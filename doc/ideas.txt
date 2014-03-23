@@ -1,0 +1,57 @@
+2014-03-16
+
+Background:
+I liked making a game (Vorp) but it took forever, and the editor isn't that good,
+and the game isn't really super great, though it has great elements.
+Also, it doesn't work on touchscreens.
+But I'm still obsessed with game ideas. My fantasy is to make a new one every
+week.
+
+Goals:
+Write a library that combines performance with developer productivity.
+Create tools that simplify level and robot making to the point where
+a 1st-grader should be able to make & share stuff.
+
+Tech elements:
+JS
+Very loose coupling
+Web Audio
+Multiple renderer
+Touch and mouse support
+Event-driven, using predicted inter-frame delays to do expected work and prep a graphics frame.
+Quad-tree wall/space support
+Focus on letting people (me) make new games, not new levels in existing game.
+Robots.
+
+Inspiration:
+Adventure (2600)
+Dandy
+Gauntlet (the obscure fixed-screen space/cave flying/shooting game, not "wizard shot the food")
+Pac Man
+Wizard of Wor
+Dig Dug
+Boulder Dash
+Robotron
+N the ninja game
+
+Basic gameplay for Game 1:
+Run around a 2d cave, avoiding or shooting robots.
+
+Fancy gameplay:
+Flexible gameclock time. Maybe even slow down sound effects.
+Musical-ish.
+Faces on things.
+
+Big idea - sprite behavior affected by being line-of-sight to certain artifacts.
+- love or fear artifact
+- artifact induces aggression or passivity
+- artifact can be carried, gives owner power, but is cursed - like LOTR's R.
+Examples:
+- artifact causes creatures to hang out near it and attack other creatures
+- artifact causes fear - nobody can get close to it
+- artifact induces blindness or short vision
+- or invisibility
+- or invulnerabinity
+- or slows/speeds - affects clock cycle frequency. Player's sense of time is altered if affected.
+- turns sprites to stone
+- makes sprites invulnerable but very slow
