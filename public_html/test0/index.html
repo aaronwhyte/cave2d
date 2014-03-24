@@ -4,11 +4,21 @@
 <title>test0</title>
 <script src="main.js"></script>
 <link rel="stylesheet" type="text/css" href="main.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
 <canvas id="canvas"></canvas>
 <script>
-  window.addEventListener("load", main);
+function pd(event) {
+  event.preventDefault();
+}
+window.addEventListener("load", main);
+window.addEventListener("scroll", pd);
+document.body.addEventListener("touchstart", pd);
+document.body.addEventListener("touchmove", pd);
+document.body.addEventListener("touchend", pd);
 </script>
 </body>
 </html>
