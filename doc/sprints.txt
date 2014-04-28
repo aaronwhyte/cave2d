@@ -5,23 +5,6 @@ v resize event listener
 v canvas resizer
 v put it in cave2d site
 
-Trail Drawing
-Separates sprite drawing from rendering timing.
-Rendering commands should be temporal, describing how to draw something that happened
-in the past. API ideas:
-addLine(x0, y0, t0, x1, y1, t1, pixelDuration)
-Other params: color, size
-Do it in 2d <canvas> first.
-- collection of un-garbage-collected lines
-- addLine(x0, y0, t0, x1, y1, t1, duration)
-- setTime(t)
-- setTimeFloor(t) // anything that falls entirely below that can be deleted
-- drawTo(canvas)
-
-Animation Lib
-- event pump w RequestAnimationFrame polyfill (it's prefixed in a couple browsers)
-- animation period measurement with Date.now() polyfill
-- change crossover to use trail drawing and animation
 
 Milestone: Animated canvas dingus with variable speed time
 

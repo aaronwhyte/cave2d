@@ -1,0 +1,61 @@
+Rendering
+Separate sprite drawing from rendering timing.
+For splash effects, the whole thing can be scheduled ahead of time - lines
+radiating out from a point, sparkles, whatever. Feed instructions to the renderer,
+and then forget about it.
+For sprite drawing,
+
+Rendering commands should be temporal, describing how to draw something given a time param.
+API ideas:
+point(x0, y0, t0, x1, y1, t1)
+line(ax0, ay0, bx0, by0, t0, ax1, ay1, bx1, by1, t1)
+
+How about a whole animation framework, like web audio?
+https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#AudioParam
+interface AudioParam {
+
+    attribute float value;
+    readonly attribute float defaultValue;
+
+    // Parameter automation.
+    void setValueAtTime(float value, double startTime);
+    void linearRampToValueAtTime(float value, double endTime);
+    void exponentialRampToValueAtTime(float value, double endTime);
+
+    // Exponentially approach the target value with a rate having the given time constant.
+    void setTargetAtTime(float target, double startTime, double timeConstant);
+
+    // Sets an array of arbitrary parameter values starting at time for the given duration.
+    // The number of values will be scaled to fit into the desired duration.
+    void setValueCurveAtTime(Float32Array values, double startTime, double duration);
+
+    // Cancels all scheduled parameter changes with times greater than or equal to startTime.
+    void cancelScheduledValues(double startTime);
+
+};
+
+Except some of my values will be 2d points or 4d colors.
+
+AniLine line = drawLine(pointA, pointB, startTime);
+line.addPose(pointA, pointB, time);
+line.setEnd(time);
+line.setColor(r, g, b, a, time);
+line.setTrailDuration(duration, time);
+Neat-o.
+
+
+Other params: color, size, width..
+That extends a point in time. Great for effects. What about lines and polys?
+If the player is a square, how will
+Do it in 2d <canvas> first.
+- collection of un-garbage-collected lines
+- addLine(x0, y0, t0, x1, y1, t1, duration)
+- setTime(t)
+- setTimeFloor(t) // anything that falls entirely below that can be deleted
+- drawTo(canvas)
+
+The idea
+Animation Lib
+- event pump w RequestAnimationFrame polyfill (it's prefixed in a couple browsers)
+- animation period measurement with Date.now() polyfill
+- change crossover to use trail drawing and animation

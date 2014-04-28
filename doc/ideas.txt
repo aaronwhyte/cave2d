@@ -16,11 +16,11 @@ Tech elements:
 JS
 Very loose coupling
 Web Audio
-Multiple renderer
+Multiple renderers
 Touch and mouse support
 Event-driven, using predicted inter-frame delays to do expected work and prep a graphics frame.
 Quad-tree wall/space support
-Focus on letting people (me) make new games, not new levels in existing game.
+Focus on letting people (me) make new games, not new levels in existing game?
 Robots.
 
 Inspiration:
@@ -33,6 +33,8 @@ Dig Dug
 Boulder Dash
 Robotron
 N the ninja game
+Bill Budge's Pinball Construction Set
+Moon Patrol
 
 Basic gameplay for Game 1:
 Run around a 2d cave, avoiding or shooting robots.
@@ -42,7 +44,7 @@ Flexible gameclock time. Maybe even slow down sound effects.
 Musical-ish.
 Faces on things.
 
-Big idea - sprite behavior affected by being line-of-sight to certain artifacts.
+Big gameplay idea - sprite behavior affected by being line-of-sight to certain artifacts.
 - love or fear artifact
 - artifact induces aggression or passivity
 - artifact can be carried, gives owner power, but is cursed - like LOTR's R.
@@ -51,7 +53,16 @@ Examples:
 - artifact causes fear - nobody can get close to it
 - artifact induces blindness or short vision
 - or invisibility
-- or invulnerabinity
+- or invulnerability
 - or slows/speeds - affects clock cycle frequency. Player's sense of time is altered if affected.
 - turns sprites to stone
 - makes sprites invulnerable but very slow
+
+Another idea: Design whole game first, then code it. Repeat.
+
+Game 1:
+Setting: computer-generated quad-tree caves.
+Player: Circle that
+
+Game 2:
+Stunt tank!!
