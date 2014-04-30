@@ -17,7 +17,7 @@ function Camera() {
  */
 Camera.prototype.transform = function(ctx) {
   ctx.scale(this.zoom, this.zoom);
-  ctx.rotate(-this.rotation);
+  ctx.rotate(this.rotation);
   ctx.translate(-this.pan.x, -this.pan.y);
 };
 
