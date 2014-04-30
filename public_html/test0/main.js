@@ -5,9 +5,9 @@ function main() {
   ctx = canvas.getContext("2d");
   viewport = new Viewport(canvas);
   camera = new Camera();
+  camera.setPanXY(0, 100);
   camera.setZoom(1/100);
-  camera.setPanXY(50, 25);
-  camera.setRotation(Math.PI / 10);
+  //camera.setRotation(Math.PI / 10);
 
   window.addEventListener("resize", function(){
     resizeCanvas();
@@ -28,24 +28,42 @@ function resizeCanvas() {
   draw();
 }
 
+var BRANCH_LENGTH = 60;
+var BRANCH_RADIUS =  5;
+var BRANCH_SCALE = 0.7;
+
 function draw() {
   var ctx = canvas.getContext('2d');
   ctx.save();
   viewport.transform(ctx);
-  ctx.strokeStyle="#f00";
-  ctx.lineWidth = 0.005;
-  ctx.beginPath();
-  ctx.rect(0, 0, 1, 1);
-  ctx.stroke();
-  ctx.save();
   camera.transform(ctx);
-  ctx.strokeStyle="#0f0";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.rect(0, 0, 100, 50);
-  ctx.rect(-5, -5, 10, 10);
-  ctx.stroke();
+  drawTree(16);
   ctx.restore();
+}
+
+function drawTree(depth) {
+  function rot() {
+    return Math.PI / 4 + (Math.random() - 0.5) * Math.PI / 4;
+  }
+  function newScale() {
+    return BRANCH_SCALE * (1 + 0.2 * (Math.random() - 0.5));
+  }
+  ctx.fillRect(-BRANCH_RADIUS, 0, BRANCH_RADIUS * 2, BRANCH_LENGTH);
+  if (depth <=1) return;
+  ctx.save();
+  ctx.translate(0, BRANCH_LENGTH - BRANCH_RADIUS);
+  ctx.rotate(-rot());
+  var s = newScale();
+  ctx.scale(s, s);
+  drawTree(depth - 1);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(0, BRANCH_LENGTH - BRANCH_RADIUS);
+  ctx.rotate(+rot());
+  var s = newScale();
+  ctx.scale(s, s);
+  drawTree(depth - 1);
   ctx.restore();
 }
 
