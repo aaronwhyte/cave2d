@@ -5,7 +5,13 @@ v resize event listener
 v canvas resizer
 v put it in cave2d site
 
+2014-04-28
+Viewport and camera
+v viewport has resize callback
+v camera has pan, rot, and zoom
+v works w test page
 
-Milestone: Animated canvas dingus with variable speed time
+...
 
-Milestone: Working WebGL engine!
+Milestone: Animated canvas thingy with variable speed time
+
