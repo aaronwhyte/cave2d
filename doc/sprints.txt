@@ -11,6 +11,42 @@ v viewport has resize callback
 v camera has pan, rot, and zoom
 v works w test page
 
+
+2014-05-08
+Some nodes...
+stroke node {
+  series:[{t, pa, pb}, {t, pa, pb}...] sorted by t.
+  startTime: t, or default to series[0].t
+  endTime: t or infinity or series
+}
+translate node {
+  series:[{t, pos}+] sorted by t.
+  startTime: t, or default to series[0].t
+  endTime: t or infinity
+}
+rotate node {
+  series:[{t, rads}+] sorted by t.
+  startTime: t, or default to series[0].t
+  endTime: t or infinity
+}
+scale node {
+  series:[{t, scale}+] sorted by t.
+  startTime: t, or default to series[0].t
+  endTime: t or infinity
+}
+// zomg the power of the series! Slomo, fastmo, reverse, scratch...!
+delay node {
+  series:[{t, delay}+] sorted by t
+  startTime: t, or default to series[0].t
+  endTime: t or infinity
+}
+
+v stroke
+- translate
+- rotate
+- scale
+- delay
+
 ...
 
 Milestone: Animated canvas thingy with variable speed time

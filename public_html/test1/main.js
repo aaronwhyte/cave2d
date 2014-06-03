@@ -1,11 +1,13 @@
 var canvas, ctx, viewport, camera;
 
+var nodes = [];
+
 function main() {
   canvas = document.querySelector('#canvas');
   ctx = canvas.getContext("2d");
   viewport = new Viewport(canvas);
   camera = new Camera();
-  camera.setPanXY(0, 100);
+  camera.setPanXY(0, 0);
   camera.setZoom(1/100);
   //camera.setRotation(Math.PI / 10);
 
@@ -13,8 +15,10 @@ function main() {
     resizeCanvas();
   });
   resizeCanvas();
-
   initGestureListeners();
+
+  buildNodes();
+  draw();
 }
 
 function resizeCanvas() {
@@ -24,52 +28,55 @@ function resizeCanvas() {
   canvas.style.height = h + "px";
   canvas.width = w;
   canvas.height = h;
-
-  draw();
 }
 
-var BRANCH_LENGTH = 70;
-var BRANCH_RADIUS =  5;
-var BRANCH_SCALE = 0.73;
-var BRANCH_DEPTH = 19;
+var LINE_COUNT = 6;
+var RADIUS = 80;
+
+function buildNodes() {
+  for (var i = 0; i < LINE_COUNT; i++) {
+    var node = new LineNode();
+    var frac = i / (LINE_COUNT);
+    var p1 = new Vec2d(RADIUS, 0).rot(Math.PI * 2 * frac);
+    var p2 = new Vec2d().set(p1).rot(Math.PI * 2 / LINE_COUNT);
+    var p3 = new Vec2d().set(p2).rot(Math.PI * 2 / LINE_COUNT);
+    node.addValue(0, new Vec2d(), p1);
+    node.addValue(0.25, p2, new Vec2d());
+    node.addValue(0.5, p1, p2);
+    node.addValue(0.75, p2, p3);
+    node.addValue(1, p3, new Vec2d());
+
+//    node.addValue(0, p2, p1);
+//    node.addValue(0.5, p2, new Vec2d());
+//    node.addValue(1, p2, p3);
+
+//    node.addValue(0, p1, p2);
+//    node.addValue(1/3, p2, new Vec2d());
+//    node.addValue(2/3, new Vec2d(), p1);
+//    node.addValue(1, p1, p2);
+    nodes.push(node);
+  }
+}
 
 function draw() {
-  var ctx = canvas.getContext('2d');
   ctx.save();
-  ctx.fillStyle = "#888";
+  ctx.fillStyle = "rgb(255, 255, 255)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.restore();
+
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
-  drawTree(BRANCH_DEPTH);
-  ctx.restore();
-}
-
-function drawTree(depth) {
-  function rot() {
-    return Math.PI /4 - (Math.random() - 0.5) * Math.PI / 8;
+  ctx.strokeStyle = "#000";
+  ctx.lineCap = "round";
+  ctx.lineWidth = 4;
+  var time = (Date.now() % 2000) / 2000;
+  for (var i = 0; i < nodes.length; i++) {
+    var node = nodes[i];
+    node.render(ctx, time);
   }
-  function newScale() {
-    return BRANCH_SCALE * (1 + 0.4 * (Math.random() - 0.5));
-  }
-  ctx.fillRect(-BRANCH_RADIUS, 0, BRANCH_RADIUS * 2, BRANCH_LENGTH);
-  if (depth <=1) return;
-  ctx.save();
-  ctx.translate(0, BRANCH_LENGTH - BRANCH_RADIUS);
-  ctx.rotate(-rot());
-  var s = newScale();
-  ctx.scale(s, s);
-  drawTree(depth - 1);
   ctx.restore();
-
-  ctx.save();
-  ctx.translate(0, BRANCH_LENGTH - BRANCH_RADIUS);
-  ctx.rotate(+rot());
-  var s = newScale();
-  ctx.scale(s, s);
-  drawTree(depth - 1);
-  ctx.restore();
+  requestAnimationFrame(draw, canvas);
 }
 
 function initGestureListeners() {
