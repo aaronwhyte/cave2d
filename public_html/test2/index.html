@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<title>test2</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<script src="../js/vec2d.js"></script>
+<script src="../js/graphics/camera.js"></script>
+<script src="../js/graphics/viewport.js"></script>
+<script src="../js/graphics/nodes/basenode.js"></script>
+<script src="../js/graphics/nodes/linenode.js"></script>
+<script src="../js/graphics/nodes/translatenode.js"></script>
+<script src="main.js"></script>
+<link rel="stylesheet" type="text/css" href="main.css">
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+function pd(event) {
+  event.preventDefault();
+}
+window.addEventListener("load", main);
+window.addEventListener("scroll", pd);
+document.body.addEventListener("touchstart", pd);
+document.body.addEventListener("touchmove", pd);
+document.body.addEventListener("touchend", pd);
+</script>
+</body>
+</html>

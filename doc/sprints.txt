@@ -14,7 +14,7 @@ v works w test page
 
 2014-05-08
 Some nodes...
-stroke node {
+line node {
   series:[{t, pa, pb}, {t, pa, pb}...] sorted by t.
   startTime: t, or default to series[0].t
   endTime: t or infinity or series
@@ -41,11 +41,23 @@ delay node {
   endTime: t or infinity
 }
 
-v stroke
-- translate
+Basic Nodes
+v line
+  v one whirly hexagon
+v translate
+  v two moving whirly hexagons
+    v tree traversal is automatic
+    v basenode works as collection of subnodes
+    v subgraph reuse works
 - rotate
+  - three rotating whirly hexagons
 - scale
+  - four growing and shrinking whirly hexagons
 - delay
+  - five hexagons, at 1x, 2x, 3x, 4x, and 5x speed
+
+wiggly tree fractal demo
+branch, translate, (rotate and scale) x 2
 
 ...
 

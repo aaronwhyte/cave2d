@@ -1,6 +1,6 @@
 var canvas, ctx, viewport, camera;
 
-var nodes = [];
+var rootNode = new BaseNode();
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -8,8 +8,7 @@ function main() {
   viewport = new Viewport(canvas);
   camera = new Camera();
   camera.setPanXY(0, 0);
-  camera.setZoom(1/100);
-  //camera.setRotation(Math.PI / 10);
+  camera.setZoom(1/200);
 
   window.addEventListener("resize", function(){
     resizeCanvas();
@@ -34,8 +33,11 @@ var LINE_COUNT = 6;
 var RADIUS = 80;
 
 function buildNodes() {
+  var node;
+
+  var hexRoot = new BaseNode();
   for (var i = 0; i < LINE_COUNT; i++) {
-    var node = new LineNode();
+    node = new LineNode();
     var frac = i / (LINE_COUNT);
     var p1 = new Vec2d(RADIUS, 0).rot(Math.PI * 2 * frac);
     var p2 = new Vec2d().set(p1).rot(Math.PI * 2 / LINE_COUNT);
@@ -45,9 +47,24 @@ function buildNodes() {
     node.addValue(0.5, p1, p2);
     node.addValue(0.75, p2, p3);
     node.addValue(1, p3, new Vec2d());
-
-    nodes.push(node);
+    hexRoot.addChild(node);
   }
+
+  node = new TranslateNode();
+  node.addValue(0, new Vec2d(-100, 0));
+  node.addValue(0.25, new Vec2d(0, 100));
+  node.addValue(0.5, new Vec2d(100, 0));
+  node.addValue(0.75, new Vec2d(0, 100));
+  node.addValue(1, new Vec2d(-100, 0));
+  node.addChild(hexRoot);
+  rootNode.addChild(node);
+
+  node = new TranslateNode();
+  node.addValue(0, new Vec2d(100, -100));
+  node.addValue(0.5, new Vec2d(-100, -100));
+  node.addValue(1, new Vec2d(100, -100));
+  node.addChild(hexRoot);
+  rootNode.addChild(node);
 }
 
 function draw() {
@@ -63,10 +80,7 @@ function draw() {
   ctx.lineCap = "round";
   ctx.lineWidth = 4;
   var time = (Date.now() % 2000) / 2000;
-  for (var i = 0; i < nodes.length; i++) {
-    var node = nodes[i];
-    node.render(ctx, time);
-  }
+  rootNode.render(ctx, time);
   ctx.restore();
   requestAnimationFrame(draw, canvas);
 }

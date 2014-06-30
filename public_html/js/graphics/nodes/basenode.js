@@ -8,8 +8,26 @@
 function BaseNode() {
   this.series = [];
   this.endTime = Infinity;
-  this.interpolationPair = [null, null];
+  // Two series-values and a fraction.
+  this.interpolation = [null, null, 0];
+  this.children = [];
 }
+
+/**
+ * Override this to make anything interesting happen.
+ * @param context
+ * @param time
+ */
+BaseNode.prototype.render = function(context, time) {
+  // override me.
+  this.renderChildren(context, time);
+};
+
+BaseNode.prototype.renderChildren = function(context, time) {
+  for (var i = 0, n = this.children.length; i < n; i++) {
+    this.children[i].render(context, time);
+  }
+};
 
 /**
  * Adds a value object, expected to have a "time" field, to the series.
@@ -44,9 +62,9 @@ BaseNode.prototype.addValueObject = function(val) {
  * If the time falls exactly on a value, the same value is used as both
  * parts of the interpolation pair, so the time difference may be zero.
  */
-BaseNode.prototype.calcInterpolationPair = function(time) {
-  this.interpolationPair[0] = null;
-  this.interpolationPair[1] = null;
+BaseNode.prototype.calcInterpolation = function(time) {
+  this.interpolation[0] = null;
+  this.interpolation[1] = null;
   // Maybe replace this linear scan with a binary search if we get very long series.
   if (!this.series.length || time < this.series[0].time ||
       this.series[this.series.length - 1].time < time) {
@@ -54,12 +72,38 @@ BaseNode.prototype.calcInterpolationPair = function(time) {
   }
   for (var i = 0; i < this.series.length; i++) {
     if (this.series[i].time <= time) {
-      this.interpolationPair[0] = this.series[i];
+      this.interpolation[0] = this.series[i];
     }
     if (time <= this.series[i].time) {
-      this.interpolationPair[1] = this.series[i];
-      return this.interpolationPair;
+      this.interpolation[1] = this.series[i];
+      // calculate the fractional distance from A to B
+      if (this.interpolation[0].time == this.interpolation[1].time) {
+        this.interpolation[2] = 0.5;
+      } else {
+        this.interpolation[2] =
+            (time - this.interpolation[0].time) /
+            (this.interpolation[1].time - this.interpolation[0].time);
+      }
+      return this.interpolation;
     }
   }
   throw Error("inconceivable");
+};
+
+BaseNode.prototype.addChild = function(node) {
+  this.children.push(node);
+};
+
+/**
+ * @returns {boolean} true if the child was removed, false otherwise.
+ */
+BaseNode.prototype.removeChild = function(node) {
+  for (var i = 0, n = this.children.length; i < n; i++) {
+    if (this.children[i] == node) {
+      this.children[i] = this.children[n - 1];
+      this.children.pop();
+      return true;
+    }
+  }
+  return false;
 };
