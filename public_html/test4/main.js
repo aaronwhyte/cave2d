@@ -33,18 +33,17 @@ function resizeCanvas() {
 }
 
 var LINE_COUNT = 30;
-var LENGTH = 130;
-var BEND = 2;
+var LENGTH = 30;
+var BEND = 1.9;
 
 function buildNodes() {
   var p0 = new Vec2d();
   var prevTip = rootNode;
   for (var i = 0; i < LINE_COUNT; i++) {
     var frac = i / LINE_COUNT;
-    var inverseish = 1/(i + 4);
-    var p1 = new Vec2d(0, inverseish * LENGTH / 3);
-    var p2 = new Vec2d(0, inverseish * 2 * LENGTH / 3);
-    var p3 = new Vec2d(0, inverseish * LENGTH);
+    var p1 = new Vec2d(0, LENGTH / 3);
+    var p2 = new Vec2d(0, 2 * LENGTH / 3);
+    var p3 = new Vec2d(0, LENGTH);
 
     var rot = new RotateNode();
     var r0 = BEND * (Math.random() - 0.5);
@@ -68,7 +67,13 @@ function buildNodes() {
     trans.addValue(0, p3);
     trans.addValue(1, p3);
     rot.addChild(trans);
-    prevTip = trans;
+
+    var scale = new ScaleNode();
+    scale.addValue(0, 0.9);
+    scale.addValue(0.5, 0.87);
+    scale.addValue(1, 0.9);
+    trans.addChild(scale);
+    prevTip = scale;
   }
 }
 
@@ -83,7 +88,7 @@ function draw() {
   camera.transform(ctx);
   ctx.strokeStyle = "#000";
   ctx.lineCap = "round";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 10;
   var time = (Date.now() % 1000) / 1000;
   rootNode.render(ctx, time);
   ctx.restore();

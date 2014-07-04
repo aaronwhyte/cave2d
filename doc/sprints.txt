@@ -49,8 +49,8 @@ v translate
     v tree traversal is automatic
     v basenode works as collection of subnodes
     v subgraph reuse works
-- rotate
-  - three rotating whirly hexagons
+v rotate
+  v wiggly arms demo
 - scale
   - four growing and shrinking whirly hexagons
 - delay
