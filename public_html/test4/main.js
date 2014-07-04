@@ -32,35 +32,35 @@ function resizeCanvas() {
   canvas.height = h;
 }
 
-var LINE_COUNT = 30;
-var LENGTH = 30;
-var BEND = 1.9;
+var LINE_COUNT = 40;
+var LENGTH = 10;
+var BEND = 2;
 
 function buildNodes() {
   var p0 = new Vec2d();
-  var prevTip = rootNode;
-  for (var i = 0; i < LINE_COUNT; i++) {
-    var frac = i / LINE_COUNT;
-    var p1 = new Vec2d(0, LENGTH / 3);
-    var p2 = new Vec2d(0, 2 * LENGTH / 3);
-    var p3 = new Vec2d(0, LENGTH);
+  var p1 = new Vec2d(0, LENGTH / 3);
+  var p2 = new Vec2d(0, 2 * LENGTH / 3);
+  var p3 = new Vec2d(0, LENGTH);
+  var line = new LineNode();
+  line.addValue(0, p0, p0);
+  line.addValue(1/3, p0, p1);
+  line.addValue(1, p2, p3);
+  var line2 = new LineNode();
+  line2.addValue(0, p2, p3);
+  line2.addValue(1/3, p3, p3);
 
+  var prevTip = rootNode;
+
+  for (var i = 0; i < LINE_COUNT; i++) {
     var rot = new RotateNode();
     var r0 = BEND * (Math.random() - 0.5);
-    var r1 = r0 + frac * BEND * (Math.random() - 0.5);
+    var r1 = r0 + (i/LINE_COUNT) * BEND * (Math.random() - 0.5);
     rot.addValue(0, r0);
     rot.addValue(Math.random() * 0.8 + 0.1, r1);
     rot.addValue(1, r0);
     prevTip.addChild(rot);
 
-    var line = new LineNode();
-    line.addValue(0, p0, p0);
-    line.addValue(1/3, p0, p1);
-    line.addValue(1, p2, p3);
     rot.addChild(line);
-    var line2 = new LineNode();
-    line2.addValue(0, p2, p3);
-    line2.addValue(1/3, p3, p3);
     rot.addChild(line2);
 
     var trans = new TranslateNode();
@@ -69,9 +69,12 @@ function buildNodes() {
     rot.addChild(trans);
 
     var scale = new ScaleNode();
-    scale.addValue(0, 0.9);
-    scale.addValue(0.5, 0.87);
-    scale.addValue(1, 0.9);
+    var SCALE = 0.95;
+    scale.addValue(0, SCALE);
+    scale.addValue((i/LINE_COUNT) - 0.3, SCALE);
+    scale.addValue((i/LINE_COUNT), SCALE + (i/LINE_COUNT) * 1.2);
+    scale.addValue((i/LINE_COUNT) + 0.3, SCALE);
+    scale.addValue(1, SCALE);
     trans.addChild(scale);
     prevTip = scale;
   }
@@ -88,8 +91,8 @@ function draw() {
   camera.transform(ctx);
   ctx.strokeStyle = "#000";
   ctx.lineCap = "round";
-  ctx.lineWidth = 10;
-  var time = (Date.now() % 1000) / 1000;
+  ctx.lineWidth = 4;
+  var time = (Date.now() % 3000) / 3000;
   rootNode.render(ctx, time);
   ctx.restore();
   requestAnimationFrame(draw, canvas);
