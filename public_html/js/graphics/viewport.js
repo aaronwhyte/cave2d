@@ -3,7 +3,7 @@
  * origin is at the center of the canvas, with the positive Y axis pointing up,
  * and the positive X axis pointing right.
  * A unit circle will just barely fit
- * @param {HTMLCanvasElement} canvas
+ * @param {HTMLElement} canvas
  * @constructor
  */
 function Viewport(canvas) {
