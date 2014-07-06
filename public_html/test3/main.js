@@ -7,7 +7,7 @@ function main() {
   ctx = canvas.getContext("2d");
   viewport = new Viewport(canvas);
   camera = new Camera();
-  camera.setPanXY(0, 120);
+  camera.setPanXY(0, 205);
   camera.setZoom(1/200);
 
   window.addEventListener("resize", function(){
@@ -32,23 +32,23 @@ function resizeCanvas() {
   canvas.height = h;
 }
 
-var LINE_COUNT = 30;
-var LENGTH = 130;
-var BEND = 2;
+var LINE_COUNT = 50;
+var LENGTH = 10;
+var BEND = 1.5;
 
 function buildNodes() {
   var p0 = new Vec2d();
   var prevTip = rootNode;
+  var p1 = new Vec2d(0, LENGTH / 3);
+  var p2 = new Vec2d(0, 2 * LENGTH / 3);
+  var p3 = new Vec2d(0, LENGTH);
+  var bend = 0;
   for (var i = 0; i < LINE_COUNT; i++) {
-    var frac = i / LINE_COUNT;
-    var inverseish = 1/(i + 4);
-    var p1 = new Vec2d(0, inverseish * LENGTH / 3);
-    var p2 = new Vec2d(0, inverseish * 2 * LENGTH / 3);
-    var p3 = new Vec2d(0, inverseish * LENGTH);
-
     var rot = new RotateNode();
-    var r0 = BEND * (Math.random() - 0.5);
-    var r1 = r0 + frac * BEND * (Math.random() - 0.5);
+//    bend += BEND * (Math.random() - 0.5);
+    var r0 = bend;
+    var r1 = bend * 0.9;
+    bend += BEND * (Math.random() - 0.5) * i/LINE_COUNT * i/LINE_COUNT;
     rot.addValue(0, r0);
     rot.addValue(Math.random() * 0.8 + 0.1, r1);
     rot.addValue(1, r0);
@@ -83,7 +83,7 @@ function draw() {
   camera.transform(ctx);
   ctx.strokeStyle = "#000";
   ctx.lineCap = "round";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 2;
   var time = (Date.now() % 1000) / 1000;
   rootNode.render(ctx, time);
   ctx.restore();
