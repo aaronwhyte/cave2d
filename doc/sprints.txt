@@ -41,6 +41,7 @@ delay node {
   endTime: t or infinity
 }
 
+2014-07
 Basic Nodes
 v line
   v one whirly hexagon
@@ -51,15 +52,31 @@ v translate
     v subgraph reuse works
 v rotate
   v wiggly arms demo
-- scale
-  - four growing and shrinking whirly hexagons
-- delay
-  - five hexagons, at 1x, 2x, 3x, 4x, and 5x speed
+v scale
+  v other wiggly arms demo
+v delay
+  v shifty clock demo
 
-wiggly tree fractal demo
-branch, translate, (rotate and scale) x 2
+DONE Milestone: Animated canvas thingy with variable speed time
+========================================================================
 
-...
+2014-07-13
+QuadTree and demo
+v basic quad
+v color with a shape (circle?)
+v demo
 
-Milestone: Animated canvas thingy with variable speed time
+Quadtree Grid
+v edit like a quadtree
+- serialize & deserialize
 
+Game UI Nav
+- list of levels
+- start player with data D
+- start editor with data D
+
+Editor Skeleton
+v screen-to-world trans
+- nav/wall/air mode switch?
+v pointer-based grid editing
+- drag-based panning

@@ -21,3 +21,12 @@ Viewport.prototype.transform = function(ctx) {
   ctx.translate(halfWidth, halfHeight);
   ctx.scale(minHalf, -minHalf);
 };
+
+Viewport.prototype.canvasToViewport = function(vec) {
+  var halfWidth = this.canvas.width / 2;
+  var halfHeight = this.canvas.height / 2;
+  var minHalf = Math.min(halfWidth, halfHeight);
+  vec.addXY(-halfWidth, -halfHeight);
+  vec.scaleXY(1/minHalf, -1/minHalf);
+  return vec;
+};

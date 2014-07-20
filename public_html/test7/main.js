@@ -1,21 +1,25 @@
 var canvas, ctx, viewport, camera;
 
-var quad, squares;
+var grid, squares, vec;
 
 function main() {
   canvas = document.querySelector('#canvas');
   ctx = canvas.getContext("2d");
   viewport = new Viewport(canvas);
   camera = new Camera();
-  camera.setPanXY(0, 0);
+  camera.setPanXY(2000, 2000);
   camera.setZoom(1/70);
-  camera.setRotation(0);
+  //camera.setRotation(1);
+
+  grid = new QuadTreeGrid(30, 5);
 
   window.addEventListener("resize", function(){
     resizeCanvas();
   });
   initGestureListeners();
   resizeCanvas();
+
+  vec = new Vec2d();
 }
 
 function resizeCanvas() {
@@ -29,14 +33,10 @@ function resizeCanvas() {
 }
 
 function draw() {
-  var d = 30 * Math.sin((Math.PI * 2 * (Date.now() % 100000) / 100000));
-  quad = new QuadTree(0, 0, 110, 8);
-  quad.colorArea(new CircleArea(-10 - d, -15, 63), 1);
-  quad.colorArea(new CircleArea(22 + d, 26 + d, 50), 0);
-  squares = quad.getAllColoredSquares();
+  squares = grid.getAllColoredSquares();
 
   ctx.save();
-  ctx.fillStyle = "rgb(0, 0, 0)";
+  ctx.fillStyle = "rgb(0, 0, 255)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.restore();
 
@@ -53,7 +53,9 @@ function draw() {
     var x = s[1];
     var y = s[2];
     var r = s[3];
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = "#888";
+    ctx.fillStyle = "#000";
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
     ctx.strokeRect(x - r, y - r, r * 2, r * 2);
     drawn++;
   }
@@ -76,8 +78,15 @@ function initGestureListeners() {
 function touchDraw(evt) {
   for (var i = 0; i < event.touches.length; i++) {
     var touch = event.touches[i];
+    vec.setXY(touch.pageX, touch.pageY);
+    viewport.canvasToViewport(vec);
+    camera.viewportToCamera(vec);
+    console.log(vec);
+    grid.colorArea(new CircleArea(vec.x, vec.y, 5), 1);
+
+    ctx.fillStyle = "#f00";
     ctx.beginPath();
-    ctx.arc(touch.pageX, touch.pageY, 20, 0, 2*Math.PI, true);
+    ctx.arc(touch.pageX, touch.pageY, 100, 0, 2*Math.PI, true);
     ctx.fill();
     ctx.stroke();
   }

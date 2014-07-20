@@ -33,3 +33,12 @@ CircleArea.prototype.squareOverlap = function(x, y, r) {
   }
   return Area.OVERLAP_PARTIAL;
 };
+
+CircleArea.prototype.getBoundingRect = function(opt_out) {
+  var out = opt_out || [];
+  out[0] = this.x;
+  out[1] = this.y;
+  out[2] = this.r;
+  out[3] = this.r;
+  return out;
+};

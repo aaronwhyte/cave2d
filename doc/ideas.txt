@@ -66,3 +66,20 @@ Player: Circle that
 
 Game 2:
 Stunt tank!!
+
+2014-07-17
+Site experience? Ideas, some crazy:
+- Start in the editor, with a ready-made level.
+- powerups are the new keys - you may need them to get past certain enemies & obstacles
+- player could be invited to edit the level as part of playing it. But we're getting too nuts for v1.
+- Most basic experience is to have the player start playing at level 1 and proceed through the rest, to victory or death.
+Consider the ordered list of levels as a single adventure.
+Most of these games are going to have one adventure, by me.
+But it's still nice to be able to create new one-off levels in the editor, and share by URL.
+Web devs could still embed them wherever.
+
+It would be nice to be able to go from playing to editing, without making a copy or naming anything.
+Step one is to keep the level in memory, and dump it to the URL or a textarea, onchange(throttled) or on demand.
+No storage, no headache. Minimize. Do not overbuild!
+
+
