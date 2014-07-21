@@ -31,9 +31,9 @@ function resizeCanvas() {
 function draw() {
   var d = 30 * Math.sin((Math.PI * 2 * (Date.now() % 100000) / 100000));
   quad = new QuadTree(0, 0, 110, 8);
-  quad.colorArea(new CircleArea(-10 - d, -15, 63), 1);
-  quad.colorArea(new CircleArea(22 + d, 26 + d, 50), 0);
-  squares = quad.getAllColoredSquares();
+  quad.paint(new CirclePainter(-10 - d, -15, 63, 1));
+  quad.paint(new CirclePainter(22 + d, 26 + d, 50, 0));
+  squares = quad.getSquaresOfColor(1);
 
   ctx.save();
   ctx.fillStyle = "rgb(0, 0, 0)";

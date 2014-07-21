@@ -16,71 +16,58 @@ function QuadTree(centerX, centerY, radius, maxDepth) {
   this.root = [0, 0, 0, 0];
 }
 
-/**
- * Color an area of the quadtree.
- * @param area
- * @param color
- * @return true if the whole tree is now covered with that color
- */
-QuadTree.prototype.colorArea = function(area, color) {
-  return this.colorQuadrants(area, color, this.root, 1, this.center.x, this.center.y, this.radius);
+QuadTree.prototype.paint = function(painter) {
+  return this.paintQuadrants(painter, this.root, 1, this.center.x, this.center.y, this.radius);
 };
 
 /**
- * @param area
- * @param color
+ * @param painter
  * @param quadrants
  * @param depth
  * @param centerX
  * @param centerY
  * @param radius
- * @return {boolean} true if all quadrants get 100% covered, 0 otherwise.
  */
-QuadTree.prototype.colorQuadrants = function(area, color, quadrants, depth, centerX, centerY, radius) {
+QuadTree.prototype.paintQuadrants = function(painter, quadrants, depth, centerX, centerY, radius) {
   var halfR = radius * 0.5;
-  var colorCount = 0;
   for (var iy = 0; iy < 2; iy++) {
     var cy = centerY - halfR + iy * radius;
     for (var ix = 0; ix < 2; ix++) {
-      var index = iy * 2 + ix;
-
-      if (quadrants[index] == color) {
-        // Quadrant is already the target color.
-        colorCount++;
-        continue;
-      }
-
       var cx = centerX - halfR + ix * radius;
-      var overlap = area.squareOverlap(cx, cy, halfR);
+      var index = iy * 2 + ix;
+      var maxed = depth === this.maxDepth;
+      var oldColor = quadrants[index];
 
-      if (overlap == Area.OVERLAP_FULL) {
-        quadrants[index] = color;
-        colorCount++;
+      var effect = painter.getEffect(cx, cy, halfR, maxed, oldColor);
 
-      } else if (overlap == Area.OVERLAP_PARTIAL) {
-        if (depth < this.maxDepth) {
-          // descend into the quadrant
-          if (!Array.isArray(quadrants[index])) {
-            var c = quadrants[index];
-            // Turn a primitive child into four quadrants, based on the existing color.
-            quadrants[index] = [c, c, c, c];
-          }
-          if (this.colorQuadrants(area, color, quadrants[index], depth + 1, cx, cy, halfR)) {
-            colorCount++;
-            // convert the child into a primitive
-            quadrants[index] = color;
-          }
-        } else {
-          // Color the terminal node if it even partly overlaps. That way, painting with
-          // a mathematical point will work.
-          quadrants[index] = color;
-          colorCount++;
+      if (effect === Painter.PAINT_NOTHING) {
+        // skip
+
+      } else if (effect === Painter.PAINT_DETAILS) {
+        if (maxed) throw Error('Cannot paint more detail when at max depth');
+        if (!Array.isArray(quadrants[index])) {
+          // break a leaf node into sub-quadrants
+          quadrants[index] = [oldColor, oldColor, oldColor, oldColor];
         }
+        this.paintQuadrants(painter, quadrants[index], depth + 1, cx, cy, halfR);
+
+        // Maybe collapse the quadrant into a solid color.
+        var uniformColor = quadrants[index][0];
+        for (var i = 1; i < 4; i++) {
+          if (quadrants[index][i] !== uniformColor) {
+            break;
+          }
+          if (i == 3) {
+            quadrants[index] = uniformColor;
+          }
+        }
+
+      } else {
+        // effect is a solid color
+        quadrants[index] = effect;
       }
-      // else there is no overlap, so do nothing
     }
   }
-  return colorCount == 4;
 };
 
 /**
@@ -130,6 +117,33 @@ QuadTree.prototype.getAllColoredSquares = function(opt_pushToMe) {
           visitQuadrants(quadrant, cx, cy, halfR);
         } else if (quadrant) {
           // non-zero
+          squares.push([quadrant, cx, cy, halfR]);
+        }
+      }
+    }
+  }
+  visitQuadrants(this.root, this.center.x, this.center.y, this.radius);
+  return squares;
+};
+
+/**
+ * Returns an array of arrays like
+ * [[color, centerX, centerY, radius], [color, centerX, centerY, radius], ...]
+ */
+QuadTree.prototype.getSquaresOfColor = function(color, opt_pushToMe) {
+  var squares = opt_pushToMe || [];
+
+  function visitQuadrants(quadrants, centerX, centerY, radius) {
+    var halfR = radius * 0.5;
+    for (var iy = 0; iy < 2; iy++) {
+      var cy = centerY - halfR + iy * radius;
+      for (var ix = 0; ix < 2; ix++) {
+        var index = iy * 2 + ix;
+        var cx = centerX - halfR + ix * radius;
+        var quadrant = quadrants[index];
+        if (Array.isArray(quadrant)) {
+          visitQuadrants(quadrant, cx, cy, halfR);
+        } else if (quadrant == color) {
           squares.push([quadrant, cx, cy, halfR]);
         }
       }

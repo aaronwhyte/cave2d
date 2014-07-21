@@ -15,12 +15,10 @@ function QuadTreeGrid(radius, maxDepth) {
 }
 
 /**
- * Color an area of the quadtreegrid.
- * @param area
- * @param color
+ * Paint an area of the quadtreegrid.
  */
-QuadTreeGrid.prototype.colorArea = function(area, color) {
-  area.getBoundingRect(this.rect);
+QuadTreeGrid.prototype.paint = function(painter) {
+  painter.getBoundingRect(this.rect);
   var areaX = this.rect[0];
   var areaY = this.rect[1];
   var areaXR = this.rect[2];
@@ -29,12 +27,11 @@ QuadTreeGrid.prototype.colorArea = function(area, color) {
   var cellY0 = this.getCellIndexY(areaY - areaYR);
   var cellX1 = this.getCellIndexX(areaX + areaXR);
   var cellY1 = this.getCellIndexY(areaY + areaYR);
-  console.log(cellX0, cellY0, cellX1, cellY1);
   for (var cellX = cellX0; cellX <= cellX1; cellX++) {
     for (var cellY = cellY0; cellY <= cellY1; cellY++) {
       var worldX = this.getWorldXForIndexX(cellX);
       var worldY = this.getWorldYForIndexY(cellY);
-      if (area.squareOverlap(worldX, worldY, this.radius)) {
+      if (painter.getEffect(worldX, worldY, this.radius, false, null) != Painter.PAINT_NOTHING) {
         var col = this.grid[cellX];
         if (!col) {
           col = this.grid[cellX] = {};
@@ -43,20 +40,19 @@ QuadTreeGrid.prototype.colorArea = function(area, color) {
         if (!cell) {
           cell = col[cellY] = new QuadTree(worldX, worldY, this.radius, this.maxDepth);
         }
-        var covered = cell.colorArea(area, color);
-        if (covered && !color) {
-          // Delete this grid cell
-          delete col[cellY];
-        }
+        cell.paint(painter);
+//        var covered = cell.paint(painter);
+//        if (covered && !color) {
+//          // Delete this grid cell
+//          delete col[cellY];
+//        }
       }
     }
   }
 };
-
 /**
  * Returns an array of arrays like
  * [[color, centerX, centerY, radius], [color, centerX, centerY, radius], ...]
- * representing the entire area covered by the quadtree.
  */
 QuadTreeGrid.prototype.getAllColoredSquares = function() {
   var squares = [];
@@ -64,6 +60,21 @@ QuadTreeGrid.prototype.getAllColoredSquares = function() {
     var col = this.grid[colNum];
     for (var rowNum in col) {
       col[rowNum].getAllColoredSquares(squares);
+    }
+  }
+  return squares;
+};
+
+/**
+ * Returns an array of arrays like
+ * [[color, centerX, centerY, radius], [color, centerX, centerY, radius], ...]
+ */
+QuadTreeGrid.prototype.getSquaresOfColor = function(color, opt_squares) {
+  var squares = opt_squares || [];
+  for (var colNum in this.grid) {
+    var col = this.grid[colNum];
+    for (var rowNum in col) {
+      col[rowNum].getSquaresOfColor(color, squares);
     }
   }
   return squares;
