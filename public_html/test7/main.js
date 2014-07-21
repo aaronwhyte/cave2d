@@ -54,12 +54,9 @@ function draw() {
     var color = s[0];
     var x = s[1];
     var y = s[2];
-    var r = s[3];
-//    ctx.strokeStyle = "#ddd";
-    ctx.strokeStyle = color == 1 ? "#ddd" : "#444";
+    var r = s[3] + (color == 1 ? 0.1 : -0.02);
     ctx.fillStyle = color == 1 ? "#ddd" : "#666";
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
-    ctx.strokeRect(x - r, y - r, r * 2, r * 2);
     drawn++;
   }
   ctx.restore();
