@@ -11,7 +11,7 @@ function main() {
   camera.setZoom(1/70);
   //camera.setRotation(1);
 
-  grid = new QuadTreeGrid(150, 8);
+  grid = new QuadTreeGrid(100, 8);
 
   window.addEventListener("resize", function(){
     resizeCanvas();
@@ -80,7 +80,7 @@ function touchDraw(evt) {
     vec.setXY(touch.pageX, touch.pageY);
     viewport.canvasToViewport(vec);
     camera.viewportToCamera(vec);
-    grid.paint(new HallPainter(vec.x, vec.y, 5, 20), 1);
+    grid.paint(new HallPainter(vec.x, vec.y, 4, 3), 1);
 
     ctx.fillStyle = "#f00";
     ctx.beginPath();
