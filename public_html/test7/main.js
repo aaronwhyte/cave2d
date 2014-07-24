@@ -81,12 +81,6 @@ function touchDraw(evt) {
     viewport.canvasToViewport(vec);
     camera.viewportToCamera(vec);
     grid.paint(new HallPainter(vec.x, vec.y, 4, 3), 1);
-
-    ctx.fillStyle = "#f00";
-    ctx.beginPath();
-    ctx.arc(touch.pageX, touch.pageY, 100, 0, 2*Math.PI, true);
-    ctx.fill();
-    ctx.stroke();
   }
   requestAnimationFrame(draw, canvas);
 }
