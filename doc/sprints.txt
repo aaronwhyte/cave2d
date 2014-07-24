@@ -69,6 +69,28 @@ v demo
 Quadtree Grid
 v edit like a quadtree
 - serialize & deserialize
+  v port bit manipluation
+    v bitqueue
+      v test
+    v base64
+  v quadtree s27n
+    v ser
+    v des
+    v test
+  - quadtreegrid s27n
+    - ser
+    - des
+    - test
+
+test8: terrain URL
+- port stuff
+  - url
+  - lempelziv
+  - squisher
+- test8 page
+  - button saves sharing URL to textarea
+  - button dismisses textarea
+  - onload parse URL
 
 Game UI Nav
 - list of levels
@@ -78,5 +100,9 @@ Game UI Nav
 Editor Skeleton
 v screen-to-world trans
 - nav/wall/air mode switch?
-v pointer-based grid editing
+- pointer-based grid editing
+  v circles at each event
+  v touch
+  - continuity between event points on drag
+  - mouse
 - drag-based panning

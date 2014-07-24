@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>BitQueue test</title>
+  <script src="../../js/strings.js"></script>
+  <script src="../../js/testing.js"></script>
+  <script src="../../js/bits/bitqueue.js"></script>
+  <script>
+    addTest(function encodeDecodeNumbers() {
+      var q = new BitQueue();
+      q.enqueueNumber(100, 7);
+      q.enqueueNumber(200, 10);
+      assertEquals(100, q.dequeueNumber(7));
+      q.enqueueNumber(300, 20);
+      assertEquals(200, q.dequeueNumber(10));
+      assertEquals(300, q.dequeueNumber(20));
+    });
+
+    addTest(function overconsume() {
+      var q = new BitQueue();
+      q.enqueueNumber(1, 4);
+      q.enqueueNumber(1, 4);
+      try {
+        assertEquals(100, q.dequeueNumber(9));
+        fail();
+      } catch (e) {
+        // success
+      }
+    });
+
+    addTest(function notEnoughBits() {
+      var q = new BitQueue();
+      q.enqueueNumber(255, 8);
+      try {
+        q.enqueueNumber(255, 7);
+        fail();
+      } catch (e) {
+        // success
+      }
+    });
+
+    addTest(function dequeueToBytesAndPadZerosRight() {
+      var q = new BitQueue();
+      q.enqueueNumber(3, 8);
+      q.enqueueNumber(3, 2);
+      var bytes = q.dequeueToBytesAndPadZerosRight();
+      assertEquals(2, bytes.length);
+      assertEquals(3, bytes.charCodeAt(0));
+      assertEquals(128 + 64, bytes.charCodeAt(1));
+    });
+  </script>
+</head>
+<body onload="runTests()"></body>
+</html>

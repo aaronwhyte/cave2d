@@ -152,3 +152,75 @@ QuadTree.prototype.getSquaresOfColor = function(color, opt_pushToMe) {
   visitQuadrants(this.root, this.center.x, this.center.y, this.radius);
   return squares;
 };
+
+QuadTree.SOLID = 1;
+QuadTree.DETAILED = 0;
+
+QuadTree.prototype.toJSON = function() {
+  function serializeQuadrants(quadrants) {
+    for (var i = 0; i < 4; i++) {
+      if (Array.isArray(quadrants[i])) {
+        bits.enqueueNumber(QuadTree.DETAILED, 1);
+        serializeQuadrants(quadrants[i]);
+      } else {
+        bits.enqueueNumber(QuadTree.SOLID, 1);
+        bits.enqueueNumber(colorLookup[quadrants[i]], colorBitCount);
+      }
+    }
+  }
+
+  function scanColors(quadrants) {
+    for (var i = 0; i < 4; i++) {
+      if (Array.isArray(quadrants[i])) {
+        scanColors(quadrants[i]);
+      } else if (!colorLookup.hasOwnProperty(quadrants[i])) {
+        // Remember this new color
+        colorLookup[quadrants[i]] = colorList.length;
+        colorList.push(quadrants[i]);
+      }
+    }
+  }
+
+  // Make a compact list of all the colors, and a reverse lookup map.
+  // key is QuadTree color, value is index into colorList
+  var colorLookup = {};
+  // array of color values in the tree
+  var colorList = [];
+  scanColors(this.root);
+  // How many bits are needed to represent a color?
+  var colorBitCount = Math.ceil(Math.log(colorList.length) / Math.LN2);
+
+  // Serialize the tree itself into a fairly compact string
+  var bits = new BitQueue();
+  serializeQuadrants(this.root);
+
+  return {
+    center: this.center.toJSON(),
+    radius: this.radius,
+    maxDepth: this.maxDepth,
+    colorList: colorList,
+    treeBytes: bits.dequeueToBytesAndPadZerosRight()
+  };
+};
+
+QuadTree.fromJSON = function(json) {
+  function fillQuadrants(quadrants) {
+    for (var i = 0; i < 4; i++) {
+      var bit = bits.dequeueNumber(1);
+      if (bit == QuadTree.SOLID) {
+        quadrants[i] = colorList[bits.dequeueNumber(colorBitCount)];
+      } else {
+        quadrants[i] = [0, 0, 0, 0];
+        fillQuadrants(quadrants[i]);
+      }
+    }
+  }
+  var center = Vec2d.fromJSON(json.center);
+  var retval = new QuadTree(center.x, center.y, json.radius, json.maxDepth);
+  var colorList = json.colorList;
+  var colorBitCount = Math.ceil(Math.log(colorList.length) / Math.LN2);
+  var bits = new BitQueue();
+  bits.enqueueBytes(json.treeBytes);
+  fillQuadrants(retval.root);
+  return retval;
+};

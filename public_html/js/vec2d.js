@@ -229,3 +229,11 @@ Vec2d.distanceSq = function(x0, y0, x1, y1) {
   var dy = y0 - y1;
   return (dx * dx) + (dy * dy);
 };
+
+Vec2d.prototype.toJSON = function() {
+  return [this.x, this.y];
+};
+
+Vec2d.fromJSON = function(json) {
+  return new Vec2d(json[0], json[1]);
+};
