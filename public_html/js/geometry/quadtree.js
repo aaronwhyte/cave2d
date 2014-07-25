@@ -188,7 +188,9 @@ QuadTree.prototype.toJSON = function() {
   var colorList = [];
   scanColors(this.root);
   // How many bits are needed to represent a color?
-  var colorBitCount = Math.ceil(Math.log(colorList.length) / Math.LN2);
+  var colorBitCount = Math.max(
+      Math.ceil(Math.log(colorList.length) / Math.LN2),
+      1);
 
   // Serialize the tree itself into a fairly compact string
   var bits = new BitQueue();
@@ -218,7 +220,9 @@ QuadTree.fromJSON = function(json) {
   var center = Vec2d.fromJSON(json.center);
   var retval = new QuadTree(center.x, center.y, json.radius, json.maxDepth);
   var colorList = json.colorList;
-  var colorBitCount = Math.ceil(Math.log(colorList.length) / Math.LN2);
+  var colorBitCount = Math.max(
+      Math.ceil(Math.log(colorList.length) / Math.LN2),
+      1);
   var bits = new BitQueue();
   bits.enqueueBytes(json.treeBytes);
   fillQuadrants(retval.root);

@@ -13,7 +13,7 @@
   <script src="../../js/geometry/quadtreegrid.js"></script>
   <script>
     addTest(function serializeDeserializeSomething() {
-      var grid1 = new QuadTreeGrid(20, 6);
+      var grid1 = new QuadTreeGrid(40, 6);
       grid1.paint(new CirclePainter(-10, -15, 63, 100));
       grid1.paint(new CirclePainter(22, 26, 50, 200));
       var json1 = grid1.toJSON();

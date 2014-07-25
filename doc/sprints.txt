@@ -68,7 +68,7 @@ v demo
 
 Quadtree Grid
 v edit like a quadtree
-- serialize & deserialize
+v serialize & deserialize
   v port bit manipluation
     v bitqueue
       v test
@@ -77,10 +77,10 @@ v edit like a quadtree
     v ser
     v des
     v test
-  - quadtreegrid s27n
-    - ser
-    - des
-    - test
+  v quadtreegrid s27n
+    v ser
+    v des
+    v test
 
 test8: terrain URL
 - port stuff

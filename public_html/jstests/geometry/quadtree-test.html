@@ -11,7 +11,7 @@
   <script src="../../js/geometry/circlepainter.js"></script>
   <script src="../../js/geometry/quadtree.js"></script>
   <script>
-    addTest(function serializeDeserialize() {
+    addTest(function serializeDeserializeSomething() {
       var quad1 = new QuadTree(1, 2, 200, 8);
       quad1.paint(new CirclePainter(-10, -15, 63, 100));
       quad1.paint(new CirclePainter(22, 26, 50, 200));
@@ -20,6 +20,17 @@
       var quad2 = QuadTree.fromJSON(json1);
       var json2 = quad2.toJSON();
       assertStringifyEquals(json1, json2);
+      console.log(JSON.stringify(json1));
+    });
+
+    addTest(function serializeDeserializeNothing() {
+      var quad1 = new QuadTree(1, 2, 200, 8);
+      var json1 = quad1.toJSON();
+
+      var quad2 = QuadTree.fromJSON(json1);
+      var json2 = quad2.toJSON();
+      assertStringifyEquals(json1, json2);
+      console.log(JSON.stringify(json1));
     });
   </script>
 </head>
