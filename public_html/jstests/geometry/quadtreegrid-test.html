@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>QuadTreeGrid test</title>
+  <script src="../../js/strings.js"></script>
+  <script src="../../js/testing.js"></script>
+  <script src="../../js/bits/base64.js"></script>
+  <script src="../../js/bits/bitqueue.js"></script>
+  <script src="../../js/vec2d.js"></script>
+  <script src="../../js/geometry/painter.js"></script>
+  <script src="../../js/geometry/circlepainter.js"></script>
+  <script src="../../js/geometry/quadtree.js"></script>
+  <script src="../../js/geometry/quadtreegrid.js"></script>
+  <script>
+    addTest(function serializeDeserializeSomething() {
+      var grid1 = new QuadTreeGrid(20, 6);
+      grid1.paint(new CirclePainter(-10, -15, 63, 100));
+      grid1.paint(new CirclePainter(22, 26, 50, 200));
+      var json1 = grid1.toJSON();
+
+      var grid2 = QuadTreeGrid.fromJSON(json1);
+      var json2 = grid2.toJSON();
+      assertStringifyEquals(json1, json2);
+      console.log(JSON.stringify(json2));
+    });
+    addTest(function serializeDeserializeNothing() {
+      var grid1 = new QuadTreeGrid(20, 8);
+      var json1 = grid1.toJSON();
+
+      var grid2 = QuadTreeGrid.fromJSON(json1);
+      var json2 = grid2.toJSON();
+      assertStringifyEquals(json1, json2);
+      console.log(JSON.stringify(json2));
+    });
+  </script>
+</head>
+<body onload="runTests()"></body>
+</html>

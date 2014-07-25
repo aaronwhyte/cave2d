@@ -108,3 +108,31 @@ QuadTreeGrid.prototype.getWorldYForIndexY = function(iy) {
   return this.radius * 2 * iy;
 };
 
+QuadTreeGrid.prototype.toJSON = function() {
+  var gridJson = {};
+  for (var colNum in this.grid) {
+    gridJson[colNum] = {};
+    var col = this.grid[colNum];
+    for (var rowNum in col) {
+      gridJson[colNum][rowNum] = col[rowNum].toJSON();
+    }
+  }
+
+  return {
+    radius: this.radius,
+    maxDepth: this.maxDepth,
+    grid: gridJson
+  };
+};
+
+QuadTreeGrid.fromJSON = function(json) {
+  var quadTreeGrid = new QuadTreeGrid(json.radius, json.maxDepth);
+  for (var colNum in json.grid) {
+    quadTreeGrid.grid[colNum] = {};
+    var jsonCol = json.grid[colNum];
+    for (var rowNum in jsonCol) {
+      quadTreeGrid.grid[colNum][rowNum] = QuadTree.fromJSON(jsonCol[rowNum]);
+    }
+  }
+  return quadTreeGrid;
+};
