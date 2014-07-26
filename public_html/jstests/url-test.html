@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Url test</title>
+<script src="../../public_html/js/testing.js"></script>
+<script src="../../public_html/js/strings.js"></script>
+<script src="../../public_html/js/url.js"></script>
+<script>
+
+addTest(function tokenizeEncodedUrl() {
+  assertStringifyEquals(['a', '%20', 'b'], Url.tokenizeEncodedUrl('a%20b'));
+  assertStringifyEquals(['c', ' ', 'd'], Url.tokenizeEncodedUrl('c d'));
+});
+
+addTest(function percentEscapeCharacter() {
+  assertEquals('%20', Url.percentEscapeCharacter(' '));
+  assertEquals('%C3%BF', Url.percentEscapeCharacter('\u00FF'));
+});
+
+addTest(function percentEncodeUnwhitelistedChars() {
+  assertEquals('a c', Url.percentEncodeUnwhitelistedChars('a c', 'abc '));
+  assertEquals('a%20c', Url.percentEncodeUnwhitelistedChars('a c', 'abc'));
+  assertEquals('a\u00FFc', Url.percentEncodeUnwhitelistedChars('a\u00FFc', '\u00FFabc'));
+  assertEquals('a%C3%BFc', Url.percentEncodeUnwhitelistedChars('a\u00FFc', 'abc'));
+});
+
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>

@@ -84,9 +84,10 @@ v serialize & deserialize
 
 test8: terrain URL
 - port stuff
-  - url
-  - lempelziv
-  - squisher
+  v url
+  v lempelziv
+    v map
+  v squisher
 - test8 page
   - button saves sharing URL to textarea
   - button dismisses textarea
