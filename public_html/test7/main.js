@@ -54,7 +54,7 @@ function drawAll() {
     var color = s[0];
     var x = s[1];
     var y = s[2];
-    var r = s[3] + (color == 1 ? 0.05 : -0.02);
+    var r = s[3] + 0.05;
     ctx.fillStyle = FILL_STYLES[color];
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
     drawn++;
@@ -67,6 +67,10 @@ function initGestureListeners() {
   document.body.addEventListener("touchmove", touchDraw);
   document.body.addEventListener("touchend", touchDraw);
 
+  document.body.addEventListener("mousedown", mouseDown);
+  document.body.addEventListener("mouseup", mouseUp);
+  window.addEventListener("mousemove", mouseMove);
+
   var havePointerLock = 'pointerLockElement' in document ||
       'mozPointerLockElement' in document ||
       'webkitPointerLockElement' in document;
@@ -74,16 +78,37 @@ function initGestureListeners() {
   }
 }
 
-function touchDraw(evt) {
+function touchDraw(event) {
   for (var i = 0; i < event.touches.length; i++) {
     var touch = event.touches[i];
-    vec.setXY(touch.pageX, touch.pageY);
-    viewport.canvasToViewport(vec);
-    camera.viewportToCamera(vec);
-    var painter = new HallPainter(vec.x, vec.y, 4, 3);
-    grid.paint(painter, 1);
-    drawDirtyRect(painter.getBoundingRect());
+    pointerDraw(touch.pageX, touch.pageY);
   }
+}
+
+var isMouseDown = false;
+
+function mouseUp() {
+  isMouseDown = false;
+}
+
+function mouseDown(event) {
+  isMouseDown = true;
+  pointerDraw(event.pageX, event.pageY);
+}
+
+function mouseMove(event) {
+  if (isMouseDown) {
+    pointerDraw(event.pageX, event.pageY);
+  }
+}
+
+function pointerDraw(x, y) {
+  vec.setXY(x, y);
+  viewport.canvasToViewport(vec);
+  camera.viewportToCamera(vec);
+  var painter = new HallPainter(vec.x, vec.y, 4, 3);
+  grid.paint(painter, 1);
+  drawDirtyRect(painter.getBoundingRect());
 }
 
 var FILL_STYLES = ["#000", "#ddd", "#666"];
@@ -93,24 +118,16 @@ function drawDirtyRect(rect) {
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
-  ctx.lineCap = "round";
-  ctx.lineWidth = 0.09;
-
-  var drawn = 0;
   for (var i = 0; i < squares.length; i++) {
     var s = squares[i];
     // color, centerX, centerY, radius
     var color = s[0];
-    if (!color) continue;
     var x = s[1];
     var y = s[2];
     var r = s[3] + 0.05;
     ctx.fillStyle = FILL_STYLES[color];
     ctx.strokeStyle = FILL_STYLES[color];
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
-//    ctx.strokeRect(x - r, y - r, r * 2, r * 2);
-    drawn++;
   }
   ctx.restore();
-
 }

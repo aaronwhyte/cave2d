@@ -83,12 +83,10 @@ v serialize & deserialize
     v test
 
 
-Editor Performance
+Editor Improvements
 v Only redraw a dirty rect, or a list of affected quadrants.
-- Hall Pills: Affect the space between to events connected by dragging - update HallPainter
-
-Mouse support
-Maybe wrap touch and mouse in a new interface.
+x Hall Pills: Affect the space between to events connected by dragging - update HallPainter
+v Mouse support
 
 test8: terrain URL
 v port stuff
