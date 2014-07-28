@@ -80,6 +80,17 @@ QuadTreeGrid.prototype.getSquaresOfColor = function(color, opt_squares) {
   return squares;
 };
 
+QuadTreeGrid.prototype.getSquaresOverlappingRect = function(rect, opt_squares) {
+  var squares = opt_squares || [];
+  for (var colNum in this.grid) {
+    var col = this.grid[colNum];
+    for (var rowNum in col) {
+      col[rowNum].getSquaresOverlappingRect(rect, squares);
+    }
+  }
+  return squares;
+};
+
 /**
  * @returns {Number} the grid cell X index that corresponds with the x value.
  */

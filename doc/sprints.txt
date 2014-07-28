@@ -82,16 +82,23 @@ v serialize & deserialize
     v des
     v test
 
+
+Editor Performance
+v Only redraw a dirty rect, or a list of affected quadrants.
+- Hall Pills: Affect the space between to events connected by dragging - update HallPainter
+
+Mouse support
+Maybe wrap touch and mouse in a new interface.
+
 test8: terrain URL
-- port stuff
+v port stuff
   v url
   v lempelziv
     v map
   v squisher
-- test8 page
-  - button saves sharing URL to textarea
-  - button dismisses textarea
-  - onload parse URL
+- button saves sharing URL to textarea
+- button dismisses textarea
+- onload parse URL
 
 Game UI Nav
 - list of levels

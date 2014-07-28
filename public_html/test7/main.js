@@ -29,10 +29,10 @@ function resizeCanvas() {
   canvas.style.height = h + "px";
   canvas.width = w;
   canvas.height = h;
-  draw();
+  drawAll();
 }
 
-function draw() {
+function drawAll() {
   squares = [];
   grid.getSquaresOfColor(1, squares);
   grid.getSquaresOfColor(2, squares);
@@ -54,8 +54,8 @@ function draw() {
     var color = s[0];
     var x = s[1];
     var y = s[2];
-    var r = s[3] + (color == 1 ? 0.1 : -0.02);
-    ctx.fillStyle = color == 1 ? "#ddd" : "#666";
+    var r = s[3] + (color == 1 ? 0.05 : -0.02);
+    ctx.fillStyle = FILL_STYLES[color];
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
     drawn++;
   }
@@ -80,7 +80,37 @@ function touchDraw(evt) {
     vec.setXY(touch.pageX, touch.pageY);
     viewport.canvasToViewport(vec);
     camera.viewportToCamera(vec);
-    grid.paint(new HallPainter(vec.x, vec.y, 4, 3), 1);
+    var painter = new HallPainter(vec.x, vec.y, 4, 3);
+    grid.paint(painter, 1);
+    drawDirtyRect(painter.getBoundingRect());
   }
-  requestAnimationFrame(draw, canvas);
+}
+
+var FILL_STYLES = ["#000", "#ddd", "#666"];
+
+function drawDirtyRect(rect) {
+  var squares = grid.getSquaresOverlappingRect(rect);
+  ctx.save();
+  viewport.transform(ctx);
+  camera.transform(ctx);
+  ctx.lineCap = "round";
+  ctx.lineWidth = 0.09;
+
+  var drawn = 0;
+  for (var i = 0; i < squares.length; i++) {
+    var s = squares[i];
+    // color, centerX, centerY, radius
+    var color = s[0];
+    if (!color) continue;
+    var x = s[1];
+    var y = s[2];
+    var r = s[3] + 0.05;
+    ctx.fillStyle = FILL_STYLES[color];
+    ctx.strokeStyle = FILL_STYLES[color];
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+//    ctx.strokeRect(x - r, y - r, r * 2, r * 2);
+    drawn++;
+  }
+  ctx.restore();
+
 }

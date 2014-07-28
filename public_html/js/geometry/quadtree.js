@@ -77,7 +77,6 @@ QuadTree.prototype.paintQuadrants = function(painter, quadrants, depth, centerX,
  */
 QuadTree.prototype.getAllSquares = function(opt_pushToMe) {
   var squares = opt_pushToMe || [];
-
   function visitQuadrants(quadrants, centerX, centerY, radius) {
     var halfR = radius * 0.5;
     for (var iy = 0; iy < 2; iy++) {
@@ -104,7 +103,6 @@ QuadTree.prototype.getAllSquares = function(opt_pushToMe) {
  */
 QuadTree.prototype.getAllColoredSquares = function(opt_pushToMe) {
   var squares = opt_pushToMe || [];
-
   function visitQuadrants(quadrants, centerX, centerY, radius) {
     var halfR = radius * 0.5;
     for (var iy = 0; iy < 2; iy++) {
@@ -132,7 +130,6 @@ QuadTree.prototype.getAllColoredSquares = function(opt_pushToMe) {
  */
 QuadTree.prototype.getSquaresOfColor = function(color, opt_pushToMe) {
   var squares = opt_pushToMe || [];
-
   function visitQuadrants(quadrants, centerX, centerY, radius) {
     var halfR = radius * 0.5;
     for (var iy = 0; iy < 2; iy++) {
@@ -144,6 +141,29 @@ QuadTree.prototype.getSquaresOfColor = function(color, opt_pushToMe) {
         if (Array.isArray(quadrant)) {
           visitQuadrants(quadrant, cx, cy, halfR);
         } else if (quadrant == color) {
+          squares.push([quadrant, cx, cy, halfR]);
+        }
+      }
+    }
+  }
+  visitQuadrants(this.root, this.center.x, this.center.y, this.radius);
+  return squares;
+};
+
+QuadTree.prototype.getSquaresOverlappingRect = function(rect, opt_pushToMe) {
+  var squares = opt_pushToMe || [];
+  function visitQuadrants(quadrants, centerX, centerY, radius) {
+    var halfR = radius * 0.5;
+    for (var iy = 0; iy < 2; iy++) {
+      var cy = centerY - halfR + iy * radius;
+      for (var ix = 0; ix < 2; ix++) {
+        var index = iy * 2 + ix;
+        var cx = centerX - halfR + ix * radius;
+        var quadrant = quadrants[index];
+        if (Array.isArray(quadrant)) {
+          visitQuadrants(quadrant, cx, cy, halfR);
+        } else if (Math.abs(rect[0] - cx) <= halfR + rect[2] &&
+            Math.abs(rect[1] - cy) <= halfR + rect[3]) {
           squares.push([quadrant, cx, cy, halfR]);
         }
       }
