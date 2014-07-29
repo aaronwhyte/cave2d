@@ -9,7 +9,7 @@ function main() {
   camera = new Camera();
   camera.setPanXY(2000, 2000);
   camera.setZoom(1/70);
-  //camera.setRotation(1);
+  camera.setRotation(1);
 
   grid = new QuadTreeGrid(100, 8);
 

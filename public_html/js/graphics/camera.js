@@ -57,6 +57,7 @@ Camera.prototype.getRotation = function() {
 
 Camera.prototype.viewportToCamera = function(vec) {
   vec.scale(1/this.zoom);
+  vec.rot(this.rotation);
   vec.addXY(this.pan.x, this.pan.y);
   return vec;
 };
