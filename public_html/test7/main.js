@@ -4,7 +4,7 @@ var grid, squares, vec;
 
 var pointers = {};
 
-SQUARE_PAD = 0.07;
+SQUARE_PAD = 0.1;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -44,24 +44,7 @@ function drawAll() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  ctx.save();
-  viewport.transform(ctx);
-  camera.transform(ctx);
-  ctx.lineCap = "round";
-  ctx.lineWidth = 0.2;
-  var drawn = 0;
-  for (var i = 0; i < squares.length; i++) {
-    var s = squares[i];
-    // color, centerX, centerY, radius
-    var color = s[0];
-    var x = s[1];
-    var y = s[2];
-    var r = s[3] + SQUARE_PAD;
-    ctx.fillStyle = FILL_STYLES[color];
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
-    drawn++;
-  }
-  ctx.restore();
+  drawSquares(squares);
 }
 
 function initGestureListeners() {
@@ -151,26 +134,33 @@ function paintHall(p1, opt_p2) {
 var FILL_STYLES = ["#000", "#ddd", "#666"];
 
 function drawDirtyRect(rect) {
-  var squares = grid.getSquaresOverlappingRect(rect);
+  ctx.save();
+  ctx.fillStyle = "#000";
+  ctx.fillRect(rect[0] - rect[2], rect[1] - rect[3], rect[2] * 2, rect[3] * 2);
+  ctx.restore();
+
+  drawSquares(grid.getSquaresOverlappingRect(rect));
+}
+
+function drawSquares(squares) {
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
+  ctx.lineWidth = 0.2;
 
-//  ctx.save();
-//  ctx.fillStyle = "#000";
-//  ctx.fillRect(rect[0] - rect[2], rect[1] - rect[3], rect[2] * 2, rect[3] * 2);
-//  ctx.restore();
-
-  for (var i = 0; i < squares.length; i++) {
-    var s = squares[i];
-    // color, centerX, centerY, radius
-    var color = s[0];
-    var x = s[1];
-    var y = s[2];
-    var r = s[3] + SQUARE_PAD;
-    ctx.fillStyle = FILL_STYLES[color];
-    ctx.strokeStyle = FILL_STYLES[color];
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  for (var color = 1; color < 3; color++) {
+    for (var i = 0; i < squares.length; i++) {
+      var s = squares[i];
+      // color, centerX, centerY, radius
+      if (s[0] != color) continue;
+      var x = s[1];
+      var y = s[2];
+      var r = s[3];
+      ctx.fillStyle = FILL_STYLES[color];
+      ctx.strokeStyle = FILL_STYLES[color];
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+      ctx.strokeRect(x - r, y - r, r * 2, r * 2);
+    }
   }
   ctx.restore();
 }
