@@ -2,14 +2,18 @@ var canvas, ctx, viewport, camera;
 
 var grid, squares, vec;
 
+var pointers = {};
+
+SQUARE_PAD = 0.07;
+
 function main() {
   canvas = document.querySelector('#canvas');
   ctx = canvas.getContext("2d");
   viewport = new Viewport(canvas);
   camera = new Camera();
   camera.setPanXY(2000, 2000);
-  camera.setZoom(1/70);
-  camera.setRotation(1);
+  camera.setZoom(1/100);
+  camera.setRotation(0);
 
   grid = new QuadTreeGrid(100, 8);
 
@@ -18,8 +22,6 @@ function main() {
   });
   initGestureListeners();
   resizeCanvas();
-
-  vec = new Vec2d();
 }
 
 function resizeCanvas() {
@@ -54,7 +56,7 @@ function drawAll() {
     var color = s[0];
     var x = s[1];
     var y = s[2];
-    var r = s[3] + 0.05;
+    var r = s[3] + SQUARE_PAD;
     ctx.fillStyle = FILL_STYLES[color];
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
     drawn++;
@@ -63,13 +65,14 @@ function drawAll() {
 }
 
 function initGestureListeners() {
-  document.body.addEventListener("touchstart", touchDraw);
-  document.body.addEventListener("touchmove", touchDraw);
-  document.body.addEventListener("touchend", touchDraw);
+  document.body.addEventListener("touchstart", onTouchStart);
+  document.body.addEventListener("touchmove", onTouchMove);
+  document.body.addEventListener("touchend", onTouchEnd);
 
-  document.body.addEventListener("mousedown", mouseDown);
-  document.body.addEventListener("mouseup", mouseUp);
-  window.addEventListener("mousemove", mouseMove);
+  document.body.addEventListener("mousedown", onMouseDown);
+  document.body.addEventListener("mouseup", onMouseUp);
+  document.body.addEventListener("mouseout", onMouseUp);
+  window.addEventListener("mousemove", onMouseMove);
 
   var havePointerLock = 'pointerLockElement' in document ||
       'mozPointerLockElement' in document ||
@@ -78,36 +81,70 @@ function initGestureListeners() {
   }
 }
 
-function touchDraw(event) {
+// maps touch.identifier to Vec2d of the prev touch location
+var worldVecs = {};
+var MOUSE_IDENTIFIER = "mouse";
+
+function onTouchStart(event) {
   for (var i = 0; i < event.touches.length; i++) {
     var touch = event.touches[i];
-    pointerDraw(touch.pageX, touch.pageY);
+    var point = worldVecFromPageXY(touch.pageX, touch.pageY);
+    paintHall(point);
+    worldVecs[touch.identifier] = point;
+  }
+}
+
+function onTouchMove(event) {
+  for (var i = 0; i < event.touches.length; i++) {
+    var touch = event.touches[i];
+    var point = worldVecFromPageXY(touch.pageX, touch.pageY);
+    paintHall(point, worldVecs[touch.identifier]);
+    worldVecs[touch.identifier] = point;
+  }
+}
+
+function onTouchEnd(event) {
+  for (var i = 0; i < event.touches.length; i++) {
+    var touch = event.touches[i];
+    var point = worldVecFromPageXY(touch.pageX, touch.pageY);
+    paintHall(point, worldVecs[touch.identifier]);
+    delete worldVecs[touch.identifier];
   }
 }
 
 var isMouseDown = false;
 
-function mouseUp() {
+function onMouseUp() {
   isMouseDown = false;
+  delete worldVecs[MOUSE_IDENTIFIER];
 }
 
-function mouseDown(event) {
+function onMouseDown(event) {
   isMouseDown = true;
-  pointerDraw(event.pageX, event.pageY);
+  var point = worldVecFromPageXY(event.pageX, event.pageY);
+  paintHall(point);
 }
 
-function mouseMove(event) {
+function onMouseMove(event) {
   if (isMouseDown) {
-    pointerDraw(event.pageX, event.pageY);
+    var point = worldVecFromPageXY(event.pageX, event.pageY);
+    paintHall(point, worldVecs[MOUSE_IDENTIFIER]);
+    worldVecs[MOUSE_IDENTIFIER] = point;
   }
 }
 
-function pointerDraw(x, y) {
-  vec.setXY(x, y);
+function worldVecFromPageXY(x, y) {
+  var vec = new Vec2d(x, y);
   viewport.canvasToViewport(vec);
   camera.viewportToCamera(vec);
-  var painter = new HallPainter(vec.x, vec.y, 4, 3);
-  grid.paint(painter, 1);
+  return vec;
+}
+
+function paintHall(p1, opt_p2) {
+  var p2 = opt_p2 || p1;
+  var segment = new Segment(p1, p2);
+  var painter = new HallPillPainter(segment, 4, 3);
+  grid.paint(painter);
   drawDirtyRect(painter.getBoundingRect());
 }
 
@@ -118,13 +155,19 @@ function drawDirtyRect(rect) {
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
+
+//  ctx.save();
+//  ctx.fillStyle = "#000";
+//  ctx.fillRect(rect[0] - rect[2], rect[1] - rect[3], rect[2] * 2, rect[3] * 2);
+//  ctx.restore();
+
   for (var i = 0; i < squares.length; i++) {
     var s = squares[i];
     // color, centerX, centerY, radius
     var color = s[0];
     var x = s[1];
     var y = s[2];
-    var r = s[3] + 0.05;
+    var r = s[3] + SQUARE_PAD;
     ctx.fillStyle = FILL_STYLES[color];
     ctx.strokeStyle = FILL_STYLES[color];
     ctx.fillRect(x - r, y - r, r * 2, r * 2);

@@ -85,10 +85,14 @@ v serialize & deserialize
 
 Editor Improvements
 v Only redraw a dirty rect, or a list of affected quadrants.
-x Hall Pills: Affect the space between to events connected by dragging - update HallPainter
 v Mouse support
+v Hall Pills: Affect the space between to events connected by dragging - update HallPainter,
+and capture drags in event handling code.
+  v dist from segment to point
+  v drag tracking
+  v proper hall pill painter
 
-test8: terrain URL
+Terrain URL
 v port stuff
   v url
   v lempelziv
@@ -106,9 +110,9 @@ Game UI Nav
 Editor Skeleton
 v screen-to-world trans
 - nav/wall/air mode switch?
-- pointer-based grid editing
+v pointer-based grid editing
   v circles at each event
   v touch
-  - continuity between event points on drag
-  - mouse
+  v continuity between event points on drag
+  v mouse
 - drag-based panning
