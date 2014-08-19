@@ -106,6 +106,7 @@ function onMouseDown(event) {
   isMouseDown = true;
   var point = worldVecFromPageXY(event.pageX, event.pageY);
   paintHall(point);
+  worldVecs[MOUSE_IDENTIFIER] = point;
 }
 
 function onMouseMove(event) {
