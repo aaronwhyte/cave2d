@@ -39,14 +39,10 @@ HallPillPainter.prototype.getEffect = function(x, y, r, maxed, oldColor) {
 };
 
 /**
- * @param {Array=} opt_out
- * @returns {*|Array} [x, y, x-radius, y-sradius]
+ * @param {Rect=} opt_out
+ * @return {Rect}
  */
 HallPillPainter.prototype.getBoundingRect = function(opt_out) {
-  var out = opt_out || [];
-  out[0] = (this.segment.p1.x + this.segment.p2.x) / 2;
-  out[1] = (this.segment.p1.y + this.segment.p2.y) / 2;
-  out[2] = Math.abs(this.segment.p1.x - this.segment.p2.x) / 2 + this.radius;
-  out[3] = Math.abs(this.segment.p1.y - this.segment.p2.y) / 2 + this.radius;
-  return out;
+  var out = opt_out || new Rect();
+  return out.setToCorners(this.segment.p1, this.segment.p2).pad(this.radius);
 };

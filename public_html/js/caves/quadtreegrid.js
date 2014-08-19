@@ -11,22 +11,18 @@ function QuadTreeGrid(radius, maxDepth) {
   // The grid is a hash of column number (x) to columns,
   // and a column is a hash from row (y) to a quadtree.
   this.grid = {};
-  this.rect = [0, 0, 0, 0];
 }
 
 /**
  * Paint an area of the quadtreegrid.
  */
 QuadTreeGrid.prototype.paint = function(painter) {
-  painter.getBoundingRect(this.rect);
-  var areaX = this.rect[0];
-  var areaY = this.rect[1];
-  var areaXR = this.rect[2];
-  var areaYR = this.rect[3];
-  var cellX0 = this.getCellIndexX(areaX - areaXR);
-  var cellY0 = this.getCellIndexY(areaY - areaYR);
-  var cellX1 = this.getCellIndexX(areaX + areaXR);
-  var cellY1 = this.getCellIndexY(areaY + areaYR);
+  var rect = new Rect();
+  painter.getBoundingRect(rect);
+  var cellX0 = this.getCellIndexX(rect.getMinX());
+  var cellY0 = this.getCellIndexY(rect.getMinY());
+  var cellX1 = this.getCellIndexX(rect.getMaxX());
+  var cellY1 = this.getCellIndexY(rect.getMaxY());
   for (var cellX = cellX0; cellX <= cellX1; cellX++) {
     for (var cellY = cellY0; cellY <= cellY1; cellY++) {
       var worldX = this.getWorldXForIndexX(cellX);
@@ -80,12 +76,29 @@ QuadTreeGrid.prototype.getSquaresOfColor = function(color, opt_squares) {
   return squares;
 };
 
+/**
+ * @param {Rect} rect
+ * @param opt_squares
+ * @returns {*|Array}
+ */
 QuadTreeGrid.prototype.getSquaresOverlappingRect = function(rect, opt_squares) {
   var squares = opt_squares || [];
   for (var colNum in this.grid) {
     var col = this.grid[colNum];
     for (var rowNum in col) {
       col[rowNum].getSquaresOverlappingRect(rect, squares);
+    }
+  }
+  return squares;
+};
+
+QuadTreeGrid.prototype.getTopGridSquares = function(opt_squares) {
+  var squares = opt_squares || [];
+  for (var colNum in this.grid) {
+    var col = this.grid[colNum];
+    for (var rowNum in col) {
+      squares.push([this.getWorldXForIndexX(colNum), this.getWorldYForIndexY(rowNum),
+          this.radius, this.radius]);
     }
   }
   return squares;

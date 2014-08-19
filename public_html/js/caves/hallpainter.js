@@ -57,14 +57,10 @@ HallPainter.prototype.getEffect = function(x, y, r, maxed, oldColor) {
 };
 
 /**
- * @param {Array=} opt_out
- * @returns {*|Array} [x, y, x-radius, y-sradius]
+ * @param {Rect=} opt_out
+ * @return {Rect}
  */
 HallPainter.prototype.getBoundingRect = function(opt_out) {
-  var out = opt_out || [];
-  out[0] = this.x;
-  out[1] = this.y;
-  out[2] = this.radius;
-  out[3] = this.radius;
-  return out;
+  var out = opt_out || new Rect();
+  return out.setPosXY(this.x, this.y).pad(this.radius);
 };

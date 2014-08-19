@@ -150,8 +150,13 @@ QuadTree.prototype.getSquaresOfColor = function(color, opt_pushToMe) {
   return squares;
 };
 
-QuadTree.prototype.getSquaresOverlappingRect = function(rect, opt_pushToMe) {
-  var squares = opt_pushToMe || [];
+/**
+ * @param {Rect} rect
+ * @param opt_squares
+ * @returns {*|Array}
+ */
+QuadTree.prototype.getSquaresOverlappingRect = function(rect, opt_squares) {
+  var squares = opt_squares || [];
   function visitQuadrants(quadrants, centerX, centerY, radius) {
     var halfR = radius * 0.5;
     for (var iy = 0; iy < 2; iy++) {
@@ -162,8 +167,7 @@ QuadTree.prototype.getSquaresOverlappingRect = function(rect, opt_pushToMe) {
         var quadrant = quadrants[index];
         if (Array.isArray(quadrant)) {
           visitQuadrants(quadrant, cx, cy, halfR);
-        } else if (Math.abs(rect[0] - cx) <= halfR + rect[2] &&
-            Math.abs(rect[1] - cy) <= halfR + rect[3]) {
+        } else if (rect.overlapsRectXYXY(cx, cy, halfR, halfR)) {
           squares.push([quadrant, cx, cy, halfR]);
         }
       }

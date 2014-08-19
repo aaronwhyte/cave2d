@@ -37,15 +37,14 @@ CirclePainter.prototype.getEffect = function(x, y, r, maxed, oldColor) {
     // Whole square falls within the circle.
     return this.color;
   }
-
   return maxed ? Painter.PAINT_NOTHING : Painter.PAINT_DETAILS;
 };
 
+/**
+ * @param {Rect=} opt_out
+ * @return {Rect}
+ */
 CirclePainter.prototype.getBoundingRect = function(opt_out) {
-  var out = opt_out || [];
-  out[0] = this.x;
-  out[1] = this.y;
-  out[2] = this.radius;
-  out[3] = this.radius;
-  return out;
+  var out = opt_out || new Rect();
+  return out.setPosXY(this.x, this.y).pad(this.radius);
 };
