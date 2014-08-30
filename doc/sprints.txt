@@ -92,6 +92,63 @@ and capture drags in event handling code.
   v drag tracking
   v proper hall pill painter
 
+v Simple AABB rect object, like vec2d.
+
+# MILESTONE: Nice editable mazes, for mouse and touch
+# COMPLETE
+#####################################################
+
+
+Write data structures
+- Trajectory
+  - id
+  - bodyId
+  - endTime
+  - movable?
+  - startTime - just for calculating position as func of time
+  - startPos
+  - vel
+- Shape
+  - circle (radius)
+  - aarect (xRadius, yRadius)
+- Body - what Collider knows about
+  - id
+  - spritId
+  - Collision Detection stuff:
+    - shape
+    - motion
+    - hit group
+  - Collision Response stuff:
+    - mass
+    - elasticity
+  - getBoundingRect(t)
+- Spirit
+  - id
+  - bodies
+  - getBoundingRect(t)
+
+Simple renderer
+- viewport surrounds everything automatically
+- knows how to draw bodies
+
+overlap tests
+- rect/rect
+- circ/circ
+- rect/circ
+- draw overlaps and non-overlaps
+
+time-to-collision tests
+- rect/rect
+- circ/circ
+- rect/circ
+
+Cell collider
+
+
+# MILESTONE: working physics for aarects and circles
+#####################################################
+
+Test 9: Make a maze and play it.
 Terrain URL
 v port stuff
   v url
