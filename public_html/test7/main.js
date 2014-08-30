@@ -4,7 +4,7 @@ var grid, squares, vec;
 
 var pointers = {};
 
-var DIRTY_RECT_PAD = 1;
+var DIRTY_RECT_PAD = 2;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -14,7 +14,7 @@ function main() {
   camera.setZoom(1/100);
   camera.setRotation(0);
 
-  grid = new QuadTreeGrid(150, 8);
+  grid = new QuadTreeGrid(100, 7);
 
   window.addEventListener("resize", function(){
     resizeCanvas();
@@ -126,7 +126,7 @@ function worldVecFromPageXY(x, y) {
 function paintHall(p1, opt_p2) {
   var p2 = opt_p2 || p1;
   var segment = new Segment(p1, p2);
-  var painter = new HallPillPainter(segment, 4, 3);
+  var painter = new HallPillPainter(segment, 8, 2);
   grid.paint(painter);
   drawDirtyRect(painter.getBoundingRect().pad(DIRTY_RECT_PAD));
 }
@@ -142,7 +142,7 @@ function drawDirtyRect(rect) {
   viewport.transform(ctx);
   camera.transform(ctx);
   ctx.fillStyle = FILL_STYLES[VOID];
-  ctx.fillRect(rect[0] - rect[2], rect[1] - rect[3], rect[2] * 2, rect[3] * 2);
+  ctx.fillRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), rect.getHeight());
   ctx.restore();
 
   drawSquares(grid.getSquaresOverlappingRect(rect));
