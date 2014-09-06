@@ -94,42 +94,68 @@ and capture drags in event handling code.
 
 v Simple AABB rect object, like vec2d.
 
-# MILESTONE: Nice editable mazes, for mouse and touch
-# COMPLETE
-#####################################################
+#### MILESTONE: Nice editable mazes, for mouse and touch
+#### COMPLETE
+What I learned:
+* Quadtrees are cute but kind of a pain in the A too because they're not a simple grid.
+* The system of void/wall/floor drawing is good. Keep it.
+* Multi-gesture+mouse drawing-based map editing is really great, and I want to keep that.
+* Turns out the Vorp code isn't as easy to reuse and adapt as I'd hoped.
 
+Now it's time to rewrite the physics & gameplay engine, to be easier to understand and use.
 
-Write data structures
-- Trajectory
-  - id
-  - bodyId
-  - endTime
-  - movable?
-  - startTime - just for calculating position as func of time
-  - startPos
-  - vel
-- Shape
-  - circle (radius)
-  - aarect (xRadius, yRadius)
-- Body - what Collider knows about
-  - id
-  - spritId
-  - Collision Detection stuff:
-    - shape
-    - motion
-    - hit group
-  - Collision Response stuff:
-    - mass
-    - elasticity
-  - getBoundingRect(t)
-- Spirit
-  - id
-  - bodies
-  - getBoundingRect(t)
+Body
+* Used by the internal collider to enqueue future events.
+* Used by the internal default collision response code.
+* Used by Sprites, through a careful API which handles pathId invalidation.
+v Identity
+  v id
+  v spiritId or 0
+v Path
+  v pathId - changes whenever a trajectory field changes. 0 means it's invalid.
+  v pathStartTime - just for calculating position as func of time
+  v pathStartPos
+  v vel
+  v pathEndTime - for not looking ahead too far, if acceleration is scheduled.
+v Shape (affects path)
+  v shapeType (circle or rect)
+  v rad (for circles)
+  v radX (for rects)
+  v radY (for rects)
+v hitGroup (changing invalidates path. Probably changes infrequently.)
+v mass
+v elasticity
+v getPosAtTime(t, out)
+v getBoundingRect(t, out)
+v set pos & vel
+v alloc & free
+
+Spirit
+- id
+- bodyIds? Or just methods that take lists of bodies, and single bodies?
+lots of custom logic, scheduling, sensing, body-manipulation.
+
+World
+- spirits {id: spirit}
+- bodies {id: body}
+- paths
 
 Simple renderer
 - viewport surrounds everything automatically
 - knows how to draw bodies
+
+Event Queue
+The world has a big queue of events, in time order. Future events are predictions that may be invalidated by the next
+event to be processed.
+Events:
+- body entering cell
+- body leaving cell
+- two bodies colliding
+  - creation/teleport overlap
+  - time-to-hit border contact.
+- chain constraint violated (if I ever do chains)
+- spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
+  Scheduling things to happen at floating-point times is the key to making reflex-time important for NPCs
 
 overlap tests
 - rect/rect
@@ -143,10 +169,25 @@ time-to-collision tests
 - rect/circ
 
 Cell collider
+- sparse grid of cells
+- cell
+  - array mapping hitgroup index to list of pathIds
+- map from bodyId to body
+- map from pathId to body. (If a body has a different pathId, then the index one is invalid)
+- body creation causes...
+  - overlap tests & immediate hit events w bodies in cells
+  - time-to-hit tests, events (multiple)
+  - enter-cells test, event (zero or one) - bounding rect's leading point crosses a cell x or y line
+  - exit-cells test, event (zero or one) - bounding rect's trailing point crosses a cell x or y line
+- enter-cell event causes
+  - overlap tests (maybe not?)
+  - time-to-hit tests
+  - enter-cells test for next edge or axis
+- exit-cell test removes bodyId from departed cells
 
 
-# MILESTONE: working physics for aarects and circles
-#####################################################
+#### MILESTONE: fully functional physics for aarects and circles
+#### STATUS: WORKIN' ON IT
 
 Test 9: Make a maze and play it.
 Terrain URL
