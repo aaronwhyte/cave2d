@@ -5,13 +5,12 @@ function Body(id, spiritId) {
   this.reset(id, spiritId);
 }
 
+Poolify(Body);
+
 Body.Shape = {
   CIRCLE: 1,
   RECT: 2
 };
-
-Body.pool = [];
-Body.poolSize = 0;
 
 Body.prototype.reset = function(id, spiritId) {
   this.id = id;
@@ -31,25 +30,6 @@ Body.prototype.reset = function(id, spiritId) {
   this.hitgroup = 0;
   this.mass = 0;
   this.elasticity = 0;
-};
-
-/**
- * @param {number=} id
- * @param {number=} spiritId
- */
-Body.alloc = function(id, spiritId) {
-  var retval;
-  if (Body.poolSize) {
-    retval = Body.pool[--Body.poolSize];
-    retval.reset(id, spiritId);
-  } else {
-    retval = new Body(id, spiritId);
-  }
-  return retval;
-};
-
-Body.free = function(o) {
-  Body.pool[Body.poolSize++] = o;
 };
 
 /**
@@ -103,4 +83,3 @@ Body.prototype.moveToTime = function(t) {
   this.pathStartTime = t;
   Vec2d.free(temp);
 };
-

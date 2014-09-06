@@ -1,15 +1,10 @@
-
-Vec2d.pool = [];
-Vec2d.poolSize = 0;
-
 /**
  * @param {number=} x
  * @param {number=} y
  * @constructor
  */
 function Vec2d(x, y) {
-  this.x = x || 0;
-  this.y = y || 0;
+  this.reset(x, y);
 }
 
 Vec2d.prototype.reset = function(x, y) {
@@ -17,25 +12,7 @@ Vec2d.prototype.reset = function(x, y) {
   this.y = y || 0;
 };
 
-/**
- * @param {number=} x
- * @param {number=} y
- */
-Vec2d.alloc = function(x, y) {
-  var retval;
-  if (Vec2d.poolSize) {
-    retval = Vec2d.pool[--Vec2d.poolSize];
-    retval.reset(x, y);
-  } else {
-    retval = new Vec2d(x, y);
-  }
-  return retval;
-};
-
-Vec2d.free = function(hit) {
-  Vec2d.pool[Vec2d.poolSize++] = hit;
-};
-
+Poolify(Vec2d);
 
 Vec2d.prototype.add = function(v) {
   this.x += v.x;
