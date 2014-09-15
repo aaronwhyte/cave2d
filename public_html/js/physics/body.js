@@ -38,11 +38,11 @@ Body.prototype.reset = function() {
 
   this.shape = Body.Shape.CIRCLE;
   // circle radius, for circles
-  this.rad = 0;
+  this.rad = 1;
   // half-width, for rects
-  this.radX = 0;
+  this.radX = 1;
   // half-height, for rects
-  this.radY = 0;
+  this.radY = 1;
 
   // This controls which other bodies and rayscans should be tested for collisions.
   this.hitgroup = 0;

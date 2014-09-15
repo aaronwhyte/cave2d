@@ -26,7 +26,7 @@ World.prototype.newId = function() {
 World.prototype.addBody = function(body) {
   body.id = this.newId();
   body.invalidBodies = this.invalidBodies;
-
+  this.bodies[body.id] = body;
   this.invalidatePathByBodyId(body);
   return body.id;
 };

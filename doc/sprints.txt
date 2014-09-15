@@ -154,9 +154,11 @@ How will path invalidations get buffered up for when the World needs to move tim
 Easy way is to make each Body hold World, like a parent pointer. I tried to avoid it but maybe I can't.
 It's cleaner to include the PathInvalidator in each Body, and the World, like Vorp does. Sigh, OK.
 
-Simple renderer
-- viewport surrounds everything automatically
-- knows how to draw bodies
+Start Test 8 - A World
+- Simple renderer
+  v draw bodies
+  - viewport surrounds everything automatically
+    - do it body-by-body for now, until cells exist
 
 Event Queue, and Time.
 The world has a big queue of events, in time order. Future events are predictions that may be invalidated by earlier
@@ -164,13 +166,12 @@ events.
 The trick here is to separate the runtime order in which events are added, and the game-time order in which they
 are dequeued and processed.
 Events:
-- body entering cell
-- body leaving cell
+- body entering/leaving cell (no cells yet for provide command format)
 - two bodies colliding
   - creation/teleport overlap
   - time-to-hit border contact.
 - chain constraint violated (if I ever do chains)
-- spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
+- timeout: spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
   Scheduling things to happen at floating-point times is the key to making reflex-time important for NPCs
 
 overlap tests
