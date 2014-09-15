@@ -129,24 +129,40 @@ v getPosAtTime(t, out)
 v getBoundingRect(t, out)
 v set pos & vel
 v alloc & free
+I'm trying to be uncompromising: Don't create an object field pointing to a parent. Pass the parent in to methods.
 
-Spirit
-- id
-- bodyIds? Or just methods that take lists of bodies, and single bodies?
-lots of custom logic, scheduling, sensing, body-manipulation.
+Spirit baseclass
+A spirit subclass can have lots of custom logic, scheduling, sensing, body-manipulation, etc.
+v id
+v world event handlers: start, timeout, hit
+x bodyIds? Or just methods that take lists of bodies, and single bodies?
 
-World
-- spirits {id: spirit}
-- bodies {id: body}
-- paths
+World (but not all its collider aspects)
+v spirits {id: spirit}
+v bodies {id: body}
+v pathIdToBody {id: body}
+v world's spirit-facing API:
+  v addBody
+  v removeBody
+  v getBody
+  x setTimeout
+  x cancelTimeout
+  (later: rayscans)
+v getBodyByPathId purges obsolete pathId keys
+
+How will path invalidations get buffered up for when the World needs to move time forward?
+Easy way is to make each Body hold World, like a parent pointer. I tried to avoid it but maybe I can't.
+It's cleaner to include the PathInvalidator in each Body, and the World, like Vorp does. Sigh, OK.
 
 Simple renderer
 - viewport surrounds everything automatically
 - knows how to draw bodies
 
-Event Queue
-The world has a big queue of events, in time order. Future events are predictions that may be invalidated by the next
-event to be processed.
+Event Queue, and Time.
+The world has a big queue of events, in time order. Future events are predictions that may be invalidated by earlier
+events.
+The trick here is to separate the runtime order in which events are added, and the game-time order in which they
+are dequeued and processed.
 Events:
 - body entering cell
 - body leaving cell
