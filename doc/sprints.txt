@@ -155,10 +155,10 @@ Easy way is to make each Body hold World, like a parent pointer. I tried to avoi
 It's cleaner to include the PathInvalidator in each Body, and the World, like Vorp does. Sigh, OK.
 
 Start Test 8 - A World
-- Simple renderer
+v Simple renderer
   v draw bodies
-  - viewport surrounds everything automatically
-    - do it body-by-body for now, until cells exist
+  v viewport surrounds everything automatically
+    v do it body-by-body for now, until cells exist
 
 Event Queue, and Time.
 The world has a big queue of events, in time order. Future events are predictions that may be invalidated by earlier

@@ -7,9 +7,9 @@ function main() {
   ctx = canvas.getContext("2d");
   viewport = new Viewport(canvas);
   camera = new Camera();
-  camera.setPanXY(0, 0);
-  camera.setZoom(1/22);
-  camera.setRotation(0);
+//  camera.setPanXY(0, 0);
+//  camera.setZoom(1/22);
+//  camera.setRotation(0);
 
   window.addEventListener("resize", function(){
     resizeCanvas();
@@ -116,9 +116,9 @@ function initWorld() {
   var v = Vec2d.alloc();
   for (var i = 0; i < 70; i++) {
     var b = Body.alloc();
-    v.setXY(Math.random() * 20 - 10, Math.random() * 20 - 10);
+    v.setXY(Math.random() * 20, 0).rot(Math.random() * 2 * Math.PI);
     b.setPosAtTime(v, 0);
-    v.setXY(Math.random() * 2 - 1, Math.random() * 2 - 1).scale(20, 20);
+    v.setXY(Math.random(), 0).rot(Math.random() * 2 * Math.PI).scaleXY(100, 10);
     b.setVelAtTime(v, 0);
     b.shape = (Math.random() < 0.5) ? Body.Shape.RECT : Body.Shape.CIRCLE;
     world.addBody(b);
@@ -130,19 +130,24 @@ function drawAll() {
   function r() {
     return Math.floor(Math.random() * 256);
   }
+  var now = Math.sin(Date.now() / 1000);
+  var v = Vec2d.alloc();
+
   ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  adjustCamera();
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
 
   ctx.lineWidth = 0.2;
 
-  var v = Vec2d.alloc();
   for (var id in world.bodies) {
     var b = world.bodies[id];
-    b.getPosAtTime(Math.sin(Date.now() / 500), v);
-    ctx.strokeStyle = 'rgb(' + [r(), r(), r()].join(',') + ')';
+    b.getPosAtTime(now, v);
+//    ctx.strokeStyle = 'rgb(' + [r(), r(), r()].join(',') + ')';
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
     if (b.shape == Body.Shape.CIRCLE) {
       ctx.beginPath();
       ctx.arc(v.x, v.y, b.rad, 0, Math.PI * 2);
@@ -157,3 +162,38 @@ function drawAll() {
   requestAnimationFrame(drawAll, canvas);
 }
 
+function adjustCamera() {
+  var now = Math.sin(Date.now() / 1000);
+  var v = Vec2d.alloc();
+
+  // reset the camera to surround the objects
+  var bRect = new Rect();
+  var rect = new Rect();
+  for (var id in world.bodies) {
+    var b = world.bodies[id];
+    b.getPosAtTime(now, v);
+    b.getBoundingRectAtTime(now, rect);
+    bRect.coverRect(rect);
+  }
+  camera.setPanXY(bRect.pos.x, bRect.pos.y);
+
+  var z;
+  if (bRect.rad.x / canvas.width > bRect.rad.y / canvas.height) {
+    // hits left and right
+    z = bRect.rad.x;
+    if (canvas.width > canvas.height) {
+      // landscape mode
+      z *= canvas.height / canvas.width;
+    }
+  } else {
+    // hits top and bottom
+    z = bRect.rad.y;
+    if (canvas.width < canvas.height) {
+      // portriat mode
+      z *= canvas.width / canvas.height;
+    }
+  }
+  z++;
+  camera.setZoom(1 / z);
+  Vec2d.free(v);
+}
