@@ -130,13 +130,13 @@ function drawAll() {
   function r() {
     return Math.floor(Math.random() * 256);
   }
-  var now = Math.sin(Date.now() / 1000);
+  var now = getNow();
   var v = Vec2d.alloc();
 
   ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  adjustCamera();
+  adjustCamera(now);
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
@@ -146,8 +146,8 @@ function drawAll() {
   for (var id in world.bodies) {
     var b = world.bodies[id];
     b.getPosAtTime(now, v);
-//    ctx.strokeStyle = 'rgb(' + [r(), r(), r()].join(',') + ')';
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.strokeStyle = 'rgb(' + [r(), r(), r()].join(',') + ')';
+//    ctx.strokeStyle = 'rgb(255, 255, 255)';
     if (b.shape == Body.Shape.CIRCLE) {
       ctx.beginPath();
       ctx.arc(v.x, v.y, b.rad, 0, Math.PI * 2);
@@ -162,8 +162,11 @@ function drawAll() {
   requestAnimationFrame(drawAll, canvas);
 }
 
-function adjustCamera() {
-  var now = Math.sin(Date.now() / 1000);
+function getNow() {
+  return Math.sin(Date.now() / 333);
+}
+
+function adjustCamera(now) {
   var v = Vec2d.alloc();
 
   // reset the camera to surround the objects
