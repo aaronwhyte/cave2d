@@ -31,17 +31,12 @@ SkipQueue.prototype.randomLevel = function() {
  * @param {Object} addMe
  */
 SkipQueue.prototype.add = function(addMe) {
-  if (!addMe) throw "addMe is " + addMe;
   var prevs = this.prevs;
-  if (!addMe.next) {
-    addMe.next = [];
-  }
   addMe.level = this.randomLevel();
   
   // set up for traversal
-  var level = this.maxLevel;
   var node = this;
-  
+
   var next;
   for (var level = this.maxLevel; level >= 0; --level) {
     // right
