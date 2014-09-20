@@ -17,10 +17,22 @@ function World() {
   this.invalidBodies = {};
 
   this.nextId = 10;
+
+  this.cells = {};
 }
+
+World.GRID_WIDTH = 1000000;
 
 World.prototype.newId = function() {
   return this.nextId++;
+};
+
+World.prototype.getCellIndex = function(cellX, cellY) {
+  return World.GRID_WIDTH * cellY + cellY;
+};
+
+World.prototype.getCell = function(ix, iy) {
+  return this.cells[this.getCellIndex(ix, iy)];
 };
 
 World.prototype.addBody = function(body) {
@@ -28,6 +40,9 @@ World.prototype.addBody = function(body) {
   body.invalidBodies = this.invalidBodies;
   this.bodies[body.id] = body;
   this.invalidatePathByBodyId(body);
+  var range = CellRange.alloc();
+  // TODO: stick the body in the cell grid
+  range.free();
   return body.id;
 };
 
