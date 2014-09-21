@@ -15,7 +15,7 @@ WorldEvent.TYPE_GRID_ENTER = 2;
 WorldEvent.TYPE_GRID_EXIT = 3;
 WorldEvent.TYPE_HIT = 4;
 
-WorldEvent.prototyle.reset = function() {
+WorldEvent.prototype.reset = function() {
   // SkipQueue node stuff
   this.time = 0;
   this.next.length = 0;
