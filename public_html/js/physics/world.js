@@ -1,4 +1,5 @@
 /**
+ * Handles spirits and bodies.
  * @constructor
  */
 function World() {
@@ -19,9 +20,23 @@ function World() {
   this.nextId = 10;
 
   this.cells = {};
+
+  this.queue = new SkipQueue(World.SKIP_QUEUE_BASE,
+      SkipQueue.getRecommendedMaxLevel(100, World.SKIP_QUEUE_BASE));
+
+  this.now = 1;
 }
 
+World.SKIP_QUEUE_BASE = 2;
+
 World.GRID_WIDTH = 1000000;
+
+/**
+ * The width and height of grid cells.
+ * The cell at index 0, 0 has its center at 0, 0.
+ * The cell at index 1, 1 has its center at CELL_SIZE, CELL_SIZE.
+ */
+World.CELL_SIZE = 4;
 
 World.prototype.newId = function() {
   return this.nextId++;
@@ -35,21 +50,27 @@ World.prototype.getCell = function(ix, iy) {
   return this.cells[this.getCellIndex(ix, iy)];
 };
 
+/**
+ * Assigns an ID and adds the body.
+ * @returns the new body ID.
+ */
 World.prototype.addBody = function(body) {
   body.id = this.newId();
+
+  // Hook the path invalidator into the body. A wee bit hacky.
   body.invalidBodies = this.invalidBodies;
+
+  // Add it to the bodies index and to the invalid bodies index.
+  // The next time the clock moves forward, the invalid body will be addressed.
   this.bodies[body.id] = body;
-  this.invalidatePathByBodyId(body);
-  var range = CellRange.alloc();
-  // TODO: stick the body in the cell grid
-  range.free();
+  this.invalidatePathByBodyId(body.id);
   return body.id;
 };
 
 World.prototype.invalidatePathByBodyId = function(bodyId) {
   var body = this.bodies[bodyId];
   if (body) {
-    delete this.paths[body.pathid];
+    delete this.paths[body.pathId];
     this.invalidBodies[bodyId] = body;
     body.pathId = 0;
   }
@@ -59,7 +80,7 @@ World.prototype.removeBodyId = function(bodyId) {
   var body = this.bodies[bodyId];
   if (body) {
     delete this.bodies[body.id];
-    delete this.paths[body.pathid];
+    delete this.paths[body.pathId];
     delete this.invalidBodies[body.id];
   }
 };
@@ -80,6 +101,85 @@ World.prototype.getBodyByPathId = function(pathId) {
     body = null;
   }
   return body;
+};
+
+World.prototype.validateBodies = function() {
+  for (var bodyId in this.invalidBodies) {
+    var body = this.invalidBodies[bodyId];
+    delete this.invalidBodies[bodyId];
+    if (!body) continue;
+
+    // Update path
+    body.moveToTime(this.now);
+    body.pathId = this.newId();
+    this.paths[body.pathId] = body;
+
+    this.addNextEntranceEvent(body);
+//    this.addNextExitEvent(body);
+//    this.addToCells(body);
+  }
+  console.log("Queue: " + this.queue.toString());
+};
+
+/**
+ * Checks to see if the body's path will cross into a new range of cells
+ * before the path expires, and allocates and adds the event if so.
+ * @param {Body} body
+ */
+World.prototype.addNextEntranceEvent = function(body) {
+  // Calculate the leading point "p" on the moving bounding rect.
+  var rect = body.getBoundingRectAtTime(this.now, Rect.alloc());
+  var vSign = Vec2d.alloc().set(body.vel).sign();
+  var p = Vec2d.alloc().set(rect.rad).multiply(vSign).add(rect.pos);
+
+  var v = body.vel; // do not free!
+
+  // c is the center of the cell that p is in.
+  var c = Vec2d.alloc().set(p).roundToGrid(World.CELL_SIZE);
+
+  // Calculate crossing times
+  var t, e;
+  var endTime = body.getPathEndTime();
+  if (v.x) {
+    t = this.now + (c.x + vSign.x * World.CELL_SIZE / 2 - p.x) / v.x;
+    if (t > this.now && t <= endTime) {
+      e = WorldEvent.alloc();
+      e.type = WorldEvent.TYPE_GRID_ENTER_X;
+      e.time = t;
+      e.pathId = body.pathId;
+      // Entrance column will be one cell ahead of p's current column.
+      e.cellRange.x0 = e.cellRange.x1 = c.x + vSign.x;
+      // Entrance rows depend on bounding rect at that time.
+      body.getBoundingRectAtTime(t, rect);
+      e.cellRange.y0 = this.getCellIndex(rect.pos.y - rect.rad.y);
+      e.cellRange.y1 = this.getCellIndex(rect.pos.y + rect.rad.y);
+      this.queue.add(e);
+    }
+  }
+  if (v.y) {
+    t = this.now + (c.y + vSign.y * World.CELL_SIZE / 2 - p.y) / v.y;
+    if (t > this.now && t <= endTime) {
+      e = WorldEvent.alloc();
+      e.type = WorldEvent.TYPE_GRID_ENTER_Y;
+      e.time = t;
+      e.pathId = body.pathId;
+      // Entrance row will be one cell ahead of p's current column.
+      e.cellRange.y0 = e.cellRange.y1 = c.y + vSign.y;
+      // Entrance rows depend on bounding rect at that time.
+      body.getBoundingRectAtTime(t, rect);
+      e.cellRange.x0 = this.getCellIndex(rect.pos.x - rect.rad.x);
+      e.cellRange.x1 = this.getCellIndex(rect.pos.x + rect.rad.x);
+      this.queue.add(e);
+    }
+  }
+
+  p.free();
+  vSign.free();
+  rect.free();
+};
+
+World.prototype.getCellIndex = function(worldCoord) {
+  return Math.round(worldCoord / World.CELL_SIZE)
 };
 
 //World.prototype.addTimeout = function(timeout) {

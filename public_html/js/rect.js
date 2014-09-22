@@ -7,9 +7,17 @@
  * @constructor
  */
 function Rect(opt_x, opt_y, opt_rx, opt_ry) {
-  this.pos = new Vec2d(opt_x , opt_y);
-  this.rad = new Vec2d(opt_rx , opt_ry);
+  this.pos = new Vec2d();
+  this.rad = new Vec2d();
+  this.reset(opt_x, opt_y, opt_rx, opt_ry);
 }
+
+Rect.prototype.reset = function(opt_x, opt_y, opt_rx, opt_ry) {
+  this.pos.setXY(opt_x || 0 , opt_y || 0);
+  this.rad.setXY(opt_rx || 0, opt_ry || 0);
+};
+
+Poolify(Rect);
 
 Rect.prototype.set = function(r) {
   this.pos.set(r.pos);

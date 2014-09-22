@@ -79,7 +79,7 @@ Body.prototype.getBoundingRectAtTime = function(t, out) {
 Body.prototype.invalidatePath = function() {
   this.pathId = 0;
   if (this.invalidBodies && this.id) {
-    this.invalidBodies[id] = this;
+    this.invalidBodies[this.id] = this;
   }
 };
 
@@ -113,7 +113,7 @@ Body.prototype.setVelAtTime = function(vel, t) {
  */
 Body.prototype.moveToTime = function(t) {
   if (this.pathStartTime === t) return;
-  var temp = this.getPosAtTime(Vec2d.alloc());
+  var temp = this.getPosAtTime(t, Vec2d.alloc());
   this.pathStartPos.set(temp);
   this.pathStartTime = t;
   Vec2d.free(temp);

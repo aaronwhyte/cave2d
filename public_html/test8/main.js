@@ -114,15 +114,19 @@ var world;
 function initWorld() {
   world = new World();
   var v = Vec2d.alloc();
-  for (var i = 0; i < 70; i++) {
+  for (var i = 0; i < 3; i++) {
     var b = Body.alloc();
     v.setXY(Math.random() * 20, 0).rot(Math.random() * 2 * Math.PI);
     b.setPosAtTime(v, 0);
     v.setXY(Math.random(), 0).rot(Math.random() * 2 * Math.PI).scaleXY(100, 10);
     b.setVelAtTime(v, 0);
     b.shape = (Math.random() < 0.5) ? Body.Shape.RECT : Body.Shape.CIRCLE;
+    b.pathDurationMax = 1.01;
     world.addBody(b);
   }
+  // TODO remove
+  world.validateBodies();
+
   Vec2d.free(v);
 }
 

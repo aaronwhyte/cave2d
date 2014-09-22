@@ -32,6 +32,18 @@ Vec2d.prototype.subtract = function(v) {
   return this;
 };
 
+Vec2d.prototype.multiply = function(v) {
+  this.x *= v.x;
+  this.y *= v.y;
+  return this;
+};
+
+Vec2d.prototype.roundToGrid = function(cellSize) {
+  this.x = Math.round(this.x / cellSize);
+  this.y = Math.round(this.y / cellSize);
+  return this.scale(cellSize);
+};
+
 Vec2d.prototype.set = function(v) {
   this.x = v.x;
   this.y = v.y;
@@ -59,6 +71,12 @@ Vec2d.prototype.scaleXY = function(sx, sy) {
 Vec2d.prototype.abs = function() {
   this.x = Math.abs(this.x);
   this.y = Math.abs(this.y);
+  return this;
+};
+
+Vec2d.prototype.sign = function() {
+  this.x = Math.sign(this.x);
+  this.y = Math.sign(this.y);
   return this;
 };
 

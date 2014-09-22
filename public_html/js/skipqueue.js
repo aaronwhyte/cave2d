@@ -1,27 +1,30 @@
 /**
  * A SkipQueue priority queue, ordered by time.
- * Nodes must have a "time" value, and this SkipQueue will
- * manage a "next" array, too.
+ * Nodes must have a "time" value, and a "next" array.
  * @constructor
  */
-function SkipQueue(expectedLength) {
-  this.maxLevel = Math.ceil(Math.log(expectedLength) / Math.log(SkipQueue.BASE));
+function SkipQueue(base, maxLevel) {
+  this.base = base;
+  this.maxLevel = maxLevel;
+  this.levelUpOdds = 1 / this.base;
+
   this.level = this.maxLevel;
   this.next = [];
   this.size = 0;  
   this.prevs = [];
 }
 
-SkipQueue.BASE = 2;
-SkipQueue.LEVEL_UP_ODDS = 1 / SkipQueue.BASE;
+SkipQueue.getRecommendedMaxLevel = function(expectedLength, base) {
+  return Math.ceil(Math.log(expectedLength) / Math.log(base));
+};
 
 SkipQueue.prototype.randomLevel = function() {
   var level = 0;
   var rand = Math.random();
-  var bar = SkipQueue.LEVEL_UP_ODDS;
+  var bar = this.levelUpOdds;
   while (rand < bar && level < this.maxLevel) {
     level++;
-    bar *= SkipQueue.LEVEL_UP_ODDS;
+    bar *= this.levelUpOdds;
   }
   return level;
 };
