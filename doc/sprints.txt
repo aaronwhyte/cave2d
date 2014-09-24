@@ -165,13 +165,38 @@ The world has a big queue of events, in time order. Future events are prediction
 events.
 The trick here is to separate the runtime order in which events are added, and the game-time order in which they
 are dequeued and processed.
-Events:
-- body entering/leaving cell (no cells yet for provide command format)
+v init events: body entering cells
+v init events: body exiting cells
+
+- add-to-cells
+  - add-to-cell
+    - add collision events
+      - actual collision checking
+        - brects
+        - rect to rect (same as brects?)
+        - circ to circ
+        - circ to rect
+    - add to group layer
+  - initial addBody add-to-cells
+
+- Process collisions
+  - collision response
+- Process enter events
+  - add to cells
+  - create next entry event
+- Process exit events
+  - add next one
+- init events: body overlap
+
+
+
+
 - two bodies colliding
   - creation/teleport overlap
   - time-to-hit border contact.
-- chain constraint violated (if I ever do chains)
-- timeout: spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
+
+Timeouts:
+- timeout event: spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
   Scheduling things to happen at floating-point times is the key to making reflex-time important for NPCs
 
 overlap tests
@@ -179,11 +204,6 @@ overlap tests
 - circ/circ
 - rect/circ
 - draw overlaps and non-overlaps
-
-time-to-collision tests
-- rect/rect
-- circ/circ
-- rect/circ
 
 Cell collider
 - sparse grid of cells
