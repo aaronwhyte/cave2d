@@ -7,6 +7,12 @@ function Vec2d(x, y) {
   this.reset(x, y);
 }
 
+Vec2d.X = 'x';
+Vec2d.Y = 'y';
+Vec2d.otherAxis = function(axis) {
+  return axis === Vec2d.X ? Vec2d.Y : Vec2d.X;
+};
+
 Vec2d.prototype.reset = function(x, y) {
   this.x = x || 0;
   this.y = y || 0;

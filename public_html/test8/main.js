@@ -157,7 +157,7 @@ function drawAll() {
       ctx.arc(v.x, v.y, b.rad, 0, Math.PI * 2);
       ctx.stroke();
     } else if (b.shape == Body.Shape.RECT) {
-      ctx.strokeRect(v.x - b.radX, v.y - b.radY, b.radX * 2, b.radY * 2);
+      ctx.strokeRect(v.x - b.rectRad.x, v.y - b.rectRad.y, b.rectRad.x * 2, b.rectRad.y * 2);
     }
   }
   ctx.restore();

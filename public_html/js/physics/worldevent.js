@@ -11,12 +11,10 @@ function WorldEvent() {
 
 Poolify(WorldEvent);
 
-WorldEvent.TYPE_TIMEOUT = 10;
-WorldEvent.TYPE_GRID_ENTER_X = 20;
-WorldEvent.TYPE_GRID_ENTER_Y = 21;
-WorldEvent.TYPE_GRID_EXIT_X = 30;
-WorldEvent.TYPE_GRID_EXIT_Y = 31;
-WorldEvent.TYPE_HIT = 40;
+WorldEvent.TYPE_TIMEOUT = 'timeout';
+WorldEvent.TYPE_GRID_ENTER = 'enter';
+WorldEvent.TYPE_GRID_EXIT = 'exit';
+WorldEvent.TYPE_HIT = 'hit';
 
 WorldEvent.prototype.reset = function() {
   // SkipQueue node stuff
@@ -34,11 +32,9 @@ WorldEvent.prototype.reset = function() {
   this.timeoutVals.length = 0;
 
   // grid enter/exit cell range
+  this.axis = null; // one of Vec2d.X or Vec2d.Y
   this.pathId = 0;
-  this.cellRange.x0 = 0;
-  this.cellRange.y0 = 0;
-  this.cellRange.x1 = -1;
-  this.cellRange.y1 = -1;
+  this.cellRange.reset();
 
   // hit fields
   this.pathId0 = 0;
@@ -47,15 +43,14 @@ WorldEvent.prototype.reset = function() {
 
 WorldEvent.prototype.toString = function() {
   var s = [];
-  s.push(
-      '{time: ', this.time,
-//      ', id: ', this.id,
-      ', type: ', this.type,
-      ', spiritId: ', this.spiritId,
-      ', pathId: ', this.pathId,
-      ', cellRange: ' + JSON.stringify(this.cellRange),
-      ', pathId0: ', this.pathId0,
-      ', pathId1: ', this.pathId1,
-      '}');
+  s.push('{time: ', this.time, ', type: ', this.type);
+  if (this.type === WorldEvent.TYPE_TIMEOUT) {
+    s.push(', spiritId: ', this.spiritId);
+  } else if (this.type === WorldEvent.TYPE_GRID_ENTER || this.type === WorldEvent.TYPE_GRID_EXIT) {
+    s.push(', pathId: ', this.pathId, ', axis: ' + this.axis, ', cellRange: ' + JSON.stringify(this.cellRange));
+  } else if (this.type === WorldEvent.TYPE_HIT) {
+    s.push(', pathId0: ', this.pathId0, ', pathId1: ', this.pathId1);
+  }
+  s.push('}');
   return s.join('');
 };

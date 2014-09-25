@@ -5,8 +5,9 @@
  * @constructor
  */
 function Body() {
-  this.pathStartPos = Vec2d.alloc();
-  this.vel = Vec2d.alloc();
+  this.pathStartPos = new Vec2d();
+  this.vel = new Vec2d();
+  this.rectRad = new Vec2d();
   this.reset();
 }
 
@@ -37,12 +38,12 @@ Body.prototype.reset = function() {
   this.invalidBodies = null;
 
   this.shape = Body.Shape.CIRCLE;
-  // circle radius, for circles
+
+  // circle radius
   this.rad = 1;
-  // half-width, for rects
-  this.radX = 1;
-  // half-height, for rects
-  this.radY = 1;
+
+  // half-width and half-height, for rects
+  this.rectRad.reset(1, 1);
 
   // This controls which other bodies and rayscans should be tested for collisions.
   this.hitgroup = 0;
@@ -71,7 +72,7 @@ Body.prototype.getBoundingRectAtTime = function(t, out) {
   if (this.shape == Body.Shape.CIRCLE) {
     out.setRadXY(this.rad, this.rad);
   } else if (this.shape == Body.Shape.RECT) {
-    out.setRadXY(this.radX, this.radY);
+    out.setRad(this.rectRad);
   }
   return out;
 };

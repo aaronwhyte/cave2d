@@ -3,24 +3,22 @@
  * @constructor
  */
 function CellRange() {
+  this.p0 = new Vec2d();
+  this.p1 = new Vec2d();
   this.reset();
 }
 
 CellRange.prototype.reset = function() {
-  this.x0 = 0;
-  this.y0 = 0;
-  this.x1 = -1;
-  this.y1 = -1;
+  this.p0.setXY(0, 0);
+  this.p1.setXY(-1, -1);
 };
 
 /**
  * @param {CellRange} that
  */
 CellRange.prototype.set = function(that) {
-  this.x0 = that.x0;
-  this.y0 = that.y0;
-  this.x1 = that.x1;
-  this.y1 = that.y1;
+  this.p0.set(that.p0);
+  this.p1.set(that.p1);
 };
 
 Poolify(CellRange);
