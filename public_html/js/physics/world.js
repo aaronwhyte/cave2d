@@ -114,71 +114,37 @@ World.prototype.validateBodies = function() {
     body.pathId = this.newId();
     this.paths[body.pathId] = body;
 
-    this.addNextGridEnter(body, Vec2d.X);
-    this.addNextGridEnter(body, Vec2d.Y);
-    this.addNextGridExit(body, Vec2d.X);
-    this.addNextGridExit(body, Vec2d.Y);
+    this.addNextGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.X);
+    this.addNextGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.Y);
+
+    this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.X);
+    this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.Y);
+
 //    this.addToCells(body);
   }
 //  console.log("Queue: " + this.queue.toString());
 };
 
 /**
- * Checks to see if the body's path will cross into a new CellRange
+ * Checks to see if the body's path will enter/exit a CellRange
  * before the path expires, and allocates and adds the event if so.
  * @param {Body} body
+ * @param {String} eventType WorldEvent TYPE const.
  * @param {String} axis The axis along which the object travels (not the axis it crosses)
  */
-World.prototype.addNextGridEnter = function(body, axis) {
+World.prototype.addNextGridEvent = function(body, eventType, axis) {
   var v = body.vel;
   if (!v[axis]) return;
   var perp = Vec2d.otherAxis(axis);
 
-  // Calculate the leading point "p" on the moving bounding rect.
+  // Calculate the leading/trailing point "p" on the moving bounding rect.
   var rect = body.getBoundingRectAtTime(this.now, Rect.alloc());
   var vSign = Vec2d.alloc().set(body.vel).sign();
-  var p = Vec2d.alloc().set(rect.rad).multiply(vSign).add(rect.pos);
-
-  // c is the center of the cell that p is in.
-  var c = Vec2d.alloc().set(p).roundToGrid(World.CELL_SIZE);
-
-  // Calculate crossing times
-  var t, e;
-  t = this.now + (c[axis] + vSign[axis] * World.CELL_SIZE / 2 - p[axis]) / v[axis];
-  if (t > this.now && t <= body.getPathEndTime()) {
-    e = WorldEvent.alloc();
-    e.type = WorldEvent.TYPE_GRID_ENTER;
-    e.axis = axis;
-    e.time = t;
-    e.pathId = body.pathId;
-    // Entrance will be one cell ahead of p's current value along axis.
-    e.cellRange.p0[axis] = e.cellRange.p1[axis] = this.getCellIndex(c[axis]) + vSign[axis];
-    // Entrance size depends on bounding rect at that time.
-    body.getBoundingRectAtTime(t, rect);
-    e.cellRange.p0[perp] = this.getCellIndex(rect.pos[perp] - rect.rad[perp]);
-    e.cellRange.p1[perp] = this.getCellIndex(rect.pos[perp] + rect.rad[perp]);
-    this.queue.add(e);
+  var p = Vec2d.alloc().set(rect.rad).multiply(vSign);
+  if (eventType === WorldEvent.TYPE_GRID_EXIT) {
+    p.scale(-1)
   }
-  p.free();
-  vSign.free();
-  rect.free();
-};
-
-/**
- * Checks to see if the body's path will exit a CellRange
- * before the path expires, and allocates and adds the event if so.
- * @param {Body} body
- * @param {String} axis The axis along which the object travels (not the axis it crosses)
- */
-World.prototype.addNextGridExit = function(body, axis) {
-  var v = body.vel;
-  if (!v[axis]) return;
-  var perp = Vec2d.otherAxis(axis);
-
-  // Calculate the trailing point "p" on the moving bounding rect.
-  var rect = body.getBoundingRectAtTime(this.now, Rect.alloc());
-  var vSign = Vec2d.alloc().set(body.vel).sign();
-  var p = Vec2d.alloc().set(rect.rad).multiply(vSign).scale(-1).add(rect.pos);
+  p.add(rect.pos);
 
   // c is the center of the cell that p is in.
   var c = Vec2d.alloc().set(p).roundToGrid(World.CELL_SIZE);
@@ -188,12 +154,14 @@ World.prototype.addNextGridExit = function(body, axis) {
   t = this.now + (c[axis] + vSign[axis] * World.CELL_SIZE / 2 - p[axis]) / v[axis];
   if (t > this.now && t <= body.getPathEndTime()) {
     e = WorldEvent.alloc();
-    e.type = WorldEvent.TYPE_GRID_EXIT;
+    e.type = eventType;
     e.axis = axis;
     e.time = t;
     e.pathId = body.pathId;
-    // Exit will be p's current on-axis val.
-    e.cellRange.p0[axis] = e.cellRange.p1[axis] = this.getCellIndex(c[axis]);
+
+    // Is the event about entering the next set of cells or leaving the current one?
+    e.cellRange.p0[axis] = e.cellRange.p1[axis] = this.getCellIndex(c[axis]) +
+        (eventType === WorldEvent.TYPE_GRID_ENTER) ? vSign[axis] : 0;
     // Exit size depend on bounding rect at that time.
     body.getBoundingRectAtTime(t, rect);
     e.cellRange.p0[perp] = this.getCellIndex(rect.pos[perp] - rect.rad[perp]);
