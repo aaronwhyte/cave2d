@@ -2,6 +2,8 @@ var canvas, ctx, viewport, camera;
 
 var pointers = {};
 
+var ANIMATE = false;
+
 function main() {
   canvas = document.querySelector('#canvas');
   ctx = canvas.getContext("2d");
@@ -163,7 +165,7 @@ function drawAll() {
   ctx.restore();
   Vec2d.free(v);
 
-  requestAnimationFrame(drawAll, canvas);
+  if (ANIMATE) requestAnimationFrame(drawAll, canvas);
 }
 
 function getNow() {
