@@ -19,7 +19,7 @@ function World() {
 
   this.nextId = 10;
 
-  this.cells = {};
+  this.grid = {};
 
   this.queue = new SkipQueue(World.SKIP_QUEUE_BASE,
       SkipQueue.getRecommendedMaxLevel(100, World.SKIP_QUEUE_BASE));
@@ -29,7 +29,7 @@ function World() {
 
 World.SKIP_QUEUE_BASE = 2;
 
-World.GRID_WIDTH = 1000000;
+World.GRID_HUGENESS = 10000;
 
 /**
  * The width and height of grid cells.
@@ -38,16 +38,26 @@ World.GRID_WIDTH = 1000000;
  */
 World.CELL_SIZE = 5;
 
-World.prototype.newId = function() {
-  return this.nextId++;
+World.prototype.cellCoord = function(worldCoord) {
+  return Math.round(worldCoord / World.CELL_SIZE)
 };
 
-World.prototype.getCellIndex = function(cellX, cellY) {
-  return World.GRID_WIDTH * cellY + cellY;
+World.prototype.gridIndexForCellCoords = function(cellX, cellY) {
+  return World.GRID_HUGENESS * cellX + cellY;
 };
 
 World.prototype.getCell = function(ix, iy) {
-  return this.cells[this.getCellIndex(ix, iy)];
+  return this.grid[this.gridIndexForCellCoords(ix, iy)];
+};
+
+World.prototype.setCell = function(cell, ix, iy) {
+  console.log('setCell', cell, ix, iy);
+  this.grid[this.gridIndexForCellCoords(ix, iy)] = cell;
+  return cell;
+};
+
+World.prototype.newId = function() {
+  return this.nextId++;
 };
 
 /**
@@ -114,15 +124,47 @@ World.prototype.validateBodies = function() {
     body.pathId = this.newId();
     this.paths[body.pathId] = body;
 
+    // Add initial set of events.
+    this.addBodyToGrid(body);
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.X);
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.Y);
-
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.X);
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.Y);
-
-//    this.addToCells(body);
   }
 //  console.log("Queue: " + this.queue.toString());
+  console.log(this.grid);
+};
+
+World.prototype.addBodyToGrid = function(body) {
+  var brect = body.getBoundingRectAtTime(this.now, Rect.alloc());
+  var ix0 = this.cellCoord(brect.pos.x - brect.rad.x);
+  var iy0 = this.cellCoord(brect.pos.y - brect.rad.y);
+  var ix1 = this.cellCoord(brect.pos.x + brect.rad.x);
+  var iy1 = this.cellCoord(brect.pos.y + brect.rad.y);
+  for (var iy = iy0; iy <= iy1; iy++) {
+    for (var ix = ix0; ix <= ix1; ix++) {
+      var cell = this.getCell(ix, iy);
+      if (!cell) {
+        cell = this.setCell(Cell.alloc(this.getGroupCount()), ix, iy);
+      }
+      this.addBodyToCell(body, cell);
+    }
+  }
+  brect.free();
+};
+
+World.prototype.getGroupCount = function() {
+  return 10; // TODO
+};
+
+
+World.prototype.addBodyToCell = function(body, cell) {
+  console.log('addBodyToCell', body, cell);
+  // Calculate and enqueue collisions based on groups
+
+  // Put body into cell
+  cell.addPathIdToGroup(body.pathId, body.hitGroup);
+
 };
 
 /**
@@ -142,7 +184,7 @@ World.prototype.addNextGridEvent = function(body, eventType, axis) {
   var vSign = Vec2d.alloc().set(body.vel).sign();
   var p = Vec2d.alloc().set(rect.rad).multiply(vSign);
   if (eventType === WorldEvent.TYPE_GRID_EXIT) {
-    p.scale(-1)
+    p.scale(-1);
   }
   p.add(rect.pos);
 
@@ -150,31 +192,26 @@ World.prototype.addNextGridEvent = function(body, eventType, axis) {
   var c = Vec2d.alloc().set(p).roundToGrid(World.CELL_SIZE);
 
   // Calculate crossing times
-  var t, e;
-  t = this.now + (c[axis] + vSign[axis] * World.CELL_SIZE / 2 - p[axis]) / v[axis];
+  var t = this.now + (c[axis] + vSign[axis] * World.CELL_SIZE / 2 - p[axis]) / v[axis];
   if (t > this.now && t <= body.getPathEndTime()) {
-    e = WorldEvent.alloc();
+    var e = WorldEvent.alloc();
     e.type = eventType;
     e.axis = axis;
     e.time = t;
     e.pathId = body.pathId;
 
-    // Is the event about entering the next set of cells or leaving the current one?
-    e.cellRange.p0[axis] = e.cellRange.p1[axis] = this.getCellIndex(c[axis]) +
+    // Is the event about entering the next set of cells, or leaving the current one?
+    e.cellRange.p0[axis] = e.cellRange.p1[axis] = this.cellCoord(c[axis]) +
         (eventType === WorldEvent.TYPE_GRID_ENTER) ? vSign[axis] : 0;
-    // Exit size depend on bounding rect at that time.
+    // The length of the crossing, in cells, depends on the position of the bounding rect at that time.
     body.getBoundingRectAtTime(t, rect);
-    e.cellRange.p0[perp] = this.getCellIndex(rect.pos[perp] - rect.rad[perp]);
-    e.cellRange.p1[perp] = this.getCellIndex(rect.pos[perp] + rect.rad[perp]);
+    e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
+    e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
     this.queue.add(e);
   }
   p.free();
   vSign.free();
   rect.free();
-};
-
-World.prototype.getCellIndex = function(worldCoord) {
-  return Math.round(worldCoord / World.CELL_SIZE)
 };
 
 //World.prototype.addTimeout = function(timeout) {

@@ -46,7 +46,7 @@ Body.prototype.reset = function() {
   this.rectRad.reset(1, 1);
 
   // This controls which other bodies and rayscans should be tested for collisions.
-  this.hitgroup = 0;
+  this.hitGroup = 0;
 
   // data for the basic "bounce" collision response
   this.mass = 1;

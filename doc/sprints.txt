@@ -170,40 +170,35 @@ v init events: body exiting cells
 
 - add-to-cells
   - add-to-cell
+    v add to group layer
     - add collision events
-      - actual collision checking
+      - actual time-to-collision checking
         - brects
         - rect to rect (same as brects?)
         - circ to circ
         - circ to rect
-    - add to group layer
   - initial addBody add-to-cells
 
-- Process collisions
-  - collision response
+Read the queue
 - Process enter events
   - add to cells
   - create next entry event
 - Process exit events
   - add next one
+- Process collisions
+  - collision response
+
+
+overlap
+- rect/rect
+- circ/circ
+- rect/circ
 - init events: body overlap
-
-
-
-
-- two bodies colliding
-  - creation/teleport overlap
-  - time-to-hit border contact.
+- draw overlaps and non-overlaps
 
 Timeouts:
 - timeout event: spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
   Scheduling things to happen at floating-point times is the key to making reflex-time important for NPCs
-
-overlap tests
-- rect/rect
-- circ/circ
-- rect/circ
-- draw overlaps and non-overlaps
 
 Cell collider
 - sparse grid of cells
