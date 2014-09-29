@@ -116,13 +116,13 @@ var world;
 function initWorld() {
   world = new World();
   var v = Vec2d.alloc();
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 30; i++) {
     var b = Body.alloc();
     v.setXY(Math.random() * 20, 0).rot(Math.random() * 2 * Math.PI);
     b.setPosAtTime(v, 0);
     v.setXY(Math.random(), 0).rot(Math.random() * 2 * Math.PI).scaleXY(100, 10);
     b.setVelAtTime(v, 0);
-    b.shape = (Math.random() < 0.5) ? Body.Shape.RECT : Body.Shape.CIRCLE;
+    b.shape = (Math.random() < 0.001) ? Body.Shape.RECT : Body.Shape.CIRCLE;
     b.pathDurationMax = 1.01;
     world.addBody(b);
   }
@@ -139,7 +139,7 @@ function drawAll() {
   var now = getNow();
   var v = Vec2d.alloc();
 
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+  ctx.fillStyle = 'rgb(0, 0, 0)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   adjustCamera(now);

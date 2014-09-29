@@ -39,6 +39,7 @@ WorldEvent.prototype.reset = function() {
   // hit fields
   this.pathId0 = 0;
   this.pathId1 = 0;
+  // this.axis, if set, means there was a hit on a side of a rectangle. X means it was east or west, Y is N or S.
 };
 
 WorldEvent.prototype.toString = function() {

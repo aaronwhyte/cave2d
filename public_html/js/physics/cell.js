@@ -42,6 +42,6 @@ Cell.prototype.removePathIdFromGroup = function(pathId, groupId) {
  * @param groupId
  * @returns {Object}
  */
-Cell.prototype.getPathIdsForGroup = function(groupId) {
+Cell.prototype.getPathIdSetForGroup = function(groupId) {
   return this.groups[groupId];
 };

@@ -25,6 +25,8 @@ function World() {
       SkipQueue.getRecommendedMaxLevel(100, World.SKIP_QUEUE_BASE));
 
   this.now = 1;
+
+  this.hitCalc = new HitCalc();
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -51,7 +53,6 @@ World.prototype.getCell = function(ix, iy) {
 };
 
 World.prototype.setCell = function(cell, ix, iy) {
-  console.log('setCell', cell, ix, iy);
   this.grid[this.gridIndexForCellCoords(ix, iy)] = cell;
   return cell;
 };
@@ -125,17 +126,17 @@ World.prototype.validateBodies = function() {
     this.paths[body.pathId] = body;
 
     // Add initial set of events.
-    this.addBodyToGrid(body);
+    this.addPathToGrid(body);
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.X);
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.Y);
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.X);
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.Y);
   }
-//  console.log("Queue: " + this.queue.toString());
-  console.log(this.grid);
+  console.log("Queue: " + this.queue.toString());
+//  console.log(this.grid);
 };
 
-World.prototype.addBodyToGrid = function(body) {
+World.prototype.addPathToGrid = function(body) {
   var brect = body.getBoundingRectAtTime(this.now, Rect.alloc());
   var ix0 = this.cellCoord(brect.pos.x - brect.rad.x);
   var iy0 = this.cellCoord(brect.pos.y - brect.rad.y);
@@ -147,22 +148,33 @@ World.prototype.addBodyToGrid = function(body) {
       if (!cell) {
         cell = this.setCell(Cell.alloc(this.getGroupCount()), ix, iy);
       }
-      this.addBodyToCell(body, cell);
+      this.addPathToCell(body, cell);
     }
   }
   brect.free();
 };
 
 World.prototype.getGroupCount = function() {
-  return 10; // TODO
+  return 10; // TODO base this on the way the world was initialized
 };
 
 
-World.prototype.addBodyToCell = function(body, cell) {
-  console.log('addBodyToCell', body, cell);
-  // Calculate and enqueue collisions based on groups
+World.prototype.addPathToCell = function(body, cell) {
+  console.log('addPathToCell', body, cell);
+  var pathIdSet = cell.getPathIdSetForGroup(body.hitGroup);
+  for (var pathId in pathIdSet) {
+    var otherBody = this.paths[pathId];
+    if (otherBody) {
+      var hitEvent = this.hitCalc.calcHit(this.now, body, otherBody);
+      if (hitEvent) {
+        this.queue.add(hitEvent);
+      }
+    } else {
+      // TODO the following:
+      console.log('remember to remove obsolete pathIds from Cells');
+    }
+  }
 
-  // Put body into cell
   cell.addPathIdToGroup(body.pathId, body.hitGroup);
 
 };

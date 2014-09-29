@@ -174,9 +174,11 @@ v init events: body exiting cells
     - add collision events
       - actual time-to-collision checking
         - brects
-        - rect to rect (same as brects?)
-        - circ to circ
+        v rect to rect (same as brects?)
+        v circ to circ
         - circ to rect
+        - unit test?
+        - fix double-hit across cells? or no? Only happens on initial add, right?
   - initial addBody add-to-cells
 
 Read the queue
