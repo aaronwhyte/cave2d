@@ -1,8 +1,12 @@
 function HitCalc() {
-  this.pair = [0, 0];
+  this.xOverlap = [0, 0];
+  this.yOverlap = [0, 0];
 }
 
 HitCalc.prototype.calcHit = function(now, b0, b1) {
+  if (b0.vel.equals(b1.vel)) {
+    return null;
+  }
   var hit = null;
   if (b0.shape == Body.Shape.RECT) {
     if (b1.shape == Body.Shape.RECT) {
@@ -19,60 +23,48 @@ HitCalc.prototype.calcHit = function(now, b0, b1) {
 };
 
 HitCalc.prototype.calcHitRectRect = function(now, a, b) {
-  if (a.vel.equals(b.vel)) return null;
   var aPos = a.getPosAtTime(now, Vec2d.alloc());
   var bPos = b.getPosAtTime(now, Vec2d.alloc());
 
   // For most of the computations, we shift times left so "now" is zero.
   var maxDuration = Math.min(a.getPathEndTime(), b.getPathEndTime()) - now;
   var t = maxDuration + 1; // effectively infinity
-  var count = this.hitTime1D(
+
+  var count = this.overlapTime1D(
       aPos.x, a.vel.x, a.rectRad.x,
       bPos.x, b.vel.x, b.rectRad.x,
-      this.pair);
-  var axis;
-  if (count >= 1) {
-    if (this.pair[0] > 0 && this.pair[0] <= maxDuration) {
-      t = this.pair[0];
-      axis = Vec2d.X;
-    }
-    if (count >= 2 && this.pair[1] < t &&
-        this.pair[1] > 0 && this.pair[1] <= maxDuration) {
-      t = this.pair[1];
-      axis = Vec2d.X;
-    }
+      this.xOverlap);
+  if (count == 0 || this.xOverlap[0] > maxDuration || this.xOverlap[1] <= 0) {
+    // no overlap, or overlap out of time range
+    return null;
   }
-  count = this.hitTime1D(
+  count = this.overlapTime1D(
       aPos.y, a.vel.y, a.rectRad.y,
       bPos.y, b.vel.y, b.rectRad.y,
-      this.pair);
-  if (count >= 1) {
-    if (this.pair[0] > 0 && this.pair[0] <= maxDuration && this.pair[0] < t) {
-      t = this.pair[0];
-      axis = Vec2d.Y;
-    }
-    if (count >= 2 && this.pair[1] < t &&
-        this.pair[1] > 0 && this.pair[1] <= maxDuration) {
-      t = this.pair[1];
-      axis = Vec2d.Y;
-    }
+      this.yOverlap);
+  if (count == 0 || this.yOverlap[0] > maxDuration || this.yOverlap[1] <= 0) {
+    // no overlap, or overlap out of time range
+    return null;
+  }
+
+  var overlapStart = Math.max(this.xOverlap[0], this.yOverlap[0]);
+  var overlapEnd = Math.min(this.xOverlap[1], this.yOverlap[1]);
+  if (overlapStart > overlapEnd) {
+    return null;
   }
   aPos.free();
   bPos.free();
-  if (axis == -1) {
-    return null;
-  }
   var e = WorldEvent.alloc();
   e.type = WorldEvent.TYPE_HIT;
-  e.time = now + t;
+  e.time = now + overlapStart;
   e.pathId0 = a.pathId;
   e.pathId1 = b.pathId;
-  e.axis = axis;
+//  e.axis = axis;
   return e;
 };
 
 /**
- * One-dimensional collision detection
+ * One-dimensional overlap timespan.
  * @param p0 position
  * @param v0 velocity
  * @param r0 radius
@@ -82,19 +74,33 @@ HitCalc.prototype.calcHitRectRect = function(now, a, b) {
  * @param out output array. Zero, one, or two time values may be returned.
  * @returns {number} number of collisions returned on the output array
  */
-HitCalc.prototype.hitTime1D = function(p0, v0, r0, p1, v1, r1, out) {
-  var denom = v1 - v0;
-  if (!denom) {
-    return 0;
+HitCalc.prototype.overlapTime1D = function(p0, v0, r0, p1, v1, r1, out) {
+  var v = v1 - v0;
+  var p = p1 - p0;
+  var r = r0 + r1;
+  if (!v) {
+    // forever, or never?
+    if (Math.abs(p) < r) {
+      // forever
+      out[0] = -Infinity;
+      out[1] = Infinity;
+      return 2;
+    } else {
+      // never
+      return 0;
+    }
   }
-  var dist = r1 + r0;
-  out[0] = (p1 - p0 + dist) / denom;
-  out[1] = (p1 - p0 - dist) / denom;
+  out[0] = (-p - r) / v;
+  out[1] = (-p + r) / v;
+  if (out[0] > out[1]) {
+    var tmp = out[0];
+    out[0] = out[1];
+    out[1] = tmp;
+  }
   return 2;
 };
 
 HitCalc.prototype.calcHitCircleCircle = function(now, b0, b1) {
-  if (b0.vel.equals(b1.vel)) return null;
   var p0 = b0.getPosAtTime(now, Vec2d.alloc());
   var p1 = b1.getPosAtTime(now, Vec2d.alloc());
 
@@ -110,7 +116,7 @@ HitCalc.prototype.calcHitCircleCircle = function(now, b0, b1) {
 
   // quadratic equation
   var a = dx * dx + dy * dy; // not zero, because vels are not equal
-  var b = 2 * (x + y);
+  var b = 2 * (x * dx + y * dy);
   var c = x * x + y * y - dist * dist;
   var sqrtb2_4ac = Math.sqrt(b * b - 4 * a * c);
 

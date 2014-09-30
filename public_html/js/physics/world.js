@@ -132,8 +132,6 @@ World.prototype.validateBodies = function() {
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.X);
     this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.Y);
   }
-  console.log("Queue: " + this.queue.toString());
-//  console.log(this.grid);
 };
 
 World.prototype.addPathToGrid = function(body) {
@@ -160,7 +158,6 @@ World.prototype.getGroupCount = function() {
 
 
 World.prototype.addPathToCell = function(body, cell) {
-  console.log('addPathToCell', body, cell);
   var pathIdSet = cell.getPathIdSetForGroup(body.hitGroup);
   for (var pathId in pathIdSet) {
     var otherBody = this.paths[pathId];

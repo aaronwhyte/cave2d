@@ -2,7 +2,7 @@ var canvas, ctx, viewport, camera;
 
 var pointers = {};
 
-var ANIMATE = false;
+var ANIMATE = true;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -120,10 +120,10 @@ function initWorld() {
     var b = Body.alloc();
     v.setXY(Math.random() * 20, 0).rot(Math.random() * 2 * Math.PI);
     b.setPosAtTime(v, 0);
-    v.setXY(Math.random(), 0).rot(Math.random() * 2 * Math.PI).scaleXY(100, 10);
+    v.setXY(Math.random(), 0).rot(Math.random() * 2 * Math.PI).scaleXY(10, 10);
     b.setVelAtTime(v, 0);
     b.shape = (Math.random() < 0.001) ? Body.Shape.RECT : Body.Shape.CIRCLE;
-    b.pathDurationMax = 1.01;
+    //b.pathDurationMax = 1.01;
     world.addBody(b);
   }
   // TODO remove
@@ -132,13 +132,24 @@ function initWorld() {
   Vec2d.free(v);
 }
 
+
+function drawBody(b, now) {
+  var p = b.getPosAtTime(now, Vec2d.alloc());
+  if (b.shape == Body.Shape.CIRCLE) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, b.rad, 0, Math.PI * 2);
+    ctx.stroke();
+  } else if (b.shape == Body.Shape.RECT) {
+    ctx.strokeRect(p.x - b.rectRad.x, p.y - b.rectRad.y, b.rectRad.x * 2, b.rectRad.y * 2);
+  }
+  p.free();
+}
+
 function drawAll() {
   function r() {
     return Math.floor(Math.random() * 256);
   }
   var now = getNow();
-  var v = Vec2d.alloc();
-
   ctx.fillStyle = 'rgb(0, 0, 0)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -149,27 +160,32 @@ function drawAll() {
 
   ctx.lineWidth = 0.2;
 
+  ctx.strokeStyle = 'rgb(255, 255, 255)';
   for (var id in world.bodies) {
     var b = world.bodies[id];
-    b.getPosAtTime(now, v);
-    ctx.strokeStyle = 'rgb(' + [r(), r(), r()].join(',') + ')';
-//    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    if (b.shape == Body.Shape.CIRCLE) {
-      ctx.beginPath();
-      ctx.arc(v.x, v.y, b.rad, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (b.shape == Body.Shape.RECT) {
-      ctx.strokeRect(v.x - b.rectRad.x, v.y - b.rectRad.y, b.rectRad.x * 2, b.rectRad.y * 2);
+    drawBody(b, now);
+  }
+
+  var node = world.queue.getFirst();
+  ctx.strokeStyle = 'rgb(255, 0, 0)';
+  while (node) {
+    if (node.type == WorldEvent.TYPE_HIT) {
+      var t = node.time;
+      if (Math.abs(now - t) < 0.05) {
+        var b0 = world.paths[node.pathId0];
+        var b1 = world.paths[node.pathId1];
+        drawBody(b0, now);
+        drawBody(b1, now);
+      }
     }
+    node = node.next[0];
   }
   ctx.restore();
-  Vec2d.free(v);
-
   if (ANIMATE) requestAnimationFrame(drawAll, canvas);
 }
 
 function getNow() {
-  return Math.sin(Date.now() / 333);
+  return (Date.now() / 3000) % 1 + 1;
 }
 
 function adjustCamera(now) {
