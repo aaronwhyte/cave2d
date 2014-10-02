@@ -28,7 +28,6 @@ HitCalc.prototype.calcHitRectRect = function(now, a, b) {
 
   // For most of the computations, we shift times left so "now" is zero.
   var maxDuration = Math.min(a.getPathEndTime(), b.getPathEndTime()) - now;
-  var t = maxDuration + 1; // effectively infinity
 
   var count = this.overlapTime1D(
       aPos.x, a.vel.x, a.rectRad.x,
@@ -36,6 +35,8 @@ HitCalc.prototype.calcHitRectRect = function(now, a, b) {
       this.xOverlap);
   if (count == 0 || this.xOverlap[0] > maxDuration || this.xOverlap[1] <= 0) {
     // no overlap, or overlap out of time range
+    aPos.free();
+    bPos.free();
     return null;
   }
   count = this.overlapTime1D(
@@ -44,12 +45,16 @@ HitCalc.prototype.calcHitRectRect = function(now, a, b) {
       this.yOverlap);
   if (count == 0 || this.yOverlap[0] > maxDuration || this.yOverlap[1] <= 0) {
     // no overlap, or overlap out of time range
+    aPos.free();
+    bPos.free();
     return null;
   }
 
   var overlapStart = Math.max(this.xOverlap[0], this.yOverlap[0]);
   var overlapEnd = Math.min(this.xOverlap[1], this.yOverlap[1]);
   if (overlapStart > overlapEnd) {
+    aPos.free();
+    bPos.free();
     return null;
   }
   aPos.free();

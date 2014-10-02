@@ -38,14 +38,14 @@ World.GRID_HUGENESS = 10000;
  * The cell at index 0, 0 has its center at 0, 0.
  * The cell at index -1, 1 has its center at -CELL_SIZE, CELL_SIZE.
  */
-World.CELL_SIZE = 5;
+World.CELL_SIZE = 2;
 
 World.prototype.cellCoord = function(worldCoord) {
-  return Math.round(worldCoord / World.CELL_SIZE)
+  return Math.round(worldCoord / World.CELL_SIZE);
 };
 
-World.prototype.gridIndexForCellCoords = function(cellX, cellY) {
-  return World.GRID_HUGENESS * cellX + cellY;
+World.prototype.gridIndexForCellCoords = function(ix, iy) {
+  return World.GRID_HUGENESS * ix + iy;
 };
 
 World.prototype.getCell = function(ix, iy) {
@@ -127,10 +127,10 @@ World.prototype.validateBodies = function() {
 
     // Add initial set of events.
     this.addPathToGrid(body);
-    this.addNextGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.X);
-    this.addNextGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.Y);
-    this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.X);
-    this.addNextGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.Y);
+    this.addFirstGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.X);
+    this.addFirstGridEvent(body, WorldEvent.TYPE_GRID_ENTER, Vec2d.Y);
+    this.addFirstGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.X);
+    this.addFirstGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.Y);
   }
 };
 
@@ -155,7 +155,6 @@ World.prototype.addPathToGrid = function(body) {
 World.prototype.getGroupCount = function() {
   return 10; // TODO base this on the way the world was initialized
 };
-
 
 World.prototype.addPathToCell = function(body, cell) {
   var pathIdSet = cell.getPathIdSetForGroup(body.hitGroup);
@@ -183,7 +182,7 @@ World.prototype.addPathToCell = function(body, cell) {
  * @param {String} eventType WorldEvent TYPE const.
  * @param {String} axis The axis along which the object travels (not the axis it crosses)
  */
-World.prototype.addNextGridEvent = function(body, eventType, axis) {
+World.prototype.addFirstGridEvent = function(body, eventType, axis) {
   var v = body.vel;
   if (!v[axis]) return;
   var perp = Vec2d.otherAxis(axis);
@@ -191,6 +190,7 @@ World.prototype.addNextGridEvent = function(body, eventType, axis) {
   // Calculate the leading/trailing point "p" on the moving bounding rect.
   var rect = body.getBoundingRectAtTime(this.now, Rect.alloc());
   var vSign = Vec2d.alloc().set(body.vel).sign();
+
   var p = Vec2d.alloc().set(rect.rad).multiply(vSign);
   if (eventType === WorldEvent.TYPE_GRID_EXIT) {
     p.scale(-1);
@@ -201,8 +201,10 @@ World.prototype.addNextGridEvent = function(body, eventType, axis) {
   var c = Vec2d.alloc().set(p).roundToGrid(World.CELL_SIZE);
 
   // Calculate crossing times
-  var t = this.now + (c[axis] + vSign[axis] * World.CELL_SIZE / 2 - p[axis]) / v[axis];
-  if (t > this.now && t <= body.getPathEndTime()) {
+  var t = this.now + (c[axis] + 0.5 * vSign[axis] * World.CELL_SIZE - p[axis]) / v[axis];
+  if (t < this.now) {
+    console.error("oh crap", t, this.now);
+  } else if (t <= body.getPathEndTime()) {
     var e = WorldEvent.alloc();
     e.type = eventType;
     e.axis = axis;
@@ -211,7 +213,7 @@ World.prototype.addNextGridEvent = function(body, eventType, axis) {
 
     // Is the event about entering the next set of cells, or leaving the current one?
     e.cellRange.p0[axis] = e.cellRange.p1[axis] = this.cellCoord(c[axis]) +
-        (eventType === WorldEvent.TYPE_GRID_ENTER) ? vSign[axis] : 0;
+        (eventType === WorldEvent.TYPE_GRID_ENTER ? vSign[axis] : 0);
     // The length of the crossing, in cells, depends on the position of the bounding rect at that time.
     body.getBoundingRectAtTime(t, rect);
     e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
@@ -221,6 +223,96 @@ World.prototype.addNextGridEvent = function(body, eventType, axis) {
   p.free();
   vSign.free();
   rect.free();
+};
+
+World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
+  var axis = prevEvent.axis;
+  var eventType = prevEvent.type;
+  var v = body.vel;
+  if (!v[axis]) return;
+  var perp = Vec2d.otherAxis(axis);
+
+  var vSign = Vec2d.alloc().set(v).sign();
+  var nextCellIndex = prevEvent.cellRange.p0[axis] + vSign[axis];
+  // What time will the point reach that cell index?
+  var rad = vSign[axis] * (body.shape == Body.Shape.CIRCLE ? body.rad : body.rectRad[axis]);
+  var dest;
+  if (eventType == WorldEvent.TYPE_GRID_ENTER) {
+    dest = (nextCellIndex - 0.5 * vSign[axis]) * World.CELL_SIZE - rad;
+  } else {
+    dest = (nextCellIndex + 0.5 * vSign[axis]) * World.CELL_SIZE + rad;
+  }
+  var t = body.pathStartTime + (dest - body.pathStartPos[axis]) / v[axis];
+  if (t < this.now) {
+    console.error("oh crap", t, this.now);
+  } else if (t <= body.getPathEndTime()) {
+    var e = WorldEvent.alloc();
+    e.type = eventType;
+    e.axis = axis;
+    e.time = t;
+    e.pathId = body.pathId;
+
+    // Is the event about entering the next set of cells, or leaving the current one?
+    e.cellRange.p0[axis] = e.cellRange.p1[axis] = nextCellIndex;
+    // The length of the crossing, in cells, depends on the position of the bounding rect at that time.
+    var rect = Rect.alloc();
+    body.getBoundingRectAtTime(t, rect);
+    e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
+    e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
+    rect.free();
+    this.queue.add(e);
+  }
+  vSign.free();
+};
+
+World.prototype.getNextEvent = function() {
+  return this.queue.getFirst();
+};
+
+World.prototype.processNextEvent = function() {
+  var e = this.queue.removeFirst();
+  this.now = e.time;
+
+  if (e.type === WorldEvent.TYPE_GRID_ENTER) {
+    var body = this.paths[e.pathId];
+    if (body) {
+      for (var iy = e.cellRange.p0.y; iy <= e.cellRange.p1.y; iy++) {
+        for (var ix = e.cellRange.p0.x; ix <= e.cellRange.p1.x; ix++) {
+          var cell = this.getCell(ix, iy);
+          if (!cell) {
+            cell = this.setCell(Cell.alloc(this.getGroupCount()), ix, iy);
+          }
+          this.addPathToCell(body, cell);
+        }
+      }
+    }
+    this.addSubsequentGridEvent(body, e);
+
+  } else if (e.type === WorldEvent.TYPE_GRID_EXIT) {
+    var body = this.paths[e.pathId];
+    if (body) {
+      for (var iy = e.cellRange.p0.y; iy <= e.cellRange.p1.y; iy++) {
+        for (var ix = e.cellRange.p0.x; ix <= e.cellRange.p1.x; ix++) {
+          var cell = this.getCell(ix, iy);
+          if (cell) {
+            cell.removePathIdFromGroup(body.id, body.hitGroup);
+          }
+        }
+      }
+    }
+    this.addSubsequentGridEvent(body, e);
+
+  } else if (e.type === WorldEvent.TYPE_HIT) {
+    var b0 = this.paths[e.pathId0];
+    var b1 = this.paths[e.pathId1];
+    if (b0 && b1) {
+      // TODO hit the bodies
+    }
+
+  } else if (e.type === WorldEvent.TYPE_TIMEOUT) {
+    // TODO timeouts
+  }
+  e.free();
 };
 
 //World.prototype.addTimeout = function(timeout) {

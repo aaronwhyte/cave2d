@@ -4,13 +4,16 @@ var pointers = {};
 
 var ANIMATE = true;
 
+var MAX_TIME = 5;
+var OBJ_COUNT = 20;
+
 function main() {
   canvas = document.querySelector('#canvas');
   ctx = canvas.getContext("2d");
   viewport = new Viewport(canvas);
   camera = new Camera();
 //  camera.setPanXY(0, 0);
-//  camera.setZoom(1/22);
+  camera.setZoom(1/60);
 //  camera.setRotation(0);
 
   window.addEventListener("resize", function(){
@@ -111,23 +114,52 @@ function worldVecFromPageXY(x, y) {
 
 ///////////////////////////////////////////////
 
-var world;
+var world, hits, enters;
 
 function initWorld() {
   world = new World();
   var v = Vec2d.alloc();
-  for (var i = 0; i < 30; i++) {
+  for (var i = 0; i < OBJ_COUNT; i++) {
     var b = Body.alloc();
-    v.setXY(Math.random() * 20, 0).rot(Math.random() * 2 * Math.PI);
-    b.setPosAtTime(v, 0);
-    v.setXY(Math.random(), 0).rot(Math.random() * 2 * Math.PI).scaleXY(10, 10);
-    b.setVelAtTime(v, 0);
-    b.shape = (Math.random() < 0.001) ? Body.Shape.RECT : Body.Shape.CIRCLE;
+
+//    if (i > 0) {
+//      v.setXY(20, 0).rot(2 * Math.PI * i / OBJ_COUNT);
+//      b.setPosAtTime(v, 1);
+//      v.scale(-0.5);
+//      b.setVelAtTime(v, 1);
+//    }
+
+    v.setXY(Math.random() * 50, 0).rot(Math.random() * 2 * Math.PI);
+    b.setPosAtTime(v, 1);
+    v.setXY(Math.random() * 10 + 1, 0).rot(Math.random() * 2 * Math.PI);
+    b.setVelAtTime(v, 1);
+    if (Math.random() < 0.001) {
+      b.shape = Body.Shape.RECT;
+    } else {
+      b.shape = Body.Shape.CIRCLE;
+      b.rad = 1 + Math.random() * 3;
+    }
+
+
     //b.pathDurationMax = 1.01;
     world.addBody(b);
   }
   // TODO remove
   world.validateBodies();
+  var e;
+  hits = [];
+  enters = [];
+  while (e = world.getNextEvent()) {
+    if (e.time > MAX_TIME) break;
+    if (e.type == WorldEvent.TYPE_HIT) {
+      hits.push({time:e.time, pathId0: e.pathId0, pathId1: e.pathId1});
+    } else if (e.type == WorldEvent.TYPE_GRID_ENTER) {
+      var cellRange = new CellRange();
+      cellRange.set(e.cellRange);
+      enters.push({time: e.time, cellRange:cellRange});
+    }
+    world.processNextEvent();
+  }
 
   Vec2d.free(v);
 }
@@ -145,15 +177,21 @@ function drawBody(b, now) {
   p.free();
 }
 
+function drawCell(ix, iy) {
+  var x = ix * World.CELL_SIZE;
+  var y = iy * World.CELL_SIZE;
+  ctx.strokeRect(x - World.CELL_SIZE/2,  y - World.CELL_SIZE/2, World.CELL_SIZE, World.CELL_SIZE);
+}
+
 function drawAll() {
-  function r() {
-    return Math.floor(Math.random() * 256);
-  }
+//  function r() {
+//    return Math.floor(Math.random() * 256);
+//  }
   var now = getNow();
   ctx.fillStyle = 'rgb(0, 0, 0)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  adjustCamera(now);
+  //adjustCamera(now);
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
@@ -166,26 +204,37 @@ function drawAll() {
     drawBody(b, now);
   }
 
-  var node = world.queue.getFirst();
   ctx.strokeStyle = 'rgb(255, 0, 0)';
-  while (node) {
-    if (node.type == WorldEvent.TYPE_HIT) {
-      var t = node.time;
-      if (Math.abs(now - t) < 0.05) {
-        var b0 = world.paths[node.pathId0];
-        var b1 = world.paths[node.pathId1];
-        drawBody(b0, now);
-        drawBody(b1, now);
+  for (var i = 0; i < hits.length; i++) {
+    var hit = hits[i];
+    var t = hit.time;
+    if (t < now && t > now - 0.4) {
+      var b0 = world.paths[hit.pathId0];
+      var b1 = world.paths[hit.pathId1];
+      drawBody(b0, now);
+      drawBody(b1, now);
+    }
+  }
+  ctx.lineWidth = 0.1;
+  ctx.strokeStyle = 'rgb(64, 64, 64)';
+  for (var i = 0; i < enters.length; i++) {
+    var enter = enters[i];
+    var t = enter.time;
+    if (t < now && t > now - 0.3) {
+      var cr = enter.cellRange;
+      for (var iy = cr.p0.y; iy <= cr.p1.y; iy++) {
+        for (var ix = cr.p0.x; ix <= cr.p1.x; ix++) {
+          drawCell(ix, iy);
+        }
       }
     }
-    node = node.next[0];
   }
   ctx.restore();
   if (ANIMATE) requestAnimationFrame(drawAll, canvas);
 }
 
 function getNow() {
-  return (Date.now() / 3000) % 1 + 1;
+  return 1 + ((Date.now() *  MAX_TIME / 5000) % (MAX_TIME - 1));
 }
 
 function adjustCamera(now) {
