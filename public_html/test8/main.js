@@ -215,8 +215,7 @@ function drawAll() {
       drawBody(b1, now);
     }
   }
-  ctx.lineWidth = 0.1;
-  ctx.strokeStyle = 'rgb(64, 64, 64)';
+  ctx.strokeStyle = 'rgb(0, 255, 0)';
   for (var i = 0; i < enters.length; i++) {
     var enter = enters[i];
     var t = enter.time;
