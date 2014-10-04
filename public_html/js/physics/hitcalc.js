@@ -1,3 +1,7 @@
+/**
+ * Creates WorldEvents for collisions between bodies.
+ * @constructor
+ */
 function HitCalc() {
   this.xOverlap = [0, 0];
   this.yOverlap = [0, 0];
@@ -22,50 +26,123 @@ HitCalc.prototype.calcHit = function(now, b0, b1) {
   return hit;
 };
 
-HitCalc.prototype.calcHitRectRect = function(now, a, b) {
-  var aPos = a.getPosAtTime(now, Vec2d.alloc());
-  var bPos = b.getPosAtTime(now, Vec2d.alloc());
+/**
+ * @param {number} now
+ * @param {Body} b0 Rectangluar body
+ * @param {Body} b1 Rectangluar body
+ * @returns {?WorldEvent} Event if hit, or null.
+ */
+HitCalc.prototype.calcHitCircleCircle = function(now, b0, b1) {
+  var p0 = b0.getPosAtTime(now, Vec2d.alloc());
+  var p1 = b1.getPosAtTime(now, Vec2d.alloc());
 
   // For most of the computations, we shift times left so "now" is zero.
-  var maxDuration = Math.min(a.getPathEndTime(), b.getPathEndTime()) - now;
+  var maxDuration = Math.min(b0.getPathEndTime(), b1.getPathEndTime()) - now;
 
+  // Normalize as if b0 is holding still at 0, 0.
+  var x = p1.x - p0.x;
+  var y = p1.y - p0.y;
+  var dx = b1.vel.x - b0.vel.x;
+  var dy = b1.vel.y - b0.vel.y;
+  var dist = b0.rad + b1.rad;
+  p0.free();
+  p1.free();
+
+  // quadratic equation
+  var a = dx * dx + dy * dy; // not zero, because vels are not equal
+  if (a == 0) return null;
+  var b = 2 * (x * dx + y * dy);
+  var c = x * x + y * y - dist * dist;
+  var b2_4ac = b * b - 4 * a * c;
+  if (b2_4ac < 0) return null;
+  var sqrtb2_4ac = Math.sqrt(b2_4ac);
+
+  var t = (-b + sqrtb2_4ac) / (2 * a);
+  var t2 = (-b - sqrtb2_4ac) / (2 * a);
+  if (t2 < t) {
+    t = t2;
+  }
+  if (t <= 0 || maxDuration < t) return null;
+  var e = WorldEvent.alloc();
+  e.type = WorldEvent.TYPE_HIT;
+  e.time = now + t;
+  e.pathId0 = b0.pathId;
+  e.pathId1 = b1.pathId;
+  e.axis = null;
+  return e;
+};
+
+HitCalc.prototype.calcHitRectCircle = function(now, rect, circ) {
+  // bounding rect check
+
+  // if dv is straight on axis
+  //
+  // else diagonal
+  //   corner vs circle
+  //   compassX vs rect
+  //   compassY vs rect
+};
+
+/**
+ * @param {number} now
+ * @param {Body} b0 Rectangluar body
+ * @param {Body} b1 Rectangluar body
+ * @returns {?WorldEvent} Event if hit, or null.
+ */
+HitCalc.prototype.calcHitRectRect = function(now, b0, b1) {
+  var pos0 = b0.getPosAtTime(now, Vec2d.alloc());
+  var pos1 = b1.getPosAtTime(now, Vec2d.alloc());
+
+  // For most of the computations, we shift times left so "now" is zero.
+  var maxDuration = Math.min(b0.getPathEndTime(), b1.getPathEndTime()) - now;
+  var hitTime = this.timeUntilRectsHit(
+      pos0, b0.vel, b0.rectRad,
+      pos1, b1.vel, b1.rectRad,
+      maxDuration);
+
+  pos0.free();
+  pos1.free();
+  if (hitTime == 0) return null;
+  var e = WorldEvent.alloc();
+  e.type = WorldEvent.TYPE_HIT;
+  e.time = now + hitTime;
+  e.pathId0 = b0.pathId;
+  e.pathId1 = b1.pathId;
+//  e.axis = axis;
+  return e;
+};
+
+/**
+ * @param {Vec2d} pos0
+ * @param {Vec2d} vel0
+ * @param {Vec2d} rad0
+ * @param {Vec2d} pos1
+ * @param {Vec2d} vel1
+ * @param {Vec2d} rad1
+ * @param {number} maxTime
+ * @returns {number} time of hit, > 0 and <= maxTime, or 0 for no hit.
+ */
+HitCalc.prototype.timeUntilRectsHit = function(pos0, vel0, rad0, pos1, vel1, rad1, maxTime) {
   var count = this.overlapTime1D(
-      aPos.x, a.vel.x, a.rectRad.x,
-      bPos.x, b.vel.x, b.rectRad.x,
+      pos0.x, vel0.x, rad0.x,
+      pos1.x, vel1.x, rad1.x,
       this.xOverlap);
-  if (count == 0 || this.xOverlap[0] > maxDuration || this.xOverlap[1] <= 0) {
-    // no overlap, or overlap out of time range
-    aPos.free();
-    bPos.free();
-    return null;
+  if (count == 0 || this.xOverlap[1] <= 0 || maxTime < this.xOverlap[0]) {
+    return 0;
   }
   count = this.overlapTime1D(
-      aPos.y, a.vel.y, a.rectRad.y,
-      bPos.y, b.vel.y, b.rectRad.y,
+      pos0.y, vel0.y, rad0.y,
+      pos1.y, vel1.y, rad1.y,
       this.yOverlap);
-  if (count == 0 || this.yOverlap[0] > maxDuration || this.yOverlap[1] <= 0) {
-    // no overlap, or overlap out of time range
-    aPos.free();
-    bPos.free();
-    return null;
+  if (count == 0 || this.yOverlap[1] <= 0 || maxTime < this.yOverlap[0]) {
+    return 0;
   }
-
   var overlapStart = Math.max(this.xOverlap[0], this.yOverlap[0]);
   var overlapEnd = Math.min(this.xOverlap[1], this.yOverlap[1]);
   if (overlapStart > overlapEnd) {
-    aPos.free();
-    bPos.free();
-    return null;
+    return 0;
   }
-  aPos.free();
-  bPos.free();
-  var e = WorldEvent.alloc();
-  e.type = WorldEvent.TYPE_HIT;
-  e.time = now + overlapStart;
-  e.pathId0 = a.pathId;
-  e.pathId1 = b.pathId;
-//  e.axis = axis;
-  return e;
+  return overlapStart;
 };
 
 /**
@@ -103,53 +180,4 @@ HitCalc.prototype.overlapTime1D = function(p0, v0, r0, p1, v1, r1, out) {
     out[1] = tmp;
   }
   return 2;
-};
-
-HitCalc.prototype.calcHitCircleCircle = function(now, b0, b1) {
-  var p0 = b0.getPosAtTime(now, Vec2d.alloc());
-  var p1 = b1.getPosAtTime(now, Vec2d.alloc());
-
-  // For most of the computations, we shift times left so "now" is zero.
-  var maxDuration = Math.min(b0.getPathEndTime(), b1.getPathEndTime()) - now;
-
-  // Normalize as if b0 is holding still at 0, 0.
-  var x = p1.x - p0.x;
-  var y = p1.y - p0.y;
-  var dx = b1.vel.x - b0.vel.x;
-  var dy = b1.vel.y - b0.vel.y;
-  var dist = b0.rad + b1.rad;
-
-  // quadratic equation
-  var a = dx * dx + dy * dy; // not zero, because vels are not equal
-  var b = 2 * (x * dx + y * dy);
-  var c = x * x + y * y - dist * dist;
-  var sqrtb2_4ac = Math.sqrt(b * b - 4 * a * c);
-
-  var t = maxDuration + 1; // effectively infinity
-  var solved = false;
-
-  var sol = (-b + sqrtb2_4ac) / (2 * a);
-  if (sol > 0 && sol <= maxDuration) {
-    t = sol;
-    solved = true;
-  }
-  sol = (-b - sqrtb2_4ac) / (2 * a);
-  if (sol > 0 && sol <= maxDuration && sol < t) {
-    t = sol;
-    solved = true;
-  }
-  p0.free();
-  p1.free();
-  if (!solved) return null;
-  var e = WorldEvent.alloc();
-  e.type = WorldEvent.TYPE_HIT;
-  e.time = now + t;
-  e.pathId0 = b0.pathId;
-  e.pathId1 = b1.pathId;
-  e.axis = null;
-  return e;
-};
-
-HitCalc.prototype.calcHitRectCircle = function(now, r, c) {
-  return null; // TODO
 };
