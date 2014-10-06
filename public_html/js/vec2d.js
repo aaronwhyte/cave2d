@@ -7,15 +7,20 @@ function Vec2d(x, y) {
   this.reset(x, y);
 }
 
-Vec2d.X = 'x';
-Vec2d.Y = 'y';
-Vec2d.otherAxis = function(axis) {
-  return axis === Vec2d.X ? Vec2d.Y : Vec2d.X;
-};
-
 Vec2d.prototype.reset = function(x, y) {
   this.x = x || 0;
   this.y = y || 0;
+};
+
+Vec2d.X = 'x';
+Vec2d.Y = 'y';
+
+Vec2d.AXES = [Vec2d.X, Vec2d.Y];
+
+Vec2d.ZERO = new Vec2d(0, 0);
+
+Vec2d.otherAxis = function(axis) {
+  return axis === Vec2d.X ? Vec2d.Y : Vec2d.X;
 };
 
 Poolify(Vec2d);

@@ -38,7 +38,7 @@ World.GRID_HUGENESS = 10000;
  * The cell at index 0, 0 has its center at 0, 0.
  * The cell at index -1, 1 has its center at -CELL_SIZE, CELL_SIZE.
  */
-World.CELL_SIZE = 2;
+World.CELL_SIZE = 20;
 
 World.prototype.cellCoord = function(worldCoord) {
   return Math.round(worldCoord / World.CELL_SIZE);
