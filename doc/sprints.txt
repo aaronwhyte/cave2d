@@ -168,27 +168,33 @@ are dequeued and processed.
 v init events: body entering cells
 v init events: body exiting cells
 
-- add-to-cells
-  - add-to-cell
+DONE 2014-10-05
+v add-to-cells
+  v initial addBody add-to-cells
+  v add-to-cell
     v add to group layer
-    - add collision events
-      - actual time-to-collision checking
-        - brects
+    v add collision events
+      v actual time-to-collision checking
+        v brects
         v rect to rect (same as brects?)
         v circ to circ
-        - circ to rect
-        - unit test?
-        - fix double-hit across cells? or no? Only happens on initial add, right?
-  - initial addBody add-to-cells
+        v circ to rect
+        x unit test?
+        x fix double-hit across cells? or no? Only happens on initial add, right?
 
-Read the queue
-- Process enter events
-  - add to cells
-  - create next entry event
-- Process exit events
-  - add next one
+Process the queue
+v Process enter events
+  v add to cells
+  v create next entry event
+v Process exit events
+  v add next one
 - Process collisions
-  - collision response
+  - default collision response
+  - spirit callbacks
+
+Timeouts:
+- timeout event: spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
+  Scheduling things to happen at floating-point times is the key to making reflex-time important for NPCs
 
 
 overlap
@@ -198,25 +204,21 @@ overlap
 - init events: body overlap
 - draw overlaps and non-overlaps
 
-Timeouts:
-- timeout event: spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
-  Scheduling things to happen at floating-point times is the key to making reflex-time important for NPCs
-
 Cell collider
-- sparse grid of cells
-- cell
-  - array mapping hitgroup index to list of pathIds
-- map from bodyId to body
-- map from pathId to body. (If a body has a different pathId, then the index one is invalid)
+v sparse grid of cells
+v cell
+  v array mapping hitgroup index to list of pathIds
+v map from bodyId to body
+v map from pathId to body. (If a body has a different pathId, then the index one is invalid)
 - body creation causes...
   - overlap tests & immediate hit events w bodies in cells
-  - time-to-hit tests, events (multiple)
-  - enter-cells test, event (zero or one) - bounding rect's leading point crosses a cell x or y line
-  - exit-cells test, event (zero or one) - bounding rect's trailing point crosses a cell x or y line
-- enter-cell event causes
-  - overlap tests (maybe not?)
-  - time-to-hit tests
-  - enter-cells test for next edge or axis
+  v time-to-hit tests, events (multiple)
+  v enter-cells test, event (zero or one) - bounding rect's leading point crosses a cell x or y line
+  v exit-cells test, event (zero or one) - bounding rect's trailing point crosses a cell x or y line
+v enter-cell event causes
+  x overlap tests (maybe not?)
+  v time-to-hit tests
+  v enter-cells test for next edge or axis
 - exit-cell test removes bodyId from departed cells
 
 
