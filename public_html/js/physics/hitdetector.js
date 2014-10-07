@@ -2,13 +2,13 @@
  * Creates WorldEvents for collisions between bodies.
  * @constructor
  */
-function HitCalc() {
+function HitDetector() {
   this.xOverlap = [0, 0];
   this.yOverlap = [0, 0];
   this.overlap = [0, 0];
 }
 
-HitCalc.prototype.calcHit = function(now, b0, b1) {
+HitDetector.prototype.calcHit = function(now, b0, b1) {
   if (b0.vel.equals(b1.vel)) {
     return null;
   }
@@ -33,7 +33,7 @@ HitCalc.prototype.calcHit = function(now, b0, b1) {
  * @param {Body} b1 Rectangluar body
  * @returns {?WorldEvent} Event if hit, or null.
  */
-HitCalc.prototype.calcHitCircleCircle = function(now, b0, b1) {
+HitDetector.prototype.calcHitCircleCircle = function(now, b0, b1) {
   var p0 = b0.getPosAtTime(now, Vec2d.alloc());
   var p1 = b1.getPosAtTime(now, Vec2d.alloc());
 
@@ -60,7 +60,7 @@ HitCalc.prototype.calcHitCircleCircle = function(now, b0, b1) {
   return e;
 };
 
-HitCalc.prototype.calcHitRectCircle = function(now, rect, circ) {
+HitDetector.prototype.calcHitRectCircle = function(now, rect, circ) {
   var e = null;
   var posRect = rect.getPosAtTime(now, Vec2d.alloc());
   var posCirc = circ.getPosAtTime(now, Vec2d.alloc());
@@ -196,7 +196,7 @@ HitCalc.prototype.calcHitRectCircle = function(now, rect, circ) {
  * @param {Body} b1 Rectangluar body
  * @returns {?WorldEvent} Event if hit, or null.
  */
-HitCalc.prototype.calcHitRectRect = function(now, b0, b1) {
+HitDetector.prototype.calcHitRectRect = function(now, b0, b1) {
   var pos0 = b0.getPosAtTime(now, Vec2d.alloc());
   var pos1 = b1.getPosAtTime(now, Vec2d.alloc());
 
@@ -229,7 +229,7 @@ HitCalc.prototype.calcHitRectRect = function(now, b0, b1) {
  * @param {number} rad
  * @returns {?Array} null for no overlap, or a two element array [start time, end time]
  */
-HitCalc.prototype.circleOriginOverlapTime = function(x, y, dx, dy, rad) {
+HitDetector.prototype.circleOriginOverlapTime = function(x, y, dx, dy, rad) {
   // quadratic equation
   var a = dx * dx + dy * dy; // not zero, because vels are not equal
   if (a == 0) return null;
@@ -258,7 +258,7 @@ HitCalc.prototype.circleOriginOverlapTime = function(x, y, dx, dy, rad) {
  * @param {number} rad1y
  * @returns {?Array} null for no overlap, or a two element array [start time, end time]
  */
-HitCalc.prototype.rectOverlapTime = function(
+HitDetector.prototype.rectOverlapTime = function(
     pos0, vel0, rad0x, rad0y,
     pos1, vel1, rad1x, rad1y) {
   var count = this.overlapTime1D(
@@ -290,7 +290,7 @@ HitCalc.prototype.rectOverlapTime = function(
  * @param out output array. Zero, one, or two time values may be returned.
  * @returns {number} number of collisions returned on the output array
  */
-HitCalc.prototype.overlapTime1D = function(p0, v0, r0, p1, v1, r1, out) {
+HitDetector.prototype.overlapTime1D = function(p0, v0, r0, p1, v1, r1, out) {
   var v = v1 - v0;
   var p = p1 - p0;
   var r = r0 + r1;

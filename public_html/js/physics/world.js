@@ -26,7 +26,7 @@ function World() {
 
   this.now = 1;
 
-  this.hitCalc = new HitCalc();
+  this.hitDetector = new HitDetector();
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -161,7 +161,7 @@ World.prototype.addPathToCell = function(body, cell) {
   for (var pathId in pathIdSet) {
     var otherBody = this.paths[pathId];
     if (otherBody) {
-      var hitEvent = this.hitCalc.calcHit(this.now, body, otherBody);
+      var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody);
       if (hitEvent) {
         this.queue.add(hitEvent);
       }
