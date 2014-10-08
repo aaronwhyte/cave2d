@@ -236,6 +236,11 @@ Vec2d.distanceSq = function(x0, y0, x1, y1) {
   return (dx * dx) + (dy * dy);
 };
 
+Vec2d.prototype.projectOnto = function(that) {
+  var coef = this.dot(that) / that.dot(that);
+  return this.set(that).scale(coef);
+};
+
 Vec2d.prototype.toJSON = function() {
   return [this.x, this.y];
 };

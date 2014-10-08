@@ -3,9 +3,11 @@ var canvas, ctx, viewport, camera;
 var pointers = {};
 
 var ANIMATE = true;
-var DRAW_GRID_EVENTS = true;
-var MAX_TIME = 10;
-var OBJ_COUNT = 30;
+var ADJUST_CAMERA = false;
+var OBJ_COUNT = 200;
+var RECT_CHANCE = 0;
+var MAX_CLOCKS_PER_ANIMATION = 0.25;
+var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -23,7 +25,7 @@ function main() {
   resizeCanvas();
 
   initWorld();
-  drawAll();
+  clockAndDraw();
 }
 
 function resizeCanvas() {
@@ -129,41 +131,46 @@ function initWorld() {
 //      b.setVelAtTime(v, 1);
 //    }
 
-    v.setXY(Math.random() * 50, 0).rot(Math.random() * 2 * Math.PI);
+    v.setXY(2 * i + 60 + 2 * Math.random(), 0).rot(0.02 * 2 * Math.PI * i);
     b.setPosAtTime(v, 1);
-    v.setXY(Math.random() * 10 + 1, 0).rot(Math.random() * 2 * Math.PI);
+    v.scale(-1).scaleToLength(2 + 2 * i / OBJ_COUNT);//.rot(Math.random() * 0.1);
     b.setVelAtTime(v, 1);
-    if (Math.random() > 0.5) {
+    if (Math.random() < RECT_CHANCE) {
       b.shape = Body.Shape.RECT;
-      b.rectRad.setXY(1 + Math.random() * 3, 1 + Math.random() * 3);
+      b.rectRad.setXY(0.5 + Math.random() * 3, 0.5 + Math.random() * 3);
+      b.mass = b.rectRad.x * b.rectRac.y
     } else {
       b.shape = Body.Shape.CIRCLE;
-      b.rad = 1 + Math.random() * 3;
+      b.rad = 0.5 + Math.random() * 3;
+      b.mass = Math.PI * b.rad * b.rad;
     }
     b.pathDurationMax = 10000;
     world.addBody(b);
   }
-  // TODO remove
-  world.validateBodies();
-  var e;
-  hits = [];
-  enters = [];
-  exits = [];
-  while (e = world.getNextEvent()) {
-    if (e.time > MAX_TIME) break;
-    if (e.type == WorldEvent.TYPE_HIT) {
-      hits.push({time:e.time, pathId0: e.pathId0, pathId1: e.pathId1});
-    } else if (e.type == WorldEvent.TYPE_GRID_ENTER) {
-      var cellRange = new CellRange();
-      cellRange.set(e.cellRange);
-      enters.push({time: e.time, cellRange:cellRange});
-    } else if (e.type == WorldEvent.TYPE_GRID_EXIT) {
-      var cellRange = new CellRange();
-      cellRange.set(e.cellRange);
-      exits.push({time: e.time, cellRange:cellRange});
-    }
-    world.processNextEvent();
-  }
+
+  // The Big Guys
+  b = Body.alloc();
+  v.setXY(0, 900);
+  b.setPosAtTime(v, 1);
+  v.setXY(0, -7.4);
+  b.setVelAtTime(v, 1);
+  b.shape = Body.Shape.CIRCLE;
+  b.rad = 40;
+  b.mass = Math.PI * b.rad * b.rad;
+  b.pathDurationMax = 10000;
+  world.addBody(b);
+
+  b = Body.alloc();
+  v.setXY(0, -1000);
+  b.setPosAtTime(v, 1);
+  v.setXY(0, 7);
+  b.setVelAtTime(v, 1);
+  b.shape = Body.Shape.CIRCLE;
+  b.rad = 120;
+  b.mass = Math.PI * b.rad * b.rad;
+  b.pathDurationMax = 10000;
+  world.addBody(b);
+
 
   Vec2d.free(v);
 }
@@ -187,74 +194,48 @@ function drawCell(ix, iy) {
   ctx.strokeRect(x - World.CELL_SIZE/2,  y - World.CELL_SIZE/2, World.CELL_SIZE, World.CELL_SIZE);
 }
 
-function drawAll() {
-//  function r() {
-//    return Math.floor(Math.random() * 256);
-//  }
-  var now = getNow();
+function drawCellRange(cr) {
+  for (var iy = cr.p0.y; iy <= cr.p1.y; iy++) {
+    for (var ix = cr.p0.x; ix <= cr.p1.x; ix++) {
+      drawCell(ix, iy);
+    }
+  }
+}
+
+function clockAndDraw() {
+  var endTimeMs = Date.now() + MAX_TIME_PER_FRAME_MS;
   ctx.fillStyle = 'rgb(0, 0, 0)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-//  adjustCamera(now);
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
 
-  ctx.lineWidth = 0.2;
-
-  if (DRAW_GRID_EVENTS) {
-    ctx.strokeStyle = 'rgb(0, 200, 0)';
-    for (var i = 0; i < enters.length; i++) {
-      var enter = enters[i];
-      var t = enter.time;
-      if (t < now && t > now - 0.3) {
-        var cr = enter.cellRange;
-        for (var iy = cr.p0.y; iy <= cr.p1.y; iy++) {
-          for (var ix = cr.p0.x; ix <= cr.p1.x; ix++) {
-            drawCell(ix, iy);
-          }
-        }
-      }
-    }
-    ctx.strokeStyle = 'rgb(0, 0, 200)';
-    for (var i = 0; i < exits.length; i++) {
-      var exit = exits[i];
-      var t = exit.time;
-      if (t < now && t > now - 0.3) {
-        var cr = exit.cellRange;
-        for (var iy = cr.p0.y; iy <= cr.p1.y; iy++) {
-          for (var ix = cr.p0.x; ix <= cr.p1.x; ix++) {
-            drawCell(ix, iy);
-          }
-        }
-      }
-    }
-  }
+  ctx.lineWidth = 0.3;
 
   ctx.strokeStyle = 'rgb(255, 255, 255)';
   for (var id in world.bodies) {
     var b = world.bodies[id];
-    drawBody(b, now);
-  }
-
-  ctx.strokeStyle = 'rgb(255, 0, 0)';
-  for (var i = 0; i < hits.length; i++) {
-    var hit = hits[i];
-    var t = hit.time;
-    if (t < now && t > now - 0.4) {
-      var b0 = world.paths[hit.pathId0];
-      var b1 = world.paths[hit.pathId1];
-      drawBody(b0, now);
-      drawBody(b1, now);
+    if (b) {
+      drawBody(b, world.now);
     }
   }
-
+  var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
+  var e = world.getNextEvent();
+  while (e && e.time <= maxClock && Date.now() <= endTimeMs) {
+//    if (e.type == WorldEvent.TYPE_GRID_ENTER) {
+//      drawCellRange(e.cellRange);
+//    }
+    world.processNextEvent();
+    e = world.getNextEvent();
+  }
+  if (!e) {
+    world.now = maxClock;
+  }
+  if (ADJUST_CAMERA) {
+    adjustCamera();
+  }
   ctx.restore();
-  if (ANIMATE) requestAnimationFrame(drawAll, canvas);
-}
-
-function getNow() {
-  return 1 + ((Date.now() *  MAX_TIME / 5000) % (MAX_TIME - 1));
+  if (ANIMATE) requestAnimationFrame(clockAndDraw, canvas);
 }
 
 function adjustCamera(now) {
@@ -265,9 +246,10 @@ function adjustCamera(now) {
   var rect = new Rect();
   for (var id in world.bodies) {
     var b = world.bodies[id];
-    b.getPosAtTime(now, v);
-    b.getBoundingRectAtTime(now, rect);
-    bRect.coverRect(rect);
+    if (b) {
+      b.getBoundingRectAtTime(world.now, rect);
+      bRect.coverRect(rect);
+    }
   }
   camera.setPanXY(bRect.pos.x, bRect.pos.y);
 

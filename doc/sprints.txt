@@ -190,6 +190,11 @@ v Process exit events
   v add next one
 - Process collisions
   - default collision response
+    - calc accel
+      v circle/circle
+      - circle/rect
+      - rect/rect
+    v alter paths
   - spirit callbacks
 
 Timeouts:
@@ -210,8 +215,8 @@ v cell
   v array mapping hitgroup index to list of pathIds
 v map from bodyId to body
 v map from pathId to body. (If a body has a different pathId, then the index one is invalid)
-- body creation causes...
-  - overlap tests & immediate hit events w bodies in cells
+v body creation causes...
+  v overlap tests & immediate hit events w bodies in cells
   v time-to-hit tests, events (multiple)
   v enter-cells test, event (zero or one) - bounding rect's leading point crosses a cell x or y line
   v exit-cells test, event (zero or one) - bounding rect's trailing point crosses a cell x or y line

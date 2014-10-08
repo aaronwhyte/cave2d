@@ -27,6 +27,7 @@ function World() {
   this.now = 1;
 
   this.hitDetector = new HitDetector();
+  this.hitResolver = new HitResolver();
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -38,7 +39,7 @@ World.GRID_HUGENESS = 10000;
  * The cell at index 0, 0 has its center at 0, 0.
  * The cell at index -1, 1 has its center at -CELL_SIZE, CELL_SIZE.
  */
-World.CELL_SIZE = 20;
+World.CELL_SIZE = 15;
 
 World.prototype.cellCoord = function(worldCoord) {
   return Math.round(worldCoord / World.CELL_SIZE);
@@ -170,7 +171,6 @@ World.prototype.addPathToCell = function(body, cell) {
       console.log('remember to remove obsolete pathIds from Cells');
     }
   }
-
   cell.addPathIdToGroup(body.pathId, body.hitGroup);
 
 };
@@ -266,16 +266,19 @@ World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
 };
 
 World.prototype.getNextEvent = function() {
+  this.validateBodies();
   return this.queue.getFirst();
 };
 
 World.prototype.processNextEvent = function() {
+  this.validateBodies();
   var e = this.queue.removeFirst();
   this.now = e.time;
 
   if (e.type === WorldEvent.TYPE_GRID_ENTER) {
     var body = this.paths[e.pathId];
-    if (body) {
+    if (body && body.pathId == e.pathId) {
+      this.addSubsequentGridEvent(body, e);
       for (var iy = e.cellRange.p0.y; iy <= e.cellRange.p1.y; iy++) {
         for (var ix = e.cellRange.p0.x; ix <= e.cellRange.p1.x; ix++) {
           var cell = this.getCell(ix, iy);
@@ -286,11 +289,11 @@ World.prototype.processNextEvent = function() {
         }
       }
     }
-    this.addSubsequentGridEvent(body, e);
 
   } else if (e.type === WorldEvent.TYPE_GRID_EXIT) {
     var body = this.paths[e.pathId];
-    if (body) {
+    if (body && body.pathId == e.pathId) {
+      this.addSubsequentGridEvent(body, e);
       for (var iy = e.cellRange.p0.y; iy <= e.cellRange.p1.y; iy++) {
         for (var ix = e.cellRange.p0.x; ix <= e.cellRange.p1.x; ix++) {
           var cell = this.getCell(ix, iy);
@@ -300,13 +303,12 @@ World.prototype.processNextEvent = function() {
         }
       }
     }
-    this.addSubsequentGridEvent(body, e);
 
   } else if (e.type === WorldEvent.TYPE_HIT) {
     var b0 = this.paths[e.pathId0];
     var b1 = this.paths[e.pathId1];
-    if (b0 && b1) {
-      // TODO hit the bodies
+    if (b0 && b1 && b0.pathId == e.pathId0 && b1.pathId == e.pathId1) {
+      this.hitResolver.resolveHit(e, b0, b1);
     }
 
   } else if (e.type === WorldEvent.TYPE_TIMEOUT) {
