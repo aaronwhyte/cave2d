@@ -189,11 +189,11 @@ v Process enter events
 v Process exit events
   v add next one
 - Process collisions
-  - default collision response
+  v default collision response
     - calc accel
       v circle/circle
-      - circle/rect
-      - rect/rect
+      v circle/rect
+      v rect/rect
     v alter paths
   - spirit callbacks
 

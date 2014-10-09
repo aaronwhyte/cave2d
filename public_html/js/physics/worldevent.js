@@ -6,6 +6,10 @@ function WorldEvent() {
   this.next = [];
   this.timeoutVals = [];
   this.cellRange = new CellRange(0, 0, -1, -1);
+
+  // This is a vector along which collision acceleration should be applied,
+  // for default elastic collision resolution.
+  this.collisionVec = new Vec2d();
   this.reset();
 }
 
@@ -39,6 +43,7 @@ WorldEvent.prototype.reset = function() {
   // hit fields
   this.pathId0 = 0;
   this.pathId1 = 0;
+  this.collisionVec.reset();
   // this.axis, if set, means there was a hit on a side of a rectangle. X means it was east or west, Y is N or S.
 };
 
