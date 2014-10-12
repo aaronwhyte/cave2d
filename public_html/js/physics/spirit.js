@@ -5,6 +5,7 @@
  */
 function Spirit(id) {
   this.id = id;
+  this.vec = new Vec2d();
 }
 
 /**
@@ -26,7 +27,9 @@ Spirit.prototype.onTimeout = function(world, timeout) {
 /**
  * When a Body is hit, the world informs its Spirit, if any.
  * @param {World} world
- * @param {Hit} hit
+ * @param {Body} thisBody
+ * @param {Body} thatBody
+ * @param {WorldEvent} hit
  */
-Spirit.prototype.onHit = function(world, hit) {
+Spirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
 };

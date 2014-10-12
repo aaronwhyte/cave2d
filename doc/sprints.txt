@@ -188,26 +188,21 @@ v Process enter events
   v create next entry event
 v Process exit events
   v add next one
-- Process collisions
+v Process collisions
   v default collision response
-    - calc accel
+    v calc accel
       v circle/circle
       v circle/rect
       v rect/rect
     v alter paths
-  - spirit callbacks
+  v spirit callbacks
+v Process collision v2
+  v World only detects
+  v Game uses resolver, or whatever, to handle hit events.
 
 Timeouts:
-- timeout event: spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
+v timeout event: spirit scheduled to do something, like accelerate, sense, react to something that happened earlier, etc.
   Scheduling things to happen at floating-point times is the key to making reflex-time important for NPCs
-
-
-overlap
-- rect/rect
-- circ/circ
-- rect/circ
-- init events: body overlap
-- draw overlaps and non-overlaps
 
 Cell collider
 v sparse grid of cells
@@ -224,13 +219,14 @@ v enter-cell event causes
   x overlap tests (maybe not?)
   v time-to-hit tests
   v enter-cells test for next edge or axis
-- exit-cell test removes bodyId from departed cells
+v exit-cell test removes bodyId from departed cells
 
+v Test 9: Bodies animated by a spirit, using timeouts
 
 #### MILESTONE: fully functional physics for aarects and circles
-#### STATUS: WORKIN' ON IT
+#### STATUS: DONE 2014-10-12
 
-Test 9: Make a maze and play it.
+Make a maze and play it.
 Terrain URL
 v port stuff
   v url
@@ -255,3 +251,11 @@ v pointer-based grid editing
   v continuity between event points on drag
   v mouse
 - drag-based panning
+
+overlap
+- rect/rect
+- circ/circ
+- rect/circ
+- init events: body overlap
+- draw overlaps and non-overlaps
+

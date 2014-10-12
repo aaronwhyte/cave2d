@@ -27,7 +27,6 @@ function World() {
   this.now = 1;
 
   this.hitDetector = new HitDetector();
-  this.hitResolver = new HitResolver();
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -58,8 +57,27 @@ World.prototype.setCell = function(cell, ix, iy) {
   return cell;
 };
 
+World.prototype.removeCell = function(ix, iy) {
+  var index = this.gridIndexForCellCoords(ix, iy);
+  var cell = this.grid[index];
+  if (cell) {
+    delete this.grid[index];
+    cell.free();
+  }
+};
+
 World.prototype.newId = function() {
   return this.nextId++;
+};
+
+/**
+ * Assigns an ID and adds the spirit.
+ * @returns the new spirit ID.
+ */
+World.prototype.addSpirit = function(spirit) {
+  spirit.id = this.newId();
+  this.spirits[spirit.id] = spirit;
+  return spirit.id;
 };
 
 /**
@@ -75,17 +93,8 @@ World.prototype.addBody = function(body) {
   // Add it to the bodies index and to the invalid bodies index.
   // The next time the clock moves forward, the invalid body will be addressed.
   this.bodies[body.id] = body;
-  this.invalidatePathByBodyId(body.id);
+  this.invalidBodies[body.id] = body;
   return body.id;
-};
-
-World.prototype.invalidatePathByBodyId = function(bodyId) {
-  var body = this.bodies[bodyId];
-  if (body) {
-    delete this.paths[body.pathId];
-    this.invalidBodies[bodyId] = body;
-    body.pathId = 0;
-  }
 };
 
 World.prototype.removeBodyId = function(bodyId) {
@@ -94,6 +103,7 @@ World.prototype.removeBodyId = function(bodyId) {
     delete this.bodies[body.id];
     delete this.paths[body.pathId];
     delete this.invalidBodies[body.id];
+    body.free();
   }
 };
 
@@ -118,8 +128,11 @@ World.prototype.getBodyByPathId = function(pathId) {
 World.prototype.validateBodies = function() {
   for (var bodyId in this.invalidBodies) {
     var body = this.invalidBodies[bodyId];
-    delete this.invalidBodies[bodyId];
     if (!body) continue;
+    delete this.invalidBodies[bodyId];
+    if (body.pathId) {
+      delete this.paths[body.pathId];
+    }
 
     // Update path
     body.moveToTime(this.now);
@@ -154,21 +167,21 @@ World.prototype.addPathToGrid = function(body) {
 };
 
 World.prototype.getGroupCount = function() {
-  return 10; // TODO base this on the way the world was initialized
+  return 5; // TODO base this on the way the world was initialized
 };
 
 World.prototype.addPathToCell = function(body, cell) {
-  var pathIdSet = cell.getPathIdSetForGroup(body.hitGroup);
+  var group = body.hitGroup;
+  var pathIdSet = cell.getPathIdSetForGroup(group);
   for (var pathId in pathIdSet) {
     var otherBody = this.paths[pathId];
-    if (otherBody) {
+    if (otherBody && otherBody.pathId == pathId) {
       var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody);
       if (hitEvent) {
         this.queue.add(hitEvent);
       }
     } else {
-      // TODO the following:
-      console.log('remember to remove obsolete pathIds from Cells');
+      cell.removePathIdFromGroup(pathId, group);
     }
   }
   cell.addPathIdToGroup(body.pathId, body.hitGroup);
@@ -220,6 +233,7 @@ World.prototype.addFirstGridEvent = function(body, eventType, axis) {
     e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
     this.queue.add(e);
   }
+  c.free();
   p.free();
   vSign.free();
   rect.free();
@@ -298,26 +312,33 @@ World.prototype.processNextEvent = function() {
         for (var ix = e.cellRange.p0.x; ix <= e.cellRange.p1.x; ix++) {
           var cell = this.getCell(ix, iy);
           if (cell) {
-            cell.removePathIdFromGroup(body.id, body.hitGroup);
+            cell.removePathIdFromGroup(body.pathId, body.hitGroup);
+            if (cell.isEmpty()) {
+              this.removeCell(ix, iy);
+            }
           }
         }
       }
     }
 
   } else if (e.type === WorldEvent.TYPE_HIT) {
-    var b0 = this.paths[e.pathId0];
-    var b1 = this.paths[e.pathId1];
-    if (b0 && b1 && b0.pathId == e.pathId0 && b1.pathId == e.pathId1) {
-      this.hitResolver.resolveHit(e, b0, b1);
-    }
-
+    // Let the game handle it.
   } else if (e.type === WorldEvent.TYPE_TIMEOUT) {
-    // TODO timeouts
+    var spirit = this.spirits[e.spiritId];
+    if (spirit) {
+      spirit.onTimeout(this, e);
+    }
   }
   e.free();
 };
 
-//World.prototype.addTimeout = function(timeout) {
-//};
+World.prototype.addTimeout = function(time, spiritId, vals) {
+  var e = WorldEvent.alloc();
+  e.type = WorldEvent.TYPE_TIMEOUT;
+  e.time = time;
+  e.spiritId = spiritId;
+  // TODO e.vals
+  this.queue.add(e);
+};
 //- removeTimeout
 //(later: rayscans)

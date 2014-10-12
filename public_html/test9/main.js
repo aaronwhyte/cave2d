@@ -3,12 +3,15 @@ var canvas, ctx, viewport, camera;
 var pointers = {};
 
 var ANIMATE = true;
-var ADJUST_CAMERA = false;
+var ADJUST_CAMERA = true;
 var OBJ_COUNT = 100;
-var RECT_CHANCE = 0.3;
-var MAX_CLOCKS_PER_ANIMATION = 0.3;
+var RECT_CHANCE = 0.2;
+var MAX_CLOCKS_PER_ANIMATION = 0.15;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
+var SPACING = 30;
+
+var testSpirit;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -16,7 +19,7 @@ function main() {
   viewport = new Viewport(canvas);
   camera = new Camera();
 //  camera.setPanXY(0, 0);
-  camera.setZoom(1/80);
+  camera.setZoom(1/100);
 //  camera.setRotation(0);
 
   window.addEventListener("resize", function(){
@@ -47,6 +50,12 @@ function initGestureListeners() {
   document.body.addEventListener("mouseup", onMouseUp);
   document.body.addEventListener("mouseout", onMouseUp);
   window.addEventListener("mousemove", onMouseMove);
+
+//  var havePointerLock = 'pointerLockElement' in document ||
+//      'mozPointerLockElement' in document ||
+//      'webkitPointerLockElement' in document;
+//  if (havePointerLock) {
+//  }
 }
 
 // maps touch.identifier to Vec2d of the prev touch location
@@ -111,64 +120,50 @@ var world, resolver;
 function initWorld() {
   world = new World();
   resolver = new HitResolver();
+  testSpirit = new TestSpirit();
+  var spiritId = world.addSpirit(testSpirit);
+  world.addTimeout(0.1, spiritId, null);
   var v = Vec2d.alloc();
-  for (var i = 0; i < OBJ_COUNT; i++) {
-    var b = Body.alloc();
-    v.setXY(2 * i + 60 + 2 * Math.random(), 0).rot(0.02 * 2 * Math.PI * i);
-    b.setPosAtTime(v, 1);
-    v.scale(-1).scaleToLength(2 + 2 * i / OBJ_COUNT);//.rot(Math.random() * 0.1);
-    b.setVelAtTime(v, 1);
-    if (Math.random() < RECT_CHANCE) {
-      b.shape = Body.Shape.RECT;
-      b.rectRad.setXY(0.5 + Math.random() * 3, 0.5 + Math.random() * 3);
-      b.mass = 4 * b.rectRad.x * b.rectRad.y;
-    } else {
-      b.shape = Body.Shape.CIRCLE;
-      b.rad = 0.5 + Math.random() * 3;
-      b.mass = Math.PI * b.rad * b.rad;
+  var sqrt = Math.sqrt(OBJ_COUNT);
+  for (var x = -sqrt/2; x < sqrt/2; x++) {
+    for (var y = -sqrt/2; y < sqrt/2; y++) {
+      var b = Body.alloc();
+      v.setXY(x * SPACING + Math.random(), y * SPACING + Math.random());
+      b.setPosAtTime(v, 1);
+      if (Math.random() < RECT_CHANCE) {
+        b.shape = Body.Shape.RECT;
+        b.rectRad.setXY(
+                (0.2 + Math.random()) * SPACING/2,
+                (0.2 + Math.random()) * SPACING/2);
+        b.mass = Infinity;
+        b.pathDurationMax = Infinity;
+      } else {
+        v.setXY(Math.random() - 0.5, Math.random() - 0.5);
+        b.setVelAtTime(v, 1);
+        b.shape = Body.Shape.CIRCLE;
+        b.rad = 1 + Math.random() * 4;
+        b.mass = Math.PI * b.rad * b.rad;
+        b.pathDurationMax = TestSpirit.TIMEOUT;
+      }
+      b.spiritId = spiritId;
+      world.addBody(b);
     }
-    b.pathDurationMax = 10000;
-    world.addBody(b);
   }
-
-  // The Big Guys
   b = Body.alloc();
-  v.setXY(0, 600);
+  v.setXY(-sqrt/2 * SPACING - 300, 0);
   b.setPosAtTime(v, 1);
-  v.setXY(0, -4);
-  b.setVelAtTime(v, 1);
-  b.shape = Body.Shape.CIRCLE;
-  b.rad = 50;
-  b.mass = Math.PI * b.rad * b.rad;
-  b.pathDurationMax = 10000;
-  world.addBody(b);
-
-  b = Body.alloc();
-  v.setXY(0, -600);
-  b.setPosAtTime(v, 1);
-  v.setXY(0, 3);
+  v.setXY(20, 0);
   b.setVelAtTime(v, 1);
   b.shape = Body.Shape.RECT;
-  b.rectRad.setXY(100, 100);
+  b.rectRad.setXY(SPACING * 0.6, SPACING * 0.6);
   b.mass = 4 * b.rectRad.x * b.rectRad.y;
-  b.pathDurationMax = 10000;
-  world.addBody(b);
-
-  // Supermass
-  b = Body.alloc();
-  v.setXY(200, 0);
-  b.setPosAtTime(v, 1);
-  v.setXY(-1, 0);
-  b.setVelAtTime(v, 1);
-  b.shape = Body.Shape.CIRCLE;
-  b.rad = 3;
-  b.mass = Infinity;
-  b.pathDurationMax = 10000;
+    //b.rad = 10;
+  //b.mass = Math.PI * b.rad * b.rad;
+  b.pathDurationMax = TestSpirit.TIMEOUT;
   world.addBody(b);
 
   Vec2d.free(v);
 }
-
 
 function drawBody(b, now) {
   var p = b.getPosAtTime(now, Vec2d.alloc());
@@ -198,11 +193,8 @@ function drawCellRange(cr) {
 }
 
 function clockAndDraw() {
-  function r() {
-    return Math.floor(Math.random() * 255);
-  }
   var endTimeMs = Date.now() + MAX_TIME_PER_FRAME_MS;
-  ctx.fillStyle = 'rgb(0, 0, 0)';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   viewport.transform(ctx);
@@ -215,7 +207,7 @@ function clockAndDraw() {
     var b = world.bodies[id];
     if (b) {
       if (b.mass == Infinity) {
-        ctx.strokeStyle = ctx.fillStyle = 'rgb(' + [r(),r(),r()].join(',') + ')';
+        ctx.strokeStyle = ctx.fillStyle = 'rgb(0, 200, 200)';
         drawBody(b, world.now);
         ctx.strokeStyle = ctx.fillStyle = 'rgb(255, 255, 255)';
       } else {
@@ -232,7 +224,7 @@ function clockAndDraw() {
         drawCellRange(e.cellRange);
       }
       if (e.type == WorldEvent.TYPE_GRID_EXIT) {
-        ctx.strokeStyle = 'rgb(0, 0, 255)';
+        ctx.strokeStyle = 'rgb(255, 0, 255)';
         drawCellRange(e.cellRange);
       }
     }
@@ -264,7 +256,7 @@ function adjustCamera(now) {
   var rect = new Rect();
   for (var id in world.bodies) {
     var b = world.bodies[id];
-    if (b) {
+    if (b && b.shape == Body.Shape.RECT) {
       b.getBoundingRectAtTime(world.now, rect);
       bRect.coverRect(rect);
     }
@@ -288,6 +280,6 @@ function adjustCamera(now) {
     }
   }
   z++;
-  camera.setZoom(1 / z);
+  camera.setZoom(0.9 / z);
   Vec2d.free(v);
 }

@@ -78,7 +78,6 @@ Body.prototype.getBoundingRectAtTime = function(t, out) {
 };
 
 Body.prototype.invalidatePath = function() {
-  this.pathId = 0;
   if (this.invalidBodies && this.id) {
     this.invalidBodies[this.id] = this;
   }

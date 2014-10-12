@@ -5,12 +5,13 @@
  * @constructor
  */
 function Cell(groupCount) {
+  this.groupCount = groupCount;
   this.groups = [];
   this.reset(groupCount);
 }
 
 Cell.prototype.reset = function(groupCount) {
-  for (var i = 0; i < groupCount; i++) {
+  for (var i = 0; i < this.groupCount; i++) {
     if (!this.groups[i]) {
       this.groups[i] = {};
     } else {
@@ -44,4 +45,14 @@ Cell.prototype.removePathIdFromGroup = function(pathId, groupId) {
  */
 Cell.prototype.getPathIdSetForGroup = function(groupId) {
   return this.groups[groupId];
+};
+
+Cell.prototype.isEmpty = function(world) {
+  for (var i = 0; i < this.groupCount; i++) {
+    var group = this.groups[i];
+    for (var pathId in group) {
+      return false;
+    }
+  }
+  return true;
 };
