@@ -32,13 +32,7 @@ TestSpirit.prototype.onTimeout = function(world, timeout) {
 };
 
 TestSpirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
-//  if (thatBody.mass == Infinity) {
-//    //thisBody.setPosAtTime(thisBody.getPosAtTime(hit.time, this.vec).addXY(15 * (Math.random() - 0.5), 15 * (Math.random() - 0.5)), hit.time);
-//  }
-//  if (Math.random() < 0.1) {
-////    world.removeBodyId(body.id);
-//  } else {
-//
-//    //body.setVelAtTime(this.vec.set(body.vel).scale(-1), hit.time);
-//  }
+  if(thatBody.mass != Infinity) {
+    thisBody.setVelAtTime(this.vec.set(thisBody.vel).scale(1.1), hit.time);
+  }
 };

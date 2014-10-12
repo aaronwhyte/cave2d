@@ -154,11 +154,15 @@ function initWorld() {
   b.setPosAtTime(v, 1);
   v.setXY(20, 0);
   b.setVelAtTime(v, 1);
+
   b.shape = Body.Shape.RECT;
   b.rectRad.setXY(SPACING * 0.6, SPACING * 0.6);
   b.mass = 4 * b.rectRad.x * b.rectRad.y;
-    //b.rad = 10;
-  //b.mass = Math.PI * b.rad * b.rad;
+
+//  b.shape = Body.Shape.CIRCLE;
+//  b.rad = SPACING * 0.6;
+//  b.mass = Math.PI * b.rad * b.rad;
+//
   b.pathDurationMax = TestSpirit.TIMEOUT;
   world.addBody(b);
 
@@ -233,6 +237,10 @@ function clockAndDraw() {
       var b1 = world.getBodyByPathId(e.pathId1);
       if (b0 && b1) {
         resolver.resolveHit(e.time, e.collisionVec, b0, b1);
+        var s0 = world.spirits[b0.spiritId];
+        if (s0) s0.onHit(world, b0, b1, e);
+        var s1 = world.spirits[b1.spiritId];
+        if (s1) s1.onHit(world, b1, b0, e);
       }
     }
     world.processNextEvent();
