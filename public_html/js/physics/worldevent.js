@@ -24,11 +24,8 @@ WorldEvent.prototype.reset = function() {
   // SkipQueue node stuff
   this.time = 0;
   this.next.length = 0;
-//
-//  // unique event ID
-//  this.id = 0;
 
-  // Which kind of event is it?
+  // Which kind of event is it? One of the TYPE constants.
   this.type = 0;
 
   // timeout fields

@@ -8,21 +8,21 @@ function HitDetector() {
   this.overlap = [0, 0, null]; // start, end, axis if any
 }
 
-HitDetector.prototype.calcHit = function(now, b0, b1) {
+HitDetector.prototype.calcHit = function(now, b0, b1, eventOut) {
   if (b0.vel.equals(b1.vel)) {
     return null;
   }
   var hit = null;
   if (b0.shape == Body.Shape.RECT) {
     if (b1.shape == Body.Shape.RECT) {
-      hit = this.calcHitRectRect(now, b0, b1);
+      hit = this.calcHitRectRect(now, b0, b1, eventOut);
     } else {
-      hit = this.calcHitRectCircle(now, b0, b1);
+      hit = this.calcHitRectCircle(now, b0, b1, eventOut);
     }
   } else if (b1.shape == Body.Shape.RECT) {
-    hit = this.calcHitRectCircle(now, b1, b0);
+    hit = this.calcHitRectCircle(now, b1, b0, eventOut);
   } else {
-    hit = this.calcHitCircleCircle(now, b0, b1);
+    hit = this.calcHitCircleCircle(now, b0, b1, eventOut);
   }
   return hit;
 };
@@ -31,9 +31,10 @@ HitDetector.prototype.calcHit = function(now, b0, b1) {
  * @param {number} now
  * @param {Body} b0 Rectangluar body
  * @param {Body} b1 Rectangluar body
+ * @param {WorldEvent} eventOut Pre-allocated output param.
  * @returns {?WorldEvent} Event if hit, or null.
  */
-HitDetector.prototype.calcHitCircleCircle = function(now, b0, b1) {
+HitDetector.prototype.calcHitCircleCircle = function(now, b0, b1, eventOut) {
   var p0 = b0.getPosAtTime(now, Vec2d.alloc());
   var p1 = b1.getPosAtTime(now, Vec2d.alloc());
 
@@ -51,7 +52,7 @@ HitDetector.prototype.calcHitCircleCircle = function(now, b0, b1) {
   p1.free();
   var e = null;
   if (overlap && 0 < overlap[0] && overlap[0] <= maxDuration) {
-    e = WorldEvent.alloc();
+    e = eventOut;
     e.type = WorldEvent.TYPE_HIT;
     e.time = now + overlap[0];
     e.pathId0 = b0.pathId;
@@ -61,7 +62,14 @@ HitDetector.prototype.calcHitCircleCircle = function(now, b0, b1) {
   return e;
 };
 
-HitDetector.prototype.calcHitRectCircle = function(now, rect, circ) {
+/**
+ * @param {number} now
+ * @param {Body} rect Rectangluar body
+ * @param {Body} circ Circular body
+ * @param {WorldEvent} eventOut Pre-allocated output param.
+ * @returns {?WorldEvent} Event if hit, or null.
+ */
+HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
   var e = null;
   var posRect = rect.getPosAtTime(now, Vec2d.alloc());
   var posCirc = circ.getPosAtTime(now, Vec2d.alloc());
@@ -104,7 +112,7 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ) {
           compassPos, Vec2d.ZERO, 0, 0);
       compassPos[axis] = 0;
       if (edgeOverlapTime && 0 < edgeOverlapTime[0] && edgeOverlapTime[0] <= maxDuration) {
-        e = WorldEvent.alloc();
+        e = eventOut;
         e.type = WorldEvent.TYPE_HIT;
         e.time = now + edgeOverlapTime[0];
         e.pathId0 = rect.pathId;
@@ -159,7 +167,6 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ) {
         pos.x - vSign.x * rect.rectRad.x, cornerPos.y,
         vel.x, vel.y, circ.rad);
     if (overlap && overlap[0] < t) {
-//      debugger;
       t = overlap[0];
       hitCorner.setXY(pos.x - vSign.x * rect.rectRad.x, cornerPos.y);
     }
@@ -184,7 +191,7 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ) {
     edgeCenter.free();
   }
   if (0 < t && t <= maxDuration) {
-    e = WorldEvent.alloc();
+    e = eventOut;
     e.type = WorldEvent.TYPE_HIT;
     e.time = now + t;
     e.pathId0 = rect.pathId;
@@ -205,9 +212,10 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ) {
  * @param {number} now
  * @param {Body} b0 Rectangluar body
  * @param {Body} b1 Rectangluar body
+ * @param {WorldEvent} eventOut Pre-allocated output param.
  * @returns {?WorldEvent} Event if hit, or null.
  */
-HitDetector.prototype.calcHitRectRect = function(now, b0, b1) {
+HitDetector.prototype.calcHitRectRect = function(now, b0, b1, eventOut) {
   var pos0 = b0.getPosAtTime(now, Vec2d.alloc());
   var pos1 = b1.getPosAtTime(now, Vec2d.alloc());
 
@@ -221,7 +229,7 @@ HitDetector.prototype.calcHitRectRect = function(now, b0, b1) {
   pos1.free();
   var e = null;
   if (overlap && 0 < overlap[0] && overlap[0] <= maxDuration) {
-    e = WorldEvent.alloc();
+    e = eventOut;
     e.type = WorldEvent.TYPE_HIT;
     e.time = now + overlap[0];
     e.pathId0 = b0.pathId;

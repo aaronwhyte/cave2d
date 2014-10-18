@@ -148,14 +148,21 @@ World.prototype.validateBodies = function() {
   }
 };
 
+World.prototype.getCellRangeForRect = function(rect, range) {
+  range.p0.setXY(
+      this.cellCoord(rect.pos.x - rect.rad.x),
+      this.cellCoord(rect.pos.y - rect.rad.y));
+  range.p1.setXY(
+      this.cellCoord(rect.pos.x + rect.rad.x),
+      this.cellCoord(rect.pos.y + rect.rad.y));
+  return range;
+};
+
 World.prototype.addPathToGrid = function(body) {
   var brect = body.getBoundingRectAtTime(this.now, Rect.alloc());
-  var ix0 = this.cellCoord(brect.pos.x - brect.rad.x);
-  var iy0 = this.cellCoord(brect.pos.y - brect.rad.y);
-  var ix1 = this.cellCoord(brect.pos.x + brect.rad.x);
-  var iy1 = this.cellCoord(brect.pos.y + brect.rad.y);
-  for (var iy = iy0; iy <= iy1; iy++) {
-    for (var ix = ix0; ix <= ix1; ix++) {
+  var range = this.getCellRangeForRect(brect, CellRange.alloc());;
+  for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
+    for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
       var cell = this.getCell(ix, iy);
       if (!cell) {
         cell = this.setCell(Cell.alloc(this.getGroupCount()), ix, iy);
@@ -163,6 +170,7 @@ World.prototype.addPathToGrid = function(body) {
       this.addPathToCell(body, cell);
     }
   }
+  range.free();
   brect.free();
 };
 
@@ -171,21 +179,24 @@ World.prototype.getGroupCount = function() {
 };
 
 World.prototype.addPathToCell = function(body, cell) {
+  var nextEvent = WorldEvent.alloc();
   var group = body.hitGroup;
   var pathIdSet = cell.getPathIdSetForGroup(group);
   for (var pathId in pathIdSet) {
     var otherBody = this.paths[pathId];
     if (otherBody && otherBody.pathId == pathId) {
-      var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody);
+      var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
       if (hitEvent) {
+        // Add the existing event and allocate the next one.
         this.queue.add(hitEvent);
+        nextEvent = WorldEvent.alloc();
       }
     } else {
       cell.removePathIdFromGroup(pathId, group);
     }
   }
-  cell.addPathIdToGroup(body.pathId, body.hitGroup);
-
+  cell.addPathIdToGroup(body.pathId, group);
+  nextEvent.free();
 };
 
 /**
@@ -194,10 +205,12 @@ World.prototype.addPathToCell = function(body, cell) {
  * @param {Body} body
  * @param {String} eventType WorldEvent TYPE const.
  * @param {String} axis The axis along which the object travels (not the axis it crosses)
+ * @param {WorldEvent} eventOut
+ * @return eventOut if there is an event, or null otherwise.
  */
-World.prototype.addFirstGridEvent = function(body, eventType, axis) {
+World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
   var v = body.vel;
-  if (!v[axis]) return;
+  if (!v[axis]) return null;
   var perp = Vec2d.otherAxis(axis);
 
   // Calculate the leading/trailing point "p" on the moving bounding rect.
@@ -214,11 +227,12 @@ World.prototype.addFirstGridEvent = function(body, eventType, axis) {
   var c = Vec2d.alloc().set(p).roundToGrid(World.CELL_SIZE);
 
   // Calculate crossing times
+  var e = null;
   var t = this.now + (c[axis] + 0.5 * vSign[axis] * World.CELL_SIZE - p[axis]) / v[axis];
   if (t < this.now) {
-    console.error("oh crap", t, this.now);
+    console.error("oh crap, grid event time < now:", t, this.now);
   } else if (t <= body.getPathEndTime()) {
-    var e = WorldEvent.alloc();
+    e = eventOut;
     e.type = eventType;
     e.axis = axis;
     e.time = t;
@@ -231,12 +245,28 @@ World.prototype.addFirstGridEvent = function(body, eventType, axis) {
     body.getBoundingRectAtTime(t, rect);
     e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
     e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
-    this.queue.add(e);
   }
   c.free();
   p.free();
   vSign.free();
   rect.free();
+  return e;
+};
+
+/**
+ * Checks to see if the body's path will enter/exit a CellRange
+ * before the path expires, and allocates and adds the event if so.
+ * @param {Body} body
+ * @param {String} eventType WorldEvent TYPE const.
+ * @param {String} axis The axis along which the object travels (not the axis it crosses)
+ */
+World.prototype.addFirstGridEvent = function(body, eventType, axis) {
+  var event = WorldEvent.alloc();
+  if (this.getFirstGridEvent(body, eventType, axis, event)) {
+    this.queue.add(event);
+  } else {
+    event.free();
+  }
 };
 
 World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
@@ -340,5 +370,109 @@ World.prototype.addTimeout = function(time, spiritId, vals) {
   // TODO e.vals
   this.queue.add(e);
 };
-//- removeTimeout
-//(later: rayscans)
+
+// TODO removeTimeout
+
+/**
+ * Performs an immediate rayscan. If there's a hit, this will return true,
+ * and the response will be populated. Otherwise it will be untouched.
+ * @param {ScanRequest} req Input param
+ * @param {ScanResponse} resp Output param.
+ * @return {boolean} true if there's a hit, false if not.
+ */
+World.prototype.rayscan = function(req, resp) {
+  this.validateBodies();
+  var foundHit = false;
+
+  // Create a Body based on the ScanRequest.
+  var b = Body.alloc();
+  b.hitGroup = req.hitGroup;
+  b.setPosAtTime(req.pos, this.now);
+  b.vel.set(req.vel);
+  b.shape = req.shape;
+  b.rad = req.rad;
+  b.rectRad.set(req.rectRad);
+  b.pathDurationMax = 1;
+
+  // allocs
+  var rect = Rect.alloc();
+  var range = CellRange.alloc();
+  var hitEvent = WorldEvent.alloc();
+  var xEvent = WorldEvent.alloc();
+  var yEvent = WorldEvent.alloc();
+
+  // The hitEvent will always be the earliest hit, because every time a hit is found,
+  // the body's pathDurationMax is ratcheted down to the hit time. So only
+  // earlier hits will be discovered afterwards.
+  hitEvent.time = this.now + b.pathDurationMax + 1; // effective infinity
+
+  // Examine the body's starting cells.
+  b.getBoundingRectAtTime(this.now, rect);
+  this.getCellRangeForRect(rect, range);
+  if (this.getRayscanHit(b, range, hitEvent)) {
+    foundHit = true;
+  }
+
+  // Calc the initial grid-enter events
+  xEvent.time = yEvent.time = this.now + b.pathDurationMax + 1; // effective infinity
+
+  this.getFirstGridEvent(b, WorldEvent.TYPE_GRID_ENTER, Vec2d.X, xEvent);
+  this.getFirstGridEvent(b, WorldEvent.TYPE_GRID_ENTER, Vec2d.Y, yEvent);
+
+  // Process the earliest grid-enter event and generate the next one,
+  // until they're later than the max time.
+  var maxTime = this.now + b.pathDurationMax;
+  while (xEvent.time <  maxTime || yEvent.time < maxTime) {
+    if (xEvent.time < yEvent.time) {
+      if (this.getRayscanHit(b, xEvent.cellRange, hitEvent)) {
+        foundHit = true;
+        // TODO xEvent = getSubsequentGridEvent
+      }
+    } else {
+      if (this.getRayscanHit(b, yEvent.cellRange, hitEvent)) {
+        foundHit = true;
+        // TODO yEvent = getSubsequentGridEvent
+      }
+    }
+    maxTime = this.now + b.pathDurationMax;
+  }
+  
+  // TODO if foundHit, copy hitEvent fields out to resp.
+
+  rect.free();
+  range.free();
+  hitEvent.free();
+  xEvent.free();
+  yEvent.free();
+};
+
+/**
+ * Gets the earliest hit between a Body and all the bodies in a CellRange.
+ * Side effect: The input body's pathDurationMax will shrink to the hit time.
+ * @param {Body} body
+ * @param {CellRange} range
+ * @param {WorldEvent} eventOut
+ * @returns {?WorldEvent} eventOut if there was a hit, or null otherwise.
+ */
+World.prototype.getRayscanHit = function(body, range, eventOut) {
+  var retval = null;
+  for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
+    for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
+      var cell = this.getCell(ix, iy);
+      if (cell) {
+        var pathIdSet = cell.getPathIdSetForGroup(body.hitGroup);
+        for (var pathId in pathIdSet) {
+          var otherBody = this.paths[pathId];
+          if (otherBody && otherBody.pathId == pathId) {
+            if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
+              retval = eventOut;
+              // Tighten the duration max. There's no point in looking for later hits, just earlier ones.
+              body.pathDurationMax = eventOut.time - this.now;
+            }
+          }
+        }
+      }
+    }
+  }
+  return retval;
+};

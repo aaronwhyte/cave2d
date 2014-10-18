@@ -226,6 +226,35 @@ v Test 9: Bodies animated by a spirit, using timeouts
 #### MILESTONE: fully functional physics for aarects and circles
 #### STATUS: DONE 2014-10-12
 
+Rayscan
+API?
+world.rayscan(hitGroup, startPos, endOffset, shape, rad, rectRad)
+returns a WorldEvent? No. Separate RayScanResult thingy, allocated by client
+...
+- world.rayscan(request, result);
+v RayscanRequest has that stuff: hitGroup, startPos, endOffset, shape, and one of rad, or rectRad.
+- RayscanResult: is like a WorldEvent a little:
+
+Controller
+- aim
+  - touch
+  - arrows
+  - pointerlock?
+- buttons
+  - touch area
+  - keyboard
+
+Android browser initial zoom
+
+Editor Skeleton
+- nav/wall/air mode switch
+v pointer-based grid editing
+  v circles at each event
+  v touch
+  v continuity between event points on drag
+  v mouse
+- drag-based panning
+
 Make a maze and play it.
 Terrain URL
 v port stuff
@@ -242,15 +271,6 @@ Game UI Nav
 - start player with data D
 - start editor with data D
 
-Editor Skeleton
-v screen-to-world trans
-- nav/wall/air mode switch?
-v pointer-based grid editing
-  v circles at each event
-  v touch
-  v continuity between event points on drag
-  v mouse
-- drag-based panning
 
 overlap
 - rect/rect
