@@ -87,13 +87,14 @@ World.prototype.addSpirit = function(spirit) {
 World.prototype.addBody = function(body) {
   body.id = this.newId();
 
-  // Hook the path invalidator into the body. A wee bit hacky.
-  body.invalidBodies = this.invalidBodies;
-
   // Add it to the bodies index and to the invalid bodies index.
   // The next time the clock moves forward, the invalid body will be addressed.
   this.bodies[body.id] = body;
-  this.invalidBodies[body.id] = body;
+
+  // Hook the path invalidator into the body. A wee bit hacky.
+  body.invalidBodies = this.invalidBodies;
+  body.invalidatePath();
+
   return body.id;
 };
 
@@ -160,7 +161,7 @@ World.prototype.getCellRangeForRect = function(rect, range) {
 
 World.prototype.addPathToGrid = function(body) {
   var brect = body.getBoundingRectAtTime(this.now, Rect.alloc());
-  var range = this.getCellRangeForRect(brect, CellRange.alloc());;
+  var range = this.getCellRangeForRect(brect, CellRange.alloc());
   for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
       var cell = this.getCell(ix, iy);
@@ -206,7 +207,7 @@ World.prototype.addPathToCell = function(body, cell) {
  * @param {String} eventType WorldEvent TYPE const.
  * @param {String} axis The axis along which the object travels (not the axis it crosses)
  * @param {WorldEvent} eventOut
- * @return eventOut if there is an event, or null otherwise.
+ * @return {?WorldEvent} if there is an event, or null otherwise.
  */
 World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
   var v = body.vel;
@@ -269,11 +270,19 @@ World.prototype.addFirstGridEvent = function(body, eventType, axis) {
   }
 };
 
-World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
+/**
+ * Checks to see if the body's path will enter/exit a CellRange
+ * before the path expires, and allocates and adds the event if so.
+ * @param {Body} body
+ * @param {WorldEvent} prevEvent The grid event before this one.
+ * @param {WorldEvent} eventOut
+ * @return {?WorldEvent} if there is an event, or null otherwise.
+ */
+World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
   var axis = prevEvent.axis;
   var eventType = prevEvent.type;
   var v = body.vel;
-  if (!v[axis]) return;
+  if (!v[axis]) return null;
   var perp = Vec2d.otherAxis(axis);
 
   var vSign = Vec2d.alloc().set(v).sign();
@@ -287,10 +296,11 @@ World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
     dest = (nextCellIndex + 0.5 * vSign[axis]) * World.CELL_SIZE + rad;
   }
   var t = body.pathStartTime + (dest - body.pathStartPos[axis]) / v[axis];
+  var e = null;
   if (t < this.now) {
     console.error("oh crap", t, this.now);
   } else if (t <= body.getPathEndTime()) {
-    var e = WorldEvent.alloc();
+    e = eventOut;
     e.type = eventType;
     e.axis = axis;
     e.time = t;
@@ -304,9 +314,18 @@ World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
     e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
     e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
     rect.free();
-    this.queue.add(e);
   }
   vSign.free();
+  return e;
+};
+
+World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
+  var event = WorldEvent.alloc();
+  if (this.getSubsequentGridEvent(body, prevEvent, event)) {
+    this.queue.add(event);
+  } else {
+    event.free();
+  }
 };
 
 World.prototype.getNextEvent = function() {
@@ -353,6 +372,7 @@ World.prototype.processNextEvent = function() {
 
   } else if (e.type === WorldEvent.TYPE_HIT) {
     // Let the game handle it.
+
   } else if (e.type === WorldEvent.TYPE_TIMEOUT) {
     var spirit = this.spirits[e.spiritId];
     if (spirit) {
@@ -422,28 +442,50 @@ World.prototype.rayscan = function(req, resp) {
   // Process the earliest grid-enter event and generate the next one,
   // until they're later than the max time.
   var maxTime = this.now + b.pathDurationMax;
+  var eventOut = WorldEvent.alloc();
+  var tmp;
   while (xEvent.time <  maxTime || yEvent.time < maxTime) {
     if (xEvent.time < yEvent.time) {
       if (this.getRayscanHit(b, xEvent.cellRange, hitEvent)) {
         foundHit = true;
-        // TODO xEvent = getSubsequentGridEvent
+      }
+      if (this.getSubsequentGridEvent(b, xEvent, eventOut)) {
+        tmp = xEvent;
+        xEvent = eventOut;
+        eventOut = tmp;
+      } else {
+        // Push event out of range.
+        xEvent.time = maxTime + 1;
       }
     } else {
       if (this.getRayscanHit(b, yEvent.cellRange, hitEvent)) {
         foundHit = true;
-        // TODO yEvent = getSubsequentGridEvent
+      }
+      if (this.getSubsequentGridEvent(b, yEvent, eventOut)) {
+        tmp = yEvent;
+        yEvent = eventOut;
+        eventOut = tmp;
+      } else {
+        // Push event out of range.
+        yEvent.time = maxTime + 1;
       }
     }
+    // lower maxTime
     maxTime = this.now + b.pathDurationMax;
   }
-  
-  // TODO if foundHit, copy hitEvent fields out to resp.
 
+  if (foundHit) {
+    // The request body's pathId is 0, so take the non-zero one.
+    resp.pathId = hitEvent.pathId0 || hitEvent.pathId1;
+    resp.timeOffset = hitEvent.time - this.now;
+    resp.collisionVec.set(hitEvent.collisionVec);
+  }
   rect.free();
   range.free();
   hitEvent.free();
   xEvent.free();
   yEvent.free();
+  return foundHit;
 };
 
 /**

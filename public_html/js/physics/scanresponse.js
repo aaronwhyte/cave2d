@@ -8,7 +8,7 @@ function ScanResponse() {
 }
 
 ScanResponse.prototype.reset = function() {
-  this.time = 0;
+  this.timeOffset = 0; // zero to one
   this.pathId = 0;
   this.collisionVec.reset();
 };

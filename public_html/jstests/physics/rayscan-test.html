@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>rayscan test</title>
+<script src="../../js/strings.js"></script>
+<script src="../../js/testing.js"></script>
+<script src="../../js/math.js"></script>
+<script src="../../js/poolify.js"></script>
+<script src="../../js/vec2d.js"></script>
+<script src="../../js/rect.js"></script>
+<script src="../../js/skipqueue.js"></script>
+
+<script src="../../js/physics/cell.js"></script>
+<script src="../../js/physics/body.js"></script>
+<script src="../../js/physics/cellrange.js"></script>
+<script src="../../js/physics/hitdetector.js"></script>
+<script src="../../js/physics/spirit.js"></script>
+<script src="../../js/physics/world.js"></script>
+<script src="../../js/physics/worldevent.js"></script>
+<script src="../../js/physics/scanrequest.js"></script>
+<script src="../../js/physics/scanresponse.js"></script>
+<script>
+
+addTest(function defaultRayscanEmptyWorld() {
+  var world = new World();
+  var request = new ScanRequest();
+  var response = new ScanResponse();
+  var json1 = JSON.stringify(response);
+  assertEquals(false, world.rayscan(request, response));
+  assertEquals(json1, JSON.stringify(response));
+});
+
+addTest(function longRayscanEmptyWorld() {
+  var world = new World();
+  var request = new ScanRequest();
+  request.hitGroup = 1;
+  request.vel.setXY(1000, 2000);
+  var response = new ScanResponse();
+  var json1 = JSON.stringify(response);
+  assertEquals(false, world.rayscan(request, response));
+  assertEquals(json1, JSON.stringify(response));
+});
+
+addTest(function rayscanHit() {
+  var world = new World();
+
+  var body = new Body();
+  body.hitGroup = 1;
+  body.setPosAtTime(new Vec2d(12, 0), world.now);
+  var bodyId = world.addBody(body);
+
+  var request = new ScanRequest();
+  request.hitGroup = 1;
+  request.vel.setXY(20, 0);
+  var response = new ScanResponse();
+  var isHit = world.rayscan(request, response);
+  assertTrue(isHit);
+  assertEquals(body, world.getBodyByPathId(response.pathId));
+  assertEquals(0.5, response.timeOffset);
+});
+
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>

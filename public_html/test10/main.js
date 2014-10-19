@@ -2,16 +2,16 @@ var canvas, ctx, viewport, camera;
 
 var pointers = {};
 
+var raySpirit;
+
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
 var OBJ_COUNT = 100;
 var RECT_CHANCE = 0.2;
-var MAX_CLOCKS_PER_ANIMATION = 0.15;
+var MAX_CLOCKS_PER_ANIMATION = 0.02;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
-var DRAW_GRID_EVENTS = false;
+var DRAW_GRID_EVENTS = true;
 var SPACING = 30;
-
-var testSpirit;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -120,9 +120,6 @@ var world, resolver;
 function initWorld() {
   world = new World();
   resolver = new HitResolver();
-  testSpirit = new TestSpirit();
-  var spiritId = world.addSpirit(testSpirit);
-  world.addTimeout(0.1, spiritId, null);
   var v = Vec2d.alloc();
   var sqrt = Math.sqrt(OBJ_COUNT);
   for (var x = -sqrt/2; x < sqrt/2; x++) {
@@ -137,34 +134,47 @@ function initWorld() {
                 (0.2 + Math.random()) * SPACING/2);
         b.mass = Infinity;
         b.pathDurationMax = Infinity;
+        world.addBody(b);
       } else {
         v.setXY(Math.random() - 0.5, Math.random() - 0.5);
         b.setVelAtTime(v, 1);
         b.shape = Body.Shape.CIRCLE;
         b.rad = 1 + Math.random() * 4;
         b.mass = Math.PI * b.rad * b.rad;
-        b.pathDurationMax = TestSpirit.TIMEOUT;
+        b.pathDurationMax = TestSpirit.TIMEOUT;// * 2;
+        var bodyId = world.addBody(b);
+
+        var spirit = new TestSpirit();
+        var spiritId = world.addSpirit(spirit);
+        spirit.bodyId = bodyId;
+        b.spiritId = spiritId;
+        world.addTimeout(TestSpirit.TIMEOUT, spiritId, null);
       }
-      b.spiritId = spiritId;
-      world.addBody(b);
     }
   }
+
   b = Body.alloc();
-  v.setXY(-sqrt/2 * SPACING - 300, 0);
+  v.setXY(-sqrt/2 * SPACING - 10, -sqrt/2 * SPACING - 10);
   b.setPosAtTime(v, 1);
   v.setXY(20, 0);
   b.setVelAtTime(v, 1);
 
   b.shape = Body.Shape.RECT;
-  b.rectRad.setXY(SPACING * 0.6, SPACING * 0.6);
+  b.rectRad.setXY(SPACING * 0.4, SPACING * 0.4);
   b.mass = 4 * b.rectRad.x * b.rectRad.y;
-
 //  b.shape = Body.Shape.CIRCLE;
 //  b.rad = SPACING * 0.6;
 //  b.mass = Math.PI * b.rad * b.rad;
-//
-  b.pathDurationMax = TestSpirit.TIMEOUT;
-  world.addBody(b);
+  b.pathDurationMax = RaySpirit.TIMEOUT;// * 2;
+
+  bodyId = world.addBody(b);
+
+  spirit = new RaySpirit();
+  spiritId = world.addSpirit(spirit);
+  spirit.bodyId = bodyId;
+  raySpirit = spirit;
+  b.spiritId = spiritId;
+  world.addTimeout(RaySpirit.TIMEOUT, spiritId, null);
 
   Vec2d.free(v);
 }
@@ -175,11 +185,19 @@ function drawBody(b, now) {
     ctx.beginPath();
     ctx.arc(p.x, p.y, b.rad, 0, Math.PI * 2);
     ctx.fill();
-//    ctx.stroke();
   } else if (b.shape == Body.Shape.RECT) {
     ctx.fillRect(p.x - b.rectRad.x, p.y - b.rectRad.y, b.rectRad.x * 2, b.rectRad.y * 2);
   }
   p.free();
+}
+
+function drawRayHits() {
+  for (var i = 0; i < raySpirit.hitPos.length; i++) {
+    var p = raySpirit.hitPos[i];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, RaySpirit.RAY_RADUIS, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function drawCell(ix, iy) {
@@ -198,7 +216,7 @@ function drawCellRange(cr) {
 
 function clockAndDraw() {
   var endTimeMs = Date.now() + MAX_TIME_PER_FRAME_MS;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.fillStyle = 'rgb(0, 0, 0)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   viewport.transform(ctx);
@@ -219,6 +237,10 @@ function clockAndDraw() {
       }
     }
   }
+
+  ctx.strokeStyle = ctx.fillStyle = 'rgb(255, 000, 0)';
+  drawRayHits();
+
   var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
   var e = world.getNextEvent();
   while (e && e.time <= maxClock && Date.now() <= endTimeMs) {
