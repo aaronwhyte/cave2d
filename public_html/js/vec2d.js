@@ -10,6 +10,7 @@ function Vec2d(x, y) {
 Vec2d.prototype.reset = function(x, y) {
   this.x = x || 0;
   this.y = y || 0;
+  return this;
 };
 
 Vec2d.X = 'x';
@@ -23,7 +24,23 @@ Vec2d.otherAxis = function(axis) {
   return axis === Vec2d.X ? Vec2d.Y : Vec2d.X;
 };
 
-Poolify(Vec2d);
+// Vec2d gets a custom pool implementation,
+// since the poolify'd alloc was taking too munh time.
+Vec2d.pool = [];
+Vec2d.alloc = function(x, y) {
+  if (Vec2d.pool.length) {
+    return Vec2d.pool.pop().reset();
+  }
+  return new Vec2d(x, y);
+};
+
+Vec2d.prototype.free = function() {
+  Vec2d.pool.push(this);
+};
+
+Vec2d.free = function(vec) {
+  vec.free();
+};
 
 Vec2d.prototype.add = function(v) {
   this.x += v.x;
