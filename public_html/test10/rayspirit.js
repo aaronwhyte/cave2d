@@ -15,7 +15,7 @@ RaySpirit.TIMEOUT = 0.1;
 RaySpirit.prototype = new Spirit();
 RaySpirit.prototype.constructor = RaySpirit;
 
-RaySpirit.RAY_COUNT = 60;
+RaySpirit.RAY_COUNT = 30;
 RaySpirit.RAY_LENGTH = 100;
 RaySpirit.RAY_RADUIS = 2;
 
