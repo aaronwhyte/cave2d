@@ -6,7 +6,7 @@ var raySpirit;
 
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
-var OBJ_COUNT = 40;
+var OBJ_COUNT = 60;
 var RECT_CHANCE = 0.2;
 var MAX_CLOCKS_PER_ANIMATION = RaySpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
