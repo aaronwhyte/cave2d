@@ -10,13 +10,13 @@ function RaySpirit() {
   this.hitPos = [];
 }
 
-RaySpirit.TIMEOUT = 0.05;
+RaySpirit.TIMEOUT = 0.1;
 
 RaySpirit.prototype = new Spirit();
 RaySpirit.prototype.constructor = RaySpirit;
 
 RaySpirit.RAY_COUNT = 60;
-RaySpirit.RAY_LENGTH = 200;
+RaySpirit.RAY_LENGTH = 100;
 RaySpirit.RAY_RADUIS = 2;
 
 RaySpirit.prototype.onTimeout = function(world, timeout) {
@@ -27,10 +27,11 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
 
   var b = world.bodies[this.bodyId];
   if (b && b.mass != Infinity) {
-    this.vec.set(b.vel).rot(0.6 * (Math.random() - 0.5));
-    this.vec.scale(Math.random() + 0.44);
-    if (this.vec.magnitudeSquared() < 0.05) {
-      b.getPosAtTime(timeout.time, this.vec).scaleToLength(-Math.random() * 10 - 5);
+    this.vec.set(b.vel).rot(0.2 * (Math.random() - 0.5));
+    this.vec.scale(0.98);
+    if (this.vec.magnitudeSquared() < 2) {
+      b.getPosAtTime(timeout.time, this.vec).scaleToLength(-Math.random() * 10 - 5).
+          rot(3 * (Math.random() - 0.5));
     }
     b.setVelAtTime(this.vec, world.now);
 

@@ -506,11 +506,13 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
         for (var pathId in pathIdSet) {
           var otherBody = this.paths[pathId];
           if (otherBody && otherBody.pathId == pathId) {
+            otherBody.freezeAtTime(world.now);
             if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
               retval = eventOut;
               // Tighten the duration max. There's no point in looking for later hits, just earlier ones.
               body.pathDurationMax = eventOut.time - this.now;
             }
+            otherBody.unfreeze();
           }
         }
       }

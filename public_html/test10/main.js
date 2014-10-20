@@ -8,9 +8,9 @@ var ANIMATE = true;
 var ADJUST_CAMERA = true;
 var OBJ_COUNT = 100;
 var RECT_CHANCE = 0.2;
-var MAX_CLOCKS_PER_ANIMATION = 0.02;
+var MAX_CLOCKS_PER_ANIMATION = RaySpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
-var DRAW_GRID_EVENTS = true;
+var DRAW_GRID_EVENTS = false;
 var SPACING = 30;
 
 function main() {
@@ -154,13 +154,13 @@ function initWorld() {
   }
 
   b = Body.alloc();
-  v.setXY(-sqrt/2 * SPACING - 10, -sqrt/2 * SPACING - 10);
+  v.setXY(-sqrt/2 * SPACING - 50, -sqrt/2 * SPACING - 50);
   b.setPosAtTime(v, 1);
   v.setXY(20, 0);
   b.setVelAtTime(v, 1);
 
   b.shape = Body.Shape.RECT;
-  b.rectRad.setXY(SPACING * 0.4, SPACING * 0.4);
+  b.rectRad.setXY(SPACING * 0.3, SPACING * 0.3);
   b.mass = 4 * b.rectRad.x * b.rectRad.y;
 //  b.shape = Body.Shape.CIRCLE;
 //  b.rad = SPACING * 0.6;
@@ -192,12 +192,18 @@ function drawBody(b, now) {
 }
 
 function drawRayHits() {
+  var center = world.bodies[raySpirit.bodyId].getPosAtTime(world.now, Vec2d.alloc());
   for (var i = 0; i < raySpirit.hitPos.length; i++) {
     var p = raySpirit.hitPos[i];
     ctx.beginPath();
     ctx.arc(p.x, p.y, RaySpirit.RAY_RADUIS, 0, Math.PI * 2);
     ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
   }
+  center.free();
 }
 
 function drawCell(ix, iy) {
@@ -224,6 +230,9 @@ function clockAndDraw() {
 
   ctx.lineWidth = 0.4;
 
+  ctx.strokeStyle = ctx.fillStyle = 'rgb(255, 0, 0)';
+  drawRayHits();
+
   ctx.strokeStyle = ctx.fillStyle = 'rgb(255, 255, 255)';
   for (var id in world.bodies) {
     var b = world.bodies[id];
@@ -237,9 +246,6 @@ function clockAndDraw() {
       }
     }
   }
-
-  ctx.strokeStyle = ctx.fillStyle = 'rgb(255, 000, 0)';
-  drawRayHits();
 
   var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
   var e = world.getNextEvent();

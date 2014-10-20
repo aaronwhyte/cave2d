@@ -8,6 +8,10 @@ function Body() {
   this.pathStartPos = new Vec2d();
   this.vel = new Vec2d();
   this.rectRad = new Vec2d();
+
+  this.freezePathStartPos = new Vec2d();
+  this.freezeVel = new Vec2d();
+
   this.reset();
 }
 
@@ -51,6 +55,12 @@ Body.prototype.reset = function() {
   // data for the basic "bounce" collision response
   this.mass = 1;
   this.elasticity = 1;
+
+  // cache for rayscan freeze-unfreeze
+  this.freezePathStartPos.reset();
+  this.freezeVel.reset();
+  this.freezePathStartTime = 0;
+  this.freezePathDurationMax = 0;
 };
 
 /**
@@ -121,4 +131,29 @@ Body.prototype.moveToTime = function(t) {
 
 Body.prototype.getPathEndTime = function() {
   return this.pathStartTime + this.pathDurationMax;
+};
+
+/**
+ * Freezes a body at a certain time, so it can be rayscanned.
+ * @param time
+ */
+Body.prototype.freezeAtTime = function(time) {
+  this.freezePathStartPos.set(this.pathStartPos);
+  this.freezeVel.set(this.vel);
+  this.freezePathStartTime = this.pathStartTime;
+  this.freezePathDurationMax = this.pathDurationMax;
+
+  // update pathStartTime and pathStartPos
+  this.moveToTime(time);
+  // stop in place
+  this.vel.setXY(0, 0);
+  // rayscans have a pathDurationMax of 1, so this doesn't need anything higher.
+  this.pathDurationMax = 1;
+};
+
+Body.prototype.unfreeze = function() {
+  this.pathStartPos.set(this.freezePathStartPos);
+  this.vel.set(this.freezeVel);
+  this.pathStartTime = this.freezePathStartTime;
+  this.pathDurationMax = this.freezePathDurationMax;
 };
