@@ -7,11 +7,11 @@ var raySpirit;
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
 var OBJ_COUNT = 25;
-var RECT_CHANCE = 0.2;
+var RECT_CHANCE = 0.3;
 var MAX_CLOCKS_PER_ANIMATION = RaySpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
-var SPACING = 30;
+var SPACING = 50;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -130,8 +130,8 @@ function initWorld() {
       if (Math.random() < RECT_CHANCE) {
         b.shape = Body.Shape.RECT;
         b.rectRad.setXY(
-                (0.2 + Math.random()) * SPACING/2,
-                (0.2 + Math.random()) * SPACING/2);
+                (0.3 + Math.random()) * SPACING * 0.3,
+                (0.3 + Math.random()) * SPACING * 0.3);
         b.mass = Infinity;
         b.pathDurationMax = Infinity;
         world.addBody(b);
@@ -139,7 +139,7 @@ function initWorld() {
         v.setXY(Math.random() - 0.5, Math.random() - 0.5);
         b.setVelAtTime(v, 1);
         b.shape = Body.Shape.CIRCLE;
-        b.rad = 1 + Math.random() * 4;
+        b.rad = 2 + Math.random() * 4;
         b.mass = Math.PI * b.rad * b.rad;
         b.pathDurationMax = TestSpirit.TIMEOUT;// * 2;
         var bodyId = world.addBody(b);
@@ -156,11 +156,11 @@ function initWorld() {
   b = Body.alloc();
   v.setXY(-sqrt/2 * SPACING - 30, 0);
   b.setPosAtTime(v, 1);
-  v.setXY(20, 0);
+  v.setXY(2, 0);
   b.setVelAtTime(v, 1);
 
   b.shape = Body.Shape.RECT;
-  b.rectRad.setXY(SPACING * 0.3, SPACING * 0.3);
+  b.rectRad.setXY(8, 8);
   b.mass = 4 * b.rectRad.x * b.rectRad.y;
 //  b.shape = Body.Shape.CIRCLE;
 //  b.rad = SPACING * 0.6;
@@ -316,6 +316,6 @@ function adjustCamera(now) {
     }
   }
   z++;
-  camera.setZoom(0.9 / z);
+  camera.setZoom(0.8 / z);
   Vec2d.free(v);
 }

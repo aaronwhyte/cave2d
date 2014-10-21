@@ -7,6 +7,7 @@ function RaySpirit() {
   this.bodyId = -1;
   this.id = -1;
   this.vec = Vec2d.alloc();
+  this.accel = Vec2d.alloc();
   this.hitPos = [];
 }
 
@@ -28,11 +29,7 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
   var b = world.bodies[this.bodyId];
   if (b && b.mass != Infinity) {
     this.vec.set(b.vel).rot(0.2 * (Math.random() - 0.5));
-    this.vec.scale(0.98);
-    if (this.vec.magnitudeSquared() < 2) {
-      b.getPosAtTime(timeout.time, this.vec).scaleToLength(-Math.random() * 10 - 5).
-          rot(3 * (Math.random() - 0.5));
-    }
+    this.vec.scale(0.97);
     b.setVelAtTime(this.vec, world.now);
 
     var req = ScanRequest.alloc();
@@ -42,13 +39,28 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
     b.getPosAtTime(world.now, req.pos);
     var resp = ScanResponse.alloc();
     var aOffset = world.now / 10;
+
+    // gravity
+    b.getPosAtTime(world.now, this.accel).scale(-0.002);
+
     for (var i = 0; i < RaySpirit.RAY_COUNT; i++) {
       var a = Math.PI * 2 * i / RaySpirit.RAY_COUNT;
       req.vel.setXY(0, RaySpirit.RAY_LENGTH).rot(a + aOffset);
       if (world.rayscan(req, resp)) {
         this.hitPos.push(Vec2d.alloc().set(req.vel).scale(resp.timeOffset).add(req.pos));
+        var other = world.getBodyByPathId(resp.pathId);
+        if (other) {
+          if (other.mass == Infinity) {
+            this.accel.add(req.vel.scaleToLength(0.3 * (resp.timeOffset - 0.6)));
+          } else {
+            this.accel.add(req.vel.scaleToLength(0.3 * (2 - resp.timeOffset)));
+          }
+        }
       }
     }
+
+    this.vec.set(b.vel).add(this.accel);
+    b.setVelAtTime(this.vec, world.now);
   }
 
   world.addTimeout(timeout.time + RaySpirit.TIMEOUT, this.id, null);
