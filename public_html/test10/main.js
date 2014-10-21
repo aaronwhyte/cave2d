@@ -6,7 +6,7 @@ var raySpirit;
 
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
-var OBJ_COUNT = 60;
+var OBJ_COUNT = 25;
 var RECT_CHANCE = 0.2;
 var MAX_CLOCKS_PER_ANIMATION = RaySpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
@@ -154,7 +154,7 @@ function initWorld() {
   }
 
   b = Body.alloc();
-  v.setXY(-sqrt/2 * SPACING - 50, -sqrt/2 * SPACING - 50);
+  v.setXY(-sqrt/2 * SPACING - 30, 0);
   b.setPosAtTime(v, 1);
   v.setXY(20, 0);
   b.setVelAtTime(v, 1);
