@@ -236,11 +236,12 @@ v RayscanRequest has that stuff: hitGroup, startPos, endOffset, shape, and one o
 v RayscanResult: is like a WorldEvent a little
 
 Controller
-- aim
+- aimer
   - touch
+    - starting zone
   - arrows
-  - pointerlock?
-- buttons
+  - pointerlock: https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
+- button
   - touch area
   - keyboard
 
