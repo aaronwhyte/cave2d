@@ -1,9 +1,9 @@
 /**
  * An axis-aligned rectangle with a center and an x and y radius (half height and half width)
- * @param {?number} opt_x
- * @param {?number} opt_y
- * @param {?number} opt_rx
- * @param {?number} opt_ry
+ * @param {=number} opt_x
+ * @param {=number} opt_y
+ * @param {=number} opt_rx
+ * @param {=number} opt_ry
  * @constructor
  */
 function Rect(opt_x, opt_y, opt_rx, opt_ry) {
@@ -12,6 +12,12 @@ function Rect(opt_x, opt_y, opt_rx, opt_ry) {
   this.reset(opt_x, opt_y, opt_rx, opt_ry);
 }
 
+/**
+ * @param {=number} opt_x
+ * @param {=number} opt_y
+ * @param {=number} opt_rx
+ * @param {=number} opt_ry
+ */
 Rect.prototype.reset = function(opt_x, opt_y, opt_rx, opt_ry) {
   this.pos.setXY(opt_x || 0 , opt_y || 0);
   this.rad.setXY(opt_rx || 0, opt_ry || 0);
@@ -21,10 +27,10 @@ Rect.prototype.reset = function(opt_x, opt_y, opt_rx, opt_ry) {
 Rect.pool = [];
 
 /**
- * @param {?number} opt_x
- * @param {?number} opt_y
- * @param {?number} opt_rx
- * @param {?number} opt_ry
+ * @param {=number} opt_x
+ * @param {=number} opt_y
+ * @param {=number} opt_rx
+ * @param {=number} opt_ry
  */
 Rect.alloc = function(opt_x, opt_y, opt_rx, opt_ry) {
   if (Rect.pool.length) {
