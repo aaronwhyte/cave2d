@@ -27,6 +27,9 @@ function World() {
   this.now = 1;
 
   this.hitDetector = new HitDetector();
+
+  // cache for rayscans.
+  this.scannedBodyIds = new ArraySet();
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -405,6 +408,7 @@ World.prototype.addTimeout = function(time, spiritId, vals) {
  */
 World.prototype.rayscan = function(req, resp) {
   this.validateBodies();
+  this.scannedBodyIds.reset();
   var foundHit = false;
 
   // Create a Body based on the ScanRequest.
@@ -511,13 +515,16 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
           var pathId = pathIdArray[i];
           var otherBody = this.paths[pathId];
           if (otherBody && otherBody.pathId == pathId) {
-            otherBody.freezeAtTime(world.now);
-            if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
-              retval = eventOut;
-              // Tighten the duration max. There's no point in looking for later hits, just earlier ones.
-              body.pathDurationMax = eventOut.time - this.now;
+            if (!this.scannedBodyIds.contains(otherBody.id)) {
+              this.scannedBodyIds.put(otherBody.id);
+              otherBody.freezeAtTime(world.now);
+              if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
+                retval = eventOut;
+                // Tighten the duration max. There's no point in looking for later hits, just earlier ones.
+                body.pathDurationMax = eventOut.time - this.now;
+              }
+              otherBody.unfreeze();
             }
-            otherBody.unfreeze();
             i++;
           } else {
             pathIdSet.removeIndex(i);
