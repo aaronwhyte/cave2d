@@ -1,12 +1,16 @@
 /**
- * @param {?number} opt_x
- * @param {?number} opt_y
+ * @param {=number} opt_x
+ * @param {=number} opt_y
  * @constructor
  */
 function Vec2d(opt_x, opt_y) {
   this.reset(opt_x, opt_y);
 }
 
+/**
+ * @param {=number} opt_x
+ * @param {=number} opt_y
+ */
 Vec2d.prototype.reset = function(opt_x, opt_y) {
   this.x = opt_x || 0;
   this.y = opt_y || 0;
@@ -15,6 +19,10 @@ Vec2d.prototype.reset = function(opt_x, opt_y) {
 
 Vec2d.pool = [];
 
+/**
+ * @param {=number} opt_x
+ * @param {=number} opt_y
+ */
 Vec2d.alloc = function(opt_x, opt_y) {
   if (Vec2d.pool.length) {
     return Vec2d.pool.pop().reset(opt_x, opt_y);
