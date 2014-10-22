@@ -1,17 +1,35 @@
 /**
- * @param {number=} x
- * @param {number=} y
+ * @param {?number} opt_x
+ * @param {?number} opt_y
  * @constructor
  */
-function Vec2d(x, y) {
-  this.reset(x, y);
+function Vec2d(opt_x, opt_y) {
+  this.reset(opt_x, opt_y);
 }
 
-Vec2d.prototype.reset = function(x, y) {
-  this.x = x || 0;
-  this.y = y || 0;
+Vec2d.prototype.reset = function(opt_x, opt_y) {
+  this.x = opt_x || 0;
+  this.y = opt_y || 0;
   return this;
 };
+
+Vec2d.pool = [];
+
+Vec2d.alloc = function(opt_x, opt_y) {
+  if (Vec2d.pool.length) {
+    return Vec2d.pool.pop().reset(opt_x, opt_y);
+  }
+  return new Vec2d(opt_x, opt_y);
+};
+
+Vec2d.prototype.free = function() {
+  Vec2d.pool.push(this);
+};
+
+Vec2d.free = function(obj) {
+  obj.free();
+};
+
 
 Vec2d.X = 'x';
 Vec2d.Y = 'y';
@@ -22,24 +40,6 @@ Vec2d.ZERO = new Vec2d(0, 0);
 
 Vec2d.otherAxis = function(axis) {
   return axis === Vec2d.X ? Vec2d.Y : Vec2d.X;
-};
-
-// Vec2d gets a custom pool implementation,
-// since the poolify'd alloc was taking too munh time.
-Vec2d.pool = [];
-Vec2d.alloc = function(x, y) {
-  if (Vec2d.pool.length) {
-    return Vec2d.pool.pop().reset();
-  }
-  return new Vec2d(x, y);
-};
-
-Vec2d.prototype.free = function() {
-  Vec2d.pool.push(this);
-};
-
-Vec2d.free = function(vec) {
-  vec.free();
 };
 
 Vec2d.prototype.add = function(v) {

@@ -182,8 +182,10 @@ World.prototype.getGroupCount = function() {
 World.prototype.addPathToCell = function(body, cell) {
   var nextEvent = WorldEvent.alloc();
   var group = body.hitGroup;
-  var pathIdSet = cell.getPathIdSetForGroup(group);
-  for (var pathId in pathIdSet) {
+  var pathIdSet = cell.getPathIdsForGroup(group);
+  var pathIdArray = pathIdSet.vals;
+  for (var i = 0; i < pathIdArray.length;) {
+    var pathId = pathIdArray[i];
     var otherBody = this.paths[pathId];
     if (otherBody && otherBody.pathId == pathId) {
       var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
@@ -192,8 +194,9 @@ World.prototype.addPathToCell = function(body, cell) {
         this.queue.add(hitEvent);
         nextEvent = WorldEvent.alloc();
       }
+      i++;
     } else {
-      cell.removePathIdFromGroup(pathId, group);
+      pathIdSet.removeIndex(i);
     }
   }
   cell.addPathIdToGroup(body.pathId, group);
@@ -502,8 +505,10 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
       var cell = this.getCell(ix, iy);
       if (cell) {
-        var pathIdSet = cell.getPathIdSetForGroup(body.hitGroup);
-        for (var pathId in pathIdSet) {
+        var pathIdSet = cell.getPathIdsForGroup(body.hitGroup);
+        var pathIdArray = pathIdSet.vals;
+        for (var i = 0; i < pathIdArray.length;) {
+          var pathId = pathIdArray[i];
           var otherBody = this.paths[pathId];
           if (otherBody && otherBody.pathId == pathId) {
             otherBody.freezeAtTime(world.now);
@@ -513,6 +518,9 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
               body.pathDurationMax = eventOut.time - this.now;
             }
             otherBody.unfreeze();
+            i++;
+          } else {
+            pathIdSet.removeIndex(i);
           }
         }
       }

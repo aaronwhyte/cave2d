@@ -5,52 +5,45 @@
  * @constructor
  */
 function Cell(groupCount) {
-  this.groupCount = groupCount;
   this.groups = [];
   this.reset(groupCount);
 }
 
 Cell.prototype.reset = function(groupCount) {
-  for (var i = 0; i < this.groupCount; i++) {
+  for (var i = 0; i < groupCount; i++) {
     if (!this.groups[i]) {
-      this.groups[i] = {};
+      this.groups[i] = ArraySet.alloc();
     } else {
-      var group = this.groups[i];
-      for (var key in group) {
-        if (group.hasOwnProperty(key)) {
-          delete group[key];
-        }
-      }
+      this.groups[i].reset();
     }
   }
-  this.groups.length = groupCount;
+  while (this.groups.length > groupCount) {
+    this.groups.pop().free();
+  }
 };
 
 Poolify(Cell);
 
 Cell.prototype.addPathIdToGroup = function(pathId, groupId) {
-  var group = this.groups[groupId];
-  group[pathId] = true;
+  this.groups[groupId].put(pathId);
 };
 
 Cell.prototype.removePathIdFromGroup = function(pathId, groupId) {
-  var group = this.groups[groupId];
-  delete group[pathId];
+  this.groups[groupId].remove(pathId);
 };
 
 /**
- * Returns a map from pathId to boolean "true", to avoid re-formatting overhead.
+ * Returns the internal ArraySet.
  * @param groupId
- * @returns {Object}
+ * @returns {ArraySet}
  */
-Cell.prototype.getPathIdSetForGroup = function(groupId) {
+Cell.prototype.getPathIdsForGroup = function(groupId) {
   return this.groups[groupId];
 };
 
-Cell.prototype.isEmpty = function(world) {
-  for (var i = 0; i < this.groupCount; i++) {
-    var group = this.groups[i];
-    for (var pathId in group) {
+Cell.prototype.isEmpty = function() {
+  for (var i = 0; i < this.groups.length; i++) {
+    if (this.groups[i].isEmpty()) {
       return false;
     }
   }
