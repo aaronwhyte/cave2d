@@ -7,7 +7,7 @@ var raySpirit;
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
 var OBJ_COUNT = 36;
-var RECT_CHANCE = 0.3;
+var RECT_CHANCE = 0.4;
 var MAX_CLOCKS_PER_ANIMATION = RaySpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
@@ -160,7 +160,7 @@ function initWorld() {
   b.setVelAtTime(v, 1);
 
   b.shape = Body.Shape.RECT;
-  b.rectRad.setXY(8, 8);
+  b.rectRad.setXY(6, 6);
   b.mass = 4 * b.rectRad.x * b.rectRad.y;
 //  b.shape = Body.Shape.CIRCLE;
 //  b.rad = SPACING * 0.6;
