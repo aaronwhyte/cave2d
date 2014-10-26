@@ -21,6 +21,7 @@ RaySpirit.TIMEOUT = 0.05;
 RaySpirit.prototype = new Spirit();
 RaySpirit.prototype.constructor = RaySpirit;
 
+RaySpirit.ROAM_DIST = 150;
 RaySpirit.RAY_COUNT = 10;
 RaySpirit.RAY_LENGTH = 100;
 RaySpirit.RAY_RADUIS = 2;
@@ -36,12 +37,12 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
     this.vec.set(b.vel);
     var speed = this.vec.magnitude();
 
-//    if (speed < 5) {
-//      this.vec.scaleToLength(10);
-//      this.vec.rot(Math.random() - 0.5);
-//    } else {
-      this.vec.scale(0.97);
-//    }
+    if (speed < 5) {
+      this.vec.scale(2);
+      this.vec.rot(Math.random() - 0.5);
+    } else {
+      this.vec.scale(0.95);
+    }
     b.setVelAtTime(this.vec, world.now);
 
     var req = ScanRequest.alloc();
@@ -52,7 +53,7 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
     var resp = ScanResponse.alloc();
 
     // return to base?
-    if (req.pos.magnitude() > 200) {
+    if (req.pos.magnitude() > RaySpirit.ROAM_DIST) {
       this.mode = RaySpirit.MODE_RETURN;
     }
 
@@ -63,7 +64,7 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
     speed = b.vel.magnitude();
     var closest = 2;
     for (var i = 0; i < RaySpirit.RAY_COUNT; i++) {
-      var a = Math.PI * i / RaySpirit.RAY_COUNT - 0.5 * Math.PI;
+      var a = 0.8 * Math.PI * (i / RaySpirit.RAY_COUNT - 0.5);
       req.vel.set(b.vel).scaleToLength(RaySpirit.RAY_LENGTH).rot(a);
       if (world.rayscan(req, resp)) {
         this.hitPos.push(Vec2d.alloc().set(req.vel).scale(resp.timeOffset).add(req.pos));
@@ -72,7 +73,8 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
           if (other.mass == Infinity) {
             // there's a wall
             this.mode = RaySpirit.MODE_ATTACK;
-            if (resp.timeOffset < 0.5) {
+            var dist = resp.timeOffset * RaySpirit.RAY_LENGTH - b.rad;
+            if (dist < speed * RaySpirit.TIMEOUT * 20) {
               this.vec.set(req.vel).scaleToLength(1 - resp.timeOffset + 0.1)
                   .scale(-0.4);
               this.accel.add(this.vec);

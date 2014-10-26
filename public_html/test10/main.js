@@ -7,11 +7,11 @@ var raySpirit;
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
 var OBJ_COUNT = 36;
-var RECT_CHANCE = 0.4;
+var RECT_CHANCE = 0.6;
 var MAX_CLOCKS_PER_ANIMATION = RaySpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
-var SPACING = 40;
+var SPACING = 60;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -139,7 +139,7 @@ function initWorld() {
         v.setXY(Math.random() - 0.5, Math.random() - 0.5);
         b.setVelAtTime(v, 1);
         b.shape = Body.Shape.CIRCLE;
-        b.rad = 2 + Math.random() * 4;
+        b.rad = 2 + Math.random() * 3;
         b.mass = Math.PI * b.rad * b.rad;
         b.pathDurationMax = TestSpirit.TIMEOUT;// * 2;
         var bodyId = world.addBody(b);
@@ -154,17 +154,17 @@ function initWorld() {
   }
 
   b = Body.alloc();
-  v.setXY(-sqrt/2 * SPACING - 30, 0);
+  v.setXY(-sqrt/2 * SPACING - 50, 0);
   b.setPosAtTime(v, 1);
   v.setXY(2, 0);
   b.setVelAtTime(v, 1);
 
-  b.shape = Body.Shape.RECT;
-  b.rectRad.setXY(6, 6);
-  b.mass = 4 * b.rectRad.x * b.rectRad.y;
-//  b.shape = Body.Shape.CIRCLE;
-//  b.rad = SPACING * 0.6;
-//  b.mass = Math.PI * b.rad * b.rad;
+//  b.shape = Body.Shape.RECT;
+//  b.rectRad.setXY(6, 6);
+//  b.mass = 4 * b.rectRad.x * b.rectRad.y;
+  b.shape = Body.Shape.CIRCLE;
+  b.rad = 7;
+  b.mass = Math.PI * b.rad * b.rad;
   b.pathDurationMax = RaySpirit.TIMEOUT;// * 2;
 
   bodyId = world.addBody(b);
@@ -228,7 +228,7 @@ function clockAndDraw() {
   viewport.transform(ctx);
   camera.transform(ctx);
 
-  ctx.lineWidth = 0.4;
+  ctx.lineWidth = 0.5;
 
   ctx.strokeStyle = ctx.fillStyle = 'rgb(255, 0, 0)';
   drawRayHits();
@@ -316,6 +316,6 @@ function adjustCamera(now) {
     }
   }
   z++;
-  camera.setZoom(0.8 / z);
+  camera.setZoom(0.95 / z);
   Vec2d.free(v);
 }
