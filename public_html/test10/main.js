@@ -222,8 +222,7 @@ function drawCellRange(cr) {
 
 function clockAndDraw() {
   var endTimeMs = Date.now() + MAX_TIME_PER_FRAME_MS;
-  ctx.fillStyle = 'rgb(0, 0, 0)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   viewport.transform(ctx);
   camera.transform(ctx);
