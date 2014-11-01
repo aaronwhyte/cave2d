@@ -236,16 +236,31 @@ v RayscanRequest has that stuff: hitGroup, startPos, endOffset, shape, and one o
 v RayscanResult: is like a WorldEvent a little
 
 Controller
-- aimer
-  - touch
-    - starting zone
-  - arrows
-  - pointerlock: https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
-- button
-  - touch area
-  - keyboard
+The idea is abstract away the following from the game logic:
+1) Device type: keyboard, mouse, trackpad, touchscreen, or combo.
+2) Sample rates and game framerates. Use milliseconds for everything.
 
+The actual JS events happen between frames.
+They should be buffered by the event-handler code, and then consumed on-demand during the event loop.
+Timing is important.
+Example: A player taps the "x" key: down/up between frames. It should still count.
+But if a player is holding a button down, that needs to persist too.
+So the controller is stateful, consumes events, and produces state and more events.
+Basic use cases:
+1) Button: queue every down and up, with timestamp, plus current state and start timestamp (last event basically).
+2) Aimer: current vector, w magnitude from 0 to 1. Plus down/up state w timestamp, queue, last.
+  - kbd params: the keys for up/dn/rt/lt
+  - touch params: drag radius, boundary function
+  - pointer-lock params: can it be done? Does it still give down/up?
 x Android browser initial zoom // looks like they fixed it
+
+Canvas layers
+- background with map, drawn once, redrawn only in dirtyrect chunks.
+- foreground with all the action, fully redrawn every turn
+
+Simple Sounds
+- one shot
+- continuous
 
 Stupid Game
 
