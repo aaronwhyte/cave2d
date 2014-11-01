@@ -13,8 +13,6 @@ function WorldEvent() {
   this.reset();
 }
 
-Poolify(WorldEvent);
-
 WorldEvent.TYPE_TIMEOUT = 'timeout';
 WorldEvent.TYPE_GRID_ENTER = 'enter';
 WorldEvent.TYPE_GRID_EXIT = 'exit';
@@ -42,6 +40,21 @@ WorldEvent.prototype.reset = function() {
   this.pathId1 = 0;
   this.collisionVec.reset();
   // this.axis, if set, means there was a hit on a side of a rectangle. X means it was east or west, Y is N or S.
+
+  return this;
+};
+
+WorldEvent.pool = [];
+
+WorldEvent.alloc = function() {
+  if (WorldEvent.pool.length) {
+    return WorldEvent.pool.pop().reset();
+  }
+  return new WorldEvent();
+};
+
+WorldEvent.prototype.free = function() {
+  WorldEvent.pool.push(this);
 };
 
 WorldEvent.prototype.toString = function() {
