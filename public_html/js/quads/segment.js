@@ -29,7 +29,7 @@ Segment.prototype.distanceToPointSquared = function(p3) {
     var p = Vec2d.alloc();
     p.set(this.p2).subtract(this.p1).scale(u).add(this.p1);
     retval = p3.distanceSquared(p);
-    Vec2d.free(p);
+    p.free();
   }
   return retval;
 };

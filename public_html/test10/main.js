@@ -176,7 +176,7 @@ function initWorld() {
   b.spiritId = spiritId;
   world.addTimeout(RaySpirit.TIMEOUT, spiritId, null);
 
-  Vec2d.free(v);
+  v.free();
 }
 
 function drawBody(b, now) {
@@ -316,5 +316,5 @@ function adjustCamera(now) {
   }
   z++;
   camera.setZoom(0.95 / z);
-  Vec2d.free(v);
+  v.free();
 }

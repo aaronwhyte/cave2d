@@ -126,7 +126,7 @@ Body.prototype.moveToTime = function(t) {
   var temp = this.getPosAtTime(t, Vec2d.alloc());
   this.pathStartPos.set(temp);
   this.pathStartTime = t;
-  Vec2d.free(temp);
+  temp.free();
 };
 
 Body.prototype.getPathEndTime = function() {

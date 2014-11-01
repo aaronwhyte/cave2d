@@ -166,7 +166,7 @@ function initWorld() {
   b.pathDurationMax = TestSpirit.TIMEOUT;
   world.addBody(b);
 
-  Vec2d.free(v);
+  v.free();
 }
 
 function drawBody(b, now) {
@@ -289,5 +289,5 @@ function adjustCamera(now) {
   }
   z++;
   camera.setZoom(0.9 / z);
-  Vec2d.free(v);
+  v.free();
 }

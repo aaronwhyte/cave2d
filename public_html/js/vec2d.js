@@ -34,11 +34,6 @@ Vec2d.prototype.free = function() {
   Vec2d.pool.push(this);
 };
 
-Vec2d.free = function(obj) {
-  obj.free();
-};
-
-
 Vec2d.X = 'x';
 Vec2d.Y = 'y';
 

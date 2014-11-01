@@ -166,7 +166,7 @@ function initWorld() {
   b.pathDurationMax = 10000;
   world.addBody(b);
 
-  Vec2d.free(v);
+  v.free();
 }
 
 
@@ -289,5 +289,5 @@ function adjustCamera(now) {
   }
   z++;
   camera.setZoom(1 / z);
-  Vec2d.free(v);
+  v.free();
 }
