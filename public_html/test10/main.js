@@ -6,9 +6,9 @@ var raySpirit;
 
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
-var OBJ_COUNT = 36;
-var RECT_CHANCE = 0.6;
-var MAX_CLOCKS_PER_ANIMATION = RaySpirit.TIMEOUT;
+var OBJ_COUNT = 8*8;
+var RECT_CHANCE = 0.5;
+var MAX_CLOCKS_PER_ANIMATION = 1 * RaySpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
 var SPACING = 60;
@@ -246,6 +246,9 @@ function clockAndDraw() {
     }
   }
 
+  if (ADJUST_CAMERA) {
+    adjustCamera();
+  }
   var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
   var e = world.getNextEvent();
   while (e && e.time <= maxClock && Date.now() <= endTimeMs) {
@@ -276,9 +279,6 @@ function clockAndDraw() {
   if (!e || e.time > maxClock) {
     world.now = maxClock;
   }
-  if (ADJUST_CAMERA) {
-    adjustCamera();
-  }
   ctx.restore();
   if (ANIMATE) requestAnimationFrame(clockAndDraw, canvas);
 }
@@ -287,8 +287,8 @@ function adjustCamera(now) {
   var v = Vec2d.alloc();
 
   // reset the camera to surround the objects
-  var bRect = new Rect();
-  var rect = new Rect();
+  var bRect = Rect.alloc();
+  var rect = Rect.alloc();
   for (var id in world.bodies) {
     var b = world.bodies[id];
     if (b && b.shape == Body.Shape.RECT) {
@@ -316,5 +316,7 @@ function adjustCamera(now) {
   }
   z++;
   camera.setZoom(0.95 / z);
+  rect.free();
+  bRect.free();
   v.free();
 }
