@@ -235,23 +235,47 @@ v world.rayscan(request, result);
 v RayscanRequest has that stuff: hitGroup, startPos, endOffset, shape, and one of rad, or rectRad.
 v RayscanResult: is like a WorldEvent a little
 
-Controller
+
+Controls
 The idea is abstract away the following from the game logic:
 1) Device type: keyboard, mouse, trackpad, touchscreen, or combo.
 2) Sample rates and game framerates. Use milliseconds for everything.
-
 The actual JS events happen between frames.
-They should be buffered by the event-handler code, and then consumed on-demand during the event loop.
-Timing is important.
-Example: A player taps the "x" key: down/up between frames. It should still count.
+They could be buffered by the event-handler code, and then consumed on-demand during the event loop.
+But they should also ping a callback, because it's possible to do really on-demand between-frame
+physics updates, by advancing the simulation up to the time of the event, and then applying the effect.
+When the animation-frame hits, it advances the sim the rest of the way, then draws, I guess. Hm.
+I'm assuming that I have 16ms to simulate and draw, after each 60Hz RAF event, before we start skipping frames.
+
+Example: A player taps the "x" key: down/up between frames. It should still count, so final state isn't enough.
 But if a player is holding a button down, that needs to persist too.
 So the controller is stateful, consumes events, and produces state and more events.
+
 Basic use cases:
 1) Button: queue every down and up, with timestamp, plus current state and start timestamp (last event basically).
-2) Aimer: current vector, w magnitude from 0 to 1. Plus down/up state w timestamp, queue, last.
-  - kbd params: the keys for up/dn/rt/lt
-  - touch params: drag radius, boundary function
-  - pointer-lock params: can it be done? Does it still give down/up?
+2) Stick: current vector, w magnitude from 0 to 1. Plus down/up state w timestamp, queue, last.
+  * kbd params: the keys for up/dn/rt/lt
+  * touch params: drag radius, boundary function
+  * pointer-lock params: can it be done? Does it still give down/up?
+API considerations
+Write games for multiple input types, joining multiple input classes into one abstract input.
+
+Example 1: twinstick shooter supporting keyboard, touch, and mouselock/keyboard combo.
+* Define movement keys and touch-zone, and combine them into one Stick for movement.
+* Define firing keys, touch-zone, and mouselock, and combine then onto one Stick for firing.
+So all sticks types, like KeyStick, TouchStick, and MouseLockStick, will have different configuration options
+(keys, touch-zones, radius, etc) but they'll all produce the same output. Then a PolyStick can accept many
+sticks as imput, combine them, and produce the same kind of stick output. One could also create a BackwardsStick,
+a SpinningStick, a RandomStick, DelayStick, other handicaps, both as filters and as additions.
+How are sticks combined? Add inputs, and clip (not scale) to unit circle.
+
+Example 2: Vorp's grab and drop buttons.
+* Keyboard: Z and X
+* Touch: define two overlapping rects or circles or whatevs - functions of touch points I guess?
+* Mouselock: map left and right mouse buttons. (new idea there!)
+How are buttons combined? On every child up/down, the parent is down if any child is down.
+
+
 x Android browser initial zoom // looks like they fixed it
 
 Canvas layers
