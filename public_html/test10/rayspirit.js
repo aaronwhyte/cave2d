@@ -12,14 +12,13 @@ function RaySpirit() {
   this.hitPos = [];
   this.mode = RaySpirit.MODE_ATTACK;
 }
+RaySpirit.prototype = new Spirit();
+RaySpirit.prototype.constructor = RaySpirit;
 
 RaySpirit.MODE_ATTACK = 1;
 RaySpirit.MODE_RETURN = 2;
 
 RaySpirit.TIMEOUT = 0.05;
-
-RaySpirit.prototype = new Spirit();
-RaySpirit.prototype.constructor = RaySpirit;
 
 RaySpirit.ROAM_DIST = 150;
 RaySpirit.RAY_COUNT = 10;
