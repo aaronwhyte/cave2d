@@ -1,11 +1,11 @@
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
-var OBJ_COUNT = 8*8;
+var OBJ_COUNT = 200;
 var RECT_CHANCE = 0.5;
 var MAX_CLOCKS_PER_ANIMATION = PlayerSpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
-var SPACING = 60;
+var SPACING = 50;
 
 var canvas, ctx, viewport, camera;
 var world, resolver;
@@ -76,7 +76,7 @@ function initWorld() {
   v.setXY(-sqrt/2 * SPACING - 50, 0);
   b.setPosAtTime(v, 1);
   b.shape = Body.Shape.CIRCLE;
-  b.rad = 7;
+  b.rad = 8;
   b.mass = Math.PI * b.rad * b.rad;
   b.pathDurationMax = PlayerSpirit.TIMEOUT;
   bodyId = world.addBody(b);

@@ -19,9 +19,10 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
   var b = world.bodies[this.bodyId];
   if (b && b.mass != Infinity) {
     if (this.stick) {
-      this.stick.getVal(this.accel).scale(0.2);
+      this.stick.getVal(this.accel);
+      this.accel.scale(0.8);
     }
-    this.vec.set(b.vel).scale(0.9).add(this.accel);
+    this.vec.set(b.vel).scale(0.92).add(this.accel);
     b.setVelAtTime(this.vec, world.now);
   }
 

@@ -62,11 +62,12 @@ KeyStick.prototype.stopListening = function() {
 };
 
 KeyStick.prototype.getVal = function(out) {
-  out.reset();
+  this.val.reset();
   for (var code in this.codeToState) {
     if (this.codeToState[code]) {
-      out.add(this.codeToDir[code]);
+      this.val.add(this.codeToDir[code]);
     }
   }
-  return this.clip(out);
+  this.clip();
+  return out.set(this.val);
 };
