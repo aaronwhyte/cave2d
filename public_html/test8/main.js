@@ -1,7 +1,5 @@
 var canvas, ctx, viewport, camera;
 
-var pointers = {};
-
 var ANIMATE = true;
 var ADJUST_CAMERA = false;
 var OBJ_COUNT = 100;
@@ -15,14 +13,11 @@ function main() {
   ctx = canvas.getContext("2d");
   viewport = new Viewport(canvas);
   camera = new Camera();
-//  camera.setPanXY(0, 0);
   camera.setZoom(1/80);
-//  camera.setRotation(0);
 
-  window.addEventListener("resize", function(){
+  window.addEventListener("resize", function() {
     resizeCanvas();
   });
-  initGestureListeners();
   resizeCanvas();
 
   initWorld();
@@ -37,74 +32,6 @@ function resizeCanvas() {
   canvas.width = w;
   canvas.height = h;
 }
-
-function initGestureListeners() {
-  document.body.addEventListener("touchstart", onTouchStart);
-  document.body.addEventListener("touchmove", onTouchMove);
-  document.body.addEventListener("touchend", onTouchEnd);
-
-  document.body.addEventListener("mousedown", onMouseDown);
-  document.body.addEventListener("mouseup", onMouseUp);
-  document.body.addEventListener("mouseout", onMouseUp);
-  window.addEventListener("mousemove", onMouseMove);
-}
-
-// maps touch.identifier to Vec2d of the prev touch location
-var worldVecs = {};
-var MOUSE_IDENTIFIER = "mouse";
-
-function onTouchStart(event) {
-  for (var i = 0; i < event.touches.length; i++) {
-    var touch = event.touches[i];
-    var point = worldVecFromPageXY(touch.pageX, touch.pageY);
-    worldVecs[touch.identifier] = point;
-  }
-}
-
-function onTouchMove(event) {
-  for (var i = 0; i < event.touches.length; i++) {
-    var touch = event.touches[i];
-    var point = worldVecFromPageXY(touch.pageX, touch.pageY);
-    worldVecs[touch.identifier] = point;
-  }
-}
-
-function onTouchEnd(event) {
-  for (var i = 0; i < event.touches.length; i++) {
-    var touch = event.touches[i];
-    var point = worldVecFromPageXY(touch.pageX, touch.pageY);
-    delete worldVecs[touch.identifier];
-  }
-}
-
-var isMouseDown = false;
-
-function onMouseUp() {
-  isMouseDown = false;
-  delete worldVecs[MOUSE_IDENTIFIER];
-}
-
-function onMouseDown(event) {
-  isMouseDown = true;
-  var point = worldVecFromPageXY(event.pageX, event.pageY);
-  worldVecs[MOUSE_IDENTIFIER] = point;
-}
-
-function onMouseMove(event) {
-  if (isMouseDown) {
-    var point = worldVecFromPageXY(event.pageX, event.pageY);
-    worldVecs[MOUSE_IDENTIFIER] = point;
-  }
-}
-
-function worldVecFromPageXY(x, y) {
-  var vec = new Vec2d(x, y);
-  viewport.canvasToViewport(vec);
-  camera.viewportToCamera(vec);
-  return vec;
-}
-
-///////////////////////////////////////////////
 
 var world, resolver;
 

@@ -16,7 +16,7 @@ function main() {
 
   grid = new QuadTreeGrid(100, 7);
 
-  window.addEventListener("resize", function(){
+  window.addEventListener("resize", function() {
     resizeCanvas();
   });
   initGestureListeners();

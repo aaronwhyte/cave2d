@@ -18,7 +18,7 @@ function main() {
   camera = new Camera();
   camera.setZoom(1/100);
 
-  window.addEventListener("resize", function(){
+  window.addEventListener("resize", function() {
     resizeCanvas();
   });
   resizeCanvas();
@@ -180,7 +180,7 @@ function clockAndDraw() {
   if (ANIMATE) requestAnimationFrame(clockAndDraw, canvas);
 }
 
-function adjustCamera(now) {
+function adjustCamera() {
   var v = Vec2d.alloc();
 
   // reset the camera to surround the objects
