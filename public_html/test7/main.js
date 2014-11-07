@@ -55,12 +55,6 @@ function initGestureListeners() {
   document.body.addEventListener("mouseup", onMouseUp);
   document.body.addEventListener("mouseout", onMouseUp);
   window.addEventListener("mousemove", onMouseMove);
-
-  var havePointerLock = 'pointerLockElement' in document ||
-      'mozPointerLockElement' in document ||
-      'webkitPointerLockElement' in document;
-  if (havePointerLock) {
-  }
 }
 
 // maps touch.identifier to Vec2d of the prev touch location
