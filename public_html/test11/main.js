@@ -1,6 +1,6 @@
 var ANIMATE = true;
 var ADJUST_CAMERA = true;
-var OBJ_COUNT = 200;
+var OBJ_COUNT = 36;
 var RECT_CHANCE = 0.5;
 var MAX_CLOCKS_PER_ANIMATION = PlayerSpirit.TIMEOUT;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
@@ -87,8 +87,16 @@ function initWorld() {
   playerSpirit = spirit;
   b.spiritId = spiritId;
   world.addTimeout(PlayerSpirit.TIMEOUT, spiritId, null);
-  stick = new KeyStick();
-  stick.startListening();
+
+  var keyStick = new KeyStick();
+  keyStick.startListening();
+
+  var touchStick = new TouchStick();
+  touchStick.startListening();
+
+  stick = new MultiStick();
+  stick.addStick(keyStick);
+  stick.addStick(touchStick);
   playerSpirit.setStick(stick);
 
   v.free();
@@ -121,6 +129,9 @@ function drawCellRange(cr) {
 }
 
 function clockAndDraw() {
+  if (ADJUST_CAMERA) {
+    adjustCamera();
+  }
   var endTimeMs = Date.now() + MAX_TIME_PER_FRAME_MS;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
@@ -143,9 +154,6 @@ function clockAndDraw() {
     }
   }
 
-  if (ADJUST_CAMERA) {
-    adjustCamera();
-  }
   var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
   var e = world.getNextEvent();
   while (e && e.time <= maxClock && Date.now() <= endTimeMs) {

@@ -275,6 +275,20 @@ Example 2: Vorp's grab and drop buttons.
 * Mouselock: map left and right mouse buttons. (new idea there!)
 How are buttons combined? On every child up/down, the parent is down if any child is down.
 
+Sticks
+v Stick base class
+v KeyStick
+v TouchStick
+v MultiStick - adds input sticks and clips the result
+  v demo KeyStick and TouchStick on the same page
+- PointerLockStick
+
+Buttons
+- base class
+- KeyButton
+- TouchButton
+- MouseButton
+- MultiButton?
 
 x Android browser initial zoom // looks like they fixed it
 

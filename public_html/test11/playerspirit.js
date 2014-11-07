@@ -9,6 +9,9 @@ function PlayerSpirit() {
   this.vec = Vec2d.alloc();
   this.accel = Vec2d.alloc();
   this.stick = null;
+
+  this.accelFactor = 0.9;
+  this.friction = 0.1;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -20,9 +23,9 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
   if (b && b.mass != Infinity) {
     if (this.stick) {
       this.stick.getVal(this.accel);
-      this.accel.scale(0.8);
+      this.accel.scale(this.accelFactor);
     }
-    this.vec.set(b.vel).scale(0.92).add(this.accel);
+    this.vec.set(b.vel).scale(1 - this.friction).add(this.accel);
     b.setVelAtTime(this.vec, world.now);
   }
 
