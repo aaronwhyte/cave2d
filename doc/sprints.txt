@@ -281,7 +281,10 @@ v KeyStick
 v TouchStick
 v MultiStick - adds input sticks and clips the result
   v demo KeyStick and TouchStick on the same page
+  v demo twin-stick shooter - multiple sticks of each type
 - PointerLockStick
+
+- Test for leaked cell removing body.
 
 Buttons
 - base class

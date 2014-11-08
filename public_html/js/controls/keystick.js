@@ -22,9 +22,6 @@ function KeyStick() {
       self.codeToState[e.keyCode] = false;
     }
   };
-
-  // default arrow keys
-  this.setUpRightDownLeftByName(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT);
 }
 
 KeyStick.prototype = new Stick();
@@ -37,11 +34,13 @@ KeyStick.LEFT = new Vec2d(-1, 0);
 
 KeyStick.prototype.setByKeyCode = function(keyCode, vec) {
   this.codeToDir[keyCode] = vec;
+  return this;
 };
 
 KeyStick.prototype.setByName = function(name, vec) {
   var keyCode = this.keys.getKeyCodeForName(name);
   this.setByKeyCode(keyCode, vec);
+  return this;
 };
 
 KeyStick.prototype.setUpRightDownLeftByName = function(up, right, down, left) {
@@ -49,16 +48,19 @@ KeyStick.prototype.setUpRightDownLeftByName = function(up, right, down, left) {
   this.setByName(right, KeyStick.RIGHT);
   this.setByName(down, KeyStick.DOWN);
   this.setByName(left, KeyStick.LEFT);
+  return this;
 };
 
 KeyStick.prototype.startListening = function() {
   document.addEventListener('keydown', this.downListener);
   document.addEventListener('keyup', this.upListener);
+  return this;
 };
 
 KeyStick.prototype.stopListening = function() {
   document.removeEventListener('keydown', this.downListener);
   document.removeEventListener('keyup', this.upListener);
+  return this;
 };
 
 KeyStick.prototype.getVal = function(out) {

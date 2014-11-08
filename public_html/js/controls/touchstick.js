@@ -7,8 +7,8 @@ function TouchStick() {
   Stick.call(this);
 
   this.radius = 30;
-  this.halo = 30;
-  this.isInStartZone = function(x, y) {
+  this.halo = 0;
+  this.startZoneFn = function(x, y) {
     return true;
   };
 
@@ -33,12 +33,23 @@ function TouchStick() {
 TouchStick.prototype = new Stick();
 TouchStick.prototype.constructor = TouchStick;
 
+TouchStick.prototype.setStartZoneFunction = function(fn) {
+  this.startZoneFn = fn;
+  return this;
+};
+
+TouchStick.prototype.setRadius = function(r) {
+  this.radius = r;
+  return this;
+};
 
 TouchStick.prototype.startListening = function() {
   document.body.addEventListener('touchstart', this.touchStartListener);
   document.body.addEventListener('touchmove', this.touchMoveListener);
   document.body.addEventListener('touchend', this.touchEndListener);
   document.body.addEventListener('touchcancel', this.touchEndListener);
+  return this;
+
 };
 
 TouchStick.prototype.stopListening = function() {
@@ -46,6 +57,7 @@ TouchStick.prototype.stopListening = function() {
   document.body.removeEventListener('touchmove', this.touchMoveListener);
   document.body.removeEventListener('touchend', this.touchEndListener);
   document.body.removeEventListener('touchcancel', this.touchEndListener);
+  return this;
 };
 
 TouchStick.prototype.getVal = function(out) {
@@ -59,9 +71,10 @@ TouchStick.prototype.onTouchStart = function(e) {
   var touches = e.changedTouches;
   for (var i = 0; i < touches.length; i++) {
     var touch = touches[i];
-    if (this.isInStartZone(touch.pageX, touch.pageY)) {
+    if (this.startZoneFn(touch.pageX, touch.pageY)) {
       // Start tracking this one.
       this.touchId = touch.identifier;
+      console.log('touchId: ' + this.touchId);
       this.center.setXY(touch.pageX, touch.pageY);
       this.tip.setXY(touch.pageX, touch.pageY);
       break;

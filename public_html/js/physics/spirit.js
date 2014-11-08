@@ -5,7 +5,6 @@
  */
 function Spirit(id) {
   this.id = id;
-  this.vec = new Vec2d();
 }
 
 /**

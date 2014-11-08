@@ -13,6 +13,7 @@ MultiStick.prototype.constructor = MultiStick;
 
 MultiStick.prototype.addStick = function(s) {
   this.sticks.push(s);
+  return this;
 };
 
 MultiStick.prototype.getVal = function(out) {

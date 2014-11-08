@@ -83,6 +83,16 @@ World.prototype.addSpirit = function(spirit) {
   return spirit.id;
 };
 
+World.prototype.removeSpiritId = function(id) {
+  var spirit = this.spirits[id];
+  if (spirit) {
+    delete this.spirits[id];
+    if (spirit.free) {
+      spirit.free();
+    }
+  }
+};
+
 /**
  * Assigns an ID and adds the body.
  * @returns the new body ID.
