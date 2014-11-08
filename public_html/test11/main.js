@@ -2,14 +2,14 @@ var ANIMATE = true;
 var ADJUST_CAMERA = true;
 var OBJ_COUNT = 36;
 var RECT_CHANCE = 0.5;
-var MAX_CLOCKS_PER_ANIMATION = PlayerSpirit.TIMEOUT;
+var MAX_CLOCKS_PER_ANIMATION = 0.3;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
 var SPACING = 50;
 
 var canvas, ctx, viewport, camera;
 var world, resolver;
-var playerSpirit, stick;
+var playerSpirit;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -76,7 +76,7 @@ function initWorld() {
   v.setXY(-sqrt/2 * SPACING - 50, 0);
   b.setPosAtTime(v, 1);
   b.shape = Body.Shape.CIRCLE;
-  b.rad = 8;
+  b.rad = 3;
   b.mass = Math.PI * b.rad * b.rad;
   b.pathDurationMax = PlayerSpirit.TIMEOUT;
   bodyId = world.addBody(b);
@@ -88,16 +88,35 @@ function initWorld() {
   b.spiritId = spiritId;
   world.addTimeout(PlayerSpirit.TIMEOUT, spiritId, null);
 
-  var keyStick = new KeyStick();
-  keyStick.startListening();
+  var aimStick = (new MultiStick())
+      .addStick((new KeyStick())
+          .setUpRightDownLeftByName(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT)
+          .startListening())
+      .addStick((new KeyStick())
+          .setUpRightDownLeftByName('i', 'l', 'k', 'j')
+          .startListening())
+      .addStick((new TouchStick())
+          .setStartZoneFunction(function(x, y) {
+            return x > canvas.width / 2;
+          })
+          .setRadius(10)
+          .startListening()
+  );
 
-  var touchStick = new TouchStick();
-  touchStick.startListening();
+  var moveStick = (new MultiStick())
+      .addStick((new KeyStick())
+          .setUpRightDownLeftByName('w', 'd', 's', 'a')
+          .startListening())
+      .addStick((new TouchStick())
+          .setStartZoneFunction(function(x, y) {
+            return x <= canvas.width / 2;
+          })
+          .setRadius(20)
+          .startListening()
+  );
 
-  stick = new MultiStick();
-  stick.addStick(keyStick);
-  stick.addStick(touchStick);
-  playerSpirit.setStick(stick);
+  playerSpirit.setAimStick(aimStick);
+  playerSpirit.setMoveStick(moveStick);
 
   v.free();
 }
