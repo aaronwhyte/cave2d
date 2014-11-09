@@ -9,7 +9,7 @@ var SPACING = 50;
 
 var canvas, ctx, viewport, camera;
 var world, resolver;
-var playerSpirit;
+var playerSpirit, raySpirit;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -76,7 +76,7 @@ function initWorld() {
   v.setXY(-sqrt/2 * SPACING - 50, 0);
   b.setPosAtTime(v, 1);
   b.shape = Body.Shape.CIRCLE;
-  b.rad = 3;
+  b.rad = 3.5;
   b.mass = Math.PI * b.rad * b.rad;
   b.pathDurationMax = PlayerSpirit.TIMEOUT;
   bodyId = world.addBody(b);
@@ -118,6 +118,22 @@ function initWorld() {
   playerSpirit.setAimStick(aimStick);
   playerSpirit.setMoveStick(moveStick);
 
+
+  b = Body.alloc();
+  v.setXY(sqrt/2 * SPACING + 50, 0);
+  b.setPosAtTime(v, 1);
+  b.shape = Body.Shape.CIRCLE;
+  b.rad = 7;
+  b.mass = Math.PI * b.rad * b.rad;
+  b.pathDurationMax = RaySpirit.TIMEOUT;// * 2;
+  bodyId = world.addBody(b);
+  spirit = new RaySpirit();
+  spiritId = world.addSpirit(spirit);
+  spirit.bodyId = bodyId;
+  raySpirit = spirit;
+  b.spiritId = spiritId;
+  world.addTimeout(RaySpirit.TIMEOUT, spiritId, null);
+
   v.free();
 }
 
@@ -131,6 +147,21 @@ function drawBody(b, now) {
     ctx.fillRect(p.x - b.rectRad.x, p.y - b.rectRad.y, b.rectRad.x * 2, b.rectRad.y * 2);
   }
   p.free();
+}
+
+function drawRayHits() {
+  var center = world.bodies[raySpirit.bodyId].getPosAtTime(world.now, Vec2d.alloc());
+  for (var i = 0; i < raySpirit.hitPos.length; i++) {
+    var p = raySpirit.hitPos[i];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, RaySpirit.RAY_RADUIS, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }
+  center.free();
 }
 
 function drawCell(ix, iy) {
@@ -158,6 +189,8 @@ function clockAndDraw() {
   camera.transform(ctx);
 
   ctx.lineWidth = 0.5;
+  ctx.strokeStyle = ctx.fillStyle = 'rgb(255, 0, 0)';
+  drawRayHits();
 
   ctx.strokeStyle = ctx.fillStyle = 'rgb(255, 255, 255)';
   for (var id in world.bodies) {
