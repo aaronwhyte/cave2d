@@ -46,6 +46,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         bulletBody.shape = Body.Shape.CIRCLE;
         bulletBody.rad = b.rad * 0.75;
         bulletBody.mass = bulletBody.rad * bulletBody.rad * Math.PI;
+        bulletBody.pathDurationMax = BulletSpirit.TIMEOUT;
         bulletBody.setPosAtTime(b.getPosAtTime(world.now, this.vec), world.now);
         bulletBody.setVelAtTime(this.aim, world.now);
         var bulletId = world.addBody(bulletBody);

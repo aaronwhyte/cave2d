@@ -114,6 +114,13 @@ World.prototype.addBody = function(body) {
 World.prototype.removeBodyId = function(bodyId) {
   var body = this.bodies[bodyId];
   if (body) {
+    var rect = Rect.alloc();
+    body.getBoundingRectAtTime(this.now, rect);
+    var range = CellRange.alloc();
+    this.getCellRangeForRect(rect, range);
+    this.removeBodyFromCellRange(body, range);
+    range.free();
+    rect.free();
     delete this.bodies[body.id];
     delete this.paths[body.pathId];
     delete this.invalidBodies[body.id];
@@ -121,7 +128,21 @@ World.prototype.removeBodyId = function(bodyId) {
   }
 };
 
-World.prototype.getBody = function(bodyId) {
+World.prototype.removeBodyFromCellRange = function(body, cellRange) {
+  for (var iy = cellRange.p0.y; iy <= cellRange.p1.y; iy++) {
+    for (var ix = cellRange.p0.x; ix <= cellRange.p1.x; ix++) {
+      var cell = this.getCell(ix, iy);
+      if (cell) {
+        cell.removePathIdFromGroup(body.pathId, body.hitGroup);
+        if (cell.isEmpty()) {
+          this.removeCell(ix, iy);
+        }
+      }
+    }
+  }
+};
+
+  World.prototype.getBody = function(bodyId) {
   return this.bodies[bodyId];
 };
 
@@ -373,17 +394,7 @@ World.prototype.processNextEvent = function() {
     var body = this.paths[e.pathId];
     if (body && body.pathId == e.pathId) {
       this.addSubsequentGridEvent(body, e);
-      for (var iy = e.cellRange.p0.y; iy <= e.cellRange.p1.y; iy++) {
-        for (var ix = e.cellRange.p0.x; ix <= e.cellRange.p1.x; ix++) {
-          var cell = this.getCell(ix, iy);
-          if (cell) {
-            cell.removePathIdFromGroup(body.pathId, body.hitGroup);
-            if (cell.isEmpty()) {
-              this.removeCell(ix, iy);
-            }
-          }
-        }
-      }
+      this.removeBodyFromCellRange(body, e.cellRange);
     }
 
   } else if (e.type === WorldEvent.TYPE_HIT) {

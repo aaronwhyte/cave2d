@@ -11,7 +11,7 @@ BulletSpirit.prototype.constructor = BulletSpirit;
 
 Poolify(BulletSpirit);
 
-BulletSpirit.TIMEOUT = 40;
+BulletSpirit.TIMEOUT = 20;
 
 BulletSpirit.prototype.reset = function() {
   this.bodyId = -1;
