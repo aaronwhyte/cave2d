@@ -288,15 +288,6 @@ v Leaked cells when removing body?
   v test
   v fix
 
-Buttons
-- base class
-- KeyButton
-- TouchButton
-- MouseButton
-- MultiButton?
-
-x Android browser initial zoom // looks like they fixed it
-
 Canvas layers
 - background with map, drawn once, redrawn only in dirtyrect chunks.
 - foreground with all the action, fully redrawn every turn
@@ -306,6 +297,13 @@ Simple Sounds
 - continuous
 
 Stupid Game
+
+Buttons
+- base class
+- KeyButton
+- TouchButton
+- MouseButton
+- MultiButton?
 
 Editor Skeleton
 - nav/wall/air mode switch
