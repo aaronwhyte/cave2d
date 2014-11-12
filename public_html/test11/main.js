@@ -100,8 +100,11 @@ function initWorld() {
             return x > canvas.width / 2;
           })
           .setRadius(10)
-          .startListening()
-  );
+          .startListening())
+      .addStick((new PointerLockStick())
+          .setRadius(20)
+          .setCanvas(canvas)
+          .startListening());
 
   var moveStick = (new MultiStick())
       .addStick((new KeyStick())
@@ -112,8 +115,7 @@ function initWorld() {
             return x <= canvas.width / 2;
           })
           .setRadius(20)
-          .startListening()
-  );
+          .startListening());
 
   playerSpirit.setAimStick(aimStick);
   playerSpirit.setMoveStick(moveStick);

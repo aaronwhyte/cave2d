@@ -7,7 +7,6 @@ function TouchStick() {
   Stick.call(this);
 
   this.radius = 30;
-  this.halo = 0;
   this.startZoneFn = function(x, y) {
     return true;
   };
@@ -91,7 +90,7 @@ TouchStick.prototype.onTouchMove = function(e) {
       // Keep tracking this one.
       this.tip.setXY(touch.pageX, touch.pageY);
       var dist = this.tip.distance(this.center);
-      var max = this.radius + this.halo;
+      var max = this.radius;
       if (dist > max) {
         this.center.slideByFraction(this.tip, (dist - max) / dist);
       }
