@@ -2,24 +2,58 @@
 <html>
 <head>
 <title>cave2d</title>
+<style>
+body {
+  font-family: verdana, arial, sans-serif;
+}
+
+h1 {
+  font-size:large;
+  margin:1.2em 0 0.5em;
+}
+
+a {
+  font-weight:bold;
+  text-decoration:none;
+}
+
+div {
+  margin: 0.5em 0;
+}
+</style>
 </head>
 <body>
-You stand in the nothingness that will yield cave2d.com.
-<p>
-You see a handful of ordered chaos.
-<ul>
-  <li><a href="test1">test1 - line</a>
-  <li><a href="test2">test2 - translate</a>
-  <li><a href="test3">test3 - rotate</a>
-  <li><a href="test4">test4 - scale</a>
-  <li><a href="test5">test5 - timeshift</a>
-  <li><a href="test6">test6 - QuadTree Moon</a>
-  <li><a href="test7">test7 - QuadTreeGrid &amp; HallPainter</a>
-  <li><a href="test8">test8 - Collision</a>
-  <li><a href="test9">test9 - Spirit</a>
-  <li><a href="test10">test10 - Rayscan</a>
-  <li><a href="test11">test11 - Stick controller</a>
-</ul>
+
+I'm working on an HTML5 2D canvas game engine for phones, tablets and laptops.<br>
+Source code: <a href="https://github.com/aaronwhyte/cave2d">github.com/aaronwhyte/cave2d</a><br>
+Updates: <a href="https://plus.google.com/111062934711090819978" rel="publisher">Google+ page for plexode</a>
+
+<h1>Controls</h1>
+<div><a href="test11">test11 - Stick controller</a><br>
+  Twin-stick shooter demo, to test a bunch of "Stick" control classes.<br>
+  Move with WASD keys, or the left half of a touchscreen.<br>
+  Fire using IJKL, arrow keys, a mouse or trackpad (using
+  <a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API">Pointer Lock API</a>),
+  or the right half of a touchscreen.
+</div>
+
+<h1>Physics</h1>
+<div><a href="test10">test10 - Rayscan</a><br>The RayscanSpirit uses rayscans to see and make decisions.</div>
+<div><a href="test9">test9 - Spirit</a><br>"Spirit" classes animate bodies, bringing them to life.</div>
+<div><a href="test8">test8 - Collision</a><br>Continuous 2D collision detection between bodies shaped like axis-aligned rectangles and circles.</div>
+
+<h1>Quadtrees</h1>
+<div><a href="test7">test7 - QuadTreeGrid &amp; HallPainter</a><br><b>Interactive!</b> Draw a cave map with a mouse or touchscreen.</div>
+<div><a href="test6">test6 - QuadTree Moon</a><br>Demos quadtree editing by adding a circle and deleting a circle, at 60fps</div>
+
+<h1>Graphics</h1>
+<div><a href="test5">test5 - timeshift</a><br>Shifts the subtree's time as a function of time. Draws a clock that makes random, uneven progress.</div>
+<div><a href="test4">test4 - scale</a><br>Changes the size of a drawing tree over time. Looks like a hungry hydra.</div>
+<div><a href="test3">test3 - rotate</a><br>Rotates the drawing tree over time. Looks like a wiggly sea creature.</div>
+<div><a href="test2">test2 - translate</a><br>Moves chunks of the drawing tree over time.</div>
+<div><a href="test1">test1 - line</a><br>Interpolates line endpoints over time.</div>
+
+
 <script>
 if (document.location.hostname.indexOf('cave2d.com') > -1) {
   console.log('analytics');
