@@ -133,7 +133,7 @@ function clockAndDraw() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   viewport.transform(ctx);
-  camera.transform(ctx);
+  camera.transformContext(ctx);
 
   ctx.lineWidth = 0.4;
 

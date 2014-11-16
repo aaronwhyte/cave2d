@@ -134,7 +134,7 @@ var FILL_STYLES = ["#000", "#fff", "#66f"];
 function drawDirtyRect(rect) {
   ctx.save();
   viewport.transform(ctx);
-  camera.transform(ctx);
+  camera.transformContext(ctx);
   ctx.fillStyle = FILL_STYLES[VOID];
   ctx.fillRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), rect.getHeight());
   ctx.restore();
@@ -145,7 +145,7 @@ function drawDirtyRect(rect) {
 function drawSquares(squares) {
   ctx.save();
   viewport.transform(ctx);
-  camera.transform(ctx);
+  camera.transformContext(ctx);
   var drawOrder = [WALL, FLOOR];
   var pad = 5.5 * camera.getZoom();
   for (var drawIndex = 0; drawIndex < drawOrder.length; drawIndex++) {

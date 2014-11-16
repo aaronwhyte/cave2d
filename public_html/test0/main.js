@@ -41,7 +41,7 @@ function draw() {
   ctx.restore();
   ctx.save();
   viewport.transform(ctx);
-  camera.transform(ctx);
+  camera.transformContext(ctx);
   drawTree(BRANCH_DEPTH);
   ctx.restore();
 }

@@ -80,7 +80,7 @@ function draw() {
 
   ctx.save();
   viewport.transform(ctx);
-  camera.transform(ctx);
+  camera.transformContext(ctx);
   ctx.strokeStyle = "#000";
   ctx.lineCap = "round";
   ctx.lineWidth = 2;

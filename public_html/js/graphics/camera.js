@@ -15,7 +15,7 @@ function Camera() {
  * on the canvas.
  * @param {CanvasRenderingContext2D} ctx
  */
-Camera.prototype.transform = function(ctx) {
+Camera.prototype.transformContext = function(ctx) {
   ctx.scale(this.zoom, this.zoom);
   ctx.rotate(this.rotation);
   ctx.translate(-this.pan.x, -this.pan.y);
