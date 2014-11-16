@@ -87,12 +87,12 @@ PointerLockStick.prototype.getVal = function(out) {
   }
 };
 
-PointerLockStick.prototype.requestLock = function(canvas) {
-  canvas.requestPointerLock = canvas.requestPointerLock ||
-      canvas.mozRequestPointerLock ||
-      canvas.webkitRequestPointerLock;
-  if (canvas.requestPointerLock) {
-    canvas.requestPointerLock();
+PointerLockStick.prototype.requestLock = function() {
+  this.canvas.requestPointerLock = this.canvas.requestPointerLock ||
+      this.canvas.mozRequestPointerLock ||
+      this.canvas.webkitRequestPointerLock;
+  if (this.canvas.requestPointerLock) {
+    this.canvas.requestPointerLock();
   }
 };
 
@@ -106,13 +106,10 @@ PointerLockStick.prototype.exitPointerLock = function() {
 };
 
 PointerLockStick.prototype.onLockChange = function(e) {
-  if (document.pointerLockElement === canvas ||
-      document.mozPointerLockElement === canvas ||
-      document.webkitPointerLockElement === canvas) {
-    this.locked = true;
-  } else {
-    this.locked = false;
-  }
+  this.locked =
+      document.pointerLockElement === this.canvas ||
+      document.mozPointerLockElement === this.canvas ||
+      document.webkitPointerLockElement === this.canvas;
 };
 
 PointerLockStick.prototype.onLockError = function(e) {
@@ -136,5 +133,5 @@ PointerLockStick.prototype.onMouseUp = function(e) {
 PointerLockStick.prototype.onClick = function(e) {
   // At least on Chrome, you have to click the canvas to request pointerlock.
   // If you try to request it in any other execution thread, you'll get an error.
-  this.requestLock(this.canvas);
+  this.requestLock();
 };
