@@ -289,21 +289,46 @@ v Leaked cells when removing body?
   v fix
 
 Canvas layers
-- background with map, drawn once, redrawn only in dirtyrect chunks.
-- foreground with all the action, fully redrawn every turn
+Examples:
+* Background with map, drawn once, redrawn only in dirtyrect chunks when map changes.
+  May be written to with marks and stains and stuff as the action wears on.
+  What's special is that the canvas holds the entire background, and the canvas element itself moves.
+  Is that even wise? Maybe I should use a tile system, where the tiles are canvases that get rendered and recycled
+  as needed. But lets just get a single giant tile in there for now.
+* Foreground with all the action, fully redrawn every turn. The canvas itself does not move.
+* Debug overlay layer that can be turned on and off. Also probably shouldn't move, but maaaybe.
+Tasks:
+v Make it work
+- Make a reasonable API
+
 
 Simple Sounds
 - one shot
 - continuous
 
-Stupid Game
+Complete Game
+- Main Menu
+  - Graphics!
+  - Sounds!
+  - Instructional Instructions!
+  - Settings!
+- Starting a Level
+  - Getting Killed
+
+
 
 Buttons
 - base class
 - KeyButton
 - TouchButton
 - MouseButton
-- MultiButton?
+- MultiButton
+
+Slider
+basically a stick where I project the value onto a line, and a renderer
+
+Checkbox
+a button with bit attached, and a renderer
 
 Editor Skeleton
 - nav/wall/air mode switch

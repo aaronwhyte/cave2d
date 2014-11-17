@@ -25,6 +25,10 @@ Camera.prototype.setPanXY = function(x, y) {
   this.pan.setXY(x, y);
 };
 
+Camera.prototype.setPan = function(vec) {
+  this.pan.set(vec);
+};
+
 Camera.prototype.setZoom = function(zoom) {
   this.zoom = zoom;
 };
