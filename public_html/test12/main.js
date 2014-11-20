@@ -1,14 +1,14 @@
 var OBJ_COUNT = 300;
-var RECT_CHANCE = 0.9;
-var NO_RECT_CHANCE = 0.3;
+var RECT_CHANCE = 0.7;
 var MAX_CLOCKS_PER_ANIMATION = 0.3;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
-var SPACING = 40;
+var SPACING = 50;
 
 var ZOOM = 1/100;
 
-var fgCanvas, bgCanvas, fgCtx, bgCtx, fgViewport, fgCamera, bgCamera;
+var fgCanvas, bgCanvas, winDiv;
+var fgCtx, bgCtx, fgViewport, fgCamera, bgCamera;
 var world, resolver;
 var playerSpirit, raySpirit;
 
@@ -17,6 +17,7 @@ var bgDirty = true;
 function main() {
   fgCanvas = document.querySelector('#fgCanvas');
   bgCanvas = document.querySelector('#bgCanvas');
+  winDiv = document.querySelector('#winDiv');
   fgCtx = fgCanvas.getContext("2d");
   bgCtx = bgCanvas.getContext("2d");
   fgViewport = new Viewport(fgCanvas);
@@ -37,8 +38,8 @@ function main() {
 function resize() {
   var w = window.innerWidth;
   var h = window.innerHeight;
-  fgCanvas.style.width = w + "px";
-  fgCanvas.style.height = h + "px";
+  winDiv.style.width = fgCanvas.style.width = w + "px";
+  winDiv.style.height = fgCanvas.style.height = h + "px";
   fgCanvas.width = w;
   fgCanvas.height = h;
 
@@ -56,11 +57,10 @@ function initWorld() {
       v.setXY(x * SPACING + Math.random(), y * SPACING + Math.random());
       b.setPosAtTime(v, 1);
       if (Math.random() < RECT_CHANCE) {
-        if (Math.random() < NO_RECT_CHANCE) continue;
         b.shape = Body.Shape.RECT;
         b.rectRad.setXY(
-                (0.3 + Math.random()) * SPACING * 0.2,
-                (0.3 + Math.random()) * SPACING * 0.2);
+                (0.3 + Math.random()) * SPACING * 0.3,
+                (0.3 + Math.random()) * SPACING * 0.3);
         b.mass = Infinity;
         b.pathDurationMax = Infinity;
         world.addBody(b);
@@ -277,6 +277,21 @@ function drawBg(canvas, ctx) {
   bgCamera.setPan(bRect.pos);
   bgCamera.setZoom(ZOOM);
   bgCamera.transformContext(ctx);
+
+  function randInt(n) {
+    return Math.floor(Math.random() * n);
+  }
+
+  for (var i = 0; i < 700; i++) {
+    ctx.strokeStyle = ctx.fillStyle =
+        'rgb(' + [randInt(50), randInt(50), randInt(50)].join(',') + ')';
+    ctx.beginPath();
+    ctx.arc(
+        bRect.pos.x + 1.6 * (Math.random() - 0.5) * bRect.rad.x,
+        bRect.pos.y + 1.6 * (Math.random() - 0.5) * bRect.rad.y,
+        10 * (Math.random() + 2), 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   ctx.strokeStyle = ctx.fillStyle = 'rgb(0, 200, 200)';
   for (var id in world.bodies) {

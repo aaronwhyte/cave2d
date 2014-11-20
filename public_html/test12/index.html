@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
 <script src="../js/math.js"></script>
 <script src="../js/poolify.js"></script>
@@ -45,8 +46,10 @@
 <link rel="stylesheet" type="text/css" href="main.css">
 </head>
 <body>
+<div id="winDiv">
 <canvas id="bgCanvas"></canvas>
 <canvas id="fgCanvas"></canvas>
+</div>
 <script>
 function pd(event) {
   event.preventDefault();

@@ -12,6 +12,7 @@ canvas {
   position: absolute;
 }
 
-body {
+div#winDiv {
   overflow:hidden;
+  position:relative;
 }
