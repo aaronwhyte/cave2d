@@ -1,9 +1,10 @@
 var OBJ_COUNT = 64;
 var RECT_CHANCE = 0.7;
-var MAX_CLOCKS_PER_ANIMATION = 0.3;
-var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
-var DRAW_GRID_EVENTS = false;
+var CLOCKS_PER_SECOND = 60 * 0.3;
 var SPACING = 50;
+
+var prevFrameStartMs;
+var frameStartMs;
 
 var ZOOM = 1/100;
 
@@ -150,13 +151,19 @@ function initWorld() {
 }
 
 function clockAndDraw() {
-  var endTimeMs = Date.now() + MAX_TIME_PER_FRAME_MS;
+  if (!prevFrameStartMs) {
+    prevFrameStartMs = Date.now() - 16;
+  } else {
+    prevFrameStartMs = frameStartMs;
+  }
+  frameStartMs = Date.now();
 
   // set fgCamera pan and zoom
   var v = Vec2d.alloc();
   var b = world.bodies[playerSpirit.bodyId];
   b.getPosAtTime(world.now, v);
   fgCamera.setPanXY(v.x, v.y);
+  //fgCamera.setPanXY(0, 0);
   v.free();
   fgCamera.setZoom(ZOOM);
 
@@ -167,18 +174,36 @@ function clockAndDraw() {
     drawBg(bgCanvas, bgCtx);
   }
   var winPxToWorldUnits = getPixelToWorldRatio();
-  bgCanvas.style.left = (-bgCanvas.width/2 + window.innerWidth/2 - ((fgCamera.pan.x - bgCamera.pan.x) * winPxToWorldUnits)) + 'px';
-  bgCanvas.style.top = (-bgCanvas.height/2 + window.innerHeight/2 + ((fgCamera.pan.y - bgCamera.pan.y) * winPxToWorldUnits)) + 'px';
+  var x = (-bgCanvas.width/2 + window.innerWidth/2 - ((fgCamera.pan.x - bgCamera.pan.x) * winPxToWorldUnits)) + 'px';
+  var y = (-bgCanvas.height/2 + window.innerHeight/2 + ((fgCamera.pan.y - bgCamera.pan.y) * winPxToWorldUnits)) + 'px';
+//  var trans = 'translate(' + x + ',' + y + ')';
+//  bgCanvas.style['-webkit-transform'] = trans;
+//  bgCanvas.style['-moz-transform'] = trans;
+//  bgCanvas.style['-ms-transform'] = trans;
+//  bgCanvas.style['-o-transform'] = trans;
+//  bgCanvas.style['transform'] = trans;
+  bgCanvas.style.left = x;
+  bgCanvas.style.top = y;
 
-  clock(endTimeMs);
+  clock();
 
   requestAnimationFrame(clockAndDraw, fgCanvas);
 }
 
-function clock(endTimeMs) {
-  var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
+function clock() {
+  var frameLength = frameStartMs - prevFrameStartMs;
+  if (frameLength > 1000/30) {
+    // Don't go below 30fps
+    frameLength = 1000/30;
+  }
+  var endTimeMs = frameStartMs + frameLength;
+  var secondsElapsed = frameLength / 1000;
+  var endClock = world.now + (1.01 + Math.sin(Date.now() / 3000)) * CLOCKS_PER_SECOND * secondsElapsed;
   var e = world.getNextEvent();
-  while (e && e.time <= maxClock && Date.now() <= endTimeMs) {
+  // Stop if there are no more events to process, or we've moved the game clock far enough ahead
+  // to match the amount of wall-time elapsed since the last frame,
+  // or (worst case) we're out of time for this frame.
+  while (e && e.time <= endClock && Date.now() <= endTimeMs) {
     if (e.type == WorldEvent.TYPE_HIT) {
       var b0 = world.getBodyByPathId(e.pathId0);
       var b1 = world.getBodyByPathId(e.pathId1);
@@ -193,8 +218,8 @@ function clock(endTimeMs) {
     world.processNextEvent();
     e = world.getNextEvent();
   }
-  if (!e || e.time > maxClock) {
-    world.now = maxClock;
+  if (!e || e.time > endClock) {
+    world.now = endClock;
   }
 }
 
@@ -228,7 +253,7 @@ function drawFg(canvas, ctx, viewport) {
 }
 
 function drawBg(canvas, ctx) {
-  console.log('drawBg');
+//  console.log('drawBg');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // get background brect in world coords.
@@ -249,7 +274,7 @@ function drawBg(canvas, ctx) {
   }
   rect.free();
   if (!bRect) {
-    console.warn('no brect for the background');
+//    console.warn('no brect for the background');
     return;
   }
 
@@ -275,6 +300,7 @@ function drawBg(canvas, ctx) {
   // pan the the middle of the world's background, and zoom correctly, then transform using camera.
   // TODO parameterize camera
   bgCamera.setPan(bRect.pos);
+  //bgCamera.setPanXY(0, 0);
   bgCamera.setZoom(ZOOM);
   bgCamera.transformContext(ctx);
 

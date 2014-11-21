@@ -1,11 +1,12 @@
-var ANIMATE = true;
-var ADJUST_CAMERA = true;
-var OBJ_COUNT = 100;
+var OBJ_COUNT = 64;
 var RECT_CHANCE = 0.7;
 var MAX_CLOCKS_PER_ANIMATION = 0.3;
 var MAX_TIME_PER_FRAME_MS = 0.95 * 1000 / 60;
 var DRAW_GRID_EVENTS = false;
 var SPACING = 50;
+
+var ANIMATE = true;
+var ADJUST_CAMERA = true;
 
 var canvas, ctx, viewport, camera;
 var world, resolver;

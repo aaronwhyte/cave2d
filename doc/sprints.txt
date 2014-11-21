@@ -299,8 +299,7 @@ Examples:
 * Debug overlay layer that can be turned on and off. Also probably shouldn't move, but maaaybe.
 Tasks:
 v Make it work
-- Make a reasonable API
-
+x Make a reasonable API
 
 Simple Sounds
 - one shot
