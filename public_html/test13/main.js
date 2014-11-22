@@ -198,7 +198,7 @@ function clock() {
   }
   var endTimeMs = frameStartMs + frameLength;
   var secondsElapsed = frameLength / 1000;
-  var endClock = world.now + (1.01 + Math.sin(Date.now() / 3000)) * CLOCKS_PER_SECOND * secondsElapsed;
+  var endClock = world.now + (1.01 + Math.sin(Date.now() / 1000)) * CLOCKS_PER_SECOND * secondsElapsed;
   var e = world.getNextEvent();
   // Stop if there are no more events to process, or we've moved the game clock far enough ahead
   // to match the amount of wall-time elapsed since the last frame,
