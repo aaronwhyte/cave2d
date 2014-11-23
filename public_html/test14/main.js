@@ -1,4 +1,13 @@
 var canvas;
+var gl;
+
+var shaderProgram;
+var mvMatrix = mat4.create();
+var pMatrix = mat4.create();
+
+var triangleVertexPositionBuffer;
+var squareVertexPositionBuffer;
+
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -7,13 +16,6 @@ function main() {
     resize();
   });
   resize();
-
-  initGL(canvas);
-  initShaders();
-  initBuffers();
-
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  gl.enable(gl.DEPTH_TEST);
 
   loop();
 }
@@ -25,6 +27,14 @@ function resize() {
   canvas.style.height = h + "px";
   canvas.width = w;
   canvas.height = h;
+
+  initGL(canvas);
+  initShaders();
+  initBuffers();
+
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.enable(gl.DEPTH_TEST);
+
 }
 
 function loop() {
@@ -33,7 +43,6 @@ function loop() {
   requestAnimationFrame(loop, canvas);
 }
 
-var gl;
 function initGL(canvas) {
   gl = canvas.getContext("experimental-webgl") || canvas.getContext("webgl");
   gl.viewportWidth = canvas.width;
@@ -80,8 +89,6 @@ function getShader(gl, id) {
 }
 
 
-var shaderProgram;
-
 function initShaders() {
   var fragmentShader = getShader(gl, "shader-fs");
   var vertexShader = getShader(gl, "shader-vs");
@@ -106,20 +113,13 @@ function initShaders() {
 }
 
 
-var mvMatrix = mat4.create();
-var pMatrix = mat4.create();
-
 function setMatrixUniforms() {
   gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
   gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 }
 
-
-
-var triangleVertexPositionBuffer;
-var squareVertexPositionBuffer;
-
 function initBuffers() {
+
   triangleVertexPositionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
   var vertices = [
