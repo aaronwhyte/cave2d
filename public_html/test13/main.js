@@ -26,25 +26,8 @@ function main() {
   fgCamera.setZoom(ZOOM);
   bgCamera = new Camera();
   bgCamera.setZoom(ZOOM);
-
-  window.addEventListener("resize", function() {
-    resize();
-  });
-  resize();
-
   initWorld();
   clockAndDraw();
-}
-
-function resize() {
-  var w = window.innerWidth;
-  var h = window.innerHeight;
-  winDiv.style.width = fgCanvas.style.width = w + "px";
-  winDiv.style.height = fgCanvas.style.height = h + "px";
-  fgCanvas.width = w;
-  fgCanvas.height = h;
-
-  bgDirty = true;
 }
 
 function initWorld() {
@@ -167,15 +150,24 @@ function clockAndDraw() {
   v.free();
   fgCamera.setZoom(ZOOM);
 
-  drawFg(fgCanvas, fgCtx, fgViewport);
+  var width = fgCanvas.clientWidth;
+  var height = fgCanvas.clientHeight;
+  if (fgCanvas.width != width ||
+      fgCanvas.height != height) {
+    fgCanvas.width = width;
+    fgCanvas.height = height;
+    bgDirty = true;
+  }
 
   if (bgDirty) {
-    bgDirty = false;
     drawBg(bgCanvas, bgCtx);
   }
+  drawFg(fgCanvas, fgCtx, fgViewport);
+
+
   var winPxToWorldUnits = getPixelToWorldRatio();
-  var x = (-bgCanvas.width/2 + window.innerWidth/2 - ((fgCamera.pan.x - bgCamera.pan.x) * winPxToWorldUnits)) + 'px';
-  var y = (-bgCanvas.height/2 + window.innerHeight/2 + ((fgCamera.pan.y - bgCamera.pan.y) * winPxToWorldUnits)) + 'px';
+  var x = (-bgCanvas.width/2 + fgCanvas.clientWidth/2 - ((fgCamera.pan.x - bgCamera.pan.x) * winPxToWorldUnits)) + 'px';
+  var y = (-bgCanvas.height/2 + fgCanvas.clientHeight/2 + ((fgCamera.pan.y - bgCamera.pan.y) * winPxToWorldUnits)) + 'px';
 //  var trans = 'translate(' + x + ',' + y + ')';
 //  bgCanvas.style['-webkit-transform'] = trans;
 //  bgCanvas.style['-moz-transform'] = trans;
@@ -224,7 +216,7 @@ function clock() {
 }
 
 function getPixelToWorldRatio() {
-  return Math.min(window.innerWidth, window.innerHeight) / (2 / ZOOM);
+  return Math.min(fgCanvas.clientWidth, fgCanvas.clientHeight) / (2 / ZOOM);
 }
 
 function drawFg(canvas, ctx, viewport) {
@@ -253,8 +245,7 @@ function drawFg(canvas, ctx, viewport) {
 }
 
 function drawBg(canvas, ctx) {
-//  console.log('drawBg');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  bgDirty = false;
 
   // get background brect in world coords.
   var bRect = null;
@@ -274,12 +265,10 @@ function drawBg(canvas, ctx) {
   }
   rect.free();
   if (!bRect) {
-//    console.warn('no brect for the background');
     return;
   }
 
   // resize the canvas
-  // TODO only do this if the window's minimum dimension, minHalf.
   var winPxToWorldUnits = getPixelToWorldRatio();
   var worldWidthPx = 2 * bRect.rad.x * winPxToWorldUnits;
   var worldHeightPx = 2 * bRect.rad.y * winPxToWorldUnits;
@@ -288,12 +277,14 @@ function drawBg(canvas, ctx) {
   canvas.width = worldWidthPx;
   canvas.height = worldHeightPx;
 
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   ctx.save();
 
   // transform to viewport coords, in the middle of the canvas
   ctx.translate(canvas.width/2, canvas.height/2);
-  var halfWinWidthPx = window.innerWidth / 2;
-  var halfWinHeightPx = window.innerHeight / 2;
+  var halfWinWidthPx = fgCanvas.clientWidth / 2;
+  var halfWinHeightPx = fgCanvas.clientHeight / 2;
   var minHalf = Math.min(halfWinWidthPx, halfWinHeightPx);
   ctx.scale(minHalf, -minHalf);
 

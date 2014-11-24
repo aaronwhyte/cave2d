@@ -8,7 +8,7 @@ body {
 }
 
 h1 {
-  font-size:large;
+  font-size:x-large;
   margin:1.2em 0 0.5em;
 }
 
@@ -18,7 +18,12 @@ a {
 }
 
 div {
-  margin: 0.5em 0;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+code {
+  font-family: courier new, courier, monospace;
 }
 </style>
 </head>
@@ -30,13 +35,43 @@ Updates: <a href="https://plus.google.com/111062934711090819978" rel="publisher"
 
 <h1>More Graphics</h1>
 <div><a href="test13">test13 - Separate Physics and Drawing Speeds</a><br>
-  The physics engine is event-based, using a single queue of events. How fast physics goes is independent
-  of the rendering rate. Here the physics speed varies on a sin-wave cycle.<br>
+  In this test, the game oscillates between slow-motion and fast-motion every few seconds.
+  <p>
+  The physics engine has a single queue, sorted by time, to keep track of most events that affect the world:
+  <ul>
+  <li>a body enters a grid cell</li>
+  <li>a body exits a grid cell</li>
+  <li>two bodies collide</li>
+  <li>a spirit timeout fires</li>
+  </ul>
+  World-time is independent from JavaScript's <code>Date.now()</code>. To advance world-time, a client needs to
+  consume events from the queue, in time order. That usually causes more events to be inserted at later world-times.
+  <p>
+  Bodies don't have a currentPosition field. A body has a "path", where position is a function of time, calculated
+  using these fields:
+  <ul>
+    <li>some starting position along a linear path
+    <li>the time at which the body was at that start position
+    <li>the body's velocity
+  </ul>
+  This path only changes when a body accelerates or teleports.
+  <p>
+  This all makes it easy to separate the speed of world-time from the rendering rate.
+  <p>
+  Also, in all previous tests, I was guilty of many of the anti-patterns in
+  <a href="http://games.greggman.com/game/webgl-anti-patterns/">http://games.greggman.com/game/webgl-anti-patterns/</a>.
+  I had made my canvas fullscreen by using a <code>window.onresize()</code> handler to set <code>canvas.width</code>,
+  <code>canvas.height</code>, <code>canvas.style.width</code>, and <code>canvas.style.height</code> to the same value as
+  <code>window.innerWidth</code> and <code>window.innerHeight</code>.
+  <p>Now test13 uses CSS <code>width:100%</code> and <code>height:100%</code> for the fullscreen effect, so those
+  never need to be adjusted by JS.
+  And every frame, test13 compares <code>canvas.clientWidth</code> to <code>canvas.width</code> (ditto for height), to
+  decide when to update <code>canvas.width</code> and <code>canvas.height</code>.
 </div>
 
 <div><a href="test12">test12 - Canvas layers</a><br>
   This is the same as test11, but now the background (the walls) is painted once onto a separate canvas that is bigger
-  than the screen, and that canvas is moved, but not redrawn.<br>
+  than the screen, and that canvas is moved, but not redrawn.
 </div>
 
 <h1>Controls</h1>
@@ -54,7 +89,7 @@ Updates: <a href="https://plus.google.com/111062934711090819978" rel="publisher"
 <div><a href="test8">test8 - Collision</a><br>Continuous 2D collision detection between bodies shaped like axis-aligned rectangles and circles.</div>
 
 <h1>Quadtrees</h1>
-<div><a href="test7">test7 - QuadTreeGrid &amp; HallPainter</a><br><b>Interactive!</b> Draw a cave map with a mouse or touchscreen.</div>
+<div><a href="test7">test7 - QuadTreeGrid &amp; HallPainter</a><br>You can draw a cave map with a mouse or touchscreen.</div>
 <div><a href="test6">test6 - QuadTree Moon</a><br>Demos quadtree editing by adding a circle and deleting a circle, at 60fps</div>
 
 <h1>Graphics</h1>
