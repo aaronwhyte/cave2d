@@ -81,8 +81,7 @@ function getShader(gl, id) {
   gl.compileShader(shader);
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.warn(gl.getShaderInfoLog(shader));
-    return null;
+    throw gl.getShaderInfoLog(shader);
   }
 
   return shader;
@@ -99,8 +98,8 @@ function initShaders() {
   gl.linkProgram(shaderProgram);
 
   if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-//    alert("Could not initialise shaders");
-    console.warn("Could not init shaders!");
+    // TODO get a real link status error?
+    throw "Could not init shaders!";
   }
 
   gl.useProgram(shaderProgram);
