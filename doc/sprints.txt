@@ -301,6 +301,16 @@ Tasks:
 v Make it work
 x Make a reasonable API
 
+Proper Outputter
+- Combine sound and graphics for splashes and stuff.
+- Sound and graphics engines are reusable and generic, I hope, but outputter is game-specific.
+- Basic graphics engine can draw primitive shapes in solid colorscolors, and lines
+  - circl
+
+WebGL renderer
+- foreground rects
+- foreground circles - shader or polys?
+
 Simple Sounds
 - one shot
 - continuous
@@ -313,6 +323,7 @@ Complete Game
   - Settings!
 - Starting a Level
   - Getting Killed
+  - winning the level
 
 
 
