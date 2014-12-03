@@ -103,7 +103,7 @@ function clock() {
   }
   var endTimeMs = frameStartMs + frameLength;
   var secondsElapsed = frameLength / 1000;
-  var endClock = world.now + (1.01 + Math.sin(Date.now() / 1000)) * CLOCKS_PER_SECOND * secondsElapsed;
+  var endClock = world.now + CLOCKS_PER_SECOND * secondsElapsed;
   var e = world.getNextEvent();
   // Stop if there are no more events to process, or we've moved the game clock far enough ahead
   // to match the amount of wall-time elapsed since the last frame,
@@ -128,13 +128,20 @@ function clock() {
   }
 }
 
+function readPlayerPos() {
+  world.bodies[playerSpirit.bodyId].getPosAtTime(world.now, playerPos);
+}
+
+var playerPos = new Vec2d();
+
 function drawScene(gl, program) {
+  readPlayerPos();
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   var uTranslation = gl.getUniformLocation(program, "uTranslation");
   var t = Date.now() / 1000;
-//  var translation = [0, 0, 0];
-  var translation = [Math.sin(t), -Math.cos(t), 0];
+  var translation = [0, 0, 0];
+//  var translation = [Math.sin(t), -Math.cos(t), 0];
   gl.uniform3fv(uTranslation, translation);
 
   var edgeLength = Math.min(canvas.width, canvas.height);
@@ -143,6 +150,8 @@ function drawScene(gl, program) {
   // background
   var uScale = gl.getUniformLocation(program, 'uScale');
   gl.uniform3fv(uScale, scale);
+  var uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
+  gl.uniform3fv(uPlayerPos, [playerPos.x, playerPos.y, 0]);
   drawTriangles(gl, program, bgColorBuff, bgVertBuff, bgTriangleCount);
 
   // foreground
@@ -177,6 +186,9 @@ function drawBody(b, now, scale) {
 
   var uScale = gl.getUniformLocation(program, 'uScale');
   gl.uniform3fv(uScale, scale);
+  var uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
+  gl.uniform3fv(uPlayerPos, [playerPos.x, playerPos.y, 0]);
+//  gl.uniform3fv(uPlayerPos, [0, 0, 0]);
   drawTriangles(gl, program, fgColorBuff, fgVertBuff, 2);
 
   p.free();
@@ -253,7 +265,7 @@ function initWorld() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bgColors), gl.STATIC_DRAW);
 
   b = Body.alloc();
-  v.setXY(-sqrt/2 * SPACING - 50, 0);
+  v.setXY(0, 0);
   b.setPosAtTime(v, 1);
   b.shape = Body.Shape.CIRCLE;
   b.rad = 3.5;
