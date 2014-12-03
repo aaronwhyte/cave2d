@@ -6,28 +6,6 @@
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<script id="vertex-shader" type="x-shader/x-vertex">
-  uniform vec3 uTranslation;
-  uniform vec3 uScale;
-
-  attribute vec3 aVertexPosition;
-  attribute vec4 aVertexColor;
-
-  varying lowp vec4 vColor;
-
-  void main(void) {
-    gl_Position = vec4((aVertexPosition + uTranslation) * uScale, 1.0);
-    vColor = aVertexColor;
-  }
-</script>
-<script id="fragment-shader" type="x-shader/x-fragment">
-  varying lowp vec4 vColor;
-
-  void main(void) {
-    gl_FragColor = vColor;
-  }
-</script>
-
 <script src="../js/graphics/webgl/webglutil.js"></script>
 <script src="main.js"></script>
 <link rel="stylesheet" type="text/css" href="main.css">

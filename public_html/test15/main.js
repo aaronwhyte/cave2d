@@ -1,5 +1,4 @@
-
-var canvas, gl, program;
+var canvas, vertexShader, fragmentShader, program, gl;
 var bgVertBuff, bgColorBuff;
 
 var CELLS_X = 64;
@@ -13,15 +12,42 @@ function main() {
     alpha: false,
     antialias: true
   });
-  program = createProgramFromScripts(gl, 'vertex-shader', 'fragment-shader');
+
+  loadText('vertex-shader.glsl', function(text) {
+    vertexShader = compileShader(gl, text, gl.VERTEX_SHADER);
+    maybeCreateProgram();
+  });
+
+  loadText('fragment-shader.glsl', function(text) {
+    fragmentShader = compileShader(gl, text, gl.FRAGMENT_SHADER);
+    maybeCreateProgram();
+  });
+}
+
+function loadText(path, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', path, true);
+  xhr.responseType = 'text';
+  xhr.onload = function(e) {
+    callback(this.response);
+  };
+  xhr.send();
+}
+
+function maybeCreateProgram() {
+  if (!vertexShader || !fragmentShader) return;
+
+  program = createProgram(gl, vertexShader, fragmentShader);
   gl.enable(gl.DEPTH_TEST);
   gl.useProgram(program);
 
-  initBackgroundData(gl);
-
-  loop();
+  onProgramCreated();
 }
 
+function onProgramCreated() {
+  initBackgroundData(gl);
+  loop();
+}
 
 function initBackgroundData(gl) {
   var verts = [];
@@ -29,12 +55,15 @@ function initBackgroundData(gl) {
 
   for (var y = 0; y < CELLS_Y; y++) {
     for (var x = 0; x < CELLS_X; x++) {
-      var px = 2 * ((x + 0.5) / CELLS_X - 0.5);
-      var py = 2 * ((y + 0.5) / CELLS_Y - 0.5);
-      var rx = 1 / CELLS_X;
-      var ry = 1 / CELLS_Y;
-      var c = Math.random() / 3;
-      addRect(verts, colors, px, py, 0, rx, ry, c, c, 1 - c);
+      var px = 2 * ((x + 0.5) / CELLS_X - 0.5) + Math.random() - 0.5;
+      var py = 2 * ((y + 0.5) / CELLS_Y - 0.5) + Math.random() - 0.5;
+      var rx = (1 + Math.random()) / CELLS_X;
+      var ry = (1 + Math.random()) / CELLS_Y;
+      var r, g, b;
+      r = Math.random() / 3;
+      g = Math.random() / 3;
+      b = 1 - Math.random() / 3;
+      addRect(verts, colors, px, py, 0, rx, ry, r, g, b);
     }
   }
 
