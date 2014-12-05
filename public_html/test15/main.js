@@ -12,10 +12,9 @@ var prevFrameStartMs;
 var frameStartMs;
 
 var viewTranslation = [0, 0, 0];
+var ZOOM = 1/150;
+
 var viewScale = [1/ZOOM, 1/ZOOM, 0];
-
-
-var ZOOM = 1/100;
 
 var world, resolver;
 var playerSpirit, raySpirit;
@@ -151,9 +150,16 @@ var bodyPos = new Vec2d();
 
 var uViewTranslation, uViewScale, uModelScale, uModelTranslation, uModelColor, uPlayerPos;
 
+var aVertexColor, aVertexPosition;
+
 function drawScene(gl, program) {
   readPlayerPos();
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
+  gl.enableVertexAttribArray(aVertexColor);
+  aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
+  gl.enableVertexAttribArray(aVertexPosition);
 
   viewTranslation[0] = -playerPos.x;
   viewTranslation[1] = -playerPos.y;
@@ -223,13 +229,9 @@ function drawBody(b) {
 
 
 function drawTriangles(gl, program, colorBuff, vertBuff, triangleCount) {
-  var aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
-  gl.enableVertexAttribArray(aVertexColor);
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
   gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
 
-  var aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
-  gl.enableVertexAttribArray(aVertexPosition);
   gl.bindBuffer(gl.ARRAY_BUFFER, vertBuff);
   gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
   gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
