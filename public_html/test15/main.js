@@ -5,14 +5,14 @@ var rectVertBuff, rectColorBuff;
 
 var OBJ_COUNT = 64;
 var RECT_CHANCE = 0.7;
-var CLOCKS_PER_SECOND = 60 * 0.4;
+var CLOCKS_PER_SECOND = 60 * 0.3;
 var SPACING = 50;
 
 var prevFrameStartMs;
 var frameStartMs;
 
 var viewTranslation = [0, 0, 0];
-var ZOOM = 1/150;
+var ZOOM = 1/100;
 
 var viewScale = [1/ZOOM, 1/ZOOM, 0];
 
