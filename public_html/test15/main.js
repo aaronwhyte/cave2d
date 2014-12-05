@@ -1,15 +1,21 @@
 var canvas, vertexShader, fragmentShader, program, gl;
 var bgVertBuff, bgColorBuff, bgTriangleCount;
 
+var rectVertBuff, rectColorBuff;
+
 var OBJ_COUNT = 64;
 var RECT_CHANCE = 0.7;
-var CLOCKS_PER_SECOND = 60 * 0.3;
+var CLOCKS_PER_SECOND = 60 * 0.4;
 var SPACING = 50;
 
 var prevFrameStartMs;
 var frameStartMs;
 
-var ZOOM = 1/200;
+var viewTranslation = [0, 0, 0];
+var viewScale = [1/ZOOM, 1/ZOOM, 0];
+
+
+var ZOOM = 1/100;
 
 var world, resolver;
 var playerSpirit, raySpirit;
@@ -54,6 +60,13 @@ function maybeCreateProgram() {
 }
 
 function onProgramCreated() {
+  uViewTranslation = gl.getUniformLocation(program, 'uViewTranslation');
+  uViewScale = gl.getUniformLocation(program, 'uViewScale');
+  uModelTranslation = gl.getUniformLocation(program, 'uModelTranslation');
+  uModelScale = gl.getUniformLocation(program, 'uModelScale');
+  uModelColor = gl.getUniformLocation(program, 'uModelColor');
+  uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
+
   initWorld();
   loop();
 }
@@ -133,80 +146,102 @@ function readPlayerPos() {
 }
 
 var playerPos = new Vec2d();
+var array3 = [0, 0, 0];
+var bodyPos = new Vec2d();
+
+var uViewTranslation, uViewScale, uModelScale, uModelTranslation, uModelColor, uPlayerPos;
 
 function drawScene(gl, program) {
   readPlayerPos();
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  var uTranslation = gl.getUniformLocation(program, "uTranslation");
-  var t = Date.now() / 1000;
-  var translation = [0, 0, 0];
-//  var translation = [Math.sin(t), -Math.cos(t), 0];
-  gl.uniform3fv(uTranslation, translation);
+  viewTranslation[0] = -playerPos.x;
+  viewTranslation[1] = -playerPos.y;
+  gl.uniform3fv(uViewTranslation, viewTranslation);
 
   var edgeLength = Math.min(canvas.width, canvas.height);
-  var scale = [ZOOM * edgeLength / canvas.width, ZOOM * edgeLength / canvas.height, 1];
+  viewScale[0] = ZOOM * edgeLength / canvas.width;
+  viewScale[1] = ZOOM * edgeLength / canvas.height;
+
+  gl.uniform3fv(uViewScale, viewScale);
+  gl.uniform3fv(uPlayerPos, [playerPos.x, playerPos.y, 0]);
 
   // background
-  var uScale = gl.getUniformLocation(program, 'uScale');
-  gl.uniform3fv(uScale, scale);
-  var uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
-  gl.uniform3fv(uPlayerPos, [playerPos.x, playerPos.y, 0]);
+  gl.uniform3fv(uModelScale, identity3);
+  gl.uniform3fv(uModelTranslation, zero3);
+  gl.uniform3fv(uModelColor, identity3);
+
   drawTriangles(gl, program, bgColorBuff, bgVertBuff, bgTriangleCount);
 
   // foreground
   for (var id in world.bodies) {
     var b = world.bodies[id];
     if (b && b.mass != Infinity) {
-      drawBody(b, world.now, scale);
+      drawBody(b);
     }
   }
 }
 
-function drawBody(b, now, scale) {
-  var p = b.getPosAtTime(now, Vec2d.alloc());
+var zero3 = [0, 0, 0];
+var identity3 = [1, 1, 1];
 
-  var verts = [];
-  var colors = [];
+var playerColor3 = [1, 0.5, 0.5];
+var raySpiritColor3 = [0.2, 0.7, 0.8];
+var bulletColor3 = [1, 0.5, 0.1];
+var otherColor3 = [0.5, 1, 0.5];
+
+function drawBody(b) {
+  b.getPosAtTime(world.now, bodyPos);
+
   if (b.id == playerSpirit.bodyId) {
-    addRect(verts, colors, p.x, p.y, 0, b.rad, b.rad, 1, 0.5, 0.5);
+    gl.uniform3fv(uModelColor, playerColor3);
   } else if (b.id == raySpirit.bodyId) {
-    addRect(verts, colors, p.x, p.y, 0, b.rad, b.rad, 0, 1, 0);
+    gl.uniform3fv(uModelColor, raySpiritColor3);
+  } else if (world.spirits[world.bodies[b.id].spiritId] instanceof BulletSpirit) {
+    gl.uniform3fv(uModelColor, bulletColor3);
   } else {
-    addRect(verts, colors, p.x, p.y, 0, b.rad, b.rad, 0.5, 1, 0.5);
+    gl.uniform3fv(uModelColor, otherColor3);
   }
 
-  var fgVertBuff = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, fgVertBuff);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STREAM_DRAW);
+  array3[0] = b.rad;
+  array3[1] = b.rad;
+  array3[2] = 1;
+  gl.uniform3fv(uModelScale, array3);
 
-  var fgColorBuff = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, fgColorBuff);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STREAM_DRAW);
+  array3[0] = bodyPos.x;
+  array3[1] = bodyPos.y;
+  array3[2] = 0;
+  gl.uniform3fv(uModelTranslation, array3);
 
-  var uScale = gl.getUniformLocation(program, 'uScale');
-  gl.uniform3fv(uScale, scale);
-  var uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
-  gl.uniform3fv(uPlayerPos, [playerPos.x, playerPos.y, 0]);
-//  gl.uniform3fv(uPlayerPos, [0, 0, 0]);
-  drawTriangles(gl, program, fgColorBuff, fgVertBuff, 2);
+  array3[0] = playerPos.x;
+  array3[1] = playerPos.y;
+  array3[2] = 0;
+  gl.uniform3fv(uPlayerPos, array3);
 
-  p.free();
+  drawTriangles(gl, program, rectColorBuff, rectVertBuff, 2);
 }
 
 
 function drawTriangles(gl, program, colorBuff, vertBuff, triangleCount) {
-  var aVertexColor = gl.getAttribLocation(program, "aVertexColor");
+  var aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
   gl.enableVertexAttribArray(aVertexColor);
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
   gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
 
-  var aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
+  var aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
   gl.enableVertexAttribArray(aVertexPosition);
   gl.bindBuffer(gl.ARRAY_BUFFER, vertBuff);
   gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
   gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
 }
+
+function createStaticGlBuff(values) {
+  var buff = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buff);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
+  return buff;
+}
+
 
 
 function initWorld() {
@@ -256,13 +291,19 @@ function initWorld() {
     }
   }
 
-  bgVertBuff = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, bgVertBuff);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bgVerts), gl.STATIC_DRAW);
+  bgVertBuff = createStaticGlBuff(bgVerts);
+  bgColorBuff = createStaticGlBuff(bgColors);
 
-  bgColorBuff = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, bgColorBuff);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bgColors), gl.STATIC_DRAW);
+  // template for individually-drawn rectangles
+  // TODO: circles and other models
+  var rectVerts = [];
+  var vertColors = [];
+  addRect(rectVerts, vertColors,
+      0, 0, -1, // x y z
+      1, 1, // rx ry
+      1, 1, 1); // r g b
+  rectVertBuff = createStaticGlBuff(rectVerts);
+  rectColorBuff = createStaticGlBuff(vertColors);
 
   b = Body.alloc();
   v.setXY(0, 0);

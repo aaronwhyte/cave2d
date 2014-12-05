@@ -307,17 +307,13 @@ Proper Outputter
 * Basic graphics engine can draw primitive shapes in solid colors, and lines?
 
 WebGL renderer
-- Static level background
-  - JS to load GL mem (see test15) using world coords
-  - vertex shader case (how to do branching in shader lang?)
-  - JS to set uniforms to translate world-to-view. Model-to-world is identity, since model == world for background.
-- Dynamic foreground objects
-  - JS to load model data into GL mem using model coords.
-  - vertex shader case for model type
-  - JS to set uniforms for model-to-world, world-to-view, plus color or other uniforms
-
-Some ideas for how to work the GL:
-- Pass points, time, and random numbers as uniforms.
+v Static level background
+  v JS to load GL mem (see test15) using world coords
+  v JS to set uniforms to translate world-to-view. Model-to-world is identity, since model == world for background.
+v Dynamic foreground objects, at all
+  v JS to load model data into GL mem using model coords.
+  v JS to set uniforms for model-to-world, world-to-view, plus color or other uniforms
+- circles
 
 Simple Sounds
 - one shot
