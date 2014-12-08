@@ -14,7 +14,7 @@ var SPACING = 50;
 // uniforms
 var uViewTranslation, uViewScale, uModelScale, uModelTranslation, uModelColor, uPlayerPos;
 // attributes
-var aVertexColor, aVertexPosition;
+var aVertexPosition, aVertexColor;
 // data buffers
 var bgPosBuff, bgColorBuff, bgTriangleCount;
 var rectPosBuff, rectColorBuff;
@@ -89,11 +89,11 @@ function onProgramCreated() {
   uModelColor = gl.getUniformLocation(program, 'uModelColor');
   uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
 
-  // Cache and enable the vertex color and position attributes.
-  aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
-  gl.enableVertexAttribArray(aVertexColor);
+  // Cache and enable the vertex position and color attributes.
   aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
   gl.enableVertexAttribArray(aVertexPosition);
+  aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
+  gl.enableVertexAttribArray(aVertexColor);
 
   initWorld();
   loop();
@@ -186,7 +186,7 @@ function drawScene() {
   gl.uniform3fv(uModelScale, IDENTITY_3);
   gl.uniform3fv(uModelTranslation, ZERO_3);
   gl.uniform3fv(uModelColor, IDENTITY_3);
-  drawTriangles(gl, bgColorBuff, bgPosBuff, bgTriangleCount);
+  drawTriangles(gl, bgPosBuff, bgColorBuff, bgTriangleCount);
 
   // foreground
   for (var id in world.bodies) {
@@ -220,16 +220,16 @@ function drawBody(b) {
   array3[2] = 0;
   gl.uniform3fv(uModelTranslation, array3);
 
-  drawTriangles(gl, rectColorBuff, rectPosBuff, 2);
+  drawTriangles(gl, rectPosBuff, rectColorBuff, 2);
 }
 
+function drawTriangles(gl, positionBuff, colorBuff, triangleCount) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
+  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
 
-function drawTriangles(gl, colorBuff, positionBuff, triangleCount) {
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
   gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
-  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
   gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
 }
 
@@ -257,7 +257,7 @@ function initWorld() {
  * caching the buffer locations in bgPosBuff and bgColorBuff.
  */
 function initMapAndBackgroundVertexes() {
-  var bgVerts = [];
+  var bgPositions = [];
   var bgColors = [];
   bgTriangleCount = 0;
   var red, green, blue;
@@ -282,7 +282,7 @@ function initMapAndBackgroundVertexes() {
         red = Math.random() / 3;
         green = Math.random() / 3;
         blue = 1 - Math.random() / 3;
-        addRect(bgVerts, bgColors, v.x, v.y, 0, b.rectRad.x, b.rectRad.y, red, green, blue);
+        addRect(bgPositions, bgColors, v.x, v.y, 0, b.rectRad.x, b.rectRad.y, red, green, blue);
         bgTriangleCount += 2;
 
       } else {
@@ -306,27 +306,41 @@ function initMapAndBackgroundVertexes() {
   }
 
   // Send the arrays to the GL program, and cache the locations of those buffers for later.
-  bgPosBuff = createStaticGlBuff(bgVerts);
+  bgPosBuff = createStaticGlBuff(bgPositions);
   bgColorBuff = createStaticGlBuff(bgColors);
 }
 
 function initModelVertexes() {
   // template for individually-drawn rectangles
-  var rectVerts = [];
+  var vertPositions = [];
   var vertColors = [];
-  addRect(rectVerts, vertColors,
+  addRect(vertPositions, vertColors,
       0, 0, -1, // x y z
       1, 1, // rx ry
       1, 1, 1); // r g b
-  rectPosBuff = createStaticGlBuff(rectVerts);
+  rectPosBuff = createStaticGlBuff(vertPositions);
   rectColorBuff = createStaticGlBuff(vertColors);
 
   // TODO: circles and other models
 }
 
-function addRect(verts, colors, px, py, pz, rx, ry, r, g, b) {
+/**
+ * Appends new vertex values to the "vertPositionsOut" and "vertColorsOut" arrays,
+ * for a rectangle with the specified position, size, and color.
+ * @param {Array} vertPositionsOut  output array that accumulates position values
+ * @param {Array} vertColorsOut  output array that accumulates color values
+ * @param {number} px  x positon of the center of the rectangle
+ * @param {number} py  y positon of the center of the rectangle
+ * @param {number} pz  z positon of the center of the rectangle
+ * @param {number} rx  x-radius of the rectangle; half the width
+ * @param {number} ry  y-radius of the rectangle; half the height
+ * @param {number} r  red color component, 0-1
+ * @param {number} g  green color component, 0-1
+ * @param {number} b  blue color component, 0-1
+ */
+function addRect(vertPositionsOut, vertColorsOut, px, py, pz, rx, ry, r, g, b) {
   // Two triangles form a square.
-  verts.push(
+  vertPositionsOut.push(
           px-rx, py-ry, pz,
           px-rx, py+ry, pz,
           px+rx, py+ry, pz,
@@ -335,7 +349,7 @@ function addRect(verts, colors, px, py, pz, rx, ry, r, g, b) {
           px+rx, py-ry, pz,
           px-rx, py-ry, pz);
   for (var i = 0; i < 6; i++) {
-    colors.push(r, g, b, 1);
+    vertColorsOut.push(r, g, b, 1);
   }
 }
 
