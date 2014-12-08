@@ -3,7 +3,7 @@ var canvas, vertexShader, fragmentShader, program, gl;
 
 // physics and behavior
 var world, resolver;
-var playerSpirit, raySpirit;
+var playerSpirit, raySpirit, playerBody;
 
 // map generation
 var OBJ_COUNT = 64;
@@ -157,7 +157,7 @@ function clock() {
 }
 
 function readPlayerPos() {
-  world.bodies[playerSpirit.bodyId].getPosAtTime(world.now, playerPos);
+  playerBody.getPosAtTime(world.now, playerPos);
 }
 
 function drawScene() {
@@ -165,8 +165,8 @@ function drawScene() {
 
   // Center the view on the player.
   readPlayerPos();
-  viewTranslation[0] = -playerPos.x;
-  viewTranslation[1] = -playerPos.y;
+  viewTranslation[0] = -playerPos.x - 0.25 - playerBody.vel.x / 10;
+  viewTranslation[1] = -playerPos.y - 0.25 - playerBody.vel.y / 10;
   gl.uniform3fv(uViewTranslation, viewTranslation);
 
   // Remember the player's position, for tweaking the colors.
@@ -428,6 +428,7 @@ function initPlayer() {
   b.mass = Math.PI * b.rad * b.rad;
   b.pathDurationMax = PlayerSpirit.TIMEOUT;
   var bodyId = world.addBody(b);
+  playerBody = b;
   var spirit = new PlayerSpirit();
   var spiritId = world.addSpirit(spirit);
   spirit.bodyId = bodyId;
