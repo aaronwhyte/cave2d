@@ -1,23 +1,45 @@
+// WebGL fundamentals
 var canvas, vertexShader, fragmentShader, program, gl;
-var bgVertBuff, bgColorBuff, bgTriangleCount;
 
-var rectVertBuff, rectColorBuff;
+// physics and behavior
+var world, resolver;
+var playerSpirit, raySpirit;
 
+// map generation
 var OBJ_COUNT = 64;
 var RECT_CHANCE = 0.7;
-var CLOCKS_PER_SECOND = 60 * 0.3;
 var SPACING = 50;
 
+// locations of cached GL program data:
+// uniforms
+var uViewTranslation, uViewScale, uModelScale, uModelTranslation, uModelColor, uPlayerPos;
+// attributes
+var aVertexColor, aVertexPosition;
+// data buffers
+var bgPosBuff, bgColorBuff, bgTriangleCount;
+var rectPosBuff, rectColorBuff;
+
+// frame rendering timing
+var CLOCKS_PER_SECOND = 60 * 0.3;
 var prevFrameStartMs;
 var frameStartMs;
 
-var viewTranslation = [0, 0, 0];
+// world-to-view transformation
 var ZOOM = 1/100;
-
+var viewTranslation = [0, 0, 0];
 var viewScale = [1/ZOOM, 1/ZOOM, 0];
 
-var world, resolver;
-var playerSpirit, raySpirit;
+// scene-drawing values
+var playerPos = new Vec2d();
+var array3 = [0, 0, 0];
+var bodyPos = new Vec2d();
+var ZERO_3 = [0, 0, 0];
+var IDENTITY_3 = [1, 1, 1];
+var PLAYER_COLOR_3 = [1, 0.5, 0.5];
+var RAY_SPIRIT_COLOR_3 = [0.2, 0.7, 0.8];
+var BULLET_COLOR_3 = [1, 0.5, 0.1];
+var OTHER_COLOR_3 = [0.5, 1, 0.5];
+
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -27,12 +49,12 @@ function main() {
     antialias: true
   });
 
-  loadText('vertex-shader.glsl', function(text) {
+  loadText('vertex-shader.txt', function(text) {
     vertexShader = compileShader(gl, text, gl.VERTEX_SHADER);
     maybeCreateProgram();
   });
 
-  loadText('fragment-shader.glsl', function(text) {
+  loadText('fragment-shader.txt', function(text) {
     fragmentShader = compileShader(gl, text, gl.FRAGMENT_SHADER);
     maybeCreateProgram();
   });
@@ -59,6 +81,7 @@ function maybeCreateProgram() {
 }
 
 function onProgramCreated() {
+  // Cache all the shader uniforms.
   uViewTranslation = gl.getUniformLocation(program, 'uViewTranslation');
   uViewScale = gl.getUniformLocation(program, 'uViewScale');
   uModelTranslation = gl.getUniformLocation(program, 'uModelTranslation');
@@ -66,35 +89,25 @@ function onProgramCreated() {
   uModelColor = gl.getUniformLocation(program, 'uModelColor');
   uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
 
+  // Cache and enable the vertex color and position attributes.
+  aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
+  gl.enableVertexAttribArray(aVertexColor);
+  aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
+  gl.enableVertexAttribArray(aVertexPosition);
+
   initWorld();
   loop();
-}
-
-
-function addRect(verts, colors, px, py, pz, rx, ry, r, g, b) {
-  // Two triangles form a square.
-  verts.push(
-      px-rx, py-ry, pz,
-      px-rx, py+ry, pz,
-      px+rx, py+ry, pz,
-
-      px+rx, py+ry, pz,
-      px+rx, py-ry, pz,
-      px-rx, py-ry, pz);
-  for (var i = 0; i < 6; i++) {
-    colors.push(r, g, b, 1);
-  }
 }
 
 function loop() {
   maybeResize(canvas, gl);
   if (!prevFrameStartMs) {
-    prevFrameStartMs = Date.now() - 16;
+    prevFrameStartMs = Date.now() - 1000/60;
   } else {
     prevFrameStartMs = frameStartMs;
   }
   frameStartMs = Date.now();
-  drawScene(gl, program);
+  drawScene();
   clock();
   requestAnimationFrame(loop, canvas);
 }
@@ -144,40 +157,36 @@ function readPlayerPos() {
   world.bodies[playerSpirit.bodyId].getPosAtTime(world.now, playerPos);
 }
 
-var playerPos = new Vec2d();
-var array3 = [0, 0, 0];
-var bodyPos = new Vec2d();
-
-var uViewTranslation, uViewScale, uModelScale, uModelTranslation, uModelColor, uPlayerPos;
-
-var aVertexColor, aVertexPosition;
-
-function drawScene(gl, program) {
-  readPlayerPos();
+function drawScene() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
-  gl.enableVertexAttribArray(aVertexColor);
-  aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
-  gl.enableVertexAttribArray(aVertexPosition);
-
+  // Center the view on the player.
+  readPlayerPos();
   viewTranslation[0] = -playerPos.x;
   viewTranslation[1] = -playerPos.y;
   gl.uniform3fv(uViewTranslation, viewTranslation);
 
+  // Remember the player's position, for tweaking the colors.
+  array3[0] = playerPos.x;
+  array3[1] = playerPos.y;
+  array3[2] = 0;
+  gl.uniform3fv(uPlayerPos, array3);
+
+  // Scale the view to encompass a fixed-size square around the player's position.
   var edgeLength = Math.min(canvas.width, canvas.height);
   viewScale[0] = ZOOM * edgeLength / canvas.width;
   viewScale[1] = ZOOM * edgeLength / canvas.height;
-
   gl.uniform3fv(uViewScale, viewScale);
   gl.uniform3fv(uPlayerPos, [playerPos.x, playerPos.y, 0]);
 
-  // background
-  gl.uniform3fv(uModelScale, identity3);
-  gl.uniform3fv(uModelTranslation, zero3);
-  gl.uniform3fv(uModelColor, identity3);
-
-  drawTriangles(gl, program, bgColorBuff, bgVertBuff, bgTriangleCount);
+  // Draw the whole background.
+  // All the vertex data is already in the program, in bgColorBuff and bgPosBuff.
+  // Since the map is already in world-coordinates and world-colors,
+  // set all the model-to-world uniforms to do nothing.
+  gl.uniform3fv(uModelScale, IDENTITY_3);
+  gl.uniform3fv(uModelTranslation, ZERO_3);
+  gl.uniform3fv(uModelColor, IDENTITY_3);
+  drawTriangles(gl, bgColorBuff, bgPosBuff, bgTriangleCount);
 
   // foreground
   for (var id in world.bodies) {
@@ -188,25 +197,17 @@ function drawScene(gl, program) {
   }
 }
 
-var zero3 = [0, 0, 0];
-var identity3 = [1, 1, 1];
-
-var playerColor3 = [1, 0.5, 0.5];
-var raySpiritColor3 = [0.2, 0.7, 0.8];
-var bulletColor3 = [1, 0.5, 0.1];
-var otherColor3 = [0.5, 1, 0.5];
-
 function drawBody(b) {
   b.getPosAtTime(world.now, bodyPos);
 
   if (b.id == playerSpirit.bodyId) {
-    gl.uniform3fv(uModelColor, playerColor3);
+    gl.uniform3fv(uModelColor, PLAYER_COLOR_3);
   } else if (b.id == raySpirit.bodyId) {
-    gl.uniform3fv(uModelColor, raySpiritColor3);
+    gl.uniform3fv(uModelColor, RAY_SPIRIT_COLOR_3);
   } else if (world.spirits[world.bodies[b.id].spiritId] instanceof BulletSpirit) {
-    gl.uniform3fv(uModelColor, bulletColor3);
+    gl.uniform3fv(uModelColor, BULLET_COLOR_3);
   } else {
-    gl.uniform3fv(uModelColor, otherColor3);
+    gl.uniform3fv(uModelColor, OTHER_COLOR_3);
   }
 
   array3[0] = b.rad;
@@ -219,20 +220,15 @@ function drawBody(b) {
   array3[2] = 0;
   gl.uniform3fv(uModelTranslation, array3);
 
-  array3[0] = playerPos.x;
-  array3[1] = playerPos.y;
-  array3[2] = 0;
-  gl.uniform3fv(uPlayerPos, array3);
-
-  drawTriangles(gl, program, rectColorBuff, rectVertBuff, 2);
+  drawTriangles(gl, rectColorBuff, rectPosBuff, 2);
 }
 
 
-function drawTriangles(gl, program, colorBuff, vertBuff, triangleCount) {
+function drawTriangles(gl, colorBuff, positionBuff, triangleCount) {
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
   gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertBuff);
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
   gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
   gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
 }
@@ -244,17 +240,28 @@ function createStaticGlBuff(values) {
   return buff;
 }
 
-
-
 function initWorld() {
+  world = new World();
+  resolver = new HitResolver();
+
+  initMapAndBackgroundVertexes();
+  initModelVertexes();
+
+  initPlayer();
+  initRaySpirit();
+}
+
+/**
+ * Adds wall bodies and TestSpirit bodies to the world,
+ * and sends the wall rect vertexes to the GL program,
+ * caching the buffer locations in bgPosBuff and bgColorBuff.
+ */
+function initMapAndBackgroundVertexes() {
   var bgVerts = [];
   var bgColors = [];
   bgTriangleCount = 0;
-
-  world = new World();
-  resolver = new HitResolver();
   var red, green, blue;
-  var v = Vec2d.alloc();
+  var v = new Vec2d();
   var sqrt = Math.sqrt(OBJ_COUNT);
   for (var x = -sqrt/2; x < sqrt/2; x++) {
     for (var y = -sqrt/2; y < sqrt/2; y++) {
@@ -262,6 +269,7 @@ function initWorld() {
       v.setXY(x * SPACING + Math.random(), y * SPACING + Math.random());
       b.setPosAtTime(v, 1);
       if (Math.random() < RECT_CHANCE) {
+        // Stationary wall
         b.shape = Body.Shape.RECT;
         b.rectRad.setXY(
                 (0.3 + Math.random()) * SPACING * 0.3,
@@ -269,6 +277,8 @@ function initWorld() {
         b.mass = Infinity;
         b.pathDurationMax = Infinity;
         world.addBody(b);
+
+        // Cache background vertex info
         red = Math.random() / 3;
         green = Math.random() / 3;
         blue = 1 - Math.random() / 3;
@@ -276,6 +286,8 @@ function initWorld() {
         bgTriangleCount += 2;
 
       } else {
+        // TestSpirit sprite.
+        // (It's silly to create these during map-initialization, but oh well.)
         v.setXY(Math.random() - 0.5, Math.random() - 0.5);
         b.setVelAtTime(v, 1);
         b.shape = Body.Shape.CIRCLE;
@@ -293,31 +305,52 @@ function initWorld() {
     }
   }
 
-  bgVertBuff = createStaticGlBuff(bgVerts);
+  // Send the arrays to the GL program, and cache the locations of those buffers for later.
+  bgPosBuff = createStaticGlBuff(bgVerts);
   bgColorBuff = createStaticGlBuff(bgColors);
+}
 
+function initModelVertexes() {
   // template for individually-drawn rectangles
-  // TODO: circles and other models
   var rectVerts = [];
   var vertColors = [];
   addRect(rectVerts, vertColors,
       0, 0, -1, // x y z
       1, 1, // rx ry
       1, 1, 1); // r g b
-  rectVertBuff = createStaticGlBuff(rectVerts);
+  rectPosBuff = createStaticGlBuff(rectVerts);
   rectColorBuff = createStaticGlBuff(vertColors);
 
-  b = Body.alloc();
-  v.setXY(0, 0);
+  // TODO: circles and other models
+}
+
+function addRect(verts, colors, px, py, pz, rx, ry, r, g, b) {
+  // Two triangles form a square.
+  verts.push(
+          px-rx, py-ry, pz,
+          px-rx, py+ry, pz,
+          px+rx, py+ry, pz,
+
+          px+rx, py+ry, pz,
+          px+rx, py-ry, pz,
+          px-rx, py-ry, pz);
+  for (var i = 0; i < 6; i++) {
+    colors.push(r, g, b, 1);
+  }
+}
+
+function initPlayer() {
+  var v = new Vec2d();
+  var b = Body.alloc();
+  v.setXY(-Math.sqrt(OBJ_COUNT)/2 * SPACING - 50, 0);
   b.setPosAtTime(v, 1);
   b.shape = Body.Shape.CIRCLE;
   b.rad = 3.5;
   b.mass = Math.PI * b.rad * b.rad;
   b.pathDurationMax = PlayerSpirit.TIMEOUT;
-  bodyId = world.addBody(b);
-
-  spirit = new PlayerSpirit();
-  spiritId = world.addSpirit(spirit);
+  var bodyId = world.addBody(b);
+  var spirit = new PlayerSpirit();
+  var spiritId = world.addSpirit(spirit);
   spirit.bodyId = bodyId;
   playerSpirit = spirit;
   b.spiritId = spiritId;
@@ -354,22 +387,22 @@ function initWorld() {
 
   playerSpirit.setAimStick(aimStick);
   playerSpirit.setMoveStick(moveStick);
+}
 
-
-  b = Body.alloc();
-  v.setXY(sqrt/2 * SPACING + 50, 0);
+function initRaySpirit() {
+  var v = new Vec2d();
+  var b = Body.alloc();
+  v.setXY(Math.sqrt(OBJ_COUNT)/2 * SPACING + 50, 0);
   b.setPosAtTime(v, 1);
   b.shape = Body.Shape.CIRCLE;
   b.rad = 7;
   b.mass = Math.PI * b.rad * b.rad;
-  b.pathDurationMax = RaySpirit.TIMEOUT;// * 2;
-  bodyId = world.addBody(b);
-  spirit = new RaySpirit();
-  spiritId = world.addSpirit(spirit);
+  b.pathDurationMax = RaySpirit.TIMEOUT;
+  var bodyId = world.addBody(b);
+  var spirit = new RaySpirit();
+  var spiritId = world.addSpirit(spirit);
   spirit.bodyId = bodyId;
   raySpirit = spirit;
   b.spiritId = spiritId;
   world.addTimeout(RaySpirit.TIMEOUT, spiritId, null);
-
-  v.free();
 }

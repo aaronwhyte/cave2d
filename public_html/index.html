@@ -12,6 +12,14 @@ h1 {
   margin:1.2em 0 0.5em;
 }
 
+h2 {
+  font-size:large;
+}
+
+h3 {
+  font-size:medium;
+}
+
 a {
   font-weight:bold;
   text-decoration:none;
@@ -22,82 +30,279 @@ div {
   margin-bottom: 1em;
 }
 
-code {
-  font-family: courier new, courier, monospace;
+code.sampleCode {
+  font-family: consolas, monospace;
+  white-space: pre;
+  display:block;
+  margin-left:2em;
 }
 </style>
 </head>
 <body>
 
-I'm working on an HTML5 2D canvas game engine for phones, tablets and laptops.<br>
+I'm working on a 2D HTML5 game engine for phones, tablets and laptops.<br>
 Source code: <a href="https://github.com/aaronwhyte/cave2d">github.com/aaronwhyte/cave2d</a><br>
 Updates: <a href="https://plus.google.com/111062934711090819978" rel="publisher">Google+ page for plexode</a>
 
 <h1>More Graphics</h1>
-<div><a href="test13">test13 - Separate Physics and Drawing Speeds</a><br>
-  In this test, the game oscillates between slow-motion and fast-motion every few seconds.
-  <p>
-  The physics engine has a single queue, sorted by time, to keep track of most events that affect the world:
-  <ul>
+<h2><a href="test15">Test 15 - WebGL Renderer</a></h2>
+This re-implements the twin-stick shooter renderer from tests 11-13, using WebGL instead of 2D canvas. WebGL
+seems to be the key to smooth animation on an iPad 2 running iOS 8 - 2D canvas wasn't fast enough.
+On Android, Chrome and Firefox are buttery smooth on Nexus 5 and 7, KitKat and Lollipop, Chrome and Firefox.
+<p>
+I worked through a few tutorials, and they helped a lot, but they didn't explain how to buffer up the background,
+or how to render moving foreground objects efficiently, without JavaScript memory allocations, so I had to figure that
+out on my own. I'm new at WebGL and OpenGL, so I may be making mistakes, but here is what has worked for me so far:
+
+<h3>1) Create a WebGLProgram</h3>
+Create a WebGLProgram object, containing a <a href="test15/vertex-shader.txt">vertex shader</a>
+and <a href="test15/fragment-shader.txt">fragment shader</a>.
+That's covered by existing tutorials like these:
+<ul>
+  <li><a href="http://learningwebgl.com/blog/?p=28">learningwebgl.com, Lesson 1</a></li>
+  <li><a href="http://games.greggman.com/game/webgl-fundamentals/">games.greggman.com, WebGL Fundamentals</a></li>
+</ul>
+
+<h3>2) Cache GL program variable locations</h3>
+During setup, cache the locations of all the vertex shader's uniform variables, and the attribute lists.
+These are re-used several times every frame by drawScene().
+<p>
+In the test15 vertex shader, I have uniforms for transforming vertexes from model coords to world coords, and from
+world coords to view coords.
+I also transform from model color to final pixel color, so the same model can be rendered with different colors.
+There's one more uniform, the player position, which was just for a fun effect - altering every pixel color based
+on where the player is in the world.
+<br>
+<code class="sampleCode">
+function onProgramCreated() {
+  // Cache all the shader uniforms.
+  uViewTranslation = gl.getUniformLocation(program, 'uViewTranslation');
+  uViewScale = gl.getUniformLocation(program, 'uViewScale');
+  uModelTranslation = gl.getUniformLocation(program, 'uModelTranslation');
+  uModelScale = gl.getUniformLocation(program, 'uModelScale');
+  uModelColor = gl.getUniformLocation(program, 'uModelColor');
+  uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
+
+  // Cache and enable the vertex color and position attributes.
+  aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
+  gl.enableVertexAttribArray(aVertexColor);
+  aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
+  gl.enableVertexAttribArray(aVertexPosition);
+
+  initWorld();
+  loop();
+}
+</code>
+
+<h3>3) Create the static level map</h3>
+As I generate the geometry of the level (a bunch of random rectangles), I generate two parallel JavaScript arrays:
+One for triangle vertex points, and one for the RBG components of the vertex colors. If this was a traditional full
+game, this info would be generated once at the start of each level.
+<p>
+The map vertex positions are already in world-coordinates, so when I draw them, uModelScale is always (1, 1, 1) and
+the uModelTranslation is (0, 0). And they're already colored with near-final colors, so the uModelColor,
+which scales the color in my shader, is always (1, 1, 1).
+<p>
+Then I feed those arrays to the GL program as buffers, and cache pointers to
+each of those two buffers, for later use.
+<code class="sampleCode">
+function initMapAndBackgroundVertexes() {
+  var bgVerts = [];
+  var bgColors = [];
+
+  ...Fill the arrays with vertex coordinates and color RBG values, as I generate the level walls...
+
+  // Send the arrays to the GL program, and cache the locations of those buffers for later.
+  bgPosBuff = createStaticGlBuff(bgVerts);
+  bgColorBuff = createStaticGlBuff(bgColors);
+}
+
+function createStaticGlBuff(values) {
+  var buff = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buff);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
+  return buff;
+}
+</code>
+
+<h3>4) Initialize re-usable models</h3>
+I have really simple sprite models for now: Just a square, made from two triangles.
+Getting the position and color model data into the GL program is straightforward:
+<code class="sampleCode">
+function initModelVertexes() {
+  // template for individually-drawn rectangles
+  var rectVerts = [];
+  var vertColors = [];
+  addRect(rectVerts, vertColors,
+      0, 0, -1, // x y z
+      1, 1, // rx ry
+      1, 1, 1); // r g b
+  rectPosBuff = createStaticGlBuff(rectVerts);
+  rectColorBuff = createStaticGlBuff(vertColors);
+
+  // TODO: circles and other models
+}
+</code>
+
+<h3>5) Draw the scene as quickly as possible.</h3>
+This code should be doing very little work in JavaScript, since it will be called every 16 milliseconds.
+The GL program should have all the data it needs, for things that don't change from scene to scene, like the locations
+of the uniforms and attributes, and the map vertexes and model vertexes.
+<p>
+All we have to do here is to
+set the view transformations,
+tell GL to draw the map vertexes,
+and use model vertexes to stamp a bunch of sprites with different locations, sizes, and colors onto the canvas.
+For fun, I vary every pixel's color based on the player's location, but since the GL hardware is doing the heavy
+lifting, it's super fast.
+<code class="sampleCode">
+function drawScene(gl, program) {
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  // Center the view on the player.
+  readPlayerPos();
+  viewTranslation[0] = -playerPos.x;
+  viewTranslation[1] = -playerPos.y;
+  gl.uniform3fv(uViewTranslation, viewTranslation);
+
+  // Remember the player's position, for tweaking the colors.
+  array3[0] = playerPos.x;
+  array3[1] = playerPos.y;
+  array3[2] = 0;
+  gl.uniform3fv(uPlayerPos, array3);
+
+  // Scale the view to encompass a fixed-size square around the player's position.
+  var edgeLength = Math.min(canvas.width, canvas.height);
+  viewScale[0] = ZOOM * edgeLength / canvas.width;
+  viewScale[1] = ZOOM * edgeLength / canvas.height;
+  gl.uniform3fv(uViewScale, viewScale);
+  gl.uniform3fv(uPlayerPos, [playerPos.x, playerPos.y, 0]);
+
+  // Draw the whole background.
+  // All the vertex data is already in the program, in bgColorBuff and bgPosBuff.
+  // Since the map is already in world-coordinates and world-colors,
+  // set all the model-to-world uniforms to do nothing.
+  gl.uniform3fv(uModelScale, identity3);
+  gl.uniform3fv(uModelTranslation, zero3);
+  gl.uniform3fv(uModelColor, identity3);
+  drawTriangles(gl, program, bgColorBuff, bgPosBuff, bgTriangleCount);
+
+  // foreground
+  for (var id in world.bodies) {
+    var b = world.bodies[id];
+    if (b && b.mass != Infinity) {
+      drawBody(b);
+    }
+  }
+}
+
+function drawBody(b) {
+  b.getPosAtTime(world.now, bodyPos);
+
+  if (b.id == playerSpirit.bodyId) {
+    gl.uniform3fv(uModelColor, playerColor3);
+  } else if (b.id == raySpirit.bodyId) {
+    gl.uniform3fv(uModelColor, raySpiritColor3);
+  } else if (world.spirits[world.bodies[b.id].spiritId] instanceof BulletSpirit) {
+    gl.uniform3fv(uModelColor, bulletColor3);
+  } else {
+    gl.uniform3fv(uModelColor, otherColor3);
+  }
+
+  array3[0] = b.rad;
+  array3[1] = b.rad;
+  array3[2] = 1;
+  gl.uniform3fv(uModelScale, array3);
+
+  array3[0] = bodyPos.x;
+  array3[1] = bodyPos.y;
+  array3[2] = 0;
+  gl.uniform3fv(uModelTranslation, array3);
+
+  drawTriangles(gl, program, rectColorBuff, rectPosBuff, 2);
+}
+
+function drawTriangles(gl, program, colorBuff, positionBuff, triangleCount) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
+  gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
+  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
+}
+</code>
+<p>
+The live code is at <a href="test15/main.js">test15/main.js</a>.<br>
+You can find <a href="https://github.com/aaronwhyte/cave2d/blob/master/public_html/test15/main.js">test15/main.js
+on GitHub</a>, too.
+
+<h2><a href="test14">Test 14 - Basic WebGL</a></h2>
+A rectangle and a triangle, from <a href="http://learningwebgl.com/blog/?p=28">learningwebgl.com, Lesson1</a>,
+plus some badly-coded animation.
+
+<h2><a href="test13">Test 13 - Separate Physics and Drawing Speeds</a></h2>
+In this test, the game oscillates between slow-motion and fast-motion every few seconds.
+It's smooth and fast on Android, but still a little choppy on an iPad 2 with iOS 8. :-(
+<p>
+The physics engine has a single queue, sorted by time, to keep track of most events that affect the world:
+<ul>
   <li>a body enters a grid cell</li>
   <li>a body exits a grid cell</li>
   <li>two bodies collide</li>
   <li>a spirit timeout fires</li>
-  </ul>
-  World-time is independent from JavaScript's <code>Date.now()</code>. To advance world-time, a client needs to
-  consume events from the queue, in time order. That usually causes more events to be inserted at later world-times.
-  <p>
-  Bodies don't have a currentPosition field. A body has a "path", where position is a function of time, calculated
-  using these fields:
-  <ul>
-    <li>some starting position along a linear path
-    <li>the time at which the body was at that start position
-    <li>the body's velocity
-  </ul>
-  This path only changes when a body accelerates or teleports.
-  <p>
-  This all makes it easy to separate the speed of world-time from the rendering rate.
-  <p>
-  Also, in all previous tests, I was guilty of many of the anti-patterns in
-  <a href="http://games.greggman.com/game/webgl-anti-patterns/">http://games.greggman.com/game/webgl-anti-patterns/</a>.
-  I had made my canvas fullscreen by using a <code>window.onresize()</code> handler to set <code>canvas.width</code>,
-  <code>canvas.height</code>, <code>canvas.style.width</code>, and <code>canvas.style.height</code> to the same value as
-  <code>window.innerWidth</code> and <code>window.innerHeight</code>.
-  <p>Now test13 uses CSS <code>width:100%</code> and <code>height:100%</code> for the fullscreen effect, so those
-  never need to be adjusted by JS.
-  And every frame, test13 compares <code>canvas.clientWidth</code> to <code>canvas.width</code> (ditto for height), to
-  decide when to update <code>canvas.width</code> and <code>canvas.height</code>.
-</div>
+</ul>
+World-time is independent from JavaScript's <code>Date.now()</code>. To advance world-time, a client needs to
+consume events from the queue, in time order. That usually causes more events to be inserted at later world-times.
+<p>
+Bodies don't have a currentPosition field. A body has a "path", where position is a function of time, calculated
+using these fields:
+<ul>
+  <li>some starting position along a linear path
+  <li>the time at which the body was at that start position
+  <li>the body's velocity
+</ul>
+This path only changes when a body accelerates or teleports.
+<p>
+This all makes it easy to separate the speed of world-time from the rendering rate.
+<p>
+Also, in all previous tests, I was guilty of many of the anti-patterns in
+<a href="http://games.greggman.com/game/webgl-anti-patterns/">http://games.greggman.com/game/webgl-anti-patterns/</a>.
+I had made my canvas fullscreen by using a <code>window.onresize()</code> handler to set <code>canvas.width</code>,
+<code>canvas.height</code>, <code>canvas.style.width</code>, and <code>canvas.style.height</code> to the same value as
+<code>window.innerWidth</code> and <code>window.innerHeight</code>.
+<p>Now test13 uses CSS <code>width:100%</code> and <code>height:100%</code> for the fullscreen effect, so those
+never need to be adjusted by JS.
+And every frame, test13 compares <code>canvas.clientWidth</code> to <code>canvas.width</code> (ditto for height), to
+decide when to update <code>canvas.width</code> and <code>canvas.height</code>.
 
-<div><a href="test12">test12 - Canvas layers</a><br>
-  This is the same as test11, but now the background (the walls) is painted once onto a separate canvas that is bigger
-  than the screen, and that canvas is moved, but not redrawn.
-</div>
+<h2><a href="test12">Test 12 - Canvas layers</a></h2>
+This is the same as test11, but now the background (the walls) is painted once onto a separate canvas that is bigger
+than the screen, and that canvas is moved, but not redrawn.
 
 <h1>Controls</h1>
-<div><a href="test11">test11 - Stick controls</a><br>
-  Twin-stick shooter demo, to test a bunch of "Stick" control classes.<br>
-  Move with WASD keys, or the left half of a touchscreen.<br>
-  Fire using IJKL, arrow keys, a mouse or trackpad (using
-  <a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API">Pointer Lock API</a>),
-  or the right half of a touchscreen.
-</div>
+<h2><a href="test11">Test 11 - Stick controls</a></h2>
+Twin-stick shooter demo, to test a bunch of "Stick" control classes.<br>
+Move with WASD keys, or the left half of a touchscreen.<br>
+Fire using IJKL, arrow keys, a mouse or trackpad (using
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API">Pointer Lock API</a>),
+or the right half of a touchscreen.
 
 <h1>Physics</h1>
-<div><a href="test10">test10 - Rayscan</a><br>The RayscanSpirit uses rayscans to see and make decisions.</div>
-<div><a href="test9">test9 - Spirit</a><br>"Spirit" classes animate bodies, bringing them to life.</div>
-<div><a href="test8">test8 - Collision</a><br>Continuous 2D collision detection between bodies shaped like axis-aligned rectangles and circles.</div>
+<div><a href="test10">Test 10 - Rayscan</a><br>The RayscanSpirit uses rayscans to see and make decisions.</div>
+<div><a href="test9">Test 9 - Spirit</a><br>"Spirit" classes animate bodies, bringing them to life.</div>
+<div><a href="test8">Test 8 - Collision</a><br>Continuous 2D collision detection between bodies shaped like axis-aligned rectangles and circles.</div>
 
 <h1>Quadtrees</h1>
-<div><a href="test7">test7 - QuadTreeGrid &amp; HallPainter</a><br>You can draw a cave map with a mouse or touchscreen.</div>
-<div><a href="test6">test6 - QuadTree Moon</a><br>Demos quadtree editing by adding a circle and deleting a circle, at 60fps</div>
+<div><a href="test7">Test 7 - QuadTreeGrid &amp; HallPainter</a><br>You can draw a cave map with a mouse or touchscreen.</div>
+<div><a href="test6">Test 6 - QuadTree Moon</a><br>Demos quadtree editing by adding a circle and deleting a circle, at 60fps</div>
 
 <h1>Graphics</h1>
-<div><a href="test5">test5 - timeshift</a><br>Shifts the subtree's time as a function of time. Draws a clock that makes random, uneven progress.</div>
-<div><a href="test4">test4 - scale</a><br>Changes the size of a drawing tree over time. Looks like a hungry hydra.</div>
-<div><a href="test3">test3 - rotate</a><br>Rotates the drawing tree over time. Looks like a wiggly sea creature.</div>
-<div><a href="test2">test2 - translate</a><br>Moves chunks of the drawing tree over time.</div>
-<div><a href="test1">test1 - line</a><br>Interpolates line endpoints over time.</div>
+<div><a href="test5">Test 5 - timeshift</a><br>Shifts the subtree's time as a function of time. Draws a clock that makes random, uneven progress.</div>
+<div><a href="test4">Test 4 - scale</a><br>Changes the size of a drawing tree over time. Looks like a hungry hydra.</div>
+<div><a href="test3">Test 3 - rotate</a><br>Rotates the drawing tree over time. Looks like a wiggly sea creature.</div>
+<div><a href="test2">Test 2 - translate</a><br>Moves chunks of the drawing tree over time.</div>
+<div><a href="test1">Test 1 - line</a><br>Interpolates line endpoints over time.</div>
 
 
 <script>
