@@ -116,6 +116,7 @@ if (!'WebGLRenderingContext' in window) {
       FLOAT: 1,
       TRIANGLES: 1,
       TRIANGLE_STRIP: 1,
+      TRIANGLE_FAN: 1,
       vertexAttribPointer: f,
       drawArrays: f,
       STATIC_DRAW: 1,

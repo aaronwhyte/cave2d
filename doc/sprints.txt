@@ -313,7 +313,7 @@ v Static level background
 v Dynamic foreground objects, at all
   v JS to load model data into GL mem using model coords.
   v JS to set uniforms for model-to-world, world-to-view, plus color or other uniforms
-- circles
+v circles
 
 Simple Sounds
 - one shot

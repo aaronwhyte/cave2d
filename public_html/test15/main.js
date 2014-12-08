@@ -18,6 +18,9 @@ var aVertexPosition, aVertexColor;
 // data buffers
 var bgPosBuff, bgColorBuff, bgTriangleCount;
 var rectPosBuff, rectColorBuff;
+// There can be different circle models for different levels of detail.
+// These are sparse arrays, indexed by number of corners.
+var circlePosBuffs = [], circleColorBuffs = [];
 
 // frame rendering timing
 var CLOCKS_PER_SECOND = 60 * 0.3;
@@ -39,7 +42,7 @@ var PLAYER_COLOR_3 = [1, 0.5, 0.5];
 var RAY_SPIRIT_COLOR_3 = [0.2, 0.7, 0.8];
 var BULLET_COLOR_3 = [1, 0.5, 0.1];
 var OTHER_COLOR_3 = [0.5, 1, 0.5];
-
+var CIRCLE_CORNERS = 32;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -199,6 +202,10 @@ function drawScene() {
 
 function drawBody(b) {
   b.getPosAtTime(world.now, bodyPos);
+  array3[0] = bodyPos.x;
+  array3[1] = bodyPos.y;
+  array3[2] = 0;
+  gl.uniform3fv(uModelTranslation, array3);
 
   if (b.id == playerSpirit.bodyId) {
     gl.uniform3fv(uModelColor, PLAYER_COLOR_3);
@@ -210,17 +217,22 @@ function drawBody(b) {
     gl.uniform3fv(uModelColor, OTHER_COLOR_3);
   }
 
-  array3[0] = b.rad;
-  array3[1] = b.rad;
-  array3[2] = 1;
-  gl.uniform3fv(uModelScale, array3);
+  if (b.shape === Body.Shape.RECT) {
+    array3[0] = b.rectRad.x;
+    array3[1] = b.rectRad.y;
+    array3[2] = 1;
+    gl.uniform3fv(uModelScale, array3);
 
-  array3[0] = bodyPos.x;
-  array3[1] = bodyPos.y;
-  array3[2] = 0;
-  gl.uniform3fv(uModelTranslation, array3);
+    drawTriangles(gl, rectPosBuff, rectColorBuff, 2);
 
-  drawTriangles(gl, rectPosBuff, rectColorBuff, 2);
+  } else if (b.shape === Body.Shape.CIRCLE) {
+    array3[0] = b.rad;
+    array3[1] = b.rad;
+    array3[2] = 1;
+    gl.uniform3fv(uModelScale, array3);
+
+    drawTriangleFan(gl, circlePosBuffs[CIRCLE_CORNERS], circleColorBuffs[CIRCLE_CORNERS], CIRCLE_CORNERS);
+  }
 }
 
 function drawTriangles(gl, positionBuff, colorBuff, triangleCount) {
@@ -231,6 +243,16 @@ function drawTriangles(gl, positionBuff, colorBuff, triangleCount) {
   gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
 
   gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
+}
+
+function drawTriangleFan(gl, positionBuff, colorBuff, cornerCount) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
+  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
+  gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, cornerCount + 2);
 }
 
 function createStaticGlBuff(values) {
@@ -321,12 +343,21 @@ function initModelVertexes() {
   rectPosBuff = createStaticGlBuff(vertPositions);
   rectColorBuff = createStaticGlBuff(vertColors);
 
-  // TODO: circles and other models
+  vertPositions.length = 0;
+  vertColors.length = 0;
+  addCircle(vertPositions, vertColors,
+      0, 0, -1, // x y z
+      1, // radius
+      CIRCLE_CORNERS,
+      1, 1, 1); // r g b
+  circlePosBuffs[CIRCLE_CORNERS] = createStaticGlBuff(vertPositions);
+  circleColorBuffs[CIRCLE_CORNERS] = createStaticGlBuff(vertColors);
 }
 
 /**
  * Appends new vertex values to the "vertPositionsOut" and "vertColorsOut" arrays,
- * for a rectangle with the specified position, size, and color.
+ * for a rectangle with the specified position, size, and color. The new vertexes
+ * will form two triangles.
  * @param {Array} vertPositionsOut  output array that accumulates position values
  * @param {Array} vertColorsOut  output array that accumulates color values
  * @param {number} px  x positon of the center of the rectangle
@@ -337,6 +368,7 @@ function initModelVertexes() {
  * @param {number} r  red color component, 0-1
  * @param {number} g  green color component, 0-1
  * @param {number} b  blue color component, 0-1
+ * @return the number of vertexes added. Always 6 for a rectangle.
  */
 function addRect(vertPositionsOut, vertColorsOut, px, py, pz, rx, ry, r, g, b) {
   // Two triangles form a square.
@@ -351,6 +383,39 @@ function addRect(vertPositionsOut, vertColorsOut, px, py, pz, rx, ry, r, g, b) {
   for (var i = 0; i < 6; i++) {
     vertColorsOut.push(r, g, b, 1);
   }
+  return 6;
+}
+
+/**
+ * Appends new vertex values to the "vertPositionsOut" and "vertColorsOut" arrays,
+ * for a circle with the specified position, size, and color.
+ * THe new vertexes will form a triangle fan.
+ * @param {Array} vertPositionsOut  output array that accumulates position values
+ * @param {Array} vertColorsOut  output array that accumulates color values
+ * @param {number} px  x positon of the center of the rectangle
+ * @param {number} py  y positon of the center of the rectangle
+ * @param {number} pz  z positon of the center of the rectangle
+ * @param {number} rad  radius of the circle
+ * @param {number} corners  Number of points around the circle to draw.
+ *    Six would make a hexagon, eight would be a hexagon, etc. There will be a
+ *    higher number of output vertexes than "corners", so pat attantion to the
+ *    return value.
+ * @param {number} r  red color component, 0-1
+ * @param {number} g  green color component, 0-1
+ * @param {number} b  blue color component, 0-1
+ * @return the number of vertexes actually added
+ */
+function addCircle(vertPositionsOut, vertColorsOut, px, py, pz, rad, corners, r, g, b) {
+  vertPositionsOut.push(px, py, pz);
+  vertColorsOut.push(r, g, b, 1);
+  for (var i = 0; i <= corners; i++) {
+    vertPositionsOut.push(
+        rad * Math.sin(2 * Math.PI * i / corners),
+        rad * Math.cos(2 * Math.PI * i / corners),
+        pz);
+    vertColorsOut.push(r, g, b, 1);
+  }
+  return corners + 2;
 }
 
 function initPlayer() {
