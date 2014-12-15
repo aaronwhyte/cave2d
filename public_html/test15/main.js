@@ -42,7 +42,7 @@ var PLAYER_COLOR_3 = [1, 0.5, 0.5];
 var RAY_SPIRIT_COLOR_3 = [0.2, 0.7, 0.8];
 var BULLET_COLOR_3 = [1, 0.5, 0.1];
 var OTHER_COLOR_3 = [0.5, 1, 0.5];
-var CIRCLE_CORNERS = 32;
+var CIRCLE_CORNERS = 16;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -333,7 +333,7 @@ function initMapAndBackgroundVertexes() {
 }
 
 function initModelVertexes() {
-  // template for individually-drawn rectangles
+  // template for rectangles
   var vertPositions = [];
   var vertColors = [];
   addRect(vertPositions, vertColors,
@@ -343,6 +343,7 @@ function initModelVertexes() {
   rectPosBuff = createStaticGlBuff(vertPositions);
   rectColorBuff = createStaticGlBuff(vertColors);
 
+  // template for circles
   vertPositions.length = 0;
   vertColors.length = 0;
   addCircle(vertPositions, vertColors,
