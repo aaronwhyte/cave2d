@@ -1,0 +1,281 @@
+<!doctype html>
+<html>
+<head>
+<title>Test 15 Notes</title>
+<style>
+body {
+  font-family: verdana, arial, sans-serif;
+}
+
+h1 {
+  font-size:x-large;
+  margin:1.2em 0 0.5em;
+}
+
+h2 {
+  font-size:large;
+}
+
+h3 {
+  font-size:medium;
+}
+
+a {
+  font-weight:bold;
+  text-decoration:none;
+}
+
+div {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+code.sampleCode {
+  font-family: consolas, monospace;
+  white-space: pre;
+  display:block;
+  margin: 1em 0;
+  xmargin-left:2em;
+}
+</style>
+</head>
+<body>
+<a href="../">&uarr; cave2d.com</a>
+<h1>Test 15 Notes</h1>
+Introductory WebGL tutorials showed me how to get set up and draw some shapes, one time. But they didn't
+explain how to buffer up the background, or how to render moving foreground objects efficiently, at 60fps,
+without JavaScript memory allocations. I had to figure that out on my own.
+<p>
+Here's what's worked for me so far:
+
+<h2>1) Create a WebGLProgram</h2>
+Create a WebGLProgram object, containing a <a href="vertex-shader.txt">vertex shader</a>
+and <a href="fragment-shader.txt">fragment shader</a>.
+That's covered by tutorials like these:
+<ul>
+  <li><a href="http://learningwebgl.com/blog/?p=28">learningwebgl.com, Lesson 1</a></li>
+  <li><a href="http://games.greggman.com/game/webgl-fundamentals/">games.greggman.com, WebGL Fundamentals</a></li>
+</ul>
+
+<h2>2) Cache GL program variable locations</h2>
+During setup, cache the locations of all the vertex shader's uniform variables, and the attribute lists.
+These are re-used several times every frame by drawScene().
+<p>
+In the test15 vertex shader, I have uniforms for transforming vertexes from model coords to world coords, and from
+world coords to view coords.
+I also transform from model color to final pixel color, so the same model can be rendered with different colors.
+There's one more uniform, the player position, which was just for a fun effect - altering every pixel color based
+on where the player is in the world.
+<br>
+<code class="sampleCode">
+function onProgramCreated() {
+  // Cache all the shader uniforms.
+  uViewTranslation = gl.getUniformLocation(program, 'uViewTranslation');
+  uViewScale = gl.getUniformLocation(program, 'uViewScale');
+  uModelTranslation = gl.getUniformLocation(program, 'uModelTranslation');
+  uModelScale = gl.getUniformLocation(program, 'uModelScale');
+  uModelColor = gl.getUniformLocation(program, 'uModelColor');
+  uPlayerPos = gl.getUniformLocation(program, 'uPlayerPos');
+
+  // Cache and enable the vertex position and color attributes.
+  aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
+  gl.enableVertexAttribArray(aVertexPosition);
+  aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
+  gl.enableVertexAttribArray(aVertexColor);
+
+  initWorld();
+  loop();
+}
+</code>
+
+<h2>3) Create the static level map</h2>
+As I generate the geometry of the level (a bunch of random rectangles), I generate two parallel JavaScript arrays:
+One for triangle vertex positions, and one for the RBG components of the vertex colors. If this was a traditional full
+game, this info would be generated once at the start of each level.
+<p>
+The map vertex positions are already in world-coordinates, so when I draw them, uModelScale is always (1, 1, 1) and
+the uModelTranslation is (0, 0). And they're already colored with near-final colors, so the uModelColor,
+which scales the color in my shader, is always (1, 1, 1).
+<p>
+Then I feed those arrays to the GL program as buffers, and cache pointers to
+each of those two buffers, for later use.
+<code class="sampleCode">function initMapAndBackgroundVertexes() {
+  var bgPositions = [];
+  var bgColors = [];
+
+  ...Fill the arrays with vertex coordinates and color RBG values, as I generate the level walls...
+
+  // Send the arrays to the GL program, and cache the locations of those buffers for later.
+  bgPosBuff = createStaticGlBuff(bgPositions);
+  bgColorBuff = createStaticGlBuff(bgColors);
+}
+
+function createStaticGlBuff(values) {
+  var buff = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buff);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
+  return buff;
+}
+</code>
+
+<h2>4) Initialize re-usable models</h2>
+I have really simple sprite models for now: A square made from two triangles,
+and a circle made from a bunch of triangles in a fan.
+Getting the position and color model data into the GL program is straightforward:
+<code class="sampleCode">function initModelVertexes() {
+  // template for rectangles
+  var vertPositions = [];
+  var vertColors = [];
+  addRect(vertPositions, vertColors,
+      0, 0, -1, // x y z
+      1, 1, // rx ry
+      1, 1, 1); // r g b
+  rectPosBuff = createStaticGlBuff(vertPositions);
+  rectColorBuff = createStaticGlBuff(vertColors);
+
+  // template for circles
+  vertPositions.length = 0;
+  vertColors.length = 0;
+  addCircle(vertPositions, vertColors,
+      0, 0, -1, // x y z
+      1, // radius
+      CIRCLE_CORNERS,
+      1, 1, 1); // r g b
+  circlePosBuffs[CIRCLE_CORNERS] = createStaticGlBuff(vertPositions);
+  circleColorBuffs[CIRCLE_CORNERS] = createStaticGlBuff(vertColors);
+}
+</code>
+I overbuilt the circle code to allow for multiple models, since I might want a higher polycount
+for a big circle, but for now there's just one circle model.
+
+<h2>5) Draw the scene as quickly as possible.</h2>
+This code should be doing very little work in JavaScript, since it will be called every frame.
+The GL program should have all the data it needs, for things that don't change from scene to scene, like the locations
+of the uniforms and attributes, and the map vertexes and model vertexes.
+<p>
+All we have to do here is to
+set the view transformations,
+tell GL to draw the map vertexes,
+and use model vertexes to stamp a bunch of sprites with different locations, sizes, and colors onto the canvas.
+For fun, I vary every pixel's color based on the player's location, but since the GL hardware is doing the heavy
+lifting, it's super fast.
+<code class="sampleCode">function drawScene() {
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  // Center the view on the player.
+  readPlayerPos();
+  viewTranslation[0] = -playerPos.x - 0.25 - playerBody.vel.x / 10;
+  viewTranslation[1] = -playerPos.y - 0.25 - playerBody.vel.y / 10;
+  gl.uniform3fv(uViewTranslation, viewTranslation);
+
+  // Remember the player's position, for tweaking the colors.
+  array3[0] = playerPos.x;
+  array3[1] = playerPos.y;
+  array3[2] = 0;
+  gl.uniform3fv(uPlayerPos, array3);
+
+  // Scale the view to encompass a fixed-size square around the player's position.
+  var edgeLength = Math.min(canvas.width, canvas.height);
+  viewScale[0] = ZOOM * edgeLength / canvas.width;
+  viewScale[1] = ZOOM * edgeLength / canvas.height;
+  gl.uniform3fv(uViewScale, viewScale);
+  gl.uniform3fv(uPlayerPos, [playerPos.x, playerPos.y, 0]);
+
+  // Draw the whole background.
+  // All the vertex data is already in the program, in bgColorBuff and bgPosBuff.
+  // Since the map is already in world-coordinates and world-colors,
+  // set all the model-to-world uniforms to do nothing.
+  gl.uniform3fv(uModelScale, IDENTITY_3);
+  gl.uniform3fv(uModelTranslation, ZERO_3);
+  gl.uniform3fv(uModelColor, IDENTITY_3);
+  drawTriangles(gl, bgPosBuff, bgColorBuff, bgTriangleCount);
+
+  // foreground
+  for (var id in world.bodies) {
+    var b = world.bodies[id];
+    if (b && b.mass != Infinity) {
+      drawBody(b);
+    }
+  }
+}
+
+function drawBody(b) {
+  b.getPosAtTime(world.now, bodyPos);
+  array3[0] = bodyPos.x;
+  array3[1] = bodyPos.y;
+  array3[2] = 0;
+  gl.uniform3fv(uModelTranslation, array3);
+
+  if (b.id == playerSpirit.bodyId) {
+    gl.uniform3fv(uModelColor, PLAYER_COLOR_3);
+  } else if (b.id == raySpirit.bodyId) {
+    gl.uniform3fv(uModelColor, RAY_SPIRIT_COLOR_3);
+  } else if (world.spirits[world.bodies[b.id].spiritId] instanceof BulletSpirit) {
+    gl.uniform3fv(uModelColor, BULLET_COLOR_3);
+  } else {
+    gl.uniform3fv(uModelColor, OTHER_COLOR_3);
+  }
+
+  if (b.shape === Body.Shape.RECT) {
+    array3[0] = b.rectRad.x;
+    array3[1] = b.rectRad.y;
+    array3[2] = 1;
+    gl.uniform3fv(uModelScale, array3);
+
+    drawTriangles(gl, rectPosBuff, rectColorBuff, 2);
+
+  } else if (b.shape === Body.Shape.CIRCLE) {
+    array3[0] = b.rad;
+    array3[1] = b.rad;
+    array3[2] = 1;
+    gl.uniform3fv(uModelScale, array3);
+
+    drawTriangleFan(gl, circlePosBuffs[CIRCLE_CORNERS], circleColorBuffs[CIRCLE_CORNERS], CIRCLE_CORNERS);
+  }
+}
+
+function drawTriangles(gl, positionBuff, colorBuff, triangleCount) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
+  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
+  gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
+}
+
+function drawTriangleFan(gl, positionBuff, colorBuff, cornerCount) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
+  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
+  gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, cornerCount + 2);
+}
+</code>
+<p>
+The live code is at <a href="main.js">/test15/main.js</a>,
+and it's on <a href="https://github.com/aaronwhyte/cave2d/blob/master/public_html/test15/main.js">GitHub</a>.
+
+
+<script>
+if (document.location.hostname.indexOf('cave2d.com') > -1) {
+  (function (i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function () {
+      (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date();
+    a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+  ga('create', 'UA-7758703-3', 'auto');
+  ga('send', 'pageview');
+}
+</script>
+</body>
+</html>

@@ -22,6 +22,7 @@ Event-driven, using predicted inter-frame delays to do expected work and prep a 
 Quad-tree wall/space support
 Focus on letting people (me) make new games, not new levels in existing game?
 Robots.
+WebGL!
 
 Inspiration:
 Adventure (2600)
@@ -83,3 +84,26 @@ Step one is to keep the level in memory, and dump it to the URL or a textarea, o
 No storage, no headache. Minimize. Do not overbuild!
 
 
+2014-12-09
+Game ideas
+
+Time warp ideas:
+You have shields, but when they're down to zero, time slows down, which makes you super accurate and faster than
+the enemies and traps.
+
+Skip: short-range teleport
+
+Two-endpoint portals can be carried by two players with tractor beams.
+Or one player with a weapon can send things through a portal to assist a second player.
+Two-thumb trator beam: Release button to drop. Flick and release to throw. Magnitude of movement creates temporary
+charge, which fades, and gets consumed as activation for tools, and builds kick for throwing.
+
+2014-12-22
+Control ideas
+
+Tap the fire area to fire in the direction of travel, but drag to activate aimable special, like tractor, mace,
+or aiming fire/ice/earth. Mostly I like tractor though, because you need to interact with the rest of the world more.
+Might only work with touch and mouse. Hard to do stuff like that on a trackpad, I think.
+
+I think the one-button tractor-beam is going to be the easiest, most intuitive, most portable thing, if I can get the
+forces right.

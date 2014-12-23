@@ -123,7 +123,11 @@ if (!'WebGLRenderingContext' in window) {
       DYNAMIC_DRAW: 1,
       STREAM_DRAW: 1,
       uniform4f: f,
-      uniform3fv: f
+      uniform3fv: f,
+      uniform1i: f,
+      uniform1f: f
+
+
     };
 
     window.WebGLShader = f;

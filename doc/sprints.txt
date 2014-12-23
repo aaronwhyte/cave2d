@@ -315,9 +315,29 @@ v Dynamic foreground objects, at all
   v JS to set uniforms for model-to-world, world-to-view, plus color or other uniforms
 v circles
 
-Simple Sounds
-- one shot
-- continuous
+Sparks
+Splashes and explosions can use a circle, with a time uniform and a dist-from-center varying,
+and kind of a fancy frag shader.
+Vertex shaders could be lots of fun, for glitching, warping, prismo-style beam-in for isometrics,
+robotron-style stretch-splosions.
+
+Web Audio
+Create an SoundMaster object that has the context, handles the listener position,
+and provides one or more actual audio nodes to connect game sounds to.
+(For instance: Events in the world, ambient noises, music, announcements, etc.)
+Spirits can create one-shot noises by passing SoundMaster to static mode creators.
+Spirits manage continuous sounds by creating a long-lived object, passing in SoundMaster,
+and then tweaking knobs the class exposes.
+- SoundMaster lass
+- one shot noises
+  - collisions with various substances
+     - wall
+     - creature
+     - bullet
+- continuous sounds
+  - player motion
+  - critter motion
+  - rayscan spirit
 
 Complete Game
 - Main Menu
