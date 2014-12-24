@@ -275,6 +275,7 @@ Example 2: Vorp's grab and drop buttons.
 * Mouselock: map left and right mouse buttons. (new idea there!)
 How are buttons combined? On every child up/down, the parent is down if any child is down.
 
+2014-11
 Sticks
 v Stick base class
 v KeyStick
@@ -288,6 +289,7 @@ v Leaked cells when removing body?
   v test
   v fix
 
+2014-11
 Canvas layers
 Examples:
 * Background with map, drawn once, redrawn only in dirtyrect chunks when map changes.
@@ -301,11 +303,7 @@ Tasks:
 v Make it work
 x Make a reasonable API
 
-Proper Outputter
-* Combine sound and graphics for splashes and stuff.
-* Sound and graphics engines are reusable and generic, I hope, but outputter is game-specific.
-* Basic graphics engine can draw primitive shapes in solid colors, and lines?
-
+2014-11 to 2014-12
 WebGL renderer
 v Static level background
   v JS to load GL mem (see test15) using world coords
@@ -315,11 +313,20 @@ v Dynamic foreground objects, at all
   v JS to set uniforms for model-to-world, world-to-view, plus color or other uniforms
 v circles
 
+2014-12-22 to...
 Sparks
 Splashes and explosions can use a circle, with a time uniform and a dist-from-center varying,
 and kind of a fancy frag shader.
 Vertex shaders could be lots of fun, for glitching, warping, prismo-style beam-in for isometrics,
 robotron-style stretch-splosions.
+v Nice simple explosion shader with time param.
+- JS for throw-away graphics effects.
+  - Separate Effects class for one-shot graphics (and later audio)
+  - Recycles records used to render to GL based on time param.
+  - Garbage collects expired rows.
+- Make hitting a wall splash a little wall color.
+- Make bullet hits explode enemies (which makes them re-appear far away from the player)
+- Make firing a bullet spash a little bullet color.
 
 Web Audio
 Create an SoundMaster object that has the context, handles the listener position,
@@ -338,6 +345,11 @@ and then tweaking knobs the class exposes.
   - player motion
   - critter motion
   - rayscan spirit
+
+Proper Outputter
+* Combine sound and graphics for splashes and stuff.
+* Sound and graphics engines are reusable and generic, I hope, but outputter is game-specific.
+* Basic graphics engine can draw primitive shapes in solid colors, and lines?
 
 Complete Game
 - Main Menu
