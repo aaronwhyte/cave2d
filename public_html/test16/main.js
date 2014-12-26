@@ -240,7 +240,7 @@ function drawBody(b) {
     gl.uniform3fv(uModelScale, array3);
     // Explosions!
     gl.uniform1i(uType, 2);
-    var t = (Date.now() / (1500 + (b.id % 100))) % 1;
+    var t = (world.now / (15 + b.id % 10)) % 1;
     gl.uniform1f(uTime, t);
     drawTriangleFan(gl, circlePosBuffs[CIRCLE_CORNERS], circleColorBuffs[CIRCLE_CORNERS], CIRCLE_CORNERS);
   }
