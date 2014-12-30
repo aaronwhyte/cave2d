@@ -1,0 +1,37 @@
+Fracas II: The Frackening
+
+Implementation design
+
+index.html
+Initializes canvas, creates a Fracas2 instance, and starts it up.
+
+Fracas2
+This is the topmost class. It controls the top state machine. States:
+1) Pregame
+2) Gameplay(level) including brief Game Over
+
+PreGame UI
+Some kind of attract mode, with instructions and a start button I guess.
+
+Level Pre-loading
+Each level is a text file fetched over XHR. There's a level list with URLs. Fetch level 1 from pregame,
+and 2 from 1, 3 from 2, etc, so they're ready. But don't assume they'll be ready when needed. Level switching
+should always be async.
+
+Level Playing
+Here's the fun part.
+It takes a canvas, a level map, and player stats (health, weapons, etc. if any)
+It creates a webgl context, programs, webaudio context, etc...
+Next steps:
+Create a World object from the level.
+Create triangle buffers from the static parts of the level (walls mostly)
+
+Async Style
+To render any WebGL, I need to load my renderer and shader,
+then compile them into a program, and pass that to the renderer.
+To play a level, I need to load its text representation.
+Once the level is loaded, and the renderer is initialized,
+I need to fill the renderer's background triangle vertex buffers.
+
+So there's an implied graph of task deps.
+Maybe the simple thing to do is to use the invalidate() function to move state fwd. Yeppers, that's simple.

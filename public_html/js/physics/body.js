@@ -106,6 +106,19 @@ Body.prototype.setPosAtTime = function(pos, t) {
 };
 
 /**
+ * Shifts the path so it intersects the new position at the new time,
+ * without changing the velocity. Teleportation, basically.
+ * @param x
+ * @param y
+ * @param t
+ */
+Body.prototype.setPosXYAtTime = function(x, y, t) {
+  this.invalidatePath();
+  this.pathStartTime = t;
+  this.pathStartPos.setXY(x, y);
+};
+
+/**
  * Shifts the path so that it intersects the same position at time t that it used to,
  * but it arrives with a new velocity (and therefore is coming from and going to new places.)
  * @param vel
@@ -115,6 +128,19 @@ Body.prototype.setVelAtTime = function(vel, t) {
   this.invalidatePath();
   this.moveToTime(t);
   this.vel.set(vel);
+};
+
+/**
+ * Shifts the path so that it intersects the same position at time t that it used to,
+ * but it arrives with a new velocity (and therefore is coming from and going to new places.)
+ * @param x
+ * @param y
+ * @param t
+ */
+Body.prototype.setVelXYAtTime = function(x, y, t) {
+  this.invalidatePath();
+  this.moveToTime(t);
+  this.vel.setXY(x, y);
 };
 
 /**

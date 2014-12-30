@@ -13,39 +13,11 @@ function getWebGlContext(canvas, paramObj) {
 }
 
 /**
- * Creates a program from 2 script tags
- * @param {!WebGLRenderingContext} gl The WebGL Context.
- * @param {string} vertexShaderId  vertex shader script tag ID
- * @param {string} fragmentShaderId  fragment shader script tag ID
- * @return {!WebGLProgram}
- */
-function createProgramFromScripts(gl, vertexShaderId, fragmentShaderId) {
-  var vertexShader = createShaderFromScript(gl, vertexShaderId, gl.VERTEX_SHADER);
-  var fragmentShader = createShaderFromScript(gl, fragmentShaderId, gl.FRAGMENT_SHADER);
-  return createProgram(gl, vertexShader, fragmentShader);
-}
-
-
-/**
- * Creates a shader from the content of a script tag.
- * @param {!WebGLRenderingContext} gl
- * @param {string} scriptId
- * @param {number} shaderType  gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
- * @return {!WebGLShader}
- */
-function createShaderFromScript(gl, scriptId, shaderType) {
-  var shaderScript = document.getElementById(scriptId);
-  var shaderSource = shaderScript.text;
-  return compileShader(gl, shaderSource, shaderType);
-}
-
-
-/**
  * Creates and compiles a shader.
- * @param {!WebGLRenderingContext} gl The WebGL Context.
+ * @param {!WebGLRenderingContext} gl
  * @param {string} shaderSource The GLSL source code for the shader.
- * @param {number} shaderType The type of shader, VERTEX_SHADER or
- *     FRAGMENT_SHADER.
+ * @param {number} shaderType The type of shader, gl.VERTEX_SHADER or
+ *     gl.FRAGMENT_SHADER.
  * @return {!WebGLShader} The shader.
  */
 function compileShader(gl, shaderSource, shaderType) {
@@ -57,7 +29,6 @@ function compileShader(gl, shaderSource, shaderType) {
   }
   return shader;
 }
-
 
 /**
  * Creates a program from 2 shaders.
@@ -77,6 +48,51 @@ function createProgram(gl, vertexShader, fragmentShader) {
   return program;
 }
 
+/**
+ * @param {!WebGLRenderingContext} gl
+ * @param values
+ * @returns {WebGLBuffer}
+ */
+function createStaticGlBuff(gl, values) {
+  var buff = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buff);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
+  return buff;
+}
+
+/**
+ * @param {!WebGLRenderingContext} gl
+ * @param {!WebGLAttribute} aVertexPosition
+ * @param {!WebGLAttribute} aVertexColor
+ * @param {!WebGLBuffer} positionBuff  buffer with three numbers per vertex: x, y, z.
+ * @param {!WebGLBuffer} colorBuff  buffer with four numbers per vertex: r, g, b, a.
+ * @param {!number} triangleCount
+ */
+function drawTriangles(gl, aVertexPosition, aVertexColor, positionBuff, colorBuff, triangleCount) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
+  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
+  gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
+}
+
+/**
+ * @param {!WebGLRenderingContext} gl
+ * @param {!WebGLBuffer} positionBuff  buffer with three numbers per vertex: x, y, z.
+ * @param {!WebGLBuffer} colorBuff  buffer with four numbers per vertex: r, g, b, a.
+ * @param {!number} cornerCount
+ */
+function drawTriangleFan(gl, positionBuff, colorBuff, cornerCount) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
+  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
+  gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, cornerCount + 2);
+}
 
 // Make WebStorm 8 happy
 if (!'WebGLRenderingContext' in window) {
@@ -84,6 +100,7 @@ if (!'WebGLRenderingContext' in window) {
   (function(){
     var f = function(){};
     window.WebGLRenderingContext = {
+      WebGLBuffer: {},
       createShader: f,
       shaderSource: f,
       compileShader: f,

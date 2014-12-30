@@ -313,6 +313,33 @@ v Dynamic foreground objects, at all
   v JS to set uniforms for model-to-world, world-to-view, plus color or other uniforms
 v circles
 
+
+2014-12-26 to...
+FRACAS II
+Remember my first JS game ever, http://plexode.com/fracas ?
+Time for that remake, featuring the same ascii text level format, roughly:
+.: floor
+#: wall
+%: (new!) destructible wall
+g: gnome
+G: gnome generator
+$: gold
++: health
+@: player start
+>: exit
+
+Gnomes will wander, avoiding obstacles, until they see the player. Then they attack!
+Generators do a rayscan before generating, to avoid overlapping.
+Treasure and health won't occupy the whole floorspace. Monsters can go over them...
+But to make up for it I'll add destructable walls the player can blast through.
+
+Engine features I still need:
+* SparkEngine
+* Sound
+
+
+
+
 2014-12-22 to...
 Sparks
 Splashes and explosions can use a circle, with a time uniform and a dist-from-center varying,
@@ -321,7 +348,7 @@ Vertex shaders could be lots of fun, for glitching, warping, prismo-style beam-i
 robotron-style stretch-splosions.
 v Nice simple explosion shader with time param.
 - JS for throw-away graphics effects.
-  - Separate Effects class for one-shot graphics (and later audio)
+  - Separate SparkEngine class for one-shot graphics (and later audio)
   - Recycles records used to render to GL based on time param.
   - Garbage collects expired rows.
 - Make hitting a wall splash a little wall color.

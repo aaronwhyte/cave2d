@@ -1,0 +1,39 @@
+uniform vec3 uViewTranslation;
+uniform vec3 uViewScale;
+uniform vec3 uModelScale;
+uniform vec3 uModelTranslation;
+uniform vec3 uModelColor;
+
+// Special rendering type:
+// 0: none
+// 1: explosion
+uniform lowp int uType;
+
+// time param for some animations, from 0 to 1
+uniform lowp float uTime;
+
+attribute vec3 aVertexPosition;
+attribute vec4 aVertexColor;
+
+varying lowp vec4 vColor;
+
+// Model-space distance from the origin, usually from 0 to 1.
+varying lowp float vLength;
+
+void main(void) {
+  if (uType == 1) {
+    vLength = length(aVertexPosition);
+    gl_Position = vec4((aVertexPosition * (uModelScale * 10.0) + uModelTranslation + uViewTranslation) * uViewScale, 1.0);
+  } else if (uType == 2) {
+    vLength = length(aVertexPosition);
+    vec3 scale = vec3(10.0, 10.0, 1.0) * uModelScale;
+    gl_Position = vec4((aVertexPosition * (scale) + uModelTranslation + uViewTranslation) * uViewScale, 1.0);
+    // z value
+    gl_Position[2] = uTime * 0.9 + vLength * 0.5;
+  } else if (uType == 3) {
+    gl_Position = vec4((aVertexPosition * uModelScale + uModelTranslation + uViewTranslation) * uViewScale, 1.0);
+  } else {
+    gl_Position = vec4((aVertexPosition * uModelScale + uModelTranslation + uViewTranslation) * uViewScale, 1.0);
+  }
+  vColor = aVertexColor * vec4(uModelColor, 1.0);
+}
