@@ -38,8 +38,7 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
     var speed = this.vec.magnitude();
 
     if (speed < 0.01) {
-      this.vec.scale(2);
-      this.vec.rot(Math.random() - 0.5);
+      this.vec.addXY((Math.random() - 0.5) * 0.01, (Math.random() - 0.5) * 0.01);
     } else {
       this.vec.scale(0.8);
     }
@@ -55,6 +54,10 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
     // return to base?
     if (req.pos.magnitude() > RaySpirit.ROAM_DIST) {
       this.mode = RaySpirit.MODE_RETURN;
+    }
+    // relaunch attack?
+    if (req.pos.magnitude() < RaySpirit.ROAM_DIST / 2) {
+      this.mode = RaySpirit.MODE_ATTACK;
     }
 
     // gravity
@@ -72,7 +75,6 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
         if (other) {
           if (other.mass == Infinity) {
             // there's a wall
-            this.mode = RaySpirit.MODE_ATTACK;
             var dist = resp.timeOffset * RaySpirit.RAY_LENGTH - b.rad;
             if (dist < speed * RaySpirit.TIMEOUT * 20) {
               this.vec.set(req.vel).scaleToLength(1 - resp.timeOffset + 0.1)

@@ -6,8 +6,8 @@ var world, resolver;
 var playerSpirit, raySpirit, playerBody;
 
 // map generation
-var OBJ_COUNT = 64;
-var RECT_CHANCE = 0.7;
+var OBJ_COUNT = 640;
+var RECT_CHANCE = 1 - 0.03;
 var SPACING = 50;
 
 var BLEND = false;
@@ -240,7 +240,7 @@ function drawBody(b) {
     gl.uniform3fv(uModelScale, array3);
     // Explosions!
     gl.uniform1i(uType, 2);
-    var t = (world.now / (15 + b.id % 10)) % 1;
+    var t = (world.now / (15 + (b.id % 100)/10)) % 1;
     gl.uniform1f(uTime, t);
     drawTriangleFan(gl, circlePosBuffs[CIRCLE_CORNERS], circleColorBuffs[CIRCLE_CORNERS], CIRCLE_CORNERS);
   }
@@ -298,8 +298,11 @@ function initMapAndBackgroundVertexes() {
   var sqrt = Math.sqrt(OBJ_COUNT);
   for (var x = -sqrt/2; x < sqrt/2; x++) {
     for (var y = -sqrt/2; y < sqrt/2; y++) {
+      if (Vec2d.magnitude(x, y) < 3) continue;
       var b = Body.alloc();
-      v.setXY(x * SPACING + Math.random(), y * SPACING + Math.random());
+      v.setXY(
+          x * SPACING + 0.7 * (Math.random()-0.5) * SPACING,
+          y * SPACING + 0.7 * (Math.random()-0.5) * SPACING);
       b.setPosAtTime(v, 1);
       if (Math.random() < RECT_CHANCE) {
         // Stationary wall
@@ -312,9 +315,9 @@ function initMapAndBackgroundVertexes() {
         world.addBody(b);
 
         // Cache background vertex info
-        red = Math.random() / 3;
-        green = Math.random() / 3;
-        blue = 1 - Math.random() / 3;
+        red = Math.random() / 2;
+        green = Math.random() / 2;
+        blue = 1 - Math.random() / 2;
         addRect(bgPositions, bgColors, v.x, v.y, 0.2, b.rectRad.x, b.rectRad.y, red, green, blue);
         bgTriangleCount += 2;
 
@@ -484,10 +487,10 @@ function initPlayer() {
 function initRaySpirit() {
   var v = new Vec2d();
   var b = Body.alloc();
-  v.setXY(Math.sqrt(OBJ_COUNT)/2 * SPACING + 50, 0);
+  v.setXY(0, 0);
   b.setPosAtTime(v, 1);
   b.shape = Body.Shape.CIRCLE;
-  b.rad = 7;
+  b.rad = 30;
   b.mass = Math.PI * b.rad * b.rad * 2;
   b.pathDurationMax = RaySpirit.TIMEOUT;
   var bodyId = world.addBody(b);
