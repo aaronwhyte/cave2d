@@ -25,11 +25,11 @@ function Fracas2(canvas) {
   this.loopCallback = this.loop.bind(this);
 }
 
-Fracas2.SPACING = 10;
-Fracas2.CHARACTER_RADIUS = 0.67 * 0.5 * Fracas2.SPACING;
+Fracas2.SPACING = 2;
+Fracas2.CHARACTER_RADIUS = 0.4 * 0.5 * Fracas2.SPACING;
 Fracas2.WALL_Z = 0.2;
 
-Fracas2.CLOCKS_PER_SECOND = 0.3;
+Fracas2.CLOCKS_PER_SECOND = 60 * 0.3;
 
 Fracas2.State = {
   MAIN_MENU: 'main_menu',
@@ -47,7 +47,7 @@ Fracas2.prototype.beginMainMenu = function() {
   this.invalidate();
 
   // TODO: actually have a menu
-  this.beginPlayingLevel(0);
+  this.beginPlayingLevel(1);
 };
 
 Fracas2.prototype.beginPlayingLevel = function(levelIndex) {
@@ -69,13 +69,13 @@ Fracas2.prototype.getOnLevelLoadedFunc = function(index) {
   var self = this;
   return function(text) {
     self.levelStrings[index] = text;
-    console.log('level ' + index + ':\n' + text);
+//    console.log('level ' + index + ':\n' + text);
     self.invalidate();
   };
 };
 
 Fracas2.prototype.invalidate = function() {
-  console.log('invalidate');
+//  console.log('invalidate');
   this.maybeRequestShaders();
   this.maybeCreateRenderer();
   this.maybeStartLevel();
@@ -128,7 +128,7 @@ Fracas2.prototype.maybeStartLevel = function() {
   if (!this.waitingForState == Fracas2.State.PLAY_LEVEL ||
       !this.levelStrings[this.waitingForLevelIndex] ||
       !this.renderer) {
-    console.log('maybeStartLevel nope: ', this.waitingForState, this.levelStrings, this.renderer);
+//    console.log('maybeStartLevel nope: ', this.waitingForState, this.levelStrings, this.renderer);
     return;
   }
   var levelIndex = this.waitingForLevelIndex;
@@ -140,6 +140,7 @@ Fracas2.prototype.maybeStartLevel = function() {
 };
 
 Fracas2.prototype.initWorldFromString = function(s) {
+  this.playerBody = new Body();
   var vec = new Vec2d();
   var x = 0, y = 0;
 
@@ -151,7 +152,8 @@ Fracas2.prototype.initWorldFromString = function(s) {
     return vec.setXY(1, 1).scale(Fracas2.SPACING * 0.5);
   }
 
-  var world = new World();
+  this.resolver = new HitResolver();
+  this.world = new World();
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
     switch (c) {
@@ -168,14 +170,18 @@ Fracas2.prototype.initWorldFromString = function(s) {
         b.rectRad.set(rr());
         b.mass = Infinity;
         b.pathDurationMax = Infinity;
-        world.addBody(b);
-        break;
-      case '@':
-        // player
-        this.addPlayerToWorld(world);
+        this.world.addBody(b);
         break;
       case '.':
         // floor
+        break;
+      case '@':
+        // player
+        this.addPlayerToWorld(xy());
+        break;
+      case 'g':
+        // gnome
+        this.addGnomeToWorld(xy());
         break;
       case '\r':
         // ignore
@@ -185,20 +191,24 @@ Fracas2.prototype.initWorldFromString = function(s) {
     }
     x++;
   }
-  this.world = world;
 };
 
-Fracas2.prototype.addPlayerToWorld = function(world) {
-  var b = new Body();
+Fracas2.prototype.addPlayerToWorld = function(position) {
+  // Init the player body early, so the gnomes can have something to hunt for.
+  var b = this.playerBody;
+
+  b.setPosAtTime(position, 1);
+  b.shape = Body.Shape.CIRCLE;
+  b.rad = Fracas2.CHARACTER_RADIUS;
   b.pathDurationMax = PlayerSpirit.TIMEOUT;
-  var bodyId = world.addBody(b);
-  this.playerBody = b;
+
+  var bodyId = this.world.addBody(b);
   var spirit = new PlayerSpirit();
-  var spiritId = world.addSpirit(spirit);
+  var spiritId = this.world.addSpirit(spirit);
   spirit.bodyId = bodyId;
   this.playerSpirit = spirit;
   b.spiritId = spiritId;
-  world.addTimeout(world.now + PlayerSpirit.TIMEOUT, spiritId, null);
+  this.world.addTimeout(this.world.now + PlayerSpirit.TIMEOUT, spiritId, null);
 
   var self = this;
   var aimStick = (new MultiStick())
@@ -234,6 +244,22 @@ Fracas2.prototype.addPlayerToWorld = function(world) {
   this.playerSpirit.setMoveStick(moveStick);
 };
 
+Fracas2.prototype.addGnomeToWorld = function(position) {
+  var b = new Body();
+  b.setPosAtTime(position, 1);
+  b.shape = Body.Shape.CIRCLE;
+  b.rad = Fracas2.CHARACTER_RADIUS;
+  b.pathDurationMax = GnomeSpirit.TIMEOUT;
+
+  var bodyId = this.world.addBody(b);
+  var spirit = new GnomeSpirit();
+  spirit.setTargetBody(this.playerBody);
+  var spiritId = this.world.addSpirit(spirit);
+  spirit.bodyId = bodyId;
+  b.spiritId = spiritId;
+  this.world.addTimeout(this.world.now + Math.random() * GnomeSpirit.TIMEOUT, spiritId, null);
+};
+
 Fracas2.prototype.initRendererBuffers = function() {
   var triBuilder = new TriangleBufferBuilder(this.renderer.gl);
   var vec = new Vec2d();
@@ -241,9 +267,9 @@ Fracas2.prototype.initRendererBuffers = function() {
     var body = this.world.bodies[id];
     if (body.mass == Infinity) {
       // TODO: Identify walls more explicitly
-      var red = Math.random() / 2;
-      var green = Math.random() / 2;
-      var blue = 1 - Math.random() / 2;
+      var red = Math.random() / 10;
+      var green = Math.random() / 10;
+      var blue = 1 - Math.random() / 10;
       var alpha = 1;
       triBuilder.addRect(body.getPosAtTime(1, vec), Fracas2.WALL_Z, body.rectRad, red, green, blue, alpha);
     }
@@ -257,7 +283,7 @@ Fracas2.prototype.initRendererBuffers = function() {
 Fracas2.prototype.loop = function() {
   this.frameEndMs = Date.now() + 1000 / 60;
   this.renderer.maybeResize();
-  this.renderer.drawScene();
+  this.renderer.drawScene(this.world, this.playerBody);
   this.clock();
   requestAnimationFrame(this.loopCallback, this.canvas);
 };
@@ -266,7 +292,7 @@ Fracas2.prototype.clock = function() {
   // Reserve at least a little time for physics, so we make some progress even if rendering blew through
   // our time budget.
   this.frameEndMs = Math.max(this.frameEndMs, Date.now() + 0.1 * 1000 / 60);
-  var endClock = this.world.now + Fracas2.CLOCKS_PER_SECOND / 60;
+  var endClock = this.world.now + Fracas2.CLOCKS_PER_SECOND * (1/60);
   var e = this.world.getNextEvent();
   // Stop if there are no more events to process,
   // or we've moved the game clock far enough ahead to match the amount of wall-time elapsed since the last frame,

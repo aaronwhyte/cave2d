@@ -13,11 +13,14 @@ function Renderer(canvas, gl, program) {
 
   this.viewScale = [1, 1, 1];
   this.viewTranslation = [0, 0, 0];
-  this.zoom = 1/200;
+  this.zoom = 1/10;
+  this.array3 = [0, 0, 0];
+  this.circlePosBuffs = [];
+  this.circleColorBuffs = [];
 
   this.initAttributesAndUniforms();
+  this.initModelVertexes();
 }
-
 
 var ZERO_3 = [0, 0, 0];
 var IDENTITY_3 = [1, 1, 1];
@@ -26,7 +29,7 @@ var RAY_SPIRIT_COLOR_3 = [0.2, 0.7, 0.8];
 var BULLET_COLOR_3 = [1, 0.5, 0.1];
 var OTHER_COLOR_3 = [0.5, 1, 0.5];
 
-
+Renderer.CIRCLE_CORNERS = 31;
 
 Renderer.prototype.initAttributesAndUniforms = function() {
   var gl = this.gl;
@@ -55,6 +58,26 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   uniform('uTime');
 };
 
+Renderer.prototype.initModelVertexes = function() {
+  // template for rectangles
+  var triBuilder = new TriangleBufferBuilder(this.gl);
+  triBuilder.addRect(
+      Vec2d.ZERO, -1, // {x, y} z
+      new Vec2d(1, 1), // rx ry
+      1, 1, 1, 1); // r g b a
+  this.rectPosBuff = triBuilder.createPositionBuff();
+  this.rectColorBuff = triBuilder.createColorBuff();
+
+  // template for circles
+  var fanBuilder = new FanBufferBuilder(this.gl);
+  fanBuilder.addCircle(
+      Vec2d.ZERO, -1, // {x, y} z
+      1, // radius
+      Renderer.CIRCLE_CORNERS,
+      1, 1, 1, 1); // r g b a
+  this.circlePosBuffs[Renderer.CIRCLE_CORNERS] = fanBuilder.createPositionBuff();
+  this.circleColorBuffs[Renderer.CIRCLE_CORNERS] = fanBuilder.createColorBuff();
+};
 
 Renderer.prototype.maybeResize = function() {
   if (this.canvas.width != this.canvas.clientWidth ||
@@ -66,14 +89,14 @@ Renderer.prototype.maybeResize = function() {
 };
 
 
-Renderer.prototype.drawScene = function(world) {
+Renderer.prototype.drawScene = function(world, playerBody) {
   this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-//  // Center the view on the player.
-//  readPlayerPos();
-//  viewTranslation[0] = -playerPos.x - 0.25 - playerBody.vel.x / 10;
-//  viewTranslation[1] = -playerPos.y - 0.25 - playerBody.vel.y / 10;
-//  viewTranslation[2] = 0;
+  // Center the view on the player.
+  var playerPos = playerBody.getPosAtTime(world.now, Vec2d.alloc());
+  this.viewTranslation[0] = -playerPos.x - playerBody.vel.x / 10;
+  this.viewTranslation[1] = -playerPos.y - playerBody.vel.y / 10;
+  this.viewTranslation[2] = 0;
   this.gl.uniform3fv(this.uViewTranslation, this.viewTranslation);
 
   // Scale the view to encompass a fixed-size square around the player's position.
@@ -84,7 +107,15 @@ Renderer.prototype.drawScene = function(world) {
   this.gl.uniform3fv(this.uViewScale, this.viewScale);
 
   this.drawBackground();
-  // TODO: foreground!
+  playerPos.free();
+
+  // foreground
+  for (var id in world.bodies) {
+    var b = world.bodies[id];
+    if (b && b.mass != Infinity) {
+      this.drawBody(world, b);
+    }
+  }
 };
 
 Renderer.prototype.drawBackground = function() {
@@ -96,8 +127,49 @@ Renderer.prototype.drawBackground = function() {
   this.gl.uniform3fv(this.uModelTranslation, ZERO_3);
   this.gl.uniform3fv(this.uModelColor, IDENTITY_3);
   this.gl.uniform1i(this.uType, 0);
-  drawTriangles(this.gl, this.aVertexPosition, this.aVertexColor,
-      this.bgPosBuff, this.bgColorBuff, this.bgTriangleCount);
+  this.drawTriangles(this.bgPosBuff, this.bgColorBuff, this.bgTriangleCount);
+};
+
+Renderer.prototype.drawBody = function(world, b) {
+  var bodyPos = Vec2d.alloc();
+  b.getPosAtTime(world.now, bodyPos);
+  this.array3[0] = bodyPos.x;
+  this.array3[1] = bodyPos.y;
+  this.array3[2] = 0;
+  this.gl.uniform3fv(this.uModelTranslation, this.array3);
+
+  var spirit = world.spirits[b.spiritId];
+  if (spirit && spirit instanceof PlayerSpirit) {
+    this.gl.uniform3fv(this.uModelColor, PLAYER_COLOR_3);
+  } else if (spirit && spirit instanceof RaySpirit) {
+    this.gl.uniform3fv(this.uModelColor, RAY_SPIRIT_COLOR_3);
+  } else if (spirit && spirit instanceof BulletSpirit) {
+    this.gl.uniform3fv(this.uModelColor, BULLET_COLOR_3);
+  } else {
+    this.gl.uniform3fv(this.uModelColor, OTHER_COLOR_3);
+  }
+
+  if (b.shape === Body.Shape.RECT) {
+    this.array3[0] = b.rectRad.x;
+    this.array3[1] = b.rectRad.y;
+    this.array3[2] = 1;
+    this.gl.uniform3fv(this.uModelScale, this.array3);
+
+    // gl, aVertexPosition, aVertexColor, positionBuff, colorBuff, triangleCount
+    this.drawTriangles(this.rectPosBuff, this.rectColorBuff, 2);
+
+  } else if (b.shape === Body.Shape.CIRCLE) {
+    this.array3[0] = b.rad;
+    this.array3[1] = b.rad;
+    this.array3[2] = 1;
+    this.gl.uniform3fv(this.uModelScale, this.array3);
+
+    this.drawTriangleFan(
+        this.circlePosBuffs[Renderer.CIRCLE_CORNERS],
+        this.circleColorBuffs[Renderer.CIRCLE_CORNERS],
+        Renderer.CIRCLE_CORNERS);
+  }
+  bodyPos.free();
 };
 
 Renderer.prototype.setBackgroundTriangleVertexes = function(positionBuff, colorBuff, triangleCount) {
@@ -106,52 +178,32 @@ Renderer.prototype.setBackgroundTriangleVertexes = function(positionBuff, colorB
   this.bgTriangleCount = triangleCount;
 };
 
-//function drawScene() {
-//
-//  // foreground
-//  for (var id in world.bodies) {
-//    var b = world.bodies[id];
-//    if (b && b.mass != Infinity) {
-//      drawBody(b);
-//    }
-//  }
-//}
-//
-//function drawBody(b) {
-//  b.getPosAtTime(world.now, bodyPos);
-//  array3[0] = bodyPos.x;
-//  array3[1] = bodyPos.y;
-//  array3[2] = 0;
-//  gl.uniform3fv(uModelTranslation, array3);
-//
-//  if (b.id == playerSpirit.bodyId) {
-//    gl.uniform3fv(uModelColor, PLAYER_COLOR_3);
-//  } else if (b.id == raySpirit.bodyId) {
-//    gl.uniform3fv(uModelColor, RAY_SPIRIT_COLOR_3);
-//  } else if (world.spirits[world.bodies[b.id].spiritId] instanceof BulletSpirit) {
-//    gl.uniform3fv(uModelColor, BULLET_COLOR_3);
-//  } else {
-//    gl.uniform3fv(uModelColor, OTHER_COLOR_3);
-//  }
-//
-//  if (b.shape === Body.Shape.RECT) {
-//    array3[0] = b.rectRad.x;
-//    array3[1] = b.rectRad.y;
-//    array3[2] = 1;
-//    gl.uniform3fv(uModelScale, array3);
-//    gl.uniform1i(uType, 0);
-//    drawTriangles(gl, rectPosBuff, rectColorBuff, 2);
-//
-//  } else if (b.shape === Body.Shape.CIRCLE) {
-//    array3[0] = b.rad;
-//    array3[1] = b.rad;
-//    array3[2] = 1;
-//    gl.uniform3fv(uModelScale, array3);
-//    // Explosions!
-//    gl.uniform1i(uType, 2);
-//    var t = (world.now / (15 + (b.id % 100)/10)) % 1;
-//    gl.uniform1f(uTime, t);
-//    drawTriangleFan(gl, circlePosBuffs[CIRCLE_CORNERS], circleColorBuffs[CIRCLE_CORNERS], CIRCLE_CORNERS);
-//  }
-//}
-//
+/**
+ * @param {!WebGLBuffer} positionBuff  buffer with three numbers per vertex: x, y, z.
+ * @param {!WebGLBuffer} colorBuff  buffer with four numbers per vertex: r, g, b, a.
+ * @param {!number} triangleCount
+ */
+Renderer.prototype.drawTriangles = function(positionBuff, colorBuff, triangleCount) {
+  this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuff);
+  this.gl.vertexAttribPointer(this.aVertexPosition, 3, this.gl.FLOAT, false, 0, 0);
+
+  this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuff);
+  this.gl.vertexAttribPointer(this.aVertexColor, 4, this.gl.FLOAT, false, 0, 0);
+
+  this.gl.drawArrays(this.gl.TRIANGLES, 0, triangleCount * 3);
+};
+
+/**
+ * @param {!WebGLBuffer} positionBuff  buffer with three numbers per vertex: x, y, z.
+ * @param {!WebGLBuffer} colorBuff  buffer with four numbers per vertex: r, g, b, a.
+ * @param {!number} cornerCount
+ */
+Renderer.prototype.drawTriangleFan = function(positionBuff, colorBuff, cornerCount) {
+  this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuff);
+  this.gl.vertexAttribPointer(this.aVertexPosition, 3, this.gl.FLOAT, false, 0, 0);
+
+  this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuff);
+  this.gl.vertexAttribPointer(this.aVertexColor, 4, this.gl.FLOAT, false, 0, 0);
+
+  this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, cornerCount + 2);
+};

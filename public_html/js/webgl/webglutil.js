@@ -60,40 +60,6 @@ function createStaticGlBuff(gl, values) {
   return buff;
 }
 
-/**
- * @param {!WebGLRenderingContext} gl
- * @param {!WebGLAttribute} aVertexPosition
- * @param {!WebGLAttribute} aVertexColor
- * @param {!WebGLBuffer} positionBuff  buffer with three numbers per vertex: x, y, z.
- * @param {!WebGLBuffer} colorBuff  buffer with four numbers per vertex: r, g, b, a.
- * @param {!number} triangleCount
- */
-function drawTriangles(gl, aVertexPosition, aVertexColor, positionBuff, colorBuff, triangleCount) {
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
-  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
-  gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
-
-  gl.drawArrays(gl.TRIANGLES, 0, triangleCount * 3);
-}
-
-/**
- * @param {!WebGLRenderingContext} gl
- * @param {!WebGLBuffer} positionBuff  buffer with three numbers per vertex: x, y, z.
- * @param {!WebGLBuffer} colorBuff  buffer with four numbers per vertex: r, g, b, a.
- * @param {!number} cornerCount
- */
-function drawTriangleFan(gl, positionBuff, colorBuff, cornerCount) {
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
-  gl.vertexAttribPointer(aVertexPosition, 3, gl.FLOAT, false, 0, 0);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
-  gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
-
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, cornerCount + 2);
-}
-
 // Make WebStorm 8 happy
 if (!'WebGLRenderingContext' in window) {
   throw 'WebGLRenderingContext undefined!';

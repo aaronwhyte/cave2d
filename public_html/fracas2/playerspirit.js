@@ -15,8 +15,8 @@ function PlayerSpirit() {
 
   this.accelFactor = 0.2;
   this.friction = 0.1;
-  this.shotSpeed = 20;
-  this.shotInterval = 2;
+  this.shotSpeed = 2.3;
+  this.shotInterval = 3.14;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -45,6 +45,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         var bulletBody = Body.alloc();
         bulletBody.shape = Body.Shape.CIRCLE;
         bulletBody.rad = b.rad * 0.75;
+        bulletBody.rectRad.setXY(1, 1).scale(bulletBody.rad);
         bulletBody.mass = bulletBody.rad * bulletBody.rad * Math.PI;
         bulletBody.pathDurationMax = BulletSpirit.TIMEOUT;
         bulletBody.setPosAtTime(b.getPosAtTime(world.now, this.vec), world.now);

@@ -538,7 +538,7 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
           if (otherBody && otherBody.pathId == pathId) {
             if (!this.scannedBodyIds.contains(otherBody.id)) {
               this.scannedBodyIds.put(otherBody.id);
-              otherBody.freezeAtTime(world.now);
+              otherBody.freezeAtTime(this.now);
               if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
                 retval = eventOut;
                 // Tighten the duration max. There's no point in looking for later hits, just earlier ones.
