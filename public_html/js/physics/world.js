@@ -2,7 +2,9 @@
  * Handles spirits and bodies.
  * @constructor
  */
-function World() {
+function World(opt_cellSize) {
+
+  this.cellSize = opt_cellSize || World.DEFAULT_CELL_SIZE;
 
   // spiritId to Spirit
   this.spirits = {};
@@ -41,10 +43,10 @@ World.GRID_HUGENESS = 10000;
  * The cell at index 0, 0 has its center at 0, 0.
  * The cell at index -1, 1 has its center at -CELL_SIZE, CELL_SIZE.
  */
-World.CELL_SIZE = 15;
+World.DEFAULT_CELL_SIZE = 15;
 
 World.prototype.cellCoord = function(worldCoord) {
-  return Math.round(worldCoord / World.CELL_SIZE);
+  return Math.round(worldCoord / this.cellSize);
 };
 
 World.prototype.gridIndexForCellCoords = function(ix, iy) {
@@ -262,11 +264,11 @@ World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
   p.add(rect.pos);
 
   // c is the center of the cell that p is in.
-  var c = Vec2d.alloc().set(p).roundToGrid(World.CELL_SIZE);
+  var c = Vec2d.alloc().set(p).roundToGrid(this.cellSize);
 
   // Calculate crossing times
   var e = null;
-  var t = this.now + (c[axis] + 0.5 * vSign[axis] * World.CELL_SIZE - p[axis]) / v[axis];
+  var t = this.now + (c[axis] + 0.5 * vSign[axis] * this.cellSize - p[axis]) / v[axis];
   if (t < this.now) {
     console.error("oh crap, grid event time < now:", t, this.now);
   } else if (t <= body.getPathEndTime()) {
@@ -328,9 +330,9 @@ World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
   var rad = vSign[axis] * (body.shape == Body.Shape.CIRCLE ? body.rad : body.rectRad[axis]);
   var dest;
   if (eventType == WorldEvent.TYPE_GRID_ENTER) {
-    dest = (nextCellIndex - 0.5 * vSign[axis]) * World.CELL_SIZE - rad;
+    dest = (nextCellIndex - 0.5 * vSign[axis]) * this.cellSize - rad;
   } else {
-    dest = (nextCellIndex + 0.5 * vSign[axis]) * World.CELL_SIZE + rad;
+    dest = (nextCellIndex + 0.5 * vSign[axis]) * this.cellSize + rad;
   }
   var t = body.pathStartTime + (dest - body.pathStartPos[axis]) / v[axis];
   var e = null;

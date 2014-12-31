@@ -153,7 +153,7 @@ Fracas2.prototype.initWorldFromString = function(s) {
   }
 
   this.resolver = new HitResolver();
-  this.world = new World();
+  this.world = new World(7);
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
     switch (c) {
