@@ -99,10 +99,11 @@ Renderer.prototype.drawScene = function(world, playerBody) {
   this.viewTranslation[2] = 0;
   this.gl.uniform3fv(this.uViewTranslation, this.viewTranslation);
 
-  // Scale the view to encompass a fixed-size square around the player's position.
-  var edgeLength = Math.min(this.canvas.width, this.canvas.height);
-  this.viewScale[0] = this.zoom * edgeLength / this.canvas.width;
-  this.viewScale[1] = this.zoom * edgeLength / this.canvas.height;
+  // Scale the view to using the average of the two edge lengths,
+  // to avoid extreme zooming for narrow/tall canvases.
+  var avgLength = (this.canvas.width + this.canvas.height) / 2;
+  this.viewScale[0] = this.zoom * avgLength / this.canvas.width;
+  this.viewScale[1] = this.zoom * avgLength / this.canvas.height;
   this.viewScale[2] = 1;
   this.gl.uniform3fv(this.uViewScale, this.viewScale);
 
