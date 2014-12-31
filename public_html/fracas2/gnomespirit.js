@@ -12,7 +12,7 @@ function GnomeSpirit() {
 
 GnomeSpirit.EXCITED_TIMEOUT = 2;
 GnomeSpirit.BORED_TIMEOUT = 7;
-GnomeSpirit.MAX_SCAN_DIST = 18;
+GnomeSpirit.MAX_SCAN_DIST = 16;
 GnomeSpirit.CHASE_ACCEL = 0.6;
 GnomeSpirit.WANDER_ACCEL = 0.2;
 
