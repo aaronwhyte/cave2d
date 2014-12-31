@@ -29,7 +29,7 @@ var RAY_SPIRIT_COLOR_3 = [0.2, 0.7, 0.8];
 var BULLET_COLOR_3 = [1, 0.5, 0.1];
 var OTHER_COLOR_3 = [0.5, 1, 0.5];
 
-Renderer.CIRCLE_CORNERS = 31;
+Renderer.CIRCLE_CORNERS = 13;
 
 Renderer.prototype.initAttributesAndUniforms = function() {
   var gl = this.gl;

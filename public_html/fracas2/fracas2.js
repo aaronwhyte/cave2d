@@ -249,7 +249,7 @@ Fracas2.prototype.addGnomeToWorld = function(position) {
   b.setPosAtTime(position, 1);
   b.shape = Body.Shape.CIRCLE;
   b.rad = Fracas2.CHARACTER_RADIUS;
-  b.pathDurationMax = GnomeSpirit.TIMEOUT;
+  b.pathDurationMax = GnomeSpirit.BORED_TIMEOUT;
 
   var bodyId = this.world.addBody(b);
   var spirit = new GnomeSpirit();
@@ -257,7 +257,7 @@ Fracas2.prototype.addGnomeToWorld = function(position) {
   var spiritId = this.world.addSpirit(spirit);
   spirit.bodyId = bodyId;
   b.spiritId = spiritId;
-  this.world.addTimeout(this.world.now + Math.random() * GnomeSpirit.TIMEOUT, spiritId, null);
+  this.world.addTimeout(this.world.now + Math.random() * GnomeSpirit.BORED_TIMEOUT, spiritId, null);
 };
 
 Fracas2.prototype.initRendererBuffers = function() {
