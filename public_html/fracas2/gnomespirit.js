@@ -36,7 +36,7 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
   // The odds of scanning fall off after half the scan dist
   if (targetInRange && (Math.random() + 1) * 0.5 > dist / GnomeSpirit.MAX_SCAN_DIST) {
     var req = ScanRequest.alloc();
-    req.hitGroup = 0;
+    req.hitGroup = Fracas2.Group.GNOME_SCAN;
     req.shape = Body.Shape.CIRCLE;
     req.rad = 0.1;
     req.pos.set(gnomePos);

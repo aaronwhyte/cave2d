@@ -1,10 +1,38 @@
 /**
  * Handles spirits and bodies.
+ *
+ * @param {number} cellSize The world-space size of each cell in the collision-detection grid.
+ * If it's too small, time is wasted as things enter and exit cells. If it's too big,
+ * we suffer from O(n^2) collision detection speed within each cell.
+ * If falsey, this defaults to 15.
+ *
+ * @param {number} groupCount The number of collision groups in each cell.
+ * If falsey, this defaults to 1.
+ *
+ * @param {Array} groupPairs An array of 2-element arrays, defining all the group pairs
+ * that can collide with each other. The two IDs in a pair may be the same, to make
+ * a group's members collide with each other.
+ *
  * @constructor
  */
-function World(opt_cellSize) {
-
-  this.cellSize = opt_cellSize || World.DEFAULT_CELL_SIZE;
+function World(cellSize, groupCount, groupPairs) {
+  this.cellSize = cellSize || World.DEFAULT_CELL_SIZE;
+  this.groupCount = groupCount || 1;
+  this.groupPairs = groupPairs || [[0, 0]];
+  this.groupHitsGroups = [];
+  for (var i = 0; i < this.groupPairs.length; i++) {
+    var pair = this.groupPairs[i];
+    for (var a = 0; a < 2; a++) {
+      var b = (a + 1) % 2;
+      var list = this.groupHitsGroups[pair[a]];
+      if (!list) {
+        list = this.groupHitsGroups[pair[a]] = [];
+      }
+      if (list.indexOf(pair[b]) < 0) {
+        list.push(pair[b]);
+      }
+    }
+  }
 
   // spiritId to Spirit
   this.spirits = {};
@@ -212,27 +240,32 @@ World.prototype.addPathToGrid = function(body) {
 };
 
 World.prototype.getGroupCount = function() {
-  return 5; // TODO base this on the way the world was initialized
+  return this.groupCount;
 };
 
 World.prototype.addPathToCell = function(body, cell) {
   var nextEvent = WorldEvent.alloc();
   var group = body.hitGroup;
-  var pathIdSet = cell.getPathIdsForGroup(group);
-  var pathIdArray = pathIdSet.vals;
-  for (var i = 0; i < pathIdArray.length;) {
-    var pathId = pathIdArray[i];
-    var otherBody = this.paths[pathId];
-    if (otherBody && otherBody.pathId == pathId) {
-      var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
-      if (hitEvent) {
-        // Add the existing event and allocate the next one.
-        this.queue.add(hitEvent);
-        nextEvent = WorldEvent.alloc();
+
+  var hitGroups = this.groupHitsGroups[group];
+  for (var gi = 0; gi < hitGroups.length; gi++) {
+    var otherGroup = hitGroups[gi];
+    var pathIdSet = cell.getPathIdsForGroup(otherGroup);
+    var pathIdArray = pathIdSet.vals;
+    for (var pi = 0; pi < pathIdArray.length;) {
+      var pathId = pathIdArray[pi];
+      var otherBody = this.paths[pathId];
+      if (otherBody && otherBody.pathId == pathId) {
+        var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
+        if (hitEvent) {
+          // Add the existing event and allocate the next one.
+          this.queue.add(hitEvent);
+          nextEvent = WorldEvent.alloc();
+        }
+        pi++;
+      } else {
+        pathIdSet.removeIndex(pi);
       }
-      i++;
-    } else {
-      pathIdSet.removeIndex(i);
     }
   }
   cell.addPathIdToGroup(body.pathId, group);
@@ -532,25 +565,30 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
       var cell = this.getCell(ix, iy);
       if (cell) {
-        var pathIdSet = cell.getPathIdsForGroup(body.hitGroup);
-        var pathIdArray = pathIdSet.vals;
-        for (var i = 0; i < pathIdArray.length;) {
-          var pathId = pathIdArray[i];
-          var otherBody = this.paths[pathId];
-          if (otherBody && otherBody.pathId == pathId) {
-            if (!this.scannedBodyIds.contains(otherBody.id)) {
-              this.scannedBodyIds.put(otherBody.id);
-              otherBody.freezeAtTime(this.now);
-              if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
-                retval = eventOut;
-                // Tighten the duration max. There's no point in looking for later hits, just earlier ones.
-                body.pathDurationMax = eventOut.time - this.now;
+        var hitGroups = this.groupHitsGroups[body.hitGroup];
+        for (var gi = 0; gi < hitGroups.length; gi++) {
+          var otherGroup = hitGroups[gi];
+          var pathIdSet = cell.getPathIdsForGroup(otherGroup);
+          var pathIdArray = pathIdSet.vals;
+          for (var i = 0; i < pathIdArray.length;) {
+            var pathId = pathIdArray[i];
+            var otherBody = this.paths[pathId];
+            if (otherBody && otherBody.pathId == pathId) {
+              if (!this.scannedBodyIds.contains(otherBody.id)) {
+                this.scannedBodyIds.put(otherBody.id);
+                otherBody.freezeAtTime(this.now);
+                if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
+                  retval = eventOut;
+                  // Tighten the duration max. There's no point in looking for later hits, just earlier ones.
+                  // (This is OK for rayscans, but never do it for other bodies.)
+                  body.pathDurationMax = eventOut.time - this.now;
+                }
+                otherBody.unfreeze();
               }
-              otherBody.unfreeze();
+              i++;
+            } else {
+              pathIdSet.removeIndex(i);
             }
-            i++;
-          } else {
-            pathIdSet.removeIndex(i);
           }
         }
       }

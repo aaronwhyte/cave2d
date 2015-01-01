@@ -36,6 +36,39 @@ Fracas2.State = {
   PLAY_LEVEL: 'play_level'
 };
 
+Fracas2.Group = {
+  WALL: 0,
+  PLAYER: 1,
+  PLAYER_BULLET: 2,
+  PLAYER_ITEM: 3,
+  GNOME: 4,
+  GNOME_SCAN: 5,
+  GENERATOR_SCAN: 6
+};
+
+Fracas2.GROUP_COUNT = 7;
+
+Fracas2.GROUP_PAIRS = [
+  [Fracas2.Group.PLAYER, Fracas2.Group.WALL],
+
+  [Fracas2.Group.PLAYER_BULLET, Fracas2.Group.WALL],
+
+  [Fracas2.Group.PLAYER_ITEM, Fracas2.Group.PLAYER],
+
+  [Fracas2.Group.GNOME, Fracas2.Group.WALL],
+  [Fracas2.Group.GNOME, Fracas2.Group.PLAYER],
+  [Fracas2.Group.GNOME, Fracas2.Group.PLAYER_BULLET],
+  [Fracas2.Group.GNOME, Fracas2.Group.GNOME],
+
+  [Fracas2.Group.GNOME_SCAN, Fracas2.Group.WALL],
+  [Fracas2.Group.GNOME_SCAN, Fracas2.Group.PLAYER],
+
+  [Fracas2.Group.GENERATOR_SCAN, Fracas2.Group.WALL],
+  [Fracas2.Group.GENERATOR_SCAN, Fracas2.Group.PLAYER],
+  [Fracas2.Group.GENERATOR_SCAN, Fracas2.Group.PLAYER_BULLET],
+  [Fracas2.Group.GENERATOR_SCAN, Fracas2.Group.GNOME]
+];
+
 Fracas2.prototype.stopWaitingForState = function() {
   this.waitingForState = null;
   this.waitingForLevelIndex = null;
@@ -153,7 +186,7 @@ Fracas2.prototype.initWorldFromString = function(s) {
   }
 
   this.resolver = new HitResolver();
-  this.world = new World(7);
+  this.world = new World(Fracas2.SPACING * 2.5 * Math.PI, Fracas2.GROUP_COUNT, Fracas2.GROUP_PAIRS);
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
     switch (c) {
@@ -165,6 +198,7 @@ Fracas2.prototype.initWorldFromString = function(s) {
       case '#':
         // wall
         var b = Body.alloc();
+        b.hitGroup = Fracas2.Group.WALL;
         b.setPosAtTime(xy(), 1);
         b.shape = Body.Shape.RECT;
         b.rectRad.set(rr());
@@ -196,7 +230,7 @@ Fracas2.prototype.initWorldFromString = function(s) {
 Fracas2.prototype.addPlayerToWorld = function(position) {
   // Init the player body early, so the gnomes can have something to hunt for.
   var b = this.playerBody;
-
+  b.hitGroup = Fracas2.Group.PLAYER;
   b.setPosAtTime(position, 1);
   b.shape = Body.Shape.CIRCLE;
   b.rad = Fracas2.CHARACTER_RADIUS;
@@ -246,6 +280,7 @@ Fracas2.prototype.addPlayerToWorld = function(position) {
 
 Fracas2.prototype.addGnomeToWorld = function(position) {
   var b = new Body();
+  b.hitGroup = Fracas2.Group.GNOME;
   b.setPosAtTime(position, 1);
   b.shape = Body.Shape.CIRCLE;
   b.rad = Fracas2.CHARACTER_RADIUS;
