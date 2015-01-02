@@ -8,16 +8,16 @@ function PlayerSpirit(game) {
   this.bodyId = -1;
   this.id = -1;
   this.health = 3;
-  this.vec = Vec2d.alloc();
-  this.accel = Vec2d.alloc();
-  this.aim = Vec2d.alloc();
+  this.vec = new Vec2d();
+  this.accel = new Vec2d();
+  this.aim = new Vec2d();
   this.moveStick = null;
   this.aimStick = null;
   this.lastFire = 0;
 
-  this.accelFactor = 0.2;
+  this.accelFactor = 0.12;
   this.friction = 0.16;
-  this.shotSpeed = 2.3;
+  this.shotSpeed = 2;
   this.shotInterval = 4;
 }
 PlayerSpirit.prototype = new Spirit();
@@ -33,7 +33,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
     this.accel.reset();
     if (this.moveStick) {
       this.moveStick.getVal(this.accel);
-      this.accel.scale(b.rad * this.accelFactor);
+      this.accel.scale(this.accelFactor);
     }
     this.vec.set(b.vel).scale(1 - this.friction).add(this.accel);
     b.setVelAtTime(this.vec, world.now);
@@ -47,7 +47,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         var bulletBody = Body.alloc();
         bulletBody.hitGroup = Fracas2.Group.PLAYER_BULLET;
         bulletBody.shape = Body.Shape.CIRCLE;
-        bulletBody.rad = b.rad * 0.75;
+        bulletBody.rad = b.rad * 0.8;
         bulletBody.rectRad.setXY(1, 1).scale(bulletBody.rad);
         bulletBody.mass = bulletBody.rad * bulletBody.rad * Math.PI;
         bulletBody.pathDurationMax = BulletSpirit.TIMEOUT;
@@ -68,11 +68,14 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
 };
 
 PlayerSpirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
-  if (world.spirits[thatBody.spiritId] instanceof GnomeSpirit) {
+  var otherSpirit = world.spirits[thatBody.spiritId];
+  if (otherSpirit instanceof GnomeSpirit) {
     this.health--;
     if (this.health <= 0) {
       return Fracas2.Reaction.DESTROY_PLAYER;
     }
+  } else if (otherSpirit instanceof ExitSpirit) {
+    return Fracas2.Reaction.EXIT_LEVEL;
   }
   return Fracas2.Reaction.BOUNCE;
 };

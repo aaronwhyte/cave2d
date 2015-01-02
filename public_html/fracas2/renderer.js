@@ -113,7 +113,7 @@ Renderer.prototype.drawScene = function(world, playerBody) {
   // foreground
   for (var id in world.bodies) {
     var b = world.bodies[id];
-    if (b && b.mass != Infinity) {
+    if (b && !(world.spirits[b.spiritId] instanceof WallSpirit)) {
       this.drawBody(world, b);
     }
   }

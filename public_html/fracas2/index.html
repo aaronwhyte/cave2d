@@ -41,6 +41,7 @@
 <script src="gnomespirit.js"></script>
 <script src="bulletspirit.js"></script>
 <script src="wallspirit.js"></script>
+<script src="exitspirit.js"></script>
 
 <script src="renderer.js"></script>
 <script src="fracas2.js"></script>
@@ -52,6 +53,8 @@
 <canvas id="canvas"></canvas>
 <script>
 
+var f2;
+
 function main() {
   var canvas = document.querySelector('#canvas');
   var levelPaths = [
@@ -59,7 +62,7 @@ function main() {
     './levels/b.txt',
     './levels/c.txt'
   ];
-  var f2 = new Fracas2(canvas);
+  f2 = new Fracas2(canvas);
   f2.startLoadingLevels(levelPaths);
   f2.beginMainMenu();
 }

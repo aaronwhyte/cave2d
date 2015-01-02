@@ -33,7 +33,7 @@ BulletSpirit.prototype.onHit = function(world, thisBody, thatBody, hitEvent) {
   }
   // Bounce off of walls if the angle of bounce is shallow, to allow touch-screen users to
   // fire shots down narrow hallways by glancing off the walls.
-  if (otherSpirit instanceof WallSpirit) {
+  if (otherSpirit instanceof WallSpirit || otherSpirit instanceof ExitSpirit) {
     var proj = Vec2d.alloc().set(thisBody.vel).projectOnto(hitEvent.collisionVec);
     var dot = thisBody.vel.dot(proj);
     var glance = dot / thisBody.vel.magnitude();

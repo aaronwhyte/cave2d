@@ -344,23 +344,40 @@ v init GL program with shaders
 v init bg buffers
 v rayscans for gnomes
 v group-based collision detection
-- combat rules
+v combat rules
   v gnome death
-  - player damage and death - reload 1st level for now.
-  - player health indicator? One life for now...
-- exit to next level
-  - Exit spirit
-  - renderer
+  v player damage and death - reload next level for now.
+  x player health indicator - hearts at the top of the screen? Or facial expression? (Face. Design, impl. below)
+v exit to next level
+  v Exit spirit
+  v basic rendering
+  v bullets don't bounce of of it
+- states
+  - you lose
+  - you win
+  - main menu
 - explosions
   - gnome damage
   - gnome death
   - player damage
   - player death
-- states
-  - you lose
-  - you win
-  - main menu
 - sound effects
+- graphics models
+  - player
+    - mouth
+    - eyes
+    - arms and legs?
+  - gnomes
+    - eyes
+    - mouth
+    - arms & legs?
+    - hat! Maybe like http://plexode.com/eval3/#s=aekVQXANJVQMbAx10AYMeFBERAYIeF5sBSkUePQNEQk+mHx0QdB89TwMNA0uRk3APdqUDSE9QTkZUphyxsWABcQkKAVyxREQPR0pNTTRVWk1GvARHRUXEz9FDRkhKTzFCVUnLxU/QD05QV0Y1UAkOEg0B+QrueBNc71e76fgSfziB8BJ8DBMFCIPDUId7RhcNfL7iESf7RIhNKBUIzpdbthLTasligPKhVKZQJhGlJeYxPZDkIRTIrLZsmajWbDabjfcADjgPcjmdDqdkTeDyej2fASB8PiNNisCqL5qkZq8KrL3CL7B0Qg9Gi1RqcPr1oglcAMatlgBNiANqr0ekEipcpeEnJt9aMsl0wmU0ZBGLTCnbOlV/a7ZbamAibCLhlVIc8jplGnBEfEQC1j0MZB4RDMZ0emCNmhN5kObwLSn2ywcvmNezNKklez10B+ifmkuGm1Fw1Sb1sq1973lGv+1lu3wyqmoBX8hxkJ3Wxr2PoGSAbdb+XeG+utkB4T4MQCYYjPpCr7NIxFQMiAV720r22wsTTN1TIPIVm8TxmDlZpfFeU9F34aUFFyQxUYOcSEFGf1uDugAxwBEk6naY5PmQUFkxHJt5Tjghu2cQmDFaWpwXpBmEUNegEwPBiNFpVSMUQjNRnMd1z37hd0n+hphwBTgTogPB3IKUaLlhV1RhSFYQhFFM6hKEQJBWFNUFhcBpVVBdpQXfyRoZduKpCQl5wPmZxHGe1Y30Co+3KPCGHUhySxUAkVTMY2exCPRskWDgozrAEHnEBIFlGS0qRUE06kxVWejRS4VaXAkaRUOegQLRCaABBAAQTPxxH5O6S2yFMwhVFCsW1oaa0qomixJo2j6RQkVCoNpUp5V6kxPpWnqZV6nKeqCohVqScQWMyqKqA6rETq+zKyrRuCxht1jaEiTYpUmbkqlJdJUQmVpYloVZcl6YI1eppXyo9pY/QlbW/exVpFYSuLhMi46AoKBqFoeNKKEU66OWWv0qFSt2yseyRVTFw1xUazcZp+oRPoG1apRO46wt2tX8xV/LCTFGF2saWrIpbH8bwBCceTGz8itFUwRBMCgQ0E7sntxLLeyjSMqkh1Sor0SBGEMSgJKYqCqANV69KgD9RFUJBQE/GRZFUCQIBMRQIROHC+MBMRZPsWj7Ek+xXPvCGNAEAUAQLDaMxBVDu3qe5qiMRq9ZNlWX4Ngss4LezRxfNdv3FE+MA/OsgtC0ozAuj+W5BK8uAkFl16XoDK6Cf8j4/BusLHek3TlKd6diuN6Yli+ggNzuwh2H+gPCsdLwNNBhFWvQJGIZAKGWp12Js7ttMECSaXWkF19ndwQq0sfTpjpZ5Bn2nHAGgvSL/1CgJy2PY+L5F1FXQ0TAgCCzAMThUJIAwSBH9woDrf2BJ/4VQlwCAGF4AAA=
+    - hat could fly off during explosion...
+  - bullets --> arrows
+    - big signage arrow pointed in direction of flight, like Dandy
+    - arrows stop and blink out when they hit a wall (file under explosion)
+- control tweaks
+  - single fire button, laser scope?
 
 Bugs
 - Simultaneous-corner-bounce interpenetration.

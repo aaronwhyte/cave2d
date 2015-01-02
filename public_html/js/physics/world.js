@@ -173,6 +173,7 @@ World.prototype.removeBodyFromCellRange = function(body, cellRange) {
 };
 
 World.prototype.getBody = function(bodyId) {
+  this.validateBodies();
   return this.bodies[bodyId];
 };
 

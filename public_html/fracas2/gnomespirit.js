@@ -7,10 +7,10 @@ function GnomeSpirit(game) {
   this.game = game;
   this.id = -1;
   this.bodyId = -1;
-  this.vec = Vec2d.alloc();
+  this.vec = new Vec2d();;
   this.excitement = 0;
   this.twist = 0;
-  this.lastTargetPos = Vec2d.alloc();
+  this.lastTargetPos = new Vec2d();
   this.goToLastTargetPos = false;
 }
 
@@ -86,32 +86,43 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
             .add(b.vel);
       }
     } else {
-      // In range but out of excitement.
+      // Probably on screen, but out of excitement.
       this.goToLastTargetPos = false;
       this.excitement = 0;
-      this.vec.set(b.vel)
+      this.vec.set(b.vel).scaleToLength(GnomeSpirit.WANDER_ACCEL)
           .addXY(
-              GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5),
-              GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5));
+              0.1 * GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5),
+              0.1 * GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5))
+          .add(b.vel);
     }
 
     if (this.twist) {
       this.vec.rot(Math.sign(this.twist) * Math.PI * 0.5 / GnomeSpirit.TWIST_DURATION);
       this.twist -= Math.sign(this.twist);
     }
+    this.vec.scale(1 - GnomeSpirit.FRICTION);
+    b.setVelAtTime(this.vec, world.now);
+    b.invalidatePath();
 
   } else {
+
     // Probably off the screen. Become inert.
     this.goToLastTargetPos = false;
     this.excitement = 0;
     this.twist = 0;
-    this.vec.scale(1 - GnomeSpirit.FRICTION);
+    var speedSq = b.vel.magnitudeSquared();
+    if (speedSq == 0) {
+      // do nothing
+    } else if (speedSq < 0.1) {
+      // stop
+      b.setVelAtTime(Vec2d.ZERO, world.now);
+      b.invalidatePath();
+    } else {
+      this.vec.scale(1 - GnomeSpirit.FRICTION);
+      b.setVelAtTime(this.vec, world.now);
+      b.invalidatePath();
+    }
   }
-
-  this.vec.scale(1 - GnomeSpirit.FRICTION);
-  b.setVelAtTime(this.vec, world.now);
-  b.invalidatePath();
-
   world.addTimeout(
       world.now + (this.excitement >= 1 ? GnomeSpirit.EXCITED_TIMEOUT : GnomeSpirit.BORED_TIMEOUT),
       this.id, null);

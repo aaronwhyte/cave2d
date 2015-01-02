@@ -34,11 +34,12 @@ Fracas2.Reaction = {
   DESTROY_GNOME: 2,
   COLLECT_GOLD: 3,
   COLLECT_HEALTH: 4,
-  DESTROY_PLAYER: 5
+  DESTROY_PLAYER: 5,
+  EXIT_LEVEL: 6
 };
 
 Fracas2.SPACING = 2;
-Fracas2.CHARACTER_RADIUS = 0.6 * 0.5 * Fracas2.SPACING;
+Fracas2.CHARACTER_RADIUS = 0.5 * 0.5 * Fracas2.SPACING;
 Fracas2.WALL_Z = 0.2;
 
 Fracas2.CLOCKS_PER_SECOND = 60 * 0.3;
@@ -92,13 +93,14 @@ Fracas2.prototype.beginMainMenu = function() {
   this.invalidate();
 
   // TODO: actually have a menu
-//  setTimeout(this.beginPlayingLevel.bind(this, 0), 100);
-  this.beginPlayingLevel(this.levelNum++ % 3);
+  this.levelNum = 0;
+  this.beginPlayingLevel();
 };
 
-Fracas2.prototype.beginPlayingLevel = function(levelIndex) {
+Fracas2.prototype.beginPlayingLevel = function() {
   this.waitingForState = Fracas2.State.PLAY_LEVEL;
-  this.waitingForLevelIndex = levelIndex;
+  // TODO: you win if you finish the last level
+  this.waitingForLevelIndex = this.levelNum % this.levelPaths.length;
   this.invalidate();
 };
 
@@ -202,6 +204,7 @@ Fracas2.prototype.initWorldFromString = function(s) {
   this.resolver = new HitResolver();
   this.world = new World(Fracas2.SPACING * 2.5 * Math.PI, Fracas2.GROUP_COUNT, Fracas2.GROUP_PAIRS);
   this.wallSpiritId = this.world.addSpirit(new WallSpirit());
+  this.exitSpiritId = this.world.addSpirit(new ExitSpirit());
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
     switch (c) {
@@ -227,6 +230,18 @@ Fracas2.prototype.initWorldFromString = function(s) {
         break;
       case '.':
         // floor
+        break;
+      case '>':
+        // exit
+        var b = Body.alloc();
+        b.spiritId = this.exitSpiritId;
+        b.hitGroup = Fracas2.Group.WALL;
+        b.setPosAtTime(xy(), 1);
+        b.shape = Body.Shape.RECT;
+        b.rectRad.set(vec.setXY(1, 1).scale(Fracas2.SPACING * 0.33));
+        b.mass = Infinity;
+        b.pathDurationMax = Infinity;
+        this.world.addBody(b);
         break;
       case '@':
         // player
@@ -315,8 +330,8 @@ Fracas2.prototype.initRendererBuffers = function() {
   var vec = new Vec2d();
   for (var id in this.world.bodies) {
     var body = this.world.bodies[id];
-    if (body.mass == Infinity) {
-      // TODO: Identify walls more explicitly
+    var spirit = this.world.spirits[body.spiritId];
+    if (spirit instanceof WallSpirit) {
       var red = Math.random() / 10;
       var green = Math.random() / 10;
       var blue = 1 - Math.random() / 10;
@@ -333,16 +348,14 @@ Fracas2.prototype.initRendererBuffers = function() {
 Fracas2.prototype.loop = function() {
   if (this.world === null || this.renderer === null) return;
   this.rafKey = requestAnimationFrame(this.loopCallback, this.canvas);
-  this.frameEndMs = Date.now() + 1000 / 60;
+  this.frameEndMs = Date.now() + 1000 / 70;
+
   this.renderer.maybeResize();
   this.renderer.drawScene(this.world, this.playerBody);
   this.clock();
 };
 
 Fracas2.prototype.clock = function() {
-  // Reserve at least a little time for physics, so we make some progress even if rendering blew through
-  // our time budget.
-  this.frameEndMs = Math.max(this.frameEndMs, Date.now() + 0.1 * 1000 / 60);
   var endClock = this.world.now + Fracas2.CLOCKS_PER_SECOND * (1/60);
   var e = this.world.getNextEvent();
   // Stop if there are no more events to process,
@@ -363,13 +376,11 @@ Fracas2.prototype.clock = function() {
         if (s1) {
           reaction1 = s1.onHit(this.world, b1, b0, e);
         }
-        this.processReaction(b0, s0, reaction0);
-        this.processReaction(b1, s1, reaction1);
-
-//        b0 = this.world.getBody(b0.id);
-//        b1 = this.world.getBody(b1.id);
-        if (b0 && b1 && reaction0 == Fracas2.Reaction.BOUNCE && reaction1 == Fracas2.Reaction.BOUNCE) {
+        if (reaction0 == Fracas2.Reaction.BOUNCE && reaction1 == Fracas2.Reaction.BOUNCE) {
           this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
+        } else {
+          this.processReaction(b0, s0, reaction0);
+          this.processReaction(b1, s1, reaction1);
         }
       }
     }
@@ -388,6 +399,10 @@ Fracas2.prototype.processReaction = function(body, spirit, reaction) {
     this.destroyGnome(spirit);
   } else if (reaction == Fracas2.Reaction.DESTROY_PLAYER) {
     this.gameOver(spirit);
+  } else if (reaction == Fracas2.Reaction.EXIT_LEVEL) {
+    this.levelNum++;
+    cancelAnimationFrame(this.rafKey);
+    this.beginPlayingLevel();
   }
 };
 
