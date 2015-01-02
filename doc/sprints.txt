@@ -337,8 +337,35 @@ Engine features I still need:
 * SparkEngine
 * Sound
 
+v simple async dependency loading solution
+v load maps
+v init world from maps
+v init GL program with shaders
+v init bg buffers
+v rayscans for gnomes
+v group-based collision detection
+- combat rules
+  v gnome death
+  - player damage and death - reload 1st level for now.
+  - player health indicator? One life for now...
+- exit to next level
+  - Exit spirit
+  - renderer
+- explosions
+  - gnome damage
+  - gnome death
+  - player damage
+  - player death
+- states
+  - you lose
+  - you win
+  - main menu
+- sound effects
 
-
+Bugs
+- Simultaneous-corner-bounce interpenetration.
+  - Repro unit test
+  - Fix
 
 2014-12-22 to...
 Sparks

@@ -172,7 +172,7 @@ World.prototype.removeBodyFromCellRange = function(body, cellRange) {
   }
 };
 
-  World.prototype.getBody = function(bodyId) {
+World.prototype.getBody = function(bodyId) {
   return this.bodies[bodyId];
 };
 
@@ -182,6 +182,7 @@ World.prototype.removeBodyFromCellRange = function(body, cellRange) {
  * @returns {*}
  */
 World.prototype.getBodyByPathId = function(pathId) {
+  this.validateBodies();
   var body = this.paths[pathId];
   if (body && body.pathId != pathId) {
     delete this.paths[pathId];

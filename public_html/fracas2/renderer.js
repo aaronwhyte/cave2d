@@ -13,7 +13,7 @@ function Renderer(canvas, gl, program) {
 
   this.viewScale = [1, 1, 1];
   this.viewTranslation = [0, 0, 0];
-  this.zoom = 1/10;
+  this.zoom = 1/13;
   this.array3 = [0, 0, 0];
   this.circlePosBuffs = [];
   this.circleColorBuffs = [];
@@ -142,8 +142,6 @@ Renderer.prototype.drawBody = function(world, b) {
   var spirit = world.spirits[b.spiritId];
   if (spirit && spirit instanceof PlayerSpirit) {
     this.gl.uniform3fv(this.uModelColor, PLAYER_COLOR_3);
-  } else if (spirit && spirit instanceof RaySpirit) {
-    this.gl.uniform3fv(this.uModelColor, RAY_SPIRIT_COLOR_3);
   } else if (spirit && spirit instanceof BulletSpirit) {
     this.gl.uniform3fv(this.uModelColor, BULLET_COLOR_3);
   } else {

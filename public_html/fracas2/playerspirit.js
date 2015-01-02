@@ -2,10 +2,12 @@
  * @constructor
  * @extends {Spirit}
  */
-function PlayerSpirit() {
+function PlayerSpirit(game) {
   Spirit.call(this);
+  this.game = game;
   this.bodyId = -1;
   this.id = -1;
+  this.health = 3;
   this.vec = Vec2d.alloc();
   this.accel = Vec2d.alloc();
   this.aim = Vec2d.alloc();
@@ -14,9 +16,9 @@ function PlayerSpirit() {
   this.lastFire = 0;
 
   this.accelFactor = 0.2;
-  this.friction = 0.1;
+  this.friction = 0.16;
   this.shotSpeed = 2.3;
-  this.shotInterval = 1.14;
+  this.shotInterval = 4;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -52,7 +54,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         bulletBody.setPosAtTime(b.getPosAtTime(world.now, this.vec), world.now);
         bulletBody.setVelAtTime(this.aim, world.now);
         var bulletId = world.addBody(bulletBody);
-        var bulletSpirit = BulletSpirit.alloc();
+        var bulletSpirit = BulletSpirit.alloc(this.game);
         bulletSpirit.bodyId = bulletId;
         world.addSpirit(bulletSpirit);
 
@@ -66,6 +68,13 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
 };
 
 PlayerSpirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
+  if (world.spirits[thatBody.spiritId] instanceof GnomeSpirit) {
+    this.health--;
+    if (this.health <= 0) {
+      return Fracas2.Reaction.DESTROY_PLAYER;
+    }
+  }
+  return Fracas2.Reaction.BOUNCE;
 };
 
 PlayerSpirit.prototype.setMoveStick = function(stick) {

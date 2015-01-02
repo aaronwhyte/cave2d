@@ -2,19 +2,25 @@
  * @constructor
  * @extends {Spirit}
  */
-function GnomeSpirit() {
+function GnomeSpirit(game) {
   Spirit.call(this);
+  this.game = game;
   this.id = -1;
   this.bodyId = -1;
   this.vec = Vec2d.alloc();
   this.excitement = 0;
+  this.twist = 0;
+  this.lastTargetPos = Vec2d.alloc();
+  this.goToLastTargetPos = false;
 }
 
 GnomeSpirit.EXCITED_TIMEOUT = 2;
 GnomeSpirit.BORED_TIMEOUT = 7;
-GnomeSpirit.MAX_SCAN_DIST = 16;
-GnomeSpirit.CHASE_ACCEL = 0.6;
-GnomeSpirit.WANDER_ACCEL = 0.2;
+GnomeSpirit.MAX_SCAN_DIST = 20;
+GnomeSpirit.CHASE_ACCEL = 0.45;
+GnomeSpirit.WANDER_ACCEL = 0.3;
+GnomeSpirit.FRICTION = 0.4;
+GnomeSpirit.TWIST_DURATION = 2;
 
 GnomeSpirit.prototype = new Spirit();
 GnomeSpirit.prototype.constructor = GnomeSpirit;
@@ -53,36 +59,58 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
   }
   if (targetInRange) {
     if (targetSeen) {
-      if (this.excitement < 50) {
-        this.excitement += 10;
-      }
-      this.vec.set(targetPos).subtract(gnomePos).scaleToLength(GnomeSpirit.CHASE_ACCEL);
+      this.lastTargetPos.set(targetPos);
+      this.goToLastTargetPos = true;
+      this.twist = 0;
+      this.excitement = 30;
+
+      this.vec.set(this.lastTargetPos).subtract(gnomePos).scaleToLength(GnomeSpirit.CHASE_ACCEL);
       this.vec.add(b.vel);
     } else if (this.excitement >= 1) {
       this.excitement--;
-      this.vec.set(b.vel).scaleToLength(GnomeSpirit.WANDER_ACCEL)
-          .rot(0.9 * (Math.random() - 0.5))
-          .addXY(
-              GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5),
-              GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5))
-          .add(b.vel);
+      // Have we arrived at the last place the target was spotted?
+      if (this.goToLastTargetPos && gnomePos.distance(this.lastTargetPos) < 2 * Fracas2.CHARACTER_RADIUS) {
+        // Yes - cancel search.
+        this.goToLastTargetPos = false;
+      }
+      if (this.goToLastTargetPos) {
+        // Go to that spot.
+        this.twist = 0;
+        this.vec.set(this.lastTargetPos).subtract(gnomePos).scaleToLength(GnomeSpirit.CHASE_ACCEL);
+        this.vec.add(b.vel);
+      } else {
+        this.vec.set(b.vel).scaleToLength(GnomeSpirit.CHASE_ACCEL * 0.75)
+            .addXY(
+                0.25 * GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5),
+                0.25 * GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5))
+            .add(b.vel);
+      }
     } else {
+      // In range but out of excitement.
+      this.goToLastTargetPos = false;
       this.excitement = 0;
       this.vec.set(b.vel)
           .addXY(
               GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5),
               GnomeSpirit.WANDER_ACCEL * (Math.random() - 0.5));
     }
-    this.vec.scale(0.6);
-    this.vec.rot(0.5 * (Math.random() - 0.5));
-    b.setVelAtTime(this.vec, world.now);
-    b.invalidatePath();
+
+    if (this.twist) {
+      this.vec.rot(Math.sign(this.twist) * Math.PI * 0.5 / GnomeSpirit.TWIST_DURATION);
+      this.twist -= Math.sign(this.twist);
+    }
+
   } else {
+    // Probably off the screen. Become inert.
+    this.goToLastTargetPos = false;
     this.excitement = 0;
-    this.vec.set(b.vel).scale(0.3);
-    b.setVelAtTime(this.vec, world.now);
-    b.invalidatePath();
+    this.twist = 0;
+    this.vec.scale(1 - GnomeSpirit.FRICTION);
   }
+
+  this.vec.scale(1 - GnomeSpirit.FRICTION);
+  b.setVelAtTime(this.vec, world.now);
+  b.invalidatePath();
 
   world.addTimeout(
       world.now + (this.excitement >= 1 ? GnomeSpirit.EXCITED_TIMEOUT : GnomeSpirit.BORED_TIMEOUT),
@@ -93,5 +121,11 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
 };
 
 GnomeSpirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
+  if (world.spirits[thatBody.spiritId] instanceof BulletSpirit) {
+    return Fracas2.Reaction.DESTROY_GNOME;
+  } else {
+    this.twist = GnomeSpirit.TWIST_DURATION * (Math.random() < 0.5 ? -1 : 1);
+  }
   thisBody.setVelAtTime(this.vec.set(thisBody.vel).scale(0.9), hit.time);
+  return Fracas2.Reaction.BOUNCE;
 };

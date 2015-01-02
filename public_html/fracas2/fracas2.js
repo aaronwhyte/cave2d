@@ -22,11 +22,23 @@ function Fracas2(canvas) {
   // final artifact of shader loading
   this.renderer = null;
 
-  this.loopCallback = this.loop.bind(this);
+  // for canceling a RequestAnimationFrame
+  this.rafKey = null;
+
+  this.levelNum = 0;
 }
 
+Fracas2.Reaction = {
+  BOUNCE: 0,
+  DESTROY_BULLET: 1,
+  DESTROY_GNOME: 2,
+  COLLECT_GOLD: 3,
+  COLLECT_HEALTH: 4,
+  DESTROY_PLAYER: 5
+};
+
 Fracas2.SPACING = 2;
-Fracas2.CHARACTER_RADIUS = 0.4 * 0.5 * Fracas2.SPACING;
+Fracas2.CHARACTER_RADIUS = 0.6 * 0.5 * Fracas2.SPACING;
 Fracas2.WALL_Z = 0.2;
 
 Fracas2.CLOCKS_PER_SECOND = 60 * 0.3;
@@ -80,7 +92,8 @@ Fracas2.prototype.beginMainMenu = function() {
   this.invalidate();
 
   // TODO: actually have a menu
-  this.beginPlayingLevel(1);
+//  setTimeout(this.beginPlayingLevel.bind(this, 0), 100);
+  this.beginPlayingLevel(this.levelNum++ % 3);
 };
 
 Fracas2.prototype.beginPlayingLevel = function(levelIndex) {
@@ -169,6 +182,7 @@ Fracas2.prototype.maybeStartLevel = function() {
   this.state = Fracas2.State.PLAY_LEVEL;
   this.initWorldFromString(this.levelStrings[levelIndex]);
   this.initRendererBuffers();
+  this.loopCallback = this.loop.bind(this);
   this.loop();
 };
 
@@ -187,6 +201,7 @@ Fracas2.prototype.initWorldFromString = function(s) {
 
   this.resolver = new HitResolver();
   this.world = new World(Fracas2.SPACING * 2.5 * Math.PI, Fracas2.GROUP_COUNT, Fracas2.GROUP_PAIRS);
+  this.wallSpiritId = this.world.addSpirit(new WallSpirit());
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
     switch (c) {
@@ -195,9 +210,13 @@ Fracas2.prototype.initWorldFromString = function(s) {
         y--;
         x = 0;
         continue;
+      case '\r':
+        // ignore
+        continue;
       case '#':
         // wall
         var b = Body.alloc();
+        b.spiritId = this.wallSpiritId;
         b.hitGroup = Fracas2.Group.WALL;
         b.setPosAtTime(xy(), 1);
         b.shape = Body.Shape.RECT;
@@ -217,11 +236,7 @@ Fracas2.prototype.initWorldFromString = function(s) {
         // gnome
         this.addGnomeToWorld(xy());
         break;
-      case '\r':
-        // ignore
-        break;
       default:
-        console.log('skipping unhandled character', c);
     }
     x++;
   }
@@ -237,7 +252,7 @@ Fracas2.prototype.addPlayerToWorld = function(position) {
   b.pathDurationMax = PlayerSpirit.TIMEOUT;
 
   var bodyId = this.world.addBody(b);
-  var spirit = new PlayerSpirit();
+  var spirit = new PlayerSpirit(this);
   var spiritId = this.world.addSpirit(spirit);
   spirit.bodyId = bodyId;
   this.playerSpirit = spirit;
@@ -287,7 +302,7 @@ Fracas2.prototype.addGnomeToWorld = function(position) {
   b.pathDurationMax = GnomeSpirit.BORED_TIMEOUT;
 
   var bodyId = this.world.addBody(b);
-  var spirit = new GnomeSpirit();
+  var spirit = new GnomeSpirit(this);
   spirit.setTargetBody(this.playerBody);
   var spiritId = this.world.addSpirit(spirit);
   spirit.bodyId = bodyId;
@@ -316,11 +331,12 @@ Fracas2.prototype.initRendererBuffers = function() {
 };
 
 Fracas2.prototype.loop = function() {
+  if (this.world === null || this.renderer === null) return;
+  this.rafKey = requestAnimationFrame(this.loopCallback, this.canvas);
   this.frameEndMs = Date.now() + 1000 / 60;
   this.renderer.maybeResize();
   this.renderer.drawScene(this.world, this.playerBody);
   this.clock();
-  requestAnimationFrame(this.loopCallback, this.canvas);
 };
 
 Fracas2.prototype.clock = function() {
@@ -337,11 +353,24 @@ Fracas2.prototype.clock = function() {
       var b0 = this.world.getBodyByPathId(e.pathId0);
       var b1 = this.world.getBodyByPathId(e.pathId1);
       if (b0 && b1) {
-        this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
         var s0 = this.world.spirits[b0.spiritId];
-        if (s0) s0.onHit(this.world, b0, b1, e);
         var s1 = this.world.spirits[b1.spiritId];
-        if (s1) s1.onHit(this.world, b1, b0, e);
+        var reaction0, reaction1;
+        reaction0 = reaction1 = Fracas2.Reaction.BOUNCE;
+        if (s0) {
+          reaction0 = s0.onHit(this.world, b0, b1, e);
+        }
+        if (s1) {
+          reaction1 = s1.onHit(this.world, b1, b0, e);
+        }
+        this.processReaction(b0, s0, reaction0);
+        this.processReaction(b1, s1, reaction1);
+
+//        b0 = this.world.getBody(b0.id);
+//        b1 = this.world.getBody(b1.id);
+        if (b0 && b1 && reaction0 == Fracas2.Reaction.BOUNCE && reaction1 == Fracas2.Reaction.BOUNCE) {
+          this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
+        }
       }
     }
     this.world.processNextEvent();
@@ -351,3 +380,41 @@ Fracas2.prototype.clock = function() {
     this.world.now = endClock;
   }
 };
+
+Fracas2.prototype.processReaction = function(body, spirit, reaction) {
+  if (reaction == Fracas2.Reaction.DESTROY_BULLET) {
+    this.destroyBullet(spirit);
+  } else if (reaction == Fracas2.Reaction.DESTROY_GNOME) {
+    this.destroyGnome(spirit);
+  } else if (reaction == Fracas2.Reaction.DESTROY_PLAYER) {
+    this.gameOver(spirit);
+  }
+};
+
+/**
+ * Removes the spirit and its body from the world, and frees them if they are pooled.
+ * @param spirit
+ */
+Fracas2.prototype.removeSpiritAndBody = function(spirit) {
+  this.world.removeSpiritId(spirit.id);
+  this.world.removeBodyId(spirit.bodyId);
+};
+
+
+Fracas2.prototype.destroyBullet = function(spirit) {
+  this.removeSpiritAndBody(spirit);
+  // TODO: explosion!
+};
+
+Fracas2.prototype.destroyGnome = function(spirit) {
+  this.removeSpiritAndBody(spirit);
+  // TODO: explosion!
+};
+
+Fracas2.prototype.gameOver = function(spirit) {
+  cancelAnimationFrame(this.rafKey);
+  this.beginMainMenu();
+  // TODO: explosion!
+};
+
+
