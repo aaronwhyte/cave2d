@@ -32,10 +32,11 @@ Fracas2.Reaction = {
   BOUNCE: 0,
   DESTROY_BULLET: 1,
   DESTROY_GNOME: 2,
-  COLLECT_GOLD: 3,
-  COLLECT_HEALTH: 4,
-  DESTROY_PLAYER: 5,
-  EXIT_LEVEL: 6
+  DESTROY_GENERATOR: 3,
+  COLLECT_GOLD: 4,
+  COLLECT_HEALTH: 5,
+  DESTROY_PLAYER: 6,
+  EXIT_LEVEL: 7
 };
 
 Fracas2.SPACING = 2;
@@ -228,6 +229,10 @@ Fracas2.prototype.initWorldFromString = function(s) {
         b.pathDurationMax = Infinity;
         this.world.addBody(b);
         break;
+      case 'G':
+        // generator
+        this.addGeneratorToWorld(xy());
+        break;
       case '.':
         // floor
         break;
@@ -322,7 +327,26 @@ Fracas2.prototype.addGnomeToWorld = function(position) {
   var spiritId = this.world.addSpirit(spirit);
   spirit.bodyId = bodyId;
   b.spiritId = spiritId;
+
   this.world.addTimeout(this.world.now + Math.random() * GnomeSpirit.BORED_TIMEOUT, spiritId, null);
+};
+
+Fracas2.prototype.addGeneratorToWorld = function(position) {
+  var b = Body.alloc();
+  b.hitGroup = Fracas2.Group.WALL;
+  b.setPosAtTime(position, 1);
+  b.shape = Body.Shape.RECT;
+  b.rectRad.set(new Vec2d(1, 1).scale(Fracas2.SPACING * 0.33));
+  b.mass = Infinity;
+  b.pathDurationMax = Infinity;
+
+  var bodyId = this.world.addBody(b);
+  var spirit = new GeneratorSpirit(this);
+  var spiritId = this.world.addSpirit(spirit);
+  spirit.bodyId = bodyId;
+  b.spiritId = spiritId;
+
+  this.world.addTimeout(this.world.now + GeneratorSpirit.TIMEOUT * (0.5 * Math.random()), b.spiritId, null);
 };
 
 Fracas2.prototype.initRendererBuffers = function() {
@@ -397,6 +421,8 @@ Fracas2.prototype.processReaction = function(body, spirit, reaction) {
     this.destroyBullet(spirit);
   } else if (reaction == Fracas2.Reaction.DESTROY_GNOME) {
     this.destroyGnome(spirit);
+  } else if (reaction == Fracas2.Reaction.DESTROY_GENERATOR) {
+    this.destroyGenerator(spirit);
   } else if (reaction == Fracas2.Reaction.DESTROY_PLAYER) {
     this.gameOver(spirit);
   } else if (reaction == Fracas2.Reaction.EXIT_LEVEL) {
@@ -426,9 +452,16 @@ Fracas2.prototype.destroyGnome = function(spirit) {
   // TODO: explosion!
 };
 
+Fracas2.prototype.destroyGenerator = function(spirit) {
+  this.removeSpiritAndBody(spirit);
+  // TODO: explosion!
+};
+
 Fracas2.prototype.gameOver = function(spirit) {
   cancelAnimationFrame(this.rafKey);
-  this.beginMainMenu();
+
+  // Start the current level over, for now.
+  this.beginPlayingLevel();
   // TODO: explosion!
 };
 

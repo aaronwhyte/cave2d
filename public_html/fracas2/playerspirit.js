@@ -18,7 +18,7 @@ function PlayerSpirit(game) {
   this.accelFactor = 0.12;
   this.friction = 0.16;
   this.shotSpeed = 2;
-  this.shotInterval = 4;
+  this.shotInterval = 3.1;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -26,7 +26,7 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.TIMEOUT = 0.25;
 
 PlayerSpirit.prototype.onTimeout = function(world, timeout) {
-  var b = world.bodies[this.bodyId];
+  var b = world.getBody(this.bodyId);
 
   if (b) {
     // move
@@ -48,7 +48,6 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         bulletBody.hitGroup = Fracas2.Group.PLAYER_BULLET;
         bulletBody.shape = Body.Shape.CIRCLE;
         bulletBody.rad = b.rad * 0.8;
-        bulletBody.rectRad.setXY(1, 1).scale(bulletBody.rad);
         bulletBody.mass = bulletBody.rad * bulletBody.rad * Math.PI;
         bulletBody.pathDurationMax = BulletSpirit.TIMEOUT;
         bulletBody.setPosAtTime(b.getPosAtTime(world.now, this.vec), world.now);

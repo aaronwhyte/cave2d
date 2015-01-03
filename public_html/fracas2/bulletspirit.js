@@ -11,7 +11,7 @@ BulletSpirit.prototype.constructor = BulletSpirit;
 
 Poolify(BulletSpirit);
 
-BulletSpirit.TIMEOUT = 20;
+BulletSpirit.TIMEOUT = 10;
 BulletSpirit.MAX_HITS = 4;
 
 BulletSpirit.prototype.reset = function(game) {
@@ -28,7 +28,7 @@ BulletSpirit.prototype.onTimeout = function(world, timeout) {
 
 BulletSpirit.prototype.onHit = function(world, thisBody, thatBody, hitEvent) {
   var otherSpirit = world.spirits[thatBody.spiritId];
-  if (otherSpirit instanceof GnomeSpirit) {
+  if (otherSpirit instanceof GnomeSpirit || otherSpirit instanceof GeneratorSpirit) {
     return Fracas2.Reaction.DESTROY_BULLET;
   }
   // Bounce off of walls if the angle of bounce is shallow, to allow touch-screen users to
