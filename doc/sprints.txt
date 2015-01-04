@@ -352,21 +352,34 @@ v exit to next level
   v Exit spirit
   v basic rendering
   v bullets don't bounce off of it
-- generators
-  - spirit and renderer
-  - rayscan and gnome creation
-  - destructible
+v generators
+  v spirit and renderer
+  v gnome creation
+  v destructible
+  v rayscan
+- new colors
+  - exits
+  - generators
+- treasure? Or destructible walls?
+  - spirit
+  - renderer
+  - collision rules
 - health
-- treasure
+  - spirit
+  - renderer
+  - player health indicator, no matter how lame. Try MIDI-maze smiley-face. Or color, or both.
+  - player's health carries over from level to level
 - states
   - you lose
   - you win
   - main menu
-- explosions
-  - gnome damage
-  - gnome death
+- explosions & sparks
+  - gnome destroyed
+  - generator destroyed
   - player damage
-  - player death
+  - player destroyed
+  - wall bump
+  - wall destroyed
 - sound effects
 - graphics models
   - player

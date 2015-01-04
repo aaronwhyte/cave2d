@@ -46,8 +46,8 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
     req.shape = Body.Shape.CIRCLE;
     req.rad = 0.1;
     req.pos.set(gnomePos);
-    var resp = ScanResponse.alloc();
     req.vel.set(targetPos).subtract(gnomePos);
+    var resp = ScanResponse.alloc();
     if (world.rayscan(req, resp)) {
       var hitBody = world.getBodyByPathId(resp.pathId);
       if (hitBody.id == this.targetBody.id) {

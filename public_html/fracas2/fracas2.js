@@ -313,10 +313,12 @@ Fracas2.prototype.addPlayerToWorld = function(position) {
   this.playerSpirit.setMoveStick(moveStick);
 };
 
-Fracas2.prototype.addGnomeToWorld = function(position) {
+Fracas2.prototype.addGnomeToWorld = function(position, opt_velocity) {
   var b = new Body();
+  var vel = opt_velocity || Vec2d.ZERO;
   b.hitGroup = Fracas2.Group.GNOME;
-  b.setPosAtTime(position, 1);
+  b.setPosAtTime(position, this.world.now);
+  b.setVelAtTime(vel, this.world.now);
   b.shape = Body.Shape.CIRCLE;
   b.rad = Fracas2.CHARACTER_RADIUS;
   b.pathDurationMax = GnomeSpirit.BORED_TIMEOUT;

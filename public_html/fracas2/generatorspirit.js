@@ -13,6 +13,7 @@ GeneratorSpirit.prototype = new Spirit();
 GeneratorSpirit.prototype.constructor = GeneratorSpirit;
 
 GeneratorSpirit.TIMEOUT = 25;
+GeneratorSpirit.ATTEMPTS = 4;
 
 GeneratorSpirit.prototype.onTimeout = function(world, timeout) {
   var b = world.getBody(this.bodyId);
@@ -20,10 +21,28 @@ GeneratorSpirit.prototype.onTimeout = function(world, timeout) {
   var generatorPos = b.getPosAtTime(world.now, Vec2d.alloc());
   var playerPos = this.game.playerBody.getPosAtTime(world.now, Vec2d.alloc());
 
+  // Generators are more active the closer the player gets to them, so there's no hard user-visible cutoff.
   if (generatorPos.distance(playerPos) < GnomeSpirit.MAX_SCAN_DIST * (0.3 + Math.random() * 0.7)) {
-    // generate
-    // TODO rayscan and initial position
-    this.game.addGnomeToWorld(b.getPosAtTime(world.now, this.vec));
+    var req = ScanRequest.alloc();
+    var resp = ScanResponse.alloc();
+    for (var attempt = 0; attempt < GeneratorSpirit.ATTEMPTS; attempt++) {
+      // Do a scan that crosses the middle of the generator, to the proposed position of the new gnome.
+      // It needs to cover the area of three gnomes, which is two diameters, or four radii,
+      // because initial overlap doesn't get detected by rayscans, and we want to find a perfectly
+      // clear spot to create the new gnome.
+      req.hitGroup = Fracas2.Group.GENERATOR_SCAN;
+      req.shape = Body.Shape.CIRCLE;
+      req.rad = Fracas2.CHARACTER_RADIUS;
+      req.vel.setXY(4 * Fracas2.CHARACTER_RADIUS, 0).rot(Math.PI * 2 * Math.random());
+      req.pos.set(req.vel).scale(-0.5).add(generatorPos);
+      if (!world.rayscan(req, resp)) {
+        this.game.addGnomeToWorld(
+            b.getPosAtTime(world.now, req.pos.add(req.vel)), req.vel.scaleToLength(GnomeSpirit.WANDER_ACCEL));
+        break;
+      }
+    }
+    req.free();
+    resp.free();
   }
 
   world.addTimeout(world.now + GeneratorSpirit.TIMEOUT * (0.5 + Math.random()), this.id, null);
