@@ -14,7 +14,7 @@ function GnomeSpirit(game) {
   this.goToLastTargetPos = false;
 }
 
-GnomeSpirit.EXCITED_TIMEOUT = 2;
+GnomeSpirit.EXCITED_TIMEOUT = 1;
 GnomeSpirit.BORED_TIMEOUT = 5;
 GnomeSpirit.MAX_SCAN_DIST = 22;
 GnomeSpirit.CHASE_ACCEL = 0.45;
@@ -52,7 +52,7 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
       var hitBody = world.getBodyByPathId(resp.pathId);
       if (hitBody.id == this.targetBody.id) {
         targetSeen = true;
-        this.game.gnomeAtDist(resp.timeOffset);
+        this.game.gnomeAtDist(dist);
       }
     }
     req.free();
@@ -63,7 +63,7 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
       this.lastTargetPos.set(targetPos);
       this.goToLastTargetPos = true;
       this.twist = 0;
-      this.excitement = 30;
+      this.excitement = 25 + Math.random() * 10;
 
       this.vec.set(this.lastTargetPos).subtract(gnomePos).scaleToLength(GnomeSpirit.CHASE_ACCEL);
       this.vec.add(b.vel);

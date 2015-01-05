@@ -29,7 +29,7 @@ function Fracas2(canvas) {
 
   this.cameraPos = new Vec2d();
 
-  this.timeSpeed = 1;
+  this.gnomeDist = GnomeSpirit.MAX_SCAN_DIST;
   this.zoomFactor = 1;
 }
 
@@ -195,7 +195,7 @@ Fracas2.prototype.maybeStartLevel = function() {
 };
 
 Fracas2.prototype.initWorldFromString = function(s) {
-  this.timeSpeed = 1;
+  this.gnomeDist = GnomeSpirit.MAX_SCAN_DIST;
   this.zoomFactor = 1;
 
   this.playerBody = new Body();
@@ -405,11 +405,11 @@ Fracas2.prototype.loop = function() {
 };
 
 Fracas2.prototype.clock = function() {
-  this.timeSpeed += 0.005;
-  var timeSpeedPow3 = this.timeSpeed * this.timeSpeed * this.timeSpeed;
-  //this.zoomFactor = 0.96 * this.zoomFactor + 0.04 * (1/this.timeSpeed);
-  if (this.timeSpeed > 1) this.timeSpeed = 1;
-  var endClock = this.world.now + Fracas2.CLOCKS_PER_SECOND * timeSpeedPow3 * (1/60);
+  this.gnomeDist = Math.min(1.03 * this.gnomeDist, GnomeSpirit.MAX_SCAN_DIST);
+  var clockScale = Math.min(10, this.gnomeDist) / 10;
+  var zoom = Math.min(1, clockScale * 4);
+  //this.zoomFactor = 0.9 * this.zoomFactor + 0.1 * (1/zoom);
+  var endClock = this.world.now + Fracas2.CLOCKS_PER_SECOND * clockScale * (1/60);
   var e = this.world.getNextEvent();
   // Stop if there are no more events to process,
   // or we've moved the game clock far enough ahead to match the amount of wall-time elapsed since the last frame,
@@ -494,8 +494,8 @@ Fracas2.prototype.gameOver = function(spirit) {
   // TODO: explosion!
 };
 
-Fracas2.prototype.gnomeAtDist = function(zeroToOne) {
-  if (zeroToOne < this.timeSpeed) {
-    this.timeSpeed = zeroToOne;
+Fracas2.prototype.gnomeAtDist = function(dist) {
+  if (dist < this.gnomeDist) {
+    this.gnomeDist = dist;
   }
 };
