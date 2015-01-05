@@ -52,6 +52,7 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
       var hitBody = world.getBodyByPathId(resp.pathId);
       if (hitBody.id == this.targetBody.id) {
         targetSeen = true;
+        this.game.gnomeAtDist(resp.timeOffset);
       }
     }
     req.free();

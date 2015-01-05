@@ -24,10 +24,12 @@ function Renderer(canvas, gl, program) {
 
 var ZERO_3 = [0, 0, 0];
 var IDENTITY_3 = [1, 1, 1];
-var PLAYER_COLOR_3 = [1, 0.5, 0.5];
-var RAY_SPIRIT_COLOR_3 = [0.2, 0.7, 0.8];
-var BULLET_COLOR_3 = [1, 0.5, 0.1];
-var OTHER_COLOR_3 = [0.5, 1, 0.5];
+var PLAYER_COLOR_3 = [1.0, 0.3, 0.5];
+var BULLET_COLOR_3 = [1, 1, 0.6];
+var GNOME_COLOR_3 = [0.0, 0.9, 0.2];
+var GENERATOR_COLOR_3 = [0.3, 0.6, 0.3];
+var EXIT_COLOR_3 = [1.0, 0.0, 1.0];
+var OTHER_COLOR_3 = [0.5, 0.5, 0.5];
 
 Renderer.CIRCLE_CORNERS = 13;
 
@@ -89,26 +91,24 @@ Renderer.prototype.maybeResize = function() {
 };
 
 
-Renderer.prototype.drawScene = function(world, playerBody) {
+Renderer.prototype.drawScene = function(world, cameraPos, zoomFactor) {
   this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
   // Center the view on the player.
-  var playerPos = playerBody.getPosAtTime(world.now, Vec2d.alloc());
-  this.viewTranslation[0] = -playerPos.x - playerBody.vel.x / 10;
-  this.viewTranslation[1] = -playerPos.y - playerBody.vel.y / 10;
+  this.viewTranslation[0] = -cameraPos.x;
+  this.viewTranslation[1] = -cameraPos.y;
   this.viewTranslation[2] = 0;
   this.gl.uniform3fv(this.uViewTranslation, this.viewTranslation);
 
   // Scale the view to using the average of the two edge lengths,
   // to avoid extreme zooming for narrow/tall canvases.
   var avgLength = (this.canvas.width + this.canvas.height) / 2;
-  this.viewScale[0] = this.zoom * avgLength / this.canvas.width;
-  this.viewScale[1] = this.zoom * avgLength / this.canvas.height;
+  this.viewScale[0] = this.zoom * avgLength * zoomFactor/ this.canvas.width;
+  this.viewScale[1] = this.zoom * avgLength * zoomFactor/ this.canvas.height;
   this.viewScale[2] = 1;
   this.gl.uniform3fv(this.uViewScale, this.viewScale);
 
   this.drawBackground();
-  playerPos.free();
 
   // foreground
   for (var id in world.bodies) {
@@ -140,10 +140,16 @@ Renderer.prototype.drawBody = function(world, b) {
   this.gl.uniform3fv(this.uModelTranslation, this.array3);
 
   var spirit = world.spirits[b.spiritId];
-  if (spirit && spirit instanceof PlayerSpirit) {
-    this.gl.uniform3fv(this.uModelColor, PLAYER_COLOR_3);
-  } else if (spirit && spirit instanceof BulletSpirit) {
+  if (spirit instanceof GnomeSpirit) {
+    this.gl.uniform3fv(this.uModelColor, GNOME_COLOR_3);
+  } else if (spirit instanceof GeneratorSpirit) {
+    this.gl.uniform3fv(this.uModelColor, GENERATOR_COLOR_3);
+  } else if (spirit instanceof BulletSpirit) {
     this.gl.uniform3fv(this.uModelColor, BULLET_COLOR_3);
+  } else if (spirit instanceof PlayerSpirit) {
+    this.gl.uniform3fv(this.uModelColor, PLAYER_COLOR_3);
+  } else if (spirit instanceof ExitSpirit) {
+    this.gl.uniform3fv(this.uModelColor, EXIT_COLOR_3);
   } else {
     this.gl.uniform3fv(this.uModelColor, OTHER_COLOR_3);
   }

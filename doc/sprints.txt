@@ -357,9 +357,10 @@ v generators
   v gnome creation
   v destructible
   v rayscan
-- new colors
-  - exits
-  - generators
+v new colors
+  v exits
+  v generators
+v DEATH BRUSH
 - treasure? Or destructible walls?
   - spirit
   - renderer

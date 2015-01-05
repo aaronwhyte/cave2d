@@ -26,6 +26,11 @@ function Fracas2(canvas) {
   this.rafKey = null;
 
   this.levelNum = 0;
+
+  this.cameraPos = new Vec2d();
+
+  this.timeSpeed = 1;
+  this.zoomFactor = 1;
 }
 
 Fracas2.Reaction = {
@@ -149,8 +154,8 @@ Fracas2.prototype.maybeCreateRenderer = function() {
   if (this.renderer || !this.vertexShaderText || !this.fragmentShaderText) return;
 
   var gl = getWebGlContext(this.canvas, {
-    alpha: false,
-    antialias: true
+    alpha: true,
+    antialias: false
   });
   var vertexShader = compileShader(gl, this.vertexShaderText, gl.VERTEX_SHADER);
   var fragmentShader = compileShader(gl, this.fragmentShaderText, gl.FRAGMENT_SHADER);
@@ -190,6 +195,9 @@ Fracas2.prototype.maybeStartLevel = function() {
 };
 
 Fracas2.prototype.initWorldFromString = function(s) {
+  this.timeSpeed = 1;
+  this.zoomFactor = 1;
+
   this.playerBody = new Body();
   var vec = new Vec2d();
   var x = 0, y = 0;
@@ -313,7 +321,8 @@ Fracas2.prototype.addPlayerToWorld = function(position) {
   this.playerSpirit.setMoveStick(moveStick);
 };
 
-Fracas2.prototype.addGnomeToWorld = function(position, opt_velocity) {
+Fracas2.prototype.addGnomeToWorld = function(position, opt_velocity, opt_timeout) {
+  var timeout = opt_timeout || (this.world.now + Math.random() * GnomeSpirit.BORED_TIMEOUT);
   var b = new Body();
   var vel = opt_velocity || Vec2d.ZERO;
   b.hitGroup = Fracas2.Group.GNOME;
@@ -330,7 +339,7 @@ Fracas2.prototype.addGnomeToWorld = function(position, opt_velocity) {
   spirit.bodyId = bodyId;
   b.spiritId = spiritId;
 
-  this.world.addTimeout(this.world.now + Math.random() * GnomeSpirit.BORED_TIMEOUT, spiritId, null);
+  this.world.addTimeout(timeout, spiritId, null);
 };
 
 Fracas2.prototype.addGeneratorToWorld = function(position) {
@@ -377,12 +386,30 @@ Fracas2.prototype.loop = function() {
   this.frameEndMs = Date.now() + 1000 / 70;
 
   this.renderer.maybeResize();
-  this.renderer.drawScene(this.world, this.playerBody);
+
+  var playerPos = this.playerBody.getPosAtTime(this.world.now + 2, Vec2d.alloc());
+  var aimOffset = Vec2d.alloc();
+  var playerVel = Vec2d.alloc().set(this.playerBody.vel);
+  if (this.playerSpirit) {
+    this.playerSpirit.aimStick.getVal(aimOffset).scale(0.5);
+  }
+  this.cameraPos.scale(0.9).add(
+      playerPos
+          .add(playerVel.scale(0.1))
+//          .add(aimOffset)
+          .scale(0.1));
+  this.renderer.drawScene(this.world, this.cameraPos, this.zoomFactor);
+  playerPos.free();
+  aimOffset.free();
   this.clock();
 };
 
 Fracas2.prototype.clock = function() {
-  var endClock = this.world.now + Fracas2.CLOCKS_PER_SECOND * (1/60);
+  this.timeSpeed += 0.005;
+  var timeSpeedPow3 = this.timeSpeed * this.timeSpeed * this.timeSpeed;
+  //this.zoomFactor = 0.96 * this.zoomFactor + 0.04 * (1/this.timeSpeed);
+  if (this.timeSpeed > 1) this.timeSpeed = 1;
+  var endClock = this.world.now + Fracas2.CLOCKS_PER_SECOND * timeSpeedPow3 * (1/60);
   var e = this.world.getNextEvent();
   // Stop if there are no more events to process,
   // or we've moved the game clock far enough ahead to match the amount of wall-time elapsed since the last frame,
@@ -467,4 +494,8 @@ Fracas2.prototype.gameOver = function(spirit) {
   // TODO: explosion!
 };
 
-
+Fracas2.prototype.gnomeAtDist = function(zeroToOne) {
+  if (zeroToOne < this.timeSpeed) {
+    this.timeSpeed = zeroToOne;
+  }
+};

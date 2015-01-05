@@ -37,7 +37,9 @@ GeneratorSpirit.prototype.onTimeout = function(world, timeout) {
       req.pos.set(req.vel).scale(-0.5).add(generatorPos);
       if (!world.rayscan(req, resp)) {
         this.game.addGnomeToWorld(
-            b.getPosAtTime(world.now, req.pos.add(req.vel)), req.vel.scaleToLength(GnomeSpirit.WANDER_ACCEL));
+            b.getPosAtTime(world.now, req.pos.add(req.vel)),
+            req.vel.scaleToLength(GnomeSpirit.WANDER_ACCEL),
+            this.game.world.now + 0.01);
         break;
       }
     }
