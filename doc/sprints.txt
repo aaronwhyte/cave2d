@@ -360,11 +360,15 @@ v generators
 v new colors
   v exits
   v generators
-v DEATH BRUSH
-- treasure? Or destructible walls?
-  - spirit
-  - renderer
-  - collision rules
+v DEATH BRUSH(ing)
+v destructible walls
+  v spirit
+  v renderer
+  v collision rules
+v gold
+  v spirit
+  v renderer
+  v collision rules
 - health
   - spirit
   - renderer
