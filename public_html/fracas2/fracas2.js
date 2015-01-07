@@ -34,18 +34,18 @@ function Fracas2(canvas) {
 }
 
 Fracas2.Reaction = {
-  BOUNCE: 10,
+  BOUNCE: 1,
 
-  DESTROY_BULLET: 20,
-  DESTROY_GNOME: 21,
-  DESTROY_GENERATOR: 22,
-  DESTROY_BRICK: 23,
+  DESTROY_BULLET: 2,
+  DESTROY_GNOME: 4,
+  DESTROY_GENERATOR: 8,
+  DESTROY_BRICK: 16,
 
-  COLLECT_HEALTH: 30,
-  COLLECT_GOLD: 31,
+  COLLECT_HEALTH: 32,
+  COLLECT_GOLD: 64,
 
-  DESTROY_PLAYER: 99,
-  EXIT_LEVEL: 100
+  DESTROY_PLAYER: 128,
+  EXIT_LEVEL: 512
 };
 
 Fracas2.SPACING = 2;
@@ -359,6 +359,7 @@ Fracas2.prototype.addGnomeToWorld = function(position, opt_velocity, opt_timeout
   b.setVelAtTime(vel, this.world.now);
   b.shape = Body.Shape.CIRCLE;
   b.rad = Fracas2.CHARACTER_RADIUS;
+  b.mass = 2;
   b.pathDurationMax = GnomeSpirit.BORED_TIMEOUT;
 
   var bodyId = this.world.addBody(b);
@@ -417,19 +418,13 @@ Fracas2.prototype.loop = function() {
   this.renderer.maybeResize();
 
   var playerPos = this.playerBody.getPosAtTime(this.world.now + 2, Vec2d.alloc());
-  var aimOffset = Vec2d.alloc();
   var playerVel = Vec2d.alloc().set(this.playerBody.vel);
-  if (this.playerSpirit) {
-    this.playerSpirit.aimStick.getVal(aimOffset).scale(0.5);
-  }
   this.cameraPos.scale(0.9).add(
       playerPos
           .add(playerVel.scale(0.1))
-//          .add(aimOffset)
           .scale(0.1));
   this.renderer.drawScene(this.world, this.cameraPos, 1);
   playerPos.free();
-  aimOffset.free();
   this.clock();
 };
 
@@ -459,12 +454,11 @@ Fracas2.prototype.clock = function() {
         if (s1) {
           reaction1 = s1.onHit(this.world, b1, b0, e);
         }
-        if (reaction0 == Fracas2.Reaction.BOUNCE && reaction1 == Fracas2.Reaction.BOUNCE) {
+        if ((reaction0 & Fracas2.Reaction.BOUNCE) && (reaction1 & Fracas2.Reaction.BOUNCE)) {
           this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-        } else {
-          this.processReaction(b0, s0, reaction0);
-          this.processReaction(b1, s1, reaction1);
         }
+        this.processReaction(b0, s0, reaction0);
+        this.processReaction(b1, s1, reaction1);
       }
     }
     this.world.processNextEvent();
@@ -476,19 +470,19 @@ Fracas2.prototype.clock = function() {
 };
 
 Fracas2.prototype.processReaction = function(body, spirit, reaction) {
-  if (reaction == Fracas2.Reaction.DESTROY_BULLET) {
+  if (reaction & Fracas2.Reaction.DESTROY_BULLET) {
     this.destroyBullet(spirit);
-  } else if (reaction == Fracas2.Reaction.DESTROY_GNOME) {
+  } else if (reaction & Fracas2.Reaction.DESTROY_GNOME) {
     this.destroyGnome(spirit);
-  } else if (reaction == Fracas2.Reaction.DESTROY_GENERATOR) {
+  } else if (reaction & Fracas2.Reaction.DESTROY_GENERATOR) {
     this.destroyGenerator(spirit);
-  } else if (reaction == Fracas2.Reaction.DESTROY_BRICK) {
+  } else if (reaction & Fracas2.Reaction.DESTROY_BRICK) {
     this.destroyBrick(spirit);
-  } else if (reaction == Fracas2.Reaction.COLLECT_GOLD) {
+  } else if (reaction & Fracas2.Reaction.COLLECT_GOLD) {
     this.collectGold(spirit);
-  } else if (reaction == Fracas2.Reaction.DESTROY_PLAYER) {
+  } else if (reaction & Fracas2.Reaction.DESTROY_PLAYER) {
     this.gameOver(spirit);
-  } else if (reaction == Fracas2.Reaction.EXIT_LEVEL) {
+  } else if (reaction & Fracas2.Reaction.EXIT_LEVEL) {
     this.levelNum++;
     cancelAnimationFrame(this.rafKey);
     this.beginPlayingLevel();

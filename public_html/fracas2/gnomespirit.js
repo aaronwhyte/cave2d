@@ -18,7 +18,7 @@ GnomeSpirit.EXCITED_TIMEOUT = 1;
 GnomeSpirit.BORED_TIMEOUT = 5;
 GnomeSpirit.MAX_SCAN_DIST = 22;
 GnomeSpirit.CHASE_ACCEL = 0.45;
-GnomeSpirit.WANDER_ACCEL = 0.3;
+GnomeSpirit.WANDER_ACCEL = 0.2;
 GnomeSpirit.FRICTION = 0.4;
 GnomeSpirit.TWIST_DURATION = 2;
 GnomeSpirit.RAYSCAN_RADIUS = BulletSpirit.RADIUS;
@@ -134,8 +134,12 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
 };
 
 GnomeSpirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
-  if (world.spirits[thatBody.spiritId] instanceof BulletSpirit) {
+  var otherSpirit = world.spirits[thatBody.spiritId];
+  if (otherSpirit instanceof BulletSpirit) {
     return Fracas2.Reaction.DESTROY_GNOME;
+  } else if (otherSpirit instanceof PlayerSpirit) {
+    return Fracas2.Reaction.DESTROY_GNOME | Fracas2.Reaction.BOUNCE;
+
   } else {
     this.twist = GnomeSpirit.TWIST_DURATION * (Math.random() < 0.5 ? -1 : 1);
   }
