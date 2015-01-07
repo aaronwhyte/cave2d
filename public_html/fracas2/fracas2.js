@@ -328,7 +328,7 @@ Fracas2.prototype.addPlayerToWorld = function(position) {
           .setStartZoneFunction(function(x, y) {
             return x > self.canvas.width / 2;
           })
-          .setRadius(10)
+          .setRadius(20)
           .startListening())
       .addStick((new PointerLockStick())
           .setRadius(20)
