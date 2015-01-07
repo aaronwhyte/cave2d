@@ -45,7 +45,7 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
     var req = ScanRequest.alloc();
     req.hitGroup = Fracas2.Group.GNOME_SCAN;
     req.shape = Body.Shape.CIRCLE;
-    req.rad = 0.1;
+    req.rad = GnomeSpirit.RAYSCAN_RADIUS;
     req.pos.set(gnomePos);
     req.vel.set(targetPos).subtract(gnomePos);
     var resp = ScanResponse.alloc();

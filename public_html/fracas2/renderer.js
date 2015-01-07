@@ -26,9 +26,9 @@ var ZERO_3 = [0, 0, 0];
 var IDENTITY_3 = [1, 1, 1];
 var PLAYER_COLOR_3 = [1.0, 0.3, 0.5];
 var BULLET_COLOR_3 = [1, 0.6, 0.2];
-var GNOME_COLOR_3 = [0.0, 0.9, 0.2];
+var GNOME_COLOR_3 = [0.4, 0.7, 0.4];
 var GOLD_COLOR_3 = [1, 1, 0];
-var BRICK_COLOR_3 = [0, 0, 0.6];
+var BRICK_COLOR_3_HEALTH = [null, [0.3, 0.3, 0.6], [0.2, 0.2, 0.6], [0.1, 0.1, 0.6]];
 var GENERATOR_COLOR_3 = [0.3, 0.6, 0.3];
 var EXIT_COLOR_3 = [1.0, 0.0, 1.0];
 var OTHER_COLOR_3 = [0.5, 0.5, 0.5];
@@ -146,7 +146,7 @@ Renderer.prototype.drawBody = function(world, b) {
   } else if (spirit instanceof GeneratorSpirit) {
     this.gl.uniform3fv(this.uModelColor, GENERATOR_COLOR_3);
   } else if (spirit instanceof BrickSpirit) {
-    this.gl.uniform3fv(this.uModelColor, BRICK_COLOR_3);
+    this.gl.uniform3fv(this.uModelColor, BRICK_COLOR_3_HEALTH[spirit.health]);
   } else if (spirit instanceof GoldSpirit) {
     this.gl.uniform3fv(this.uModelColor, GOLD_COLOR_3);
   } else if (spirit instanceof BulletSpirit) {

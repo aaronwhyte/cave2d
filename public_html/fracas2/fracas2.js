@@ -171,7 +171,7 @@ Fracas2.prototype.maybeCreateRenderer = function() {
 };
 
 Fracas2.prototype.loadText = function(path, callback) {
-  console.log('loadText ', path);
+//  console.log('loadText ', path);
   var xhr = new XMLHttpRequest();
   xhr.open('GET', path, true);
   xhr.responseType = 'text';
@@ -182,11 +182,11 @@ Fracas2.prototype.loadText = function(path, callback) {
 };
 
 Fracas2.prototype.maybeStartLevel = function() {
-  console.log('maybeStartLevel');
+//  console.log('maybeStartLevel');
   if (!this.waitingForState == Fracas2.State.PLAY_LEVEL ||
       !this.levelStrings[this.waitingForLevelIndex] ||
       !this.renderer) {
-    console.log('maybeStartLevel nope: ', this.waitingForState, this.levelStrings, this.renderer);
+//    console.log('maybeStartLevel nope: ', this.waitingForState, this.levelStrings, this.renderer);
     return;
   }
   var levelIndex = this.waitingForLevelIndex;
@@ -214,7 +214,7 @@ Fracas2.prototype.initWorldFromString = function(s) {
   }
 
   this.resolver = new HitResolver();
-  this.world = new World(Fracas2.SPACING * 2.5 * Math.PI, Fracas2.GROUP_COUNT, Fracas2.GROUP_PAIRS);
+  this.world = new World(Fracas2.SPACING * 2.9127, Fracas2.GROUP_COUNT, Fracas2.GROUP_PAIRS);
   this.wallSpiritId = this.world.addSpirit(new WallSpirit());
   this.exitSpiritId = this.world.addSpirit(new ExitSpirit());
   for (var i = 0; i < s.length; i++) {
@@ -242,40 +242,29 @@ Fracas2.prototype.initWorldFromString = function(s) {
         break;
       case '=':
         // brick (destructible wall)
-        for (var by = -1; by <= 1; by += 2) {
-          for (var bx = -1; bx <= 1; bx += 2) {
-            var b = Body.alloc();
-            var brickSpirit = new BrickSpirit();
-            b.spiritId = this.world.addSpirit(brickSpirit);
-            b.hitGroup = Fracas2.Group.WALL;
-            b.setPosAtTime(xy().addXY(bx * Fracas2.SPACING/4, by * Fracas2.SPACING/4), 1);
-            b.shape = Body.Shape.RECT;
-            b.rectRad.set(rr().scale(0.5));
-            b.mass = Infinity;
-            b.pathDurationMax = Infinity;
-            brickSpirit.bodyId = this.world.addBody(b);
-          }
-        }
+        var b = Body.alloc();
+        var brickSpirit = new BrickSpirit();
+        b.spiritId = this.world.addSpirit(brickSpirit);
+        b.hitGroup = Fracas2.Group.WALL;
+        b.setPosAtTime(xy(), 1);
+        b.shape = Body.Shape.RECT;
+        b.rectRad.set(rr());
+        b.mass = Infinity;
+        b.pathDurationMax = Infinity;
+        brickSpirit.bodyId = this.world.addBody(b);
         break;
       case '$':
         // gold
-        for (var by = -1; by <= 1; by += 2) {
-          for (var bx = -1; bx <= 1; bx += 2) {
-            var b = Body.alloc();
-            var goldSpirit = new GoldSpirit();
-            b.spiritId = this.world.addSpirit(goldSpirit);
-            b.hitGroup = Fracas2.Group.WALL;
-            b.setPosAtTime(xy()
-                .addXY(bx * Fracas2.SPACING/4, by * Fracas2.SPACING/4)
-                .addXY(0.2 * (Math.random() - 0.5), 0.2 * (Math.random() - 0.5)),
-                1);
-            b.shape = Body.Shape.CIRCLE;
-            b.rad = Fracas2.SPACING * 0.25;
-            b.mass = Infinity;
-            b.pathDurationMax = Infinity;
-            goldSpirit.bodyId = this.world.addBody(b);
-          }
-        }
+        var b = Body.alloc();
+        var goldSpirit = new GoldSpirit();
+        b.spiritId = this.world.addSpirit(goldSpirit);
+        b.hitGroup = Fracas2.Group.WALL;
+        b.setPosAtTime(xy(), 1);
+        b.shape = Body.Shape.CIRCLE;
+        b.rad = Fracas2.CHARACTER_RADIUS * 1.1;
+        b.mass = Infinity;
+        b.pathDurationMax = Infinity;
+        goldSpirit.bodyId = this.world.addBody(b);
         break;
       case 'G':
         // generator
