@@ -13,6 +13,7 @@ Poolify(BulletSpirit);
 
 BulletSpirit.TIMEOUT = 10;
 BulletSpirit.MAX_HITS = 4;
+BulletSpirit.RADIUS = 0.6 * 0.8;
 
 BulletSpirit.prototype.reset = function(game) {
   this.game = game;
@@ -33,7 +34,8 @@ BulletSpirit.prototype.onHit = function(world, thisBody, thatBody, hitEvent) {
   }
   // Bounce off of walls if the angle of bounce is shallow, to allow touch-screen users to
   // fire shots down narrow hallways by glancing off the walls.
-  if (otherSpirit instanceof WallSpirit || otherSpirit instanceof ExitSpirit) {
+  if (otherSpirit instanceof WallSpirit || otherSpirit instanceof ExitSpirit
+      || otherSpirit instanceof GoldSpirit || otherSpirit instanceof BrickSpirit) {
     var proj = Vec2d.alloc().set(thisBody.vel).projectOnto(hitEvent.collisionVec);
     var dot = thisBody.vel.dot(proj);
     var glance = dot / thisBody.vel.magnitude();

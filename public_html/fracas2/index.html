@@ -43,6 +43,8 @@
 <script src="generatorspirit.js"></script>
 <script src="wallspirit.js"></script>
 <script src="exitspirit.js"></script>
+<script src="brickspirit.js"></script>
+<script src="goldspirit.js"></script>
 
 <script src="renderer.js"></script>
 <script src="fracas2.js"></script>
@@ -60,11 +62,11 @@ function main() {
   var canvas = document.querySelector('#canvas');
   var levelPaths = [
 //    './levels/d.txt',
-
     './levels/a.txt',
     './levels/b.txt',
     './levels/c.txt',
-    './levels/d.txt'
+    './levels/d.txt',
+    './levels/e.txt'
   ];
   f2 = new Fracas2(canvas);
   f2.startLoadingLevels(levelPaths);

@@ -21,6 +21,7 @@ GnomeSpirit.CHASE_ACCEL = 0.45;
 GnomeSpirit.WANDER_ACCEL = 0.3;
 GnomeSpirit.FRICTION = 0.4;
 GnomeSpirit.TWIST_DURATION = 2;
+GnomeSpirit.RAYSCAN_RADIUS = BulletSpirit.RADIUS;
 
 GnomeSpirit.prototype = new Spirit();
 GnomeSpirit.prototype.constructor = GnomeSpirit;

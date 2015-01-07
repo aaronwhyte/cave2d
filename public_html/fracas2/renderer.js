@@ -25,8 +25,10 @@ function Renderer(canvas, gl, program) {
 var ZERO_3 = [0, 0, 0];
 var IDENTITY_3 = [1, 1, 1];
 var PLAYER_COLOR_3 = [1.0, 0.3, 0.5];
-var BULLET_COLOR_3 = [1, 1, 0.6];
+var BULLET_COLOR_3 = [1, 0.6, 0.2];
 var GNOME_COLOR_3 = [0.0, 0.9, 0.2];
+var GOLD_COLOR_3 = [1, 1, 0];
+var BRICK_COLOR_3 = [0, 0, 0.6];
 var GENERATOR_COLOR_3 = [0.3, 0.6, 0.3];
 var EXIT_COLOR_3 = [1.0, 0.0, 1.0];
 var OTHER_COLOR_3 = [0.5, 0.5, 0.5];
@@ -90,7 +92,6 @@ Renderer.prototype.maybeResize = function() {
   }
 };
 
-
 Renderer.prototype.drawScene = function(world, cameraPos, zoomFactor) {
   this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
@@ -144,6 +145,10 @@ Renderer.prototype.drawBody = function(world, b) {
     this.gl.uniform3fv(this.uModelColor, GNOME_COLOR_3);
   } else if (spirit instanceof GeneratorSpirit) {
     this.gl.uniform3fv(this.uModelColor, GENERATOR_COLOR_3);
+  } else if (spirit instanceof BrickSpirit) {
+    this.gl.uniform3fv(this.uModelColor, BRICK_COLOR_3);
+  } else if (spirit instanceof GoldSpirit) {
+    this.gl.uniform3fv(this.uModelColor, GOLD_COLOR_3);
   } else if (spirit instanceof BulletSpirit) {
     this.gl.uniform3fv(this.uModelColor, BULLET_COLOR_3);
   } else if (spirit instanceof PlayerSpirit) {

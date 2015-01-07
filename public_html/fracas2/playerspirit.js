@@ -47,7 +47,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         var bulletBody = Body.alloc();
         bulletBody.hitGroup = Fracas2.Group.PLAYER_BULLET;
         bulletBody.shape = Body.Shape.CIRCLE;
-        bulletBody.rad = b.rad * 0.8;
+        bulletBody.rad = BulletSpirit.RADIUS;
         bulletBody.mass = bulletBody.rad * bulletBody.rad * Math.PI;
         bulletBody.pathDurationMax = BulletSpirit.TIMEOUT;
         bulletBody.setPosAtTime(b.getPosAtTime(world.now, this.vec), world.now);
