@@ -374,6 +374,10 @@ v gold
   - renderer
   - player health indicator, no matter how lame. Try MIDI-maze smiley-face. Or color, or both.
   - player's health carries over from level to level
+- spaces vs. walls
+  - Render non-walls as black background, and default the canvas to wall-blue
+  - Cull walls that are not touching other tile types.
+  - Change level format to be floor-based, not wall-based. Add wall bodies programatically.
 - states
   - you lose
   - you win
