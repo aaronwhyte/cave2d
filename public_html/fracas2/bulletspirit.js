@@ -12,14 +12,13 @@ BulletSpirit.prototype.constructor = BulletSpirit;
 Poolify(BulletSpirit);
 
 BulletSpirit.TIMEOUT = 10;
-BulletSpirit.MAX_HITS = 4;
 BulletSpirit.RADIUS = 0.6 * 0.8;
 
 BulletSpirit.prototype.reset = function(game) {
   this.game = game;
   this.bodyId = -1;
   this.id = -1;
-  this.hits = 0;
+  this.bounce = 0;
 };
 
 BulletSpirit.prototype.onTimeout = function(world, timeout) {
@@ -34,18 +33,14 @@ BulletSpirit.prototype.onHit = function(world, thisBody, thatBody, hitEvent) {
   }
   // Bounce off of walls if the angle of bounce is shallow, to allow touch-screen users to
   // fire shots down narrow hallways by glancing off the walls.
-  if (otherSpirit instanceof WallSpirit || otherSpirit instanceof ExitSpirit
-      || otherSpirit instanceof GoldSpirit || otherSpirit instanceof BrickSpirit) {
-    var proj = Vec2d.alloc().set(thisBody.vel).projectOnto(hitEvent.collisionVec);
-    var dot = thisBody.vel.dot(proj);
-    var glance = dot / thisBody.vel.magnitude();
-    if (glance > 0.7) {
+  var proj = Vec2d.alloc().set(thisBody.vel).projectOnto(hitEvent.collisionVec);
+  var dot = thisBody.vel.dot(proj);
+  var isGlance = (dot / thisBody.vel.magnitude()) < 0.7;
+  if (!isGlance) {
+    if (this.bounce <= 0) {
       return Fracas2.Reaction.DESTROY_BULLET;
     }
-  }
-  this.hits++;
-  if (this.hits >= BulletSpirit.MAX_HITS) {
-    return Fracas2.Reaction.DESTROY_BULLET;
+    this.bounce--;
   }
   return Fracas2.Reaction.BOUNCE;
 };

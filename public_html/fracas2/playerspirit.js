@@ -7,7 +7,8 @@ function PlayerSpirit(game) {
   this.game = game;
   this.bodyId = -1;
   this.id = -1;
-  this.health = 3;
+  this.health = PlayerSpirit.MAX_HEALTH;
+  this.powerup = 0;
   this.vec = new Vec2d();
   this.accel = new Vec2d();
   this.aim = new Vec2d();
@@ -18,12 +19,14 @@ function PlayerSpirit(game) {
   this.accelFactor = 0.12;
   this.friction = 0.16;
   this.shotSpeed = 2;
-  this.shotInterval = 3.1;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.TIMEOUT = 0.25;
+
+PlayerSpirit.MAX_HEALTH = 3;
+PlayerSpirit.SHOT_INTERVAL = 3.5;
 
 PlayerSpirit.prototype.onTimeout = function(world, timeout) {
   var b = world.getBody(this.bodyId);
@@ -38,8 +41,11 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
     this.vec.set(b.vel).scale(1 - this.friction).add(this.accel);
     b.setVelAtTime(this.vec, world.now);
 
+    this.powerup = Math.max(0, this.powerup - 0.0015);
+
     // fire
-    if (this.aimStick && this.lastFire + this.shotInterval <= world.now) {
+    var shotInterval = PlayerSpirit.SHOT_INTERVAL * (1 - this.powerup * 0.75);
+    if (this.aimStick && this.lastFire + shotInterval <= world.now) {
       this.aimStick.getVal(this.aim);
       if (!this.aim.isZero()) {
         this.lastFire = world.now;
@@ -52,9 +58,10 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         bulletBody.pathDurationMax = BulletSpirit.TIMEOUT;
         bulletBody.setPosAtTime(b.getPosAtTime(world.now, this.vec), world.now);
         bulletBody.setVelAtTime(this.aim, world.now);
-        var bulletId = world.addBody(bulletBody);
+
         var bulletSpirit = BulletSpirit.alloc(this.game);
-        bulletSpirit.bodyId = bulletId;
+        bulletSpirit.bounce = this.powerup * 4;
+        bulletSpirit.bodyId = world.addBody(bulletBody);
         world.addSpirit(bulletSpirit);
 
         bulletBody.spiritId = bulletSpirit.id;
@@ -69,6 +76,8 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
 PlayerSpirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
   var otherSpirit = world.spirits[thatBody.spiritId];
   if (otherSpirit instanceof GnomeSpirit) {
+    // 30% powerup penalty when damaged
+    this.powerup *= 0.7;
     this.health--;
     if (this.health <= 0) {
       return Fracas2.Reaction.DESTROY_PLAYER;
@@ -85,4 +94,12 @@ PlayerSpirit.prototype.setMoveStick = function(stick) {
 
 PlayerSpirit.prototype.setAimStick = function(stick) {
   this.aimStick = stick;
+};
+
+PlayerSpirit.prototype.addHealth = function() {
+  if (this.health < 3) {
+    this.health++;
+  } else {
+    this.powerup = 1;
+  }
 };

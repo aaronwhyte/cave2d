@@ -266,6 +266,19 @@ Fracas2.prototype.initWorldFromString = function(s) {
         b.pathDurationMax = Infinity;
         goldSpirit.bodyId = this.world.addBody(b);
         break;
+      case '+':
+        // health
+        var b = Body.alloc();
+        var healthSpirit = new HealthSpirit();
+        b.spiritId = this.world.addSpirit(healthSpirit);
+        b.hitGroup = Fracas2.Group.WALL;
+        b.setPosAtTime(xy(), 1);
+        b.shape = Body.Shape.RECT;
+        b.rectRad = new Vec2d(1, 1).scale(Fracas2.CHARACTER_RADIUS * 0.9);
+        b.mass = Infinity;
+        b.pathDurationMax = Infinity;
+        healthSpirit.bodyId = this.world.addBody(b);
+        break;
       case 'G':
         // generator
         this.addGeneratorToWorld(xy());
@@ -307,11 +320,13 @@ Fracas2.prototype.addPlayerToWorld = function(position) {
   b.shape = Body.Shape.CIRCLE;
   b.rad = Fracas2.CHARACTER_RADIUS;
   b.pathDurationMax = PlayerSpirit.TIMEOUT;
-
   var bodyId = this.world.addBody(b);
-  var spirit = new PlayerSpirit(this);
+
+  // re-use old spirit, for health and powerup continuity between levels.
+  var spirit = this.playerSpirit || new PlayerSpirit(this);
   var spiritId = this.world.addSpirit(spirit);
   spirit.bodyId = bodyId;
+  spirit.lastFire = 0;
   this.playerSpirit = spirit;
   b.spiritId = spiritId;
   this.world.addTimeout(this.world.now + PlayerSpirit.TIMEOUT, spiritId, null);
@@ -480,9 +495,13 @@ Fracas2.prototype.processReaction = function(body, spirit, reaction) {
     this.destroyBrick(spirit);
   } else if (reaction & Fracas2.Reaction.COLLECT_GOLD) {
     this.collectGold(spirit);
+  } else if (reaction & Fracas2.Reaction.COLLECT_HEALTH) {
+    this.collectHealth(spirit);
   } else if (reaction & Fracas2.Reaction.DESTROY_PLAYER) {
     this.gameOver(spirit);
   } else if (reaction & Fracas2.Reaction.EXIT_LEVEL) {
+    this.levelStartingHealth = this.playerSpirit.health;
+    this.levelStartingRapidFire = this.playerSpirit.rapidFire;
     this.levelNum++;
     cancelAnimationFrame(this.rafKey);
     this.beginPlayingLevel();
@@ -524,12 +543,20 @@ Fracas2.prototype.collectGold = function(spirit) {
   // TODO: explosion!
 };
 
-Fracas2.prototype.gameOver = function(spirit) {
-  cancelAnimationFrame(this.rafKey);
-
-  // Start the current level over, for now.
-  this.beginPlayingLevel();
+Fracas2.prototype.collectHealth = function(spirit) {
+  this.removeSpiritAndBody(spirit);
+  if (this.playerSpirit) {
+    this.playerSpirit.addHealth();
+  }
   // TODO: explosion!
+};
+
+Fracas2.prototype.gameOver = function(spirit) {
+  // TODO: explosion!
+  cancelAnimationFrame(this.rafKey);
+  this.playerSpirit = null;
+  this.levelNum = 0
+  this.beginPlayingLevel();
 };
 
 Fracas2.prototype.gnomeAtDist = function(dist) {

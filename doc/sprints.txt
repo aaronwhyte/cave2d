@@ -369,11 +369,12 @@ v gold
   v spirit
   v renderer
   v collision rules
-- health
-  - spirit
-  - renderer
-  - player health indicator, no matter how lame. Try MIDI-maze smiley-face. Or color, or both.
-  - player's health carries over from level to level
+v health
+  v spirit
+  v renderer
+  v player health indicator, no matter how lame. Try MIDI-maze smiley-face. Or color, or both.
+  v player's health carries over from level to level
+  v at full health, healths act as a powerup that fades with time
 - spaces vs. walls
   - Render non-walls as black background, and default the canvas to wall-blue
   - Cull walls that are not touching other tile types.

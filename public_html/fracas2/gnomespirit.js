@@ -7,7 +7,7 @@ function GnomeSpirit(game) {
   this.game = game;
   this.id = -1;
   this.bodyId = -1;
-  this.vec = new Vec2d();;
+  this.vec = new Vec2d();
   this.excitement = 0;
   this.twist = 0;
   this.lastTargetPos = new Vec2d();
@@ -104,27 +104,18 @@ GnomeSpirit.prototype.onTimeout = function(world, timeout) {
     }
     this.vec.scale(1 - GnomeSpirit.FRICTION);
     b.setVelAtTime(this.vec, world.now);
-    b.invalidatePath();
 
   } else {
 
-    // Probably off the screen. Become inert.
+    // Probably off the screen. Time to relax.
     this.goToLastTargetPos = false;
     this.excitement = 0;
     this.twist = 0;
-    var speedSq = b.vel.magnitudeSquared();
-    if (speedSq == 0) {
-      // do nothing
-    } else if (speedSq < 0.1) {
-      // stop
-      b.setVelAtTime(Vec2d.ZERO, world.now);
-      b.invalidatePath();
-    } else {
-      this.vec.scale(1 - GnomeSpirit.FRICTION);
-      b.setVelAtTime(this.vec, world.now);
-      b.invalidatePath();
-    }
+    this.vec.set(b.vel).scale(1 - GnomeSpirit.FRICTION);
+    b.setVelAtTime(this.vec, world.now);
   }
+
+  b.invalidatePath();
   world.addTimeout(
       world.now + (this.excitement >= 1 ? GnomeSpirit.EXCITED_TIMEOUT : GnomeSpirit.BORED_TIMEOUT),
       this.id, null);
