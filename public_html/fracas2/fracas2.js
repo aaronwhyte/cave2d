@@ -500,8 +500,6 @@ Fracas2.prototype.processReaction = function(body, spirit, reaction) {
   } else if (reaction & Fracas2.Reaction.DESTROY_PLAYER) {
     this.gameOver(spirit);
   } else if (reaction & Fracas2.Reaction.EXIT_LEVEL) {
-    this.levelStartingHealth = this.playerSpirit.health;
-    this.levelStartingRapidFire = this.playerSpirit.rapidFire;
     this.levelNum++;
     cancelAnimationFrame(this.rafKey);
     this.beginPlayingLevel();
@@ -520,6 +518,10 @@ Fracas2.prototype.removeSpiritAndBody = function(spirit) {
 
 Fracas2.prototype.destroyBullet = function(spirit) {
   this.removeSpiritAndBody(spirit);
+  if (this.playerSpirit) {
+    // Prepare to fire sooner
+    this.playerSpirit.lastFire -= PlayerSpirit.SHOT_INTERVAL * 0.7;
+  }
   // TODO: explosion!
 };
 
@@ -540,6 +542,7 @@ Fracas2.prototype.destroyBrick = function(spirit) {
 
 Fracas2.prototype.collectGold = function(spirit) {
   this.removeSpiritAndBody(spirit);
+  if (this.playerSpirit) this.playerSpirit.addGold();
   // TODO: explosion!
 };
 

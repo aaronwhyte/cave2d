@@ -17,7 +17,7 @@ function GnomeSpirit(game) {
 GnomeSpirit.EXCITED_TIMEOUT = 1;
 GnomeSpirit.BORED_TIMEOUT = 5;
 GnomeSpirit.MAX_SCAN_DIST = 22;
-GnomeSpirit.CHASE_ACCEL = 0.45;
+GnomeSpirit.CHASE_ACCEL = 0.3;
 GnomeSpirit.WANDER_ACCEL = 0.2;
 GnomeSpirit.FRICTION = 0.4;
 GnomeSpirit.TWIST_DURATION = 2;

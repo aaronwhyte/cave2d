@@ -16,7 +16,7 @@ function PlayerSpirit(game) {
   this.aimStick = null;
   this.lastFire = 0;
 
-  this.accelFactor = 0.12;
+  this.accelFactor = 0.11;
   this.friction = 0.16;
   this.shotSpeed = 2;
 }
@@ -26,7 +26,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.TIMEOUT = 0.25;
 
 PlayerSpirit.MAX_HEALTH = 3;
-PlayerSpirit.SHOT_INTERVAL = 3.5;
+PlayerSpirit.SHOT_INTERVAL = 10;
+PlayerSpirit.MAX_POWERUP = 1.3;
 
 PlayerSpirit.prototype.onTimeout = function(world, timeout) {
   var b = world.getBody(this.bodyId);
@@ -100,6 +101,13 @@ PlayerSpirit.prototype.addHealth = function() {
   if (this.health < 3) {
     this.health++;
   } else {
-    this.powerup = 1;
+    this.powerup = Math.min(PlayerSpirit.MAX_POWERUP, this.powerup + 1);
   }
+};
+
+PlayerSpirit.prototype.bulletHitSomething = function() {
+};
+
+PlayerSpirit.prototype.addGold = function() {
+  this.powerup = Math.min(PlayerSpirit.MAX_POWERUP, this.powerup + 0.1);
 };

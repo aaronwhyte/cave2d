@@ -24,7 +24,7 @@ function Renderer(canvas, gl, program) {
 
 var ZERO_3 = [0, 0, 0];
 var IDENTITY_3 = [1, 1, 1];
-var PLAYER_COLOR_3_HEALTH = [null, [0.5, 0, 0.5], [0.8, 0.1, 0.0], [1.0, 0.2, 0.6]];
+var PLAYER_COLOR_3_HEALTH = [null, [0.5, 0, 0.5], [0.8, 0.1, 0.0], [1.0, 0.2, 0.8]];
 var BULLET_COLOR_3 = [0.5, 0.9, 1.0];
 var GNOME_COLOR_3 = [0.4, 0.7, 0.4];
 var GOLD_COLOR_3 = [1, 1, 0];
