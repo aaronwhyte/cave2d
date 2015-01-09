@@ -61,7 +61,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         bulletBody.setVelAtTime(this.aim, world.now);
 
         var bulletSpirit = BulletSpirit.alloc(this.game);
-        bulletSpirit.bounce = this.powerup * 4;
+        bulletSpirit.bounce = (this.powerup - 0.5) * 5;
         bulletSpirit.bodyId = world.addBody(bulletBody);
         world.addSpirit(bulletSpirit);
 
