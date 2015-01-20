@@ -41,18 +41,18 @@ Matrix44.prototype.toIdentity = function() {
   return this;
 };
 
-Matrix44.prototype.toTranslateOp = function(vec3d) {
+Matrix44.prototype.toTranslateOp = function(vec4) {
   this.toIdentity();
-  for (var row = 0; row < 3; row++) {
-    this.m[3 + 4 * row] = vec3d[Vec3d.AXES[row]];
+  for (var row = 0; row < 4; row++) {
+    this.m[3 + 4 * row] = vec4.v[row];
   }
   return this;
 };
 
-Matrix44.prototype.toScaleOp = function(vec3d) {
+Matrix44.prototype.toScaleOp = function(vec4) {
   this.toIdentity();
   for (var xy = 0; xy < 3; xy++) {
-    this.m[5 * xy] = vec3d[Vec3d.AXES[xy]];
+    this.m[5 * xy] = vec4.v[xy];
   }
   return this;
 };
@@ -67,8 +67,8 @@ Matrix44.prototype.toRotateXOp = function(angle) {
   var sin = Math.sin(angle);
   this.toIdentity();
   this.setColRowVal(1, 1, cos);
-  this.setColRowVal(2, 1, sin);
-  this.setColRowVal(1, 2, -sin);
+  this.setColRowVal(2, 1, -sin);
+  this.setColRowVal(1, 2, sin);
   this.setColRowVal(2, 2, cos);
   return this;
 };
@@ -83,8 +83,8 @@ Matrix44.prototype.toRotateYOp = function(angle) {
   var sin = Math.sin(angle);
   this.toIdentity();
   this.setColRowVal(0, 0, cos);
-  this.setColRowVal(2, 0, -sin);
-  this.setColRowVal(0, 2, sin);
+  this.setColRowVal(2, 0, sin);
+  this.setColRowVal(0, 2, -sin);
   this.setColRowVal(2, 2, cos);
   return this;
 };
@@ -99,8 +99,8 @@ Matrix44.prototype.toRotateZOp = function(angle) {
   var sin = Math.sin(angle);
   this.toIdentity();
   this.setColRowVal(0, 0, cos);
-  this.setColRowVal(1, 0, sin);
-  this.setColRowVal(0, 1, -sin);
+  this.setColRowVal(1, 0, -sin);
+  this.setColRowVal(0, 1, sin);
   this.setColRowVal(1, 1, cos);
   return this;
 };

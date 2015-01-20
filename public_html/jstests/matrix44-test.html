@@ -5,7 +5,7 @@
 <script src="../js/strings.js"></script>
 <script src="../js/testing.js"></script>
 <script src="../js/matrix44.js"></script>
-<script src="../js/vec3d.js"></script>
+<script src="../js/vec4.js"></script>
 <script>
 
 var SLOP = 0.00001;
@@ -14,17 +14,17 @@ addTest(function equals() {
   var a = new Matrix44();
   var b = new Matrix44();
   assertTrue(a.equals(b));
-  a.toTranslateOp(new Vec3d(2, 3, 5));
-  b.toTranslateOp(new Vec3d(2, 3, 5));
+  a.toTranslateOp(new Vec4(2, 3, 5));
+  b.toTranslateOp(new Vec4(2, 3, 5));
   assertTrue(a.equals(b));
-  a.toTranslateOp(new Vec3d(-1, -2, -3));
+  a.toTranslateOp(new Vec4(-1, -2, -3));
   assertTrue(!a.equals(b));
 });
 
 addTest(function translateAndUndoTranslate() {
   var a = new Matrix44();
   var b = new Matrix44();
-  b.toTranslateOp(new Vec3d(2, 3, 5));
+  b.toTranslateOp(new Vec4(2, 3, 5));
   assertTrue(!a.equals(b));
 
   // Multiply an identity by a translation - turns it into that translation.
@@ -34,20 +34,26 @@ addTest(function translateAndUndoTranslate() {
   // do it again - now the translation should be 4, 6, 10.
   a.multiply(b);
   assertTrue(!a.equals(b));
-  b.toTranslateOp(new Vec3d(4, 6, 10));
+  b.toTranslateOp(new Vec4(4, 6, 10));
   assertTrue(a.equals(b));
 
   // Translate back to the origin
-  b.toTranslateOp(new Vec3d(-4, -6, -10));
+  b.toTranslateOp(new Vec4(-4, -6, -10));
   a.multiply(b);
   b.toIdentity();
   assertTrue(a.equals(b));
 });
 
+addTest(function translateVec() {
+  var mat = new Matrix44().toTranslateOp(new Vec4(2, 3, 5));
+  var vec = new Vec4(1, 1, 1).transform(mat);
+  assertEquals(new Vec4(3, 4, 6).toString(), vec.toString());
+});
+
 addTest(function scaleAndUndoScale() {
   var a = new Matrix44();
   var b = new Matrix44();
-  b.toScaleOp(new Vec3d(2, 3, 5));
+  b.toScaleOp(new Vec4(2, 3, 5));
   assertTrue(!a.equals(b));
 
   // Multiply an identity by a scale - turns it into that scale.
@@ -57,11 +63,11 @@ addTest(function scaleAndUndoScale() {
   // do it again - now the scale should be 4, 9, 25.
   a.multiply(b);
   assertTrue(!a.equals(b));
-  b.toScaleOp(new Vec3d(4, 9, 25));
+  b.toScaleOp(new Vec4(4, 9, 25));
   assertTrue(a.equals(b));
 
   // back to original scale
-  b.toScaleOp(new Vec3d(1/4, 1/9, 1/25));
+  b.toScaleOp(new Vec4(1/4, 1/9, 1/25));
   a.multiply(b);
   b.toIdentity();
   assertTrue(a.equals(b));
@@ -70,26 +76,39 @@ addTest(function scaleAndUndoScale() {
 addTest(function rotateX() {
   var m = new Matrix44();
   m.toRotateXOp(Math.PI / 2);
-  var v = new Vec3d(2, 3, 5);
+  var v = new Vec4(2, 3, 5);
   v.transform(m);
-  assertTrue(v.equals(new Vec3d(2, -5, 3), SLOP));
+  assertTrue(v.equals(new Vec4(2, -5, 3), SLOP));
 });
 
 addTest(function rotateY() {
   var m = new Matrix44();
   m.toRotateYOp(Math.PI / 2);
-  var v = new Vec3d(2, 3, 5);
+  var v = new Vec4(2, 3, 5);
   v.transform(m);
-  assertTrue(v.equals(new Vec3d(5, 3, -2), SLOP));
+  assertTrue(v.equals(new Vec4(5, 3, -2), SLOP));
 });
 
 addTest(function rotateZ() {
   var m = new Matrix44();
   m.toRotateZOp(Math.PI / 2);
-  var v = new Vec3d(2, 3, 5);
+  var v = new Vec4(2, 3, 5);
   v.transform(m);
   console.log(v);
-  assertTrue(v.equals(new Vec3d(-3, 2, 5), SLOP));
+  assertTrue(v.equals(new Vec4(-3, 2, 5), SLOP));
+});
+
+addTest(function operationOrderCheck() {
+  var mat = new Matrix44();
+
+  // I'm trying to do matrix multiplication in the standard OpenGL order,
+  // which seems backwards to me.
+  mat.multiply(new Matrix44().toTranslateOp(new Vec4(7, 11, 13)));
+  mat.multiply(new Matrix44().toScaleOp(new Vec4(2, 3, 5)));
+
+  var vec = new Vec4(1, 1, 1);
+  vec.transform(mat);
+  assertEquals(new Vec4(2 + 7, 3 + 11, 5 + 13).toString(), vec.toString());
 });
 </script>
 </head>
