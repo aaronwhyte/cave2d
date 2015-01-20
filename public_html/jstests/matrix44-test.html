@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Matrix44 test</title>
+<script src="../js/strings.js"></script>
+<script src="../js/testing.js"></script>
+<script src="../js/matrix44.js"></script>
+<script src="../js/vec3d.js"></script>
+<script>
+
+var SLOP = 0.00001;
+
+addTest(function equals() {
+  var a = new Matrix44();
+  var b = new Matrix44();
+  assertTrue(a.equals(b));
+  a.toTranslateOp(new Vec3d(2, 3, 5));
+  b.toTranslateOp(new Vec3d(2, 3, 5));
+  assertTrue(a.equals(b));
+  a.toTranslateOp(new Vec3d(-1, -2, -3));
+  assertTrue(!a.equals(b));
+});
+
+addTest(function translateAndUndoTranslate() {
+  var a = new Matrix44();
+  var b = new Matrix44();
+  b.toTranslateOp(new Vec3d(2, 3, 5));
+  assertTrue(!a.equals(b));
+
+  // Multiply an identity by a translation - turns it into that translation.
+  a.multiply(b);
+  assertTrue(a.equals(b));
+
+  // do it again - now the translation should be 4, 6, 10.
+  a.multiply(b);
+  assertTrue(!a.equals(b));
+  b.toTranslateOp(new Vec3d(4, 6, 10));
+  assertTrue(a.equals(b));
+
+  // Translate back to the origin
+  b.toTranslateOp(new Vec3d(-4, -6, -10));
+  a.multiply(b);
+  b.toIdentity();
+  assertTrue(a.equals(b));
+});
+
+addTest(function scaleAndUndoScale() {
+  var a = new Matrix44();
+  var b = new Matrix44();
+  b.toScaleOp(new Vec3d(2, 3, 5));
+  assertTrue(!a.equals(b));
+
+  // Multiply an identity by a scale - turns it into that scale.
+  a.multiply(b);
+  assertTrue(a.equals(b));
+
+  // do it again - now the scale should be 4, 9, 25.
+  a.multiply(b);
+  assertTrue(!a.equals(b));
+  b.toScaleOp(new Vec3d(4, 9, 25));
+  assertTrue(a.equals(b));
+
+  // back to original scale
+  b.toScaleOp(new Vec3d(1/4, 1/9, 1/25));
+  a.multiply(b);
+  b.toIdentity();
+  assertTrue(a.equals(b));
+});
+
+addTest(function rotateX() {
+  var m = new Matrix44();
+  m.toRotateXOp(Math.PI / 2);
+  var v = new Vec3d(2, 3, 5);
+  v.transform(m);
+  assertTrue(v.equals(new Vec3d(2, -5, 3), SLOP));
+});
+
+addTest(function rotateY() {
+  var m = new Matrix44();
+  m.toRotateYOp(Math.PI / 2);
+  var v = new Vec3d(2, 3, 5);
+  v.transform(m);
+  assertTrue(v.equals(new Vec3d(5, 3, -2), SLOP));
+});
+
+addTest(function rotateZ() {
+  var m = new Matrix44();
+  m.toRotateZOp(Math.PI / 2);
+  var v = new Vec3d(2, 3, 5);
+  v.transform(m);
+  console.log(v);
+  assertTrue(v.equals(new Vec3d(-3, 2, 5), SLOP));
+});
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>
