@@ -320,7 +320,7 @@ Remember my first JS game ever, http://plexode.com/fracas ?
 Time for that remake, featuring the same ascii text level format, roughly:
 .: floor
 #: wall
-%: (new!) destructible wall
+=: (new!) destructible wall
 g: gnome
 G: gnome generator
 $: gold
@@ -332,10 +332,6 @@ Gnomes will wander, avoiding obstacles, until they see the player. Then they att
 Generators do a rayscan before generating, to avoid overlapping.
 Treasure and health won't occupy the whole floorspace. Monsters can go over them...
 But to make up for it I'll add destructable walls the player can blast through.
-
-Engine features I still need:
-* SparkEngine
-* Sound
 
 v simple async dependency loading solution
 v load maps
@@ -375,23 +371,58 @@ v health
   v player health indicator, no matter how lame. Try MIDI-maze smiley-face. Or color, or both.
   v player's health carries over from level to level
   v at full health, healths act as a powerup that fades with time
+
+WebGL text
+I've got a design for a 3D typeface, which I call "sticks". Everything is made of sticks, which are stretched cubes.
+A character can be expressed as a list of line segments, where each is x0, y0, x1, y1.
+To make a 3D stick, start with a unit cube, stretch it to the right length, rotate it, and translate it into position.
+Do it all in JS. I can use Vec2d, because it ignores Z. Or I can do it all in 2D, and then make it 3D as the last step.
+3D Matrix Math
+Matrix
+.alloc
+.free
+.identity
+.scaleXYZ
+.translateXYZ
+.rotateAboutAxis(Vec.X, Vec.Y, or Vec.Z)
+
+
+*
+  Model instruction format?
+
+  Stick model format
+  stick model display
+
+
+- states
+  - title screen (formerly Main Menu) with instructions
+    - touch, mouse-click, or press a key to play
+  - playing
+  - Starting a level
+    - Show level title overlay, briefly.
+  - Game Over - overlays on existing game, then switches to title screen
+  - victory
+
 - spaces vs. walls
   - Render non-walls as black background, and default the canvas to wall-blue
-  - Cull walls that are not touching other tile types.
+  - Cull walls that are not touching other tile types. Don't give them bodies.
   - Change level format to be floor-based, not wall-based. Add wall bodies programatically.
-- states
-  - you lose
-  - you win
-  - main menu
-- explosions & sparks
+
+- explosions & sound effects I
   - gnome destroyed
   - generator destroyed
   - player damage
-  - player destroyed
   - wall bump
   - wall destroyed
-- sound effects
+  - gold collected
+  - health collected
+  - exit level?
+  - player destroyed?
+
 - graphics models
+  - bullets --> arrows
+    - big signage arrow pointed in direction of flight, like Dandy
+    - arrows stop and blink out when they hit a wall (file under explosion)
   - player
     - mouth
     - eyes
@@ -402,9 +433,10 @@ v health
     - arms & legs?
     - hat! Maybe like http://plexode.com/eval3/#s=aekVQXANJVQMbAx10AYMeFBERAYIeF5sBSkUePQNEQk+mHx0QdB89TwMNA0uRk3APdqUDSE9QTkZUphyxsWABcQkKAVyxREQPR0pNTTRVWk1GvARHRUXEz9FDRkhKTzFCVUnLxU/QD05QV0Y1UAkOEg0B+QrueBNc71e76fgSfziB8BJ8DBMFCIPDUId7RhcNfL7iESf7RIhNKBUIzpdbthLTasligPKhVKZQJhGlJeYxPZDkIRTIrLZsmajWbDabjfcADjgPcjmdDqdkTeDyej2fASB8PiNNisCqL5qkZq8KrL3CL7B0Qg9Gi1RqcPr1oglcAMatlgBNiANqr0ekEipcpeEnJt9aMsl0wmU0ZBGLTCnbOlV/a7ZbamAibCLhlVIc8jplGnBEfEQC1j0MZB4RDMZ0emCNmhN5kObwLSn2ywcvmNezNKklez10B+ifmkuGm1Fw1Sb1sq1973lGv+1lu3wyqmoBX8hxkJ3Wxr2PoGSAbdb+XeG+utkB4T4MQCYYjPpCr7NIxFQMiAV720r22wsTTN1TIPIVm8TxmDlZpfFeU9F34aUFFyQxUYOcSEFGf1uDugAxwBEk6naY5PmQUFkxHJt5Tjghu2cQmDFaWpwXpBmEUNegEwPBiNFpVSMUQjNRnMd1z37hd0n+hphwBTgTogPB3IKUaLlhV1RhSFYQhFFM6hKEQJBWFNUFhcBpVVBdpQXfyRoZduKpCQl5wPmZxHGe1Y30Co+3KPCGHUhySxUAkVTMY2exCPRskWDgozrAEHnEBIFlGS0qRUE06kxVWejRS4VaXAkaRUOegQLRCaABBAAQTPxxH5O6S2yFMwhVFCsW1oaa0qomixJo2j6RQkVCoNpUp5V6kxPpWnqZV6nKeqCohVqScQWMyqKqA6rETq+zKyrRuCxht1jaEiTYpUmbkqlJdJUQmVpYloVZcl6YI1eppXyo9pY/QlbW/exVpFYSuLhMi46AoKBqFoeNKKEU66OWWv0qFSt2yseyRVTFw1xUazcZp+oRPoG1apRO46wt2tX8xV/LCTFGF2saWrIpbH8bwBCceTGz8itFUwRBMCgQ0E7sntxLLeyjSMqkh1Sor0SBGEMSgJKYqCqANV69KgD9RFUJBQE/GRZFUCQIBMRQIROHC+MBMRZPsWj7Ek+xXPvCGNAEAUAQLDaMxBVDu3qe5qiMRq9ZNlWX4Ngss4LezRxfNdv3FE+MA/OsgtC0ozAuj+W5BK8uAkFl16XoDK6Cf8j4/BusLHek3TlKd6diuN6Yli+ggNzuwh2H+gPCsdLwNNBhFWvQJGIZAKGWp12Js7ttMECSaXWkF19ndwQq0sfTpjpZ5Bn2nHAGgvSL/1CgJy2PY+L5F1FXQ0TAgCCzAMThUJIAwSBH9woDrf2BJ/4VQlwCAGF4AAA=
     - hat could fly off during explosion...
-  - bullets --> arrows
-    - big signage arrow pointed in direction of flight, like Dandy
-    - arrows stop and blink out when they hit a wall (file under explosion)
+
+- shader effects
+  - powerup glow or vertex freakout?
+  - tunnel vision during slo-mo?
 - control tweaks
   - single fire button, laser scope?
 
@@ -435,7 +467,7 @@ and provides one or more actual audio nodes to connect game sounds to.
 Spirits can create one-shot noises by passing SoundMaster to static mode creators.
 Spirits manage continuous sounds by creating a long-lived object, passing in SoundMaster,
 and then tweaking knobs the class exposes.
-- SoundMaster lass
+- SoundMaster class
 - one shot noises
   - collisions with various substances
      - wall
