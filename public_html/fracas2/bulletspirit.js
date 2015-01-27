@@ -12,7 +12,7 @@ BulletSpirit.prototype.constructor = BulletSpirit;
 Poolify(BulletSpirit);
 
 BulletSpirit.TIMEOUT = 10;
-BulletSpirit.RADIUS = 0.6 * 0.8;
+BulletSpirit.RADIUS = 0.3;
 
 BulletSpirit.prototype.reset = function(game) {
   this.game = game;
@@ -35,7 +35,7 @@ BulletSpirit.prototype.onHit = function(world, thisBody, thatBody, hitEvent) {
   // fire shots down narrow hallways by glancing off the walls.
   var proj = Vec2d.alloc().set(thisBody.vel).projectOnto(hitEvent.collisionVec);
   var dot = thisBody.vel.dot(proj);
-  var isGlance = (dot / thisBody.vel.magnitude()) < 0.7;
+  var isGlance = (dot / thisBody.vel.magnitude()) < 0.1;
   if (!isGlance) {
     if (this.bounce <= 0) {
       return Fracas2.Reaction.DESTROY_BULLET;

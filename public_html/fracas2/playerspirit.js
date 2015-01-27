@@ -27,7 +27,7 @@ PlayerSpirit.TIMEOUT = 0.25;
 
 PlayerSpirit.MAX_HEALTH = 3;
 PlayerSpirit.SHOT_INTERVAL = 10;
-PlayerSpirit.MAX_POWERUP = 1.3;
+PlayerSpirit.MAX_POWERUP = 1.4;
 
 PlayerSpirit.prototype.onTimeout = function(world, timeout) {
   var b = world.getBody(this.bodyId);
@@ -42,10 +42,10 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
     this.vec.set(b.vel).scale(1 - this.friction).add(this.accel);
     b.setVelAtTime(this.vec, world.now);
 
-    this.powerup = Math.max(0, this.powerup - 0.0015);
+    this.powerup = Math.max(0, this.powerup - 0.002);
 
     // fire
-    var shotInterval = PlayerSpirit.SHOT_INTERVAL * (1 - this.powerup * 0.75);
+    var shotInterval = PlayerSpirit.SHOT_INTERVAL * Math.max(0.1, (1 - this.powerup * 0.75));
     if (this.aimStick && this.lastFire + shotInterval <= world.now) {
       this.aimStick.getVal(this.aim);
       if (!this.aim.isZero()) {
@@ -61,7 +61,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeout) {
         bulletBody.setVelAtTime(this.aim, world.now);
 
         var bulletSpirit = BulletSpirit.alloc(this.game);
-        bulletSpirit.bounce = (this.powerup - 0.5) * 5;
+        bulletSpirit.bounce = (this.powerup - 0.9) * 5;
         bulletSpirit.bodyId = world.addBody(bulletBody);
         world.addSpirit(bulletSpirit);
 
@@ -109,5 +109,5 @@ PlayerSpirit.prototype.bulletHitSomething = function() {
 };
 
 PlayerSpirit.prototype.addGold = function() {
-  this.powerup = Math.min(PlayerSpirit.MAX_POWERUP, this.powerup + 0.1);
+  this.powerup = Math.min(PlayerSpirit.MAX_POWERUP, this.powerup + 0.2);
 };
