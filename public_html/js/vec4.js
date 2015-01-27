@@ -83,7 +83,7 @@ Vec4.prototype.subtract = function(that) {
 };
 
 Vec4.prototype.set = function(that) {
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 4; i++) {
     this.v[i] = that.v[i];
   }
   return this;
@@ -203,9 +203,9 @@ Vec4.prototype.projectOnto = function(that) {
 };
 
 Vec4.prototype.toJSON = function() {
-  return [this.v[0], this.v[1], this.v[2]];
+  return [this.v[0], this.v[1], this.v[2], this.v[3]];
 };
 
 Vec4.fromJSON = function(json) {
-  return new Vec4(json[0], json[1], json[2]);
+  return new Vec4(json[0], json[1], json[2], json[3]);
 };

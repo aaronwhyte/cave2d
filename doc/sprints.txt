@@ -373,26 +373,52 @@ v health
   v at full health, healths act as a powerup that fades with time
 
 WebGL text
-I've got a design for a 3D typeface, which I call "sticks". Everything is made of sticks, which are stretched cubes.
+I've got a design for a 3D typeface, which I call "sticks". Everything is made of sticks,
+which are stretched cubes.
 A character can be expressed as a list of line segments, where each is x0, y0, x1, y1.
-To make a 3D stick, start with a unit cube, stretch it to the right length, rotate it, and translate it into position.
-Do it all in JS. I can use Vec2d, because it ignores Z. Or I can do it all in 2D, and then make it 3D as the last step.
-3D Matrix Math
-Matrix
-.alloc
-.free
-.identity
-.scaleXYZ
-.translateXYZ
-.rotateAboutAxis(Vec.X, Vec.Y, or Vec.Z)
+To make a 3D stick, start with a unit cube, stretch it to the right length, rotate it,
+and translate it into position.
 
+2015-01-19
+Matrix44
+v toIdentity
+v toScaleOp
+v toTranslateOp
+v toRotation[XYZ]Op
+v multiply
+v unit testing
 
-*
-  Model instruction format?
+2015-01-19
+Vec4
+v transform(matrix44)
+v unit tested a we bit in Matrix44 tests.
 
-  Stick model format
-  stick model display
+RigidModel
+v addVertex(vertex) returns index
+  v Vertex
+  v vertexes
+v addTriangle(index0, index1, index2) (counter-clockwise)
+  v triangles
+v addRigidModel(that) - adds all vertexes and triangles (re-indexed of course)
+v transformPositions(matrix) - duh
+v createVertexBuffer() generates a new VertexBuffer object, to be used for drawing.
+  In interleaved pos3f/color4b format. Or I can do pos4f/color4f if super lazy
 
+VertexBuffer
+Backed by a GL buffer, it wraps that crap.
+v prepareToDraw() in preparation to draw. We might want to do this once, and then
+  draw the same buffer several times with different uniforms. This binds the buffer(s)
+  and sets the attribute(s).
+v draw() draws to the GL. You'd better have called bind() first!
+
+2015-01-25
+Use RigidModel and VertexBuffer (and test them for the first time)
+- replace existing "addRect" and "addCircle" RigidModel-generating things.
+- build entire background of squares out of this
+- build the circular model out of this.
+Now we're back where we started.
+
+Sticks: the typeface
 
 - states
   - title screen (formerly Main Menu) with instructions

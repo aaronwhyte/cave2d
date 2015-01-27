@@ -35,3 +35,43 @@ I need to fill the renderer's background triangle vertex buffers.
 
 So there's an implied graph of task deps.
 Maybe the simple thing to do is to use the invalidate() function to move state fwd. Yeppers, that's simple.
+
+
+3D Typeface "Sticks" - letters and numbers (and punctuation) made from cuboids.
+How to express a cuboid (a 3D rectangle)?
+I need it for rendering. I know how to render one from two GL triangle fans.
+I can have a GLModel class that has a collection of points & colors, and knows how to draw
+them - it knows if it's triangles or fans or whatever, and how it's organized.
+It also has some standard point-manipulation... Best yet, it should support adding.
+So if I have a cylinder, a cone, and a bunch of cuboids, I can combine those to make
+a little rocket with arms and legs.
+But... I kinda like more vertical integration, so I can have shaders for specific
+objects or classes of objects, which take custom uniforms.
+Although, if each GLModel is responsible for its own drawArrays(), then each one
+can provide uniforms, too, to control shader behavior each frame.
+OK, lets not worry about minimizing GL calls right now. Each GLModel
+can have a list of draw commands, where each command has...
+* vertex positions, Vec4 instances
+* vertex colors, which I guess can also be Vec4
+* drawArrays mode: LINES, LINE_STRIP, POINTS, TRIANGLE, TRIANGLE_FAN, etc.
+  That way, adding another model just appends to arrays for the same mode.
+* Uh that's it. No special uniforms-handling or anything. That can be handled
+  by wrappers and stuff.
+* Methods for transforming points and colors.
+* Methods for adding one model to another, to build stuff.
+Maybe I should learn indexed drawing and only use triangleseeessss? hm
+I'll try indexed drawing with all triangles, and see how that goes.
+Q: If this is cave2d.com, with "2D" in the title, shouldn't I stick to 2D?
+I could do the same thing, but with rects instead of cuboids?
+Or should I keep just a hint of 3D in there, for programmer fun and to make
+the whole thing feel a little more... special? Hm.
+
+
+Animation in Hardware
+I could give each vertex two position values, and make the vertex shader interpolate
+between them using a "time" uniform. It could be smooth or jumpy, depending on the time values.
+Or they could animate based on multiple attributes and multiple uniforms.
+That would make it possible to animate a gnome's limbs separately, and face and
+hat and eyes too. They could have a walking-distortion, an excited-distortion,
+a birth-distortion, and an death-distortion. Though I'd like to do a Robotron-style
+death explosion, with the model stretching and distorting briefly.
