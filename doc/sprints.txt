@@ -412,13 +412,21 @@ v prepareToDraw() in preparation to draw. We might want to do this once, and the
 v draw() draws to the GL. You'd better have called bind() first!
 
 2015-01-25
-Use RigidModel and VertexBuffer (and test them for the first time)
+
+Test 17: RigidModel, ModelStamp, and Cuboid
+- get a ModelStamp to draw one triangle.
+- rotate the view matrix
+- draw a few triangles with rotated model matrixes
+- replace the triangles with cuboids
+- replace cuboids with random cuboid clusters?
+
+Sticks Typeface
+
+Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.
 - build entire background of squares out of this
 - build the circular model out of this.
 Now we're back where we started.
-
-Sticks: the typeface
 
 - states
   - title screen (formerly Main Menu) with instructions

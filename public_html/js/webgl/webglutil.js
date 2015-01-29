@@ -85,11 +85,19 @@ if (!'WebGLRenderingContext' in window) {
 
       clearColor: f,
       enable: f,
+      disable: f,
+      depthFunc: f,
+      blendFunc: f,
       DEPTH_TEST: 1,
+      SRC_ALPHA: 1,
+      BLEND: 1,
+      LESS: 1,
+      ONE: 1,
+      TRUE: 1,
+      FALSE: 1,
       getAttribLocation: f,
       enableVertexAttribArray: f,
       getUniformLocation: f,
-      uniformMatrix4fv: f,
       createBuffer: f,
       ARRAY_BUFFER: 1,
       ELEMENT_ARRAY_BUFFER: 1,
@@ -109,11 +117,12 @@ if (!'WebGLRenderingContext' in window) {
       DYNAMIC_DRAW: 1,
       STREAM_DRAW: 1,
       uniform4f: f,
+      uniform4fv: f,
+      uniform3f: f,
       uniform3fv: f,
       uniform1i: f,
-      uniform1f: f
-
-
+      uniform1f: f,
+      uniformMatrix4fv: f
     };
 
     window.WebGLShader = f;
