@@ -8,6 +8,6 @@ attribute vec4 aVertexColor;
 varying lowp vec4 vColor;
 
 void main(void) {
-  gl_Position = aVertexPosition * uViewMatrix * uModelMatrix;
+  gl_Position = aVertexPosition * uModelMatrix * uViewMatrix;
   vColor = aVertexColor * uModelColor;
 }

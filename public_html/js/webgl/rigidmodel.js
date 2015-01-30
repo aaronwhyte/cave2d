@@ -64,11 +64,11 @@ RigidModel.prototype.transformPositions = function(matrix) {
 /**
  * Adds immutable snapshot data to GL and returns a handle to it.
  * @param gl
- * @param positionAttributeName
- * @param colorAttributeName
+ * @param posAttrib
+ * @param colorAttrib
  * @returns {ModelStamp}
  */
-RigidModel.prototype.createModelStamp = function(gl, positionAttributeName, colorAttributeName) {
+RigidModel.prototype.createModelStamp = function(gl, posAttrib, colorAttrib) {
   var i, positionArray = [], colorArray = [];
   for (i = 0; i < this.vertexes.length; i++) {
     var vertex = this.vertexes[i];
@@ -77,8 +77,8 @@ RigidModel.prototype.createModelStamp = function(gl, positionAttributeName, colo
       colorArray.push(vertex.color.v[d]);
     }
   }
-  var positionBuff = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuff);
+  var posBuff = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, posBuff);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionArray), gl.STATIC_DRAW);
   var colorBuff = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
@@ -95,8 +95,5 @@ RigidModel.prototype.createModelStamp = function(gl, positionAttributeName, colo
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuff);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(elementsArray), gl.STATIC_DRAW);
 
-  var map = [];
-  map[positionAttributeName] = positionBuff;
-  map[colorAttributeName] = colorBuff;
-  return new ModelStamp(gl.TRIANGLES, map, elementBuff, elementsArray.length);
+  return new ModelStamp(gl.TRIANGLES, posAttrib, posBuff, colorAttrib, colorBuff, elementBuff, elementsArray.length);
 };

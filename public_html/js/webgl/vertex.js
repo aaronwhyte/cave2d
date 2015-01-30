@@ -6,6 +6,16 @@ function Vertex() {
   this.color = new Vec4();
 }
 
+Vertex.prototype.setPositionXYZ = function(x, y, z) {
+  this.position.setXYZ(x, y, z);
+  return this;
+};
+
+Vertex.prototype.setColorRGB = function(r, g, b) {
+  this.color.setXYZ(r, g, b);
+  return this;
+};
+
 /**
  * @returns {Vertex} a deep copy of this vertex
  */

@@ -414,9 +414,9 @@ v draw() draws to the GL. You'd better have called bind() first!
 2015-01-25
 
 Test 17: RigidModel, ModelStamp, and Cuboid
-- get a ModelStamp to draw one triangle.
-- rotate the view matrix
-- draw a few triangles with rotated model matrixes
+v get a ModelStamp to draw one triangle.
+v rotate the view matrix
+v draw a few triangles with rotated model matrixes
 - replace the triangles with cuboids
 - replace cuboids with random cuboid clusters?
 

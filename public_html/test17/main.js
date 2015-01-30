@@ -11,6 +11,7 @@ var aVertexPosition, aVertexColor;
 // ...
 
 var vec4 = new Vec4();
+var mat4 = new Matrix44();
 var viewMatrix = new Matrix44();
 var modelMatrix = new Matrix44();
 var modelColor = new Vec4();
@@ -19,7 +20,7 @@ var array3 = [0, 0, 0];
 var bodyPos = new Vec2d();
 var IDENTITY_VEC4 = [1, 1, 1, 1];
 
-var ZOOM = 20;
+var ZOOM = 10;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -80,8 +81,16 @@ function onProgramCreated() {
   loop();
 }
 
+var model;
+var stamp;
 function initModels() {
-  // TODO
+  model = new RigidModel();
+  var a = model.addVertex(new Vertex().setPositionXYZ(-0.5, -0.5, 0).setColorRGB(1, 0, 0));
+  var b = model.addVertex(new Vertex().setPositionXYZ(0, 0.5, 0).setColorRGB(0, 1, 0));
+  var c = model.addVertex(new Vertex().setPositionXYZ(0.5, -0.5, 0).setColorRGB(0, 0, 1));
+  model.addTriangle(a, b, c);
+
+  stamp = model.createModelStamp(gl, aVertexPosition, aVertexColor);
 }
 
 function loop() {
@@ -102,14 +111,27 @@ function drawScene() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // view
-  var edgeLength = Math.min(canvas.width, canvas.height);
-  vec4.setXYZ(ZOOM * edgeLength / canvas.width, ZOOM * edgeLength / canvas.height, 1);
+  var avgLength = (canvas.width + canvas.height) / 2;
+  vec4.setXYZ(avgLength / (ZOOM * canvas.width), avgLength / (ZOOM * canvas.height), 1);
   viewMatrix.toScaleOp(vec4);
   gl.uniformMatrix4fv(uViewMatrix, gl.FALSE, viewMatrix.m);
 
   // model(s)
-  gl.uniformMatrix4fv(uModelMatrix, gl.FALSE, modelMatrix.m);
-  gl.uniform4fv(uModelColor, IDENTITY_VEC4);
-  gl.uniform1i(uType, 0);
-  // TODO
+  stamp.prepareToDraw(gl);
+
+  var r = 9;
+  for (var y = -r; y <= r; y++) {
+    for (var x = -r; x <= r; x++) {
+      vec4.setXYZ(x, y, 0);
+      modelMatrix.toIdentity();
+      mat4.toTranslateOp(vec4);
+      modelMatrix.multiply(mat4);
+      mat4.toRotateZOp((x + y + 0.1) * Date.now() / 5000);
+      modelMatrix.multiply(mat4);
+      gl.uniformMatrix4fv(uModelMatrix, gl.FALSE, modelMatrix.m);
+      gl.uniform4fv(uModelColor, IDENTITY_VEC4);
+      gl.uniform1i(uType, 0);
+      stamp.draw(gl);
+    }
+  }
 }

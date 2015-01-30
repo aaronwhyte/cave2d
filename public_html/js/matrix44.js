@@ -13,6 +13,12 @@ Matrix44.IDENTITY_ARRAY = [
     0, 0, 1, 0,
     0, 0, 0, 1];
 
+Matrix44.tempArray = [
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0];
+
 /**
  * Start as the the identity matrix.
  * @returns {Matrix44}
@@ -43,7 +49,7 @@ Matrix44.prototype.toIdentity = function() {
 
 Matrix44.prototype.toTranslateOp = function(vec4) {
   this.toIdentity();
-  for (var row = 0; row < 4; row++) {
+  for (var row = 0; row < 3; row++) {
     this.m[3 + 4 * row] = vec4.v[row];
   }
   return this;
@@ -125,7 +131,12 @@ Matrix44.prototype.multiply = function(that) {
       for (var i = 0; i < 4; i++) {
         val += this.m[i + 4*y] * that.m[x + 4*i];
       }
-      this.m[x + 4*y] = val;
+      Matrix44.tempArray[x + 4*y] = val;
+    }
+  }
+  for (y = 0; y < 4; y++) {
+    for (x = 0; x < 4; x++) {
+      this.m[x + 4*y] = Matrix44.tempArray[x + 4*y];
     }
   }
   return this;

@@ -3,24 +3,25 @@
  * with 1+n easy function calls instead of about 5+n crazy calls.
  * Only accepts vertex attributes that are in groups of four floats.
  * @param glType probably gl.TRIANGLES
- * @param vertexNameBuffMap map from attribute name to buffer pointer
  * @param indexBuff pointer to the element index buffer
  * @param indexCount the total number of index values. Ten triangles would be thirty.
  * @constructor
  */
-function ModelStamp(glType, vertexNameBuffMap, indexBuff, indexCount) {
+function ModelStamp(glType, posAttrib, posBuff, colorAttrib, colorBuff, indexBuff, indexCount) {
   this.glType = glType;
-  this.vertexNameBuffMap = vertexNameBuffMap;
+  this.posAttrib = posAttrib;
+  this.posBuff = posBuff;
+  this.colorAttrib = colorAttrib;
+  this.colorBuff = colorBuff;
   this.indexBuff = indexBuff;
   this.indexCount = indexCount;
 }
 
 ModelStamp.prototype.prepareToDraw = function(gl) {
-  for (var name in this.vertexNameBuffMap) {
-    var buff = this.vertexNameBuffMap[name];
-    gl.bindBuffer(gl.ARRAY_BUFFER, buff);
-    gl.vertexAttribPointer(name, 4, gl.FLOAT, false, 0, 0);
-  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuff);
+  gl.vertexAttribPointer(this.posAttrib, 4, gl.FLOAT, false, 0, 0);
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuff);
+  gl.vertexAttribPointer(this.colorAttrib, 4, gl.FLOAT, false, 0, 0);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuff);
 };
 
