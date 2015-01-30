@@ -134,10 +134,8 @@ Matrix44.prototype.multiply = function(that) {
       Matrix44.tempArray[x + 4*y] = val;
     }
   }
-  for (y = 0; y < 4; y++) {
-    for (x = 0; x < 4; x++) {
-      this.m[x + 4*y] = Matrix44.tempArray[x + 4*y];
-    }
+  for (var a = 0; a < 16; a++) {
+    this.m[a] = Matrix44.tempArray[a];
   }
   return this;
 };
