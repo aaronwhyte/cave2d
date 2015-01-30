@@ -85,9 +85,9 @@ var model;
 var stamp;
 function initModels() {
   model = new RigidModel();
-  var a = model.addVertex(new Vertex().setPositionXYZ(-0.5, -0.5, 0).setColorRGB(1, 0, 0));
-  var b = model.addVertex(new Vertex().setPositionXYZ(0, 0.5, 0).setColorRGB(0, 1, 0));
-  var c = model.addVertex(new Vertex().setPositionXYZ(0.5, -0.5, 0).setColorRGB(0, 0, 1));
+  var a = model.addVertex(new Vertex().setPositionXYZ(-1, -1, 1).setColorRGB(0, 0, 0));
+  var b = model.addVertex(new Vertex().setPositionXYZ(0, 1, 0).setColorRGB(1, 0, 0));
+  var c = model.addVertex(new Vertex().setPositionXYZ(1, -1, 1).setColorRGB(0, 0, 0));
   model.addTriangle(a, b, c);
 
   stamp = model.createModelStamp(gl, aVertexPosition, aVertexColor);
@@ -111,22 +111,22 @@ function drawScene() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // view
-  var avgLength = (canvas.width + canvas.height) / 2;
-  vec4.setXYZ(avgLength / (ZOOM * canvas.width), avgLength / (ZOOM * canvas.height), 1);
+  var edge = Math.max(canvas.width, canvas.height);
+  vec4.setXYZ(edge / (ZOOM * canvas.width), edge / (ZOOM * canvas.height), 1);
   viewMatrix.toScaleOp(vec4);
   gl.uniformMatrix4fv(uViewMatrix, gl.FALSE, viewMatrix.m);
 
   // model(s)
   stamp.prepareToDraw(gl);
 
-  var r = 9;
+  var r = 10;
   for (var y = -r; y <= r; y++) {
     for (var x = -r; x <= r; x++) {
       vec4.setXYZ(x, y, 0);
       modelMatrix.toIdentity();
       mat4.toTranslateOp(vec4);
       modelMatrix.multiply(mat4);
-      mat4.toRotateZOp((x + y + 0.1) * Date.now() / 5000);
+      mat4.toRotateZOp((x + y + 0.01) * Date.now() / 5000);
       modelMatrix.multiply(mat4);
       gl.uniformMatrix4fv(uModelMatrix, gl.FALSE, modelMatrix.m);
       gl.uniform4fv(uModelColor, IDENTITY_VEC4);
