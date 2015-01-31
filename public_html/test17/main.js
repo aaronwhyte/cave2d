@@ -84,12 +84,13 @@ function onProgramCreated() {
 var model;
 var stamp;
 function initModels() {
-  model = new RigidModel();
-  var a = model.addVertex(new Vertex().setPositionXYZ(-1, -1, 1).setColorRGB(0, 0, 0));
-  var b = model.addVertex(new Vertex().setPositionXYZ(0, 1, 0).setColorRGB(1, 0, 0));
-  var c = model.addVertex(new Vertex().setPositionXYZ(1, -1, 1).setColorRGB(0, 0, 0));
-  model.addTriangle(a, b, c);
+//  model = new RigidModel();
+//  var a = model.addVertex(new Vertex().setPositionXYZ(-1, -1, 1).setColorRGB(0, 0, 0));
+//  var b = model.addVertex(new Vertex().setPositionXYZ(0, 1, 0).setColorRGB(1, 0, 0));
+//  var c = model.addVertex(new Vertex().setPositionXYZ(1, -1, 1).setColorRGB(0, 0, 0));
+//  model.addTriangle(a, b, c);
 
+  model = RigidModel.createCube();
   stamp = model.createModelStamp(gl, aVertexPosition, aVertexColor);
 }
 
@@ -122,11 +123,16 @@ function drawScene() {
   var r = 10;
   for (var y = -r; y <= r; y++) {
     for (var x = -r; x <= r; x++) {
-      vec4.setXYZ(x, y, 0);
       modelMatrix.toIdentity();
-      mat4.toTranslateOp(vec4);
+      mat4.toTranslateOp(vec4.setXYZ(x, y, 0.2));
       modelMatrix.multiply(mat4);
-      mat4.toRotateZOp((x + y + 0.01) * Date.now() / 5000);
+      mat4.toRotateXOp((x + y + 0.01) * Date.now() / 5000);
+      modelMatrix.multiply(mat4);
+      mat4.toRotateYOp(-(x * y + 0.01) * Date.now() / 11000);
+      modelMatrix.multiply(mat4);
+      mat4.toRotateZOp(-(x - y + 0.01) * Date.now() / 7000);
+      modelMatrix.multiply(mat4);
+      mat4.toScaleOp(vec4.setXYZ(0.1, 0.4, 0.9));
       modelMatrix.multiply(mat4);
       gl.uniformMatrix4fv(uModelMatrix, gl.FALSE, modelMatrix.m);
       gl.uniform4fv(uModelColor, IDENTITY_VEC4);

@@ -417,7 +417,7 @@ Test 17: RigidModel, ModelStamp, and Cuboid
 v get a ModelStamp to draw one triangle.
 v rotate the view matrix
 v draw a few triangles with rotated model matrixes
-- replace the triangles with cuboids
+v replace the triangles with cuboids
 - replace cuboids with random cuboid clusters?
 
 Sticks Typeface

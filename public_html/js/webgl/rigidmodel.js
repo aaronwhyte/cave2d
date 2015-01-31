@@ -97,3 +97,31 @@ RigidModel.prototype.createModelStamp = function(gl, posAttrib, colorAttrib) {
 
   return new ModelStamp(gl.TRIANGLES, posAttrib, posBuff, colorAttrib, colorBuff, elementBuff, elementsArray.length);
 };
+
+RigidModel.createCube = function() {
+  var m = new RigidModel();
+  var v = [];
+  for (var z = -1; z <= 1; z+= 2) {
+    for (var y = -1; y <= 1; y+= 2) {
+      for (var x = -1; x <= 1; x+= 2) {
+        v.push(m.addVertex(new Vertex().setPositionXYZ(x, y, z).setColorRGB(1, 1, 1)));
+      }
+    }
+  }
+  function face(nw, ne, sw, se) {
+    m.addTriangle(v[nw], v[sw], v[ne]);
+    m.addTriangle(v[se], v[ne], v[sw]);
+  }
+  // 2   3
+  //  6   7
+  //
+  // 0   1
+  //  4   5
+  face(4, 5, 0, 1); // bottom
+  face(2, 3, 6, 7); // top
+  face(6, 7, 4, 5); // front
+  face(3, 2, 1, 0); // back
+  face(2, 6, 0, 4); // left
+  face(7, 3, 5, 1); // right
+  return m;
+};
