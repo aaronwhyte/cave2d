@@ -17,7 +17,6 @@ var modelMatrix = new Matrix44();
 var modelColor = new Vec4();
 
 var array3 = [0, 0, 0];
-var bodyPos = new Vec2d();
 var IDENTITY_VEC4 = [1, 1, 1, 1];
 
 var ZOOM = 10;
