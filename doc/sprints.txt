@@ -413,14 +413,18 @@ v draw() draws to the GL. You'd better have called bind() first!
 
 2015-01-25
 
-Test 17: RigidModel, ModelStamp, and Cuboid
+Test 17+18: RigidModel, ModelStamp, and Cuboid
 v get a ModelStamp to draw one triangle.
 v rotate the view matrix
 v draw a few triangles with rotated model matrixes
 v replace the triangles with cuboids
-- replace cuboids with random cuboid clusters?
 
+2015-01-31
 Sticks Typeface
+v Draw a bunch of F's.
+- Draw a bunch of A's.
+- Generalize the font-making code.
+- Make a character generator wth boldness param. Support lots of the ASCII chars.
 
 Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.

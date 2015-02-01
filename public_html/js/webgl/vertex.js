@@ -22,7 +22,7 @@ Vertex.prototype.setColorRGB = function(r, g, b) {
 Vertex.prototype.copy = function() {
   var copy = new Vertex();
   copy.position.set(this.position);
-  copy.color.set(this.position);
+  copy.color.set(this.color);
   return copy;
 };
 

@@ -38,7 +38,7 @@ RigidModel.prototype.addRigidModel = function(that) {
   // Map that's vertex indexes to their new indexes in this.
   var i, vertexMap = {};
   for (i = 0; i < that.vertexes.length; i++) {
-    vertexMap[i] = this.addVertex(that[i].copy());
+    vertexMap[i] = this.addVertex(that.vertexes[i].copy());
   }
   for (i = 0; i < that.triangles.length; i++) {
     var thatTri = that.triangles[i];
