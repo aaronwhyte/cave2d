@@ -91,17 +91,17 @@ function initStamps() {
   var fat = 0.5;
   var depth = 1;
   top.transformPositions(m.toScaleOp(v.setXYZ(1 + fat, fat, depth)));
-  top.transformPositions(m.toTranslateOp(v.setXYZ(0, 1, 0)));
+  top.transformPositions(m.toTranslateOp(v.setXYZ(0, 2, 0)));
   total.addRigidModel(top);
 
   var mid = RigidModel.createCube();
   mid.transformPositions(m.toScaleOp(v.setXYZ(0.8 + fat, fat, depth)));
-  mid.transformPositions(m.toTranslateOp(v.setXYZ(-0.2/2, 0, 0)));
+  mid.transformPositions(m.toTranslateOp(v.setXYZ(-0.2, 0, 0)));
   total.addRigidModel(mid);
 
   var left = RigidModel.createCube();
   left.transformPositions(m.toScaleOp(v.setXYZ(fat, 2 + fat, depth)));
-  left.transformPositions(m.toTranslateOp(v.setXYZ(-0.5, 0, 0)));
+  left.transformPositions(m.toTranslateOp(v.setXYZ(-1, 0, 0)));
   total.addRigidModel(left);
 
   stamps['F'] = total.createModelStamp(gl, aVertexPosition, aVertexColor);
@@ -134,6 +134,7 @@ function drawScene() {
   stamps['F'].prepareToDraw(gl);
 
   var r = 11;
+  var size = 0.17;
   var t = Date.now();
   for (var y = -r; y <= r; y++) {
     for (var x = -r; x <= r; x++) {
@@ -146,7 +147,7 @@ function drawScene() {
       modelMatrix.multiply(mat4);
       mat4.toRotateZOp((x * y + 1) * t / 16000);
       modelMatrix.multiply(mat4);
-      mat4.toScaleOp(vec4.setXYZ(0.5, 0.5, 0.5));
+      mat4.toScaleOp(vec4.setXYZ(size, size, size));
       modelMatrix.multiply(mat4);
       gl.uniformMatrix4fv(uModelMatrix, gl.FALSE, modelMatrix.m);
       gl.uniform4fv(uModelColor, IDENTITY_VEC4);

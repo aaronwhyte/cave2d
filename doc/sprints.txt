@@ -420,9 +420,12 @@ v draw a few triangles with rotated model matrixes
 v replace the triangles with cuboids
 
 2015-01-31
+
 Sticks Typeface
 v Draw a bunch of F's.
+  2015-02-02
 - Draw a bunch of A's.
+  v Fix bugs when composing RigidModels. Could be anywhere!
 - Generalize the font-making code.
 - Make a character generator wth boldness param. Support lots of the ASCII chars.
 

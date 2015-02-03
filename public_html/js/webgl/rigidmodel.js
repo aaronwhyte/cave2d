@@ -4,9 +4,12 @@
 function RigidModel() {
   this.vertexes = [];
   this.triangles = [];
-  this.glPositionBuffer = null;
-  this.glColorBuffer = null;
 }
+
+RigidModel.prototype.clear = function() {
+  this.vertexes.length = 0;
+  this.triangles.length = 0;
+};
 
 /**
  * @param {Vertex} vertex

@@ -53,6 +53,8 @@ Vec4.temp = new Vec4();
  */
 Vec4.prototype.transform = function(matrix) {
   Vec4.temp.reset();
+  // In this case we want even "w" to be 0. It will get a 1 if the math works out.
+  Vec4.temp.v[3] = 0;
   for (var row = 0; row < 4; row++) {
     for (var col = 0; col < 4; col++) {
       Vec4.temp.v[row] += this.v[col] * matrix.m[col + 4*row];
@@ -171,7 +173,7 @@ Vec4.prototype.equals = function(that, opt_slop) {
 };
 
 Vec4.prototype.toString = function() {
-  return '(' + this.v[0] + ', ' + this.v[1] + ', ' + this.v[2] + ')';
+  return '(' + this.v[0] + ', ' + this.v[1] + ', ' + this.v[2] + ', ' + this.v[3] + ')';
 };
 
 Vec4.alongRayDistance = function(startPoint, towardsPoint, distance) {
