@@ -83,8 +83,8 @@ function onProgramCreated() {
 
 var glyphs;
 function initStamps() {
-  var lineWidth = 0.3;
-  glyphs = new Glyphs(new GlyphMaker(lineWidth * 2, lineWidth * 2));
+  var lineWidth = 0.6;
+  glyphs = new Glyphs(new GlyphMaker(lineWidth, lineWidth * 2));
   glyphs.initStamps(gl, aVertexPosition, aVertexColor);
 }
 
