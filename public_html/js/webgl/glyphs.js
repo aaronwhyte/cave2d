@@ -17,8 +17,8 @@ Glyphs.prototype.initStamps = function(gl, aVertexPosition, aVertexColor) {
         new RigidModel()).createModelStamp(gl, aVertexPosition, aVertexColor);
   }
   g('A',
-      -w * 1.2, -h,  -r/5, h,
-      w * 1.2, -h,  r/5, h,
+      -w, -h,  -r/5, h,
+      w, -h,  r/5, h,
       -w/2, -h * 0.33, w/2, -h * 0.33);
   g('B',
       -w, h, -w, -h,
@@ -28,9 +28,9 @@ Glyphs.prototype.initStamps = function(gl, aVertexPosition, aVertexColor) {
       w, 0, w, -h,
       w, -h, -w, -h);
   g('C',
-      w * 0.5, h, -w, h,
-      -w, h, -w, -h,
-      -w, -h, w, -h);
+      -w + r, h, w/2, h,
+      -w, h - r, -w, -h + r,
+      -w + r, -h, w - r, -h);
   g('D',
       -w, h - r, -w, -h,
       -w, -h, w, -h,
@@ -101,4 +101,37 @@ Glyphs.prototype.initStamps = function(gl, aVertexPosition, aVertexColor) {
       w, h, w, 0,
       w, 0, -w, 0,
       0, -r, w, -h);
+  g('S',
+      w, h, -w/2 + r, h,
+      -w/2, h - r/2, -w, h/2,
+      -w, h/2, w, -h/2,
+      w, -h/2, w/2, -h + r/2,
+      w/2 - r, -h, -w, -h);
+  g('T',
+      w, h, -w, h,
+      0, h, 0, -h);
+  g('U',
+      -w, h - r, -w, -h + r,
+      w, h - r, w, -h + r,
+      -w + r, -h, w - r, -h);
+  g('V',
+      -w, h,  -r/5, -h,
+      w, h,  r/5, -h);
+  g('W',
+      -w, h, -w, -h,
+          -w + r*0.6, -h + r/3, -r*0.2, -h * 0.5,
+          -r*0.2, -h * 0.5, w - r*0.6, -h + r/3,
+          w, -h, w, h);
+  g('X',
+      -w, h, w, -h,
+      w, h, -w, -h);
+  g('Y',
+      -w, h, -r/2, 0,
+      w, h, r/2, 0,
+      0, 0, 0, -h);
+  g('Z',
+      -w, h, w, h,
+      w, h - r/2, -w, -h + r/2,
+      -w, -h, w, -h);
+
 };
