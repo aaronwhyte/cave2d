@@ -65,6 +65,76 @@ RigidModel.prototype.transformPositions = function(matrix) {
 };
 
 /**
+ * Mutates the vertexes by moving each towards or away from a centerpoint,
+ * so they're all the same radius from it.
+ * @param {Vec4} center
+ * @param {number} radius
+ * @return {RigidModel} this
+ */
+RigidModel.prototype.sphereize = function(center, radius) {
+  for (var i = 0; i < this.vertexes.length; i++) {
+    var p = this.vertexes[i].position;
+    p.subtract(center).scaleToLength(radius).add(center);
+  }
+  return this;
+};
+
+/**
+ * Creates a new RigidModel just like this one, but replacing all triangles with
+ * four coplaner triangles covering the same area, creating a new vertex in the
+ * middle of each edge. Color values for the new vertexes are the average of the
+ * original two points along the edge.
+ */
+RigidModel.prototype.createQuadrupleTriangleModel = function() {
+  var m = new RigidModel();
+  function childName(index0, index1) {
+    return (index0 < index1) ? index0 + "_" + index1 : index1 + "_" + index0;
+  }
+  // Each key is a name of a vertex - either the original parent vert index,
+  // or a name created by joining two parent IDs.
+  // Each value is a new model vertex index.
+  var namedVerts = {};
+  for (var ti = 0; ti < this.triangles.length; ti++) {
+    var oldTri = this.triangles[ti];
+    // copy original verts, as needed
+    for (var i = 0; i < 3; i++) {
+      var vi = oldTri[i];
+      // map old vertex index to new one
+      if (!(vi in namedVerts)) {
+        namedVerts[vi] = m.addVertex(this.vertexes[vi].copy());
+      }
+    }
+    // create children in the middle of edges, as needed
+    for (var i = 0; i < 3; i++) {
+      var parent0Index = oldTri[i];
+      var parent1Index = oldTri[(i + 1) % 3];
+      var name = childName(parent0Index, parent1Index);
+      if (!(name in namedVerts)) {
+        var parent0 = this.vertexes[parent0Index];
+        var parent1 = this.vertexes[parent1Index];
+        var newVert = parent0.copy();
+        newVert.position.add(parent1.position).scale1(0.5);
+        // I'm assuming alpha is always 1, so if that changes, change this to average alpha, too.
+        newVert.color.add(parent1.color).scale1(0.5);
+        namedVerts[name] = m.addVertex(newVert);
+      }
+    }
+    // manually add triangles using the new vertexes
+    var a = namedVerts[oldTri[0]];
+    var b = namedVerts[oldTri[1]];
+    var c = namedVerts[oldTri[2]];
+    var ab = namedVerts[childName(oldTri[0], oldTri[1])];
+    var bc = namedVerts[childName(oldTri[1], oldTri[2])];
+    var ac = namedVerts[childName(oldTri[0], oldTri[2])];
+    m.addTriangle(a, ab, ac);
+    m.addTriangle(ab, b, bc);
+    m.addTriangle(ac, bc, c);
+    m.addTriangle(ab, bc, ac);
+  }
+  return m;
+};
+
+/**
  * Adds immutable snapshot data to GL and returns a handle to it.
  * @param gl
  * @param posAttrib
@@ -101,6 +171,11 @@ RigidModel.prototype.createModelStamp = function(gl, posAttrib, colorAttrib) {
   return new ModelStamp(gl.TRIANGLES, posAttrib, posBuff, colorAttrib, colorBuff, elementBuff, elementsArray.length);
 };
 
+/**
+ * Creates a unit-cube, with points at 1 and -1 along each dimension,
+ * so edge-length is 2 and volume is 8.
+ * @returns {RigidModel}
+ */
 RigidModel.createCube = function() {
   var m = new RigidModel();
   var v = [];
@@ -126,5 +201,50 @@ RigidModel.createCube = function() {
   face(3, 2, 1, 0); // back
   face(2, 6, 0, 4); // left
   face(7, 3, 5, 1); // right
+  return m;
+};
+
+/**
+ * Creates a four-faced triangular pyramid, with one edge parallel to the Y axis,
+ * and one edge parallel to the X axis. Edges have a length of 2.
+ * @returns {RigidModel}
+ */
+RigidModel.createTetrahedron = function() {
+  var m = new RigidModel();
+  var dz = Math.sqrt(2) / 2;
+  var a = m.addVertex(new Vertex().setPositionXYZ(0, 1, -dz).setColorRGB(1, 1, 1));
+  var b = m.addVertex(new Vertex().setPositionXYZ(0, -1, -dz).setColorRGB(1, 1, 1));
+  var c = m.addVertex(new Vertex().setPositionXYZ(1, 0, dz).setColorRGB(1, 1, 1));
+  var d = m.addVertex(new Vertex().setPositionXYZ(-1, 0, dz).setColorRGB(1, 1, 1));
+  m.addTriangle(a, d, c);
+  m.addTriangle(a, b, d);
+  m.addTriangle(a, c, b);
+  m.addTriangle(b, c, d);
+  return m;
+};
+
+/**
+ * Creates an eight-faced shape with a vertex at 1 and -1 on every axis.
+ * @returns {RigidModel}
+ */
+RigidModel.createOctahedron = function() {
+  var m = new RigidModel();
+  function v(x, y, z) {
+    return m.addVertex(new Vertex().setPositionXYZ(x, y, z).setColorRGB(1, 1, 1));
+  }
+  var a = v(1, 0, 0);
+  var b = v(-1, 0, 0);
+  var c = v(0, 1, 0);
+  var d = v(0, -1, 0);
+  var e = v(0, 0, 1);
+  var f = v(0, 0, -1);
+  m.addTriangle(c, e, a);
+  m.addTriangle(c, a, f);
+  m.addTriangle(c, f, b);
+  m.addTriangle(c, b, e);
+  m.addTriangle(d, e, b);
+  m.addTriangle(d, a, e);
+  m.addTriangle(d, f, a);
+  m.addTriangle(d, b, f);
   return m;
 };

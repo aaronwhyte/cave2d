@@ -424,10 +424,20 @@ v replace the triangles with cuboids
 Sticks Typeface
 v Draw a bunch of F's.
   2015-02-02
-- Draw a bunch of A's.
+v Draw a bunch of A's.
   v Fix bugs when composing RigidModels. Could be anywhere!
-- Generalize the font-making code.
-- Make a character generator wth boldness param. Support lots of the ASCII chars.
+v Generalize the font-making code.
+v Make a character generator.
+- Support lots of the ASCII chars.
+  v A-Z
+  - 0-9
+  - some punctuation?
+
+More model tools
+v RigitModel.createTetrahedron()
+v RigidModel.prototype.quadrupleTriangles()
+v RigidModel.prototype.sphereize(center, radius)
+v RigidModel.createOctahedtron()
 
 Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.
