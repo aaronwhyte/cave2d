@@ -80,29 +80,38 @@ function onProgramCreated() {
   loop();
 }
 
-var model;
-var stamp;
+var water;
+var earth;
 function initModels() {
-  model = RigidModel.createOctahedron()
+  var model = RigidModel.createOctahedron()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
-      .sphereize(Vec4.ZERO, 1)
-  ;
+      .sphereize(Vec4.ZERO, 1);
   for (var i = 0; i < model.vertexes.length; i++) {
     var r = Math.random() < (model.vertexes[i].position.v[0] + 1)/2 ? 1 : 0.1;
     var z = Math.abs(model.vertexes[i].position.v[1]) > 0.95 - Math.random() * 0.1;
     if (z) {
       model.vertexes[i].color.setXYZ(1, 1, 1);
     } else {
-      model.vertexes[i].color.setXYZ(1 - r, 0.5, r);
+      model.vertexes[i].color.setXYZ(1 - r, 0.5 + r/2, 0);
     }
     if (z || r != 1) {
-      model.vertexes[i].position.scaleToLength(1.01 + Math.random() * Math.random() * 0.6);
+      model.vertexes[i].position.scaleToLength(1.01 + Math.random() * Math.random() * 0.15);
+    } else {
+      model.vertexes[i].position.scaleToLength(0.95);
     }
   }
-  stamp = model.createModelStamp(gl, aVertexPosition, aVertexColor);
+  earth = model.createModelStamp(gl, aVertexPosition, aVertexColor);
+
+  model = RigidModel.createOctahedron()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .sphereize(Vec4.ZERO, 1);
+  water = model.createModelStamp(gl, aVertexPosition, aVertexColor);
 }
 
 function loop() {
@@ -128,11 +137,11 @@ function drawScene() {
   viewMatrix.toScaleOp(vec4);
   gl.uniformMatrix4fv(uViewMatrix, gl.FALSE, viewMatrix.m);
 
-  // model(s)
-  stamp.prepareToDraw(gl);
-
   var size = 0.8;
   var t = Date.now();
+
+  // model(s)
+  earth.prepareToDraw(gl);
   modelMatrix.toIdentity();
   mat4.toRotateXOp(0.2);
   modelMatrix.multiply(mat4);
@@ -145,5 +154,20 @@ function drawScene() {
   gl.uniformMatrix4fv(uModelMatrix, gl.FALSE, modelMatrix.m);
   gl.uniform4fv(uModelColor, IDENTITY_VEC4);
   gl.uniform1i(uType, 0);
-  stamp.draw(gl);
+  earth.draw(gl);
+
+  water.prepareToDraw(gl);
+  modelMatrix.toIdentity();
+  mat4.toRotateXOp(0.2);
+  modelMatrix.multiply(mat4);
+  mat4.toRotateZOp(-0.3);
+  modelMatrix.multiply(mat4);
+  mat4.toRotateYOp(t / 4000);
+  modelMatrix.multiply(mat4);
+  mat4.toScaleOp(vec4.setXYZ(size, size, size));
+  modelMatrix.multiply(mat4);
+  gl.uniformMatrix4fv(uModelMatrix, gl.FALSE, modelMatrix.m);
+  gl.uniform4fv(uModelColor, vec4.setXYZ(0, 0.3, 1).v);
+  gl.uniform1i(uType, 0);
+  water.draw(gl);
 }

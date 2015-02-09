@@ -81,7 +81,7 @@ RigidModel.prototype.sphereize = function(center, radius) {
 
 /**
  * Creates a new RigidModel just like this one, but replacing all triangles with
- * four coplaner triangles covering the same area, creating a new vertex in the
+ * four co-planer triangles covering the same area, creating a new vertex in the
  * middle of each edge. Color values for the new vertexes are the average of the
  * original two points along the edge.
  */
