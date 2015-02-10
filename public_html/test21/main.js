@@ -100,7 +100,7 @@ function initModels() {
     if (z || r != 1) {
       model.vertexes[i].position.scaleToLength(1.01 + Math.random() * Math.random() * 0.15);
     } else {
-      model.vertexes[i].position.scaleToLength(0.95);
+      model.vertexes[i].position.scaleToLength(0.98);
     }
   }
   earth = model.createModelStamp(gl, aVertexPosition, aVertexColor);
@@ -132,12 +132,12 @@ function drawScene() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // view
-  var edge = Math.max(canvas.width, canvas.height);
-  vec4.setXYZ(edge / (ZOOM * canvas.width), edge / (ZOOM * canvas.height), 0.7);
+  var edge = Math.min(canvas.width, canvas.height);
+  vec4.setXYZ(edge / (ZOOM * canvas.width), edge / (ZOOM * canvas.height), 0.5);
   viewMatrix.toScaleOp(vec4);
   gl.uniformMatrix4fv(uViewMatrix, gl.FALSE, viewMatrix.m);
 
-  var size = 0.8;
+  var size = 1.6;
   var t = Date.now();
 
   // model(s)
@@ -147,7 +147,7 @@ function drawScene() {
   modelMatrix.multiply(mat4);
   mat4.toRotateZOp(-0.3);
   modelMatrix.multiply(mat4);
-  mat4.toRotateYOp(t / 4000);
+  mat4.toRotateYOp(t / 2000);
   modelMatrix.multiply(mat4);
   mat4.toScaleOp(vec4.setXYZ(size, size, size));
   modelMatrix.multiply(mat4);
@@ -162,7 +162,7 @@ function drawScene() {
   modelMatrix.multiply(mat4);
   mat4.toRotateZOp(-0.3);
   modelMatrix.multiply(mat4);
-  mat4.toRotateYOp(t / 4000);
+  mat4.toRotateYOp(t / 2000);
   modelMatrix.multiply(mat4);
   mat4.toScaleOp(vec4.setXYZ(size, size, size));
   modelMatrix.multiply(mat4);
