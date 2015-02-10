@@ -84,7 +84,7 @@ function onProgramCreated() {
 var glyphs;
 function initStamps() {
   var lineWidth = 0.6;
-  glyphs = new Glyphs(new GlyphMaker(lineWidth, lineWidth * 2));
+  glyphs = new Glyphs(new GlyphMaker(lineWidth, lineWidth));
   glyphs.initStamps(gl, aVertexPosition, aVertexColor);
 }
 
@@ -112,7 +112,7 @@ function drawScene() {
   gl.uniformMatrix4fv(uViewMatrix, gl.FALSE, viewMatrix.m);
 
   var i = 0;
-  var r = 7;
+  var r = 8;
   for (var letter in glyphs.stamps) {
     glyphs.stamps[letter].prepareToDraw(gl);
 

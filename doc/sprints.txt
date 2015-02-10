@@ -428,10 +428,10 @@ v Draw a bunch of A's.
   v Fix bugs when composing RigidModels. Could be anywhere!
 v Generalize the font-making code.
 v Make a character generator.
-- Support lots of the ASCII chars.
+v Support lots of the ASCII chars.
   v A-Z
-  - 0-9
-  - some punctuation?
+  v 0-9
+  v some punctuation
 
 More model tools
 v RigitModel.createTetrahedron()
@@ -439,20 +439,21 @@ v RigidModel.prototype.quadrupleTriangles()
 v RigidModel.prototype.sphereize(center, radius)
 v RigidModel.createOctahedtron()
 
-Use RigidModel and ModelStamp in Fracas2
-- replace existing "addRect" and "addCircle" RigidModel-generating things.
-- build entire background of squares out of this
-- build the circular model out of this.
-Now we're back where we started.
+2015-02-09
 
 - states
-  - title screen (formerly Main Menu) with instructions
+  - title screen with instructions
     - touch, mouse-click, or press a key to play
   - playing
   - Starting a level
     - Show level title overlay, briefly.
   - Game Over - overlays on existing game, then switches to title screen
   - victory
+
+Use RigidModel and ModelStamp in Fracas2
+- replace existing "addRect" and "addCircle" RigidModel-generating things.
+- build entire background of squares out of this
+- build the circular model out of this.
 
 - spaces vs. walls
   - Render non-walls as black background, and default the canvas to wall-blue
