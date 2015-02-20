@@ -441,14 +441,36 @@ v RigidModel.createOctahedtron()
 
 2015-02-09
 
-- states
-  - title screen with instructions
-    - touch, mouse-click, or press a key to play
-  - playing
-  - Starting a level
-    - Show level title overlay, briefly.
-  - Game Over - overlays on existing game, then switches to title screen
-  - victory
+States
+Idea: Each "state" is a robot, and they run in parallel on a shared stage.
+Shared resources include
+* Output: WebGL, WebAudio (& master control node)
+* Input: keyboard, mouse, touchscreen
+* Time: Date.now(), AnimationFrame ticks.
+* CPU power
+A master robot issues orders to the state-bots:
+* Animate onto or off of the stage, with time constraints.
+* Start or stop processing events.
+* Shutdown.
+Each robot performs synchronous and async tasks to reach its goals.
+Async callbacks update internal state, and tickle the behavior machine.
+The top branches in the behavior machine are goal-based.
+For each goal there are states to evaluate, and synchronous and async tactics to employ.
+Robots can call the master controller back when major goals are met, to tickle *its*
+behavior machine.
+State instance examples: Title, Play Level 1, Play Level 2, Death, Pause, Victory
+Transition examples: Rise from Y/Z, rotate out, scale, swirl vert pos,
+All layers co-exist in the shader program, but perhaps each has its own value for uniform uLayer.
+- Layer baseclass
+  - setGoalVisibility(n)
+    - goalVisibility field from 0 to 1
+    - currentVisibility field from 0 to 1
+  - setListening(bool)
+  - setAnimating(bool)
+  - draw(gl)
+- Move Fracas2 gameplay code and renderer into PlayLayer class.
+- TitleLayer
+- VictoryLayer?
 
 Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.
@@ -460,6 +482,7 @@ Use RigidModel and ModelStamp in Fracas2
   - Cull walls that are not touching other tile types. Don't give them bodies.
   - Change level format to be floor-based, not wall-based. Add wall bodies programatically.
 
+Special Effects
 - explosions & sound effects I
   - gnome destroyed
   - generator destroyed
@@ -511,39 +534,6 @@ v Nice simple explosion shader with time param.
 - Make hitting a wall splash a little wall color.
 - Make bullet hits explode enemies (which makes them re-appear far away from the player)
 - Make firing a bullet spash a little bullet color.
-
-Web Audio
-Create an SoundMaster object that has the context, handles the listener position,
-and provides one or more actual audio nodes to connect game sounds to.
-(For instance: Events in the world, ambient noises, music, announcements, etc.)
-Spirits can create one-shot noises by passing SoundMaster to static mode creators.
-Spirits manage continuous sounds by creating a long-lived object, passing in SoundMaster,
-and then tweaking knobs the class exposes.
-- SoundMaster class
-- one shot noises
-  - collisions with various substances
-     - wall
-     - creature
-     - bullet
-- continuous sounds
-  - player motion
-  - critter motion
-  - rayscan spirit
-
-Proper Outputter
-* Combine sound and graphics for splashes and stuff.
-* Sound and graphics engines are reusable and generic, I hope, but outputter is game-specific.
-* Basic graphics engine can draw primitive shapes in solid colors, and lines?
-
-Complete Game
-- Main Menu
-  - Graphics!
-  - Sounds!
-  - Instructional Instructions!
-  - Settings!
-- Starting a Level
-  - Getting Killed
-  - winning the level
 
 
 
