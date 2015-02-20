@@ -22,17 +22,17 @@ function Renderer(canvas, gl, program) {
   this.initModelVertexes();
 }
 
-var ZERO_3 = [0, 0, 0];
-var IDENTITY_3 = [1, 1, 1];
-var PLAYER_COLOR_3_HEALTH = [null, [0.5, 0, 0.5], [0.8, 0.1, 0.0], [1.0, 0.2, 0.8]];
-var BULLET_COLOR_3 = [0.5, 0.9, 1.0];
-var GNOME_COLOR_3 = [0.4, 0.7, 0.4];
-var GOLD_COLOR_3 = [1, 1, 0];
-var HEALTH_COLOR_3 = [1, 0.9, 0.9];
-var BRICK_COLOR_3_HEALTH = [null, [0.3, 0.3, 0.6], [0.2, 0.2, 0.6], [0.1, 0.1, 0.6]];
-var GENERATOR_COLOR_3 = [0.3, 0.6, 0.3];
-var EXIT_COLOR_3 = [1.0, 0.0, 1.0];
-var OTHER_COLOR_3 = [0.5, 0.5, 0.5];
+Renderer.ZERO_3 = [0, 0, 0];
+Renderer.IDENTITY_3 = [1, 1, 1];
+Renderer.PLAYER_COLOR_3_HEALTH = [null, [0.5, 0, 0.5], [0.8, 0.1, 0.0], [1.0, 0.2, 0.8]];
+Renderer.BULLET_COLOR_3 = [0.5, 0.9, 1.0];
+Renderer.GNOME_COLOR_3 = [0.4, 0.7, 0.4];
+Renderer.GOLD_COLOR_3 = [1, 1, 0];
+Renderer.HEALTH_COLOR_3 = [1, 0.9, 0.9];
+Renderer.BRICK_COLOR_3_HEALTH = [null, [0.3, 0.3, 0.6], [0.2, 0.2, 0.6], [0.1, 0.1, 0.6]];
+Renderer.GENERATOR_COLOR_3 = [0.3, 0.6, 0.3];
+Renderer.EXIT_COLOR_3 = [1.0, 0.0, 1.0];
+Renderer.OTHER_COLOR_3 = [0.5, 0.5, 0.5];
 
 Renderer.CIRCLE_CORNERS = 13;
 
@@ -126,9 +126,9 @@ Renderer.prototype.drawBackground = function() {
   // All the vertex data is already in the program, in bgColorBuff and bgPosBuff.
   // Since the map is already in world-coordinates and world-colors,
   // set all the model-to-world uniforms to do nothing.
-  this.gl.uniform3fv(this.uModelScale, IDENTITY_3);
-  this.gl.uniform3fv(this.uModelTranslation, ZERO_3);
-  this.gl.uniform3fv(this.uModelColor, IDENTITY_3);
+  this.gl.uniform3fv(this.uModelScale, Renderer.IDENTITY_3);
+  this.gl.uniform3fv(this.uModelTranslation, Renderer.ZERO_3);
+  this.gl.uniform3fv(this.uModelColor, Renderer.IDENTITY_3);
   this.gl.uniform1i(this.uType, 0);
   this.drawTriangles(this.bgPosBuff, this.bgColorBuff, this.bgTriangleCount);
 };
@@ -143,23 +143,23 @@ Renderer.prototype.drawBody = function(world, b) {
 
   var spirit = world.spirits[b.spiritId];
   if (spirit instanceof GnomeSpirit) {
-    this.gl.uniform3fv(this.uModelColor, GNOME_COLOR_3);
+    this.gl.uniform3fv(this.uModelColor, Renderer.GNOME_COLOR_3);
   } else if (spirit instanceof GeneratorSpirit) {
-    this.gl.uniform3fv(this.uModelColor, GENERATOR_COLOR_3);
+    this.gl.uniform3fv(this.uModelColor, Renderer.GENERATOR_COLOR_3);
   } else if (spirit instanceof BrickSpirit) {
-    this.gl.uniform3fv(this.uModelColor, BRICK_COLOR_3_HEALTH[spirit.health]);
+    this.gl.uniform3fv(this.uModelColor, Renderer.BRICK_COLOR_3_HEALTH[spirit.health]);
   } else if (spirit instanceof HealthSpirit) {
-    this.gl.uniform3fv(this.uModelColor, HEALTH_COLOR_3);
+    this.gl.uniform3fv(this.uModelColor, Renderer.HEALTH_COLOR_3);
   } else if (spirit instanceof GoldSpirit) {
-    this.gl.uniform3fv(this.uModelColor, GOLD_COLOR_3);
+    this.gl.uniform3fv(this.uModelColor, Renderer.GOLD_COLOR_3);
   } else if (spirit instanceof BulletSpirit) {
-    this.gl.uniform3fv(this.uModelColor, BULLET_COLOR_3);
+    this.gl.uniform3fv(this.uModelColor, Renderer.BULLET_COLOR_3);
   } else if (spirit instanceof PlayerSpirit) {
-    this.gl.uniform3fv(this.uModelColor, PLAYER_COLOR_3_HEALTH[Math.min(spirit.health, 3)]);
+    this.gl.uniform3fv(this.uModelColor, Renderer.PLAYER_COLOR_3_HEALTH[Math.min(spirit.health, 3)]);
   } else if (spirit instanceof ExitSpirit) {
-    this.gl.uniform3fv(this.uModelColor, EXIT_COLOR_3);
+    this.gl.uniform3fv(this.uModelColor, Renderer.EXIT_COLOR_3);
   } else {
-    this.gl.uniform3fv(this.uModelColor, OTHER_COLOR_3);
+    this.gl.uniform3fv(this.uModelColor, Renderer.OTHER_COLOR_3);
   }
 
   if (b.shape === Body.Shape.RECT) {
