@@ -442,7 +442,7 @@ v RigidModel.createOctahedtron()
 2015-02-09
 
 States
-Idea: Each "state" is a robot, and they run in parallel on a shared stage.
+Idea: Each "state" is a robot, and they can run in parallel.
 Shared resources include
 * Output: WebGL, WebAudio (& master control node)
 * Input: keyboard, mouse, touchscreen
@@ -450,25 +450,61 @@ Shared resources include
 * CPU power
 A master robot issues orders to the state-bots:
 * Animate onto or off of the stage, with time constraints.
-* Start or stop processing events.
-* Shutdown.
+* Start or stop processing input events?
+* Shutdown?
 Each robot performs synchronous and async tasks to reach its goals.
 Async callbacks update internal state, and tickle the behavior machine.
 The top branches in the behavior machine are goal-based.
 For each goal there are states to evaluate, and synchronous and async tactics to employ.
-Robots can call the master controller back when major goals are met, to tickle *its*
-behavior machine.
-State instance examples: Title, Play Level 1, Play Level 2, Death, Pause, Victory
-Transition examples: Rise from Y/Z, rotate out, scale, swirl vert pos,
+Robots can call the master controller back when major goals are met, or maybe the master
+queries in a RAF loop.
+State instance examples: Title(playing?), Settings, Instructions, PlayLevel(map), Victory
+Transition examples: Rise from Y/Z, rotate out, scale, nonlinear vertex collapse/expand, fade...
 All layers co-exist in the shader program, but perhaps each has its own value for uniform uLayer.
-- Layer baseclass
-  - setGoalVisibility(n)
-    - goalVisibility field from 0 to 1
-    - currentVisibility field from 0 to 1
-  - setListening(bool)
-  - setAnimating(bool)
-  - draw(gl)
-- Move Fracas2 gameplay code and renderer into PlayLayer class.
+From WebAudio AudioParam spec, http://webaudio.github.io/web-audio-api/#AudioParam
+"""
+These methods will be called automation methods.
+...
+The following rules will apply when calling these methods:
+
+If one of these events is added at a time where there is already an event of the exact same type, then the new event
+will replace the old one.
+
+If one of these events is added at a time where there is already one or more events of a different type, then it will
+be placed in the list after them, but before events whose times are after the event.
+
+If setValueCurveAtTime() is called for time T and duration D and there are any events having a time greater than T, but
+less than T + D, then a NotSupportedError exception must be thrown. In other words, it's not ok to schedule a value
+curve during a time period containing other events.
+
+Similarly a NotSupportedError exception must be thrown if any automation method is called at a time which is inside of
+the time interval of a SetValueCurve event at time T and duration D.
+
+interface AudioParam {
+                attribute float value;
+    readonly    attribute float defaultValue;
+    void setValueAtTime (float value, double startTime);
+    void linearRampToValueAtTime (float value, double endTime);
+    void exponentialRampToValueAtTime (float value, double endTime);
+    void setTargetAtTime (float target, double startTime, float timeConstant);
+    void setValueCurveAtTime (Float32Array values, double startTime, double duration);
+    void cancelScheduledValues (double startTime);
+};
+"""
+
+So... I want to steal the easy parts first, maybe make a general AnimatedValue class, then use it for animated
+transitions and junk.
+
+AnimatedValue
+v setValueAtTime(value, startTime)
+v linearRampToValueAtTime(value, endTime) // v(t) = V0 + (V1 - V0) * ((t - T0) / (T1 - T0))
+v cancelScheduledValues(startTime)
+v unit test
+2015-02-23
+
+- Refactor fracas2.js
+  - Main loads all the levels and inits GL
+  - PlayLevelLayer(map) does gameplay
 - TitleLayer
 - VictoryLayer?
 
@@ -478,9 +514,9 @@ Use RigidModel and ModelStamp in Fracas2
 - build the circular model out of this.
 
 - spaces vs. walls
-  - Render non-walls as black background, and default the canvas to wall-blue
+  - Render non-walls with triangles, and default the canvas to wall-color
   - Cull walls that are not touching other tile types. Don't give them bodies.
-  - Change level format to be floor-based, not wall-based. Add wall bodies programatically.
+  - Change level format to be floor-based, not wall-based. Compute wall bodies.
 
 Special Effects
 - explosions & sound effects I
