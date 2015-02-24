@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>AnimatedValue test</title>
+<script src="../js/strings.js"></script>
+<script src="../js/testing.js"></script>
+<script src="../js/animatedvalue.js"></script>
+<script>
+
+addTest(function getEmpty() {
+  var av = new AnimatedValue();
+  assertEquals('undefined', typeof av.getValueAtTime(1));
+});
+
+addTest(function singleSet() {
+  var av = new AnimatedValue();
+  av.setValueAtTime(10, 2);
+  assertEquals('undefined', typeof av.getValueAtTime(1.999));
+  assertEquals(10, av.getValueAtTime(2));
+  assertEquals(10, av.getValueAtTime(20000));
+});
+
+addTest(function setOutOfOrder() {
+  var av = new AnimatedValue();
+  av.setValueAtTime(10, 2);
+  av.setValueAtTime(0, 4);
+  av.setValueAtTime(20, 3);
+  av.setValueAtTime(-10, -2);
+  assertEquals('undefined', typeof av.getValueAtTime(-2.1));
+  assertEquals(-10, av.getValueAtTime(-2));
+  assertEquals(-10, av.getValueAtTime(-1));
+  assertEquals(-10, av.getValueAtTime(1.9));
+  assertEquals(10, av.getValueAtTime(2));
+  assertEquals(10, av.getValueAtTime(2.9));
+  assertEquals(20, av.getValueAtTime(3));
+  assertEquals(0, av.getValueAtTime(4));
+  assertEquals(0, av.getValueAtTime(5));
+});
+
+addTest(function linearRampNoSet() {
+  var av = new AnimatedValue();
+  av.linearRampToValueAtTime(10, 2);
+  assertEquals('undefined', typeof av.getValueAtTime(1.999));
+  assertEquals(10, av.getValueAtTime(2));
+  assertEquals(10, av.getValueAtTime(20000));
+});
+
+addTest(function mulltipleLinearRamp() {
+  var av = new AnimatedValue();
+  av.linearRampToValueAtTime(10, 2);
+  av.linearRampToValueAtTime(0, 4);
+  assertEquals(10, av.getValueAtTime(2));
+  assertEquals(0, av.getValueAtTime(4));
+  assertEquals(5, av.getValueAtTime(3));
+});
+
+addTest(function setRampSet() {
+  var av = new AnimatedValue();
+  av.setValueAtTime(0, 0);
+  av.linearRampToValueAtTime(10, 10);
+  av.setValueAtTime(20, 20);
+  assertEquals(0, av.getValueAtTime(0));
+  assertEquals(9, av.getValueAtTime(9));
+  assertEquals(10, av.getValueAtTime(10));
+  assertEquals(10, av.getValueAtTime(11));
+  assertEquals(10, av.getValueAtTime(19));
+  assertEquals(20, av.getValueAtTime(20));
+  assertEquals(20, av.getValueAtTime(20000));
+});
+
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>
