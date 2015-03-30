@@ -141,7 +141,7 @@ function drawScene() {
   var t = Date.now();
 
   // model(s)
-  earth.prepareToDraw(gl);
+  earth.prepareToDraw(gl, aVertexPosition, aVertexColor);
   modelMatrix.toIdentity();
   mat4.toRotateXOp(0.2);
   modelMatrix.multiply(mat4);
@@ -156,7 +156,7 @@ function drawScene() {
   gl.uniform1i(uType, 0);
   earth.draw(gl);
 
-  water.prepareToDraw(gl);
+  water.prepareToDraw(gl, aVertexPosition, aVertexColor);
   modelMatrix.toIdentity();
   mat4.toRotateXOp(0.2);
   modelMatrix.multiply(mat4);
