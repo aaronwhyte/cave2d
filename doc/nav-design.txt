@@ -1,0 +1,156 @@
+
+///////////////////////////////////
+// Fullscreen and Navigation URLs
+///////////////////////////////////
+
+Original hope:
+Give each activity a URL, and use Html5 History API.
+https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Manipulating_the_browser_history
+
+But that can't work, because it breaks fullscreen. From http://www.html5rocks.com/en/mobile/fullscreen/:
+"""
+The fullscreen API can be a little finicky sometimes. Browser vendors don't want to lock users in a fullscreen page
+so they have developed mechanisms to break out of fullscreen as soon as they possibly can. This means you can't build
+a fullscreen website that spans multiple pages because:
+
+Changing the URL programmatically by using window.location = "http://example.com" breaks out of fullscreen
+A user clicking on an external link inside your page will exit fullscreen
+Changing the URL via the navigator.pushState API will also break out of the fullscreen experience.
+You have two options if you want to keep the user in a fullscreen experience:
+* Use the installable web app mechanisms to go fullscreen
+* Manage your UI and app state using the # fragment.
+"""
+So it looks like I'm going back to hash fragments, like Vorp. OK.
+http://cave2d.com/fracas2/ is the title screen. No game is in progress.
+http://cave2d.com/fracas2/#settings is settings, with no game is in progress.
+http://cave2d.com/fracas2/#level=num is playing a level.
+http://cave2d.com/fracas2/#level=num&paused is pausing a game in progress
+http://cave2d.com/fracas2/#level=num&settings is pausing a level and going to settings.
+
+
+
+States
+Idea: Each "state" is a robot, and they can run in parallel.
+Shared resources include
+* Output: WebGL, WebAudio (& master control node)
+* Input: keyboard, mouse, touchscreen
+* Time: Date.now(), AnimationFrame ticks.
+* CPU power
+A master robot issues orders to the state-bots:
+* Animate onto or off of the stage, with time constraints.
+* Start or stop processing input events?
+* Shutdown?
+Each robot performs synchronous and async tasks to reach its goals.
+Async callbacks update internal state, and tickle the behavior machine.
+The top branches in the behavior machine are goal-based.
+For each goal there are states to evaluate, and synchronous and async tactics to employ.
+Robots can call the master controller back when major goals are met, or maybe the master
+queries in a RAF loop.
+State instance examples: Title(playing?), Settings, Instructions, PlayLevel(map), Victory
+Transition examples: Rise from Y/Z, rotate out, scale, nonlinear vertex collapse/expand, fade...
+All layers co-exist in the shader program, but perhaps each has its own value for uniform uLayer.
+From WebAudio AudioParam spec, http://webaudio.github.io/web-audio-api/#AudioParam
+"""
+These methods will be called automation methods.
+...
+The following rules will apply when calling these methods:
+
+If one of these events is added at a time where there is already an event of the exact same type, then the new event
+will replace the old one.
+
+If one of these events is added at a time where there is already one or more events of a different type, then it will
+be placed in the list after them, but before events whose times are after the event.
+
+If setValueCurveAtTime() is called for time T and duration D and there are any events having a time greater than T, but
+less than T + D, then a NotSupportedError exception must be thrown. In other words, it's not ok to schedule a value
+curve during a time period containing other events.
+
+Similarly a NotSupportedError exception must be thrown if any automation method is called at a time which is inside of
+the time interval of a SetValueCurve event at time T and duration D.
+
+interface AudioParam {
+                attribute float value;
+    readonly    attribute float defaultValue;
+    void setValueAtTime (float value, double startTime);
+    void linearRampToValueAtTime (float value, double endTime);
+    void exponentialRampToValueAtTime (float value, double endTime);
+    void setTargetAtTime (float target, double startTime, float timeConstant);
+    void setValueCurveAtTime (Float32Array values, double startTime, double duration);
+    void cancelScheduledValues (double startTime);
+};
+"""
+
+So... I want to steal the easy parts first, maybe make a general AnimatedValue class, then use it for animated
+transitions and junk.
+
+2015-03-08
+Re-think...
+Ideas to tease apart:
+* setting a goal "state". Maybe that's the wrong idea, but the async event processor needs goals.
+* async dependency loading/setup to reach a goal. invalidate() takes next action.
+* sharing input-event processing
+* transitions and sharing canvas among layers
+* hashtag URLs, written to and read from. Bookmarkable. May be a dumb idea
+* the difference between starting a level, and unpausing a paused level
+* loading and unloading resources a view needs
+* transitions: start game, pause, resume, die, exit to next level
+* reusable code!
+
+I think I will have a bunch of games with the same structure:
+title & settings, start playing,
+pause, resume, restart level, quit to title,
+die & restart level, exit to next level,
+finished
+
+Goal 1 is to start the title screen.
+Goal 2 is to start level 1.
+
+Code-wise, I'd like each screen to be its own file.
+Each has a pointer to the main controller class, so it can trigger transitions.
+A level's map gets loaded into physics and GL, and unloaded from GL. Physics worlds get GCed.
+There are static resources shared by all levels, too. Separate them from per-level ones. Models, for instance.
+
+TitleScreen will need
+canvas
+gl
+
+2015-03-14
+Re-re-think...
+What main does
+* Build renderer by loading and compiling shaders and passing them to Renderer
+* Make renderer load models for title and game
+* Pre-fetch level maps
+* create instance of Audio
+* Create instance of TitleScreen
+* Create title screen when renderer is done, and start resume it.
+Borrow Android Activity lifecycle ideas:
+
+A game level:
+Gather deps:
+* renderer with models loaded into GL
+* audio
+* canvas
+* convert map to physical world.
+
+constructor(all dependencies: renderer, modelLib, audio, canvas (for listeners), populated world)
+  * completely created, but offstage and not animating or listening
+appear()
+  * add models to GL program
+  * start RAF loop
+  * start audio rampup
+  * start to animate onto the stage
+  // finish appearance
+  * add input listeners here
+  * most interaction is here
+disappear()
+  * remove input listeners
+  * animating off of the stage
+  // finish disappearance
+  * stop RAF
+  * disconnect audio
+  * remove GL models?
+  * world is still intact! Do not undo any work that happened before appear()
+remove last reference, become garbage-collectible
+two at-rest stages
+1) offstage
+2) onstage

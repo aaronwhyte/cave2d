@@ -441,60 +441,6 @@ v RigidModel.createOctahedtron()
 
 2015-02-09
 
-States
-Idea: Each "state" is a robot, and they can run in parallel.
-Shared resources include
-* Output: WebGL, WebAudio (& master control node)
-* Input: keyboard, mouse, touchscreen
-* Time: Date.now(), AnimationFrame ticks.
-* CPU power
-A master robot issues orders to the state-bots:
-* Animate onto or off of the stage, with time constraints.
-* Start or stop processing input events?
-* Shutdown?
-Each robot performs synchronous and async tasks to reach its goals.
-Async callbacks update internal state, and tickle the behavior machine.
-The top branches in the behavior machine are goal-based.
-For each goal there are states to evaluate, and synchronous and async tactics to employ.
-Robots can call the master controller back when major goals are met, or maybe the master
-queries in a RAF loop.
-State instance examples: Title(playing?), Settings, Instructions, PlayLevel(map), Victory
-Transition examples: Rise from Y/Z, rotate out, scale, nonlinear vertex collapse/expand, fade...
-All layers co-exist in the shader program, but perhaps each has its own value for uniform uLayer.
-From WebAudio AudioParam spec, http://webaudio.github.io/web-audio-api/#AudioParam
-"""
-These methods will be called automation methods.
-...
-The following rules will apply when calling these methods:
-
-If one of these events is added at a time where there is already an event of the exact same type, then the new event
-will replace the old one.
-
-If one of these events is added at a time where there is already one or more events of a different type, then it will
-be placed in the list after them, but before events whose times are after the event.
-
-If setValueCurveAtTime() is called for time T and duration D and there are any events having a time greater than T, but
-less than T + D, then a NotSupportedError exception must be thrown. In other words, it's not ok to schedule a value
-curve during a time period containing other events.
-
-Similarly a NotSupportedError exception must be thrown if any automation method is called at a time which is inside of
-the time interval of a SetValueCurve event at time T and duration D.
-
-interface AudioParam {
-                attribute float value;
-    readonly    attribute float defaultValue;
-    void setValueAtTime (float value, double startTime);
-    void linearRampToValueAtTime (float value, double endTime);
-    void exponentialRampToValueAtTime (float value, double endTime);
-    void setTargetAtTime (float target, double startTime, float timeConstant);
-    void setValueCurveAtTime (Float32Array values, double startTime, double duration);
-    void cancelScheduledValues (double startTime);
-};
-"""
-
-So... I want to steal the easy parts first, maybe make a general AnimatedValue class, then use it for animated
-transitions and junk.
-
 AnimatedValue
 v setValueAtTime(value, startTime)
 v linearRampToValueAtTime(value, endTime) // v(t) = V0 + (V1 - V0) * ((t - T0) / (T1 - T0))
@@ -502,11 +448,50 @@ v cancelScheduledValues(startTime)
 v unit test
 2015-02-23
 
-- Refactor fracas2.js
-  - Main loads all the levels and inits GL
-  - PlayLevelLayer(map) does gameplay
-- TitleLayer
-- VictoryLayer?
+- ModelLibary
+  - where to stick all the RigidModels et al?
+  - the library is complete when the models are in the GL memory
+- Renderer
+  - nearly stateless interface to the GL program and shaders
+  - can hold one model: callers can set a model and stamp it all over. Next caller sets another model, uniforms.
+- main.js controller
+  v load levels
+  v load GL program
+  v create renderer
+  - create ModelLib
+    - add glyphs
+    - circle (overuse for now)
+    - square
+  - BaseScreen
+  - construct TitleScreen w all deps
+  - start TitleScreen
+- TitleScreen
+  - constructor(Renderer, ModelLib
+  - start
+  - F r a c a s II
+    The Frackening
+  - buttons
+    - start game
+    - full screen
+    - mouse lock
+  - stop()
+- PlayLayer(map) does gameplay
+  - start
+    - RAF loop
+    - input listeners
+    - UI: pause button at top center
+  - resume
+  - pause
+  - stop: stops listeners and, when totally off stage, stops RAF loop. In theory it can be GCed then.
+- BetweenLevelsLayer?
+- PauseLayer
+  - continue game button
+  - quit button
+- SettingsLayer
+  - nothing yet
+  - back button
+- VictoryLayer
+  - ???
 
 Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.
