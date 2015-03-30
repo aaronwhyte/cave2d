@@ -1,4 +1,8 @@
 /**
+ * A way to create, combine, and manipulate a 3D model in JS.
+ * This is not optimized for repeated real-time use. It's meant to
+ * be used during setup.
+ * Generates static ModelStamp objects, which are meant to be used at runtime.
  * @constructor
  */
 function RigidModel() {
@@ -137,11 +141,9 @@ RigidModel.prototype.createQuadrupleTriangleModel = function() {
 /**
  * Adds immutable snapshot data to GL and returns a handle to it.
  * @param gl
- * @param posAttrib
- * @param colorAttrib
  * @returns {ModelStamp}
  */
-RigidModel.prototype.createModelStamp = function(gl, posAttrib, colorAttrib) {
+RigidModel.prototype.createModelStamp = function(gl) {
   var i, positionArray = [], colorArray = [];
   for (i = 0; i < this.vertexes.length; i++) {
     var vertex = this.vertexes[i];
@@ -168,7 +170,7 @@ RigidModel.prototype.createModelStamp = function(gl, posAttrib, colorAttrib) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuff);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(elementsArray), gl.STATIC_DRAW);
 
-  return new ModelStamp(gl.TRIANGLES, posAttrib, posBuff, colorAttrib, colorBuff, elementBuff, elementsArray.length);
+  return new ModelStamp(gl.TRIANGLES, posBuff, colorBuff, elementBuff, elementsArray.length);
 };
 
 /**

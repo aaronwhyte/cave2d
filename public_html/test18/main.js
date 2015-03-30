@@ -111,7 +111,7 @@ function drawScene() {
   gl.uniformMatrix4fv(uViewMatrix, gl.FALSE, viewMatrix.m);
 
   // model(s)
-  stamp.prepareToDraw(gl);
+  stamp.prepareToDraw(gl, aVertexPosition, aVertexColor);
 
   var r = 10;
   for (var y = -r; y <= r; y++) {

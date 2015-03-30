@@ -85,7 +85,7 @@ var glyphs;
 function initStamps() {
   var lineWidth = 0.6;
   glyphs = new Glyphs(new GlyphMaker(lineWidth, lineWidth));
-  glyphs.initStamps(gl, aVertexPosition, aVertexColor);
+  glyphs.initStamps(gl);
 }
 
 function loop() {
@@ -114,7 +114,8 @@ function drawScene() {
   var i = 0;
   var r = 8;
   for (var letter in glyphs.stamps) {
-    glyphs.stamps[letter].prepareToDraw(gl);
+    var stamp = glyphs.stamps[letter];
+    stamp.prepareToDraw(gl, aVertexPosition, aVertexColor);
 
     var x = ((i % r) - r/2);
     var y = (r/3 - Math.floor(i / r)) * 1.5;
@@ -131,7 +132,8 @@ function drawScene() {
 
     gl.uniformMatrix4fv(uModelMatrix, gl.FALSE, modelMatrix.m);
     gl.uniform4fv(uModelColor, IDENTITY_VEC4);
-    glyphs.stamps[letter].draw(gl);
+
+    stamp.draw(gl);
     i++;
   }
 }

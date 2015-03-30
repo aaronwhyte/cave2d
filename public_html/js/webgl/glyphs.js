@@ -1,9 +1,14 @@
+/**
+ * A collection of printable characters, as ModelStamp objects in the "stamps" map.
+ * @param glyphMaker
+ * @constructor
+ */
 function Glyphs(glyphMaker) {
   this.glyphMaker = glyphMaker;
   this.stamps = {};
 }
 
-Glyphs.prototype.initStamps = function(gl, aVertexPosition, aVertexColor) {
+Glyphs.prototype.initStamps = function(gl) {
   var r = this.glyphMaker.lineWidth / 2;
   var h = 1.5;
   var w = 1;
@@ -14,7 +19,7 @@ Glyphs.prototype.initStamps = function(gl, aVertexPosition, aVertexColor) {
       self.glyphMaker.addStick(arguments[i], arguments[i + 1], arguments[i + 2], arguments[i + 3]);
     }
     self.stamps[arguments[0]] = self.glyphMaker.addToRigidModel(
-        new RigidModel()).createModelStamp(gl, aVertexPosition, aVertexColor);
+        new RigidModel()).createModelStamp(gl);
   }
   g('A',
       -w, -h,  -r/5, h,

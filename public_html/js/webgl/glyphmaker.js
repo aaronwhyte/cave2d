@@ -1,3 +1,9 @@
+/**
+ * Helps build glyph (printable character) RigidModel objects.
+ * @param lineWidth
+ * @param glyphDepth
+ * @constructor
+ */
 function GlyphMaker(lineWidth, glyphDepth) {
   this.lineWidth = lineWidth;
   this.glyphDepth = glyphDepth;
