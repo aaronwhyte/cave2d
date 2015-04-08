@@ -9,7 +9,7 @@ var modelColor = new Vec4();
 
 var stamps = {};
 
-var ZOOM = 3;
+var ZOOM = 4;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -23,12 +23,12 @@ function onRendererLoaded(r) {
 }
 
 function initStamps() {
-  var model = RigidModel.createOctahedron().sphereize(vec4.setXYZ(0, 0, 0), 1);
-  stamps.earth = model.createModelStamp(renderer.gl);
+  var model = RigidModel.createOctahedron()
+      .sphereize(vec4.setXYZ(0, 0, 0), 0.8);
+  stamps.octahedron = model.createModelStamp(renderer.gl);
 
-  model = RigidModel.createCube().sphereize(vec4.setXYZ(0, 0, 0), 1);
-  //model.transformPositions(mat4.toScaleOp(vec4.setXYZ(0.5, 0.5, 0.5)));
-  stamps.water = model.createModelStamp(renderer.gl);
+  model = RigidModel.createCube().sphereize(vec4.setXYZ(0, 0, 0), 0.7);
+  stamps.cube = model.createModelStamp(renderer.gl);
 }
 
 function loop() {
@@ -40,31 +40,61 @@ function drawScene() {
   renderer.resize().clear();
 
   var edge = Math.min(canvas.width, canvas.height);
-  vec4.setXYZ(edge / (ZOOM * canvas.width), edge / (ZOOM * canvas.height), 0.5);
+  vec4.setXYZ(edge / (ZOOM * canvas.width), edge / (ZOOM * canvas.height), 0.3);
   viewMatrix.toScaleOp(vec4);
-  renderer.setViewMatrix(viewMatrix);
 
-  var size = 1.6;
   var t = Date.now();
 
-  modelMatrix.toIdentity();
-  mat4.toRotateXOp(0.2);
-  modelMatrix.multiply(mat4);
-  mat4.toRotateZOp(-0.3);
-  modelMatrix.multiply(mat4);
-  mat4.toRotateYOp(t / 500);
-  modelMatrix.multiply(mat4);
-  mat4.toScaleOp(vec4.setXYZ(size, size, size));
-  modelMatrix.multiply(mat4);
-  renderer.setModelMatrix(modelMatrix);
+  mat4.toRotateXOp(Math.sin(t / 720) * 0.2);
+  viewMatrix.multiply(mat4);
 
-  renderer
-      .setStamp(stamps.earth)
-      .setColorVector(modelColor.setXYZ(1, 1, 1))
-      .drawStamp();
+  mat4.toRotateYOp(Math.sin(t / 650) * 0.2);
+  viewMatrix.multiply(mat4);
 
+  renderer.setViewMatrix(viewMatrix);
+
+
+  var size = 1.0;
   renderer
-      .setStamp(stamps.water)
-      .setColorVector(modelColor.setXYZ(Math.abs(Math.sin(t/200)), Math.random, 0.5))
-      .drawStamp();
+      .setStamp(stamps.cube)
+      .setColorVector(modelColor.setXYZ(1, 1, 0.5));
+  for (var y = -5; y <= 5; y++) {
+    for (var x = -5; x <= 5; x++) {
+      modelMatrix.toIdentity();
+
+      mat4.toTranslateOp(vec4.setXYZ(x, y, 0));
+      modelMatrix.multiply(mat4);
+
+      mat4.toScaleOp(vec4.setXYZ(size, size, size));
+      modelMatrix.multiply(mat4);
+
+      mat4.toScaleOp(vec4.setXYZ(1, 1, Math.sin(x * y * t/7000)*3.2 + 1));
+      modelMatrix.multiply(mat4);
+
+      renderer.setModelMatrix(modelMatrix);
+      renderer.drawStamp();
+    }
+  }
+
+  size = 0.3;
+  renderer
+      .setStamp(stamps.octahedron)
+      .setColorVector(modelColor.setXYZ(0, 0.8, 1));
+  for (var y = -5; y <= 5; y++) {
+    for (var x = -5; x <= 5; x++) {
+      modelMatrix.toIdentity();
+
+      mat4.toTranslateOp(vec4.setXYZ(x, y, -1.4));
+      modelMatrix.multiply(mat4);
+
+      mat4.toScaleOp(vec4.setXYZ(size, size, size));
+      modelMatrix.multiply(mat4);
+
+      mat4.toRotateZOp(Math.sin((x+y)*(x-y) * t / 900) * 0.1);
+      modelMatrix.multiply(mat4);
+
+      renderer.setModelMatrix(modelMatrix);
+      renderer.drawStamp();
+    }
+  }
 }
