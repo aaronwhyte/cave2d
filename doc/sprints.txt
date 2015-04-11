@@ -458,24 +458,36 @@ v unit test
   v load levels
   v load GL program
   v create renderer
-  - create ModelLib
-    - add glyphs
-    - circle (overuse for now)
-    - square
-  - BaseScreen
-  - construct TitleScreen w all deps
-  - start TitleScreen
-- TitleScreen
-  - constructor(Renderer, ModelLib
-  - start
-  - F r a c a s II
+    v many things
+    v change view uniforms to a single mat44
+  v construct TitleScreen w all deps
+  v start() TitleScreen
+
+- Printer class
+  - takes a typeface and a renderer
+  - printLine(startMatrix, nextCharMatrix, text)
+  - printMultiLine(startMatrix, nextCharMatrix, nextLineMatrix, text)
+  - demo w test 23 - print test23's main.js code in webGL??
+    - more glyphs: ()[]{}<>'"/\= etc
+    - force to uppercase or add fake lowercase glyphs - smallcaps?
+
+- Button class?
+  - design the clickable button, oh joy
+
+- TitleScreen I
+  v constructor
+  v start()
+  - print:
+    F r a c a s II
     The Frackening
   - buttons
     - start game
     - full screen
     - mouse lock
   - stop()
-- PlayLayer(map) does gameplay
+
+- PlayScreen
+  - Takes exactly one level string
   - start
     - RAF loop
     - input listeners
@@ -483,11 +495,14 @@ v unit test
   - resume
   - pause
   - stop: stops listeners and, when totally off stage, stops RAF loop. In theory it can be GCed then.
-- BetweenLevelsLayer?
-- PauseLayer
+
+- BetweenLevelsScreen?
+
+- PauseScreen
   - continue game button
   - quit button
-- SettingsLayer
+
+- SettingsScreen
   - nothing yet
   - back button
 - VictoryLayer
