@@ -448,13 +448,11 @@ v cancelScheduledValues(startTime)
 v unit test
 2015-02-23
 
-- ModelLibary
-  - where to stick all the RigidModels et al?
-  - the library is complete when the models are in the GL memory
-- Renderer
-  - nearly stateless interface to the GL program and shaders
-  - can hold one model: callers can set a model and stamp it all over. Next caller sets another model, uniforms.
-- main.js controller
+v Renderer: interface to the GL program and shaders
+  v can hold one model: callers can set a model and stamp it all over. Next caller sets another model, uniforms.
+  v demo w test22
+
+v main.js controller I
   v load levels
   v load GL program
   v create renderer
@@ -463,13 +461,13 @@ v unit test
   v construct TitleScreen w all deps
   v start() TitleScreen
 
-- Printer class
-  - takes a typeface and a renderer
-  - printLine(startMatrix, nextCharMatrix, text)
-  - printMultiLine(startMatrix, nextCharMatrix, nextLineMatrix, text)
-  - demo w test 23 - print test23's main.js code in webGL??
-    - more glyphs: ()[]{}<>'"/\= etc
-    - force to uppercase or add fake lowercase glyphs - smallcaps?
+v Printer class
+  v takes a typeface and a renderer
+  v printLine(startMatrix, nextCharMatrix, text)
+  x printMultiLine(startMatrix, nextCharMatrix, nextLineMatrix, text)
+  v demo w test 23
+    x more glyphs: ()[]{}<>'"/\= etc
+    x force to uppercase or add fake lowercase glyphs - smallcaps?
 
 - Button class?
   - design the clickable button, oh joy
