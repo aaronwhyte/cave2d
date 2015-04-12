@@ -29,7 +29,7 @@ function onRendererLoaded(r) {
 }
 
 function initStamps() {
-  glyphs = new Glyphs(new GlyphMaker(0.5, 6));
+  glyphs = new Glyphs(new GlyphMaker(0.6, 3));
   glyphs.initStamps(renderer.gl);
   printer = new Printer(renderer, glyphs.stamps);
 
@@ -39,8 +39,8 @@ function initStamps() {
       .sphereize(vec4.setXYZ(0, 0, 0), 0.8);
   for (var i = 0; i < model.vertexes.length; i++) {
     var v = model.vertexes[i];
-    var r = Math.random();
-    v.setColorRGB(r * 0.1 + 0.7, r * 0.1 + 0.7, r * 0.1 + 0.7);
+    var r = 1-Math.random()*0.2;
+    v.setColorRGB(r, r, r);
     v.position.scaleToLength(0.7 + Math.random() * 0.5);
   }
   stamps.asteroid = model.createModelStamp(renderer.gl);
@@ -67,14 +67,14 @@ function drawScene() {
 
   // print text
   renderer.setViewMatrix(viewMatrix);
-  renderer.setColorVector(modelColor.setXYZ(0.8, 0, 0.8));
+  renderer.setColorVector(modelColor.setXYZ(0.1, 0.7, 0.3));
   printer.printLine(startMatrix, nextCharMatrix, "DONKEY BATS");
 
   // draw yellow city
   var size = 1.0;
   renderer
       .setStamp(stamps.cube)
-      .setColorVector(modelColor.setXYZ(1, 1, 0.5));
+      .setColorVector(modelColor.setXYZ(1, 0.9, 0.5));
   for (var y = -2; y <= 2; y++) {
     for (var x = -2; x <= 2; x++) {
       modelMatrix.toIdentity();
@@ -98,7 +98,7 @@ function drawScene() {
   var rad = 4;
   renderer
       .setStamp(stamps.asteroid)
-      .setColorVector(modelColor.setXYZ(0, 0.8, 1));
+      .setColorVector(modelColor.setXYZ(1, 0.5, 0.7));
   for (var y = -rad; y <= rad; y++) {
     for (var x = -rad; x <= rad; x++) {
       modelMatrix.toIdentity();
