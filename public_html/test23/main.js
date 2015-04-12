@@ -15,7 +15,7 @@ var startMatrix = new Matrix44()
     .multiply(mat4.toRotateXOp(0.1));
 var nextCharMatrix = new Matrix44()
     .multiply(mat4.toTranslateOp(vec4.setXYZ(3.1, 0, 0)));
-var ZOOM = 4;
+var ZOOM = 3.4;
 
 function main() {
   canvas = document.querySelector('#canvas');
