@@ -29,7 +29,7 @@ function onRendererLoaded(r) {
 }
 
 function initStamps() {
-  glyphs = new Glyphs(new GlyphMaker(0.7, 5));
+  glyphs = new Glyphs(new GlyphMaker(0.5, 6));
   glyphs.initStamps(renderer.gl);
   printer = new Printer(renderer, glyphs.stamps);
 
@@ -67,8 +67,8 @@ function drawScene() {
 
   // print text
   renderer.setViewMatrix(viewMatrix);
-  renderer.setColorVector(modelColor.setXYZ(Math.random()*0.3 + 0.5, Math.random()*0.2 + 0.5, Math.random()*0.3 + 0.6));
-  printer.printLine(startMatrix, nextCharMatrix, "CAVE2D.COM!!");
+  renderer.setColorVector(modelColor.setXYZ(0.8, 0, 0.8));
+  printer.printLine(startMatrix, nextCharMatrix, "DONKEY BATS");
 
   // draw yellow city
   var size = 1.0;
