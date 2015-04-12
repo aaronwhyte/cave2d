@@ -9,7 +9,7 @@ var modelColor = new Vec4();
 
 var glyphs, printer, stamps = {};
 var startMatrix = new Matrix44()
-    .multiply(mat4.toTranslateOp(vec4.setXYZ(-2.6, -2, -2)))
+    .multiply(mat4.toTranslateOp(vec4.setXYZ(-2.6, -2, -1.5)))
     .multiply(mat4.toScaleOp(vec4.setXYZ(0.2, 0.2, 0.2)))
     .multiply(mat4.toRotateZOp(Math.PI / 5))
     .multiply(mat4.toRotateXOp(0.1));
@@ -29,7 +29,7 @@ function onRendererLoaded(r) {
 }
 
 function initStamps() {
-  glyphs = new Glyphs(new GlyphMaker(0.6, 3));
+  glyphs = new Glyphs(new GlyphMaker(0.6, 10));
   glyphs.initStamps(renderer.gl);
   printer = new Printer(renderer, glyphs.stamps);
 
@@ -70,24 +70,17 @@ function drawScene() {
   renderer.setColorVector(modelColor.setXYZ(0.1, 0.7, 0.3));
   printer.printLine(startMatrix, nextCharMatrix, "DONKEY BATS");
 
-  // draw yellow city
+  // draw city
   var size = 1.0;
   renderer
       .setStamp(stamps.cube)
-      .setColorVector(modelColor.setXYZ(1, 0.9, 0.5));
+      .setColorVector(modelColor.setXYZ(0.8, 0.3, 0.5));
   for (var y = -2; y <= 2; y++) {
     for (var x = -2; x <= 2; x++) {
       modelMatrix.toIdentity();
-
-      mat4.toTranslateOp(vec4.setXYZ(x, y, 0));
-      modelMatrix.multiply(mat4);
-
-      mat4.toScaleOp(vec4.setXYZ(size, size, size));
-      modelMatrix.multiply(mat4);
-
-      mat4.toScaleOp(vec4.setXYZ(1, 1, Math.sin((x+3) * (y-3) * t/9000)*4 + 1));
-      modelMatrix.multiply(mat4);
-
+      modelMatrix.multiply(mat4.toTranslateOp(vec4.setXYZ(x, y, 0)));
+      modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(size, size, size)));
+      modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(1, 1, Math.sin((x+3) * (y-3) * t/9000)*4 + 1)));
       renderer.setModelMatrix(modelMatrix);
       renderer.drawStamp();
     }
@@ -96,23 +89,19 @@ function drawScene() {
   // draw asteroids
   var size = 0.3;
   var rad = 4;
-  renderer
-      .setStamp(stamps.asteroid)
-      .setColorVector(modelColor.setXYZ(1, 0.5, 0.7));
+  renderer.setStamp(stamps.asteroid);
   for (var y = -rad; y <= rad; y++) {
     for (var x = -rad; x <= rad; x++) {
+      renderer.setColorVector(modelColor.setXYZ(0.7 - Math.sin(y + x)*0.3, 0.5 - Math.cos(y - x)*0.2, 0.5));
       modelMatrix.toIdentity();
-
       mat4.toTranslateOp(vec4.setXYZ(
               x + Math.sin(y/2 + t / 2000) / 2,
               y + Math.cos(x/2 + t / 2000) / 2,
               -1.5));
       modelMatrix.multiply(mat4);
-
       modelMatrix.multiply(mat4.toRotateZOp(Math.sin((x - y + 0.1)) * t / 900));
       modelMatrix.multiply(mat4.toRotateXOp(Math.sin((x - y + 0.1)) * t / 1000));
       modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(size, size, size)));
-
       renderer.setModelMatrix(modelMatrix);
       renderer.drawStamp();
     }
