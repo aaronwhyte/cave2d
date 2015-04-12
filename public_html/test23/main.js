@@ -41,8 +41,7 @@ function initStamps() {
     var v = model.vertexes[i];
     var r = Math.random();
     v.setColorRGB(r * 0.1 + 0.7, r * 0.1 + 0.7, r * 0.1 + 0.7);
-    v.position.scaleToLength(0.4 + Math.random() * 0.8);
-    console.log(v.color);
+    v.position.scaleToLength(0.7 + Math.random() * 0.5);
   }
   stamps.asteroid = model.createModelStamp(renderer.gl);
 
@@ -68,7 +67,7 @@ function drawScene() {
 
   // print text
   renderer.setViewMatrix(viewMatrix);
-  renderer.setColorVector(modelColor.setXYZ(Math.random(), Math.random()*0.4 + 0.5, Math.random()*0.2 + 0.8));
+  renderer.setColorVector(modelColor.setXYZ(Math.random()*0.3 + 0.5, Math.random()*0.2 + 0.5, Math.random()*0.3 + 0.6));
   printer.printLine(startMatrix, nextCharMatrix, "CAVE2D.COM!!");
 
   // draw yellow city
@@ -96,20 +95,22 @@ function drawScene() {
 
   // draw asteroids
   var size = 0.3;
+  var rad = 4;
   renderer
       .setStamp(stamps.asteroid)
       .setColorVector(modelColor.setXYZ(0, 0.8, 1));
-  for (var y = -7; y <= 7; y++) {
-    for (var x = -7; x <= 7; x++) {
+  for (var y = -rad; y <= rad; y++) {
+    for (var x = -rad; x <= rad; x++) {
       modelMatrix.toIdentity();
 
       mat4.toTranslateOp(vec4.setXYZ(
-              x + Math.sin(y/2 + t / 2000),
-              y + Math.cos(x/2 + t / 2000),
+              x + Math.sin(y/2 + t / 2000) / 2,
+              y + Math.cos(x/2 + t / 2000) / 2,
               -1.5));
       modelMatrix.multiply(mat4);
 
-      modelMatrix.multiply(mat4.toRotateZOp(Math.sin((x - y)) * t / 900));
+      modelMatrix.multiply(mat4.toRotateZOp(Math.sin((x - y + 0.1)) * t / 900));
+      modelMatrix.multiply(mat4.toRotateXOp(Math.sin((x - y + 0.1)) * t / 1000));
       modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(size, size, size)));
 
       renderer.setModelMatrix(modelMatrix);
