@@ -13,10 +13,23 @@
 <script src="../js/rect.js"></script>
 <script src="../js/skipqueue.js"></script>
 <script src="../js/arrayset.js"></script>
+<script src="../js/textloader.js"></script>
 
+<script src="../js/matrix44.js"></script>
+<script src="../js/vec4.js"></script>
+
+<script src="../js/webgl/renderer.js"></script>
+<script src="../js/webgl/rendererloader.js"></script>
 <script src="../js/webgl/webglutil.js"></script>
 <script src="../js/webgl/trianglebufferbuilder.js"></script>
 <script src="../js/webgl/fanbufferbuilder.js"></script>
+
+<script src="../js/webgl/glyphs.js"></script>
+<script src="../js/webgl/glyphmaker.js"></script>
+<script src="../js/webgl/printer.js"></script>
+<script src="../js/webgl/rigidmodel.js"></script>
+<script src="../js/webgl/modelstamp.js"></script>
+<script src="../js/webgl/vertex.js"></script>
 
 <script src="../js/physics/cell.js"></script>
 <script src="../js/physics/body.js"></script>
@@ -47,8 +60,9 @@
 <script src="goldspirit.js"></script>
 <script src="healthspirit.js"></script>
 
-<script src="renderer.js"></script>
+<script src="titlescreen.js"></script>
 <script src="fracas2.js"></script>
+<script src="main.js"></script>
 
 <link rel="stylesheet" type="text/css" href="main.css">
 </head>
@@ -57,9 +71,9 @@
 <canvas id="canvas"></canvas>
 <script>
 
-var f2;
+var main;
 
-function main() {
+function loadGame() {
   var canvas = document.querySelector('#canvas');
   var levelPaths = [
 //    './levels/d.txt',
@@ -69,16 +83,18 @@ function main() {
     './levels/d.txt',
     './levels/e.txt'
   ];
-  f2 = new Fracas2(canvas);
-  f2.startLoadingLevels(levelPaths);
-  f2.beginMainMenu();
+  main = new Main(canvas);
+  main.loadRenderer('vertex-shader.txt', 'fragment-shader.txt');
+  main.loadLevels(levelPaths);
+
+  main.setGoal(Main.GOAL_TITLE);
 }
 
 function pd(event) {
   event.preventDefault();
 }
 
-window.addEventListener('load', main);
+window.addEventListener('load', loadGame);
 window.addEventListener('scroll', pd);
 document.body.addEventListener('touchstart', pd);
 document.body.addEventListener('touchmove', pd);

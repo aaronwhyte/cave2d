@@ -1,36 +1,16 @@
 /**
- * The whole Fracas2 game, including the start screen, all the levels, game-over, etc.
  * @constructor
  */
-function Fracas2(canvas) {
+function Fracas2(main, canvas, renderer) {
+  this.main = main;
   this.canvas = canvas;
-  this.levelPaths = [];
-
-  // Parallel to levelPaths.
-  // Deserialize a level when the player plays it.
-  this.levelStrings = [];
-
-  // async state loading state. Hm.
-  this.waitingForState = null;
-  this.waitingForLevelIndex = null;
-
-  // async shader loading state
-  this.requestedShaders = false;
-  this.vertexShader = null;
-  this.fragmentShader = null;
-
-  // final artifact of shader loading
-  this.renderer = null;
+  this.renderer = renderer;
 
   // for canceling a RequestAnimationFrame
   this.rafKey = null;
-
   this.levelNum = 0;
-
   this.cameraPos = new Vec2d();
-
   this.gnomeDist = GnomeSpirit.MAX_SCAN_DIST;
-  this.zoomFactor = 1;
 }
 
 Fracas2.Reaction = {
@@ -53,11 +33,6 @@ Fracas2.CHARACTER_RADIUS = 0.6 * 0.5 * Fracas2.SPACING;
 Fracas2.WALL_Z = 0.2;
 
 Fracas2.CLOCKS_PER_SECOND = 60 * 0.3;
-
-Fracas2.State = {
-  MAIN_MENU: 'main_menu',
-  PLAY_LEVEL: 'play_level'
-};
 
 Fracas2.Group = {
   WALL: 0,
@@ -92,111 +67,14 @@ Fracas2.GROUP_PAIRS = [
   [Fracas2.Group.GENERATOR_SCAN, Fracas2.Group.GNOME]
 ];
 
-Fracas2.prototype.stopWaitingForState = function() {
-  this.waitingForState = null;
-  this.waitingForLevelIndex = null;
-};
-
-Fracas2.prototype.beginMainMenu = function() {
-  this.stopWaitingForState();
-  this.state = Fracas2.State.MAIN_MENU;
-  this.invalidate();
-
-  // TODO: actually have a menu
-  this.levelNum = 0;
-  this.beginPlayingLevel();
-};
-
-Fracas2.prototype.beginPlayingLevel = function() {
-  this.waitingForState = Fracas2.State.PLAY_LEVEL;
-  // TODO: you win if you finish the last level
-  this.waitingForLevelIndex = this.levelNum % this.levelPaths.length;
-  this.invalidate();
-};
-
-Fracas2.prototype.startLoadingLevels = function(levelPaths) {
-  this.levelPaths = levelPaths;
-  this.levelStrings = [];
-  for (var i = 0; i < levelPaths.length; i++) {
-    var path = levelPaths[i];
-    this.loadText(path, this.getOnLevelLoadedFunc(i));
-  }
-};
-
-Fracas2.prototype.getOnLevelLoadedFunc = function(index) {
-  var self = this;
-  return function(text) {
-    self.levelStrings[index] = text;
-//    console.log('level ' + index + ':\n' + text);
-    self.invalidate();
-  };
-};
-
-Fracas2.prototype.invalidate = function() {
-//  console.log('invalidate');
-  this.maybeRequestShaders();
-  this.maybeCreateRenderer();
-  this.maybeStartLevel();
-};
-
-Fracas2.prototype.maybeRequestShaders = function() {
-  if (this.requestedShaders) return;
-
-  this.requestedShaders = true;
-  var self = this;
-  this.loadText('vertex-shader.txt', function(text) {
-    self.vertexShaderText = text;
-    self.invalidate();
-  });
-  this.loadText('fragment-shader.txt', function(text) {
-    self.fragmentShaderText = text;
-    self.invalidate();
-  });
-};
-
-Fracas2.prototype.maybeCreateRenderer = function() {
-  if (this.renderer || !this.vertexShaderText || !this.fragmentShaderText) return;
-
-  var gl = getWebGlContext(this.canvas, {
-    alpha: true,
-    antialias: false
-  });
-  var vertexShader = compileShader(gl, this.vertexShaderText, gl.VERTEX_SHADER);
-  var fragmentShader = compileShader(gl, this.fragmentShaderText, gl.FRAGMENT_SHADER);
-  var program = createProgram(gl, vertexShader, fragmentShader);
-  gl.enable(gl.DEPTH_TEST);
-  gl.useProgram(program);
-  this.renderer = new Renderer(this.canvas, gl, program);
-  this.invalidate();
-};
-
-Fracas2.prototype.loadText = function(path, callback) {
-//  console.log('loadText ', path);
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', path, true);
-  xhr.responseType = 'text';
-  xhr.onload = function() {
-    callback(this.response);
-  };
-  xhr.send();
-};
-
-Fracas2.prototype.maybeStartLevel = function() {
+//
+//Fracas2.prototype.maybeStartLevel = function() {
 //  console.log('maybeStartLevel');
-  if (!this.waitingForState == Fracas2.State.PLAY_LEVEL ||
-      !this.levelStrings[this.waitingForLevelIndex] ||
-      !this.renderer) {
-//    console.log('maybeStartLevel nope: ', this.waitingForState, this.levelStrings, this.renderer);
-    return;
-  }
-  var levelIndex = this.waitingForLevelIndex;
-  this.stopWaitingForState();
-  this.state = Fracas2.State.PLAY_LEVEL;
-  this.initWorldFromString(this.levelStrings[levelIndex]);
-  this.initRendererBuffers();
-  this.loopCallback = this.loop.bind(this);
-  this.loop();
-};
+//  this.initWorldFromString(this.levelText);
+//  this.initRendererBuffers();
+//  this.loopCallback = this.loop.bind(this);
+//  this.loop();
+//};
 
 Fracas2.prototype.initWorldFromString = function(s) {
   this.gnomeDist = GnomeSpirit.MAX_SCAN_DIST;
@@ -430,7 +308,7 @@ Fracas2.prototype.loop = function() {
   this.rafKey = requestAnimationFrame(this.loopCallback, this.canvas);
   this.frameEndMs = Date.now() + 1000 / 70;
 
-  this.renderer.maybeResize();
+  this.renderer.resize();
 
   var playerPos = this.playerBody.getPosAtTime(this.world.now + 2, Vec2d.alloc());
   var playerVel = Vec2d.alloc().set(this.playerBody.vel);
@@ -558,7 +436,7 @@ Fracas2.prototype.gameOver = function(spirit) {
   // TODO: explosion!
   cancelAnimationFrame(this.rafKey);
   this.playerSpirit = null;
-  this.levelNum = 0
+  this.levelNum = 0;
   this.beginPlayingLevel();
 };
 
