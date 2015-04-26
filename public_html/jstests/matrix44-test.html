@@ -4,6 +4,7 @@
 <title>Matrix44 test</title>
 <script src="../js/strings.js"></script>
 <script src="../js/testing.js"></script>
+<script src="../js/matrix33.js"></script>
 <script src="../js/matrix44.js"></script>
 <script src="../js/vec4.js"></script>
 <script>
@@ -94,7 +95,6 @@ addTest(function rotateZ() {
   m.toRotateZOp(Math.PI / 2);
   var v = new Vec4(2, 3, 5);
   v.transform(m);
-  console.log(v);
   assertTrue(v.equals(new Vec4(-3, 2, 5), SLOP));
 });
 
@@ -109,6 +109,42 @@ addTest(function operationOrderCheck() {
   var vec = new Vec4(1, 1, 1);
   vec.transform(mat);
   assertEquals(new Vec4(2 + 7, 3 + 11, 5 + 13).toString(), vec.toString());
+});
+
+addTest(function determinant() {
+  var mat = new Matrix44();
+  mat.multiply(new Matrix44().toTranslateOp(new Vec4(7, 11, 13)));
+  mat.multiply(new Matrix44().toScaleOp(new Vec4(2, 3, 5)));
+  assertEquals(30, mat.determinant());
+});
+
+addTest(function transpose() {
+  var mat = new Matrix44();
+  mat.m = [
+    11, 12, 13, 14,
+    21, 22, 23, 24,
+    31, 32, 33, 34,
+    41, 42, 43, 44];
+
+  assertStringifyEquals([
+      11, 21, 31, 41,
+      12, 22, 32, 42,
+      13, 23, 33, 43,
+      14, 24, 34, 44],
+      mat.transpose().m
+  );
+});
+
+addTest(function inverse() {
+  var mat = new Matrix44();
+  mat.multiply(new Matrix44().toTranslateOp(new Vec4(7, 11, 13)));
+  mat.multiply(new Matrix44().toScaleOp(new Vec4(2, 3, 5)));
+  mat.multiply(new Matrix44().toRotateXOp(1));
+  mat.multiply(new Matrix44().toRotateYOp(2));
+  mat.multiply(new Matrix44().toRotateZOp(3));
+  var inv = mat.getInverse();
+  mat.multiply(inv);
+  assertTrue(mat.equals(new Matrix44(), SLOP));
 });
 </script>
 </head>

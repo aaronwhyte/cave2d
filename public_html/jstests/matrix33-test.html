@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Matrix33 test</title>
+<script src="../js/strings.js"></script>
+<script src="../js/testing.js"></script>
+<script src="../js/matrix33.js"></script>
+<script src="../js/matrix44.js"></script>
+<script src="../js/vec4.js"></script>
+<script>
+
+addTest(function determinant() {
+  var mat = new Matrix33();
+  mat.multiply(new Matrix33().toTranslateXYOp(7, 11));
+  mat.multiply(new Matrix33().toScaleXYOp(2, 3));
+  mat.multiply(new Matrix33().toRotateOp(1));
+  assertEquals(6, mat.determinant());
+});
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>

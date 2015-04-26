@@ -8,10 +8,10 @@ function Matrix44() {
 }
 
 Matrix44.IDENTITY_ARRAY = [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1];
+  1, 0, 0, 0,
+  0, 1, 0, 0,
+  0, 0, 1, 0,
+  0, 0, 0, 1];
 
 Matrix44.tempArray = [
   0, 0, 0, 0,
@@ -153,6 +153,62 @@ Matrix44.prototype.equals = function(that, opt_slop) {
     if (Math.abs(this.m[i] - that.m[i]) > slop) return false;
   }
   return true;
+};
+
+Matrix44.prototype.getInverse = function(out) {
+  out = out || new Matrix44();
+  // Calculate the matrix of cofactors, the adugate matrix.
+  // Divide by the determinant as we go.
+  var oneOverDet = 1/this.determinant();
+  var cofactor = Matrix33.alloc();
+  for (var y = 0; y < 4; y++) {
+    for (var x = 0; x < 4; x++) {
+      // Transpose as we go, by swapping x and y coords.
+      out.setColRowVal(y, x,
+          oneOverDet *
+          ((x % 2) ? -1 : 1) *
+          ((y % 2) ? -1 : 1) *
+          this.getCofactor(x, y, cofactor).determinant());
+    }
+  }
+  cofactor.free();
+  return out;
+};
+
+Matrix44.prototype.transpose = function() {
+  for (var y = 0; y < 3; y++) {
+    for (var x = y + 1; x < 4; x++) {
+      var temp = this.getColRowVal(x, y);
+      this.setColRowVal(x, y, this.getColRowVal(y, x));
+      this.setColRowVal(y, x, temp);
+    }
+  }
+  return this;
+};
+
+Matrix44.prototype.determinant = function() {
+  var total = 0;
+  var row = 0;
+  var cofactor = Matrix33.alloc();
+  for (var col = 0; col < 4; col++) {
+    this.getCofactor(col, row, cofactor);
+    total +=
+        ((col % 2) ? -1 : 1) *
+        this.getColRowVal(col, row) *
+        cofactor.determinant();
+  }
+  cofactor.free();
+  return total;
+};
+
+Matrix44.prototype.getCofactor = function(col, row, mat33) {
+  mat33 = mat33 || new Matrix33();
+  for (var y = 0; y < 3; y++) {
+    for (var x = 0; x < 3; x++) {
+      mat33.setColRowVal(x, y, this.getColRowVal(x + (x < col ? 0 : 1), y + (y < row ? 0 : 1)));
+    }
+  }
+  return mat33;
 };
 
 Matrix44.prototype.toString = function() {
