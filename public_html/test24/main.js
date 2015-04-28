@@ -14,6 +14,8 @@ var stamps = {};
 var ZOOM = 20;
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
+var PATH_DURATION = 10;
+var lastPathRefreshTime = 0;
 
 var FLOOR_RAD = 11;
 
@@ -75,7 +77,7 @@ function initWorld() {
         b.rad = 0.25 + Math.random();
         b.mass = 4/3 * Math.PI * Math.pow(b.rad, 3);
         b.setVelXYAtTime(Math.random() - 0.5, Math.random() - 0.5, world.now);
-        b.pathDurationMax = CLOCKS_PER_FRAME * 1.01;
+        b.pathDurationMax = PATH_DURATION;
         world.addBody(b);
       }
     }
@@ -110,10 +112,13 @@ function clock() {
     world.now = endClock;
   }
 
-  for (var id in world.bodies) {
-    var b = world.bodies[id];
-    if (b && b.shape === Body.Shape.CIRCLE) {
-      b.invalidatePath();
+  if (lastPathRefreshTime + PATH_DURATION - CLOCKS_PER_FRAME <= world.now) {
+    lastPathRefreshTime = world.now;
+    for (var id in world.bodies) {
+      var b = world.bodies[id];
+      if (b && b.shape === Body.Shape.CIRCLE) {
+        b.invalidatePath();
+      }
     }
   }
 
