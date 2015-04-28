@@ -107,12 +107,12 @@ function drawScene() {
   var t = Date.now();
 
   // set view matrix
-  var edge = Math.min(canvas.width, canvas.height);
+  var edge = Math.min(canvas.width, canvas.height / (Math.sqrt(2)/2));
   viewMatrix.toIdentity();
 
   viewMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(
           edge / (ZOOM * canvas.width),
-          0.5 * Math.sqrt(2) * edge / (ZOOM * canvas.height),
+          Math.sqrt(2)/2 * edge / (ZOOM * canvas.height),
           0.5)));
 
   // Shear
@@ -120,7 +120,7 @@ function drawScene() {
   mat4.setColRowVal(2, 1, -1.1);
   viewMatrix.multiply(mat4);
 
-  viewMatrix.multiply(mat4.toRotateZOp(Math.PI / 4));
+  viewMatrix.multiply(mat4.toRotateZOp(Math.PI * t / 8000));
 
   renderer.setViewMatrix(viewMatrix);
 
