@@ -11,9 +11,9 @@ var modelColor = new Vec4();
 
 var stamps = {};
 
-var ZOOM = 10;
+var ZOOM = 19;
 var MS_PER_FRAME = 1000 / 60;
-var CLOCKS_PER_FRAME = 1000 / 60;
+var CLOCKS_PER_FRAME = 0.3;
 
 var world, resolver;
 
@@ -43,26 +43,32 @@ function initStamps() {
   stamps.cube = RigidModel.createCube().createModelStamp(renderer.gl);
 }
 
+var FLOOR_RAD = 6;
+
 function initWorld() {
   world = new World();
   resolver = new HitResolver();
   var v = new Vec2d();
-  for (var y = -3; y <= 3; y++) {
-    for (var x = -3 ; x <= 3; x++) {
+
+  for (var y = -FLOOR_RAD; y <= FLOOR_RAD; y++) {
+    for (var x = -FLOOR_RAD ; x <= FLOOR_RAD; x++) {
       var b = Body.alloc();
       v.setXY(x * 2, y * 2);
       b.setPosAtTime(v, 1);
-      b.mass = 1;
-      b.pathDurationMax = CLOCKS_PER_FRAME * 1.001;
+      b.group = 0;
+      b.pathDurationMax = Infinity;
       var rand = Math.random();
       // Stationary wall
-      if (rand < 1/3) {
+      if (Math.abs(y) == FLOOR_RAD || Math.abs(x) == FLOOR_RAD || Math.random() < 0.1) {
         b.shape = Body.Shape.RECT;
+        b.mass = Infinity;
         b.rectRad.setXY(1, 1);
         world.addBody(b);
-      } else if (rand < 2/3) {
+      } else if (Math.random() < 0.15) {
         b.shape = Body.Shape.CIRCLE;
-        b.rad = 1;
+        b.mass = 1;
+        b.rad = 0.7;
+        b.setVelXYAtTime(Math.random() - 0.5, Math.random() - 0.5, world.now);
         world.addBody(b);
       }
     }
@@ -88,10 +94,6 @@ function clock() {
       var b1 = world.getBodyByPathId(e.pathId1);
       if (b0 && b1) {
         resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-        var s0 = world.spirits[b0.spiritId];
-        if (s0) s0.onHit(world, b0, b1, e);
-        var s1 = world.spirits[b1.spiritId];
-        if (s1) s1.onHit(world, b1, b0, e);
       }
     }
     world.processNextEvent();
@@ -150,8 +152,8 @@ function drawScene() {
   renderer
       .setStamp(stamps.cube)
       .setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
-  for (var y = -3; y <= 3; y++) {
-    for (var x = -3 ; x <= 3; x++) {
+  for (var y = -FLOOR_RAD; y <= FLOOR_RAD; y++) {
+    for (var x = -FLOOR_RAD; x <= FLOOR_RAD; x++) {
       modelMatrix.toTranslateOp(vec4.setXYZ(x * 2, y * 2, 2));
       renderer.setModelMatrix(modelMatrix);
       renderer.drawStamp();
