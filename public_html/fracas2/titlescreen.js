@@ -13,7 +13,7 @@ function TitleScreen(main, canvas, renderer, audio) {
 
   this.loopCallback = this.loop.bind(this);
 
-  var glyphs = new Glyphs(new GlyphMaker(0.6, 10));
+  var glyphs = new Glyphs(new GlyphMaker(0.5, 3));
   glyphs.initStamps(this.renderer.gl);
   this.printer = new Printer(renderer, glyphs.stamps);
 
@@ -24,17 +24,19 @@ function TitleScreen(main, canvas, renderer, audio) {
   this.modelMatrix = new Matrix44();
   this.modelColor = new Vec4();
 
+  // to center text, shift by (length-1)/2 * next-char spacing (3)
   this.startMatrix = new Matrix44()
-      .multiply(this.mat4.toTranslateOp(this.vec4.setXYZ(-0.6, 0, 0)))
-      .multiply(this.mat4.toScaleOp(this.vec4.setXYZ(0.05, 0.05, 0.05)))
-      .multiply(this.mat4.toRotateXOp(Math.PI * 0.25))
+      .multiply(this.mat4.toTranslateOp(this.vec4.setXYZ(0, 0.5, 0)))
+      .multiply(this.mat4.toScaleOp(this.vec4.setXYZ(0.07, 0.07, 0.07)))
+      .multiply(this.mat4.toTranslateOp(this.vec4.setXYZ(-(9-1)/2 * 3, 0, 0)))
   ;
+
+// FRACAS II
+//     ^
 //      .multiply(this.mat4.toRotateXOp(0.1));
   this.nextCharMatrix = new Matrix44()
-      .multiply(this.mat4.toTranslateOp(this.vec4.setXYZ(3.1, 0, 0)));
+      .multiply(this.mat4.toTranslateOp(this.vec4.setXYZ(3.0, 0, 0)));
 }
-
-TitleScreen.ZOOM = 1;
 
 TitleScreen.VISIBILITY_PER_MS = 5 / 1000;
 
@@ -95,14 +97,18 @@ TitleScreen.prototype.draw = function() {
   // set view matrix
   var edge = Math.min(this.canvas.width, this.canvas.height);
   this.vec4.setXYZ(
-          edge / (TitleScreen.ZOOM * this.canvas.width) + Math.sin(t / 720) * 0.1,
-          edge / (TitleScreen.ZOOM * this.canvas.height) + Math.sin(t / 720) * 0.1,
-      Math.sin(t / 720) * 3);
-  this.viewMatrix.toScaleOp(this.vec4);
-//  this.viewMatrix.multiply(this.mat4.toRotateXOp(Math.sin(t / 720) * 0.5));
+          edge / this.canvas.width,
+          edge / this.canvas.height,
+          1);
+  this.viewMatrix.toScaleOp(this.vec4)
+      .multiply(this.mat4.toScaleOp(this.vec4.setXYZ(1, 1, 0.4)))
+      .multiply(this.mat4.toTranslateOp(this.vec4.setXYZ(0, 0, -0.1)))
+      .multiply(this.mat4.toRotateYOp(Math.sin(t / 500) * Math.PI / 2 * 0.1))
+      .multiply(this.mat4.toRotateXOp(-Math.PI * 0.2 * 0.75))
+  ;
 
   this.renderer.setViewMatrix(this.viewMatrix);
-  this.renderer.setColorVector(this.modelColor.setXYZ(0.1, 0.7, 0.3));
+  this.renderer.setColorVector(this.modelColor.setXYZ(0.1, 1, 0.3));
   this.printer.printLine(this.startMatrix, this.nextCharMatrix, 'FRACAS II');
 //  this.renderer.drawText("FRACAS 2", 0, 0);
 };
