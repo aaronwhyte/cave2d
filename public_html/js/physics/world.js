@@ -12,6 +12,7 @@
  * @param {Array} groupPairs An array of 2-element arrays, defining all the group pairs
  * that can collide with each other. The two IDs in a pair may be the same, to make
  * a group's members collide with each other.
+ * If falsey, this defaults to one group, "0", which collides with itself.
  *
  * @constructor
  */

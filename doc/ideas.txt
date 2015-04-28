@@ -107,3 +107,15 @@ Might only work with touch and mouse. Hard to do stuff like that on a trackpad, 
 
 I think the one-button tractor-beam is going to be the easiest, most intuitive, most portable thing, if I can get the
 forces right.
+
+2015-04-24
+Tactile, uniform
+
+Every screen is a pointer-sensitive level.
+Know how to map between screen and world coords all the time, with matrix and inverse matrix.
+A world is still effectively 2D, so letters become world objects.
+Multiple worlds coexist onscreen, with their own coord systems.
+This can help with an editor, and with button controls. I like the merger of title and level.
+And there's no reason the controls for title and play aren't the same.
+The Title can be level 0.
+The "Settings" shortcut is always a door to a spirit-world, or a mini-game.

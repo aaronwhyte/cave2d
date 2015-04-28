@@ -217,4 +217,5 @@ Glyphs.prototype.initStamps = function(gl) {
   g('+',
       -w, 0, w, 0,
       0, -w, 0, w);
+  return this.stamps;
 };

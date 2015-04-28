@@ -64,9 +64,9 @@ function drawScene() {
   viewMatrix.toScaleOp(vec4);
   viewMatrix.multiply(mat4.toRotateXOp(Math.sin(t / 720) * 0.1));
   viewMatrix.multiply(mat4.toRotateYOp(Math.sin(t / 650) * 0.1));
+  renderer.setViewMatrix(viewMatrix);
 
   // print text
-  renderer.setViewMatrix(viewMatrix);
   renderer.setColorVector(modelColor.setXYZ(0.1, 0.7, 0.3));
   printer.printLine(startMatrix, nextCharMatrix, "DONKEY BATS");
 

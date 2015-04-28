@@ -469,6 +469,56 @@ v Printer class
     x more glyphs: ()[]{}<>'"/\= etc
     x force to uppercase or add fake lowercase glyphs - smallcaps?
 
+Test 24: Pointer
+v Matrix44.inverse(mat44);
+- Create a world with things in it
+- Create WindowToClipspace matrix
+  - WindowToCanvas
+  - CanvasToClipspace
+- WindowToWorld
+  - inverse(WindowToClipspaceMatrix * inverse(ViewMatrix))
+    because ViewMatrix is WorldToClipspace, and we want Window->Clipspace->World
+  - recalc if either input changes. ViewMatrix changes a heckuvalot.
+- Draw cursor at the place where the user touches/clicks
+- Move one of those things around by touching the screen to make it head to that world location...
+  - or split the screen in half, and make touches on one side do one thing, and the other does the other?
+
+Test 25: Audio
+- World with things
+- SoundSystem
+- One-shot
+- Sustained sound
+- Bang objects into each other to hear their noises
+- Hold some objects to hear their sustained noises.
+
+Test 26: New Controls
+- Touch to engage friction, release to float
+- Frame-by-frame coord change dictates target velocity
+- Apply accel to try to reach target velocity
+- Max drive accel stat matters
+- Tile effects
+  - Surface traction matters: maxAccel = maxDriveAccel * surfaceTraction
+  - Surface drag also possible
+  - This make different floors interesting - stone vs ice.
+- Aiming mechanisms
+- Last drag dictates aim unit-vec
+- Aim-lock button for nonstop shooters?
+
+- World Render
+  - create a world
+  - draw w renderer
+    - wall
+    - floor
+    - balls
+    - iso transformation
+      - rot
+      - shear y by z
+
+- Pointer
+  - screen-to-world coord calc
+  - show touch pos in world
+  - select world object with t
+
 - Button class?
   - design the clickable button, oh joy
 
