@@ -13,7 +13,9 @@ var stamps = {};
 
 var ZOOM = 20;
 var MS_PER_FRAME = 1000 / 60;
-var CLOCKS_PER_FRAME = 1;
+var CLOCKS_PER_FRAME = 0.5;
+
+var FLOOR_RAD = 11;
 
 var world, resolver;
 
@@ -43,8 +45,6 @@ function initStamps() {
   stamps.cube = RigidModel.createCube().createModelStamp(renderer.gl);
 }
 
-var FLOOR_RAD = 11;
-
 function initWorld() {
   world = new World();
   resolver = new HitResolver();
@@ -59,15 +59,20 @@ function initWorld() {
       b.pathDurationMax = Infinity;
       var rand = Math.random();
       // Stationary wall
-      if (Math.abs(y) == FLOOR_RAD || Math.abs(x) == FLOOR_RAD || Math.random() < 0.15) {
+      if (Math.abs(y) == FLOOR_RAD || Math.abs(x) == FLOOR_RAD) {
         b.shape = Body.Shape.RECT;
         b.mass = Infinity;
         b.rectRad.setXY(1, 1);
         world.addBody(b);
+      } else if (Math.random() < 0.1) {
+        b.shape = Body.Shape.RECT;
+        b.mass = Infinity;
+        b.rectRad.setXY(0.5 + Math.random(), 0.5 + Math.random());
+        world.addBody(b);
       } else if (Math.random() < 0.15) {
         b.shape = Body.Shape.CIRCLE;
-        b.mass = 1;
-        b.rad = 0.7;
+        b.rad = 0.25 + Math.random();
+        b.mass = 4/3 * Math.PI * Math.pow(b.rad, 3);
         b.setVelXYAtTime(Math.random() - 0.5, Math.random() - 0.5, world.now);
         world.addBody(b);
       }
@@ -152,13 +157,10 @@ function drawScene() {
   renderer
       .setStamp(stamps.cube)
       .setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
-  for (var y = -FLOOR_RAD; y <= FLOOR_RAD; y++) {
-    for (var x = -FLOOR_RAD; x <= FLOOR_RAD; x++) {
-      modelMatrix.toTranslateOp(vec4.setXYZ(x * 2, y * 2, 2));
-      renderer.setModelMatrix(modelMatrix);
-      renderer.drawStamp();
-    }
-  }
+  modelMatrix.toTranslateOp(vec4.setXYZ(0, 0, 2))
+      .multiply(mat4.toScaleOp(vec4.setXYZ(2 * FLOOR_RAD + 1, 2 * FLOOR_RAD + 1, 1)));
+  renderer.setModelMatrix(modelMatrix);
+  renderer.drawStamp();
 
 }
 
