@@ -11,9 +11,9 @@ var modelColor = new Vec4();
 
 var stamps = {};
 
-var ZOOM = 19;
+var ZOOM = 20;
 var MS_PER_FRAME = 1000 / 60;
-var CLOCKS_PER_FRAME = 0.3;
+var CLOCKS_PER_FRAME = 1;
 
 var world, resolver;
 
@@ -43,7 +43,7 @@ function initStamps() {
   stamps.cube = RigidModel.createCube().createModelStamp(renderer.gl);
 }
 
-var FLOOR_RAD = 6;
+var FLOOR_RAD = 11;
 
 function initWorld() {
   world = new World();
@@ -59,7 +59,7 @@ function initWorld() {
       b.pathDurationMax = Infinity;
       var rand = Math.random();
       // Stationary wall
-      if (Math.abs(y) == FLOOR_RAD || Math.abs(x) == FLOOR_RAD || Math.random() < 0.1) {
+      if (Math.abs(y) == FLOOR_RAD || Math.abs(x) == FLOOR_RAD || Math.random() < 0.15) {
         b.shape = Body.Shape.RECT;
         b.mass = Infinity;
         b.rectRad.setXY(1, 1);
@@ -122,7 +122,7 @@ function drawScene() {
   mat4.setColRowVal(2, 1, -1.1);
   viewMatrix.multiply(mat4);
 
-  viewMatrix.multiply(mat4.toRotateZOp(Math.PI * t / 8000));
+  viewMatrix.multiply(mat4.toRotateZOp(Math.PI * t / 20000));
 
   renderer.setViewMatrix(viewMatrix);
 
