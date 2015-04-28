@@ -56,17 +56,18 @@ function initWorld() {
       v.setXY(x * 2, y * 2);
       b.setPosAtTime(v, 1);
       b.group = 0;
-      b.pathDurationMax = Infinity;
       var rand = Math.random();
       // Stationary wall
       if (Math.abs(y) == FLOOR_RAD || Math.abs(x) == FLOOR_RAD) {
         b.shape = Body.Shape.RECT;
         b.mass = Infinity;
+        b.pathDurationMax = Infinity;
         b.rectRad.setXY(1, 1);
         world.addBody(b);
       } else if (Math.random() < 0.1) {
         b.shape = Body.Shape.RECT;
         b.mass = Infinity;
+        b.pathDurationMax = Infinity;
         b.rectRad.setXY(0.5 + Math.random(), 0.5 + Math.random());
         world.addBody(b);
       } else if (Math.random() < 0.15) {
@@ -74,6 +75,7 @@ function initWorld() {
         b.rad = 0.25 + Math.random();
         b.mass = 4/3 * Math.PI * Math.pow(b.rad, 3);
         b.setVelXYAtTime(Math.random() - 0.5, Math.random() - 0.5, world.now);
+        b.pathDurationMax = CLOCKS_PER_FRAME * 1.01;
         world.addBody(b);
       }
     }
@@ -107,6 +109,14 @@ function clock() {
   if (!e || e.time > endClock) {
     world.now = endClock;
   }
+
+  for (var id in world.bodies) {
+    var b = world.bodies[id];
+    if (b && b.shape === Body.Shape.CIRCLE) {
+      b.invalidatePath();
+    }
+  }
+
 }
 
 function drawScene() {
