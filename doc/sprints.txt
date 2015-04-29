@@ -471,17 +471,13 @@ v Printer class
 
 Test 24: Pointer
 v Matrix44.inverse(mat44);
-- Create a world with things in it
-- Create WindowToClipspace matrix
-  - WindowToCanvas
-  - CanvasToClipspace
-- WindowToWorld
-  - inverse(WindowToClipspaceMatrix * inverse(ViewMatrix))
-    because ViewMatrix is WorldToClipspace, and we want Window->Clipspace->World
-  - recalc if either input changes. ViewMatrix changes a heckuvalot.
-- Draw cursor at the place where the user touches/clicks
-- Move one of those things around by touching the screen to make it head to that world location...
-  - or split the screen in half, and make touches on one side do one thing, and the other does the other?
+v Create a world with things in it
+v Create WindowToClipspace matrix
+x WindowToWorld
+v invert vector in two stages, because the combined screen-to-clip and clip-to-world is not invertable!
+x Draw cursor at the place where the user touches/clicks
+v MonoPointer - mouse/touch pollable single pointer support 
+v Highlight stuff near the pointer
 
 Test 25: Audio
 - World with things
