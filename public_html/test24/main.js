@@ -175,8 +175,9 @@ function drawScene() {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.RECT) {
       b.getPosAtTime(world.now, bodyPos);
-      if (Math.abs(pWorldVec4.v[0] - bodyPos.x) <= b.rectRad.x &&
-          Math.abs(pWorldVec4.v[1] - bodyPos.y) <= b.rectRad.y*1.5) {
+      if (pointer.down &&
+          Math.abs(pWorldVec4.v[0] - bodyPos.x) <= b.rectRad.x * 2 &&
+          Math.abs(pWorldVec4.v[1] - bodyPos.y) <= b.rectRad.y * 3) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
         renderer.setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
@@ -194,7 +195,8 @@ function drawScene() {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.CIRCLE) {
       b.getPosAtTime(world.now, bodyPos);
-      if (Vec2d.magnitude(pWorldVec4.v[0] - bodyPos.x, pWorldVec4.v[1] - bodyPos.y) <= b.rad*1.5) {
+      if (pointer.down &&
+          Vec2d.magnitude(pWorldVec4.v[0] - bodyPos.x, pWorldVec4.v[1] - bodyPos.y) <= b.rad * 3) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
         renderer.setColorVector(modelColor.setXYZ(0, 1, 0));

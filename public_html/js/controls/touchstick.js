@@ -73,7 +73,6 @@ TouchStick.prototype.onTouchStart = function(e) {
     if (this.startZoneFn(touch.pageX, touch.pageY)) {
       // Start tracking this one.
       this.touchId = touch.identifier;
-      console.log('touchId: ' + this.touchId);
       this.center.setXY(touch.pageX, touch.pageY);
       this.tip.setXY(touch.pageX, touch.pageY);
       break;
