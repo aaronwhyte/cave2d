@@ -7,23 +7,31 @@ var bodyPos = new Vec2d();
 
 var viewMatrix = new Matrix44();
 var modelMatrix = new Matrix44();
+var screenToClipMatrix = new Matrix44();
+var screenToWorldMatrix = new Matrix44();
 var modelColor = new Vec4();
 
 var stamps = {};
 
-var ZOOM = 20;
+var ZOOM = 15;
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
 var PATH_DURATION = 10;
 var lastPathRefreshTime = 0;
 
-var FLOOR_RAD = 11;
+var FLOOR_RAD = 7;
 
 var world, resolver;
+
+var pointer, pScreenVec4, pWorldVec4;
 
 function main() {
   canvas = document.querySelector('#canvas');
   new RendererLoader(canvas, 'vertex-shader.txt', 'fragment-shader.txt').load(onRendererLoaded);
+  pScreenVec4 = new Vec4();
+  pWorldVec4 = new Vec4();
+  pointer = new MonoPointer();
+  pointer.startListening();
 }
 
 function onRendererLoaded(r) {
@@ -72,9 +80,9 @@ function initWorld() {
         b.pathDurationMax = Infinity;
         b.rectRad.setXY(0.5 + Math.random(), 0.5 + Math.random());
         world.addBody(b);
-      } else if (Math.random() < 0.15) {
+      } else if (Math.random() < 0.2) {
         b.shape = Body.Shape.CIRCLE;
-        b.rad = 0.25 + Math.random();
+        b.rad = 1 - Math.random() * 0.5;
         b.mass = 4/3 * Math.PI * Math.pow(b.rad, 3);
         b.setVelXYAtTime(Math.random() - 0.5, Math.random() - 0.5, world.now);
         b.pathDurationMax = PATH_DURATION;
@@ -121,7 +129,6 @@ function clock() {
       }
     }
   }
-
 }
 
 function drawScene() {
@@ -146,14 +153,36 @@ function drawScene() {
 
   renderer.setViewMatrix(viewMatrix);
 
+
+  // Get world coords of pointer
+  pScreenVec4.setXYZ(pointer.pos.x, pointer.pos.y, 0);
+
+  screenToClipMatrix.toIdentity();
+  screenToClipMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(2/canvas.width, -2/canvas.height, 0)));
+  screenToClipMatrix.multiply(mat4.toTranslateOp(vec4.setXYZ(-canvas.width/2, -canvas.height/2, 0)));
+
+  pWorldVec4.set(pScreenVec4).transform(screenToClipMatrix);
+
+  viewMatrix.getInverse(mat4);
+  pWorldVec4.transform(mat4);
+
   // walls
+  // If I was serious, the static wall vertexes would be loaded into GL memory ahead of time.
   renderer
       .setStamp(stamps.cube)
       .setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
   for (var id in world.bodies) {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.RECT) {
-      drawBody(b);
+      b.getPosAtTime(world.now, bodyPos);
+      if (Math.abs(pWorldVec4.v[0] - bodyPos.x) <= b.rectRad.x &&
+          Math.abs(pWorldVec4.v[1] - bodyPos.y) <= b.rectRad.y*1.5) {
+        renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
+        drawBody(b);
+        renderer.setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
+      } else {
+        drawBody(b);
+      }
     }
   }
 
@@ -164,7 +193,14 @@ function drawScene() {
   for (var id in world.bodies) {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.CIRCLE) {
-      drawBody(b);
+      b.getPosAtTime(world.now, bodyPos);
+      if (Vec2d.magnitude(pWorldVec4.v[0] - bodyPos.x, pWorldVec4.v[1] - bodyPos.y) <= b.rad*1.5) {
+        renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
+        drawBody(b);
+        renderer.setColorVector(modelColor.setXYZ(0, 1, 0));
+      } else {
+        drawBody(b);
+      }
     }
   }
 

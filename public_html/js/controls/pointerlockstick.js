@@ -60,7 +60,6 @@ PointerLockStick.prototype.startListening = function() {
   this.canvas.addEventListener('click', this.clickListener);
   this.listening = true;
   return this;
-
 };
 
 PointerLockStick.prototype.stopListening = function() {
