@@ -24,6 +24,7 @@ var FLOOR_RAD = 7;
 var world, resolver;
 
 var pointer, pScreenVec4, pWorldVec4;
+var POINTER_RAD = 0.5;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -176,8 +177,8 @@ function drawScene() {
     if (b && b.shape === Body.Shape.RECT) {
       b.getPosAtTime(world.now, bodyPos);
       if (pointer.down &&
-          Math.abs(pWorldVec4.v[0] - bodyPos.x) <= b.rectRad.x * 2 &&
-          Math.abs(pWorldVec4.v[1] - bodyPos.y) <= b.rectRad.y * 3) {
+          Math.abs(pWorldVec4.v[0] - bodyPos.x) <= b.rectRad.x + POINTER_RAD &&
+          Math.abs(pWorldVec4.v[1] - bodyPos.y) <= b.rectRad.y + POINTER_RAD) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
         renderer.setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
@@ -196,7 +197,7 @@ function drawScene() {
     if (b && b.shape === Body.Shape.CIRCLE) {
       b.getPosAtTime(world.now, bodyPos);
       if (pointer.down &&
-          Vec2d.magnitude(pWorldVec4.v[0] - bodyPos.x, pWorldVec4.v[1] - bodyPos.y) <= b.rad * 3) {
+          Vec2d.magnitude(pWorldVec4.v[0] - bodyPos.x, pWorldVec4.v[1] - bodyPos.y) <= b.rad + POINTER_RAD) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
         renderer.setColorVector(modelColor.setXYZ(0, 1, 0));
@@ -206,14 +207,14 @@ function drawScene() {
     }
   }
 
-  // floor
-  renderer
-      .setStamp(stamps.cube)
-      .setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
-  modelMatrix.toTranslateOp(vec4.setXYZ(0, 0, 2))
-      .multiply(mat4.toScaleOp(vec4.setXYZ(2 * FLOOR_RAD + 1, 2 * FLOOR_RAD + 1, 1)));
-  renderer.setModelMatrix(modelMatrix);
-  renderer.drawStamp();
+//  // floor
+//  renderer
+//      .setStamp(stamps.cube)
+//      .setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
+//  modelMatrix.toTranslateOp(vec4.setXYZ(0, 0, 2))
+//      .multiply(mat4.toScaleOp(vec4.setXYZ(2 * FLOOR_RAD + 1, 2 * FLOOR_RAD + 1, 1)));
+//  renderer.setModelMatrix(modelMatrix);
+//  renderer.drawStamp();
 
 }
 
