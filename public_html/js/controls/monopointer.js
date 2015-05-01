@@ -32,7 +32,7 @@ function MonoPointer() {
 }
 
 // Weak - better if I could use "half an inch" or something.
-MonoPointer.TOUCH_Y_OFFSET = -50;
+MonoPointer.TOUCH_Y_OFFSET = -80;
 
 MonoPointer.prototype.startListening = function() {
   document.body.addEventListener('mousedown', this.mouseDownListener);
