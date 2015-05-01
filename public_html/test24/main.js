@@ -15,7 +15,7 @@ var stamps = {};
 
 var ZOOM = 15;
 var MS_PER_FRAME = 1000 / 60;
-var CLOCKS_PER_FRAME = 0.5;
+var CLOCKS_PER_FRAME = 0.1;
 var PATH_DURATION = 10;
 var lastPathRefreshTime = 0;
 
@@ -24,7 +24,8 @@ var FLOOR_RAD = 7;
 var world, resolver;
 
 var pointer, pScreenVec4, pWorldVec4;
-var POINTER_RAD = 0.5;
+var POINTER_RAD = 1/3;
+var POINTER_HEIGHT = 2.01;
 
 function main() {
   canvas = document.querySelector('#canvas');
@@ -54,6 +55,23 @@ function initStamps() {
       .sphereize(vec4.setXYZ(0, 0, 0), 1)
       .createModelStamp(renderer.gl);
   stamps.cube = RigidModel.createCube().createModelStamp(renderer.gl);
+
+  var canModel = RigidModel.createOctahedron()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .sphereize(vec4.setXYZ(0, 0, 0), 3);
+  for (var i = 0; i < canModel.vertexes.length; i++) {
+    var v = canModel.vertexes[i].position.v;
+    if (v[2] > 1) v[2] = 1;
+    if (v[2] < -1) v[2] = -1;
+    var mag = Vec2d.magnitude(v[0], v[1]);
+    if (mag > 1) {
+      v[0] = v[0] / mag;
+      v[1] = v[1] / mag;
+    }
+  }
+  stamps.can = canModel.createModelStamp(renderer.gl);
 }
 
 function initWorld() {
@@ -81,7 +99,7 @@ function initWorld() {
         b.pathDurationMax = Infinity;
         b.rectRad.setXY(0.5 + Math.random(), 0.5 + Math.random());
         world.addBody(b);
-      } else if (Math.random() < 0.2) {
+      } else if (Math.random() < 0.1) {
         b.shape = Body.Shape.CIRCLE;
         b.rad = 1 - Math.random() * 0.5;
         b.mass = 4/3 * Math.PI * Math.pow(b.rad, 3);
@@ -132,40 +150,29 @@ function clock() {
   }
 }
 
+function isPointing() {
+  return true;
+}
+
 function drawScene() {
   renderer.resize().clear();
   var t = Date.now();
+  setViewMatrix(t);
+  setPointerWorldVec();
 
-  // set view matrix
-  var edge = Math.min(canvas.width, canvas.height / (Math.sqrt(2)/2));
-  viewMatrix.toIdentity();
-
-  viewMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(
-          edge / (ZOOM * canvas.width),
-          Math.sqrt(2)/2 * edge / (ZOOM * canvas.height),
-          0.5)));
-
-  // Shear
-  mat4.toIdentity();
-  mat4.setColRowVal(2, 1, -1.1);
-  viewMatrix.multiply(mat4);
-
-  viewMatrix.multiply(mat4.toRotateZOp(Math.PI * t / 20000));
-
-  renderer.setViewMatrix(viewMatrix);
-
-
-  // Get world coords of pointer
-  pScreenVec4.setXYZ(pointer.pos.x, pointer.pos.y, 0);
-
-  screenToClipMatrix.toIdentity();
-  screenToClipMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(2/canvas.width, -2/canvas.height, 0)));
-  screenToClipMatrix.multiply(mat4.toTranslateOp(vec4.setXYZ(-canvas.width/2, -canvas.height/2, 0)));
-
-  pWorldVec4.set(pScreenVec4).transform(screenToClipMatrix);
-
-  viewMatrix.getInverse(mat4);
-  pWorldVec4.transform(mat4);
+  // draw pointer puck
+  if (isPointing()) {
+    renderer
+        .setStamp(stamps.can)
+        .setColorVector(modelColor.setXYZ(
+                0.5 + 0.25 * Math.sin(t / 60),
+                0.5 + 0.25 * Math.sin(2*Math.PI/3 + t / 60),
+                0.5 + 0.25 * Math.sin(4*Math.PI/3 + t / 60)));
+    modelMatrix.toTranslateOp(pWorldVec4);
+    modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(POINTER_RAD, POINTER_RAD, POINTER_HEIGHT*0.5)));
+    renderer.setModelMatrix(modelMatrix);
+    renderer.drawStamp();
+  }
 
   // walls
   // If I was serious, the static wall vertexes would be loaded into GL memory ahead of time.
@@ -176,7 +183,7 @@ function drawScene() {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.RECT) {
       b.getPosAtTime(world.now, bodyPos);
-      if (pointer.down &&
+      if (isPointing() &&
           Math.abs(pWorldVec4.v[0] - bodyPos.x) <= b.rectRad.x + POINTER_RAD &&
           Math.abs(pWorldVec4.v[1] - bodyPos.y) <= b.rectRad.y + POINTER_RAD) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
@@ -188,7 +195,7 @@ function drawScene() {
     }
   }
 
-  // spheres
+  // draw spheres
   renderer
       .setStamp(stamps.sphere)
       .setColorVector(modelColor.setXYZ(0, 1, 0));
@@ -196,7 +203,7 @@ function drawScene() {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.CIRCLE) {
       b.getPosAtTime(world.now, bodyPos);
-      if (pointer.down &&
+      if (isPointing() &&
           Vec2d.magnitude(pWorldVec4.v[0] - bodyPos.x, pWorldVec4.v[1] - bodyPos.y) <= b.rad + POINTER_RAD) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
@@ -206,16 +213,39 @@ function drawScene() {
       }
     }
   }
+}
 
-//  // floor
-//  renderer
-//      .setStamp(stamps.cube)
-//      .setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
-//  modelMatrix.toTranslateOp(vec4.setXYZ(0, 0, 2))
-//      .multiply(mat4.toScaleOp(vec4.setXYZ(2 * FLOOR_RAD + 1, 2 * FLOOR_RAD + 1, 1)));
-//  renderer.setModelMatrix(modelMatrix);
-//  renderer.drawStamp();
+function setViewMatrix(t) {
+  // set view matrix
+  var edge = Math.min(canvas.width, canvas.height / (Math.sqrt(2)/2));
+  viewMatrix.toIdentity();
 
+  viewMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(
+          edge / (ZOOM * canvas.width),
+          Math.sqrt(2)/2 * edge / (ZOOM * canvas.height),
+      0.5)));
+
+  // Shear
+  mat4.toIdentity();
+  mat4.setColRowVal(2, 1, -1.1);
+  viewMatrix.multiply(mat4);
+
+  // Slow spin
+  viewMatrix.multiply(mat4.toRotateZOp(Math.PI * t / 20000));
+  renderer.setViewMatrix(viewMatrix);
+}
+
+function setPointerWorldVec() {
+  pScreenVec4.setXYZ(pointer.pos.x, pointer.pos.y, 0);
+
+  screenToClipMatrix.toIdentity();
+  screenToClipMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(2 / canvas.width, -2 / canvas.height, 0)));
+  screenToClipMatrix.multiply(mat4.toTranslateOp(vec4.setXYZ(-canvas.width / 2, -canvas.height / 2, 0)));
+
+  pWorldVec4.set(pScreenVec4).transform(screenToClipMatrix);
+
+  viewMatrix.getInverse(mat4);
+  pWorldVec4.transform(mat4);
 }
 
 function drawBody(b) {
