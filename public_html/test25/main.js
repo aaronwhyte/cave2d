@@ -40,6 +40,18 @@ function main() {
   pointer.startListening();
   sound = new SoundFx(SoundFx.getAudioContext());
   sound.setListenerXYZ(0, 0, -2);
+
+  // on-event sound unlocker for iOS
+  document.body.addEventListener('mousedown', eventSound);
+  document.body.addEventListener('touchstart', eventSound);
+  document.body.addEventListener('keydown', eventSound);
+}
+
+function eventSound() {
+  var beepCount = 5;
+  for (var i = 0; i < beepCount; i++) {
+    sound.note(0, 0, 0, 0.5 / beepCount, 0.1, 100 + 2000 * Math.random(), 'sine');
+  }
 }
 
 function onRendererLoaded(r) {
