@@ -16,7 +16,7 @@ var stamps = {};
 
 var ZOOM = 15;
 var MS_PER_FRAME = 1000 / 60;
-var CLOCKS_PER_FRAME = 1;
+var CLOCKS_PER_FRAME = 0.5;
 var PATH_DURATION = Math.max(10, CLOCKS_PER_FRAME);
 var lastPathRefreshTime = 0;
 
@@ -39,6 +39,7 @@ function main() {
   pointer = new MonoPointer();
   pointer.startListening();
   sound = new SoundFx(SoundFx.getAudioContext());
+  sound.setListenerXYZ(0, 0, -2);
 }
 
 function onRendererLoaded(r) {
@@ -99,7 +100,7 @@ function initWorld() {
         b.pathDurationMax = Infinity;
         b.rectRad.setXY(1, 1);
         world.addBody(b);
-      } else if (Math.random() < 0.1) {
+      } else if (Math.random() < 0.05) {
         b.shape = Body.Shape.RECT;
         b.mass = Infinity;
         b.pathDurationMax = Infinity;
@@ -108,9 +109,9 @@ function initWorld() {
       } else if (Math.random() < 0.1 && circles < MAX_CIRCLES) {
         circles++;
         b.shape = Body.Shape.CIRCLE;
-        b.rad = 1 - Math.random() * 0.5;
+        b.rad = 0.3 + (circles / MAX_CIRCLES) * 0.7;
         b.mass = 4/3 * Math.PI * Math.pow(b.rad, 3);
-        b.setVelXYAtTime(Math.random() - 0.5, Math.random() - 0.5, world.now);
+        b.setVelAtTime(new Vec2d(0, 0.4).rot(Math.random() * 2 * Math.PI), world.now);
         b.pathDurationMax = PATH_DURATION;
         world.addBody(b);
       }
@@ -142,8 +143,8 @@ function clock() {
         strikeVec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
         var mag = strikeVec.magnitude();
 
-        bonk(b0, mag + 0.5);
-        bonk(b1, mag + 0.5);
+        bonk(b0, mag + 0.1);
+        bonk(b1, mag + 0.1);
       }
     }
     world.processNextEvent();
@@ -165,30 +166,30 @@ function clock() {
 }
 
 function bonk(b, mag) {
-  var vol = mag * 0.5;
+  var vol = mag;
   b.getPosAtTime(world.now, bodyPos);
   vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
   vec4.transform(viewMatrix);
   if (b.shape == Body.Shape.RECT) {
-    var mass = 1 * b.rectRad.x * b.rectRad.y;
-    for (var i = 0; i < 6; i++) {
-      var freq = (0.5 * (Math.random() + 0.5)) * 4000/mass;
-      var dur = 20 /(freq + 500);
-      sound.sound(vec4.v[0], vec4.v[1], vec4.v[2], vol, 0, 0, dur, freq, freq, 'sine');
-    }
+    var mass = b.rectRad.x * b.rectRad.y;
+    vol *= mass*0.2;
+    var freq = (400/mass) * (1 + 0.02*(Math.random() - 0.5));
+    var dur = 0.05*mag*mass;
+    var freq2 = freq * (1 - 0.03 *(Math.random()));
+    sound.sound(vec4.v[0], vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'square');
   } else {
     var mass = 3 * Math.PI * Math.pow(b.rad, 3);
-    for (var i = 0; i < 6; i++) {
-      var freq = 200 + (0.1 * (Math.random() + 0.5)) * 4000/mass;
-      var dur = 30 /(freq + 500);
-      sound.sound(vec4.v[0], vec4.v[1], vec4.v[2], vol, 0, 0, dur, freq, freq, 'sine');
-    }
+    vol *= mass;
+    var freq = 200 + (0.5 * (Math.random() + 0.5)) * 1000/mass;
+    var freq2 = freq * (1.001 + mag*mass*(0.5 + Math.random() * 0.5));
+    var dur = 0.05 + mass*mag*0.015;
+    sound.sound(vec4.v[0], vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
   }
 
 }
 
 function isPointing() {
-  return true;
+  return false;
 }
 
 function drawScene() {
@@ -215,7 +216,7 @@ function drawScene() {
   // If I was serious, the static wall vertexes would be loaded into GL memory ahead of time.
   renderer
       .setStamp(stamps.cube)
-      .setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
+      .setColorVector(modelColor.setXYZ(0.5, 0.5, 0.4));
   for (var id in world.bodies) {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.RECT) {
@@ -225,7 +226,7 @@ function drawScene() {
           Math.abs(pWorldVec4.v[1] - bodyPos.y) <= b.rectRad.y + POINTER_RAD) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
-        renderer.setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
+        renderer.setColorVector(modelColor.setXYZ(0.5, 0.5, 0.4));
       } else {
         drawBody(b);
       }
@@ -235,7 +236,7 @@ function drawScene() {
   // draw spheres
   renderer
       .setStamp(stamps.sphere)
-      .setColorVector(modelColor.setXYZ(0, 1, 0));
+      .setColorVector(modelColor.setXYZ(0, 1, 1));
   for (var id in world.bodies) {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.CIRCLE) {
@@ -244,7 +245,7 @@ function drawScene() {
           Vec2d.magnitude(pWorldVec4.v[0] - bodyPos.x, pWorldVec4.v[1] - bodyPos.y) <= b.rad + POINTER_RAD) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
-        renderer.setColorVector(modelColor.setXYZ(0, 1, 0));
+        renderer.setColorVector(modelColor.setXYZ(0, 1, 1));
       } else {
         drawBody(b);
       }

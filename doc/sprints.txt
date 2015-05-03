@@ -470,21 +470,22 @@ v Printer class
     x force to uppercase or add fake lowercase glyphs - smallcaps?
 
 Test 24: Pointer
+done 2015-04-28
 v Matrix44.inverse(mat44);
 v Create a world with things in it
 v Create WindowToClipspace matrix
 x WindowToWorld
 v invert vector in two stages, because the combined screen-to-clip and clip-to-world is not invertable!
 x Draw cursor at the place where the user touches/clicks
-v MonoPointer - mouse/touch pollable single pointer support 
+v MonoPointer - mouse/touch pollable single pointer support
 v Highlight stuff near the pointer
 
 Test 25: Audio
-- World with things
-- SoundSystem
-- One-shot
+v World with things
+v SoundSystem
+v One-shot
+v Bang objects into each other to hear their noises
 - Sustained sound
-- Bang objects into each other to hear their noises
 - Hold some objects to hear their sustained noises.
 
 Test 26: New Controls
