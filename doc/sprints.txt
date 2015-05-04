@@ -480,15 +480,22 @@ x Draw cursor at the place where the user touches/clicks
 v MonoPointer - mouse/touch pollable single pointer support
 v Highlight stuff near the pointer
 
-Test 25: Audio
+Test 25: Basic Sounds
+done 2015-05-03
 v World with things
 v SoundSystem
 v One-shot
 v Bang objects into each other to hear their noises
+v iOS sound-in-event Web Audio unlock
+
+Soundboard app
+
+
+More sounds later...
 - Sustained sound
 - Hold some objects to hear their sustained noises.
 
-Test 26: New Controls
+New Controls
 - Touch to engage friction, release to float
 - Frame-by-frame coord change dictates target velocity
 - Apply accel to try to reach target velocity
@@ -501,20 +508,6 @@ Test 26: New Controls
 - Last drag dictates aim unit-vec
 - Aim-lock button for nonstop shooters?
 
-- World Render
-  - create a world
-  - draw w renderer
-    - wall
-    - floor
-    - balls
-    - iso transformation
-      - rot
-      - shear y by z
-
-- Pointer
-  - screen-to-world coord calc
-  - show touch pos in world
-  - select world object with t
 
 - Button class?
   - design the clickable button, oh joy
