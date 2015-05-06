@@ -67,13 +67,11 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
   var t0 = c.currentTime + delay;
   var t1 = t0 + attack + sustain + decay;
   var gain = this.createGain();
-  gain.gain.value = 0;
   if (attack) {
-    gain.gain.setValueAtTime(0, t0);
+    gain.gain.setValueAtTime(0.001, t0);
     gain.gain.exponentialRampToValueAtTime(vol, t0 + attack);
-  } else {
-    gain.gain.setValueAtTime(vol, t0);
   }
+  gain.gain.setValueAtTime(vol, t0 + attack);
   if (sustain) {
     gain.gain.setValueAtTime(vol, t0 + attack + sustain);
   }
@@ -83,7 +81,7 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
 
   var osc = c.createOscillator();
   osc.frequency.setValueAtTime(freq1, t0);
-  osc.frequency.exponentialRampToValueAtTime(freq2, t0 + attack + sustain  + decay);
+  osc.frequency.exponentialRampToValueAtTime(freq2, t0 + attack + sustain + decay);
   osc.type = type;
   if (osc.start) {
     osc.start(t0);
