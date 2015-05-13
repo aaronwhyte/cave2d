@@ -23,8 +23,8 @@ var FLOOR_RAD = 7;
 
 var world, resolver;
 
-var pointer, pScreenVec4, pWorldVec4;
-var POINTER_RAD = 1/3;
+var pointer, pScreenVec4, pWorldVec4, pWorldVec2;
+var POINTER_RAD = 0.5;
 var POINTER_HEIGHT = 2.01;
 
 function main() {
@@ -32,6 +32,7 @@ function main() {
   new RendererLoader(canvas, 'vertex-shader.txt', 'fragment-shader.txt').load(onRendererLoaded);
   pScreenVec4 = new Vec4();
   pWorldVec4 = new Vec4();
+  pWorldVec2 = new Vec2d();
   pointer = new MonoPointer();
   pointer.startListening();
 }
@@ -183,9 +184,7 @@ function drawScene() {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.RECT) {
       b.getPosAtTime(world.now, bodyPos);
-      if (isPointing() &&
-          Math.abs(pWorldVec4.v[0] - bodyPos.x) <= b.rectRad.x + POINTER_RAD &&
-          Math.abs(pWorldVec4.v[1] - bodyPos.y) <= b.rectRad.y + POINTER_RAD) {
+      if (isPointing() && OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, pWorldVec2, POINTER_RAD)) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
         renderer.setColorVector(modelColor.setXYZ(0.7, 0.7, 0.7));
@@ -203,8 +202,7 @@ function drawScene() {
     var b = world.bodies[id];
     if (b && b.shape === Body.Shape.CIRCLE) {
       b.getPosAtTime(world.now, bodyPos);
-      if (isPointing() &&
-          Vec2d.magnitude(pWorldVec4.v[0] - bodyPos.x, pWorldVec4.v[1] - bodyPos.y) <= b.rad + POINTER_RAD) {
+      if (isPointing() && OverlapDetector.isCircleOverlappingCircle(bodyPos, b.rad, pWorldVec2, POINTER_RAD)) {
         renderer.setColorVector(modelColor.setXYZ(1, 0, 0));
         drawBody(b);
         renderer.setColorVector(modelColor.setXYZ(0, 1, 0));
@@ -246,6 +244,7 @@ function setPointerWorldVec() {
 
   viewMatrix.getInverse(mat4);
   pWorldVec4.transform(mat4);
+  pWorldVec2.setXY(pWorldVec4.v[0], pWorldVec4.v[1]);
 }
 
 function drawBody(b) {
