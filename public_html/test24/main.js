@@ -170,7 +170,7 @@ function drawScene() {
                 0.5 + 0.25 * Math.sin(2*Math.PI/3 + t / 60),
                 0.5 + 0.25 * Math.sin(4*Math.PI/3 + t / 60)));
     modelMatrix.toTranslateOp(pWorldVec4);
-    modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(POINTER_RAD, POINTER_RAD, POINTER_HEIGHT*0.5)));
+    modelMatrix.multiply(mat4.toScaleOpXYZ(POINTER_RAD, POINTER_RAD, POINTER_HEIGHT*0.5));
     renderer.setModelMatrix(modelMatrix);
     renderer.drawStamp();
   }
@@ -218,10 +218,10 @@ function setViewMatrix(t) {
   var edge = Math.min(canvas.width, canvas.height / (Math.sqrt(2)/2));
   viewMatrix.toIdentity();
 
-  viewMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(
+  viewMatrix.multiply(mat4.toScaleOpXYZ(
           edge / (ZOOM * canvas.width),
           Math.sqrt(2)/2 * edge / (ZOOM * canvas.height),
-      0.5)));
+      0.5));
 
   // Shear
   mat4.toIdentity();
@@ -236,9 +236,8 @@ function setViewMatrix(t) {
 function setPointerWorldVec() {
   pScreenVec4.setXYZ(pointer.pos.x, pointer.pos.y, 0);
 
-  screenToClipMatrix.toIdentity();
-  screenToClipMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(2 / canvas.width, -2 / canvas.height, 0)));
-  screenToClipMatrix.multiply(mat4.toTranslateOp(vec4.setXYZ(-canvas.width / 2, -canvas.height / 2, 0)));
+  screenToClipMatrix.toScaleOpXYZ(2 / canvas.width, -2 / canvas.height, 0);
+  screenToClipMatrix.multiply(mat4.toTranslateOpXYZ(-canvas.width / 2, -canvas.height / 2, 0));
 
   pWorldVec4.set(pScreenVec4).transform(screenToClipMatrix);
 
@@ -250,11 +249,11 @@ function setPointerWorldVec() {
 function drawBody(b) {
   b.getPosAtTime(world.now, bodyPos);
   if (b.shape == Body.Shape.RECT) {
-    modelMatrix.toTranslateOp(vec4.setXYZ(bodyPos.x, bodyPos.y, 0));
-    modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(b.rectRad.x, b.rectRad.y, 1)));
+    modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
+    modelMatrix.multiply(mat4.toScaleOpXYZ(b.rectRad.x, b.rectRad.y, 1));
   } else {
-    modelMatrix.toTranslateOp(vec4.setXYZ(bodyPos.x, bodyPos.y, 0));
-    modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(b.rad, b.rad, b.rad)));
+    modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
+    modelMatrix.multiply(mat4.toScaleOpXYZ(b.rad, b.rad, b.rad));
   }
   renderer.setModelMatrix(modelMatrix);
   renderer.drawStamp();

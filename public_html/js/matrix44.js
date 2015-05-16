@@ -55,11 +55,27 @@ Matrix44.prototype.toTranslateOp = function(vec4) {
   return this;
 };
 
+Matrix44.prototype.toTranslateOpXYZ = function(x, y, z) {
+  this.toIdentity();
+  this.m[3] = x;
+  this.m[7] = y;
+  this.m[11] = z;
+  return this;
+};
+
 Matrix44.prototype.toScaleOp = function(vec4) {
   this.toIdentity();
   for (var xy = 0; xy < 3; xy++) {
     this.m[5 * xy] = vec4.v[xy];
   }
+  return this;
+};
+
+Matrix44.prototype.toScaleOpXYZ = function(x, y, z) {
+  this.toIdentity();
+  this.m[0] = x;
+  this.m[5] = y;
+  this.m[10] = z;
   return this;
 };
 
