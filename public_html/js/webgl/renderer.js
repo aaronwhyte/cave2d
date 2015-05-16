@@ -11,9 +11,6 @@ function Renderer(canvas, gl, program) {
   this.canvas = canvas;
   this.gl = gl;
   this.program = program;
-  this.viewScale = [1, 1, 1];
-  this.viewTranslation = [0, 0, 0];
-
   this.initAttributesAndUniforms();
 }
 
@@ -59,23 +56,6 @@ Renderer.prototype.clear = function() {
   return this;
 };
 
-//Renderer.prototype.setViewport = function(cameraPos, zoomFactor) {
-//  // Center the view on the cameraPos.
-//  this.viewTranslation[0] = -cameraPos.x;
-//  this.viewTranslation[1] = -cameraPos.y;
-//  this.viewTranslation[2] = 0;
-//  this.gl.uniform3fv(this.uViewTranslation, this.viewTranslation);
-//
-//  // Scale the view to using the average of the two edge lengths,
-//  // to avoid extreme zooming for narrow/tall canvases.
-//  var avgLength = (this.canvas.width + this.canvas.height) / 2;
-//  this.viewScale[0] = this.zoom * avgLength * zoomFactor/ this.canvas.width;
-//  this.viewScale[1] = this.zoom * avgLength * zoomFactor/ this.canvas.height;
-//  this.viewScale[2] = 1;
-//  this.gl.uniform3fv(this.uViewScale, this.viewScale);
-//  return this;
-//};
-
 /**
  * @param {Matrix44} viewMatrix
  * @return {Renderer}
@@ -111,8 +91,10 @@ Renderer.prototype.setColorVector = function(colorVector) {
  * @return {Renderer}
  */
 Renderer.prototype.setStamp = function(stamp) {
-  this.modelStamp = stamp;
-  stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor);
+  if (this.modelStamp !== stamp) {
+    this.modelStamp = stamp;
+    stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor);
+  }
   return this;
 };
 
