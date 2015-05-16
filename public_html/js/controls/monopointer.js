@@ -1,5 +1,5 @@
 /**
- * Dumb pollable single pointer, blending mouse and touch on a canvas. Maybe arrow keys too?
+ * Dumb pollable multiply pointer, blending mouse and touch on a canvas.
  * @constructor
  */
 function MonoPointer() {
@@ -32,7 +32,7 @@ function MonoPointer() {
 }
 
 // Weak - better if I could use "half an inch" or something.
-MonoPointer.TOUCH_Y_OFFSET = -80;
+MonoPointer.TOUCH_Y_OFFSET = -60;
 
 MonoPointer.prototype.startListening = function() {
   document.body.addEventListener('mousedown', this.mouseDownListener);
@@ -42,7 +42,6 @@ MonoPointer.prototype.startListening = function() {
   document.body.addEventListener('touchmove', this.touchMoveListener);
   document.body.addEventListener('touchend', this.touchEndListener);
   document.body.addEventListener('touchcancel', this.touchEndListener);
-
   this.listening = true;
   return this;
 };

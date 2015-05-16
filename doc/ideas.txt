@@ -101,7 +101,7 @@ charge, which fades, and gets consumed as activation for tools, and builds kick 
 2014-12-22
 Control ideas
 
-Tap the fire area to fire in the direction of travel, but drag to activate aimable special, like tractor, mace,
+Tap the fire button to fire in the direction of travel, but drag to activate aimable special, like tractor, mace,
 or aiming fire/ice/earth. Mostly I like tractor though, because you need to interact with the rest of the world more.
 Might only work with touch and mouse. Hard to do stuff like that on a trackpad, I think.
 
@@ -109,7 +109,7 @@ I think the one-button tractor-beam is going to be the easiest, most intuitive, 
 forces right.
 
 2015-04-24
-Tactile, uniform
+Tactile, uniform level+menu system.
 
 Every screen is a pointer-sensitive level.
 Know how to map between screen and world coords all the time, with matrix and inverse matrix.
@@ -119,3 +119,11 @@ This can help with an editor, and with button controls. I like the merger of tit
 And there's no reason the controls for title and play aren't the same.
 The Title can be level 0.
 The "Settings" shortcut is always a door to a spirit-world, or a mini-game.
+
+2015-05-06
+To stretch short sounds, use a delay node per sound, and change the amount of delay over time.
+A delay node can have a value from 0 to 3 minutes (180), so a one-second sound can be stretched 180x
+For more continuous sounds, decrease oscillator frequencies, since there's not enough delay runway.
+
+Use suspend and resume when pausing? Or just drop the level's gain to 0 and stop animating, letting
+the existing sounds peter out.

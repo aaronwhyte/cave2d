@@ -32,3 +32,11 @@ Spirit.prototype.onTimeout = function(world, timeout) {
  */
 Spirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
 };
+
+/**
+ * Optional function called on every frame draw.
+ * @param {World} world
+ * @param {Renderer} renderer
+ */
+Spirit.prototype.onDraw = function(world, renderer) {
+};

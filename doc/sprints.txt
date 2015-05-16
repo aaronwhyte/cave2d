@@ -490,17 +490,24 @@ v iOS sound-in-event Web Audio unlock
 
 Test 26: Sound Board
 - Button
-  - It's a world object
-  - Therefore it has a body and a shape and probably a spirit
-  v And since pointers teleport, I need overlap tests
+  v Since pointers teleport, I need overlap tests
     v circle vs circle
     v circle vs rect
     v rect vs rect
-- Buttons make noises
-  - Make each word-button into a model
-  - Position models as rects in the world, with spirits.
-  - Make spirits listen for down
-- Dragable controls, like volume, speed, looping, play/pause
+  v MultiPointer, which tracks old and new pointer-down positions (no hover. touch-centric)
+    v setViewMatrix
+    v getWorldPointers
+    v getOldWorldPointers
+  - ButtonSpirit
+    v has rectangular body
+    v has reference to old and new pointer world coords
+    v helps draw itself
+      v has a ModelStamp
+      v and a draw() method
+    - makes a noise
+  v draw() cares about spirit.draw()
+  v Draw the button using the model.
+- Dragable controls, like volume, speed, looping, play/pause ?
 - maaaaybe a realtime graphical analyzer?
 
 
