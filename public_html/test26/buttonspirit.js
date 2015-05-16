@@ -13,7 +13,7 @@ function ButtonSpirit() {
 ButtonSpirit.prototype = new Spirit();
 ButtonSpirit.prototype.constructor = ButtonSpirit;
 
-ButtonSpirit.POINTER_RADIUS = 0.5;
+ButtonSpirit.POINTER_RADIUS = 1;
 
 ButtonSpirit.prototype.setMultiPointer = function (multiPointer) {
   this.multiPointer = multiPointer;
@@ -23,7 +23,7 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
   var t = 0.5 * world.now + 2 * Math.PI * this.rand;
   var b = world.bodies[this.bodyId];
   b.getPosAtTime(world.now, bodyPos);
-  this.color.setXYZ(0.5, 0.5, 0.5);
+  this.color.setXYZ(0.5, 0.7, 0.7);
   if (this.multiPointer) {
     for (var key in this.multiPointer.pos) {
       var pointerPos = this.multiPointer.pos[key];
@@ -33,7 +33,7 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
                 0.5 + 0.25 * Math.sin(2 * Math.PI / 3 + t),
                 0.5 + 0.25 * Math.sin(4 * Math.PI / 3 + t));
         var mass = b.rectRad.x * b.rectRad.y;
-        sound.sound(0, 0, 0, 0.25, 0.01, 0.2, 0.01, 500/mass, 500/mass + 20*Math.random(), 'sine');
+        sound.sound(0, 0, 0, 0.6, 0.01, 5/60, 1/60, 500/mass, 500/mass + 20*Math.random(), 'square');
         break;
       }
     }

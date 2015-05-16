@@ -11,7 +11,7 @@ var modelColor = new Vec4();
 
 var stamps = {};
 
-var ZOOM = 17;
+var ZOOM = 10;
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
 var PATH_DURATION = CLOCKS_PER_FRAME * 2;
@@ -187,8 +187,8 @@ function bonk(b0, b1, mag) {
   vec4.transform(viewMatrix);
   if (b0.shape == Body.Shape.RECT) {
     mass = b0.rectRad.x * b0.rectRad.y;
-    vol = mag * 0.5;
-    dur = 1.2 * mass;
+    vol = mag;
+    dur = 0.1 * mass;
     freq = 300 / mass;
     freq2 = freq - 2 * Math.random();
     sound.sound(vec4.v[0], vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
