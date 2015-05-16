@@ -40,7 +40,7 @@ function MultiPointer(canvas, viewMatrix) {
 MultiPointer.MOUSE_ID = 'mouse';
 
 // Weak - better if I could use "half an inch" or something.
-MultiPointer.TOUCH_Y_OFFSET = -60;
+MultiPointer.TOUCH_Y_OFFSET = 0;
 
 MultiPointer.prototype.startListening = function() {
   document.body.addEventListener('mousedown', this.mouseDownListener);
