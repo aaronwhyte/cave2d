@@ -37,10 +37,13 @@ function main() {
   document.body.addEventListener('touchstart', iosUnlock);
 }
 
+var iosUnlocked = false;
+
 function iosUnlock() {
-  sound.note(0, 0, 0, 0.1, 0.1, 300);
-  document.body.removeEventListener('mousedown', iosUnlock);
-  document.body.removeEventListener('touchstart', iosUnlock);
+  if (!iosUnlocked) {
+    sound.sound(0, 0, 0, 0.1, 0.01, 0.2, 0.01, 300, 300 + 20 * Math.random(), 'sine');
+    iosUnlocked = true;
+  }
 }
 
 function onRendererLoaded(r) {

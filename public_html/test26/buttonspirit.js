@@ -34,8 +34,8 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
         vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
         vec4.transform(renderer.getViewMatrix());
         var freq = 500/mass;
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.6, 0.01, 4/60, 30/60, freq, freq + 20*Math.random(), 'sin');
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.5, 0.01, 4/60, 30/60, freq*2, freq*2 + 20*Math.random(), 'sin');
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.6, 0.01, 4/60, 30/60, freq, freq + 20*Math.random(), 'sine');
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.5, 0.01, 4/60, 30/60, freq*2, freq*2 + 20*Math.random(), 'sine');
         this.lastSoundMs = Date.now();
         this.soundLength = (0.01 + 4/60 + 30/60) * 1000;
         break;
