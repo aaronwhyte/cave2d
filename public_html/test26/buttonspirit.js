@@ -33,17 +33,18 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
           && !(oldPointerPos && OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, oldPointerPos, ButtonSpirit.POINTER_RADIUS))) {
         vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
         vec4.transform(renderer.getViewMatrix());
-        var freq = 500/mass;
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.6, 0.01, 4/60, 30/60, freq, freq + 20*Math.random(), 'sine');
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.5, 0.01, 4/60, 30/60, freq*2, freq*2 + 20*Math.random(), 'sine');
+        var freq = 200/(mass);
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.4, 0, 4/60, 30/60, freq, freq + 10*Math.random(), 'square');
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.3, 0, 4/60, 30/60, freq/2, freq/2 + 10*Math.random(), 'sine');
         this.lastSoundMs = Date.now();
         this.soundLength = (0.01 + 4/60 + 30/60) * 1000;
         break;
       }
     }
   }
+  var life = 0;
   if (Date.now() - this.lastSoundMs < this.soundLength) {
-    var life = 1 - (Date.now() - this.lastSoundMs) / this.soundLength;
+    life = 1 - (Date.now() - this.lastSoundMs) / this.soundLength;
     this.color.setXYZ(
             0.5 + life * 0.5 * Math.sin(2 * Math.PI * this.rand),
             0.5 + life * 0.5 * Math.sin(2 * Math.PI * this.rand + 2*Math.PI/3),
@@ -54,8 +55,8 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
   renderer
       .setStamp(stamps.cube)
       .setColorVector(this.color);
-  modelMatrix.toTranslateOp(vec4.setXYZ(bodyPos.x, bodyPos.y, 0));
-  modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(b.rectRad.x, b.rectRad.y, 1)));
+  modelMatrix.toTranslateOp(vec4.setXYZ(bodyPos.x, bodyPos.y, -life/2));
+  modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(b.rectRad.x, b.rectRad.y, 1+life/2)));
   renderer.setModelMatrix(modelMatrix);
   renderer.drawStamp();
 };

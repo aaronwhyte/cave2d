@@ -11,7 +11,7 @@ var modelColor = new Vec4();
 
 var stamps = {};
 
-var ZOOM = 10;
+var ZOOM = 12;
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
 var PATH_DURATION = CLOCKS_PER_FRAME * 2;
@@ -108,12 +108,12 @@ function initWorld() {
         spirit = new WallSpirit();
         spirit.bodyId = world.addBody(b);
         world.addSpirit(spirit);
-      } else if (Math.random() < 0.07) {
+      } else if (Math.random() < 0.1) {
         // Button
         b.shape = Body.Shape.RECT;
         b.mass = Infinity;
         b.pathDurationMax = Infinity;
-        b.rectRad.setXY(0.5 + Math.random(), 0.5 + Math.random());
+        b.rectRad.setXY(0.3 + Math.random()*0.7, 0.3 + Math.random()*0.7);
         spirit = new ButtonSpirit();
         spirit.bodyId = world.addBody(b);
         spirit.setMultiPointer(multiPointer);
