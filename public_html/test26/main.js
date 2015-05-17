@@ -28,7 +28,7 @@ function main() {
   canvas = document.querySelector('#canvas');
   new RendererLoader(canvas, 'vertex-shader.txt', 'fragment-shader.txt').load(onRendererLoaded);
   sound = new SoundFx(SoundFx.getAudioContext());
-  sound.setListenerXYZ(0, 0, -2);
+  sound.setListenerXYZ(0, 0, -0.3);
   multiPointer = new MultiPointer(canvas, viewMatrix);
   multiPointer.startListening();
 

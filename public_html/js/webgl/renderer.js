@@ -61,8 +61,16 @@ Renderer.prototype.clear = function() {
  * @return {Renderer}
  */
 Renderer.prototype.setViewMatrix = function(viewMatrix) {
+  this.viewMatrix = viewMatrix;
   this.gl.uniformMatrix4fv(this.uViewMatrix, this.gl.FALSE, viewMatrix.m);
   return this;
+};
+
+/**
+ * @return {Matrix44}
+ */
+Renderer.prototype.getViewMatrix = function() {
+  return this.viewMatrix;
 };
 
 /**

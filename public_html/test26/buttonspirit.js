@@ -9,6 +9,8 @@ function ButtonSpirit() {
   this.multiPointer = null;
   this.color = new Vec4();
   this.rand = Math.random();
+  this.lastSoundMs = 0;
+  this.soundLength = 1;
 }
 ButtonSpirit.prototype = new Spirit();
 ButtonSpirit.prototype.constructor = ButtonSpirit;
@@ -20,23 +22,34 @@ ButtonSpirit.prototype.setMultiPointer = function (multiPointer) {
 };
 
 ButtonSpirit.prototype.onDraw = function(world, renderer) {
-  var t = 0.5 * world.now + 2 * Math.PI * this.rand;
   var b = world.bodies[this.bodyId];
+  var mass = b.rectRad.x * b.rectRad.y;
   b.getPosAtTime(world.now, bodyPos);
-  this.color.setXYZ(0.5, 0.7, 0.7);
   if (this.multiPointer) {
     for (var key in this.multiPointer.pos) {
+      var oldPointerPos = this.multiPointer.oldPos[key];
       var pointerPos = this.multiPointer.pos[key];
-      if (OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, pointerPos, ButtonSpirit.POINTER_RADIUS)) {
-        this.color.setXYZ(
-                0.5 + 0.25 * Math.sin(t),
-                0.5 + 0.25 * Math.sin(2 * Math.PI / 3 + t),
-                0.5 + 0.25 * Math.sin(4 * Math.PI / 3 + t));
-        var mass = b.rectRad.x * b.rectRad.y;
-        sound.sound(0, 0, 0, 0.6, 0.01, 5/60, 1/60, 500/mass, 500/mass + 20*Math.random(), 'square');
+      if (OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, pointerPos, ButtonSpirit.POINTER_RADIUS)
+          && !(oldPointerPos && OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, oldPointerPos, ButtonSpirit.POINTER_RADIUS))) {
+        vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
+        vec4.transform(renderer.getViewMatrix());
+        var freq = 500/mass;
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.6, 0.01, 4/60, 30/60, freq, freq + 20*Math.random(), 'sin');
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.5, 0.01, 4/60, 30/60, freq*2, freq*2 + 20*Math.random(), 'sin');
+        this.lastSoundMs = Date.now();
+        this.soundLength = (0.01 + 4/60 + 30/60) * 1000;
         break;
       }
     }
+  }
+  if (Date.now() - this.lastSoundMs < this.soundLength) {
+    var life = 1 - (Date.now() - this.lastSoundMs) / this.soundLength;
+    this.color.setXYZ(
+            0.5 + life * 0.5 * Math.sin(2 * Math.PI * this.rand),
+            0.5 + life * 0.5 * Math.sin(2 * Math.PI * this.rand + 2*Math.PI/3),
+            0.5 + life * 0.5 * Math.sin(2 * Math.PI * this.rand + 2*2*Math.PI/3));
+  } else {
+    this.color.setXYZ(0.5, 0.5, 0.5);
   }
   renderer
       .setStamp(stamps.cube)
