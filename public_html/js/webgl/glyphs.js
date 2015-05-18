@@ -5,10 +5,12 @@
  */
 function Glyphs(glyphMaker) {
   this.glyphMaker = glyphMaker;
-  this.stamps = {};
+  this.models = null;
+  this.stamps = null;
 }
 
-Glyphs.prototype.initStamps = function(gl) {
+Glyphs.prototype.initModels = function() {
+  this.models = {};
   var r = this.glyphMaker.lineWidth / 2;
   var h = 1.5;
   var w = 1;
@@ -18,8 +20,7 @@ Glyphs.prototype.initStamps = function(gl) {
     for (var i = 1; i < arguments.length; i+=4) {
       self.glyphMaker.addStick(arguments[i], arguments[i + 1], arguments[i + 2], arguments[i + 3]);
     }
-    self.stamps[arguments[0]] = self.glyphMaker.addToRigidModel(
-        new RigidModel()).createModelStamp(gl);
+    self.models[arguments[0]] = self.glyphMaker.addToRigidModel(new RigidModel());
   }
   g('A',
       -w, -h,  -r/5, h,
@@ -124,9 +125,9 @@ Glyphs.prototype.initStamps = function(gl) {
       w, h,  r/5, -h);
   g('W',
       -w, h, -w, -h,
-          -w + r*0.6, -h + r/3, -r*0.2, -h * 0.5,
-          -r*0.2, -h * 0.5, w - r*0.6, -h + r/3,
-          w, -h, w, h);
+      -w + r*0.6, -h + r/3, -r*0.2, -h * 0.5,
+      -r*0.2, -h * 0.5, w - r*0.6, -h + r/3,
+      w, -h, w, h);
   g('X',
       -w, h, w, -h,
       w, h, -w, -h);
@@ -196,6 +197,11 @@ Glyphs.prototype.initStamps = function(gl) {
       0, -h, 0, -h);
   g(',',
       0, -h, -w/3, -h * 4/3);
+  g('\'',
+      0, h, 0, h * 4/3);
+  g('"',
+      r*2, h, r*2, h * 4/3,
+      -r*2, h, -r*2, h * 4/3);
   g('?',
       0, -h, 0, -h,
       0, -h/3, 0, 0,
@@ -217,5 +223,17 @@ Glyphs.prototype.initStamps = function(gl) {
   g('+',
       -w, 0, w, 0,
       0, -w, 0, w);
+};
+
+Glyphs.prototype.initStamps = function(gl) {
+  if (this.stamps) return;
+
+  if (!this.models) {
+    this.initModels();
+  }
+  this.stamps = {};
+  for (var key in this.models) {
+    this.stamps[key] = this.models[key].createModelStamp(gl);
+  }
   return this.stamps;
 };

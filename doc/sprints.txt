@@ -488,40 +488,53 @@ v One-shot
 v Bang objects into each other to hear their noises
 v iOS sound-in-event Web Audio unlock
 
-Test 26: Sound Board
-- Button
-  v Since pointers teleport, I need overlap tests
-    v circle vs circle
-    v circle vs rect
-    v rect vs rect
-  v MultiPointer, which tracks old and new pointer-down positions (no hover. touch-centric)
-    v setViewMatrix
-    v getWorldPointers
-    v getOldWorldPointers
-  v ButtonSpirit
-    v has rectangular body
-    v has reference to old and new pointer world coords
-    v helps draw itself
-      v has a ModelStamp
-      v and a draw() method
-    v makes a noise
+Test 26: Touch Tone
+v MultiPointer, which tracks old and new pointer-down positions (no hover. touch-centric)
+  v setViewMatrix
+  v getWorldPointers
+  v getOldWorldPointers
+v Since pointers teleport, I need overlap tests
+  v circle vs circle
+  v circle vs rect
+  v rect vs rect
+v ButtonSpirit
+  v has rectangular body
+  v has reference to old and new pointer world coords
+  v helps draw itself
+    v has a ModelStamp
+    v and a draw() method
+  v makes a noise
   v draw() cares about spirit.draw()
-  v Draw the button using the model.
+    v Draw the button using the model.
+    v Make noise only on touch-down (new && !old)
+    v Stereo positioning
+
+Test 27: Sound Board
+Mostly for testing sounds, but also testing text menus.
 - Text buttons
-  - TextStampFactory takes a string and makes a stamp
-  - ButtonSpirit takes a stamp for drawing purposes
+  v LabelMaker takes a string and makes a model, which can make a stamp
+  v ButtonSpirit takes a stamp for drawing purposes
+  - Size the body to the stamp, or the model
 - Different for each button
-  - Make noise only on touch-down (new && !old)
   - noises:
     - tap
     - booong
     - zap!
     - explosion
     - powerup
+- Draggable volume thingy?
 
-
-- Dragable controls, like volume, speed, looping, play/pause ?
-- maaaaybe a realtime graphical analyzer?
+Test 28: Two Worlds
+Make a menu world and a playing world, and switch between them
+Menu World
+- Title
+- Start or Continue/Quit
+- Volume (defaults to off)
+- Fullscreen toggle
+- Pointerlock toggle
+Play World
+- Pause (goes to Menu)
+- Run around a maze collecting treasure, fighting monsters, finding the exit.
 
 New Controls
 - Touch to engage friction, release to float
@@ -536,9 +549,6 @@ New Controls
 - Last drag dictates aim unit-vec
 - Aim-lock button for nonstop shooters?
 
-
-- Button class?
-  - design the clickable button, oh joy
 
 - TitleScreen I
   v constructor
@@ -622,7 +632,6 @@ Bugs
   - Repro unit test
   - Fix
 
-2014-12-22 to...
 Sparks
 Splashes and explosions can use a circle, with a time uniform and a dist-from-center varying,
 and kind of a fancy frag shader.
@@ -637,20 +646,8 @@ v Nice simple explosion shader with time param.
 - Make bullet hits explode enemies (which makes them re-appear far away from the player)
 - Make firing a bullet spash a little bullet color.
 
-
-
-Buttons
-- base class
-- KeyButton
-- TouchButton
-- MouseButton
-- MultiButton
-
 Slider
 basically a stick where I project the value onto a line, and a renderer
-
-Checkbox
-a button with bit attached, and a renderer
 
 Editor Skeleton
 - nav/wall/air mode switch
@@ -676,12 +673,3 @@ Game UI Nav
 - list of levels
 - start player with data D
 - start editor with data D
-
-
-overlap
-- rect/rect
-- circ/circ
-- rect/circ
-- init events: body overlap
-- draw overlaps and non-overlaps
-

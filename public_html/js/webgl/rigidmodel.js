@@ -13,6 +13,7 @@ function RigidModel() {
 RigidModel.prototype.clear = function() {
   this.vertexes.length = 0;
   this.triangles.length = 0;
+  return this;
 };
 
 /**
