@@ -16,7 +16,7 @@ function ButtonSpirit() {
 ButtonSpirit.prototype = new Spirit();
 ButtonSpirit.prototype.constructor = ButtonSpirit;
 
-ButtonSpirit.POINTER_RADIUS = 0;
+ButtonSpirit.POINTER_RADIUS = 0.2;
 
 ButtonSpirit.prototype.setMultiPointer = function(multiPointer) {
   this.multiPointer = multiPointer;
@@ -35,14 +35,18 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
       var oldPointerPos = this.multiPointer.oldPos[key];
       var pointerPos = this.multiPointer.pos[key];
       if (OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, pointerPos, ButtonSpirit.POINTER_RADIUS)
-          && !(false && oldPointerPos && OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, oldPointerPos, ButtonSpirit.POINTER_RADIUS))) {
+          && !(oldPointerPos && OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, oldPointerPos, ButtonSpirit.POINTER_RADIUS))) {
         vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
         vec4.transform(renderer.getViewMatrix());
-        var freq = 200/(mass);
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.4, 0, 4/60, 30/60, freq, freq + 10*Math.random(), 'square');
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.3, 0, 4/60, 30/60, freq/2, freq/2 + 10*Math.random(), 'sine');
+        var freq = 2001;
+        var attack = 0;
+        var sustain = 4/60;
+        var decay = 10/60;
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.4, attack, sustain, decay, freq, freq/2, 'square');
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.3, attack, sustain, decay, freq/2, freq/4, 'sine');
+        sound.sound(vec4.v[0], vec4.v[1], 0, 0.3, attack, sustain, decay, freq/4, freq/8, 'sine');
         this.lastSoundMs = Date.now();
-        this.soundLength = (0.01 + 4/60 + 30/60) * 1000;
+        this.soundLength = (attack + sustain + decay) * 1000;
         break;
       }
     }
@@ -61,7 +65,7 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
       .setStamp(this.modelStamp)
       .setColorVector(this.color);
   modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
-  modelMatrix.multiply(mat4.toScaleOpXYZ(b.rectRad.x, b.rectRad.y, 1+life));
+  modelMatrix.multiply(mat4.toScaleOpXYZ(1, 1, 1+life));
   renderer.setModelMatrix(modelMatrix);
   renderer.drawStamp();
 };

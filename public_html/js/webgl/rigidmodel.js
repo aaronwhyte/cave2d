@@ -58,6 +58,22 @@ RigidModel.prototype.addRigidModel = function(that) {
 };
 
 /**
+ * @return {Rect} the bounding rect, or null if there are no vertexes
+ */
+RigidModel.prototype.getBoundingRect = function() {
+  if (!this.vertexes.length) {
+    return null;
+  }
+  var vert = this.vertexes[0];
+  var rect = new Rect(vert.position.v[0], vert.position.v[1], 0, 0);
+  for (var i = 1; i < this.vertexes.length; i++) {
+    vert = this.vertexes[i];
+    rect.coverXY(vert.position.v[0], vert.position.v[1]);
+  }
+  return rect;
+};
+
+/**
  * Mutates all the vertexes in this model, using the matrix.
  * @param {Matrix44} matrix
  * @return {RigidModel} this

@@ -102,10 +102,14 @@ Rect.prototype.coverRect = function(that) {
 };
 
 Rect.prototype.coverVec = function(v) {
-  var minX = Math.min(this.getMinX(), v.x);
-  var minY = Math.min(this.getMinY(), v.y);
-  var maxX = Math.max(this.getMaxX(), v.x);
-  var maxY = Math.max(this.getMaxY(), v.y);
+  return this.coverXY(v.x, v.y);
+};
+
+Rect.prototype.coverXY = function(x, y) {
+  var minX = Math.min(this.getMinX(), x);
+  var minY = Math.min(this.getMinY(), y);
+  var maxX = Math.max(this.getMaxX(), x);
+  var maxY = Math.max(this.getMaxY(), y);
   this.pos.setXY((minX + maxX) / 2, (minY + maxY) / 2);
   this.rad.setXY(Math.abs(minX - maxX) / 2, Math.abs(minY - maxY) / 2);
   return this;

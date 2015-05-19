@@ -10,10 +10,6 @@ var modelColor = new Vec4();
 
 var glyphs;
 var stamps = {};
-var startMatrix = new Matrix44()
-    .multiply(mat4.toRotateXOp(0 * -Math.PI / 2));
-var nextCharMatrix = new Matrix44()
-    .multiply(mat4.toTranslateOpXYZ(3.5, 0, 0));
 
 var ZOOM = 30;
 var MS_PER_FRAME = 1000 / 60;
@@ -67,21 +63,22 @@ function initWorld() {
   world = new World();
   resolver = new HitResolver();
   resolver.defaultElasticity = 1;
-
   var labelMaker = new LabelMaker(glyphs);
-
-  var v = new Vec2d();
+  var startMatrix = new Matrix44();
+  var nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
+  var model = labelMaker.createLabelModel(startMatrix, nextCharMatrix, "IT IS ALIVE!");
+  var brect = model.getBoundingRect();
+  model.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, 0));
   var b = Body.alloc();
-  b.setPosAtTime(v.setXY(0, 0), 1);
-  b.group = 0;
   b.shape = Body.Shape.RECT;
+  b.setPosAtTime(new Vec2d(0, 0), world.now);
+  b.rectRad.set(brect.rad);
+  b.group = 0;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
-  b.rectRad.setXY(1, 1);
   var spirit = new ButtonSpirit();
   spirit.bodyId = world.addBody(b);
   spirit.setMultiPointer(multiPointer);
-  var model = labelMaker.createLabelModel(startMatrix, nextCharMatrix, "IT IS ALIVE!");
   spirit.setModelStamp(model.createModelStamp(renderer.gl));
   world.addSpirit(spirit);
 }
