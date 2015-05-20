@@ -511,12 +511,14 @@ v ButtonSpirit
 
 Test 27: Sound Board
 Mostly for testing sounds, but also testing text menus.
-- Text buttons
+v Text button
   v LabelMaker takes a string and makes a model, which can make a stamp
   v ButtonSpirit takes a stamp for drawing purposes
-  - Size the body to the stamp, or the model
+  v Size the body to the stamp, or the model
 - Different for each button
   - noises:
+    v pew!
+    v beep
     - tap
     - booong
     - zap!

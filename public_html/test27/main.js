@@ -20,6 +20,8 @@ var lastPathRefreshTime = -Infinity;
 var world, resolver;
 var multiPointer;
 var sound;
+var labelMaker, startMatrix, nextCharMatrix;
+var nextButtonNum = 0;
 
 var iosUnlocked = false;
 
@@ -63,15 +65,39 @@ function initWorld() {
   world = new World();
   resolver = new HitResolver();
   resolver.defaultElasticity = 1;
-  var labelMaker = new LabelMaker(glyphs);
-  var startMatrix = new Matrix44();
-  var nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
-  var model = labelMaker.createLabelModel(startMatrix, nextCharMatrix, "IT IS ALIVE!");
+  labelMaker = new LabelMaker(glyphs);
+  startMatrix = new Matrix44();
+  nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
+
+  addButton("PEW!", function(world, x, y) {
+    var freq = 1500;
+    var attack = 1/60;
+    var sustain = 4 / 60;
+    var decay = 15 / 60;
+    sound.sound(x, y, 0, 1, attack, sustain, decay, freq, 1, 'square');
+    this.lastSoundMs = Date.now();
+    this.soundLength = (attack + sustain + decay) * 1000;
+  });
+
+  addButton("BEEP", function(world, x, y) {
+    var freq = 2000;
+    var attack = 1/60;
+    var sustain = 10 / 60;
+    var decay = 1/60;
+    sound.sound(x, y, 0, 1, attack, sustain, decay, freq, freq, 'triangle');
+    this.lastSoundMs = Date.now();
+    this.soundLength = (attack + sustain + decay) * 1000;
+  });
+}
+
+function addButton(text, func) {
+  var model = labelMaker.createLabelModel(startMatrix, nextCharMatrix, text);
   var brect = model.getBoundingRect();
   model.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, 0));
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
-  b.setPosAtTime(new Vec2d(0, 0), world.now);
+  b.setPosAtTime(new Vec2d(-5 * nextButtonNum, -5 * nextButtonNum), world.now);
+  nextButtonNum++;
   b.rectRad.set(brect.rad);
   b.group = 0;
   b.mass = Infinity;
@@ -80,6 +106,7 @@ function initWorld() {
   spirit.bodyId = world.addBody(b);
   spirit.setMultiPointer(multiPointer);
   spirit.setModelStamp(model.createModelStamp(renderer.gl));
+  spirit.setOnClick(func);
   world.addSpirit(spirit);
 }
 
@@ -178,8 +205,9 @@ function updateViewMatrix(t) {
   mat4.setColRowVal(2, 1, -1.1);
   viewMatrix.multiply(mat4);
 
-  // Slow spin
+  // rotate 45 degrees
   viewMatrix.multiply(mat4.toRotateZOp(Math.PI /4));
+
   renderer.setViewMatrix(viewMatrix);
 }
 

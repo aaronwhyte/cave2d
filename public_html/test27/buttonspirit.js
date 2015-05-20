@@ -12,6 +12,9 @@ function ButtonSpirit() {
   this.color = new Vec4();
   this.lastSoundMs = 0;
   this.soundLength = 1;
+  this.onClick = null;
+
+  this.vec2d = new Vec2d();
 }
 ButtonSpirit.prototype = new Spirit();
 ButtonSpirit.prototype.constructor = ButtonSpirit;
@@ -26,28 +29,22 @@ ButtonSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };
 
+ButtonSpirit.prototype.setOnClick = function(func) {
+  this.onClick = func;
+};
+
 ButtonSpirit.prototype.onDraw = function(world, renderer) {
-  var b = world.bodies[this.bodyId];
-  var mass = b.rectRad.x * b.rectRad.y;
-  b.getPosAtTime(world.now, bodyPos);
-  if (this.multiPointer) {
+  var body = this.getBody(world);
+  var bodyPos = body.getPosAtTime(world.now, this.vec2d);
+  if (this.multiPointer && this.onClick) {
     for (var key in this.multiPointer.pos) {
       var oldPointerPos = this.multiPointer.oldPos[key];
       var pointerPos = this.multiPointer.pos[key];
-      if (OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, pointerPos, ButtonSpirit.POINTER_RADIUS)
-          && !(oldPointerPos && OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, oldPointerPos, ButtonSpirit.POINTER_RADIUS))) {
+      if (!(oldPointerPos && this.isOverlapping(world, oldPointerPos))
+          && this.isOverlapping(world, pointerPos)) {
         vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
         vec4.transform(renderer.getViewMatrix());
-        var freq = 2001;
-        var attack = 0;
-        var sustain = 4/60;
-        var decay = 10/60;
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.4, attack, sustain, decay, freq, freq/2, 'square');
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.3, attack, sustain, decay, freq/2, freq/4, 'sine');
-        sound.sound(vec4.v[0], vec4.v[1], 0, 0.3, attack, sustain, decay, freq/4, freq/8, 'sine');
-        this.lastSoundMs = Date.now();
-        this.soundLength = (attack + sustain + decay) * 1000;
-        break;
+        this.onClick(world, vec4.v[0], vec4.v[1]);
       }
     }
   }
@@ -69,3 +66,15 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
   renderer.setModelMatrix(modelMatrix);
   renderer.drawStamp();
 };
+
+ButtonSpirit.prototype.getBody = function(world) {
+  return world.bodies[this.bodyId];
+};
+
+ButtonSpirit.prototype.isOverlapping = function(world, pointerPos) {
+  var body = this.getBody(world);
+  var bodyPos = body.getPosAtTime(world.now, this.vec2d);
+  return OverlapDetector.isRectOverlappingCircle(
+      bodyPos, body.rectRad, pointerPos, ButtonSpirit.POINTER_RADIUS);
+};
+
