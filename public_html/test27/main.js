@@ -11,7 +11,7 @@ var modelColor = new Vec4();
 var glyphs;
 var stamps = {};
 
-var ZOOM = 30;
+var ZOOM = 25;
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
 var PATH_DURATION = CLOCKS_PER_FRAME * 2;
@@ -70,23 +70,45 @@ function initWorld() {
   nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
 
   addButton("PEW!", function(world, x, y) {
-    var freq = 1500;
-    var attack = 1/60;
-    var sustain = 4 / 60;
-    var decay = 15 / 60;
-    sound.sound(x, y, 0, 1, attack, sustain, decay, freq, 1, 'square');
+    var freq = 1000 + x * 2000;
+    var attack = Math.random() * 1/60;
+    var sustain = (2 + Math.random() * 6) / 60;
+    var decay = (10 + 20 * Math.random()) / 60;
+    sound.sound(x, y, 0, 0.7, attack, sustain, decay, freq, 0.5, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
   });
 
-  addButton("BEEP", function(world, x, y) {
-    var freq = 2000;
+  addButton("MEEP", function(world, x, y) {
     var attack = 1/60;
-    var sustain = 10 / 60;
+    var sustain = (10 + 5 * Math.random()) / 60;
     var decay = 1/60;
-    sound.sound(x, y, 0, 1, attack, sustain, decay, freq, freq, 'triangle');
+    var freq = 50 + (0.5+x) * 2500;
+    sound.sound(x, y, 0, 0.5, attack, sustain, decay, freq, freq, 'sine');
+    freq *= 2.01;
+    sound.sound(x, y, 0, 0.5, attack, sustain, decay, freq, freq, 'sine');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
+  });
+
+  addButton("TAP", function(world, x, y) {
+    var mass = 2 + x * 3;
+    var freq = 1000 + (1 + (Math.random() - 0.5)*0.01) * 300 * mass;
+    var freq2 = freq + freq * ((Math.random() - 0.5) * 0.05);
+    var dur = (1 + mass) * 0.01;
+    sound.sound(x, y, 0, 1, 0, 0, dur, freq, freq2, 'sine');
+    this.lastSoundMs = Date.now();
+    this.soundLength = Math.max(100, 1000 * dur);
+  });
+
+  addButton("BONG", function(world, x, y) {
+    var mass = 1 - x * 2;
+    var dur = 1.5 * mass;
+    var freq = 500 / mass;
+    sound.sound(x, y, 0, 1, 1/60, 0, dur, freq, freq, 'sine');
+    sound.sound(x, y, 0, 1, 1/60, 0, dur, freq/3, freq/3, 'sine');
+    this.lastSoundMs = Date.now();
+    this.soundLength = 0.5 * dur * 1000;
   });
 }
 
@@ -195,10 +217,13 @@ function updateViewMatrix(t) {
   var edge = Math.min(canvas.width, canvas.height / (Math.sqrt(2)/2));
   viewMatrix.toIdentity();
 
-  viewMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(
-          edge / (ZOOM * canvas.width),
-          Math.sqrt(2)/2 * edge / (ZOOM * canvas.height),
-      0.5)));
+  viewMatrix
+      .multiply(mat4.toTranslateOpXYZ(0, 0.5, 0))
+      .multiply(mat4.toScaleOpXYZ(
+              edge / (ZOOM * canvas.width),
+              Math.sqrt(2)/2 * edge / (ZOOM * canvas.height),
+              0.5))
+  ;
 
   // Shear
   mat4.toIdentity();

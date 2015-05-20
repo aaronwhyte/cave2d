@@ -42,7 +42,7 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
       var pointerPos = this.multiPointer.pos[key];
       if (!(oldPointerPos && this.isOverlapping(world, oldPointerPos))
           && this.isOverlapping(world, pointerPos)) {
-        vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
+        vec4.setXYZ(pointerPos.x, pointerPos.y, 0);
         vec4.transform(renderer.getViewMatrix());
         this.onClick(world, vec4.v[0], vec4.v[1]);
       }
@@ -51,10 +51,11 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
   var life = 0;
   if (Date.now() - this.lastSoundMs < this.soundLength) {
     life = 1 - (Date.now() - this.lastSoundMs) / this.soundLength;
+    var t = Date.now() / 300;
     this.color.setXYZ(
-            0.5 + life * 0.5 * Math.sin(0),
-            0.5 + life * 0.5 * Math.sin(2*Math.PI/3),
-            0.5 + life * 0.5 * Math.sin(2*2*Math.PI/3));
+            0.5 + life * 0.5 * Math.sin(t + 0),
+            0.5 + life * 0.5 * Math.sin(t + 2*Math.PI/3),
+            0.5 + life * 0.5 * Math.sin(t + 2*2*Math.PI/3));
   } else {
     this.color.setXYZ(0.5, 0.5, 0.5);
   }

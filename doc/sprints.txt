@@ -519,9 +519,8 @@ v Text button
   - noises:
     v pew!
     v beep
-    - tap
-    - booong
-    - zap!
+    v tap
+    v bong
     - explosion
     - powerup
 - Draggable volume thingy?
