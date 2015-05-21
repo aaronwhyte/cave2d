@@ -521,7 +521,7 @@ v Text button
     v beep
     v tap
     v bong
-    - explosion
+    v kaboom!
     - powerup
 - Draggable volume thingy?
 

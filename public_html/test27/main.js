@@ -4,6 +4,7 @@ var vec4 = new Vec4();
 var mat4 = new Matrix44();
 var bodyPos = new Vec2d();
 
+var worldBoundingRect = new Rect();
 var viewMatrix = new Matrix44();
 var modelMatrix = new Matrix44();
 var modelColor = new Vec4();
@@ -11,7 +12,7 @@ var modelColor = new Vec4();
 var glyphs;
 var stamps = {};
 
-var ZOOM = 25;
+var ZOOM = 22;
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
 var PATH_DURATION = CLOCKS_PER_FRAME * 2;
@@ -70,25 +71,43 @@ function initWorld() {
   nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
 
   addButton("PEW!", function(world, x, y) {
-    var freq = 1000 + x * 2000;
-    var attack = Math.random() * 1/60;
-    var sustain = (2 + Math.random() * 6) / 60;
-    var decay = (10 + 20 * Math.random()) / 60;
-    sound.sound(x, y, 0, 0.7, attack, sustain, decay, freq, 0.5, 'square');
+    var freq = 2000 + x * 3000;
+    var attack = 0.01;
+    var sustain = (4 + Math.random() * 2) / 60;
+    var decay = (20 + 10 * Math.random()) / 60;
+    sound.sound(x, y, 0, 0.3, attack, sustain, decay, freq, 0.5, 'sine');
+    sound.sound(x, y, 0, 0.2, attack, sustain, decay, freq * (2 + Math.random()), 0.5, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
   });
 
   addButton("MEEP", function(world, x, y) {
-    var attack = 1/60;
-    var sustain = (10 + 5 * Math.random()) / 60;
-    var decay = 1/60;
-    var freq = 50 + (0.5+x) * 2500;
-    sound.sound(x, y, 0, 0.5, attack, sustain, decay, freq, freq, 'sine');
+    var attack = 0.02;
+    var sustain = (6 + 3 * Math.random()) / 60;
+    var decay = 0.02;
+    var freq = 500 + (0.5+x) * 2000;
+    sound.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq, 'sine');
     freq *= 2.01;
-    sound.sound(x, y, 0, 0.5, attack, sustain, decay, freq, freq, 'sine');
+    sound.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq, 'sine');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
+  });
+
+  addButton("KABOOM!", function(world, x, y) {
+    var voices = 16;
+    var maxLength = 0;
+    for (var i = 0; i < voices; i++) {
+      var delay = (i % 2 ? 0 : 0.1) * (1 + 0.1 * Math.random());
+      var attack = 0.002;
+      var sustain = 0.1 * (0.01 + Math.random());
+      var decay = Math.random() + 1;
+      maxLength = Math.max(maxLength, delay + attack + decay);
+      var freq1 = Math.random() * 30 + 30;
+      var freq2 = Math.random() * 5 + 1;
+      sound.sound(x, y, 0, 0.8, attack, sustain, decay, freq1, freq2, 'square', delay);
+    }
+    this.lastSoundMs = Date.now();
+    this.soundLength = 1000 * maxLength * 0.8;
   });
 
   addButton("TAP", function(world, x, y) {
@@ -102,7 +121,7 @@ function initWorld() {
   });
 
   addButton("BONG", function(world, x, y) {
-    var mass = 1 - x * 2;
+    var mass = 1.5 - x * 2;
     var dur = 1.5 * mass;
     var freq = 500 / mass;
     sound.sound(x, y, 0, 1, 1/60, 0, dur, freq, freq, 'sine');
@@ -118,7 +137,9 @@ function addButton(text, func) {
   model.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, 0));
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
-  b.setPosAtTime(new Vec2d(-5 * nextButtonNum, -5 * nextButtonNum), world.now);
+  var pos = new Vec2d(-4.5 * nextButtonNum, -4.5 * nextButtonNum);
+  b.setPosAtTime(pos, world.now);
+  worldBoundingRect.coverVec(pos);
   nextButtonNum++;
   b.rectRad.set(brect.rad);
   b.group = 0;
@@ -170,9 +191,6 @@ function clock() {
 
         strikeVec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
         var mag = strikeVec.magnitude();
-
-        bonk(b0, b1, mag);
-        bonk(b1, b0, mag);
       }
     }
     world.processNextEvent();
@@ -180,28 +198,6 @@ function clock() {
   }
   if (!e || e.time > endClock) {
     world.now = endClock;
-  }
-}
-
-function bonk(b0, b1, mag) {
-  var mass, vol, dur, freq, freq2;
-  b0.getPosAtTime(world.now, bodyPos);
-  vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
-  vec4.transform(viewMatrix);
-  if (b0.shape == Body.Shape.RECT) {
-    mass = b0.rectRad.x * b0.rectRad.y;
-    vol = mag;
-    dur = 0.1 * mass;
-    freq = 300 / mass;
-    freq2 = freq - 2 * Math.random();
-    sound.sound(vec4.v[0], vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
-  } else {
-    mass = b0.mass;
-    vol = 2 * mag;
-    freq = 1000 + (1 + (Math.random() - 0.5)*0.01) * 300 / mass;
-    freq2 = freq + freq * ((Math.random() - 0.5) * 0.05);
-    dur = 0.01 + 0.01 * mass;
-    sound.sound(vec4.v[0], vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
   }
 }
 
@@ -214,11 +210,11 @@ function drawScene() {
 
 function updateViewMatrix(t) {
   // set view matrix
-  var edge = Math.min(canvas.width, canvas.height / (Math.sqrt(2)/2));
+  var edge = canvas.height / (Math.sqrt(2)/2);
   viewMatrix.toIdentity();
 
   viewMatrix
-      .multiply(mat4.toTranslateOpXYZ(0, 0.5, 0))
+      .multiply(mat4.toTranslateOpXYZ(0, 0.6, 0))
       .multiply(mat4.toScaleOpXYZ(
               edge / (ZOOM * canvas.width),
               Math.sqrt(2)/2 * edge / (ZOOM * canvas.height),
