@@ -515,15 +515,40 @@ v Text button
   v LabelMaker takes a string and makes a model, which can make a stamp
   v ButtonSpirit takes a stamp for drawing purposes
   v Size the body to the stamp, or the model
-- Different for each button
-  - noises:
+v Different for each button
+  v noises:
     v pew!
-    v beep
+    v meep
+    v kaboom!
     v tap
     v bong
-    v kaboom!
-    - powerup
-- Draggable volume thingy?
+v Fix multipointer up/down timing to catch between-frame up/down events.
+  * Repro is to tap trackpad. The down/up can happen between frames,
+    so the polling clients miss it. But I like polling clients, and
+    hate listener callbacks.
+  * So keep a circular buffer of log of events, timestamped. ID, type (down/move/up/cancel?), x, y.
+  * Continue to maintain a double-buffer of old state and new state.
+  * Write clearEventLog() method to use at the end of each frame that flips the
+    old/new state buffers, and advances the circular buffer pointer so it's empty.
+  * If anyone needs more than one frame, they can buffer it themselves I
+    think. So 10 fingers x 10 events/frame ought should be enough.
+  Implement
+  v PointerEvent
+    v timestamp, pointerId, type, coords
+    v createFromMouseEvent
+    v createFromTouchEvent
+    v pooling
+  v MultiPointer has pointerEventLog
+    v Circular buffer of PointerEvent
+    v enqueue
+    v size
+    v getFromTail
+    v clear (dequeues and frees all)
+  v Multipointer continues to maintain head and tail snapshots
+  v Multipointer.reset() clears queue and resets shapshots to empty.
+v Fix ButtonSpirit to find between-frame down-->up transitions
+  v figure out insane touch bug. LOL it was === vs == for touch IDs,
+    some of which were coerced into Strings by being object keys.
 
 Test 28: Two Worlds
 Make a menu world and a playing world, and switch between them
@@ -535,7 +560,7 @@ Menu World
 - Pointerlock toggle
 Play World
 - Pause (goes to Menu)
-- Run around a maze collecting treasure, fighting monsters, finding the exit.
+- Run around a maze
 
 New Controls
 - Touch to engage friction, release to float

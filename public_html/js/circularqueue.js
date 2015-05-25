@@ -1,5 +1,9 @@
 /**
  * A circular buffer, backed by an array.
+ * In this API, enqueuing adds to the head, and dequeing removes from the tail.
+ * This might be backwards from what you're used to. But I wrote this when I was
+ * thinking of a rotating log, so the "head" was the present, and the "tail" was the past,
+ * ad you'd add the the head, and usually process the tail first. Sorry for any confusion.
  * 
  * @param {number} maxLen  Must be one or more.
  * @constructor

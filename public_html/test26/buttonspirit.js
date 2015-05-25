@@ -26,9 +26,9 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
   var mass = b.rectRad.x * b.rectRad.y;
   b.getPosAtTime(world.now, bodyPos);
   if (this.multiPointer) {
-    for (var key in this.multiPointer.pos) {
-      var oldPointerPos = this.multiPointer.oldPos[key];
-      var pointerPos = this.multiPointer.pos[key];
+    for (var key in this.multiPointer.positions) {
+      var oldPointerPos = this.multiPointer.oldPositions[key];
+      var pointerPos = this.multiPointer.positions[key];
       if (OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, pointerPos, ButtonSpirit.POINTER_RADIUS)
           && !(oldPointerPos && OverlapDetector.isRectOverlappingCircle(bodyPos, b.rectRad, oldPointerPos, ButtonSpirit.POINTER_RADIUS))) {
         vec4.setXYZ(bodyPos.x, bodyPos.y, 0);

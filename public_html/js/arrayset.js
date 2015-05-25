@@ -18,7 +18,7 @@ Poolify(ArraySet);
 
 ArraySet.prototype.put = function(v) {
   for (var i = 0; i < this.vals.length; i++) {
-    if (this.vals[i] === v) {
+    if (this.vals[i] == v) {
       return;
     }
   }
@@ -28,7 +28,7 @@ ArraySet.prototype.put = function(v) {
 
 ArraySet.prototype.contains = function(v) {
   for (var i = 0; i < this.vals.length; i++) {
-    if (this.vals[i] === v) {
+    if (this.vals[i] == v) {
       return true;
     }
   }
@@ -37,7 +37,7 @@ ArraySet.prototype.contains = function(v) {
 
 ArraySet.prototype.remove = function(v) {
   for (var i = 0; i < this.vals.length; i++) {
-    if (this.vals[i] === v) {
+    if (this.vals[i] == v) {
       this.vals[i] = this.vals[this.vals.length - 1];
       this.vals.pop();
     }

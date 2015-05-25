@@ -136,7 +136,7 @@ function loop() {
   clock();
   updateViewMatrix(Date.now());
   drawScene();
-  multiPointer.saveOldPos();
+  multiPointer.readyForNextFrame();
   multiPointer.calcInverseViewMatrix(viewMatrix);
   requestAnimationFrame(loop, canvas);
 }

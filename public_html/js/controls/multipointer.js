@@ -1,5 +1,9 @@
 /**
- * Dumb pollable multiple pointer, blending mouse and touch on a canvas.
+ * Multiple pointer handler, blending mouse and touch on a canvas.
+ * Each frame it provides before and after snapshots, and a
+ * log of all the events in between.
+ * Be sure to call readyForNextFrame() after handling event data, and before waiting until the next frame,
+ * because mouse and touch events only arrive when no other JS is running.
  * @constructor
  */
 function MultiPointer(canvas, viewMatrix) {
@@ -8,8 +12,12 @@ function MultiPointer(canvas, viewMatrix) {
   this.calcInverseViewMatrix(viewMatrix);
 
   // Maps from IDs to Vec2d()s.
-  this.oldPos = {};
-  this.pos = {};
+  this.oldPositions = {};
+  this.positions = {};
+
+  // Queue of PointerEvent objects. There are usually only a few per frame,
+  // so 100 is grossly overkill, I hope.
+  this.queue = new CircularQueue(100);
 
   this.mat44 = new Matrix44;
   this.vec4 = new Vec4();
@@ -39,9 +47,6 @@ function MultiPointer(canvas, viewMatrix) {
 
 MultiPointer.MOUSE_ID = 'mouse';
 
-// Weak - better if I could use "half an inch" or something.
-MultiPointer.TOUCH_Y_OFFSET = 0;
-
 MultiPointer.prototype.startListening = function() {
   document.body.addEventListener('mousedown', this.mouseDownListener);
   document.body.addEventListener('mousemove', this.mouseMoveListener);
@@ -50,6 +55,7 @@ MultiPointer.prototype.startListening = function() {
   document.body.addEventListener('touchmove', this.touchMoveListener);
   document.body.addEventListener('touchend', this.touchEndListener);
   document.body.addEventListener('touchcancel', this.touchEndListener);
+  document.body.addEventListener('touchleave', this.touchEndListener);
   this.listening = true;
   return this;
 };
@@ -62,27 +68,46 @@ MultiPointer.prototype.stopListening = function() {
   document.body.removeEventListener('touchmove', this.touchMoveListener);
   document.body.removeEventListener('touchend', this.touchEndListener);
   document.body.removeEventListener('touchcancel', this.touchEndListener);
+  document.body.removeEventListener('touchleave', this.touchEndListener);
   this.listening = false;
   return this;
+};
+
+MultiPointer.prototype.getQueueSize = function() {
+  return this.queue.size();
+};
+
+/**
+ * @param index Zero is the oldest event, and getQueueSize-1 is the newest.
+ * @returns {PointerEvent}
+ */
+MultiPointer.prototype.getPointerEventFromTail = function(index) {
+  return this.queue.getFromTail(index);
 };
 
 MultiPointer.prototype.calcInverseViewMatrix = function(viewMatrix) {
   viewMatrix.getInverse(this.inverseViewMatrix);
 };
 
-MultiPointer.prototype.saveOldPos = function() {
+/**
+ * Flips the old and new position snapshots, and clears the queue
+ */
+MultiPointer.prototype.readyForNextFrame = function() {
   // Delete obsolete oldPos entries
-  for (var id in this.oldPos) {
-    if (!this.pos[id]) {
-      this.oldPos[id].free();
-      delete this.oldPos[id];
+  for (var id in this.oldPositions) {
+    if (!(id in this.positions)) {
+      this.oldPositions[id].free();
+      delete this.oldPositions[id];
     }
   }
-  for (var id in this.pos) {
-    if (!this.oldPos[id]) {
-      this.oldPos[id] = Vec2d.alloc();
+  for (id in this.positions) {
+    if (!(id in this.oldPositions)) {
+      this.oldPositions[id] = Vec2d.alloc();
     }
-    this.oldPos[id].set(this.pos[id]);
+    this.oldPositions[id].set(this.positions[id]);
+  }
+  while (!this.queue.isEmpty()) {
+    this.queue.dequeue();
   }
 };
 
@@ -95,14 +120,14 @@ MultiPointer.prototype.onMouseMove = function(e) {
 };
 
 MultiPointer.prototype.onMouseUp = function(e) {
-  this.up(MultiPointer.MOUSE_ID);
+  this.up(MultiPointer.MOUSE_ID, e.clientX, e.clientY);
 };
 
 MultiPointer.prototype.onTouchStart = function(e) {
   var touches = e.changedTouches;
   for (var i = 0; i < touches.length; i++) {
     var touch = touches[i];
-    this.down(touch.identifier, touch.pageX, touch.pageY + MultiPointer.TOUCH_Y_OFFSET);
+    this.down(touch.identifier, touch.pageX, touch.pageY);
   }
 };
 
@@ -110,7 +135,7 @@ MultiPointer.prototype.onTouchMove = function(e) {
   var touches = e.changedTouches;
   for (var i = 0; i < touches.length; i++) {
     var touch = touches[i];
-    this.move(touch.identifier, touch.pageX, touch.pageY + MultiPointer.TOUCH_Y_OFFSET);
+    this.move(touch.identifier, touch.pageX, touch.pageY);
   }
 };
 
@@ -118,29 +143,51 @@ MultiPointer.prototype.onTouchEnd = function(e) {
   var touches = e.changedTouches;
   for (var i = 0; i < touches.length; i++) {
     var touch = touches[i];
-    this.up(touch.identifier);
+    this.up(touch.identifier, touch.pageX, touch.pageY);
   }
 };
 
 MultiPointer.prototype.down = function(id, x, y) {
-  if (!this.pos[id]) {
-    this.pos[id] = Vec2d.alloc();
+  var e = PointerEvent.alloc();
+  e.type = PointerEvent.TYPE_DOWN;
+  e.pointerId = id;
+  e.time = Date.now();
+  e.pos.setXY(x, y);
+  this.transformCanvasToWorld(e.pos);
+  this.queue.enqueue(e);
+
+  if (!(id in this.positions)) {
+    this.positions[id] = Vec2d.alloc();
   }
-  this.pos[id].setXY(x, y);
-  this.transformCanvasToWorld(this.pos[id]);
+  this.positions[id].set(e.pos);
 };
 
 MultiPointer.prototype.move = function(id, x, y) {
-  if (this.pos[id]) {
-    this.pos[id].setXY(x, y);
-    this.transformCanvasToWorld(this.pos[id]);
+  if (id in this.positions) {
+    var e = PointerEvent.alloc();
+    e.type = PointerEvent.TYPE_MOVE;
+    e.pointerId = id;
+    e.time = Date.now();
+    e.pos.setXY(x, y);
+    this.transformCanvasToWorld(e.pos);
+    this.queue.enqueue(e);
+
+    this.positions[id].set(e.pos);
   }
 };
 
-MultiPointer.prototype.up = function(id) {
-  if (this.pos[id]) {
-    this.pos[id].free();
-    delete this.pos[id];
+MultiPointer.prototype.up = function(id, x, y) {
+  if (id in this.positions) {
+    var e = PointerEvent.alloc();
+    e.type = PointerEvent.TYPE_UP;
+    e.pointerId = id;
+    e.time = Date.now();
+    e.pos.setXY(x, y);
+    this.transformCanvasToWorld(e.pos);
+    this.queue.enqueue(e);
+
+    this.positions[id].free();
+    delete this.positions[id];
   }
 };
 
@@ -151,8 +198,8 @@ MultiPointer.prototype.up = function(id) {
  */
 MultiPointer.prototype.transformCanvasToWorld = function(vec2d) {
   // canvas to clip
-  this.canvasToClip.toScaleOpXYZ(2 / this.canvas.width, -2 / this.canvas.height, 0);
-  this.canvasToClip.multiply(mat4.toTranslateOpXYZ(-canvas.width / 2, -canvas.height / 2, 0));
+  this.canvasToClip.toScaleOpXYZ(2 / this.canvas.width, -2 / this.canvas.height, 1);
+  this.canvasToClip.multiply(this.mat44.toTranslateOpXYZ(-this.canvas.width / 2, -this.canvas.height / 2, 0));
   this.vec4.setXYZ(vec2d.x, vec2d.y, 0).transform(this.canvasToClip);
 
   // clip to world
