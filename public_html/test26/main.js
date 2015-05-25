@@ -191,7 +191,7 @@ function bonk(b0, b1, mag) {
   if (b0.shape == Body.Shape.RECT) {
     mass = b0.rectRad.x * b0.rectRad.y;
     vol = mag;
-    dur = 0.1 * mass;
+    dur = 0.05 * mass;
     freq = 300 / mass;
     freq2 = freq - 2 * Math.random();
     sound.sound(vec4.v[0], vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
@@ -200,7 +200,7 @@ function bonk(b0, b1, mag) {
     vol = 2 * mag;
     freq = 1000 + (1 + (Math.random() - 0.5)*0.01) * 300 / mass;
     freq2 = freq + freq * ((Math.random() - 0.5) * 0.05);
-    dur = 0.01 + 0.01 * mass;
+    dur = 0.005 + 0.005 * mass;
     sound.sound(vec4.v[0], vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
   }
 }

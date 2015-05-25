@@ -76,7 +76,7 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
     gain.gain.setValueAtTime(vol, t0 + attack + sustain);
   }
   if (decay) {
-    gain.gain.exponentialRampToValueAtTime(0.001, t0 + attack + sustain + decay);
+    gain.gain.exponentialRampToValueAtTime(0.01, t0 + attack + sustain + decay);
   }
 
   var osc = c.createOscillator();

@@ -86,35 +86,35 @@ function initWorld() {
     var sustain = (6 + 3 * Math.random()) / 60;
     var decay = 0.02;
     var freq = 500 + (0.5+x) * 2000;
-    sound.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq, 'sine');
+    sound.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq, 'sine');
     freq *= 2.01;
-    sound.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq, 'sine');
+    sound.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq, 'sine');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
   });
 
   addButton("KABOOM!", function(world, x, y) {
-    var voices = 16;
+    var voices = 8;
     var maxLength = 0;
     for (var i = 0; i < voices; i++) {
       var delay = (i % 2 ? 0 : 0.1) * (1 + 0.1 * Math.random());
       var attack = 0.002;
-      var sustain = 0.1 * (0.01 + Math.random());
-      var decay = Math.random() + 1;
+      var sustain = 0.1 * (Math.random() + 0.01);
+      var decay = (Math.random() + 1) * 0.5;
       maxLength = Math.max(maxLength, delay + attack + decay);
       var freq1 = Math.random() * 30 + 30;
-      var freq2 = Math.random() * 5 + 1;
+      var freq2 = Math.random() * 10 + 10;
       sound.sound(x, y, 0, 0.8, attack, sustain, decay, freq1, freq2, 'square', delay);
     }
     this.lastSoundMs = Date.now();
-    this.soundLength = 1000 * maxLength * 0.8;
+    this.soundLength = 1000 * maxLength;
   });
 
   addButton("TAP", function(world, x, y) {
     var mass = 2 + x * 3;
     var freq = 1000 + (1 + (Math.random() - 0.5)*0.01) * 300 * mass;
     var freq2 = freq + freq * ((Math.random() - 0.5) * 0.05);
-    var dur = (1 + mass) * 0.01;
+    var dur = (1 + mass) * 0.005;
     sound.sound(x, y, 0, 1, 0, 0, dur, freq, freq2, 'sine');
     this.lastSoundMs = Date.now();
     this.soundLength = Math.max(100, 1000 * dur);
@@ -122,12 +122,12 @@ function initWorld() {
 
   addButton("BONG", function(world, x, y) {
     var mass = 1.5 - x * 2;
-    var dur = 1.5 * mass;
+    var dur = 0.7 * mass;
     var freq = 500 / mass;
-    sound.sound(x, y, 0, 1, 1/60, 0, dur, freq, freq, 'sine');
-    sound.sound(x, y, 0, 1, 1/60, 0, dur, freq/3, freq/3, 'sine');
+    sound.sound(x, y, 0, 0.7, 0.01, 0, dur, freq, freq, 'sine');
+    sound.sound(x, y, 0, 0.7, 0.01, 0, dur, freq/3, freq/3, 'sine');
     this.lastSoundMs = Date.now();
-    this.soundLength = 0.5 * dur * 1000;
+    this.soundLength = dur * 1000;
   });
 }
 

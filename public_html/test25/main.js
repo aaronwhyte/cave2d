@@ -179,8 +179,8 @@ function bonk(b0, b1, mag) {
   vec4.transform(viewMatrix);
   if (b0.shape == Body.Shape.RECT) {
     mass = b0.rectRad.x * b0.rectRad.y;
-    vol = mag * 0.5;
-    dur = 1 * mass;
+    vol = mag;
+    dur = mass;
     freq = 300 / mass;
     freq2 = freq - 2 * Math.random();
     sound.sound(vec4.v[0], vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
