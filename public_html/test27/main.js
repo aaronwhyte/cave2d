@@ -12,7 +12,7 @@ var modelColor = new Vec4();
 var glyphs;
 var stamps = {};
 
-var ZOOM = 22;
+var ZOOM = 26;
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
 var PATH_DURATION = CLOCKS_PER_FRAME * 2;
@@ -93,6 +93,23 @@ function initWorld() {
     this.soundLength = (attack + sustain + decay) * 1000;
   });
 
+  addButton("BANG", function(world, x, y) {
+    var voices = 3;
+    var maxLength = 0;
+    var sustain = 0.05 * (Math.random() + 1);
+    var baseFreq = (Math.random() + 0.5) * 100;
+    for (var i = 0; i < voices; i++) {
+      var attack = 0;
+      var decay = sustain * 4;
+      maxLength = Math.max(maxLength, attack + decay);
+      var freq1 = baseFreq * (1 + i/3);
+      var freq2 = 1 + i;
+      sound.sound(x, y, 0, 2/voices, attack, sustain, decay, freq1, freq2, 'square');
+    }
+    this.lastSoundMs = Date.now();
+    this.soundLength = 1000 * maxLength;
+  });
+
   addButton("KABOOM!", function(world, x, y) {
     var voices = 8;
     var maxLength = 0;
@@ -105,6 +122,30 @@ function initWorld() {
       var freq1 = Math.random() * 30 + 30;
       var freq2 = Math.random() * 10 + 10;
       sound.sound(x, y, 0, 0.8, attack, sustain, decay, freq1, freq2, 'square', delay);
+    }
+    this.lastSoundMs = Date.now();
+    this.soundLength = 1000 * maxLength;
+  });
+
+  addButton("BLOOPIE", function(world, x, y) {
+//    var dur = 0.15;
+//    sound.sound(x, y, 0, 0.2, dur * 0.1, dur * 0.9, 0, 300, 100, 'square', 0);
+//    sound.sound(x, y, 0, 0.2, 0, dur/2, dur/2, 100, 3000, 'square', dur/2);
+
+    var voices = 3;
+    var noteLen = 0.2 / voices;
+    var maxLength = 0;
+    var baseFreq = 20 + 10 * (1 + (3 + Math.floor(x * 3)));
+    for (var i = 0; i < voices; i++) {
+      var delay = i * noteLen;
+      var attack = 0;
+      var sustain = noteLen * 0.7;
+      var decay = noteLen * 0.3;
+      maxLength = Math.max(maxLength, delay + attack + decay);
+      var freq1 = Math.pow(i+1, 2) * baseFreq;
+      var freq2 = freq1 * 2;
+      sound.sound(x, y, 0, 0.2, attack, sustain, decay, freq1, freq2, 'square', delay);
+      sound.sound(x, y, 0, 0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
     }
     this.lastSoundMs = Date.now();
     this.soundLength = 1000 * maxLength;
@@ -214,7 +255,7 @@ function updateViewMatrix(t) {
   viewMatrix.toIdentity();
 
   viewMatrix
-      .multiply(mat4.toTranslateOpXYZ(0, 0.6, 0))
+      .multiply(mat4.toTranslateOpXYZ(0, 0.73, 0))
       .multiply(mat4.toScaleOpXYZ(
               edge / (ZOOM * canvas.width),
               Math.sqrt(2)/2 * edge / (ZOOM * canvas.height),
