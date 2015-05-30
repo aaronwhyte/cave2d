@@ -550,17 +550,62 @@ v Fix ButtonSpirit to find between-frame down-->up transitions
   v figure out insane touch bug. LOL it was === vs == for touch IDs,
     some of which were coerced into Strings by being object keys.
 
-Test 28: Two Worlds
-Make a menu world and a playing world, and switch between them
-Menu World
-- Title
-- Start or Continue/Quit
-- Volume (defaults to off)
-- Fullscreen toggle
-- Pointerlock toggle
-Play World
-- Pause (goes to Menu)
-- Run around a maze
+Test 28: Two Screens
+Make a main menu world and a playing world, and switch between them with a screen-controller.
+v Base screen interface
+  v setScreenVisibility(0-1) // default 0
+  v setScreenListening(true/false) // default false
+  v drawScreen() // might lazily create stuff, synchronously
+  v destroyScreen() // prepare to be garbage-collected, by cleaning out Web Audio and WebGL stuff
+    Main value is to unload the GL-cached models for level maps, to free GL memory
+- Screen Controller
+  v async loads screen deps
+    v renderer
+  v creates screen objects
+  v handle RAF loop
+  v calls initial screen methods:
+    v setScreenVisibility(0-1)
+    v setScreenListening(true)
+    v drawScreen()
+  - Handle transitions between screens; use AnimatedValue for setScreenVisibility?
+- TitleScreen
+  v Get anything working :-D
+  - Title
+  - Play button
+  - Override base screen jazz
+- Play Screen
+  - pause button
+    - on touch
+    - on mouse down (but is impossible with pointerlock on)
+    - on esc or space key
+  - run around a maze
+    - and monsters eat you?
+    - GAME OVER. Back to main if you don't ask for it.
+
+Physics check
+- Unit test collider
+- Make a standard world event processor
+-
+
+Test 29: Settings
+Add stuff to main menu:
+- fullscreen toggle
+  - needs to toggle mode in event handler?
+- pointerlock toggle
+  - invisible until we see some mouse moves?
+  - when to toggle mode?
+    - in click event handler?
+    - create fake mouse pointer that can be controlled w PL and non-PL mouse, or w direct touch.
+    - If we remember pref, then toggle it on first click/touch on page?
+- volume control
+  - defaults to off?
+
+Test 30: Third Screem
+- play's pause button goes to pause screen, not main
+- pause screen
+  - reuse settings chunk
+  - resume
+  - quit
 
 New Controls
 - Touch to engage friction, release to float

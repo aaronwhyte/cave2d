@@ -1,25 +1,25 @@
 /**
  * Handles spirits and bodies.
  *
- * @param {number} cellSize The world-space size of each cell in the collision-detection grid.
+ * @param {=number} opt_cellSize The world-space size of each cell in the collision-detection grid.
  * If it's too small, time is wasted as things enter and exit cells. If it's too big,
  * we suffer from O(n^2) collision detection speed within each cell.
  * If falsey, this defaults to 15.
  *
- * @param {number} groupCount The number of collision groups in each cell.
+ * @param {=number} opt_groupCount The number of collision groups in each cell.
  * If falsey, this defaults to 1.
  *
- * @param {Array} groupPairs An array of 2-element arrays, defining all the group pairs
+ * @param {=Array} opt_groupPairs An array of 2-element arrays, defining all the group pairs
  * that can collide with each other. The two IDs in a pair may be the same, to make
  * a group's members collide with each other.
  * If falsey, this defaults to one group, "0", which collides with itself.
  *
  * @constructor
  */
-function World(cellSize, groupCount, groupPairs) {
-  this.cellSize = cellSize || World.DEFAULT_CELL_SIZE;
-  this.groupCount = groupCount || 1;
-  this.groupPairs = groupPairs || [[0, 0]];
+function World(opt_cellSize, opt_groupCount, opt_groupPairs) {
+  this.cellSize = opt_cellSize || World.DEFAULT_CELL_SIZE;
+  this.groupCount = opt_groupCount || 1;
+  this.groupPairs = opt_groupPairs || [[0, 0]];
   this.groupHitsGroups = [];
   for (var i = 0; i < this.groupPairs.length; i++) {
     var pair = this.groupPairs[i];

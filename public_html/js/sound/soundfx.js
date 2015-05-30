@@ -1,10 +1,10 @@
 /**
  * Utils for producing sound effects positioned in 3D.
- * @param {AudioContext} audioContext
+ * @param {=AudioContext} opt_audioContext
  * @constructor
  */
-function SoundFx(audioContext) {
-  this.ctx = audioContext;
+function SoundFx(opt_audioContext) {
+  this.ctx = opt_audioContext || SoundFx.getAudioContext();
   if (this.ctx) {
     if (!(this.ctx.createGain || this.ctx.createGainNode) || !this.ctx.createOscillator) {
       this.ctx = null;

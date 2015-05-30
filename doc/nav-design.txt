@@ -154,3 +154,14 @@ remove last reference, become garbage-collectible
 two at-rest stages
 1) offstage
 2) onstage
+
+2015-05-27
+Thinking more...
+- Every screen is the same, with world(s)/body/spirit (including clickables), rendering, etc.
+- Controls are an ad-hoc mix, and can be changed any time.
+I would like to not pay for rendering/simulating stuff that's not on screen.
+And I'd like to be able to erase big data-based background models from GL, I guess.
+The main controller can create and destroy screen instance objects, using async loading if needed,
+and also calls setVisibility(0..1) and loop(), so the main controller handles the RAF loop.
+and listen()/unlisten() for events, but it's up to screens to do it.
+- release() level-specific GL background, which was created lazily in a loop() when "show" is non-0.

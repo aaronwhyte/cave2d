@@ -48,28 +48,32 @@ function MultiPointer(canvas, viewMatrix) {
 MultiPointer.MOUSE_ID = 'mouse';
 
 MultiPointer.prototype.startListening = function() {
-  document.body.addEventListener('mousedown', this.mouseDownListener);
-  document.body.addEventListener('mousemove', this.mouseMoveListener);
-  document.body.addEventListener('mouseup', this.mouseUpListener);
-  document.body.addEventListener('touchstart', this.touchStartListener);
-  document.body.addEventListener('touchmove', this.touchMoveListener);
-  document.body.addEventListener('touchend', this.touchEndListener);
-  document.body.addEventListener('touchcancel', this.touchEndListener);
-  document.body.addEventListener('touchleave', this.touchEndListener);
-  this.listening = true;
+  if (!this.listening) {
+    document.body.addEventListener('mousedown', this.mouseDownListener);
+    document.body.addEventListener('mousemove', this.mouseMoveListener);
+    document.body.addEventListener('mouseup', this.mouseUpListener);
+    document.body.addEventListener('touchstart', this.touchStartListener);
+    document.body.addEventListener('touchmove', this.touchMoveListener);
+    document.body.addEventListener('touchend', this.touchEndListener);
+    document.body.addEventListener('touchcancel', this.touchEndListener);
+    document.body.addEventListener('touchleave', this.touchEndListener);
+    this.listening = true;
+  }
   return this;
 };
 
 MultiPointer.prototype.stopListening = function() {
-  document.body.removeEventListener('mousedown', this.mouseDownListener);
-  document.body.removeEventListener('mousemove', this.mouseMoveListener);
-  document.body.removeEventListener('mouseup', this.mouseUpListener);
-  document.body.removeEventListener('touchstart', this.touchStartListener);
-  document.body.removeEventListener('touchmove', this.touchMoveListener);
-  document.body.removeEventListener('touchend', this.touchEndListener);
-  document.body.removeEventListener('touchcancel', this.touchEndListener);
-  document.body.removeEventListener('touchleave', this.touchEndListener);
-  this.listening = false;
+  if (this.listening) {
+    document.body.removeEventListener('mousedown', this.mouseDownListener);
+    document.body.removeEventListener('mousemove', this.mouseMoveListener);
+    document.body.removeEventListener('mouseup', this.mouseUpListener);
+    document.body.removeEventListener('touchstart', this.touchStartListener);
+    document.body.removeEventListener('touchmove', this.touchMoveListener);
+    document.body.removeEventListener('touchend', this.touchEndListener);
+    document.body.removeEventListener('touchcancel', this.touchEndListener);
+    document.body.removeEventListener('touchleave', this.touchEndListener);
+    this.listening = false;
+  }
   return this;
 };
 
