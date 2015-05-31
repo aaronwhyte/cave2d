@@ -44,6 +44,8 @@ function MultiPointer(canvas, viewMatrix) {
   this.mouseUpListener = function(e) {
     self.onMouseUp(e);
   };
+
+  this.listening = false;
 }
 
 MultiPointer.MOUSE_ID = 'mouse';
@@ -74,6 +76,16 @@ MultiPointer.prototype.stopListening = function() {
     document.body.removeEventListener('touchcancel', this.touchEndListener);
     document.body.removeEventListener('touchleave', this.touchEndListener);
     this.listening = false;
+    this.clearEventQueue();
+    for (var id in this.positions) {
+      delete this.positions[id];
+    }
+    for (var id in this.oldPositions) {
+      delete this.oldPositions[id];
+    }
+    for (var id in this.eventCoords) {
+      delete this.eventCoords[id];
+    }
   }
   return this;
 };
@@ -92,6 +104,8 @@ MultiPointer.prototype.getPointerEventFromTail = function(index) {
 
 MultiPointer.prototype.setViewMatrix = function(viewMatrix) {
   viewMatrix.getInverse(this.inverseViewMatrix);
+  if (!this.listening) return;
+
   // Effectively, every point has moved, so create a move event for them.
   for (var id in this.positions) {
     var e = PointerEvent.alloc();
