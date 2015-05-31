@@ -2,16 +2,17 @@
  * Multiple pointer handler, blending mouse and touch on a canvas.
  * Each frame it provides before and after snapshots, and a
  * log of all the events in between.
- * Be sure to call readyForNextFrame() after handling event data, and before waiting until the next frame,
+ * Be sure to call clearEventQueue() after handling event data, and before waiting until the next frame,
  * because mouse and touch events only arrive when no other JS is running.
  * @constructor
  */
 function MultiPointer(canvas, viewMatrix) {
   this.canvas = canvas;
   this.inverseViewMatrix = new Matrix44();
-  this.calcInverseViewMatrix(viewMatrix);
+  this.setViewMatrix(viewMatrix);
 
   // Maps from IDs to Vec2d()s.
+  this.eventCoords = {};
   this.oldPositions = {};
   this.positions = {};
 
@@ -89,14 +90,27 @@ MultiPointer.prototype.getPointerEventFromTail = function(index) {
   return this.queue.getFromTail(index);
 };
 
-MultiPointer.prototype.calcInverseViewMatrix = function(viewMatrix) {
+MultiPointer.prototype.setViewMatrix = function(viewMatrix) {
   viewMatrix.getInverse(this.inverseViewMatrix);
+  // Effectively, every point has moved, so create a move event for them.
+  for (var id in this.positions) {
+    var e = PointerEvent.alloc();
+    e.type = PointerEvent.TYPE_MOVE;
+    e.pointerId = id;
+    e.time = Date.now();
+    e.pos.set(this.eventCoords[id]);
+//    e.note = JSON.stringify(viewMatrix);
+    this.transformCanvasToWorld(e.pos);
+    this.queue.enqueue(e);
+
+    this.positions[id].set(e.pos);
+  }
 };
 
 /**
  * Flips the old and new position snapshots, and clears the queue
  */
-MultiPointer.prototype.readyForNextFrame = function() {
+MultiPointer.prototype.clearEventQueue = function() {
   // Delete obsolete oldPos entries
   for (var id in this.oldPositions) {
     if (!(id in this.positions)) {
@@ -164,6 +178,11 @@ MultiPointer.prototype.down = function(id, x, y) {
     this.positions[id] = Vec2d.alloc();
   }
   this.positions[id].set(e.pos);
+
+  if (!(id in this.eventCoords)) {
+    this.eventCoords[id] = Vec2d.alloc();
+  }
+  this.eventCoords[id].setXY(x, y);
 };
 
 MultiPointer.prototype.move = function(id, x, y) {
@@ -177,6 +196,7 @@ MultiPointer.prototype.move = function(id, x, y) {
     this.queue.enqueue(e);
 
     this.positions[id].set(e.pos);
+    this.eventCoords[id].setXY(x, y);
   }
 };
 
@@ -192,6 +212,9 @@ MultiPointer.prototype.up = function(id, x, y) {
 
     this.positions[id].free();
     delete this.positions[id];
+
+    this.eventCoords[id].free();
+    delete this.eventCoords[id];
   }
 };
 

@@ -38,8 +38,8 @@ TitleScreen.prototype.drawScreen = function(visibility) {
   this.clock();
   this.updateViewMatrix(Date.now());
   this.drawScene();
-  this.multiPointer.calcInverseViewMatrix(this.viewMatrix);
-  this.multiPointer.readyForNextFrame();
+  this.multiPointer.clearEventQueue();
+  this.multiPointer.setViewMatrix(this.viewMatrix);
 };
 
 TitleScreen.prototype.destroyScreen = function() {
@@ -224,19 +224,24 @@ TitleScreen.prototype.updateViewMatrix = function(t) {
   this.viewMatrix.toIdentity();
 
   this.viewMatrix
-      .multiply(this.mat4.toTranslateOpXYZ(0, 0.73, 0))
       .multiply(this.mat4.toScaleOpXYZ(
               edge / (ZOOM * this.canvas.width),
-              Math.sqrt(2)/2 * edge / (ZOOM * this.canvas.height),
+              0.75 *  edge / (ZOOM * this.canvas.height),
               0.5));
 
   // Shear
   this.mat4.toIdentity();
-  this.mat4.setColRowVal(2, 1, -1.1);
+  this.mat4.setColRowVal(2, 1, -0.7);
   this.viewMatrix.multiply(this.mat4);
 
+  // center
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(15, 15, 0));
+
   // rotate 45 degrees
-  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI /4));
+  var w = -20;
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(w, w, 0));
+  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI /4 + t/1000));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-w, -w, 0));
 
   this.renderer.setViewMatrix(this.viewMatrix);
 };
