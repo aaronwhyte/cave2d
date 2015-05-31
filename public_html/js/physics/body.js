@@ -74,10 +74,11 @@ Body.prototype.getPosAtTime = function(t, out) {
 
 /**
  * @param {number} t
- * @param {Rect} out
+ * @param {=Rect} opt_out
  * @returns {Rect}
  */
-Body.prototype.getBoundingRectAtTime = function(t, out) {
+Body.prototype.getBoundingRectAtTime = function(t, opt_out) {
+  var out = opt_out || new Rect();
   this.getPosAtTime(t, out.pos);
   if (this.shape == Body.Shape.CIRCLE) {
     out.setRadXY(this.rad, this.rad);
