@@ -550,7 +550,7 @@ v Fix ButtonSpirit to find between-frame down-->up transitions
   v figure out insane touch bug. LOL it was === vs == for touch IDs,
     some of which were coerced into Strings by being object keys.
 
-Test 28: Two Screens
+Test 28: Multiple Screens
 Make a main menu world and a playing world, and switch between them with a screen-controller.
 v Base screen interface
   v setScreenVisibility(0-1) // default 0
@@ -573,11 +573,14 @@ v TitleScreen
   v Title
   v Override base screen jazz
   v Play button
-v PlayScreen
-  v pause
-  v quit
 v PauseScreen
   v resume
+- PlayScreen
+  v pause
+  v quit
+  - some fun sprites & game controls
+- Give buttons backgrounds
+- extract common stuff from screens
 
 Test 29: Settings
 Add stuff to main menu:
