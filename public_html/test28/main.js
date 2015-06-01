@@ -17,10 +17,15 @@ function Main28() {
   document.body.addEventListener('touchstart', this.unlockIosSound.bind(this));
 }
 
-var ZOOM = 26;
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
 var PATH_DURATION = CLOCKS_PER_FRAME * 2;
+
+Main28.SCREEN_TITLE = 'title';
+Main28.SCREEN_PLAY = 'play';
+Main28.SCREEN_PAUSE = 'pause';
+
+Main28.SCREENS = [Main28.SCREEN_TITLE, Main28.SCREEN_PLAY, Main28.SCREEN_PAUSE];
 
 Main28.prototype.unlockIosSound = function() {
   if (!this.iosSoundUnlocked) {
@@ -37,8 +42,17 @@ Main28.prototype.onRendererLoaded = function(r) {
 
 Main28.prototype.initScreens = function() {
   this.initStamps();
-  this.titleScreen = new TitleScreen(this.canvas, this.renderer, this.glyphs, this.stamps, this.sfx);
-  this.titleScreen.setScreenListening(true);
+  this.screens = {};
+  this.screens[Main28.SCREEN_TITLE] = new TitleScreen(this, this.canvas, this.renderer, this.glyphs, this.stamps, this.sfx);
+  this.screens[Main28.SCREEN_PLAY] = new PlayScreen(this, this.canvas, this.renderer, this.glyphs, this.stamps, this.sfx);
+  this.screens[Main28.SCREEN_PAUSE] = new PauseScreen(this, this.canvas, this.renderer, this.glyphs, this.stamps, this.sfx);
+
+  this.visibility = {};
+  for (var i = 0; i < Main28.SCREENS.length; i++) {
+    this.visibility[Main28.SCREENS[i]] = 0;
+  }
+
+  this.frontScreenId = Main28.SCREEN_TITLE;
 };
 
 Main28.prototype.initStamps = function() {
@@ -56,23 +70,21 @@ Main28.prototype.loop = function() {
     this.loopFn = this.loop.bind(this);
   }
   this.renderer.resize().clear();
-  var titleVis = Math.min(1, Math.abs(1.5 * Math.sin(Date.now() / 500)));
-  this.titleScreen.drawScreen(titleVis);
-  this.titleScreen.setScreenListening(titleVis == 1);
+  for (var i = 0; i < Main28.SCREENS.length; i++) {
+    var id = Main28.SCREENS[i];
+    if (this.frontScreenId == id) {
+      this.visibility[id] = Math.min(1, this.visibility[id] + 1/20);
+    } else {
+      this.visibility[id] = Math.max(0, this.visibility[id] - 1/60);
+    }
+    this.screens[id].setScreenListening(this.visibility[id] > 0.9);
+    if (this.visibility[id]) {
+      this.screens[id].drawScreen(this.visibility[id]);
+    }
+  }
   requestAnimationFrame(this.loopFn, this.canvas);
 };
 
-
-function drawBody(b) {
-  b.getPosAtTime(world.now, bodyPos);
-  if (b.shape == Body.Shape.RECT) {
-    modelMatrix.toTranslateOp(vec4.setXYZ(bodyPos.x, bodyPos.y, 0));
-    modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(b.rectRad.x, b.rectRad.y, 1)));
-  } else {
-    modelMatrix.toTranslateOp(vec4.setXYZ(bodyPos.x, bodyPos.y, 0));
-    modelMatrix.multiply(mat4.toScaleOp(vec4.setXYZ(b.rad, b.rad, b.rad)));
-  }
-  renderer.setModelMatrix(modelMatrix);
-  renderer.drawStamp();
-}
-
+Main28.prototype.gotoScreen = function(screenId) {
+  this.frontScreenId = screenId;
+};

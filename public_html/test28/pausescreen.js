@@ -2,7 +2,7 @@
  * @constructor
  * @extends {Screen}
  */
-function TitleScreen(controller, canvas, renderer, glyphs, stamps, sound) {
+function PauseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   Screen.call(this);
   this.controller = controller;
   this.canvas = canvas;
@@ -21,10 +21,10 @@ function TitleScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
 }
-TitleScreen.prototype = new Screen();
-TitleScreen.prototype.constructor = TitleScreen;
+PauseScreen.prototype = new Screen();
+PauseScreen.prototype.constructor = PauseScreen;
 
-TitleScreen.prototype.setScreenListening = function(listen) {
+PauseScreen.prototype.setScreenListening = function(listen) {
   if (listen) {
     this.multiPointer.startListening();
   } else {
@@ -32,7 +32,7 @@ TitleScreen.prototype.setScreenListening = function(listen) {
   }
 };
 
-TitleScreen.prototype.drawScreen = function(visibility) {
+PauseScreen.prototype.drawScreen = function(visibility) {
   this.visibility = visibility;
   if (!this.readyToDraw) {
     this.initWorld();
@@ -45,11 +45,11 @@ TitleScreen.prototype.drawScreen = function(visibility) {
   this.multiPointer.setViewMatrix(this.viewMatrix);
 };
 
-TitleScreen.prototype.destroyScreen = function() {
+PauseScreen.prototype.destroyScreen = function() {
   // Unload button models? Need a nice utility for loading, remembering, and unloading models.
 };
 
-TitleScreen.prototype.initWorld = function() {
+PauseScreen.prototype.initWorld = function() {
   this.world = new World();
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 1;
@@ -58,34 +58,22 @@ TitleScreen.prototype.initWorld = function() {
   this.nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
 
   var controller = this.controller;
-
   var sfx = this.sfx;
-  this.addButton("TEST 28", function(world, x, y) {
-    var freq = 2000;
+  this.addButton("PAUSED!", function(world, x, y) {});
+  this.addButton("RESUME?", function(world, x, y) {
+    var freq = 1000;
     var attack = 0.01;
     var sustain = (4 + Math.random() * 2) / 60;
-    var decay = (20 + 10 * Math.random()) / 60;
-    sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, 0.5, 'sine');
-    sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq * (2 + Math.random()), 0.5, 'square');
-    this.lastSoundMs = Date.now();
-    this.soundLength = (attack + sustain + decay) * 1000;
-  });
-
-  this.addButton("PLAY?", function(world, x, y) {
-    var attack = 0.02;
-    var sustain = (6 + 3 * Math.random()) / 60;
-    var decay = 0.02;
-    var freq = 1500;
-    sfx.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq, 'sine');
-    freq *= 2.01;
-    sfx.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq, 'sine');
+    var decay = 3 * (20 + 10 * Math.random()) / 60;
+    sfx.sound(x, y, 0, 0.3, attack, sustain, decay, 0.5, freq, 'sine');
+    sfx.sound(x, y, 0, 0.2, attack, sustain, decay, 0.5, freq * (2 + Math.random()), 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main28.SCREEN_PLAY);
   });
 };
 
-TitleScreen.prototype.addButton = function(text, func) {
+PauseScreen.prototype.addButton = function(text, func) {
   var model = this.labelMaker.createLabelModel(this.startMatrix, this.nextCharMatrix, text);
   var brect = model.getBoundingRect();
   model.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, 0));
@@ -107,7 +95,7 @@ TitleScreen.prototype.addButton = function(text, func) {
   this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
 };
 
-TitleScreen.prototype.clock = function() {
+PauseScreen.prototype.clock = function() {
   var endTimeMs = Date.now() + MS_PER_FRAME;
   var endClock = this.world.now + CLOCKS_PER_FRAME;
 
@@ -143,36 +131,36 @@ TitleScreen.prototype.clock = function() {
   }
 };
 
-TitleScreen.prototype.drawScene = function() {
+PauseScreen.prototype.drawScene = function() {
   this.clock();
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 };
 
-TitleScreen.prototype.updateViewMatrix = function() {
+PauseScreen.prototype.updateViewMatrix = function() {
   var br = this.worldBoundingRect;
 
   // set view matrix
-  var ratio = Math.min(this.canvas.height, this.canvas.width) / (1.2 * Math.max(br.rad.x, br.rad.y));
+  var ratio = this.visibility * Math.min(this.canvas.height, this.canvas.width) / (1.2 * Math.max(br.rad.x, br.rad.y));
   this.viewMatrix.toIdentity();
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
               ratio / this.canvas.width,
               ratio / this.canvas.height,
-              0.5));
+          0.5));
 
   // Shear
   this.mat4.toIdentity();
   this.mat4.setColRowVal(2, 1, -0.5);
   this.viewMatrix.multiply(this.mat4);
 
-  // center
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -30 * (this.visibility - 1) - br.pos.y, 0));
+  // center and sink
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, -4 * (this.visibility - 1)));
 
   // rotate
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
-  this.viewMatrix.multiply(this.mat4.toRotateZOp(this.visibility * Math.PI / 8));
+  this.viewMatrix.multiply(this.mat4.toRotateZOp(-Math.PI / 8 + Math.PI * (this.visibility - 1)));
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
 
   this.renderer.setViewMatrix(this.viewMatrix);
