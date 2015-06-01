@@ -72,17 +72,6 @@ PlayScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main28.SCREEN_PAUSE);
   });
-  this.addButton("QUIT?", function(world, x, y) {
-    var freq = 1000;
-    var attack = 0.01;
-    var sustain = (4 + Math.random() * 2) / 60;
-    var decay = 3 * (20 + 10 * Math.random()) / 60;
-    sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, 0.5, 'sine');
-    sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq * (2 + Math.random()), 0.5, 'square');
-    this.lastSoundMs = Date.now();
-    this.soundLength = (attack + sustain + decay) * 1000;
-    controller.gotoScreen(Main28.SCREEN_TITLE);
-  });
 };
 
 PlayScreen.prototype.addButton = function(text, func) {
