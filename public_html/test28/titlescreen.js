@@ -18,6 +18,7 @@ function TitleScreen(canvas, renderer, glyphs, stamps, sound) {
   this.worldBoundingRect = new Rect();
 
   this.lastPathRefreshTime = -Infinity;
+  this.visibility = 0;
 }
 TitleScreen.prototype = new Screen();
 TitleScreen.prototype.constructor = TitleScreen;
@@ -31,6 +32,7 @@ TitleScreen.prototype.setScreenListening = function(listen) {
 };
 
 TitleScreen.prototype.drawScreen = function(visibility) {
+  this.visibility = visibility;
   if (!this.readyToDraw) {
     this.initWorld();
     this.readyToDraw = true;
@@ -55,8 +57,8 @@ TitleScreen.prototype.initWorld = function() {
   this.nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
 
   var sfx = this.sfx;
-  this.addButton("PEW!", function(world, x, y) {
-    var freq = 2000 + x * 3000;
+  this.addButton("TEST 28", function(world, x, y) {
+    var freq = 2000;
     var attack = 0.01;
     var sustain = (4 + Math.random() * 2) / 60;
     var decay = (20 + 10 * Math.random()) / 60;
@@ -66,90 +68,16 @@ TitleScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay) * 1000;
   });
 
-  this.addButton("MEEP", function(world, x, y) {
+  this.addButton("TWO SCREENS", function(world, x, y) {
     var attack = 0.02;
     var sustain = (6 + 3 * Math.random()) / 60;
     var decay = 0.02;
-    var freq = 500 + (0.5+x) * 2000;
+    var freq = 1500;
     sfx.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq, 'sine');
     freq *= 2.01;
     sfx.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq, 'sine');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
-  });
-
-  this.addButton("BANG", function(world, x, y) {
-    var voices = 3;
-    var maxLength = 0;
-    var sustain = 0.05 * (Math.random() + 1);
-    var baseFreq = (Math.random() + 0.5) * 100;
-    for (var i = 0; i < voices; i++) {
-      var attack = 0;
-      var decay = sustain * 4;
-      maxLength = Math.max(maxLength, attack + decay);
-      var freq1 = baseFreq * (1 + i/3);
-      var freq2 = 1 + i;
-      sfx.sound(x, y, 0, 2/voices, attack, sustain, decay, freq1, freq2, 'square');
-    }
-    this.lastSoundMs = Date.now();
-    this.soundLength = 1000 * maxLength;
-  });
-
-  this.addButton("KABOOM!", function(world, x, y) {
-    var voices = 8;
-    var maxLength = 0;
-    for (var i = 0; i < voices; i++) {
-      var delay = (i % 2 ? 0 : 0.1) * (1 + 0.1 * Math.random());
-      var attack = 0.002;
-      var sustain = 0.1 * (Math.random() + 0.01);
-      var decay = (Math.random() + 1) * 0.5;
-      maxLength = Math.max(maxLength, delay + attack + decay);
-      var freq1 = Math.random() * 30 + 30;
-      var freq2 = Math.random() * 10 + 10;
-      sfx.sound(x, y, 0, 0.8, attack, sustain, decay, freq1, freq2, 'square', delay);
-    }
-    this.lastSoundMs = Date.now();
-    this.soundLength = 1000 * maxLength;
-  });
-
-  this.addButton("BLOOPIE", function(world, x, y) {
-    var voices = 3;
-    var noteLen = 0.2 / voices;
-    var maxLength = 0;
-    var baseFreq = 20 + 10 * (1 + (3 + Math.floor(x * 3)));
-    for (var i = 0; i < voices; i++) {
-      var delay = i * noteLen;
-      var attack = 0;
-      var sustain = noteLen * 0.7;
-      var decay = noteLen * 0.3;
-      maxLength = Math.max(maxLength, delay + attack + decay);
-      var freq1 = Math.pow(i+1, 2) * baseFreq;
-      var freq2 = freq1 * 2;
-      sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq1, freq2, 'square', delay);
-      sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
-    }
-    this.lastSoundMs = Date.now();
-    this.soundLength = 1000 * maxLength;
-  });
-
-  this.addButton("TAP", function(world, x, y) {
-    var mass = 2 + x * 3;
-    var freq = 1000 + (1 + (Math.random() - 0.5)*0.01) * 300 * mass;
-    var freq2 = freq + freq * ((Math.random() - 0.5) * 0.05);
-    var dur = (1 + mass) * 0.005;
-    sfx.sound(x, y, 0, 1, 0, 0, dur, freq, freq2, 'sine');
-    this.lastSoundMs = Date.now();
-    this.soundLength = Math.max(100, 1000 * dur);
-  });
-
-  this.addButton("BONG", function(world, x, y) {
-    var mass = 1.5 - x * 2;
-    var dur = 0.7 * mass;
-    var freq = 500 / mass;
-    sfx.sound(x, y, 0, 0.7, 0.01, 0, dur, freq, freq, 'sine');
-    sfx.sound(x, y, 0, 0.7, 0.01, 0, dur, freq/3, freq/3, 'sine');
-    this.lastSoundMs = Date.now();
-    this.soundLength = dur * 1000;
   });
 };
 
@@ -159,9 +87,8 @@ TitleScreen.prototype.addButton = function(text, func) {
   model.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, 0));
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
-  var pos = new Vec2d(-4.5 * this.nextButtonNum, -4.5 * this.nextButtonNum);
+  var pos = new Vec2d(0, -5 * this.nextButtonNum);
   b.setPosAtTime(pos, this.world.now);
-  this.worldBoundingRect.coverVec(pos);
   this.nextButtonNum++;
   b.rectRad.set(brect.rad);
   b.group = 0;
@@ -173,6 +100,7 @@ TitleScreen.prototype.addButton = function(text, func) {
   spirit.setModelStamp(model.createModelStamp(this.renderer.gl));
   spirit.setOnClick(func);
   this.world.addSpirit(spirit);
+  this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
 };
 
 TitleScreen.prototype.clock = function() {
@@ -209,7 +137,7 @@ TitleScreen.prototype.clock = function() {
   if (!e || e.time > endClock) {
     this.world.now = endClock;
   }
-}
+};
 
 TitleScreen.prototype.drawScene = function() {
   this.clock();
@@ -218,30 +146,30 @@ TitleScreen.prototype.drawScene = function() {
   }
 };
 
-TitleScreen.prototype.updateViewMatrix = function(t) {
-  // set view matrix
-  var edge = this.canvas.height / (Math.sqrt(2)/2);
-  this.viewMatrix.toIdentity();
+TitleScreen.prototype.updateViewMatrix = function() {
+  var br = this.worldBoundingRect;
 
+  // set view matrix
+  var ratio = this.visibility * Math.min(this.canvas.height, this.canvas.width) / (1.2 * Math.max(br.rad.x, br.rad.y));
+  this.viewMatrix.toIdentity();
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
-              edge / (ZOOM * this.canvas.width),
-              0.75 *  edge / (ZOOM * this.canvas.height),
+              ratio / this.canvas.width,
+              ratio / this.canvas.height,
               0.5));
 
   // Shear
   this.mat4.toIdentity();
-  this.mat4.setColRowVal(2, 1, -0.7);
+  this.mat4.setColRowVal(2, 1, -1);
   this.viewMatrix.multiply(this.mat4);
 
-  // center
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(15, 15, 0));
+  // center and sink
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, -4 * (this.visibility - 1)));
 
-  // rotate 45 degrees
-  var w = -20;
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(w, w, 0));
-  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI /4 + t/1000));
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-w, -w, 0));
+  // rotate
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
+  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI / 8));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
 
   this.renderer.setViewMatrix(this.viewMatrix);
 };

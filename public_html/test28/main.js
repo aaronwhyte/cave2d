@@ -56,7 +56,9 @@ Main28.prototype.loop = function() {
     this.loopFn = this.loop.bind(this);
   }
   this.renderer.resize().clear();
-  this.titleScreen.drawScreen();
+  var titleVis = Math.min(1, Math.abs(1.5 * Math.sin(Date.now() / 500)));
+  this.titleScreen.drawScreen(titleVis);
+  this.titleScreen.setScreenListening(titleVis == 1);
   requestAnimationFrame(this.loopFn, this.canvas);
 };
 
