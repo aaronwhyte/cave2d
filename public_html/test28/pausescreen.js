@@ -61,25 +61,29 @@ PauseScreen.prototype.initWorld = function() {
   var sfx = this.sfx;
   this.addButton("PAUSED!", function(world, x, y) {});
   this.addButton("RESUME?", function(world, x, y) {
-    var freq = 1000;
-    var attack = 0.01;
-    var sustain = (4 + Math.random() * 2) / 60;
-    var decay = 3 * (20 + 10 * Math.random()) / 60;
-    sfx.sound(x, y, 0, 0.3, attack, sustain, decay, 0.5, freq, 'sine');
-    sfx.sound(x, y, 0, 0.2, attack, sustain, decay, 0.5, freq * (2 + Math.random()), 'square');
+    var attack = 0.2;
+    var sustain = 0;
+    var decay = 0.01;
+    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, 100, 2000, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main28.SCREEN_PLAY);
   });
   this.addButton("QUIT?", function(world, x, y) {
-    var freq = 1000;
-    var attack = 0.01;
-    var sustain = (4 + Math.random() * 2) / 60;
-    var decay = 3 * (20 + 10 * Math.random()) / 60;
-    sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, 0.5, 'sine');
-    sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq * (2 + Math.random()), 0.5, 'square');
+    var voices = 8;
+    var maxLength = 0;
+    for (var i = 0; i < voices; i++) {
+      var delay = (i % 2 ? 0 : 0.1) * (1 + 0.1 * Math.random());
+      var attack = 0.002;
+      var sustain = 0.1 * (Math.random() + 0.01);
+      var decay = (Math.random() + 1) * 0.5;
+      maxLength = Math.max(maxLength, delay + attack + decay);
+      var freq1 = Math.random() * 30 + 30;
+      var freq2 = Math.random() * 10 + 10;
+      sfx.sound(x, y, 0, 0.8, attack, sustain, decay, freq1, freq2, 'square', delay);
+    }
     this.lastSoundMs = Date.now();
-    this.soundLength = (attack + sustain + decay) * 1000;
+    this.soundLength = 1000 * maxLength;
     controller.gotoScreen(Main28.SCREEN_TITLE);
   });
 };

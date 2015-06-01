@@ -62,12 +62,10 @@ PlayScreen.prototype.initWorld = function() {
 
   this.addButton("PLAYING!", function(world, x, y) {});
   this.addButton("PAUSE?", function(world, x, y) {
-    var freq = 1000;
     var attack = 0.01;
-    var sustain = (4 + Math.random() * 2) / 60;
-    var decay = 3 * (20 + 10 * Math.random()) / 60;
-    sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, 0.5, 'sine');
-    sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq * (2 + Math.random()), 0.5, 'square');
+    var sustain = 0;
+    var decay = 0.4;
+    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, 2000, 50, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main28.SCREEN_PAUSE);
