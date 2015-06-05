@@ -575,11 +575,11 @@ v TitleScreen
   v Play button
 v PauseScreen
   v resume
-- PlayScreen
+v PlayScreen
   v pause
   v quit
-  - some fun sprites & game controls
-- Give buttons backgrounds
+  - some fun sprites & game controls?
+- Give buttons boxy backgrounds
 - extract common stuff from screens
 
 Test 29: Settings

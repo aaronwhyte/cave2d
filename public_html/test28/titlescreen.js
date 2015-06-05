@@ -79,12 +79,29 @@ TitleScreen.prototype.initWorld = function() {
 };
 
 TitleScreen.prototype.addButton = function(text, func) {
-  var model = this.labelMaker.createLabelModel(this.startMatrix, this.nextCharMatrix, text);
-  var brect = model.getBoundingRect();
-  model.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, 0));
+  var labelModel = this.labelMaker.createLabelModel(this.startMatrix, this.nextCharMatrix, text);
+  var brect = labelModel.getBoundingRect().padXY(1.5, 0.5);
+
+  labelModel.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, -0.6));
+  for (var i = 0; i < labelModel.vertexes.length; i++) {
+    var vert = labelModel.vertexes[i];
+    vert.setColorRGB(1.5, 2, 1);
+  }
+  var cuboid = RigidModel.createCube();
+  cuboid.transformPositions(new Matrix44().toScaleOpXYZ(brect.rad.x, brect.rad.y, 1));
+  cuboid.transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 1));
+  var bright = 0.9;
+  for (var i = 0; i < cuboid.vertexes.length; i++) {
+    var vert = cuboid.vertexes[i];
+    vert.setColorRGB(1.5 * bright, 2 * bright, 0.9 * bright);
+  }
+  labelModel.addRigidModel(cuboid);
+  labelModel.transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -1));
+
+
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
-  var pos = new Vec2d(0, -5 * this.nextButtonNum);
+  var pos = new Vec2d(0, -6 * this.nextButtonNum);
   b.setPosAtTime(pos, this.world.now);
   this.nextButtonNum++;
   b.rectRad.set(brect.rad);
@@ -94,7 +111,7 @@ TitleScreen.prototype.addButton = function(text, func) {
   var spirit = new ButtonSpirit();
   spirit.bodyId = this.world.addBody(b);
   spirit.setMultiPointer(this.multiPointer);
-  spirit.setModelStamp(model.createModelStamp(this.renderer.gl));
+  spirit.setModelStamp(labelModel.createModelStamp(this.renderer.gl));
   spirit.setOnClick(func);
   this.world.addSpirit(spirit);
   this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
@@ -146,26 +163,28 @@ TitleScreen.prototype.drawScene = function() {
 TitleScreen.prototype.updateViewMatrix = function() {
   var br = this.worldBoundingRect;
 
-  // set view matrix
-  var ratio = Math.min(this.canvas.height, this.canvas.width) / (1.2 * Math.max(br.rad.x, br.rad.y));
   this.viewMatrix.toIdentity();
+
+  var ratio = Math.min(this.canvas.height, this.canvas.width) / (1 * Math.max(br.rad.x, br.rad.y));
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
               ratio / this.canvas.width,
               ratio / this.canvas.height,
-              0.5));
+              0.15));
 
   // Shear
   this.mat4.toIdentity();
-  this.mat4.setColRowVal(2, 1, -0.5);
+  this.mat4.setColRowVal(2, 1, -0.7);
   this.viewMatrix.multiply(this.mat4);
 
   // center
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -30 * (this.visibility - 1) - br.pos.y, 0));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -30 * (this.visibility - 1) * (this.visibility - 1) * (this.visibility - 1) - br.pos.y, 0));
 
   // rotate
+  var viz3 = this.visibility * this.visibility;
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
-  this.viewMatrix.multiply(this.mat4.toRotateZOp(this.visibility * Math.PI / 8));
+  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI * viz3 / 8));
+  this.viewMatrix.multiply(this.mat4.toRotateXOp(((6 * viz3) - 5) * Math.PI / 10));
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
 
   this.renderer.setViewMatrix(this.viewMatrix);

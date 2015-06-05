@@ -102,7 +102,7 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
       .setStamp(this.modelStamp)
       .setColorVector(this.color);
   this.modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
-  this.modelMatrix.multiply(this.mat44.toScaleOpXYZ(1, 1, 1+life));
+//  this.modelMatrix.multiply(this.mat44.toScaleOpXYZ(1, 1, 1+life));
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
 };

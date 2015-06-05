@@ -56,7 +56,7 @@ Main28.prototype.initScreens = function() {
 };
 
 Main28.prototype.initStamps = function() {
-  var glyphMaker = new GlyphMaker(0.4, 2);
+  var glyphMaker = new GlyphMaker(0.4, 1.2);
   this.glyphs = new Glyphs(glyphMaker);
   var glyphStamps = this.glyphs.initStamps(this.renderer.gl);
   this.stamps = {};
@@ -72,10 +72,11 @@ Main28.prototype.loop = function() {
   this.renderer.resize().clear();
   for (var i = 0; i < Main28.SCREENS.length; i++) {
     var id = Main28.SCREENS[i];
+    var step = 0.5;
     if (this.frontScreenId == id) {
-      this.visibility[id] = Math.min(1, this.visibility[id] + 1/20);
+      this.visibility[id] = Math.min(1, this.visibility[id] + step/20);
     } else {
-      this.visibility[id] = Math.max(0, this.visibility[id] - 1/60);
+      this.visibility[id] = Math.max(0, this.visibility[id] - step/40);
     }
     this.screens[id].setScreenListening(this.visibility[id] > 0.9);
     if (this.visibility[id]) {

@@ -198,8 +198,8 @@ function loop() {
   clock();
   updateViewMatrix(Date.now());
   drawScene();
-  multiPointer.clearEventQueue();
   multiPointer.setViewMatrix(viewMatrix);
+  multiPointer.clearEventQueue();
   requestAnimationFrame(loop, canvas);
 }
 
