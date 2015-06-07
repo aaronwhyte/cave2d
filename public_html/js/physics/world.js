@@ -100,13 +100,16 @@ World.prototype.removeCell = function(ix, iy) {
   }
 };
 
+/**
+ * @returns {number}
+ */
 World.prototype.newId = function() {
   return this.nextId++;
 };
 
 /**
  * Assigns an ID and adds the spirit.
- * @returns the new spirit ID.
+ * @return {number} the new spirit ID.
  */
 World.prototype.addSpirit = function(spirit) {
   spirit.id = this.newId();

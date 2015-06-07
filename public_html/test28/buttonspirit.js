@@ -24,7 +24,7 @@ function ButtonSpirit() {
 ButtonSpirit.prototype = new Spirit();
 ButtonSpirit.prototype.constructor = ButtonSpirit;
 
-ButtonSpirit.POINTER_RADIUS = 0.2;
+ButtonSpirit.POINTER_RADIUS = 0.0;
 
 ButtonSpirit.prototype.setMultiPointer = function(multiPointer) {
   this.multiPointer = multiPointer;

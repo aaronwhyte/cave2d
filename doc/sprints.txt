@@ -578,9 +578,9 @@ v PauseScreen
 v PlayScreen
   v pause
   v quit
-  - some fun sprites & game controls?
-- Give buttons boxy backgrounds
-- extract common stuff from screens
+  x some fun sprites & game controls? nah.
+v Give buttons boxy backgrounds
+v extract common stuff from screens
 
 Test 29: Settings
 Add stuff to main menu:

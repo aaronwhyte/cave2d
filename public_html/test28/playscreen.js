@@ -53,15 +53,21 @@ PlayScreen.prototype.initWorld = function() {
   this.world = new World();
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 1;
-  this.labelMaker = new LabelMaker(this.glyphs);
-  this.startMatrix = new Matrix44();
-  this.nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
+  var labelMaker = new LabelMaker(this.glyphs);
 
   var controller = this.controller;
   var sfx = this.sfx;
 
-  this.addButton("PLAYING!", function(world, x, y) {});
-  this.addButton("PAUSE?", function(world, x, y) {
+  var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
+  buttonMaker
+      .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
+      .setPaddingXY(1.5, 0.5);
+
+  buttonMaker.setLetterColor([0.5, 2, 1.5]).setBlockColor(null);
+  buttonMaker.addButton(0, 0, "PLAYING", null);
+
+  buttonMaker.setLetterColor([1, 4, 3]).setBlockColor([0.5, 2, 1.5]);
+  buttonMaker.addButton(0, -8, "PAUSE", function(world, x, y) {
     var attack = 0.01;
     var sustain = 0;
     var decay = 0.4;
@@ -70,28 +76,13 @@ PlayScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main28.SCREEN_PAUSE);
   });
-};
 
-PlayScreen.prototype.addButton = function(text, func) {
-  var model = this.labelMaker.createLabelModel(this.startMatrix, this.nextCharMatrix, text);
-  var brect = model.getBoundingRect();
-  model.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, 0));
-  var b = Body.alloc();
-  b.shape = Body.Shape.RECT;
-  var pos = new Vec2d(0, -5 * this.nextButtonNum);
-  b.setPosAtTime(pos, this.world.now);
-  this.nextButtonNum++;
-  b.rectRad.set(brect.rad);
-  b.group = 0;
-  b.mass = Infinity;
-  b.pathDurationMax = Infinity;
-  var spirit = new ButtonSpirit();
-  spirit.bodyId = this.world.addBody(b);
-  spirit.setMultiPointer(this.multiPointer);
-  spirit.setModelStamp(model.createModelStamp(this.renderer.gl));
-  spirit.setOnClick(func);
-  this.world.addSpirit(spirit);
-  this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
+  for (var spiritId in this.world.spirits) {
+    var s = this.world.spirits[spiritId];
+    var b = this.world.bodies[s.bodyId];
+    this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
+  }
+  this.worldBoundingRect.coverXY(0, -16);
 };
 
 PlayScreen.prototype.clock = function() {
@@ -139,27 +130,28 @@ PlayScreen.prototype.drawScene = function() {
 
 PlayScreen.prototype.updateViewMatrix = function() {
   var br = this.worldBoundingRect;
-
-  // set view matrix
-  var ratio = (2 - this.visibility) * Math.min(this.canvas.height, this.canvas.width) / (1.2 * Math.max(br.rad.x, br.rad.y));
   this.viewMatrix.toIdentity();
+  var ratio = Math.min(this.canvas.height, this.canvas.width) / Math.max(br.rad.x, br.rad.y);
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
               ratio / this.canvas.width,
               ratio / this.canvas.height,
-              0.5));
+          0.2));
 
-  // Shear
-  this.mat4.toIdentity();
-  this.mat4.setColRowVal(2, 1, -0.5);
-  this.viewMatrix.multiply(this.mat4);
-
-  // center and sink
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, -4 * (this.visibility - 1)));
+  // center
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(
+      -br.pos.x,
+      -br.pos.y,
+      0));
 
   // rotate
+  var viz3 = this.visibility;// * this.visibility * this.visibility;
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
-  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI / 8));
+
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 13 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI/2 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI/2 * (1 - viz3)));
+
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
 
   this.renderer.setViewMatrix(this.viewMatrix);

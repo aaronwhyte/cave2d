@@ -11,8 +11,19 @@ Vertex.prototype.setPositionXYZ = function(x, y, z) {
   return this;
 };
 
+Vertex.prototype.setPositionArray = function(xyz) {
+  this.setPositionXYZ(xyz[0], xyz[1], xyz[2]);
+  return this;
+};
+
+
 Vertex.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
+  return this;
+};
+
+Vertex.prototype.setColorArray = function(rgb) {
+  this.setColorRGB(rgb[0], rgb[1], rgb[2]);
   return this;
 };
 

@@ -53,16 +53,21 @@ TitleScreen.prototype.initWorld = function() {
   this.world = new World();
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 1;
-  this.labelMaker = new LabelMaker(this.glyphs);
-  this.startMatrix = new Matrix44();
-  this.nextCharMatrix = new Matrix44().toTranslateOpXYZ(3, 0, 0);
+  var labelMaker = new LabelMaker(this.glyphs);
 
   var controller = this.controller;
-
   var sfx = this.sfx;
-  this.addButton("TEST 28", function(world, x, y) {});
 
-  this.addButton("PLAY?", function(world, x, y) {
+  var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
+  buttonMaker
+      .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
+      .setPaddingXY(1.5, 0.5);
+
+  buttonMaker.setLetterColor([0.5, 1.5, 2]).setBlockColor(null);
+  buttonMaker.addButton(0, 0, "TEST 28", null);
+
+  buttonMaker.setLetterColor([1, 3, 4]).setBlockColor([0.5, 1.5, 2]);
+  buttonMaker.addButton(0, -8, "PLAY", function(world, x, y) {
     var freq = 0;
     for (var delay = 0; delay < 0.3; delay += Math.random() * 0.1 + 0.05) {
       freq += 300 + 1000 * Math.random();
@@ -76,45 +81,13 @@ TitleScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.gotoScreen(Main28.SCREEN_PLAY);
   });
-};
 
-TitleScreen.prototype.addButton = function(text, func) {
-  var labelModel = this.labelMaker.createLabelModel(this.startMatrix, this.nextCharMatrix, text);
-  var brect = labelModel.getBoundingRect().padXY(1.5, 0.5);
-
-  labelModel.transformPositions(new Matrix44().toTranslateOpXYZ(-brect.pos.x, -brect.pos.y, -0.6));
-  for (var i = 0; i < labelModel.vertexes.length; i++) {
-    var vert = labelModel.vertexes[i];
-    vert.setColorRGB(1.5, 2, 1);
+  for (var spiritId in this.world.spirits) {
+    var s = this.world.spirits[spiritId];
+    var b = this.world.bodies[s.bodyId];
+    this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
-  var cuboid = RigidModel.createCube();
-  cuboid.transformPositions(new Matrix44().toScaleOpXYZ(brect.rad.x, brect.rad.y, 1));
-  cuboid.transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 1));
-  var bright = 0.9;
-  for (var i = 0; i < cuboid.vertexes.length; i++) {
-    var vert = cuboid.vertexes[i];
-    vert.setColorRGB(1.5 * bright, 2 * bright, 0.9 * bright);
-  }
-  labelModel.addRigidModel(cuboid);
-  labelModel.transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -1));
-
-
-  var b = Body.alloc();
-  b.shape = Body.Shape.RECT;
-  var pos = new Vec2d(0, -6 * this.nextButtonNum);
-  b.setPosAtTime(pos, this.world.now);
-  this.nextButtonNum++;
-  b.rectRad.set(brect.rad);
-  b.group = 0;
-  b.mass = Infinity;
-  b.pathDurationMax = Infinity;
-  var spirit = new ButtonSpirit();
-  spirit.bodyId = this.world.addBody(b);
-  spirit.setMultiPointer(this.multiPointer);
-  spirit.setModelStamp(labelModel.createModelStamp(this.renderer.gl));
-  spirit.setOnClick(func);
-  this.world.addSpirit(spirit);
-  this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
+  this.worldBoundingRect.coverXY(0, -16);
 };
 
 TitleScreen.prototype.clock = function() {
@@ -162,29 +135,28 @@ TitleScreen.prototype.drawScene = function() {
 
 TitleScreen.prototype.updateViewMatrix = function() {
   var br = this.worldBoundingRect;
-
   this.viewMatrix.toIdentity();
-
-  var ratio = Math.min(this.canvas.height, this.canvas.width) / (1 * Math.max(br.rad.x, br.rad.y));
+  var ratio = Math.min(this.canvas.height, this.canvas.width) / Math.max(br.rad.x, br.rad.y);
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
               ratio / this.canvas.width,
               ratio / this.canvas.height,
-              0.15));
-
-  // Shear
-  this.mat4.toIdentity();
-  this.mat4.setColRowVal(2, 1, -0.7);
-  this.viewMatrix.multiply(this.mat4);
+              0.2));
 
   // center
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -30 * (this.visibility - 1) * (this.visibility - 1) * (this.visibility - 1) - br.pos.y, 0));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(
+      -br.pos.x,
+      -br.pos.y,
+      0));
 
   // rotate
-  var viz3 = this.visibility * this.visibility;
+  var viz3 = this.visibility;// * this.visibility * this.visibility;
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
-  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI * viz3 / 8));
-  this.viewMatrix.multiply(this.mat4.toRotateXOp(((6 * viz3) - 5) * Math.PI / 10));
+
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 13 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateYOp(Math.PI/2 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateXOp(Math.PI/2 * (1 - viz3)));
+
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
 
   this.renderer.setViewMatrix(this.viewMatrix);
