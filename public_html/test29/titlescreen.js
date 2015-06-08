@@ -64,7 +64,7 @@ TitleScreen.prototype.initWorld = function() {
       .setPaddingXY(1.5, 0.5);
 
   buttonMaker.setLetterColor([0.25, 0.75, 1]).setBlockColor(null);
-  buttonMaker.addButton(0, 0, "TEST 28", null);
+  buttonMaker.addButton(0, 0, "TEST 29", null);
 
   buttonMaker.setLetterColor([0.5, 1.5, 2]).setBlockColor([0.25, 0.75, 1]);
   buttonMaker.addButton(0, -8, "PLAY", function(world, x, y) {
