@@ -583,9 +583,16 @@ v Give buttons boxy backgrounds
 v extract common stuff from screens
 
 Test 29: Settings
+Some of these APIs need to be called from an event handler. But I've separated my buttons from
+the actual events. I may have to partially undo that, or at least work alongside it...
+I need to detect when a button is clicked or entered or whatever. Bah.
+v Add proper listeners for anything that wants to execute in a real event callstack.
+
 Add stuff to main menu:
 - fullscreen toggle
-  - needs to toggle mode in event handler?
+  v needs to toggle mode in event handler?
+  v in title screen
+  - in paused screen
 - pointerlock toggle
   - invisible until we see some mouse moves?
   - when to toggle mode?
@@ -613,40 +620,6 @@ New Controls
 - Last drag dictates aim unit-vec
 - Aim-lock button for nonstop shooters?
 
-
-- TitleScreen I
-  v constructor
-  v start()
-  - print:
-    F r a c a s II
-    The Frackening
-  - buttons
-    - start game
-    - full screen
-    - mouse lock
-  - stop()
-
-- PlayScreen
-  - Takes exactly one level string
-  - start
-    - RAF loop
-    - input listeners
-    - UI: pause button at top center
-  - resume
-  - pause
-  - stop: stops listeners and, when totally off stage, stops RAF loop. In theory it can be GCed then.
-
-- BetweenLevelsScreen?
-
-- PauseScreen
-  - continue game button
-  - quit button
-
-- SettingsScreen
-  - nothing yet
-  - back button
-- VictoryLayer
-  - ???
 
 Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.

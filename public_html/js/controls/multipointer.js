@@ -45,6 +45,8 @@ function MultiPointer(canvas, viewMatrix) {
     self.onMouseUp(e);
   };
 
+  this.domEventListeners = new ArraySet();
+
   this.listening = false;
 }
 
@@ -88,6 +90,21 @@ MultiPointer.prototype.stopListening = function() {
     }
   }
   return this;
+};
+
+/**
+ * Adds a function that will be called as part of the read DOM event handler stack,
+ * so it will be able to do things like toggle fullscreen or pointer events.
+ * The function will be called with a PointerEvent, the same one that gets added to
+ * the internal queue.
+ * @param {Function} fn
+ */
+MultiPointer.prototype.addListener = function(fn) {
+  this.domEventListeners.put(fn);
+};
+
+MultiPointer.prototype.removeListener = function(fn) {
+  this.domEventListeners.remove(fn);
 };
 
 MultiPointer.prototype.getQueueSize = function() {
@@ -197,6 +214,7 @@ MultiPointer.prototype.down = function(id, x, y) {
     this.eventCoords[id] = Vec2d.alloc();
   }
   this.eventCoords[id].setXY(x, y);
+  this.callListeners(e);
 };
 
 MultiPointer.prototype.move = function(id, x, y) {
@@ -211,6 +229,7 @@ MultiPointer.prototype.move = function(id, x, y) {
 
     this.positions[id].set(e.pos);
     this.eventCoords[id].setXY(x, y);
+    this.callListeners(e);
   }
 };
 
@@ -229,6 +248,14 @@ MultiPointer.prototype.up = function(id, x, y) {
 
     this.eventCoords[id].free();
     delete this.eventCoords[id];
+    this.callListeners(e);
+  }
+};
+
+MultiPointer.prototype.callListeners = function(e) {
+  var listeners = this.domEventListeners.vals;
+  for (var i = 0; i < listeners.length; i++) {
+    listeners[i](e);
   }
 };
 
