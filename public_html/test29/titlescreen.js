@@ -82,7 +82,7 @@ TitleScreen.prototype.initWorld = function() {
     controller.gotoScreen(Main29.SCREEN_PLAY);
   });
 
-  var spiritId = buttonMaker.addButton(0, -8 -8, "FULLSCREEN", function() {});
+  var spiritId = buttonMaker.addButton(0, -8 -6, "FULLSCRN", function() {});
   // Look for new overlaps while still in the browser's event handling callstack. Hacky!
   var world = this.world;
   var spirit = world.spirits[spiritId];
@@ -115,7 +115,8 @@ TitleScreen.prototype.initWorld = function() {
     var b = this.world.bodies[s.bodyId];
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
-  this.worldBoundingRect.coverXY(0, -16);
+  this.worldBoundingRect.coverXY(0, 5);
+  this.worldBoundingRect.coverXY(0, -27);
 };
 
 TitleScreen.prototype.clock = function() {
@@ -181,9 +182,13 @@ TitleScreen.prototype.updateViewMatrix = function() {
   var viz3 = this.visibility;// * this.visibility * this.visibility;
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
 
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 13 * (1 - viz3)));
-  this.viewMatrix.multiply(this.mat4.toRotateYOp(Math.PI/2 * (1 - viz3)));
-  this.viewMatrix.multiply(this.mat4.toRotateXOp(Math.PI/2 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 20 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI/4 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI*0.5 * (1 - viz3)));
+
+//  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, -10 * (1 - viz3), 20 * (1 - viz3)));
+//  this.viewMatrix.multiply(this.mat4.toRotateYOp(-Math.PI/4 * (1 - viz3)));
+//  this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI/3 * (1 - viz3)));
 
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
 

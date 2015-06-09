@@ -100,7 +100,7 @@ Glyphs.prototype.initModels = function() {
       -w + r, h, w - r, h,
       w, h - r, w, -h + r,
       -w + r, -h, w - r, -h,
-      w * 0.2, -h * 0.5, w * 1.2, -h * 1.2);
+      w * 0.4, -h * 0.4, w * 1.4, -h);
   g('R',
       -w, h, -w, -h,
       -w, h, w, h,

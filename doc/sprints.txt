@@ -589,10 +589,10 @@ I need to detect when a button is clicked or entered or whatever. Bah.
 v Add proper listeners for anything that wants to execute in a real event callstack.
 
 Add stuff to main menu:
-- fullscreen toggle
+v fullscreen toggle
   v needs to toggle mode in event handler?
   v in title screen
-  - in paused screen
+  v in paused screen
 - pointerlock toggle
   - invisible until we see some mouse moves?
   - when to toggle mode?

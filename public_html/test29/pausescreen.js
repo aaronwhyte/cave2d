@@ -76,7 +76,36 @@ PauseScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main29.SCREEN_PLAY);
   });
-  buttonMaker.addButton(0, -14, "QUIT", function(world, x, y) {
+
+  var spiritId = buttonMaker.addButton(0, -8 -6, "FULLSCRN", function() {});
+  // Look for new overlaps while still in the browser's event handling callstack. Hacky!
+  var world = this.world;
+  var spirit = world.spirits[spiritId];
+  var renderer = this.renderer;
+  this.multiPointer.addListener(function(pointerEvent) {
+    if (spirit.processPointerEvent(world, renderer, pointerEvent)) {
+      controller.requestFullScreen();
+      var voices = 5;
+      var noteLen = 0.4 / voices;
+      var maxLength = 0;
+      var baseFreq = 100;
+      for (var i = 0; i < voices; i++) {
+        var delay = i * noteLen;
+        var attack = 0;
+        var sustain = noteLen * 0.7;
+        var decay = noteLen * 0.3;
+        maxLength = Math.max(maxLength, delay + attack + decay);
+        var freq1 = Math.pow(i+1, 2) * baseFreq;
+        var freq2 = freq1 * 2;
+        sfx.sound(0, 0, 0, 0.2, attack, sustain, decay, freq1, freq2, 'square', delay);
+        sfx.sound(0, 0, 0, 0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
+      }
+      spirit.lastSoundMs = Date.now();
+      spirit.soundLength = 1000 * maxLength;
+    }
+  });
+
+  buttonMaker.addButton(0, -8 -6 -6, "QUIT", function(world, x, y) {
     var voices = 8;
     var maxLength = 0;
     for (var i = 0; i < voices; i++) {
@@ -99,7 +128,8 @@ PauseScreen.prototype.initWorld = function() {
     var b = this.world.bodies[s.bodyId];
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
-  this.worldBoundingRect.coverXY(0, -16);
+  this.worldBoundingRect.coverXY(0, 5);
+  this.worldBoundingRect.coverXY(0, -27);
 };
 
 PauseScreen.prototype.clock = function() {
@@ -165,9 +195,10 @@ PauseScreen.prototype.updateViewMatrix = function() {
   var viz3 = this.visibility;// * this.visibility * this.visibility;
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
 
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 13 * (1 - viz3)));
-  this.viewMatrix.multiply(this.mat4.toRotateZOp(-Math.PI/2 * (1 - viz3)));
-  this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI/2 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 17 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI*0.4 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateYOp(Math.PI*0.3 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI*0.5 * (1 - viz3)));
 
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
 
