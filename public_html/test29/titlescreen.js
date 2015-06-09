@@ -69,13 +69,13 @@ TitleScreen.prototype.initWorld = function() {
   buttonMaker.setLetterColor([0.5, 1.5, 2]).setBlockColor([0.25, 0.75, 1]);
   buttonMaker.addButton(0, -8, "PLAY", function(world, x, y) {
     var freq = 0;
-    for (var delay = 0; delay < 0.3; delay += Math.random() * 0.1 + 0.05) {
-      freq += 300 + 1000 * Math.random();
-      var attack = 0.01;
-      var sustain = (4 + Math.random() * 2) / 60;
-      var decay = (20 + 10 * Math.random()) / 60;
-      sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq, 1, 'sine', delay);
-      sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq * (2 + Math.random()), 1, 'square', delay);
+    for (var delay = 0; delay < 0.1; delay += (Math.random() + 1) * 0.05) {
+      freq += 200 + 200 * Math.random();
+      var decay = 0.04;
+      var attack = 0.05 * (Math.random() + 1);
+      var sustain = 0.4 - attack;
+      sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq/4, freq, 'sine', delay);
+      sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq/4, freq * (2 + Math.random()), 'sine', delay);
     }
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
@@ -87,6 +87,7 @@ TitleScreen.prototype.initWorld = function() {
   var world = this.world;
   var spirit = world.spirits[spiritId];
   var renderer = this.renderer;
+  var vec4 = new Vec4();
   this.multiPointer.addListener(function(pointerEvent) {
     if (spirit.processPointerEvent(world, renderer, pointerEvent)) {
       controller.requestFullScreen();
@@ -102,8 +103,14 @@ TitleScreen.prototype.initWorld = function() {
         maxLength = Math.max(maxLength, delay + attack + decay);
         var freq1 = Math.pow(i+1, 2) * baseFreq;
         var freq2 = freq1 * 2;
-        sfx.sound(0, 0, 0, 0.2, attack, sustain, decay, freq1, freq2, 'square', delay);
-        sfx.sound(0, 0, 0, 0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
+        vec4.setXYZ(pointerEvent.pos.x, pointerEvent.pos.y, 0);
+        vec4.transform(renderer.getViewMatrix());
+        var x = vec4.v[0];
+        var y = vec4.v[1];
+        sfx.sound(x, y, 0,
+            0.2, attack, sustain, decay, freq1, freq2, 'square', delay);
+        sfx.sound(x, y, 0,
+            0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
       }
       spirit.lastSoundMs = Date.now();
       spirit.soundLength = 1000 * maxLength;
@@ -117,6 +124,7 @@ TitleScreen.prototype.initWorld = function() {
   }
   this.worldBoundingRect.coverXY(0, 5);
   this.worldBoundingRect.coverXY(0, -27);
+  console.log(this.worldBoundingRect);
 };
 
 TitleScreen.prototype.clock = function() {
