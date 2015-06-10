@@ -68,10 +68,10 @@ PlayScreen.prototype.initWorld = function() {
 
   buttonMaker.setLetterColor([0.5, 2, 1.5]).setBlockColor([0.25, 1, 0.75]);
   buttonMaker.addButton(0, -8, "PAUSE", function(world, x, y) {
-    var attack = 0.02;
+    var attack = 0.04;
     var sustain = 0;
     var decay = 0.3;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, 2000, 50, 'square');
+    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, 1000, 100, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main29.SCREEN_PAUSE);
