@@ -57,6 +57,8 @@ PlayScreen.prototype.initWorld = function() {
 
   var controller = this.controller;
   var sfx = this.sfx;
+  var world = this.world;
+  var self = this;
 
   var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
   buttonMaker
@@ -66,8 +68,9 @@ PlayScreen.prototype.initWorld = function() {
   buttonMaker.setLetterColor([0.25, 1, 0.75]).setBlockColor(null);
   buttonMaker.addButton(0, 0, "PLAYING", null);
 
+  // PAUSE
   buttonMaker.setLetterColor([0.5, 2, 1.5]).setBlockColor([0.25, 1, 0.75]);
-  buttonMaker.addButton(0, -8, "PAUSE", function(world, x, y) {
+  var spiritId = buttonMaker.addButton(0, -8, "PAUSE", function(world, x, y) {
     var attack = 0.04;
     var sustain = 0;
     var decay = 0.3;
@@ -75,6 +78,14 @@ PlayScreen.prototype.initWorld = function() {
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main29.SCREEN_PAUSE);
+  });
+  var pauseSpirit = this.world.spirits[spiritId];
+  document.body.addEventListener('keydown', function(e) {
+    // space is keyCode 32
+    if (self.visibility == 1 && e.keyCode == 32) {
+      // The x and y values are clip coords...?
+      pauseSpirit.onClick(world, 0, 0);
+    }
   });
 
   for (var spiritId in this.world.spirits) {

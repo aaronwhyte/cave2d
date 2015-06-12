@@ -582,21 +582,21 @@ v PlayScreen
 v Give buttons boxy backgrounds
 v extract common stuff from screens
 
-Test 29: Settings
+Test 29: Full Screen & Pointer Lock
 Some of these APIs need to be called from an event handler. But I've separated my buttons from
 the actual events. I may have to partially undo that, or at least work alongside it...
 I need to detect when a button is clicked or entered or whatever. Bah.
 v Add proper listeners for anything that wants to execute in a real event callstack.
-
-Add stuff to main menu:
 v fullscreen button
   v needs to trigger mode in event handler?
   v in title screen
   v in paused screen
-- pointerlock button
-  - create fake mouse pointer that can be controlled with pointerlocked mouse? weird.
-- volume control
-  - defaults to off?
+v space to play, pause, and resume.
+- pointerlock on play screen, off otherwise.
+  - on when Play or Resume is clicked
+  - on when the play page is mouse-clicked, since the user can escape and then return. A little janky but not too bad.
+  - off when leaving the play page.
+
 
 Physics check
 - Unit test collider

@@ -75,9 +75,9 @@ Main29.prototype.loop = function() {
     var id = Main29.SCREENS[i];
     var step = 0.5;
     if (this.frontScreenId == id) {
-      this.visibility[id] = Math.min(1, this.visibility[id] + step/15);
+      this.visibility[id] = Math.min(1, this.visibility[id] + step/10);
     } else {
-      this.visibility[id] = Math.max(0, this.visibility[id] - step/20);
+      this.visibility[id] = Math.max(0, this.visibility[id] - step/40);
     }
     this.screens[id].setScreenListening(this.visibility[id] > 0.9);
     if (this.visibility[id]) {

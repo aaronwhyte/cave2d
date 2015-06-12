@@ -57,6 +57,8 @@ PauseScreen.prototype.initWorld = function() {
 
   var controller = this.controller;
   var sfx = this.sfx;
+  var world = this.world;
+  var self = this;
 
   var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
   buttonMaker
@@ -66,8 +68,9 @@ PauseScreen.prototype.initWorld = function() {
   buttonMaker.setLetterColor([1, 0.75, 0.25]).setBlockColor(null);
   buttonMaker.addButton(0, 0, "PAUSED", null);
 
+  // RESUME
   buttonMaker.setLetterColor([2, 1.5, 0.5]).setBlockColor([1, 0.75, 0.25]);
-  buttonMaker.addButton(0, -8, "RESUME", function(world, x, y) {
+  var spiritId = buttonMaker.addButton(0, -8, "RESUME", function(world, x, y) {
     var attack = 0.2;
     var sustain = 0;
     var decay = 0.01;
@@ -76,10 +79,18 @@ PauseScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main29.SCREEN_PLAY);
   });
+  var resumeSpirit = this.world.spirits[spiritId];
+  document.body.addEventListener('keydown', function(e) {
+    // space is keyCode 32
+    if (self.visibility == 1 && e.keyCode == 32) {
+      // The x and y values are clip coords...?
+      resumeSpirit.onClick(world, 0, 0);
+    }
+  });
 
+  // FULLSCRN
   var spiritId = buttonMaker.addButton(0, -8 -6, "FULLSCRN", function() {});
   // Look for new overlaps while still in the browser's event handling callstack. Hacky!
-  var world = this.world;
   var spirit = world.spirits[spiritId];
   var renderer = this.renderer;
   var vec4 = new Vec4();
@@ -112,6 +123,7 @@ PauseScreen.prototype.initWorld = function() {
     }
   });
 
+  // QUIT
   buttonMaker.addButton(0, -8 -6 -6, "QUIT", function(world, x, y) {
     var voices = 4;
     var maxLength = 0;
