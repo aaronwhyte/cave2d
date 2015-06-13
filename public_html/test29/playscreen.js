@@ -26,11 +26,14 @@ PlayScreen.prototype = new Screen();
 PlayScreen.prototype.constructor = PlayScreen;
 
 PlayScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
+  if (listen == this.listening) {
+    return;
+  }
   if (listen) {
     this.multiPointer.startListening();
   } else {
     this.multiPointer.stopListening();
+    this.controller.exitPointerLock();
   }
   this.listening = listen;
 };
@@ -88,6 +91,11 @@ PlayScreen.prototype.initWorld = function() {
     if (self.visibility == 1 && e.keyCode == 32) {
       // The x and y values are clip coords...?
       pauseSpirit.onClick(world, 0, 0);
+    }
+  });
+  document.body.addEventListener('click', function(e) {
+    if (self.visibility == 1) {
+      self.controller.requestPointerLock();
     }
   });
 

@@ -96,7 +96,7 @@ PointerLockStick.prototype.requestLock = function() {
 };
 
 PointerLockStick.prototype.exitPointerLock = function() {
-  document.exitPointerLock = document.exitLock ||
+  document.exitPointerLock = document.exitPointerLock ||
       document.mozExitPointerLock ||
       document.webkitExitPointerLock;
   if (document.exitPointerLock) {

@@ -592,11 +592,10 @@ v fullscreen button
   v in title screen
   v in paused screen
 v space to play, pause, and resume.
-- pointerlock on play screen, off otherwise.
-  - on when Play or Resume is clicked
-  - on when the play page is mouse-clicked, since the user can escape and then return. A little janky but not too bad.
-  - off when leaving the play page.
-
+v pointerlock on in play screen, off otherwise.
+  v on when Play or Resume is clicked
+  v on when the play page is mouse-clicked, since the user can escape and then return. A little janky but not too bad.
+  v off when leaving the play page.
 
 Physics check
 - Unit test collider

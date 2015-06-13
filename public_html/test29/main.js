@@ -103,3 +103,23 @@ Main29.prototype.requestFullScreen = function() {
     elem.webkitRequestFullscreen();
   }
 };
+
+Main29.prototype.requestPointerLock = function() {
+  this.canvas.requestPointerLock = this.canvas.requestPointerLock ||
+      this.canvas.mozRequestPointerLock ||
+      this.canvas.webkitRequestPointerLock;
+  if (this.canvas.requestPointerLock) {
+    this.canvas.requestPointerLock();
+  }
+};
+
+Main29.prototype.exitPointerLock = function() {
+  document.exitPointerLock = document.exitPointerLock ||
+      document.mozExitPointerLock ||
+      document.webkitExitPointerLock;
+  if (document.exitPointerLock) {
+    document.exitPointerLock();
+  } else {
+    console.log('exitPointerLock UNPOSSIBLE');
+  }
+};

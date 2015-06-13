@@ -62,6 +62,7 @@ TitleScreen.prototype.initWorld = function() {
   var controller = this.controller;
   var sfx = this.sfx;
   var world = this.world;
+  var renderer = this.renderer;
 
   var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
   buttonMaker
@@ -87,8 +88,13 @@ TitleScreen.prototype.initWorld = function() {
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.gotoScreen(Main29.SCREEN_PLAY);
+    controller.requestPointerLock();
   });
   var playSpirit = this.world.spirits[spiritId];
+  // Look for new overlaps while still in the browser's event handling callstack.
+  this.multiPointer.addListener(function(pointerEvent) {
+    playSpirit.processPointerEvent(world, renderer, pointerEvent);
+  });
   document.body.addEventListener('keydown', function(e) {
     // space is keyCode 32
     if (self.visibility == 1 && e.keyCode == 32) {
@@ -119,9 +125,8 @@ TitleScreen.prototype.initWorld = function() {
     fullscrnSpirit.lastSoundMs = Date.now();
     fullscrnSpirit.soundLength = 1000 * maxLength;
   });
-  // Look for new overlaps while still in the browser's event handling callstack. Hacky!
+  // Look for new overlaps while still in the browser's event handling callstack.
   var fullscrnSpirit = world.spirits[spiritId];
-  var renderer = this.renderer;
   this.multiPointer.addListener(function(pointerEvent) {
     if (fullscrnSpirit.processPointerEvent(world, renderer, pointerEvent)) {
       controller.requestFullScreen();

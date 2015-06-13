@@ -81,8 +81,19 @@ PauseScreen.prototype.initWorld = function() {
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main29.SCREEN_PLAY);
+    controller.requestPointerLock();
   });
   var resumeSpirit = this.world.spirits[spiritId];
+  this.multiPointer.addListener(function(pointerEvent) {
+    resumeSpirit.processPointerEvent(world, renderer, pointerEvent);
+  });
+  document.body.addEventListener('keydown', function(e) {
+    // space is keyCode 32
+    if (self.visibility == 1 && e.keyCode == 32) {
+      // The x and y values are clip coords...?
+      resumeSpirit.onClick(world, 0, 0);
+    }
+  });
   document.body.addEventListener('keydown', function(e) {
     // space is keyCode 32
     if (self.visibility == 1 && e.keyCode == 32) {
@@ -114,7 +125,7 @@ PauseScreen.prototype.initWorld = function() {
     fullscrnSpirit.lastSoundMs = Date.now();
     fullscrnSpirit.soundLength = 1000 * maxLength;
   });
-  // Look for new overlaps while still in the browser's event handling callstack. Hacky!
+  // Look for new overlaps while still in the browser's event handling callstack.
   var fullscrnSpirit = world.spirits[spiritId];
   var renderer = this.renderer;
   this.multiPointer.addListener(function(pointerEvent) {
@@ -128,7 +139,6 @@ PauseScreen.prototype.initWorld = function() {
     var voices = 4;
     var maxLength = 0;
     for (var i = 0; i < voices; i++) {
-//      var delay = (i % 2 ? 0 : 0.1) * (1 + 0.1 * Math.random());
       var delay = 0.05 * Math.random();
       var attack = 0.05;
       var sustain = 0.1 * (Math.random() + 0.01);

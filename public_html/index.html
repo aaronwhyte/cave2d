@@ -44,7 +44,16 @@ which was based on an 8-bit Atari game, <a href="https://www.google.com/#q=Dandy
 
 <h1>User Interface</h1>
 
-<h2><a href="test29">Test 29 - Full Screen &amp; Pointer Lock [work in progress]</a></h2>
+<h2><a href="test29">Test 29 - Full Screen &amp; Pointer Lock</a></h2>
+Let the user enter fullscreen mode from the title screen or the PAUSED screen. Fullscreen is supported on all
+desktop browsers, and in Android, in Chrome and Firefox. Safari on iOS 8 doesn't support it yet.
+<a href="http://caniuse.com/#search=fullscreen">caniuse.com/#search=fullscreen</a>
+<p>
+Request pointer lock when entering PLAYING screen. Exit pointerlock when leaving that screen.
+Browsers always exit pointerlock when "esc" is pressed, so also re-request it if the user clicks the PLAYING screen.
+Chrome and Firefox are the only
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/requestPointerLock#Browser_compatibility">desktop
+browsers that support pointerlock</a> as of June 2015.
 
 <h2><a href="test28">Test 28 - Multiple Screens</a></h2>
 Until now, each test has had one global world, renderer, and event handler.
