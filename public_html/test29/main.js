@@ -79,7 +79,7 @@ Main29.prototype.loop = function() {
     } else {
       this.visibility[id] = Math.max(0, this.visibility[id] - step/40);
     }
-    this.screens[id].setScreenListening(this.visibility[id] > 0.9);
+    this.screens[id].setScreenListening(this.frontScreenId == id);
     if (this.visibility[id]) {
       this.screens[id].drawScreen(this.visibility[id]);
     }

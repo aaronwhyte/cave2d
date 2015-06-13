@@ -20,6 +20,8 @@ function ButtonSpirit() {
   this.modelMatrix = new Matrix44();
 
   this.overlapIds = new ArraySet();
+
+  this.clicked = false;
 }
 ButtonSpirit.prototype = new Spirit();
 ButtonSpirit.prototype.constructor = ButtonSpirit;
@@ -65,8 +67,9 @@ ButtonSpirit.prototype.lookForClick = function(world, renderer) {
 };
 
 /**
- * @param world
- * @param e
+ * @param {World} world
+ * @param {Renderer} renderer
+ * @param {PointerEvent} e
  * @returns {boolean} true if a new overlap is detected
  */
 ButtonSpirit.prototype.processPointerEvent = function(world, renderer, e) {
@@ -83,7 +86,10 @@ ButtonSpirit.prototype.processPointerEvent = function(world, renderer, e) {
       if (this.isOverlapping(world, e.pos)) {
         this.vec4.setXYZ(e.pos.x, e.pos.y, 0);
         this.vec4.transform(renderer.getViewMatrix());
-        this.onClick(world, this.vec4.v[0], this.vec4.v[1]);
+        if (!this.clicked) {
+          this.onClick(world, this.vec4.v[0], this.vec4.v[1]);
+          this.clicked = true;
+        }
         // Only allow one per frame.
         return true;
       }
@@ -101,9 +107,9 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
     life = 1 - (Date.now() - this.lastSoundMs) / this.soundLength;
     var t = Date.now() / 300;
     this.color.setXYZ(
-            0.5 + life * 0.5 * Math.sin(t + 0),
-            0.5 + life * 0.5 * Math.sin(t + 2*Math.PI/3),
-            0.5 + life * 0.5 * Math.sin(t + 2*2*Math.PI/3));
+            1 + life * Math.sin(t + 0),
+            1 + life * Math.sin(t + 2*Math.PI/3),
+            1 + life * Math.sin(t + 2*2*Math.PI/3));
   } else {
     this.color.setXYZ(1, 1, 1);
   }
@@ -115,6 +121,8 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
   this.modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
+
+  this.clicked = false;
 };
 
 ButtonSpirit.prototype.getBody = function(world) {

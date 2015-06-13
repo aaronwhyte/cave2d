@@ -20,16 +20,19 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 
   this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
+  this.listening = false;
 }
 PlayScreen.prototype = new Screen();
 PlayScreen.prototype.constructor = PlayScreen;
 
 PlayScreen.prototype.setScreenListening = function(listen) {
+  if (listen == this.listening) return;
   if (listen) {
     this.multiPointer.startListening();
   } else {
     this.multiPointer.stopListening();
   }
+  this.listening = listen;
 };
 
 PlayScreen.prototype.drawScreen = function(visibility) {
