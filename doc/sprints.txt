@@ -596,14 +596,11 @@ v pointerlock on in play screen, off otherwise.
   v on when Play or Resume is clicked
   v on when the play page is mouse-clicked, since the user can escape and then return. A little janky but not too bad.
   v off when leaving the play page.
-
-Physics check
-- Unit test collider
-- Make a standard world event processor
-- Repro problem where tons calculating far into the future without rendering causes missed collisions?
+v Don't listen to mouseclick on buttons when pointerlocked. Hmmm. Fix in MultiPointer.
+- Unlisten correctly
 
 New Controls
-- Touch to engage friction, release to float
+x Touch to engage friction, release to float?
 - Frame-by-frame coord change dictates target velocity
 - Apply accel to try to reach target velocity
 - Max drive accel stat matters
@@ -615,6 +612,10 @@ New Controls
 - Last drag dictates aim unit-vec
 - Aim-lock button for nonstop shooters?
 
+Physics revisited a little?
+- Unit test collider
+- Make a standard world event processor?
+- Repro problem where calculating far into the future without rendering causes missed collisions?
 
 Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.

@@ -21,16 +21,52 @@ function PauseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
   this.listening = false;
+  this.spacebarFn = this.getSpacebarFn();
+  this.multiPointerLockFn = this.getMultiPointerLockFn();
+  this.fullscrnFn = this.getFullscrnFn();
 }
 PauseScreen.prototype = new Screen();
 PauseScreen.prototype.constructor = PauseScreen;
+
+PauseScreen.prototype.getSpacebarFn = function() {
+  var self = this;
+  return function(e) {
+    // space is keyCode 32
+    if (e.keyCode == 32) {
+      // The x and y values are clip coords...?
+      self.resumeSpirit.onClick(self.world, 0, 0);
+    }
+  };
+};
+
+PauseScreen.prototype.getMultiPointerLockFn = function() {
+  var self = this;
+  return function(pointerEvent) {
+    self.resumeSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+  };
+};
+
+PauseScreen.prototype.getFullscrnFn = function() {
+  var self = this;
+  return function(pointerEvent) {
+    if (self.fullscrnSpirit.processPointerEvent(self.world, self.renderer, pointerEvent)) {
+      self.controller.requestFullScreen();
+    }
+  };
+};
 
 PauseScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   if (listen) {
     this.multiPointer.startListening();
+    document.body.addEventListener('keydown', this.spacebarFn);
+    this.multiPointer.addListener(this.multiPointerLockFn);
+    this.multiPointer.addListener(this.fullscrnFn);
   } else {
     this.multiPointer.stopListening();
+    this.multiPointer.removeListener(this.multiPointerLockFn);
+    this.multiPointer.removeListener(this.fullscrnFn);
+    document.body.removeEventListener('keydown', this.spacebarFn);
   }
   this.listening = listen;
 };
@@ -83,26 +119,8 @@ PauseScreen.prototype.initWorld = function() {
     controller.gotoScreen(Main29.SCREEN_PLAY);
     controller.requestPointerLock();
   });
-  var resumeSpirit = this.world.spirits[spiritId];
-  this.multiPointer.addListener(function(pointerEvent) {
-    resumeSpirit.processPointerEvent(world, renderer, pointerEvent);
-  });
-  document.body.addEventListener('keydown', function(e) {
-    // space is keyCode 32
-    if (self.visibility == 1 && e.keyCode == 32) {
-      // The x and y values are clip coords...?
-      resumeSpirit.onClick(world, 0, 0);
-    }
-  });
-  document.body.addEventListener('keydown', function(e) {
-    // space is keyCode 32
-    if (self.visibility == 1 && e.keyCode == 32) {
-      // The x and y values are clip coords...?
-      resumeSpirit.onClick(world, 0, 0);
-    }
-  });
+  this.resumeSpirit = this.world.spirits[spiritId];
 
-  // FULLSCRN
   // FULLSCRN
   var spiritId = buttonMaker.addButton(0, -8 -6, "FULLSCRN", function(world, x, y) {
     var voices = 5;
@@ -122,17 +140,10 @@ PauseScreen.prototype.initWorld = function() {
       sfx.sound(x, y, 0,
           0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
     }
-    fullscrnSpirit.lastSoundMs = Date.now();
-    fullscrnSpirit.soundLength = 1000 * maxLength;
+    this.lastSoundMs = Date.now();
+    this.soundLength = 1000 * maxLength;
   });
-  // Look for new overlaps while still in the browser's event handling callstack.
-  var fullscrnSpirit = world.spirits[spiritId];
-  var renderer = this.renderer;
-  this.multiPointer.addListener(function(pointerEvent) {
-    if (fullscrnSpirit.processPointerEvent(world, renderer, pointerEvent)) {
-      controller.requestFullScreen();
-    }
-  });
+  this.fullscrnSpirit = world.spirits[spiritId];
 
   // QUIT
   buttonMaker.addButton(0, -8 -6 -6, "QUIT", function(world, x, y) {

@@ -21,18 +21,40 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
   this.listening = false;
+  this.spacebarFn = this.getSpacebarFn();
+  this.requestPointerLockFn = this.getRequestPointerLockFn();
 }
 PlayScreen.prototype = new Screen();
 PlayScreen.prototype.constructor = PlayScreen;
 
+PlayScreen.prototype.getSpacebarFn = function() {
+  var self = this;
+  return function(e) {
+    // space is keyCode 32
+    if (e.keyCode == 32) {
+      // The x and y values are clip coords...?
+      self.pauseSpirit.onClick(self.world, 0, 0);
+    }
+  };
+};
+
+PlayScreen.prototype.getRequestPointerLockFn = function() {
+  var self = this;
+  return function() {
+    self.controller.requestPointerLock();
+  };
+};
+
 PlayScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) {
-    return;
-  }
+  if (listen == this.listening) return;
   if (listen) {
     this.multiPointer.startListening();
+    document.body.addEventListener('keydown', this.spacebarFn);
+    document.body.addEventListener('click', this.requestPointerLockFn);
   } else {
     this.multiPointer.stopListening();
+    document.body.removeEventListener('keydown', this.spacebarFn);
+    document.body.removeEventListener('click', this.requestPointerLockFn);
     this.controller.exitPointerLock();
   }
   this.listening = listen;
@@ -85,19 +107,7 @@ PlayScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main29.SCREEN_PAUSE);
   });
-  var pauseSpirit = this.world.spirits[spiritId];
-  document.body.addEventListener('keydown', function(e) {
-    // space is keyCode 32
-    if (self.visibility == 1 && e.keyCode == 32) {
-      // The x and y values are clip coords...?
-      pauseSpirit.onClick(world, 0, 0);
-    }
-  });
-  document.body.addEventListener('click', function(e) {
-    if (self.visibility == 1) {
-      self.controller.requestPointerLock();
-    }
-  });
+  this.pauseSpirit = this.world.spirits[spiritId];
 
   for (var spiritId in this.world.spirits) {
     var s = this.world.spirits[spiritId];

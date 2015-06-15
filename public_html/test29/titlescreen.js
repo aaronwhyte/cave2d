@@ -21,16 +21,50 @@ function TitleScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
   this.listening = false;
+  this.spacebarFn = this.getSpacebarFn();
+  this.multiPointerLockFn = this.getMultiPointerLockFn();
+  this.fullscrnFn = this.getFullscrnFn();
 }
 TitleScreen.prototype = new Screen();
 TitleScreen.prototype.constructor = TitleScreen;
+
+TitleScreen.prototype.getSpacebarFn = function() {
+  var self = this;
+  return function(e) {
+    // space is keyCode 32
+    if (e.keyCode == 32) {
+      // The x and y values are clip coords...?
+      self.playSpirit.onClick(self.world, 0, 0);
+    }
+  };
+};
+
+TitleScreen.prototype.getMultiPointerLockFn = function() {
+  var self = this;
+  return function(pointerEvent) {
+    self.playSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+  };
+};
+
+TitleScreen.prototype.getFullscrnFn = function() {
+  var self = this;
+  return function(pointerEvent) {
+    self.fullscrnSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+  }
+};
 
 TitleScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   if (listen) {
     this.multiPointer.startListening();
+    document.body.addEventListener('keydown', this.spacebarFn);
+    this.multiPointer.addListener(this.multiPointerLockFn);
+    this.multiPointer.addListener(this.fullscrnFn);
   } else {
     this.multiPointer.stopListening();
+    document.body.removeEventListener('keydown', this.spacebarFn);
+    this.multiPointer.removeListener(this.multiPointerLockFn);
+    this.multiPointer.removeListener(this.fullscrnFn);
   }
   this.listening = listen;
 };
@@ -90,18 +124,7 @@ TitleScreen.prototype.initWorld = function() {
     controller.gotoScreen(Main29.SCREEN_PLAY);
     controller.requestPointerLock();
   });
-  var playSpirit = this.world.spirits[spiritId];
-  // Look for new overlaps while still in the browser's event handling callstack.
-  this.multiPointer.addListener(function(pointerEvent) {
-    playSpirit.processPointerEvent(world, renderer, pointerEvent);
-  });
-  document.body.addEventListener('keydown', function(e) {
-    // space is keyCode 32
-    if (self.visibility == 1 && e.keyCode == 32) {
-      // The x and y values are clip coords...?
-      playSpirit.onClick(world, 0, 0);
-    }
-  });
+  this.playSpirit = this.world.spirits[spiritId];
 
   // FULLSCRN
   var spiritId = buttonMaker.addButton(0, -8 -6, "FULLSCRN", function(world, x, y) {
@@ -122,16 +145,11 @@ TitleScreen.prototype.initWorld = function() {
       sfx.sound(x, y, 0,
           0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
     }
-    fullscrnSpirit.lastSoundMs = Date.now();
-    fullscrnSpirit.soundLength = 1000 * maxLength;
+    this.lastSoundMs = Date.now();
+    this.soundLength = 1000 * maxLength;
+    self.controller.requestFullScreen();
   });
-  // Look for new overlaps while still in the browser's event handling callstack.
-  var fullscrnSpirit = world.spirits[spiritId];
-  this.multiPointer.addListener(function(pointerEvent) {
-    if (fullscrnSpirit.processPointerEvent(world, renderer, pointerEvent)) {
-      controller.requestFullScreen();
-    }
-  });
+  this.fullscrnSpirit = world.spirits[spiritId];
 
   for (var spiritId in this.world.spirits) {
     var s = this.world.spirits[spiritId];
@@ -140,7 +158,6 @@ TitleScreen.prototype.initWorld = function() {
   }
   this.worldBoundingRect.coverXY(0, 5);
   this.worldBoundingRect.coverXY(0, -27);
-  console.log(this.worldBoundingRect);
 };
 
 TitleScreen.prototype.clock = function() {
