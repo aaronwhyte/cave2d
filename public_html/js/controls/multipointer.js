@@ -103,6 +103,9 @@ MultiPointer.prototype.addListener = function(fn) {
   this.domEventListeners.put(fn);
 };
 
+/**
+ * @param {Function} fn
+ */
 MultiPointer.prototype.removeListener = function(fn) {
   this.domEventListeners.remove(fn);
 };
@@ -130,7 +133,6 @@ MultiPointer.prototype.setViewMatrix = function(viewMatrix) {
     e.pointerId = id;
     e.time = Date.now();
     e.pos.set(this.eventCoords[id]);
-//    e.note = JSON.stringify(viewMatrix);
     this.transformCanvasToWorld(e.pos);
     this.queue.enqueue(e);
 
@@ -160,8 +162,16 @@ MultiPointer.prototype.clearEventQueue = function() {
   }
 };
 
+MultiPointer.prototype.isPointerLocked = function() {
+  return document.pointerLockElement ||
+         document.mozPointerLockElement ||
+         document.webkitPointerLockElement;
+};
+
 MultiPointer.prototype.onMouseDown = function(e) {
-  this.down(MultiPointer.MOUSE_ID, e.clientX, e.clientY);
+  if (!this.isPointerLocked()) {
+    this.down(MultiPointer.MOUSE_ID, e.clientX, e.clientY);
+  }
 };
 
 MultiPointer.prototype.onMouseMove = function(e) {
