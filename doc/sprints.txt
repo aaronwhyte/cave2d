@@ -597,7 +597,8 @@ v pointerlock on in play screen, off otherwise.
   v on when the play page is mouse-clicked, since the user can escape and then return. A little janky but not too bad.
   v off when leaving the play page.
 v Don't listen to mouseclick on buttons when pointerlocked. Hmmm. Fix in MultiPointer.
-- Unlisten correctly
+v Unlisten correctly
+v Pull common code up to new BaseScreen class.
 
 New Controls
 x Touch to engage friction, release to float?

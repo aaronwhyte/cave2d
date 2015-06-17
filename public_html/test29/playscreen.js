@@ -1,80 +1,30 @@
 /**
  * @constructor
- * @extends {Screen}
+ * @extends {BaseScreen}
  */
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
-  Screen.call(this);
-  this.controller = controller;
-  this.canvas = canvas;
-  this.renderer = renderer;
-  this.glyphs = glyphs;
-  this.stamps = stamps;
-  this.sfx = sound;
-
-  this.viewMatrix = new Matrix44();
-  this.mat4 = new Matrix44();
-  this.multiPointer = new MultiPointer(this.canvas, this.viewMatrix);
-  this.readyToDraw = false;
-  this.nextButtonNum = 0;
-  this.worldBoundingRect = new Rect();
-
-  this.lastPathRefreshTime = -Infinity;
-  this.visibility = 0;
-  this.listening = false;
-  this.spacebarFn = this.getSpacebarFn();
+  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
   this.requestPointerLockFn = this.getRequestPointerLockFn();
 }
-PlayScreen.prototype = new Screen();
+PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
-PlayScreen.prototype.getSpacebarFn = function() {
-  var self = this;
-  return function(e) {
-    // space is keyCode 32
-    if (e.keyCode == 32) {
-      // The x and y values are clip coords...?
-      self.pauseSpirit.onClick(self.world, 0, 0);
-    }
-  };
-};
-
 PlayScreen.prototype.getRequestPointerLockFn = function() {
-  var self = this;
+  var controller = this.controller;
   return function() {
-    self.controller.requestPointerLock();
+    controller.requestPointerLock();
   };
 };
 
 PlayScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
-  if (listen) {
-    this.multiPointer.startListening();
-    document.body.addEventListener('keydown', this.spacebarFn);
+  if (!this.listening && listen) {
     document.body.addEventListener('click', this.requestPointerLockFn);
-  } else {
-    this.multiPointer.stopListening();
-    document.body.removeEventListener('keydown', this.spacebarFn);
-    document.body.removeEventListener('click', this.requestPointerLockFn);
+  }
+  if (this.listening && !listen) {
     this.controller.exitPointerLock();
+    document.body.removeEventListener('click', this.requestPointerLockFn);
   }
-  this.listening = listen;
-};
-
-PlayScreen.prototype.drawScreen = function(visibility) {
-  this.visibility = visibility;
-  if (!this.readyToDraw) {
-    this.initWorld();
-    this.readyToDraw = true;
-  }
-  this.clock();
-  this.updateViewMatrix(Date.now());
-  this.drawScene();
-  this.multiPointer.clearEventQueue();
-  this.multiPointer.setViewMatrix(this.viewMatrix);
-};
-
-PlayScreen.prototype.destroyScreen = function() {
-  // Unload button models? Need a nice utility for loading, remembering, and unloading models.
+  BaseScreen.prototype.setScreenListening.call(this, listen);
 };
 
 PlayScreen.prototype.initWorld = function() {
@@ -85,8 +35,6 @@ PlayScreen.prototype.initWorld = function() {
 
   var controller = this.controller;
   var sfx = this.sfx;
-  var world = this.world;
-  var self = this;
 
   var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
   buttonMaker
@@ -107,7 +55,7 @@ PlayScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main29.SCREEN_PAUSE);
   });
-  this.pauseSpirit = this.world.spirits[spiritId];
+  this.setSpaceButtonSpirit(this.world.spirits[spiritId]);
 
   for (var spiritId in this.world.spirits) {
     var s = this.world.spirits[spiritId];
@@ -116,49 +64,6 @@ PlayScreen.prototype.initWorld = function() {
   }
   this.worldBoundingRect.coverXY(0, 5);
   this.worldBoundingRect.coverXY(0, -27);
-};
-
-PlayScreen.prototype.clock = function() {
-  var endTimeMs = Date.now() + MS_PER_FRAME;
-  var endClock = this.world.now + CLOCKS_PER_FRAME;
-
-  if (this.lastPathRefreshTime + PATH_DURATION <= endClock) {
-    this.lastPathRefreshTime = this.world.now;
-    for (var id in this.world.bodies) {
-      var b = this.world.bodies[id];
-      if (b && b.shape === Body.Shape.CIRCLE) {
-        b.invalidatePath();
-        b.moveToTime(this.world.now);
-      }
-    }
-  }
-
-  var e = this.world.getNextEvent();
-  // Stop if there are no more events to process, or we've moved the game clock far enough ahead
-  // to match the amount of wall-time elapsed since the last frame,
-  // or (worst case) we're out of time for this frame.
-
-  while (e && e.time <= endClock && Date.now() <= endTimeMs) {
-    if (e.type == WorldEvent.TYPE_HIT) {
-      var b0 = this.world.getBodyByPathId(e.pathId0);
-      var b1 = this.world.getBodyByPathId(e.pathId1);
-      if (b0 && b1) {
-        this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-      }
-    }
-    this.world.processNextEvent();
-    e = this.world.getNextEvent();
-  }
-  if (!e || e.time > endClock) {
-    this.world.now = endClock;
-  }
-};
-
-PlayScreen.prototype.drawScene = function() {
-  this.clock();
-  for (var id in this.world.spirits) {
-    this.world.spirits[id].onDraw(this.world, this.renderer);
-  }
 };
 
 PlayScreen.prototype.updateViewMatrix = function() {
