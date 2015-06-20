@@ -17,6 +17,8 @@ function ButtonMaker(labelMaker, world, multiPointer, renderer) {
   this.letterColor = [1, 1, 1];
   this.blockColor = [0.5, 0.5, 0.5];
   this.padding = new Vec2d(0.5, 0.5);
+
+  this.scale = 1;
 }
 
 /**
@@ -66,6 +68,15 @@ ButtonMaker.prototype.setPaddingXY = function(x, y) {
 };
 
 /**
+ * @param {number} s
+ * @returns {ButtonMaker}
+ */
+ButtonMaker.prototype.setScale = function(s) {
+  this.scale = s;
+  return this;
+};
+
+/**
  * Adds a button body and spirit to the world, and a button model to GL.
  * @param {number} x
  * @param {number} y
@@ -75,6 +86,7 @@ ButtonMaker.prototype.setPaddingXY = function(x, y) {
  */
 ButtonMaker.prototype.addButton = function(x, y, text, func) {
   var labelModel = this.labelMaker.createLabelModel(this.startMatrix, this.nextCharMatrix, text);
+  labelModel.transformPositions(new Matrix44().toScaleOpXYZ(this.scale, this.scale, this.scale));
   var brect = labelModel.getBoundingRect();
   if (this.padding) {
     brect.padXY(this.padding.x, this.padding.y);

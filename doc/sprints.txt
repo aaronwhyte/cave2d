@@ -600,7 +600,11 @@ v Don't listen to mouseclick on buttons when pointerlocked. Hmmm. Fix in MultiPo
 v Unlisten correctly
 v Pull common code up to new BaseScreen class.
 
-New Controls
+Test 30: Trackball control
+- Trackball (base)
+- PointerLockTrackball
+- TouchTrackball
+
 x Touch to engage friction, release to float?
 - Frame-by-frame coord change dictates target velocity
 - Apply accel to try to reach target velocity
