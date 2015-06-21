@@ -5,6 +5,9 @@
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
   this.requestPointerLockFn = this.getRequestPointerLockFn();
+  this.trackball = new MouseTrackball();
+  this.trackball.setFriction(0.02);
+  this.movement = new Vec2d();
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -19,10 +22,12 @@ PlayScreen.prototype.getRequestPointerLockFn = function() {
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (!this.listening && listen) {
     document.body.addEventListener('click', this.requestPointerLockFn);
+    this.trackball.startListening();
   }
   if (this.listening && !listen) {
     this.controller.exitPointerLock();
     document.body.removeEventListener('click', this.requestPointerLockFn);
+    this.trackball.stopListening();
   }
   BaseScreen.prototype.setScreenListening.call(this, listen);
 };
@@ -60,8 +65,50 @@ PlayScreen.prototype.initWorld = function() {
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
   this.worldBoundingRect.coverXY(0, 5);
-  this.worldBoundingRect.coverXY(0, -27);
+  this.worldBoundingRect.coverXY(0, -100);
+
+  this.ballSpiritId = this.initBigBall();
 };
+
+
+PlayScreen.prototype.initBigBall = function() {
+  var model = RigidModel.createOctahedron()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .sphereize(Vec4.ZERO, 1);
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  var pos = new Vec2d(0, -50);
+  b.setPosAtTime(pos, this.world.now);
+  b.rad = 5;
+//  b.group = 1;
+  b.mass = 1;
+  b.pathDurationMax = 10;
+  var spirit = new BallSpirit();
+  spirit.bodyId = this.world.addBody(b);
+  spirit.setMultiPointer(this.multiPointer);
+  spirit.setModelStamp(model.createModelStamp(this.renderer.gl));
+  return this.world.addSpirit(spirit);
+};
+
+PlayScreen.prototype.handleInput = function() {
+  var spirit = this.world.spirits[this.ballSpiritId];
+  var body = this.world.bodies[spirit.bodyId];
+  if (this.trackball.isTouched()) {
+    this.trackball.getVal(this.movement);
+    var speed = 0.07;
+    body.setVelXYAtTime(this.movement.x * speed, -this.movement.y * speed, this.world.now);
+  } else {
+    var oldSpeedSquared = body.vel.magnitudeSquared();
+    var newSpeedSquared = 0.95 * oldSpeedSquared;
+    var newSpeed = Math.sqrt(newSpeedSquared);
+    var newVel = Vec2d.alloc().set(body.vel).scaleToLength(newSpeed);
+    body.setVelAtTime(newVel, this.world.now);
+    newVel.free();
+  }
+  this.trackball.reset();
+};
+
 
 PlayScreen.prototype.updateViewMatrix = function() {
   var br = this.worldBoundingRect;

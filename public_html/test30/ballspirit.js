@@ -15,6 +15,7 @@ function BallSpirit() {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+
 }
 BallSpirit.prototype = new Spirit();
 BallSpirit.prototype.constructor = BallSpirit;
@@ -35,9 +36,10 @@ BallSpirit.prototype.onDraw = function(world, renderer) {
       .setStamp(this.modelStamp)
       .setColorVector(this.color);
   this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 3))
-      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 4))
-      .multiply(this.mat44.toRotateXOp(-world.now / 200));
+      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 1))
+      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+      .multiply(this.mat44.toRotateYOp(world.now / 401))
+      .multiply(this.mat44.toRotateXOp(-world.now / 500));
 
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();

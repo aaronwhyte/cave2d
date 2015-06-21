@@ -108,6 +108,10 @@ BaseScreen.prototype.clock = function() {
   var endTimeMs = Date.now() + MS_PER_FRAME;
   var endClock = this.world.now + CLOCKS_PER_FRAME;
 
+  if (this.handleInput) {
+    this.handleInput();
+  }
+
   if (this.lastPathRefreshTime + PATH_DURATION <= endClock) {
     this.lastPathRefreshTime = this.world.now;
     for (var id in this.world.bodies) {

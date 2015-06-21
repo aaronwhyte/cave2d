@@ -90,9 +90,9 @@ TitleScreen.prototype.initBigBall = function() {
       .createQuadrupleTriangleModel()
       .sphereize(Vec4.ZERO, 1);
   for (var i = 0; i < model.vertexes.length; i++) {
-    var r = Math.random() < (model.vertexes[i].position.v[0] + 1)/2 ? 1 : 0.5;
+    var r = Math.random();
     model.vertexes[i].color.setXYZ(0, 1-r/4, 1-r/4);
-    model.vertexes[i].position.scaleToLength(1 + Math.random() * Math.random() * 0.1);
+    model.vertexes[i].position.scaleToLength(1.1 - r * 0.1);
   }
 
   var b = Body.alloc();
@@ -135,7 +135,6 @@ TitleScreen.prototype.updateViewMatrix = function() {
   this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI/8 * (1 - viz3)));
   this.viewMatrix.multiply(this.mat4.toRotateZOp(-Math.PI/20 * (1 - viz3)));
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, 0, -10));
-
 
   this.renderer.setViewMatrix(this.viewMatrix);
 };
