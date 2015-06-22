@@ -87,7 +87,7 @@ BaseScreen.prototype.setScreenListening = function(listen) {
 BaseScreen.prototype.drawScreen = function(visibility) {
   this.visibility = visibility;
   if (!this.readyToDraw) {
-    this.world = new World();
+    this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
     this.resolver = new HitResolver();
     this.resolver.defaultElasticity = 1;
     this.initWorld();

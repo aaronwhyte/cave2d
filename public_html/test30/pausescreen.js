@@ -31,7 +31,7 @@ PauseScreen.prototype.initWorld = function() {
     sfx.sound(x, y, 0, 0.5, attack, sustain, decay, 100, 2000, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
-    controller.gotoScreen(Main29.SCREEN_PLAY);
+    controller.gotoScreen(Main30.SCREEN_PLAY);
     controller.requestPointerLock();
   });
   var resumeSpirit = this.world.spirits[spiritId];
@@ -79,7 +79,7 @@ PauseScreen.prototype.initWorld = function() {
     }
     this.lastSoundMs = Date.now();
     this.soundLength = 1000 * maxLength;
-    controller.gotoScreen(Main29.SCREEN_TITLE);
+    controller.gotoScreen(Main30.SCREEN_TITLE);
   });
 
   for (var spiritId in this.world.spirits) {

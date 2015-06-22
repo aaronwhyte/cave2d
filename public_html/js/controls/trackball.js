@@ -31,3 +31,6 @@ Trackball.prototype.reset = function() {console.log("reset unimplimented")};
 Trackball.prototype.isTouched = function() {
   return this.touched;
 };
+
+Trackball.prototype.startListening = function() {console.log("startListening unimplimented")};
+Trackball.prototype.stopListening = function() {console.log("stopListening unimplimented")};

@@ -601,21 +601,17 @@ v Unlisten correctly
 v Pull common code up to new BaseScreen class.
 
 Test 30: Trackball control
-- Trackball (base)
-- PointerLockTrackball
-- TouchTrackball
+v Trackball (base)
+v MouseTrackball
+v TouchTrackball
+v MultiTrackball
 
-x Touch to engage friction, release to float?
-- Frame-by-frame coord change dictates target velocity
-- Apply accel to try to reach target velocity
-- Max drive accel stat matters
-- Tile effects
-  - Surface traction matters: maxAccel = maxDriveAccel * surfaceTraction
-  - Surface drag also possible
-  - This make different floors interesting - stone vs ice.
-- Aiming mechanisms
-- Last drag dictates aim unit-vec
-- Aim-lock button for nonstop shooters?
+v Touch to engage friction, release to float?
+v Frame-by-frame coord change dictates target velocity
+v Apply accel to try to reach target velocity
+v Max drive accel stat matters
+
+
 
 Physics revisited a little?
 - Unit test collider

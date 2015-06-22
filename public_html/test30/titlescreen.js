@@ -39,7 +39,7 @@ TitleScreen.prototype.initWorld = function() {
     }
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
-    controller.gotoScreen(Main29.SCREEN_PLAY);
+    controller.gotoScreen(Main30.SCREEN_PLAY);
     controller.requestPointerLock();
   });
   var playSpirit = this.world.spirits[spiritId];

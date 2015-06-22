@@ -10,6 +10,7 @@ function MouseTrackball() {
   this.listening = false;
   this.mouseMotion = new Vec2d();
   this.touched = false;
+  this.speed = 0.05;
   this.mouseMoveListener = function(e) {
     self.onMouseMove(e);
   };
@@ -35,15 +36,6 @@ MouseTrackball.prototype.stopListening = function() {
   return this;
 };
 
-///**
-// * @param {Vec2d} out
-// * @return {Vec2d} out
-// */
-//MouseTrackball.prototype.getVal = function(out) {
-//  return out.set(this.val);
-//};
-
-
 MouseTrackball.prototype.reset = function() {
   if (!this.touched) {
     this.val.scale(1 - this.friction);
@@ -55,7 +47,7 @@ MouseTrackball.prototype.reset = function() {
 MouseTrackball.prototype.onMouseMove = function(e) {
   var dx = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
   var dy = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
-  this.mouseMotion.addXY(dx, dy);
+  this.mouseMotion.addXY(dx * this.speed, dy * this.speed);
   this.val.set(this.mouseMotion);
   this.touched = true;
 };
