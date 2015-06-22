@@ -605,13 +605,20 @@ v Trackball (base)
 v MouseTrackball
 v TouchTrackball
 v MultiTrackball
-
-v Touch to engage friction, release to float?
-v Frame-by-frame coord change dictates target velocity
-v Apply accel to try to reach target velocity
-v Max drive accel stat matters
-
-
+v Tune behavior
+  v Touch to engage friction, release to float?
+  v Frame-by-frame coord change dictates target velocity
+  v Apply accel to try to reach target velocity
+  v Max drive accel stat matters
+- props
+  - walls
+  - boulders
+- sound
+  - collisions
+  - acceleration
+- fix paused-screen animation. less z.
+- fix pause button to be a separate screen visible at the same time. HudScreen.
+- fix quit. reset playing world.
 
 Physics revisited a little?
 - Unit test collider
