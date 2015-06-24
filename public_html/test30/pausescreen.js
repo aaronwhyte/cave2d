@@ -111,9 +111,8 @@ PauseScreen.prototype.updateViewMatrix = function() {
   var viz3 = this.visibility;// * this.visibility * this.visibility;
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
 
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 17 * (1 - viz3)));
-  this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI*0.4 * (1 - viz3)));
-  this.viewMatrix.multiply(this.mat4.toRotateYOp(Math.PI*0.3 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(30 * (1 - viz3), 0, 5 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toRotateYOp(0.1 * (1 - viz3)));
   this.viewMatrix.multiply(this.mat4.toRotateZOp(Math.PI*0.5 * (1 - viz3)));
 
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));

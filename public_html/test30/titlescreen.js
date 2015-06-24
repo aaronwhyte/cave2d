@@ -105,9 +105,10 @@ TitleScreen.prototype.initBigBall = function() {
   b.pathDurationMax = Infinity;
   var spirit = new BallSpirit();
   spirit.bodyId = this.world.addBody(b);
-  spirit.setMultiPointer(this.multiPointer);
   spirit.setModelStamp(model.createModelStamp(this.renderer.gl));
-  return this.world.addSpirit(spirit);
+  var spiritId = this.world.addSpirit(spirit);
+  this.world.spirits[spiritId].setColorRGB(0, 1, 1);
+  return spiritId;
 };
 
 TitleScreen.prototype.updateViewMatrix = function() {
@@ -129,7 +130,7 @@ TitleScreen.prototype.updateViewMatrix = function() {
   // rotate
   var viz3 = this.visibility;
 
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 5*(1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 4*(1 - viz3)));
 
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, 0, 10));
   this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI/8 * (1 - viz3)));

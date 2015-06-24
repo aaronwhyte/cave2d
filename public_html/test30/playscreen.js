@@ -48,8 +48,8 @@ PlayScreen.prototype.initWorld = function() {
       .setPaddingXY(1.5, 0.5);
 
   // PAUSE
-  buttonMaker.setLetterColor([0.25, 0.25, 0.25]).setBlockColor(null);
-  var spiritId = buttonMaker.addButton(0, -1, "PAUSE", function(world, x, y) {
+  buttonMaker.setLetterColor([0, 0, 0]).setBlockColor([1, 1, 1]).setScale(2).setPaddingXY(3, 2);
+  var spiritId = buttonMaker.addButton(115, 80, "PAUSE", function(world, x, y) {
     var attack = 0.04;
     var sustain = 0;
     var decay = 0.3;
@@ -60,35 +60,69 @@ PlayScreen.prototype.initWorld = function() {
   });
   this.setSpaceButtonSpirit(this.world.spirits[spiritId]);
 
+  this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
+  this.sphereStamp = RigidModel.createOctahedron()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .sphereize(Vec4.ZERO, 1).createModelStamp(this.renderer.gl);
+
+  this.ballSpiritId = this.initBall(0, -50, 5, 2, 0, 0);
+  this.initBalls();
+  this.initWalls();
+
   for (var spiritId in this.world.spirits) {
     var s = this.world.spirits[spiritId];
     var b = this.world.bodies[s.bodyId];
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
-  this.worldBoundingRect.coverXY(0, -75);
-
-  this.ballSpiritId = this.initBigBall();
 };
 
+PlayScreen.prototype.initBalls = function() {
+  for (var i = 0; i < 20; i++) {
+    this.initBall(
+            180 * (Math.random() - 0.5),
+            180 * (Math.random() - 0.5),
+            3 + Math.random() * 10,
+            Math.random() * 0.5 + 0.5, Math.random() + 0.8, Math.random()+ 0.8);
+  }
+};
 
-PlayScreen.prototype.initBigBall = function() {
-  var model = RigidModel.createOctahedron()
-      .createQuadrupleTriangleModel()
-      .createQuadrupleTriangleModel()
-      .createQuadrupleTriangleModel()
-      .sphereize(Vec4.ZERO, 1);
+PlayScreen.prototype.initBall = function(x, y, rad, red, green, blue) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
-  var pos = new Vec2d(0, -50);
-  b.setPosAtTime(pos, this.world.now);
-  b.rad = 5;
-  b.hitGroup = 1;
+  b.setPosXYAtTime(x, y, this.world.now);
+  b.rad = rad;
+  b.hitGroup = 0;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad;
-  b.pathDurationMax = 1;
+  b.pathDurationMax = PATH_DURATION * 3;
   var spirit = new BallSpirit();
   spirit.bodyId = this.world.addBody(b);
-  spirit.setMultiPointer(this.multiPointer);
-  spirit.setModelStamp(model.createModelStamp(this.renderer.gl));
+  spirit.setModelStamp(this.sphereStamp);
+  var spiritId = this.world.addSpirit(spirit);
+  this.world.spirits[spiritId].setColorRGB(red, green, blue);
+  return spiritId;
+};
+
+PlayScreen.prototype.initWalls = function() {
+  var rad = 100;
+  this.initWall(rad * 1.5, 0, 1, rad);
+  this.initWall(-rad * 1.5, 0, 1, rad);
+  this.initWall(0, rad, rad * 1.5, 1);
+  this.initWall(0, -rad, rad * 1.5, 1);
+};
+
+PlayScreen.prototype.initWall = function(x, y, h, v) {
+  var b = Body.alloc();
+  b.shape = Body.Shape.RECT;
+  b.setPosXYAtTime(x, y, this.world.now);
+  b.rectRad.setXY(h, v);
+  b.hitGroup = 0;
+  b.mass = Infinity;
+  b.pathDurationMax = Infinity;
+  var spirit = new WallSpirit();
+  spirit.bodyId = this.world.addBody(b);
+  spirit.setModelStamp(this.cubeStamp);
   return this.world.addSpirit(spirit);
 };
 
@@ -120,7 +154,7 @@ PlayScreen.prototype.handleInput = function() {
 PlayScreen.prototype.updateViewMatrix = function() {
   var br = this.worldBoundingRect;
   this.viewMatrix.toIdentity();
-  var ratio = this.canvas.height / br.rad.y;
+  var ratio = Math.min(this.canvas.height, this.canvas.width) / Math.min(br.rad.x, br.rad.y);
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
               ratio / this.canvas.width,
@@ -137,9 +171,7 @@ PlayScreen.prototype.updateViewMatrix = function() {
   var viz3 = this.visibility;
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(br.pos.x, br.pos.y, 0));
 
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 0, 17 * (1 - viz3)));
-  this.viewMatrix.multiply(this.mat4.toRotateXOp(-Math.PI*0.1 * (1 - viz3)));
-  this.viewMatrix.multiply(this.mat4.toRotateYOp(-Math.PI*0.1 * (1 - viz3)));
+  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(0, 200 * (1 - viz3), 4 * (1 - viz3)));
   this.viewMatrix.multiply(this.mat4.toRotateZOp(-Math.PI*0.5 * (1 - viz3)));
 
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
