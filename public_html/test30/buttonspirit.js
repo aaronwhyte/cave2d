@@ -81,8 +81,8 @@ ButtonSpirit.prototype.processPointerEvent = function(world, renderer, e) {
       this.overlapIds.remove(e.pointerId);
     }
   } else {
-    // Look for a down or move-in to start a new overlap.
-    if (e.type == PointerEvent.TYPE_DOWN || e.type == PointerEvent.TYPE_MOVE) {
+    // Look for a down (but not a move-in) to start a new overlap.
+    if (e.type == PointerEvent.TYPE_DOWN) {
       if (this.isOverlapping(world, e.pos)) {
         this.vec4.setXYZ(e.pos.x, e.pos.y, 0);
         this.vec4.transform(renderer.getViewMatrix());
