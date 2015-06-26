@@ -89,8 +89,8 @@ PlayScreen.prototype.initBalls = function() {
   for (var i = 0; i < 20; i++) {
     var r = i ? (3 + Math.random() * 10) : 30;
     this.initBall(
-            (190 - r) * (Math.random() - 0.5),
-            (190 - r) * (Math.random() - 0.5),
+            (140 - r) * (Math.random() - 0.5) * 2,
+            (90 - r) * (Math.random() - 0.5) * 2,
             r, 1,
             Math.random() * 0.5 + 0.5, Math.random() + 0.8, Math.random()+ 0.8);
   }
@@ -148,11 +148,11 @@ PlayScreen.prototype.handleInput = function() {
     body.setVelAtTime(newVel, this.world.now);
     accel.free();
   } else {
-    var oldSpeedSquared = body.vel.magnitudeSquared();
-    var newSpeedSquared = 0.99 * oldSpeedSquared;
-    var newSpeed = Math.sqrt(newSpeedSquared);
-    newVel.set(body.vel).scaleToLength(newSpeed);
-    body.setVelAtTime(newVel, this.world.now);
+//    var oldSpeedSquared = body.vel.magnitudeSquared();
+//    var newSpeedSquared = 0.99 * oldSpeedSquared;
+//    var newSpeed = Math.sqrt(newSpeedSquared);
+//    newVel.set(body.vel).scaleToLength(newSpeed);
+//    body.setVelAtTime(newVel, this.world.now);
   }
   newVel.free();
   this.trackball.reset();

@@ -212,6 +212,7 @@ function clockAndDraw() {
   var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
   var e = world.getNextEvent();
   while (e && e.time <= maxClock && Date.now() <= endTimeMs) {
+    world.processNextEvent();
     if (DRAW_GRID_EVENTS) {
       if (e.type == WorldEvent.TYPE_GRID_ENTER) {
         ctx.strokeStyle = 'rgb(0, 255, 0)';
@@ -233,7 +234,6 @@ function clockAndDraw() {
         if (s1) s1.onHit(world, b1, b0, e);
       }
     }
-    world.processNextEvent();
     e = world.getNextEvent();
   }
   if (!e || e.time > maxClock) {

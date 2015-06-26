@@ -58,6 +58,7 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs) {
   this.now = 1;
 
   this.hitDetector = new HitDetector();
+  this.hitTimePadding = 0.01;
 
   // cache for rayscans.
   this.scannedBodyIds = new ArraySet();
@@ -264,6 +265,8 @@ World.prototype.addPathToCell = function(body, cell) {
       if (otherBody && otherBody.pathId == pathId) {
         var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
         if (hitEvent) {
+          // Pad the collision time to prevent numerical-challenge interpenetration.
+          hitEvent.time = Math.max(hitEvent.time - this.hitTimePadding, this.now);
           // Add the existing event and allocate the next one.
           this.queue.add(hitEvent);
           nextEvent = WorldEvent.alloc();
@@ -406,11 +409,18 @@ World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
   }
 };
 
+/**
+ * Returns the next event in the queue, without dequeueing it.
+ */
 World.prototype.getNextEvent = function() {
   this.validateBodies();
   return this.queue.getFirst();
 };
 
+/**
+ * Removes the next event from the queue, and advances the world time to the event time,
+ * optionally doing some internal processing.
+ */
 World.prototype.processNextEvent = function() {
   this.validateBodies();
   var e = this.queue.removeFirst();

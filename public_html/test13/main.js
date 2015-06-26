@@ -196,6 +196,7 @@ function clock() {
   // to match the amount of wall-time elapsed since the last frame,
   // or (worst case) we're out of time for this frame.
   while (e && e.time <= endClock && Date.now() <= endTimeMs) {
+    world.processNextEvent();
     if (e.type == WorldEvent.TYPE_HIT) {
       var b0 = world.getBodyByPathId(e.pathId0);
       var b1 = world.getBodyByPathId(e.pathId1);
@@ -207,7 +208,6 @@ function clock() {
         if (s1) s1.onHit(world, b1, b0, e);
       }
     }
-    world.processNextEvent();
     e = world.getNextEvent();
   }
   if (!e || e.time > endClock) {

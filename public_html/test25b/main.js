@@ -146,6 +146,7 @@ function clock() {
   // or (worst case) we're out of time for this frame.
 
   while (e && e.time <= endClock && Date.now() <= endTimeMs) {
+    world.processNextEvent();
     if (e.type == WorldEvent.TYPE_HIT) {
       var b0 = world.getBodyByPathId(e.pathId0);
       var b1 = world.getBodyByPathId(e.pathId1);
@@ -159,7 +160,6 @@ function clock() {
         bonk(b1, mag + 0.1);
       }
     }
-    world.processNextEvent();
     e = world.getNextEvent();
   }
   if (!e || e.time > endClock) {

@@ -30,7 +30,7 @@ BallSpirit.prototype.setColorRGB = function(r, g, b) {
 BallSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody(world);
   var bodyPos = body.getPosAtTime(world.now, this.vec2d);
-  body.setVelAtTime(body.vel.scale(0.999), world.now);
+//  body.setVelAtTime(body.vel.scale(0.999), world.now);
   this.rotX -= 2 * body.vel.y/(Math.PI * body.rad);
   this.rotY -= 2 * body.vel.x/(Math.PI * body.rad);
   renderer

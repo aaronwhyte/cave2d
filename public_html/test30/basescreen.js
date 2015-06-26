@@ -89,7 +89,7 @@ BaseScreen.prototype.drawScreen = function(visibility) {
   if (!this.readyToDraw) {
     this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
     this.resolver = new HitResolver();
-    this.resolver.defaultElasticity = 1;
+    this.resolver.defaultElasticity = 0.9;
     this.initWorld();
     this.readyToDraw = true;
   }
@@ -129,6 +129,7 @@ BaseScreen.prototype.clock = function() {
   // or (worst case) we're out of time for this frame.
 
   while (e && e.time <= endClock && Date.now() <= endTimeMs) {
+    this.world.processNextEvent();
     if (e.type == WorldEvent.TYPE_HIT) {
       var b0 = this.world.getBodyByPathId(e.pathId0);
       var b1 = this.world.getBodyByPathId(e.pathId1);
@@ -136,7 +137,6 @@ BaseScreen.prototype.clock = function() {
         this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
       }
     }
-    this.world.processNextEvent();
     e = this.world.getNextEvent();
   }
   if (!e || e.time > endClock) {

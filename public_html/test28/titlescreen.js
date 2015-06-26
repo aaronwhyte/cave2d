@@ -111,6 +111,7 @@ TitleScreen.prototype.clock = function() {
   // or (worst case) we're out of time for this frame.
 
   while (e && e.time <= endClock && Date.now() <= endTimeMs) {
+    this.world.processNextEvent();
     if (e.type == WorldEvent.TYPE_HIT) {
       var b0 = this.world.getBodyByPathId(e.pathId0);
       var b1 = this.world.getBodyByPathId(e.pathId1);
@@ -118,7 +119,6 @@ TitleScreen.prototype.clock = function() {
         this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
       }
     }
-    this.world.processNextEvent();
     e = this.world.getNextEvent();
   }
   if (!e || e.time > endClock) {

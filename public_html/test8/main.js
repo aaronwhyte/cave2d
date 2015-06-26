@@ -38,6 +38,8 @@ var world, resolver;
 function initWorld() {
   world = new World();
   resolver = new HitResolver();
+  resolver.defaultElasticity = 0.8;
+
   var v = Vec2d.alloc();
   for (var i = 0; i < OBJ_COUNT; i++) {
     var b = Body.alloc();
@@ -153,6 +155,7 @@ function clockAndDraw() {
   var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
   var e = world.getNextEvent();
   while (e && e.time <= maxClock && Date.now() <= endTimeMs) {
+    world.processNextEvent();
     if (DRAW_GRID_EVENTS) {
       if (e.type == WorldEvent.TYPE_GRID_ENTER) {
         ctx.strokeStyle = 'rgb(0, 255, 0)';
@@ -170,7 +173,6 @@ function clockAndDraw() {
         resolver.resolveHit(e.time, e.collisionVec, b0, b1);
       }
     }
-    world.processNextEvent();
     e = world.getNextEvent();
   }
   if (!e || e.time > maxClock) {

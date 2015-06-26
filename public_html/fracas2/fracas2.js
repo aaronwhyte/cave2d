@@ -333,6 +333,7 @@ Fracas2.prototype.clock = function() {
   // or we've moved the game clock far enough ahead to match the amount of wall-time elapsed since the last frame,
   // or (worst case) we're out of time for this frame.
   while (e && e.time <= endClock && Date.now() < this.frameEndMs) {
+    this.world.processNextEvent();
     if (e.type == WorldEvent.TYPE_HIT) {
       var b0 = this.world.getBodyByPathId(e.pathId0);
       var b1 = this.world.getBodyByPathId(e.pathId1);
@@ -354,7 +355,6 @@ Fracas2.prototype.clock = function() {
         this.processReaction(b1, s1, reaction1);
       }
     }
-    this.world.processNextEvent();
     e = this.world.getNextEvent();
   }
   if (!e || e.time > endClock) {

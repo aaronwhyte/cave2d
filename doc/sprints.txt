@@ -614,20 +614,21 @@ v props
   v walls
   v boulders
 v Change buttons to not be rubbable.
-- fit to screen better
+v fit to screen better
+v fix paused-screen animation. less z.
+x fix pause button to be a separate screen visible at the same time. HudScreen.
+v fix interpenetration!
+- fix quit. reset playing world.
 - sound
   - collisions
   - acceleration?
-v fix paused-screen animation. less z.
-x fix pause button to be a separate screen visible at the same time. HudScreen.
-- fix quit. reset playing world.
 - Quaternions. Make that rolling look right.
 
 Physics revisited a little?
-- Add some collider unit tests. Try to repro interpenetration using inelastic collisions?
-- Collision-dist fudge-factor?
-- Make a standard world event processor?
-- Repro problem where calculating far into the future without rendering causes missed collisions?
+x Add some collider unit tests. Try to repro interpenetration using inelastic collisions?
+v Collision-dist fudge-factor?
+x Make a standard world event processor?
+v Repro problem where calculating far into the future without rendering causes missed collisions?
 
 Unload stamps from GL
 - generate big maze stamp
