@@ -9,6 +9,9 @@ TitleScreen.prototype = new BaseScreen();
 TitleScreen.prototype.constructor = TitleScreen;
 
 TitleScreen.prototype.initWorld = function() {
+  this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
+  this.resolver = new HitResolver();
+  this.resolver.defaultElasticity = 0.9;
   var labelMaker = new LabelMaker(this.glyphs);
   var controller = this.controller;
   var sfx = this.sfx;

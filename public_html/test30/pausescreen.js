@@ -9,6 +9,9 @@ PauseScreen.prototype = new BaseScreen();
 PauseScreen.prototype.constructor = PauseScreen;
 
 PauseScreen.prototype.initWorld = function() {
+  this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
+  this.resolver = new HitResolver();
+  this.resolver.defaultElasticity = 0.9;
   var labelMaker = new LabelMaker(this.glyphs);
   var controller = this.controller;
   var sfx = this.sfx;
@@ -79,6 +82,7 @@ PauseScreen.prototype.initWorld = function() {
     }
     this.lastSoundMs = Date.now();
     this.soundLength = 1000 * maxLength;
+    controller.screens[Main30.SCREEN_PLAY].clearBalls();
     controller.gotoScreen(Main30.SCREEN_TITLE);
   });
 

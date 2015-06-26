@@ -12,6 +12,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
+  this.ballsCreated = false;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -37,6 +38,9 @@ PlayScreen.prototype.setScreenListening = function(listen) {
 };
 
 PlayScreen.prototype.initWorld = function() {
+  this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
+  this.resolver = new HitResolver();
+  this.resolver.defaultElasticity = 0.8;
   var labelMaker = new LabelMaker(this.glyphs);
 
   var controller = this.controller;
@@ -74,7 +78,6 @@ PlayScreen.prototype.initWorld = function() {
   }
   this.sphereStamp = sphereModel.createModelStamp(this.renderer.gl);
 
-  this.ballSpiritId = this.initBall(0, 0, 4, 0.5, 1.5, 0, 0);
   this.initBalls();
   this.initWalls();
 
@@ -85,7 +88,20 @@ PlayScreen.prototype.initWorld = function() {
   }
 };
 
+PlayScreen.prototype.clearBalls = function() {
+  for (var spiritId in this.world.spirits) {
+    var s = this.world.spirits[spiritId];
+    var b = this.world.bodies[s.bodyId];
+    if (b.shape == Body.Shape.CIRCLE) {
+      this.world.removeSpiritId(spiritId);
+      this.world.removeBodyId(b.id);
+    }
+  }
+  this.ballsCreated = false;
+};
+
 PlayScreen.prototype.initBalls = function() {
+  this.ballSpiritId = this.initBall(0, 0, 4, 0.5, 1.5, 0, 0);
   for (var i = 0; i < 20; i++) {
     var r = i ? (3 + Math.random() * 10) : 30;
     this.initBall(
@@ -94,6 +110,7 @@ PlayScreen.prototype.initBalls = function() {
             r, 1,
             Math.random() * 0.5 + 0.5, Math.random() + 0.8, Math.random()+ 0.8);
   }
+  this.ballsCreated = true;
 };
 
 PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue) {
@@ -135,6 +152,7 @@ PlayScreen.prototype.initWall = function(x, y, h, v) {
 };
 
 PlayScreen.prototype.handleInput = function() {
+  if (!this.ballsCreated) return;
   var spirit = this.world.spirits[this.ballSpiritId];
   var body = this.world.bodies[spirit.bodyId];
   var newVel = Vec2d.alloc();
@@ -185,4 +203,14 @@ PlayScreen.prototype.updateViewMatrix = function() {
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(-br.pos.x, -br.pos.y, 0));
 
   this.renderer.setViewMatrix(this.viewMatrix);
+};
+
+PlayScreen.prototype.drawScene = function() {
+  if (!this.ballsCreated) {
+    this.initBalls();
+  }
+  this.clock();
+  for (var id in this.world.spirits) {
+    this.world.spirits[id].onDraw(this.world, this.renderer);
+  }
 };

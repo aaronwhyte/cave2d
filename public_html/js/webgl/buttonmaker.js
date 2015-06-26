@@ -106,6 +106,7 @@ ButtonMaker.prototype.addButton = function(x, y, text, func) {
     labelModel.addRigidModel(cuboid);
     labelModel.transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -1));
   }
+  var stamp = labelModel.createModelStamp(this.renderer.gl);
 
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
@@ -118,7 +119,7 @@ ButtonMaker.prototype.addButton = function(x, y, text, func) {
   var spirit = new ButtonSpirit();
   spirit.bodyId = this.world.addBody(b);
   spirit.setMultiPointer(this.multiPointer);
-  spirit.setModelStamp(labelModel.createModelStamp(this.renderer.gl));
+  spirit.setModelStamp(stamp);
   spirit.setOnClick(func);
   return this.world.addSpirit(spirit);
 };

@@ -3,9 +3,6 @@ function main() {
 }
 
 function Main30() {
-  this.titleScreen = null;
-  this.playScreen = null;
-
   this.canvas = document.querySelector('#canvas');
   new RendererLoader(this.canvas, 'vertex-shader.txt', 'fragment-shader.txt')
       .load(this.onRendererLoaded.bind(this));
