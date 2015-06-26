@@ -79,7 +79,7 @@ TitleScreen.prototype.initWorld = function() {
   this.worldBoundingRect.coverXY(0, 5);
   this.worldBoundingRect.coverXY(0, -27);
 
-  this.initBigBall();
+  this.ballSpiritId = this.initBigBall();
 };
 
 TitleScreen.prototype.initBigBall = function() {
@@ -112,6 +112,9 @@ TitleScreen.prototype.initBigBall = function() {
 };
 
 TitleScreen.prototype.updateViewMatrix = function() {
+  this.world.spirits[this.ballSpiritId].rotY += 0.005;
+  this.world.spirits[this.ballSpiritId].rotX += 0.001;
+
   var br = this.worldBoundingRect;
   this.viewMatrix.toIdentity();
   var ratio = Math.min(this.canvas.height, this.canvas.width) / Math.max(br.rad.x, br.rad.y);

@@ -61,13 +61,20 @@ PlayScreen.prototype.initWorld = function() {
   this.setSpaceButtonSpirit(this.world.spirits[spiritId]);
 
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
-  this.sphereStamp = RigidModel.createOctahedron()
+  var sphereModel = RigidModel.createOctahedron()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
-      .sphereize(Vec4.ZERO, 1).createModelStamp(this.renderer.gl);
+      .sphereize(Vec4.ZERO, 1);
+  var wut = Math.random() * 300;
+  for (var i = 0; i < sphereModel.vertexes.length; i++) {
+    var vertex = sphereModel.vertexes[i];
+    var c = Math.ceil(Math.round((Math.sin(vertex.position.v[0] * vertex.position.v[1] * vertex.position.v[2] * wut)) + 2) / 2);
+    vertex.color.setXYZ(c, c, c);
+  }
+  this.sphereStamp = sphereModel.createModelStamp(this.renderer.gl);
 
-  this.ballSpiritId = this.initBall(0, -50, 5, 2, 0, 0);
+  this.ballSpiritId = this.initBall(0, 0, 4, 0.5, 1.5, 0, 0);
   this.initBalls();
   this.initWalls();
 
@@ -80,21 +87,22 @@ PlayScreen.prototype.initWorld = function() {
 
 PlayScreen.prototype.initBalls = function() {
   for (var i = 0; i < 20; i++) {
+    var r = i ? (3 + Math.random() * 10) : 30;
     this.initBall(
-            180 * (Math.random() - 0.5),
-            180 * (Math.random() - 0.5),
-            3 + Math.random() * 10,
+            (190 - r) * (Math.random() - 0.5),
+            (190 - r) * (Math.random() - 0.5),
+            r, 1,
             Math.random() * 0.5 + 0.5, Math.random() + 0.8, Math.random()+ 0.8);
   }
 };
 
-PlayScreen.prototype.initBall = function(x, y, rad, red, green, blue) {
+PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosXYAtTime(x, y, this.world.now);
   b.rad = rad;
   b.hitGroup = 0;
-  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = PATH_DURATION * 3;
   var spirit = new BallSpirit();
   spirit.bodyId = this.world.addBody(b);
@@ -129,24 +137,24 @@ PlayScreen.prototype.initWall = function(x, y, h, v) {
 PlayScreen.prototype.handleInput = function() {
   var spirit = this.world.spirits[this.ballSpiritId];
   var body = this.world.bodies[spirit.bodyId];
+  var newVel = Vec2d.alloc();
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
-    var newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y);
+    newVel.setXY(this.movement.x, -this.movement.y);
     var accel = Vec2d.alloc().set(newVel).subtract(body.vel);
-    var maxAccel = 2;
+    var maxAccel = 3;
     accel.clipToMaxLength(maxAccel);
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
     accel.free();
-    newVel.free();
   } else {
     var oldSpeedSquared = body.vel.magnitudeSquared();
-    var newSpeedSquared = 0.95 * oldSpeedSquared;
+    var newSpeedSquared = 0.99 * oldSpeedSquared;
     var newSpeed = Math.sqrt(newSpeedSquared);
-    var newVel = Vec2d.alloc().set(body.vel).scaleToLength(newSpeed);
+    newVel.set(body.vel).scaleToLength(newSpeed);
     body.setVelAtTime(newVel, this.world.now);
-    newVel.free();
   }
+  newVel.free();
   this.trackball.reset();
 };
 
@@ -154,7 +162,7 @@ PlayScreen.prototype.handleInput = function() {
 PlayScreen.prototype.updateViewMatrix = function() {
   var br = this.worldBoundingRect;
   this.viewMatrix.toIdentity();
-  var ratio = Math.min(this.canvas.height, this.canvas.width) / Math.min(br.rad.x, br.rad.y);
+  var ratio = Math.min(this.canvas.height / br.rad.y, this.canvas.width / br.rad.x);
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
               ratio / this.canvas.width,

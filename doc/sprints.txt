@@ -613,17 +613,24 @@ v Tune behavior
 v props
   v walls
   v boulders
+v Change buttons to not be rubbable.
+- fit to screen better
 - sound
   - collisions
-  - acceleration
-- fix paused-screen animation. less z.
-- fix pause button to be a separate screen visible at the same time. HudScreen.
+  - acceleration?
+v fix paused-screen animation. less z.
+x fix pause button to be a separate screen visible at the same time. HudScreen.
 - fix quit. reset playing world.
+- Quaternions. Make that rolling look right.
 
 Physics revisited a little?
-- Unit test collider
+- Add some collider unit tests. Try to repro interpenetration using inelastic collisions?
+- Collision-dist fudge-factor?
 - Make a standard world event processor?
 - Repro problem where calculating far into the future without rendering causes missed collisions?
+
+Unload stamps from GL
+- generate big maze stamp
 
 Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.
