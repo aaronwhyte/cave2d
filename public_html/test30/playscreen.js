@@ -13,6 +13,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
   this.ballsCreated = false;
+  this.hitsThisFrame = 0;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -53,7 +54,7 @@ PlayScreen.prototype.initWorld = function() {
 
   // PAUSE
   buttonMaker.setLetterColor([0, 0.7, 2]).setBlockColor([0, 0.35, 1]).setScale(2).setPaddingXY(3, 2);
-  var spiritId = buttonMaker.addButton(115, 80, "PAUSE", function(world, x, y) {
+  var spiritId = buttonMaker.addButton(115, 79, "PAUSE", function(world, x, y) {
     var attack = 0.04;
     var sustain = 0;
     var decay = 0.3;
@@ -131,7 +132,7 @@ PlayScreen.prototype.clearBalls = function() {
 };
 
 PlayScreen.prototype.initBalls = function() {
-  this.ballSpiritId = this.initBall(0, 0, 7, 0.5, 2, 2, 2, this.rainbowStamp);
+  this.ballSpiritId = this.initBall(0, 0, 6, 0.5, 2, 2, 2, this.rainbowStamp);
   var r = 30;
   this.initBall(
           (90 - r) * (Math.random() - 0.5) * 2,
@@ -139,8 +140,8 @@ PlayScreen.prototype.initBalls = function() {
           r, 1,
           1.5, 1.5, 1.5,
           this.rainbowStamp);
-  for (var i = 0; i < 10; i++) {
-    r = i+3;
+  for (var i = 0; i < 5; i++) {
+    r = i*2+3;
     this.initBall(
             (90 - r) * (Math.random() - 0.5) * 2,
             (90 - r) * (Math.random() - 0.5) * 2,
@@ -221,8 +222,11 @@ PlayScreen.prototype.onHitEvent = function(e) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
     var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
     var mag = strikeVec.magnitude();
-    this.bonk(b0, mag);
-    this.bonk(b1, mag);
+    if (this.hitsThisFrame < 3) {
+      this.bonk(b0, mag);
+      this.bonk(b1, mag);
+      this.hitsThisFrame++;
+    }
     strikeVec.free();
   }
 };
@@ -280,6 +284,7 @@ PlayScreen.prototype.updateViewMatrix = function() {
 };
 
 PlayScreen.prototype.drawScene = function() {
+  this.hitsThisFrame = 0;
   if (!this.ballsCreated) {
     this.initBalls();
   }
