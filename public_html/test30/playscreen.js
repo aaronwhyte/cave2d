@@ -52,7 +52,7 @@ PlayScreen.prototype.initWorld = function() {
       .setPaddingXY(1.5, 0.5);
 
   // PAUSE
-  buttonMaker.setLetterColor([0, 0, 0]).setBlockColor([1, 1, 1]).setScale(2).setPaddingXY(3, 2);
+  buttonMaker.setLetterColor([0, 0.7, 2]).setBlockColor([0, 0.35, 1]).setScale(2).setPaddingXY(3, 2);
   var spiritId = buttonMaker.addButton(115, 80, "PAUSE", function(world, x, y) {
     var attack = 0.04;
     var sustain = 0;
@@ -65,6 +65,7 @@ PlayScreen.prototype.initWorld = function() {
   this.setSpaceButtonSpirit(this.world.spirits[spiritId]);
 
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
+
   var sphereModel = RigidModel.createOctahedron()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
@@ -77,6 +78,35 @@ PlayScreen.prototype.initWorld = function() {
     vertex.color.setXYZ(c, c, c);
   }
   this.sphereStamp = sphereModel.createModelStamp(this.renderer.gl);
+
+  var rainbowModel = RigidModel.createOctahedron()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
+      .sphereize(Vec4.ZERO, 1);
+  var rainbow = [
+      [1, 0, 0],
+      [1, 0.5, 0],
+      [1, 1, 0],
+      [0, 1, 0],
+      [0, 0, 1],
+      [75/255, 0, 130/255],
+      [143/255, 0, 1]
+      ];
+  for (var i = 0; i < rainbowModel.vertexes.length; i++) {
+    var vertex = rainbowModel.vertexes[i];
+    var val = ((vertex.position.v[2]
+        + 0.3 * Math.sin(Math.PI * vertex.position.v[1])
+        + 0.3 * Math.sin(Math.PI * vertex.position.v[0])) * 0.8 + 1) / 2;
+    var n = Math.floor(val * rainbow.length);
+    n = Math.min(rainbow.length - 1, Math.max(0, n));
+    var c = rainbow[n];
+    vertex.color.setXYZ(c[0]*2, c[1]*2, c[2]*2);
+  }
+  this.rainbowStamp = rainbowModel.createModelStamp(this.renderer.gl);
 
   this.initBalls();
   this.initWalls();
@@ -101,19 +131,27 @@ PlayScreen.prototype.clearBalls = function() {
 };
 
 PlayScreen.prototype.initBalls = function() {
-  this.ballSpiritId = this.initBall(0, 0, 4, 0.5, 1.5, 0, 0);
-  for (var i = 0; i < 20; i++) {
-    var r = i ? (3 + Math.random() * 10) : 30;
+  this.ballSpiritId = this.initBall(0, 0, 7, 0.5, 2, 2, 2, this.rainbowStamp);
+  var r = 30;
+  this.initBall(
+          (90 - r) * (Math.random() - 0.5) * 2,
+          (90 - r) * (Math.random() - 0.5) * 2,
+          r, 1,
+          1.5, 1.5, 1.5,
+          this.rainbowStamp);
+  for (var i = 0; i < 10; i++) {
+    r = i+3;
     this.initBall(
-            (140 - r) * (Math.random() - 0.5) * 2,
+            (90 - r) * (Math.random() - 0.5) * 2,
             (90 - r) * (Math.random() - 0.5) * 2,
             r, 1,
-            Math.random() * 0.5 + 0.5, Math.random() + 0.8, Math.random()+ 0.8);
+            Math.random() * 0.5 + 1, Math.random() * 0.5 + 1, Math.random() * 0.5 + 1,
+            this.sphereStamp);
   }
   this.ballsCreated = true;
 };
 
-PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue) {
+PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, stamp) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosXYAtTime(x, y, this.world.now);
@@ -123,7 +161,7 @@ PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue) {
   b.pathDurationMax = PATH_DURATION * 3;
   var spirit = new BallSpirit();
   spirit.bodyId = this.world.addBody(b);
-  spirit.setModelStamp(this.sphereStamp);
+  spirit.setModelStamp(stamp);
   var spiritId = this.world.addSpirit(spirit);
   this.world.spirits[spiritId].setColorRGB(red, green, blue);
   return spiritId;
@@ -176,6 +214,42 @@ PlayScreen.prototype.handleInput = function() {
   this.trackball.reset();
 };
 
+PlayScreen.prototype.onHitEvent = function(e) {
+  var b0 = this.world.getBodyByPathId(e.pathId0);
+  var b1 = this.world.getBodyByPathId(e.pathId1);
+  if (b0 && b1) {
+    this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
+    var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
+    var mag = strikeVec.magnitude();
+    this.bonk(b0, mag);
+    this.bonk(b1, mag);
+    strikeVec.free();
+  }
+};
+
+PlayScreen.prototype.bonk = function(body, mag) {
+  var mass, vol, dur, freq, freq2;
+  var bodyPos = Vec2d.alloc();
+  body.getPosAtTime(this.world.now, bodyPos);
+  this.vec4.setXYZ(bodyPos.x, bodyPos.y, 10);
+  this.vec4.transform(this.viewMatrix);
+  if (body.shape == Body.Shape.RECT) {
+    vol = mag/10;
+    mass = body.rectRad.x + body.rectRad.y;
+    dur = Math.min(0.1, mag/100);
+    freq = 10000/mass + 5 * Math.random();
+    freq2 = freq - 2 * Math.random();
+    this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'square');
+  } else {
+    mass = Math.sqrt(body.mass);
+    freq = Math.max(120, 50 * Math.sqrt(140000) / mass);
+    vol = Math.min(1, mag/5 + (2 / freq));
+    freq2 = freq * (1 + (Math.random() - 0.5) * 0.01);
+    dur = mass / 400;
+    this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, dur/10, dur/10, dur, freq, freq2, 'sine');
+  }
+  bodyPos.free();
+};
 
 PlayScreen.prototype.updateViewMatrix = function() {
   var br = this.worldBoundingRect;

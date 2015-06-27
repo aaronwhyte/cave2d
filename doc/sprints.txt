@@ -620,9 +620,9 @@ x fix pause button to be a separate screen visible at the same time. HudScreen.
 v fix interpenetration!
 v fix quit. reset playing world.
 x Quaternions. Make that rolling look right.
-- sound
-  - collisions
-  - acceleration?
+v sound
+  v collisions
+  x acceleration?
 
 Physics revisited a little?
 x Add some collider unit tests. Try to repro interpenetration using inelastic collisions?

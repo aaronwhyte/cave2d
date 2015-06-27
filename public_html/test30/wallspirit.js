@@ -7,7 +7,7 @@ function WallSpirit() {
   this.bodyId = -1;
   this.id = -1;
   this.modelStamp = null;
-  this.color = new Vec4(1, 1, 1);
+  this.color = new Vec4(0, 0.7, 2);
 
   this.vec2d = new Vec2d();
   this.vec4 = new Vec4();

@@ -12,6 +12,7 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.sfx = sound;
 
   this.viewMatrix = new Matrix44();
+  this.vec4 = new Vec4();
   this.mat4 = new Matrix44();
   this.multiPointer = new MultiPointer(this.canvas, this.viewMatrix);
   this.readyToDraw = false;
@@ -128,11 +129,7 @@ BaseScreen.prototype.clock = function() {
   while (e && e.time <= endClock && Date.now() <= endTimeMs) {
     this.world.processNextEvent();
     if (e.type == WorldEvent.TYPE_HIT) {
-      var b0 = this.world.getBodyByPathId(e.pathId0);
-      var b1 = this.world.getBodyByPathId(e.pathId1);
-      if (b0 && b1) {
-        this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-      }
+      this.onHitEvent(e);
     }
     e = this.world.getNextEvent();
   }
@@ -140,6 +137,8 @@ BaseScreen.prototype.clock = function() {
     this.world.now = endClock;
   }
 };
+
+BaseScreen.prototype.onHitEvent = function(e) {};
 
 BaseScreen.prototype.drawScene = function() {
   this.clock();
