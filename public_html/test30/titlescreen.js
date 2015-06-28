@@ -37,8 +37,8 @@ TitleScreen.prototype.initWorld = function() {
       var decay = 0.04;
       var attack = 0.05 * (Math.random() + 1);
       var sustain = 0.4 - attack;
-      sfx.sound(x, y, 10, 0.3, attack, sustain, decay, freq/4, freq, 'sine', delay);
-      sfx.sound(x, y, 10, 0.2, attack, sustain, decay, freq/4, freq * (2 + Math.random()), 'sine', delay);
+      sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq/4, freq, 'sine', delay);
+      sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq/4, freq * (2 + Math.random()), 'sine', delay);
     }
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
@@ -63,9 +63,9 @@ TitleScreen.prototype.initWorld = function() {
       maxLength = Math.max(maxLength, delay + attack + decay);
       var freq1 = Math.pow(i+1, 2) * baseFreq;
       var freq2 = freq1 * 2;
-      sfx.sound(x, y, 10,
+      sfx.sound(x, y, 0,
           0.2, attack, sustain, decay, freq1, freq2, 'square', delay);
-      sfx.sound(x, y, 10,
+      sfx.sound(x, y, 0,
           0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
     }
     this.lastSoundMs = Date.now();

@@ -7,7 +7,7 @@ function Main30() {
   new RendererLoader(this.canvas, 'vertex-shader.txt', 'fragment-shader.txt')
       .load(this.onRendererLoaded.bind(this));
   this.sfx = new SoundFx();
-  this.sfx.setListenerXYZ(0, 0, 0.1);
+  this.sfx.setListenerXYZ(0, 0, 5);
 
   // on-event sound unlocker for iOS
   this.iosSoundUnlocked = false;
