@@ -31,7 +31,7 @@ PauseScreen.prototype.initWorld = function() {
     var attack = 0.2;
     var sustain = 0;
     var decay = 0.01;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, 100, 2000, 'square');
+    sfx.sound(x, y, 10, 0.5, attack, sustain, decay, 100, 2000, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main30.SCREEN_PLAY);
@@ -55,9 +55,9 @@ PauseScreen.prototype.initWorld = function() {
       maxLength = Math.max(maxLength, delay + attack + decay);
       var freq1 = Math.pow(i+1, 2) * baseFreq;
       var freq2 = freq1 * 2;
-      sfx.sound(x, y, 0,
+      sfx.sound(x, y, 10,
           0.2, attack, sustain, decay, freq1, freq2, 'square', delay);
-      sfx.sound(x, y, 0,
+      sfx.sound(x, y, 10,
           0.2, attack, sustain, decay, freq1/2, freq2/2, 'sine', delay);
     }
     this.lastSoundMs = Date.now();
@@ -78,7 +78,7 @@ PauseScreen.prototype.initWorld = function() {
       maxLength = Math.max(maxLength, delay + attack + decay);
       var freq1 = Math.random() * 300 + 300;
       var freq2 = Math.random() * 10 + 10;
-      sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq1, freq2, 'sine', delay);
+      sfx.sound(x, y, 10, 0.5, attack, sustain, decay, freq1, freq2, 'sine', delay);
     }
     this.lastSoundMs = Date.now();
     this.soundLength = 1000 * maxLength;

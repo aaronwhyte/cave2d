@@ -58,7 +58,7 @@ PlayScreen.prototype.initWorld = function() {
     var attack = 0.04;
     var sustain = 0;
     var decay = 0.3;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, 1000, 100, 'square');
+    sfx.sound(x, y, 10, 0.2, attack, sustain, decay, 1000, 100, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
     controller.gotoScreen(Main30.SCREEN_PAUSE);
@@ -132,7 +132,7 @@ PlayScreen.prototype.clearBalls = function() {
 };
 
 PlayScreen.prototype.initBalls = function() {
-  this.ballSpiritId = this.initBall(0, 0, 6, 0.5, 2, 2, 2, this.rainbowStamp);
+  this.ballSpiritId = this.initBall(0, 0, 6, 1, 2, 2, 2, this.rainbowStamp);
   var r = 30;
   this.initBall(
           (90 - r) * (Math.random() - 0.5) * 2,
@@ -140,8 +140,9 @@ PlayScreen.prototype.initBalls = function() {
           r, 1,
           1.5, 1.5, 1.5,
           this.rainbowStamp);
-  for (var i = 0; i < 5; i++) {
-    r = i*2+3;
+  var maxBalls = 6;
+  for (var i = 0; i < maxBalls; i++) {
+    r = 10 * i/maxBalls + 2;
     this.initBall(
             (90 - r) * (Math.random() - 0.5) * 2,
             (90 - r) * (Math.random() - 0.5) * 2,
@@ -199,17 +200,10 @@ PlayScreen.prototype.handleInput = function() {
     this.trackball.getVal(this.movement);
     newVel.setXY(this.movement.x, -this.movement.y);
     var accel = Vec2d.alloc().set(newVel).subtract(body.vel);
-    var maxAccel = 3;
-    accel.clipToMaxLength(maxAccel);
+    accel.scale(0.1).scaleToLength(Math.sqrt(accel.magnitude())).clipToMaxLength(1);
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
     accel.free();
-  } else {
-//    var oldSpeedSquared = body.vel.magnitudeSquared();
-//    var newSpeedSquared = 0.99 * oldSpeedSquared;
-//    var newSpeed = Math.sqrt(newSpeedSquared);
-//    newVel.set(body.vel).scaleToLength(newSpeed);
-//    body.setVelAtTime(newVel, this.world.now);
   }
   newVel.free();
   this.trackball.reset();
@@ -221,7 +215,8 @@ PlayScreen.prototype.onHitEvent = function(e) {
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
     var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
-    var mag = strikeVec.magnitude();
+    var mag = strikeVec.magnitudeSquared()
+        * 0.5 * ((b0.mass != Infinity ? b0.mass : 1000) + (b1.mass != Infinity ? b1.mass : 1000));
     if (this.hitsThisFrame < 3) {
       this.bonk(b0, mag);
       this.bonk(b1, mag);
@@ -238,19 +233,21 @@ PlayScreen.prototype.bonk = function(body, mag) {
   this.vec4.setXYZ(bodyPos.x, bodyPos.y, 10);
   this.vec4.transform(this.viewMatrix);
   if (body.shape == Body.Shape.RECT) {
-    vol = mag/10;
-    mass = body.rectRad.x + body.rectRad.y;
-    dur = Math.min(0.1, mag/100);
-    freq = 10000/mass + 5 * Math.random();
-    freq2 = freq - 2 * Math.random();
-    this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'square');
+//    vol = Math.min(1, mag/400000);
+//    mass = 1000;
+//    dur = Math.max(0.05, Math.min(0.1, mag/100000));
+//    freq = 100 + 5 * Math.random();
+//    freq2 = freq;
+//    this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'square');
   } else {
-    mass = Math.sqrt(body.mass);
-    freq = Math.max(120, 50 * Math.sqrt(140000) / mass);
-    vol = Math.min(1, mag/5 + (2 / freq));
-    freq2 = freq * (1 + (Math.random() - 0.5) * 0.01);
-    dur = mass / 400;
-    this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, dur/10, dur/10, dur, freq, freq2, 'sine');
+    mass = body.mass;
+    freq = 200 + 100000 / mass;
+    vol = Math.min(1, mag/10000 + (2 / freq));
+    if (vol > 0.01) {
+      freq2 = freq * (1 + (Math.random() - 0.5) * 0.01);
+      dur = Math.min(0.2, Math.max(Math.sqrt(mass) / 600, 0.05));
+      this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 10, vol, 0, 0, dur, freq, freq2, 'sine');
+    }
   }
   bodyPos.free();
 };
