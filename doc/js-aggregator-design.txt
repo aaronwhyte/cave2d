@@ -1,0 +1,35 @@
+There are too many JS files! Game 1 has 48, and loading the JS requires a ton of
+connections, slowing page load a lot.
+
+Goals
+* Reduce it to one JS file to load, named using a SHA1 hash of the content.
+* Keep the list in HTML. No extra dependency book-keeping.
+* Do not require re-building during development.
+
+However
+* No minification, linting, compilation.
+* No creating a dependency system.
+* No eliminating shader or CSS file loading. Those are 20x less urgent.
+* No inlining the JS. index.html should be uncachable, but the
+  JS should be immutable and cachable per URL (hence content-hash-based URLs.)
+
+Low level interface
+For params, require a path to a source HTML file, and a destination folder path.
+As a result, write two files to the desination path.
+First is the JS, concatenated together in order, with a filename "<sha1 hash>.js".
+Second is a new html file, with the same name as input by default, with the multiple script lines
+replaced by a single line.
+
+High-level use
+Specify a project src and dest, and produce a version to ship.
+Copy everything over, then transform every index.html and add sha1 JS files.
+
+Start with a "src" and "dest" roots, and one HTML file.
+v Parse the JS files for script tags that appear in the head.
+v Load the files into memory as a string.
+v Get the SHA1 hash.
+v Write new files into dest dir
+  v js
+  v html
+HOLY CRAP IT WORKS
+
