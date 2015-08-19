@@ -616,22 +616,63 @@ v props
 v Change buttons to not be rubbable.
 v fit to screen better
 v fix paused-screen animation. less z.
-x fix pause button to be a separate screen visible at the same time. HudScreen.
 v fix interpenetration!
 v fix quit. reset playing world.
-x Quaternions. Make that rolling look right.
 v sound
   v collisions
-  x acceleration?
+  v fix volume, test on ff, chrome, ipad, nexus
+done 2015-06-28
+SERIOUSLY, LEAVE IT ALONE
 
 Physics revisited a little?
-x Add some collider unit tests. Try to repro interpenetration using inelastic collisions?
-v Collision-dist fudge-factor?
-x Make a standard world event processor?
-v Repro problem where calculating far into the future without rendering causes missed collisions?
+v Collision-dist fudge-factor
+v problem where calculating far into the future without rendering causes missed collisions
+  v repro with basic sound test, time per frame cranked way up.
+  v fix it
+
+Small Game 1
+- Title screen same as always, but more 2D
+- Ditto for pause screen
+- Trackball
+- Autofire in direection of movement
+- Second finger locks firing direction
+- Smallish auto-generated arenas, 2x2 screens roughly
+- Enemies all appear immediately, like robotron and Nuclear Throne?
+-
+
+Sound II
+Do some kinda sound-object pooling. It's an allocation free-for-all right now. It falls apart on iOS.
+Some hypotheses to check:
+- Number of simultaneous continuous oscillators has per-browser/device limit. Failure mode is silence.
+- Synth failure (silence) can be detected with AnalyserNode.getFloatTimeDomainData()
+- Number of simultaneous continuous nodes (not just oscillators) is limited per bzr/dev.
+- Short-lived GC-able node count is even more limited.
+- Pooling is effective: Hanging on to nodes in JS and re-using them results in higher node limit.
+
+- Measure performance of browsers using current frequent-allocation technique
+  - Stress-test by comparing approximate expected output to actual output
+    - vanilla HTML page with buttons and dashboard. Small canvas visualizer maybe. No WebGL.
+    - create a "expected output" node that analyzes output sample amplitude, looking for stretches of zero
+    - allocate N node sub-graphs with short durations and see how output varies with N.
+      - separate non-overlapping pulses
+        - bare oscillators
+        - position + gain + oscillators
+      - longer oscillators that overlap
+
+
+- long-lasting Singer classes
+  - position
+  - gain, mute
+  - start, stop, cancel (one-shots probably won't use stop)
+  - pause, resume (for when the game itself pauses and resumes)
+  - misc params depeding on object
 
 Unload stamps from GL
+Deleting a buffer is easy: gl.deleteBuffer(WebGLBuffer? buffer)
 - generate big maze stamp
+- load in finitely until it breaks.
+- load and unload infinitely - should be fine.
+
 
 Use RigidModel and ModelStamp in Fracas2
 - replace existing "addRect" and "addCircle" RigidModel-generating things.
