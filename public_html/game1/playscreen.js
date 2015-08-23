@@ -6,9 +6,9 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
   this.requestPointerLockFn = this.getRequestPointerLockFn();
 
-  this.trackball = new MultiTrackball();
-  this.trackball.addTrackball(new MouseTrackball());
-  this.trackball.addTrackball(new TouchTrackball());
+  this.trackball = new MultiTrackball()
+      .addTrackball(new MouseTrackball())
+      .addTrackball(new TouchTrackball());
 
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
@@ -201,7 +201,15 @@ PlayScreen.prototype.handleInput = function() {
     this.trackball.getVal(this.movement);
     newVel.setXY(this.movement.x, -this.movement.y);
     var accel = Vec2d.alloc().set(newVel).subtract(body.vel);
-    accel.scale(0.2).scaleToLength(Math.sqrt(accel.magnitude())).clipToMaxLength(1);
+    var maxAccelSquared = 2 * 2;
+    var sensitivity = 2;
+    accel.scale(sensitivity).clipToMaxLength(maxAccelSquared);
+    // If it's over 1, then use a square root to lower it.
+    // (If it's less than 1, then sqrt will make it bigger, so don't bother.)
+    var mag = accel.magnitude();
+    if (mag > 1) {
+      accel.scaleToLength(Math.sqrt(mag));
+    }
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
     accel.free();
