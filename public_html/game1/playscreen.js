@@ -14,6 +14,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.movement = new Vec2d();
   this.ballsCreated = false;
   this.hitsThisFrame = 0;
+  this.visibility = 0;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -279,7 +280,6 @@ PlayScreen.prototype.drawScene = function() {
   if (!this.ballsCreated) {
     this.initBalls();
   }
-  this.clock();
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }

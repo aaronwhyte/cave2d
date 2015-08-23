@@ -91,12 +91,21 @@ BaseScreen.prototype.drawScreen = function(visibility) {
     this.initWorld();
     this.readyToDraw = true;
   }
-  this.clock();
+  if (this.visibility == 1) {
+    this.clock();
+  }
   this.updateViewMatrix(Date.now());
   this.drawScene();
   this.multiPointer.clearEventQueue();
   this.multiPointer.setViewMatrix(this.viewMatrix);
 };
+
+BaseScreen.prototype.drawScene = function() {
+  for (var id in this.world.spirits) {
+    this.world.spirits[id].onDraw(this.world, this.renderer);
+  }
+};
+
 
 BaseScreen.prototype.destroyScreen = function() {
   // Unload button models? Need a nice utility for loading, remembering, and unloading models.
@@ -139,10 +148,3 @@ BaseScreen.prototype.clock = function() {
 };
 
 BaseScreen.prototype.onHitEvent = function(e) {};
-
-BaseScreen.prototype.drawScene = function() {
-  this.clock();
-  for (var id in this.world.spirits) {
-    this.world.spirits[id].onDraw(this.world, this.renderer);
-  }
-};
