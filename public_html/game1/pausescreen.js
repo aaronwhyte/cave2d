@@ -47,7 +47,6 @@ PauseScreen.prototype.initWorld = function() {
   // FULL SCREEN
   buttonMaker.setScale(0.75);
   var spiritId = buttonMaker.addButton(0, -8-6, "FULL SCREEN", function(e) {
-    console.log("fullscreenButton");
     var freq0 = 200;
     var freq1 = 2200;
     var delay = 0;
@@ -63,7 +62,6 @@ PauseScreen.prototype.initWorld = function() {
 
   // QUIT
   var spiritId = buttonMaker.addButton(0, -8-6-5, "QUIT", function(e) {
-    console.log("quitButton");
     var freq0 = 200;
     var freq1 = 5;
     var delay = 0;
