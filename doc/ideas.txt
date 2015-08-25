@@ -13,16 +13,16 @@ Create tools that simplify level and robot making to the point where
 a 1st-grader should be able to make & share stuff.
 
 Tech elements:
-JS
-Very loose coupling
-Web Audio
-Multiple renderers
-Touch and mouse support
-Event-driven, using predicted inter-frame delays to do expected work and prep a graphics frame.
-Quad-tree wall/space support
-Focus on letting people (me) make new games, not new levels in existing game?
-Robots.
-WebGL!
+v JS
+x Very loose coupling?
+v Web Audio
+v Multiple renderers
+v Touch and mouse support
+- Event-driven, using predicted inter-frame delays to do expected work and prep a graphics frame.
+- Quad-tree wall/space support
+- Focus on letting people (me) make new games, not new levels in existing game?
+- Robots.
+v WebGL!
 
 Inspiration:
 Adventure (2600)
@@ -32,57 +32,13 @@ Pac Man
 Wizard of Wor
 Dig Dug
 Boulder Dash
-Robotron
+Robotron & Llamatron
 N the ninja game
 Bill Budge's Pinball Construction Set
 Moon Patrol
 
 Basic gameplay for Game 1:
 Run around a 2d cave, avoiding or shooting robots.
-
-Fancy gameplay:
-Flexible gameclock time. Maybe even slow down sound effects.
-Musical-ish.
-Faces on things.
-
-Big gameplay idea - sprite behavior affected by being line-of-sight to certain artifacts.
-- love or fear artifact
-- artifact induces aggression or passivity
-- artifact can be carried, gives owner power, but is cursed - like LOTR's R.
-Examples:
-- artifact causes creatures to hang out near it and attack other creatures
-- artifact causes fear - nobody can get close to it
-- artifact induces blindness or short vision
-- or invisibility
-- or invulnerability
-- or slows/speeds - affects clock cycle frequency. Player's sense of time is altered if affected.
-- turns sprites to stone
-- makes sprites invulnerable but very slow
-
-Another idea: Design whole game first, then code it. Repeat.
-
-Game 1:
-Setting: computer-generated quad-tree caves.
-Player: Circle that
-
-Game 2:
-Stunt tank!!
-
-2014-07-17
-Site experience? Ideas, some crazy:
-- Start in the editor, with a ready-made level.
-- powerups are the new keys - you may need them to get past certain enemies & obstacles
-- player could be invited to edit the level as part of playing it. But we're getting too nuts for v1.
-- Most basic experience is to have the player start playing at level 1 and proceed through the rest, to victory or death.
-Consider the ordered list of levels as a single adventure.
-Most of these games are going to have one adventure, by me.
-But it's still nice to be able to create new one-off levels in the editor, and share by URL.
-Web devs could still embed them wherever.
-
-It would be nice to be able to go from playing to editing, without making a copy or naming anything.
-Step one is to keep the level in memory, and dump it to the URL or a textarea, onchange(throttled) or on demand.
-No storage, no headache. Minimize. Do not overbuild!
-
 
 2014-12-09
 Game ideas

@@ -631,135 +631,48 @@ v problem where calculating far into the future without rendering causes missed 
   v fix it
 
 Small Game 1
-- Title screen same as always, but more 2D
-- Ditto for pause screen
-- Trackball
-- Autofire in direection of movement
-- Second finger locks firing direction
-- Smallish auto-generated arenas, 2x2 screens roughly
-- Enemies all appear immediately, like robotron and Nuclear Throne?
--
+* Multiple, levels of increasing difficulty
+* Smallish auto-generated arenas, 2x2 screens roughly
+* Player fires continuously in last direction of acceleration (maybe add direction-lock button too)
+* Enemies all appear immediately. Kill necessary ones to finish level.
+* Enemies (and the encouraged player tactics):
+  * marching grunt - avoid and shoot
+  * flying shooter - chase and shoot, dodge bullets
+  * charging momentum-hulk - dodge
+  * pulse-blaster - get behind cover
+* Color rules:
+  * Walls blue
+  * Player, missiles reddish
+  * Enemies, missiles greenish
+  * Successful hits, explosions white
+  * no-op spashes gray
 
-Sound II
-Do some kinda sound-object pooling. It's an allocation free-for-all right now. It falls apart on iOS.
-Some hypotheses to check:
-- Number of simultaneous continuous oscillators has per-browser/device limit. Failure mode is silence.
-- Synth failure (silence) can be detected with AnalyserNode.getFloatTimeDomainData()
-- Number of simultaneous continuous nodes (not just oscillators) is limited per bzr/dev.
-- Short-lived GC-able node count is even more limited.
-- Pooling is effective: Hanging on to nodes in JS and re-using them results in higher node limit.
-
-- Measure performance of browsers using current frequent-allocation technique
-  - Stress-test by comparing approximate expected output to actual output
-    - vanilla HTML page with buttons and dashboard. Small canvas visualizer maybe. No WebGL.
-    - create a "expected output" node that analyzes output sample amplitude, looking for stretches of zero
-    - allocate N node sub-graphs with short durations and see how output varies with N.
-      - separate non-overlapping pulses
-        - bare oscillators
-        - position + gain + oscillators
-      - longer oscillators that overlap
-
-
-- long-lasting Singer classes
-  - position
-  - gain, mute
-  - start, stop, cancel (one-shots probably won't use stop)
-  - pause, resume (for when the game itself pauses and resumes)
-  - misc params depeding on object
-
-Unload stamps from GL
-Deleting a buffer is easy: gl.deleteBuffer(WebGLBuffer? buffer)
-- generate big maze stamp
-- load in finitely until it breaks.
-- load and unload infinitely - should be fine.
-
-
-Use RigidModel and ModelStamp in Fracas2
-- replace existing "addRect" and "addCircle" RigidModel-generating things.
-- build entire background of squares out of this
-- build the circular model out of this.
-
-- spaces vs. walls
-  - Render non-walls with triangles, and default the canvas to wall-color
-  - Cull walls that are not touching other tile types. Don't give them bodies.
-  - Change level format to be floor-based, not wall-based. Compute wall bodies.
-
-Special Effects
-- explosions & sound effects I
-  - gnome destroyed
-  - generator destroyed
-  - player damage
-  - wall bump
-  - wall destroyed
-  - gold collected
-  - health collected
-  - exit level?
-  - player destroyed?
-
-- graphics models
-  - bullets --> arrows
-    - big signage arrow pointed in direction of flight, like Dandy
-    - arrows stop and blink out when they hit a wall (file under explosion)
-  - player
-    - mouth
-    - eyes
-    - arms and legs?
-  - gnomes
-    - eyes
-    - mouth
-    - arms & legs?
-    - hat! Maybe like http://plexode.com/eval3/#s=aekVQXANJVQMbAx10AYMeFBERAYIeF5sBSkUePQNEQk+mHx0QdB89TwMNA0uRk3APdqUDSE9QTkZUphyxsWABcQkKAVyxREQPR0pNTTRVWk1GvARHRUXEz9FDRkhKTzFCVUnLxU/QD05QV0Y1UAkOEg0B+QrueBNc71e76fgSfziB8BJ8DBMFCIPDUId7RhcNfL7iESf7RIhNKBUIzpdbthLTasligPKhVKZQJhGlJeYxPZDkIRTIrLZsmajWbDabjfcADjgPcjmdDqdkTeDyej2fASB8PiNNisCqL5qkZq8KrL3CL7B0Qg9Gi1RqcPr1oglcAMatlgBNiANqr0ekEipcpeEnJt9aMsl0wmU0ZBGLTCnbOlV/a7ZbamAibCLhlVIc8jplGnBEfEQC1j0MZB4RDMZ0emCNmhN5kObwLSn2ywcvmNezNKklez10B+ifmkuGm1Fw1Sb1sq1973lGv+1lu3wyqmoBX8hxkJ3Wxr2PoGSAbdb+XeG+utkB4T4MQCYYjPpCr7NIxFQMiAV720r22wsTTN1TIPIVm8TxmDlZpfFeU9F34aUFFyQxUYOcSEFGf1uDugAxwBEk6naY5PmQUFkxHJt5Tjghu2cQmDFaWpwXpBmEUNegEwPBiNFpVSMUQjNRnMd1z37hd0n+hphwBTgTogPB3IKUaLlhV1RhSFYQhFFM6hKEQJBWFNUFhcBpVVBdpQXfyRoZduKpCQl5wPmZxHGe1Y30Co+3KPCGHUhySxUAkVTMY2exCPRskWDgozrAEHnEBIFlGS0qRUE06kxVWejRS4VaXAkaRUOegQLRCaABBAAQTPxxH5O6S2yFMwhVFCsW1oaa0qomixJo2j6RQkVCoNpUp5V6kxPpWnqZV6nKeqCohVqScQWMyqKqA6rETq+zKyrRuCxht1jaEiTYpUmbkqlJdJUQmVpYloVZcl6YI1eppXyo9pY/QlbW/exVpFYSuLhMi46AoKBqFoeNKKEU66OWWv0qFSt2yseyRVTFw1xUazcZp+oRPoG1apRO46wt2tX8xV/LCTFGF2saWrIpbH8bwBCceTGz8itFUwRBMCgQ0E7sntxLLeyjSMqkh1Sor0SBGEMSgJKYqCqANV69KgD9RFUJBQE/GRZFUCQIBMRQIROHC+MBMRZPsWj7Ek+xXPvCGNAEAUAQLDaMxBVDu3qe5qiMRq9ZNlWX4Ngss4LezRxfNdv3FE+MA/OsgtC0ozAuj+W5BK8uAkFl16XoDK6Cf8j4/BusLHek3TlKd6diuN6Yli+ggNzuwh2H+gPCsdLwNNBhFWvQJGIZAKGWp12Js7ttMECSaXWkF19ndwQq0sfTpjpZ5Bn2nHAGgvSL/1CgJy2PY+L5F1FXQ0TAgCCzAMThUJIAwSBH9woDrf2BJ/4VQlwCAGF4AAA=
-    - hat could fly off during explosion...
-
-- shader effects
-  - powerup glow or vertex freakout?
-  - tunnel vision during slo-mo?
-- control tweaks
-  - single fire button, laser scope?
-
-Bugs
-- Simultaneous-corner-bounce interpenetration.
-  - Repro unit test
-  - Fix
-
-Sparks
-Splashes and explosions can use a circle, with a time uniform and a dist-from-center varying,
-and kind of a fancy frag shader.
-Vertex shaders could be lots of fun, for glitching, warping, prismo-style beam-in for isometrics,
-robotron-style stretch-splosions.
-v Nice simple explosion shader with time param.
-- JS for throw-away graphics effects.
-  - Separate SparkEngine class for one-shot graphics (and later audio)
-  - Recycles records used to render to GL based on time param.
-  - Garbage collects expired rows.
-- Make hitting a wall splash a little wall color.
-- Make bullet hits explode enemies (which makes them re-appear far away from the player)
-- Make firing a bullet spash a little bullet color.
-
-Slider
-basically a stick where I project the value onto a line, and a renderer
-
-Editor Skeleton
-- nav/wall/air mode switch
-v pointer-based grid editing
-  v circles at each event
-  v touch
-  v continuity between event points on drag
-  v mouse
-- drag-based panning
-
-Make a maze and play it.
-Terrain URL
-v port stuff
-  v url
-  v lempelziv
-    v map
-  v squisher
-- button saves sharing URL to textarea
-- button dismisses textarea
-- onload parse URL
-
-Game UI Nav
-- list of levels
-- start player with data D
-- start editor with data D
+- Menu screens should not use power.
+  - Do not use the EventQueue-d ButtonSpirit behavior.
+  - Only look for touch/mouse down and space. Don't poll.
+    -
+  - Controller should not request animation frame unless there is an invalidation posted.
+    - Invalidate when changing a screen's visibility.
+    - Invalidate when a button is animating.
+    - Invalidate when a screen (like PlayScreen) asks.
+  - CPU use is 0ish
+    - on title screen
+    - on pause screen
+- Change controller to stop requestAnimationFrame loop until an event-based interrupt or constant invalidation
+- Do not re-render a menu screen if nothing is happening. Title/paused screen should not eat battery.
+- Do not strain yourself with the "pause" button on the play screen. Special-case it in a touch/key handler.
+- TitleScreen
+  - Play sound when starting up for first time.
+- PlayScreen
+  - current game state: levelNum, lives, score
+  - current level state: nullable world, level-specific GL buffers
+  - one-time setup: load re-usable models
+  - loadLevel(data)
+    - world/physics
+    - static grx
+  - levelUnload
+    - world?
+    - unload GL grx: gl.deleteBuffer(WebGLBuffer? buffer)
+  - spawnPlayer
+  - killPlayer
+  - gameOver
