@@ -2,11 +2,15 @@
  * Multiple pointer handler, blending mouse and touch on a canvas.
  * Each frame it provides before and after snapshots, and a
  * log of all the events in between.
- * Be sure to call clearEventQueue() after handling event data, and before waiting until the next frame,
- * because mouse and touch events only arrive when no other JS is running.
+ * If queueing is on, be sure to call clearEventQueue() after handling event data, and before waiting until the next
+ * frame, because mouse and touch events only arrive when no other JS is running.
+ * @param canvas
+ * @param {Matrix44} viewMatrix
+ * @param {boolean} queueing
+ *
  * @constructor
  */
-function MultiPointer(canvas, viewMatrix) {
+function MultiPointer(canvas, viewMatrix, queueing) {
   this.canvas = canvas;
   this.inverseViewMatrix = new Matrix44();
   this.setViewMatrix(viewMatrix);
@@ -18,7 +22,7 @@ function MultiPointer(canvas, viewMatrix) {
 
   // Queue of PointerEvent objects. There are usually only a few per frame,
   // so 100 is grossly overkill, I hope.
-  this.queue = new CircularQueue(100);
+  this.queue = queueing ? new CircularQueue(100) : null;
 
   this.mat44 = new Matrix44;
   this.vec4 = new Vec4();
@@ -111,7 +115,7 @@ MultiPointer.prototype.removeListener = function(fn) {
 };
 
 MultiPointer.prototype.getQueueSize = function() {
-  return this.queue.size();
+  return this.queue ? this.queue.size() : 0;
 };
 
 /**
@@ -134,7 +138,7 @@ MultiPointer.prototype.setViewMatrix = function(viewMatrix) {
     e.time = Date.now();
     e.pos.set(this.eventCoords[id]);
     this.transformCanvasToWorld(e.pos);
-    this.queue.enqueue(e);
+    this.enqueue(e);
 
     this.positions[id].set(e.pos);
   }
@@ -144,6 +148,7 @@ MultiPointer.prototype.setViewMatrix = function(viewMatrix) {
  * Flips the old and new position snapshots, and clears the queue
  */
 MultiPointer.prototype.clearEventQueue = function() {
+  if (!this.queue) return;
   // Delete obsolete oldPos entries
   for (var id in this.oldPositions) {
     if (!(id in this.positions)) {
@@ -213,7 +218,7 @@ MultiPointer.prototype.down = function(id, x, y) {
   e.time = Date.now();
   e.pos.setXY(x, y);
   this.transformCanvasToWorld(e.pos);
-  this.queue.enqueue(e);
+  this.enqueue(e);
 
   if (!(id in this.positions)) {
     this.positions[id] = Vec2d.alloc();
@@ -235,11 +240,17 @@ MultiPointer.prototype.move = function(id, x, y) {
     e.time = Date.now();
     e.pos.setXY(x, y);
     this.transformCanvasToWorld(e.pos);
-    this.queue.enqueue(e);
+    this.enqueue(e);
 
     this.positions[id].set(e.pos);
     this.eventCoords[id].setXY(x, y);
     this.callListeners(e);
+  }
+};
+
+MultiPointer.prototype.enqueue = function(e) {
+  if (this.queue) {
+    this.queue.enqueue(e);
   }
 };
 
@@ -251,7 +262,7 @@ MultiPointer.prototype.up = function(id, x, y) {
     e.time = Date.now();
     e.pos.setXY(x, y);
     this.transformCanvasToWorld(e.pos);
-    this.queue.enqueue(e);
+    this.enqueue(e);
 
     this.positions[id].free();
     delete this.positions[id];

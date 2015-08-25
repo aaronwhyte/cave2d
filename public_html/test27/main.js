@@ -31,7 +31,7 @@ function main() {
   new RendererLoader(canvas, 'vertex-shader.txt', 'fragment-shader.txt').load(onRendererLoaded);
   sound = new SoundFx(SoundFx.getAudioContext());
   sound.setListenerXYZ(0, 0, -0.3);
-  multiPointer = new MultiPointer(canvas, viewMatrix);
+  multiPointer = new MultiPointer(canvas, viewMatrix, true);
   multiPointer.startListening();
 
   // on-event sound unlocker for iOS
