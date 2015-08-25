@@ -17,7 +17,7 @@ TitleScreen.prototype.initWorld = function() {
   var sfx = this.sfx;
   var world = this.world;
 
-  var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
+  var buttonMaker = new ButtonMaker(labelMaker, this.world, null, this.renderer);
   buttonMaker
       .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
       .setPaddingXY(1.5, 0.5);
@@ -30,14 +30,14 @@ TitleScreen.prototype.initWorld = function() {
 
   // PLAY
   buttonMaker.setLetterColor([0.5, 1.5, 2]).setBlockColor([0.25, 0.75, 1]);
-  spiritId = buttonMaker.addButton(0, -8, "PLAY", function(world, x, y) {
+  spiritId = buttonMaker.addButton(0, -8, "PLAY", function(e) {
     var freq0 = 100;
     var freq1 = 5000;
     var delay = 0;
     var attack = 0.01;
     var sustain = 0.1;
     var decay = 0.04;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.gotoScreen(Main30.SCREEN_PLAY);
@@ -49,14 +49,14 @@ TitleScreen.prototype.initWorld = function() {
 
   // FULL SCREEN
   buttonMaker.setScale(0.75);
-  var spiritId = buttonMaker.addButton(0, -8 -6, "FULL SCREEN", function(world, x, y) {
+  var spiritId = buttonMaker.addButton(0, -8 -6, "FULL SCREEN", function(e) {
     var freq0 = 200;
     var freq1 = 2200;
     var delay = 0;
     var attack = 0.05;
     var sustain = 0.1;
     var decay = 0.2;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.requestFullScreen();
@@ -68,8 +68,6 @@ TitleScreen.prototype.initWorld = function() {
     var b = this.world.bodies[s.bodyId];
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
-//  this.worldBoundingRect.coverXY(0, 5);
-//  this.worldBoundingRect.coverXY(0, -27);
 };
 
 TitleScreen.prototype.updateViewMatrix = function() {

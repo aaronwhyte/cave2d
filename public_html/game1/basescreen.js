@@ -14,7 +14,7 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.viewMatrix = new Matrix44();
   this.vec4 = new Vec4();
   this.mat4 = new Matrix44();
-  this.multiPointer = new MultiPointer(this.canvas, this.viewMatrix);
+  this.multiPointer = new MultiPointer(this.canvas, this.viewMatrix, false);
   this.readyToDraw = false;
   this.nextButtonNum = 0;
   this.worldBoundingRect = new Rect();
@@ -25,6 +25,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.spacebarFn = this.getSpacebarFn();
   this.multiPointerLockFn = this.getMultiPointerLockFn();
   this.fullscrnFn = this.getFullscrnFn();
+  this.pauseFn = this.getPauseFn();
+  this.quitFn = this.getQuitFn();
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -33,6 +35,7 @@ BaseScreen.prototype.setSpaceButtonSpirit = function(s) {
   this.spaceButtonSpirit = s;
 };
 
+/** Usually "Play" and "Resume" trigger pointer-lock. */
 BaseScreen.prototype.setPointerLockButtonSpirit = function(s) {
   this.pointerLockButtonSpirit = s;
 };
@@ -46,7 +49,7 @@ BaseScreen.prototype.getSpacebarFn = function() {
   return function(e) {
     // space is keyCode 32
     if (e.keyCode == 32 && self.spaceButtonSpirit) {
-      self.spaceButtonSpirit.onClick(self.world, 0, 0);
+      self.spaceButtonSpirit.onClick(null);
     }
   };
 };
@@ -69,6 +72,24 @@ BaseScreen.prototype.getFullscrnFn = function() {
   }
 };
 
+BaseScreen.prototype.getPauseFn = function() {
+  var self = this;
+  return function(pointerEvent) {
+    if (self.pauseButtonSpirit) {
+      self.pauseButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+    }
+  }
+};
+
+BaseScreen.prototype.getQuitFn = function() {
+  var self = this;
+  return function(pointerEvent) {
+    if (self.quitButtonSpirit) {
+      self.quitButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+    }
+  }
+};
+
 BaseScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   if (listen) {
@@ -76,11 +97,15 @@ BaseScreen.prototype.setScreenListening = function(listen) {
     document.body.addEventListener('keydown', this.spacebarFn);
     this.multiPointer.addListener(this.multiPointerLockFn);
     this.multiPointer.addListener(this.fullscrnFn);
+    this.multiPointer.addListener(this.pauseFn);
+    this.multiPointer.addListener(this.quitFn);
   } else {
     this.multiPointer.stopListening();
     document.body.removeEventListener('keydown', this.spacebarFn);
     this.multiPointer.removeListener(this.multiPointerLockFn);
     this.multiPointer.removeListener(this.fullscrnFn);
+    this.multiPointer.removeListener(this.pauseFn);
+    this.multiPointer.removeListener(this.quitFn);
   }
   this.listening = listen;
 };

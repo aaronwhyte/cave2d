@@ -108,6 +108,7 @@ if (!'WebGLRenderingContext' in window) {
       disable: f,
       depthFunc: f,
       blendFunc: f,
+      deleteBuffer: f,
       getAttribLocation: f,
       enableVertexAttribArray: f,
       getUniformLocation: f,

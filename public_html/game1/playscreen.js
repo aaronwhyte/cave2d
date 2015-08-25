@@ -9,12 +9,15 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball());
-
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
-  this.ballsCreated = false;
+
+  // for sound throtling
   this.hitsThisFrame = 0;
+
   this.visibility = 0;
+  this.glBuffers = [];
+  this.world = null;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -39,6 +42,9 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   BaseScreen.prototype.setScreenListening.call(this, listen);
 };
 
+/**
+ * Called from BaseScreen the first time this is rendered.
+ */
 PlayScreen.prototype.initWorld = function() {
   this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
   this.resolver = new HitResolver();
@@ -48,26 +54,27 @@ PlayScreen.prototype.initWorld = function() {
   var controller = this.controller;
   var sfx = this.sfx;
 
-  var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
+  var buttonMaker = new ButtonMaker(labelMaker, this.world, null, this.renderer);
   buttonMaker
       .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
       .setPaddingXY(1.5, 0.5);
 
   // PAUSE
   buttonMaker.setLetterColor([0, 0.7, 2]).setBlockColor([0, 0.35, 1]).setScale(2).setPaddingXY(3, 2);
-  var spiritId = buttonMaker.addButton(115, 79, "PAUSE", function(world, x, y) {
+  var spiritId = buttonMaker.addButton(115, 79, "PAUSE", function(e) {
     var freq0 = 3000;
     var freq1 = 30;
     var delay = 0;
     var attack = 0.05;
     var sustain = 0.15;
     var decay = 0.01;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.gotoScreen(Main30.SCREEN_PAUSE);
   });
-  this.setSpaceButtonSpirit(this.world.spirits[spiritId]);
+  this.pauseButtonSpirit = this.world.spirits[spiritId];
+  this.setSpaceButtonSpirit(this.pauseButtonSpirit);
 
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
 
@@ -120,6 +127,7 @@ PlayScreen.prototype.initWorld = function() {
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
 };
+
 
 PlayScreen.prototype.clearBalls = function() {
   for (var spiritId in this.world.spirits) {
@@ -225,10 +233,10 @@ PlayScreen.prototype.onHitEvent = function(e) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
     var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
     var mag = strikeVec.magnitude();
-    if (this.hitsThisFrame < 3) {
+    this.hitsThisFrame++;
+    if (this.hitsThisFrame < 4) {
       this.bonk(b0, mag);
       this.bonk(b1, mag);
-      this.hitsThisFrame++;
     }
     strikeVec.free();
   }
@@ -291,4 +299,12 @@ PlayScreen.prototype.drawScene = function() {
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
+};
+
+PlayScreen.prototype.unloadLevel = function() {
+  this.world = null;
+  while (this.glBuffers.length) {
+    this.renderer.gl.deleteBuffer(this.glBuffers.pop());
+  }
+  this.levelLoaded = false;
 };

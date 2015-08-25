@@ -118,7 +118,10 @@ ButtonMaker.prototype.addButton = function(x, y, text, func) {
   b.pathDurationMax = Infinity;
   var spirit = new ButtonSpirit();
   spirit.bodyId = this.world.addBody(b);
-  spirit.setMultiPointer(this.multiPointer);
+  if (this.multiPointer) {
+    // TODO: remove multipointer from buttons completely?
+    spirit.setMultiPointer(this.multiPointer);
+  }
   spirit.setModelStamp(stamp);
   spirit.setOnClick(func);
   return this.world.addSpirit(spirit);

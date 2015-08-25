@@ -17,7 +17,7 @@ PauseScreen.prototype.initWorld = function() {
   var sfx = this.sfx;
   var world = this.world;
 
-  var buttonMaker = new ButtonMaker(labelMaker, this.world, this.multiPointer, this.renderer);
+  var buttonMaker = new ButtonMaker(labelMaker, this.world, null, this.renderer);
   buttonMaker
       .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
       .setPaddingXY(1.5, 0.5);
@@ -27,14 +27,14 @@ PauseScreen.prototype.initWorld = function() {
 
   // RESUME
   buttonMaker.setLetterColor([2, 1.5, 0.5]).setBlockColor([1, 0.75, 0.25]);
-  spiritId = buttonMaker.addButton(0, -8, "RESUME", function(world, x, y) {
+  spiritId = buttonMaker.addButton(0, -8, "RESUME", function(e) {
     var freq0 = 100;
     var freq1 = 5000;
     var delay = 0;
     var attack = 0.01;
     var sustain = 0.1;
     var decay = 0.04;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.gotoScreen(Main30.SCREEN_PLAY);
@@ -46,14 +46,15 @@ PauseScreen.prototype.initWorld = function() {
 
   // FULL SCREEN
   buttonMaker.setScale(0.75);
-  var spiritId = buttonMaker.addButton(0, -8-6, "FULL SCREEN", function(world, x, y) {
+  var spiritId = buttonMaker.addButton(0, -8-6, "FULL SCREEN", function(e) {
+    console.log("fullscreenButton");
     var freq0 = 200;
     var freq1 = 2200;
     var delay = 0;
     var attack = 0.05;
     var sustain = 0.1;
     var decay = 0.2;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.requestFullScreen();
@@ -61,19 +62,21 @@ PauseScreen.prototype.initWorld = function() {
   this.setFullScrnButtonSpirit(world.spirits[spiritId]);
 
   // QUIT
-  buttonMaker.addButton(0, -8-6-5, "QUIT", function(world, x, y) {
+  var spiritId = buttonMaker.addButton(0, -8-6-5, "QUIT", function(e) {
+    console.log("quitButton");
     var freq0 = 200;
     var freq1 = 5;
     var delay = 0;
     var attack = 0;
     var sustain = 1;
     var decay = 0.1;
-    sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.screens[Main30.SCREEN_PLAY].clearBalls();
     controller.gotoScreen(Main30.SCREEN_TITLE);
   });
+  this.quitButtonSpirit = world.spirits[spiritId];
 
   for (var spiritId in this.world.spirits) {
     var s = this.world.spirits[spiritId];
