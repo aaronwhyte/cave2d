@@ -37,7 +37,7 @@ PauseScreen.prototype.initWorld = function() {
     sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
-    controller.gotoScreen(Main30.SCREEN_PLAY);
+    controller.gotoScreen(Game1.SCREEN_PLAY);
     controller.requestPointerLock();
   });
   var resumeSpirit = this.world.spirits[spiritId];
@@ -71,8 +71,8 @@ PauseScreen.prototype.initWorld = function() {
     sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
-    controller.screens[Main30.SCREEN_PLAY].clearBalls();
-    controller.gotoScreen(Main30.SCREEN_TITLE);
+    controller.screens[Game1.SCREEN_PLAY].clearBalls();
+    controller.gotoScreen(Game1.SCREEN_TITLE);
   });
   this.quitButtonSpirit = world.spirits[spiritId];
 

@@ -61,7 +61,7 @@ PlayScreen.prototype.initWorld = function() {
     sfx.sound(x, y, 0, 0.2, attack, sustain, decay, 1000, 100, 'square');
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay) * 1000;
-    controller.gotoScreen(Main30.SCREEN_PAUSE);
+    controller.gotoScreen(Game1.SCREEN_PAUSE);
   });
   this.setSpaceButtonSpirit(this.world.spirits[spiritId]);
 

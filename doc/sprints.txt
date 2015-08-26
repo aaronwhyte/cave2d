@@ -657,9 +657,8 @@ v Menu screens should not use power.
     v verify CPU use and framerate is 0ish
       v on title screen
       v on pause screen
+v Rename Game1's "Main30" to "Game1".
 - Do not strain yourself with the "pause" button on the play screen. Special-case it in a touch/key handler.
-- TitleScreen
-  - Play sound when starting up for first time.
 - PlayScreen
   - current game state: levelNum, lives, score
   - current level state: nullable world, level-specific GL buffers
