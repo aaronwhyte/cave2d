@@ -13,6 +13,9 @@ function Main30() {
   this.iosSoundUnlocked = false;
   document.body.addEventListener('mousedown', this.unlockIosSound.bind(this));
   document.body.addEventListener('touchstart', this.unlockIosSound.bind(this));
+
+  this.animateFrameFn = this.animateFrame.bind(this);
+  this.looping = false;
 }
 
 var MS_PER_FRAME = 1000 / 60;
@@ -35,7 +38,7 @@ Main30.prototype.unlockIosSound = function() {
 Main30.prototype.onRendererLoaded = function(r) {
   this.renderer = r;
   this.initScreens();
-  this.loop();
+  this.requestAnimation();
 };
 
 Main30.prototype.initScreens = function() {
@@ -49,8 +52,8 @@ Main30.prototype.initScreens = function() {
   for (var i = 0; i < Main30.SCREENS.length; i++) {
     this.visibility[Main30.SCREENS[i]] = 0;
   }
-
   this.frontScreenId = Main30.SCREEN_TITLE;
+  this.animationRequested = false;
 };
 
 Main30.prototype.initStamps = function() {
@@ -63,13 +66,12 @@ Main30.prototype.initStamps = function() {
   }
 };
 
-Main30.prototype.loop = function() {
-  if (!this.loopFn) {
-    this.loopFn = this.loop.bind(this);
-  }
+Main30.prototype.animateFrame = function() {
+  this.animationRequested = false;
   this.renderer.resize().clear();
   for (var i = 0; i < Main30.SCREENS.length; i++) {
     var id = Main30.SCREENS[i];
+    var oldVisibility = this.visibility[id];
     var seconds = 0.2;
     if (this.frontScreenId == id) {
       this.visibility[id] = Math.min(1, this.visibility[id] + 1 / (seconds * 60));
@@ -80,12 +82,15 @@ Main30.prototype.loop = function() {
     if (this.visibility[id]) {
       this.screens[id].drawScreen(this.visibility[id]);
     }
+    if (oldVisibility != this.visibility[id]) {
+      this.requestAnimation();
+    }
   }
-  requestAnimationFrame(this.loopFn, this.canvas);
 };
 
 Main30.prototype.gotoScreen = function(screenId) {
   this.frontScreenId = screenId;
+  this.requestAnimation();
 };
 
 Main30.prototype.requestFullScreen = function() {
@@ -99,6 +104,7 @@ Main30.prototype.requestFullScreen = function() {
   } else if (elem.webkitRequestFullscreen) {
     elem.webkitRequestFullscreen();
   }
+  this.requestAnimation();
 };
 
 Main30.prototype.requestPointerLock = function() {
@@ -108,6 +114,7 @@ Main30.prototype.requestPointerLock = function() {
   if (this.canvas.requestPointerLock) {
     this.canvas.requestPointerLock();
   }
+  this.requestAnimation();
 };
 
 Main30.prototype.exitPointerLock = function() {
@@ -119,4 +126,13 @@ Main30.prototype.exitPointerLock = function() {
   } else {
     console.log('exitPointerLock UNPOSSIBLE');
   }
+  this.requestAnimation();
 };
+
+Main30.prototype.requestAnimation = function() {
+  if (!this.animationRequested) {
+    this.animationRequested = true;
+    requestAnimationFrame(this.animateFrameFn, this.canvas);
+  }
+};
+

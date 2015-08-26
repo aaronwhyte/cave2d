@@ -647,19 +647,16 @@ Small Game 1
   * Successful hits, explosions white
   * no-op spashes gray
 
-- Menu screens should not use power.
-  - Do not use the EventQueue-d ButtonSpirit behavior.
-  - Only look for touch/mouse down and space. Don't poll.
-    -
-  - Controller should not request animation frame unless there is an invalidation posted.
-    - Invalidate when changing a screen's visibility.
-    - Invalidate when a button is animating.
-    - Invalidate when a screen (like PlayScreen) asks.
-  - CPU use is 0ish
-    - on title screen
-    - on pause screen
-- Change controller to stop requestAnimationFrame loop until an event-based interrupt or constant invalidation
-- Do not re-render a menu screen if nothing is happening. Title/paused screen should not eat battery.
+v Menu screens should not use power.
+  v Do not use the EventQueue-d ButtonSpirit behavior.
+  v Only look for touch/mouse down and space. Don't poll.
+  v Controller should not request animation frame unless there is an invalidation posted.
+    v Invalidate when changing a screen's visibility.
+    v Invalidate when a button is animating.
+    v Invalidate when a screen (like PlayScreen) asks.
+    v verify CPU use and framerate is 0ish
+      v on title screen
+      v on pause screen
 - Do not strain yourself with the "pause" button on the play screen. Special-case it in a touch/key handler.
 - TitleScreen
   - Play sound when starting up for first time.

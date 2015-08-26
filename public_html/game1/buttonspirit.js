@@ -69,6 +69,7 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
   this.modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
+  this.animating = !!life;
 };
 
 ButtonSpirit.prototype.getBody = function(world) {

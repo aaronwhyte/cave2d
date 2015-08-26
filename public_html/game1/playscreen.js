@@ -299,6 +299,8 @@ PlayScreen.prototype.drawScene = function() {
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
+  // Animate whenever this thing draws.
+  this.controller.requestAnimation();
 };
 
 PlayScreen.prototype.unloadLevel = function() {

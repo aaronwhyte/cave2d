@@ -25,7 +25,6 @@ TitleScreen.prototype.initWorld = function() {
   // TITLE
   buttonMaker.setLetterColor([0.25, 0.75, 1]).setBlockColor(null).setScale(1.5);
   var spiritId = buttonMaker.addButton(0, 0, "GAME 1", null);
-  var titleSpirit = this.world.spirits[spiritId];
   buttonMaker.setScale(1);
 
   // PLAY

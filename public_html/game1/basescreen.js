@@ -27,6 +27,7 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.fullscrnFn = this.getFullscrnFn();
   this.pauseFn = this.getPauseFn();
   this.quitFn = this.getQuitFn();
+  this.resizeFn = this.getResizeFn();
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -90,6 +91,13 @@ BaseScreen.prototype.getQuitFn = function() {
   }
 };
 
+BaseScreen.prototype.getResizeFn = function() {
+  var self = this;
+  return function() {
+    self.controller.requestAnimation();
+  }
+};
+
 BaseScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   if (listen) {
@@ -99,6 +107,7 @@ BaseScreen.prototype.setScreenListening = function(listen) {
     this.multiPointer.addListener(this.fullscrnFn);
     this.multiPointer.addListener(this.pauseFn);
     this.multiPointer.addListener(this.quitFn);
+    window.addEventListener('resize', this.resizeFn);
   } else {
     this.multiPointer.stopListening();
     document.body.removeEventListener('keydown', this.spacebarFn);
@@ -106,6 +115,7 @@ BaseScreen.prototype.setScreenListening = function(listen) {
     this.multiPointer.removeListener(this.fullscrnFn);
     this.multiPointer.removeListener(this.pauseFn);
     this.multiPointer.removeListener(this.quitFn);
+    window.removeEventListener('resize', this.resizeFn);
   }
   this.listening = listen;
 };
@@ -126,8 +136,14 @@ BaseScreen.prototype.drawScreen = function(visibility) {
 };
 
 BaseScreen.prototype.drawScene = function() {
+  var animationRequested = false;
   for (var id in this.world.spirits) {
-    this.world.spirits[id].onDraw(this.world, this.renderer);
+    var spirit = this.world.spirits[id];
+    spirit.onDraw(this.world, this.renderer);
+    if (!animationRequested && spirit.animating) {
+      this.controller.requestAnimation();
+      animationRequested = true;
+    }
   }
 };
 
