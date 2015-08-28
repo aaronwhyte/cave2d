@@ -4,9 +4,29 @@
  */
 function PauseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
+  this.quitFn = this.getQuitFn();
 }
 PauseScreen.prototype = new BaseScreen();
 PauseScreen.prototype.constructor = PauseScreen;
+
+PauseScreen.prototype.getQuitFn = function() {
+  var self = this;
+  return function(pointerEvent) {
+    if (self.quitButtonSpirit) {
+      self.quitButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+    }
+  }
+};
+
+PauseScreen.prototype.setScreenListening = function(listen) {
+  if (listen == this.listening) return;
+  BaseScreen.prototype.setScreenListening.call(this, listen);
+  if (listen) {
+    this.multiPointer.addListener(this.quitFn);
+  } else {
+    this.multiPointer.removeListener(this.quitFn);
+  }
+};
 
 PauseScreen.prototype.initWorld = function() {
   this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);

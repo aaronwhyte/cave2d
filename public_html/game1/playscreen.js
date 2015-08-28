@@ -6,11 +6,15 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
   this.requestPointerLockFn = this.getRequestPointerLockFn();
 
+  this.multiPointer2 = new MultiPointer2(canvas);
+  this.multiPointer2ListenerFn = this.getMultiPointer2ListenerFn();
+
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball());
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
+
 
   // for sound throtling
   this.hitsThisFrame = 0;
@@ -29,17 +33,49 @@ PlayScreen.prototype.getRequestPointerLockFn = function() {
   };
 };
 
+PlayScreen.prototype.getMultiPointer2ListenerFn = function() {
+  var self = this;
+  return function(e) {
+    if (e.type == PointerEvent.TYPE_DOWN) {
+      if (Vec2d.distance(e.pos.x, e.pos.y, self.canvas.width/2, 0) < Math.min(self.canvas.height, self.canvas.width)/4) {
+        self.pauseGame();
+      }
+    }
+  }
+};
+
+
 PlayScreen.prototype.setScreenListening = function(listen) {
-  if (!this.listening && listen) {
-    document.body.addEventListener('click', this.requestPointerLockFn);
-    this.trackball.startListening();
-  }
-  if (this.listening && !listen) {
-    this.controller.exitPointerLock();
-    document.body.removeEventListener('click', this.requestPointerLockFn);
-    this.trackball.stopListening();
-  }
+  if (listen == this.listening) return;
   BaseScreen.prototype.setScreenListening.call(this, listen);
+  if (listen) {
+    this.multiPointer2.startListening();
+    this.multiPointer2.addListener(this.multiPointer2ListenerFn);
+  } else {
+    this.multiPointer2.stopListening();
+    this.multiPointer2.removeListener(this.multiPointer2ListenerFn);
+  }
+};
+
+PlayScreen.prototype.getSpacebarFn = function() {
+  var self = this;
+  return function(e) {
+    // space is keyCode 32
+    if (e.keyCode == 32) {
+      self.pauseGame();
+    }
+  };
+};
+
+PlayScreen.prototype.pauseGame = function() {
+  var freq0 = 3000;
+  var freq1 = 30;
+  var delay = 0;
+  var attack = 0.05;
+  var sustain = 0.15;
+  var decay = 0.01;
+  this.sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+  this.controller.gotoScreen(Game1.SCREEN_PAUSE);
 };
 
 /**
@@ -54,27 +90,27 @@ PlayScreen.prototype.initWorld = function() {
   var controller = this.controller;
   var sfx = this.sfx;
 
-  var buttonMaker = new ButtonMaker(labelMaker, this.world, null, this.renderer);
-  buttonMaker
-      .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
-      .setPaddingXY(1.5, 0.5);
-
-  // PAUSE
-  buttonMaker.setLetterColor([0, 0.7, 2]).setBlockColor([0, 0.35, 1]).setScale(2).setPaddingXY(3, 2);
-  var spiritId = buttonMaker.addButton(115, 79, "PAUSE", function(e) {
-    var freq0 = 3000;
-    var freq1 = 30;
-    var delay = 0;
-    var attack = 0.05;
-    var sustain = 0.15;
-    var decay = 0.01;
-    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
-    this.lastSoundMs = Date.now();
-    this.soundLength = (attack + sustain + decay + delay) * 1000;
-    controller.gotoScreen(Game1.SCREEN_PAUSE);
-  });
-  this.pauseButtonSpirit = this.world.spirits[spiritId];
-  this.setSpaceButtonSpirit(this.pauseButtonSpirit);
+//  var buttonMaker = new ButtonMaker(labelMaker, this.world, null, this.renderer);
+//  buttonMaker
+//      .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
+//      .setPaddingXY(1.5, 0.5);
+//
+//  // PAUSE
+//  buttonMaker.setLetterColor([0, 0.7, 2]).setBlockColor([0, 0.35, 1]).setScale(5).setPaddingXY(3, 2);
+//  var spiritId = buttonMaker.addButton(115, 79, "PAUSE", function(e) {
+//    var freq0 = 3000;
+//    var freq1 = 30;
+//    var delay = 0;
+//    var attack = 0.05;
+//    var sustain = 0.15;
+//    var decay = 0.01;
+//    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+//    this.lastSoundMs = Date.now();
+//    this.soundLength = (attack + sustain + decay + delay) * 1000;
+//    controller.gotoScreen(Game1.SCREEN_PAUSE);
+//  });
+//  this.pauseButtonSpirit = this.world.spirits[spiritId];
+//  this.setSpaceButtonSpirit(this.pauseButtonSpirit);
 
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
 
@@ -83,38 +119,16 @@ PlayScreen.prototype.initWorld = function() {
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .sphereize(Vec4.ZERO, 1);
-  var wut = Math.random() * 300;
-  for (var i = 0; i < sphereModel.vertexes.length; i++) {
-    var vertex = sphereModel.vertexes[i];
-    var c = Math.ceil(Math.round((Math.sin(vertex.position.v[0] * vertex.position.v[1] * vertex.position.v[2] * wut)) + 2) / 2);
-    vertex.color.setXYZ(c, c, c);
-  }
   this.sphereStamp = sphereModel.createModelStamp(this.renderer.gl);
 
   var rainbowModel = RigidModel.createOctahedron()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
-      .createQuadrupleTriangleModel()
-      .createQuadrupleTriangleModel()
       .sphereize(Vec4.ZERO, 1);
-  var rainbow = [
-    [Math.random(), Math.random(), Math.random()],
-    [Math.random(), Math.random(), Math.random()],
-    [Math.random(), Math.random(), Math.random()],
-    [Math.random(), Math.random(), Math.random()]
-  ];
-  var aa = Math.random();
-  var bb = Math.random();
   for (var i = 0; i < rainbowModel.vertexes.length; i++) {
     var vertex = rainbowModel.vertexes[i];
-    var val = ((vertex.position.v[2]
-        + aa * Math.sin(Math.PI * vertex.position.v[1])
-        + bb * Math.sin(Math.PI * vertex.position.v[0])) * 0.7 + 1) / 2;
-    var n = Math.floor(val * rainbow.length);
-    n = Math.min(rainbow.length - 1, Math.max(0, n));
-    var c = rainbow[n];
-    vertex.color.setXYZ(c[0]*2, c[1]*2, c[2]*2);
+    vertex.color.setXYZ(0.5 + 0.1 *Math.random(), 0.5 + 0.1 * Math.random(), 0.9 + 0.1 *Math.random());
   }
   this.rainbowStamp = rainbowModel.createModelStamp(this.renderer.gl);
 
@@ -149,7 +163,7 @@ PlayScreen.prototype.initBalls = function() {
           r, 1,
           1.5, 1.5, 1.5,
           this.rainbowStamp);
-  var maxBalls = 6;
+  var maxBalls = 18;
   for (var i = 0; i < maxBalls; i++) {
     r = 10 * i/maxBalls + 4;
     this.initBall(

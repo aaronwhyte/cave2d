@@ -25,8 +25,6 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.spacebarFn = this.getSpacebarFn();
   this.multiPointerLockFn = this.getMultiPointerLockFn();
   this.fullscrnFn = this.getFullscrnFn();
-  this.pauseFn = this.getPauseFn();
-  this.quitFn = this.getQuitFn();
   this.resizeFn = this.getResizeFn();
 }
 BaseScreen.prototype = new Screen();
@@ -73,24 +71,6 @@ BaseScreen.prototype.getFullscrnFn = function() {
   }
 };
 
-BaseScreen.prototype.getPauseFn = function() {
-  var self = this;
-  return function(pointerEvent) {
-    if (self.pauseButtonSpirit) {
-      self.pauseButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
-    }
-  }
-};
-
-BaseScreen.prototype.getQuitFn = function() {
-  var self = this;
-  return function(pointerEvent) {
-    if (self.quitButtonSpirit) {
-      self.quitButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
-    }
-  }
-};
-
 BaseScreen.prototype.getResizeFn = function() {
   var self = this;
   return function() {
@@ -105,16 +85,12 @@ BaseScreen.prototype.setScreenListening = function(listen) {
     document.body.addEventListener('keydown', this.spacebarFn);
     this.multiPointer.addListener(this.multiPointerLockFn);
     this.multiPointer.addListener(this.fullscrnFn);
-    this.multiPointer.addListener(this.pauseFn);
-    this.multiPointer.addListener(this.quitFn);
     window.addEventListener('resize', this.resizeFn);
   } else {
     this.multiPointer.stopListening();
     document.body.removeEventListener('keydown', this.spacebarFn);
     this.multiPointer.removeListener(this.multiPointerLockFn);
     this.multiPointer.removeListener(this.fullscrnFn);
-    this.multiPointer.removeListener(this.pauseFn);
-    this.multiPointer.removeListener(this.quitFn);
     window.removeEventListener('resize', this.resizeFn);
   }
   this.listening = listen;

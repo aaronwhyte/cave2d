@@ -646,7 +646,7 @@ Small Game 1
   * Enemies, missiles greenish
   * Successful hits, explosions white
   * no-op spashes gray
-
+Cleaning:
 v Menu screens should not use power.
   v Do not use the EventQueue-d ButtonSpirit behavior.
   v Only look for touch/mouse down and space. Don't poll.
@@ -658,7 +658,9 @@ v Menu screens should not use power.
       v on title screen
       v on pause screen
 v Rename Game1's "Main30" to "Game1".
-- Do not strain yourself with the "pause" button on the play screen. Special-case it in a touch/key handler.
+v Do not strain yourself with the world/spirit/body "pause" button on the play screen. Special-case it in
+  a PointerEvent/SpaceKey handler (or something)
+Game:
 - PlayScreen
   - current game state: levelNum, lives, score
   - current level state: nullable world, level-specific GL buffers
