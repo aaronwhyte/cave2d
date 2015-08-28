@@ -15,7 +15,6 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
 
-
   // for sound throtling
   this.hitsThisFrame = 0;
 
@@ -44,17 +43,25 @@ PlayScreen.prototype.getMultiPointer2ListenerFn = function() {
   }
 };
 
-
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
-  BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
+    document.body.addEventListener('keydown', this.spacebarFn);
+    this.multiPointer.addListener(this.multiPointerLockFn);
+    document.body.addEventListener('click', this.requestPointerLockFn);
+    this.trackball.startListening();
     this.multiPointer2.startListening();
     this.multiPointer2.addListener(this.multiPointer2ListenerFn);
   } else {
+    this.multiPointer.stopListening();
+    this.multiPointer.removeListener(this.multiPointerLockFn);
+    this.controller.exitPointerLock();
+    document.body.removeEventListener('click', this.requestPointerLockFn);
+    this.trackball.stopListening();
     this.multiPointer2.stopListening();
     this.multiPointer2.removeListener(this.multiPointer2ListenerFn);
   }
+  this.listening = listen;
 };
 
 PlayScreen.prototype.getSpacebarFn = function() {
@@ -85,32 +92,6 @@ PlayScreen.prototype.initWorld = function() {
   this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
-  var labelMaker = new LabelMaker(this.glyphs);
-
-  var controller = this.controller;
-  var sfx = this.sfx;
-
-//  var buttonMaker = new ButtonMaker(labelMaker, this.world, null, this.renderer);
-//  buttonMaker
-//      .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
-//      .setPaddingXY(1.5, 0.5);
-//
-//  // PAUSE
-//  buttonMaker.setLetterColor([0, 0.7, 2]).setBlockColor([0, 0.35, 1]).setScale(5).setPaddingXY(3, 2);
-//  var spiritId = buttonMaker.addButton(115, 79, "PAUSE", function(e) {
-//    var freq0 = 3000;
-//    var freq1 = 30;
-//    var delay = 0;
-//    var attack = 0.05;
-//    var sustain = 0.15;
-//    var decay = 0.01;
-//    sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
-//    this.lastSoundMs = Date.now();
-//    this.soundLength = (attack + sustain + decay + delay) * 1000;
-//    controller.gotoScreen(Game1.SCREEN_PAUSE);
-//  });
-//  this.pauseButtonSpirit = this.world.spirits[spiritId];
-//  this.setSpaceButtonSpirit(this.pauseButtonSpirit);
 
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
 
