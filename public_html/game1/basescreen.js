@@ -12,9 +12,9 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.sfx = sound;
 
   this.viewMatrix = new Matrix44();
+  this.vec2d = new Vec2d();
   this.vec4 = new Vec4();
   this.mat4 = new Matrix44();
-  this.multiPointer = new MultiPointer(this.canvas, this.viewMatrix, false);
   this.readyToDraw = false;
   this.nextButtonNum = 0;
   this.worldBoundingRect = new Rect();
@@ -22,58 +22,60 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
   this.listening = false;
+
   this.spacebarFn = this.getSpacebarFn();
-  this.multiPointerLockFn = this.getMultiPointerLockFn();
-  this.fullscrnFn = this.getFullscrnFn();
+  this.mouseDownFn = this.getMouseDownFn();
+  this.touchStartFn = this.getTouchStartFn();
   this.resizeFn = this.getResizeFn();
+
+  this.clipToWorldMatrix = new Matrix44();
+  this.clipToWorldMatrixDirty = true;
+
+  this.canvasToClipMatrix = new Matrix44();
+  this.canvasToClipMatrixDirty = true;
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
 
-BaseScreen.prototype.setSpaceButtonSpirit = function(s) {
-  this.spaceButtonSpirit = s;
-};
-
-/** Usually "Play" and "Resume" trigger pointer-lock. */
-BaseScreen.prototype.setPointerLockButtonSpirit = function(s) {
-  this.pointerLockButtonSpirit = s;
-};
-
-BaseScreen.prototype.setFullScrnButtonSpirit = function(s) {
-  this.fullScrnButtonSpirit = s;
-};
+BaseScreen.prototype.onSpaceDown = null;
+BaseScreen.prototype.onPointerDown = null;
 
 BaseScreen.prototype.getSpacebarFn = function() {
   var self = this;
   return function(e) {
     // space is keyCode 32
-    if (e.keyCode == 32 && self.spaceButtonSpirit) {
-      self.spaceButtonSpirit.onClick(null);
+    if (e.keyCode == 32 && self.onSpaceDown) {
+      self.onSpaceDown();
     }
   };
 };
 
-BaseScreen.prototype.getMultiPointerLockFn = function() {
+BaseScreen.prototype.getMouseDownFn = function() {
   var self = this;
-  return function(pointerEvent) {
-    if (self.pointerLockButtonSpirit) {
-      self.pointerLockButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+  return function(e) {
+    if (self.onPointerDown) {
+      self.onPointerDown(e.pageX, e.pageY);
     }
   };
 };
 
-BaseScreen.prototype.getFullscrnFn = function() {
+BaseScreen.prototype.getTouchStartFn = function() {
   var self = this;
-  return function(pointerEvent) {
-    if (self.fullScrnButtonSpirit) {
-      self.fullScrnButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+  return function(e) {
+    if (self.onPointerDown) {
+      var touches = e.changedTouches;
+      for (var i = 0; i < touches.length; i++) {
+        var touch = touches[i];
+        self.onPointerDown(touch.pageX, touch.pageY);
+      }
     }
-  }
+  };
 };
 
 BaseScreen.prototype.getResizeFn = function() {
   var self = this;
   return function() {
+    self.canvasToClipMatrixDirty = true;
     self.controller.requestAnimation();
   }
 };
@@ -81,16 +83,14 @@ BaseScreen.prototype.getResizeFn = function() {
 BaseScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   if (listen) {
-    this.multiPointer.startListening();
+    document.body.addEventListener('mousedown', this.mouseDownFn);
+    document.body.addEventListener('touchstart', this.touchStartFn);
     document.body.addEventListener('keydown', this.spacebarFn);
-    this.multiPointer.addListener(this.multiPointerLockFn);
-    this.multiPointer.addListener(this.fullscrnFn);
     window.addEventListener('resize', this.resizeFn);
   } else {
-    this.multiPointer.stopListening();
+    document.body.removeEventListener('mousedown', this.mouseDownFn);
+    document.body.removeEventListener('touchstart', this.touchStartFn);
     document.body.removeEventListener('keydown', this.spacebarFn);
-    this.multiPointer.removeListener(this.multiPointerLockFn);
-    this.multiPointer.removeListener(this.fullscrnFn);
     window.removeEventListener('resize', this.resizeFn);
   }
   this.listening = listen;
@@ -106,9 +106,37 @@ BaseScreen.prototype.drawScreen = function(visibility) {
     this.clock();
   }
   this.updateViewMatrix(Date.now());
+  this.inverseViewMatrixDirty = true;
   this.drawScene();
-  this.multiPointer.clearEventQueue();
-  this.multiPointer.setViewMatrix(this.viewMatrix);
+};
+
+BaseScreen.prototype.getClipToWorldMatrix = function() {
+  if (this.clipToWorldMatrixDirty) {
+    this.viewMatrix.getInverse(this.clipToWorldMatrix);
+    this.clipToWorldMatrixDirty = false;
+  }
+  return this.clipToWorldMatrix;
+};
+
+BaseScreen.prototype.getCanvasToClipMatrix = function() {
+  if (this.canvasToClipMatrixDirty) {
+    this.canvasToClipMatrix.toScaleOpXYZ(2 / this.canvas.width, -2 / this.canvas.height, 1);
+    this.canvasToClipMatrix.multiply(this.mat4.toTranslateOpXYZ(-this.canvas.width / 2, -this.canvas.height / 2, 0));
+  }
+  return this.canvasToClipMatrix;
+};
+
+/**
+ * Transforms a vec2d in place.
+ * @param {Vec2d} vec2d
+ * @returns {Vec2d}
+ */
+BaseScreen.prototype.transformCanvasToWorld = function(vec2d) {
+  this.vec4
+      .setXYZ(vec2d.x, vec2d.y, 0)
+      .transform(this.getCanvasToClipMatrix())
+      .transform(this.getClipToWorldMatrix());
+  return vec2d.setXY(this.vec4.v[0], this.vec4.v[1]);
 };
 
 BaseScreen.prototype.drawScene = function() {
@@ -122,7 +150,6 @@ BaseScreen.prototype.drawScene = function() {
     }
   }
 };
-
 
 BaseScreen.prototype.destroyScreen = function() {
   // Unload button models? Need a nice utility for loading, remembering, and unloading models.

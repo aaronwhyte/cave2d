@@ -34,21 +34,6 @@ ButtonSpirit.prototype.setOnClick = function(func) {
   this.onClick = func;
 };
 
-/**
- * Decides whether this pointer event should trigger a button-click or not.
- * @param {World} world
- * @param {Renderer} renderer
- * @param {PointerEvent} e
- * @returns {boolean} true if a new overlap is detected
- */
-ButtonSpirit.prototype.processPointerEvent = function(world, renderer, e) {
-  if (e.type == PointerEvent.TYPE_DOWN && this.isOverlapping(world, e.pos)) {
-    this.onClick(e);
-    return true;
-  }
-  return false;
-};
-
 ButtonSpirit.prototype.onDraw = function(world, renderer) {
   var life = 0;
   if (Date.now() - this.lastSoundMs < this.soundLength) {

@@ -42,9 +42,7 @@ TitleScreen.prototype.initWorld = function() {
     controller.gotoScreen(Game1.SCREEN_PLAY);
     controller.requestPointerLock();
   });
-  var playSpirit = this.world.spirits[spiritId];
-  this.setSpaceButtonSpirit(playSpirit);
-  this.setPointerLockButtonSpirit(playSpirit);
+  this.playSpirit = this.world.spirits[spiritId];
 
   // FULL SCREEN
   buttonMaker.setScale(0.75);
@@ -60,12 +58,27 @@ TitleScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.requestFullScreen();
   });
-  this.setFullScrnButtonSpirit(world.spirits[spiritId]);
+  this.fullScreenSpirit = world.spirits[spiritId];
 
   for (var spiritId in this.world.spirits) {
     var s = this.world.spirits[spiritId];
     var b = this.world.bodies[s.bodyId];
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
+  }
+};
+
+TitleScreen.prototype.onSpaceDown = function() {
+  this.playSpirit.onClick();
+};
+
+TitleScreen.prototype.onPointerDown = function(pageX, pageY) {
+  this.vec2d.setXY(pageX, pageY);
+  this.transformCanvasToWorld(this.vec2d);
+  if (this.playSpirit.isOverlapping(this.world, this.vec2d)) {
+    this.playSpirit.onClick();
+  }
+  if (this.fullScreenSpirit.isOverlapping(this.world, this.vec2d)) {
+    this.fullScreenSpirit.onClick();
   }
 };
 

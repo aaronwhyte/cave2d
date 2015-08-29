@@ -4,11 +4,6 @@
  */
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
-  this.requestPointerLockFn = this.getRequestPointerLockFn();
-
-  this.multiPointer2 = new MultiPointer2(canvas);
-  this.multiPointer2ListenerFn = this.getMultiPointer2ListenerFn();
-
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball());
@@ -25,53 +20,27 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
-PlayScreen.prototype.getRequestPointerLockFn = function() {
-  var controller = this.controller;
-  return function() {
-    controller.requestPointerLock();
-  };
+PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
+  if (Vec2d.distance(pageX, pageY, this.canvas.width/2, 0) < Math.min(this.canvas.height, this.canvas.width)/4) {
+    this.pauseGame();
+  } else {
+    this.controller.requestPointerLock();
+  }
 };
 
-PlayScreen.prototype.getMultiPointer2ListenerFn = function() {
-  var self = this;
-  return function(e) {
-    if (e.type == PointerEvent.TYPE_DOWN) {
-      if (Vec2d.distance(e.pos.x, e.pos.y, self.canvas.width/2, 0) < Math.min(self.canvas.height, self.canvas.width)/4) {
-        self.pauseGame();
-      }
-    }
-  }
+PlayScreen.prototype.onSpaceDown = function() {
+  this.pauseGame();
 };
 
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
+  BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
-    document.body.addEventListener('keydown', this.spacebarFn);
-    this.multiPointer.addListener(this.multiPointerLockFn);
-    document.body.addEventListener('click', this.requestPointerLockFn);
     this.trackball.startListening();
-    this.multiPointer2.startListening();
-    this.multiPointer2.addListener(this.multiPointer2ListenerFn);
   } else {
-    this.multiPointer.stopListening();
-    this.multiPointer.removeListener(this.multiPointerLockFn);
-    this.controller.exitPointerLock();
-    document.body.removeEventListener('click', this.requestPointerLockFn);
     this.trackball.stopListening();
-    this.multiPointer2.stopListening();
-    this.multiPointer2.removeListener(this.multiPointer2ListenerFn);
   }
   this.listening = listen;
-};
-
-PlayScreen.prototype.getSpacebarFn = function() {
-  var self = this;
-  return function(e) {
-    // space is keyCode 32
-    if (e.keyCode == 32) {
-      self.pauseGame();
-    }
-  };
 };
 
 PlayScreen.prototype.pauseGame = function() {
@@ -82,6 +51,7 @@ PlayScreen.prototype.pauseGame = function() {
   var sustain = 0.15;
   var decay = 0.01;
   this.sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
+  this.controller.exitPointerLock();
   this.controller.gotoScreen(Game1.SCREEN_PAUSE);
 };
 
@@ -122,7 +92,6 @@ PlayScreen.prototype.initWorld = function() {
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
 };
-
 
 PlayScreen.prototype.clearBalls = function() {
   for (var spiritId in this.world.spirits) {

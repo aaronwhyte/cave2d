@@ -4,27 +4,25 @@
  */
 function PauseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
-  this.quitFn = this.getQuitFn();
 }
 PauseScreen.prototype = new BaseScreen();
 PauseScreen.prototype.constructor = PauseScreen;
 
-PauseScreen.prototype.getQuitFn = function() {
-  var self = this;
-  return function(pointerEvent) {
-    if (self.quitButtonSpirit) {
-      self.quitButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
-    }
-  }
+PauseScreen.prototype.onSpaceDown = function() {
+  this.resumeSpirit.onClick();
 };
 
-PauseScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
-  BaseScreen.prototype.setScreenListening.call(this, listen);
-  if (listen) {
-    this.multiPointer.addListener(this.quitFn);
-  } else {
-    this.multiPointer.removeListener(this.quitFn);
+PauseScreen.prototype.onPointerDown = function(pageX, pageY) {
+  this.vec2d.setXY(pageX, pageY);
+  this.transformCanvasToWorld(this.vec2d);
+  if (this.resumeSpirit.isOverlapping(this.world, this.vec2d)) {
+    this.resumeSpirit.onClick();
+  }
+  if (this.fullScreenSpirit.isOverlapping(this.world, this.vec2d)) {
+    this.fullScreenSpirit.onClick();
+  }
+  if (this.quitSpirit.isOverlapping(this.world, this.vec2d)) {
+    this.quitSpirit.onClick();
   }
 };
 
@@ -45,6 +43,8 @@ PauseScreen.prototype.initWorld = function() {
   buttonMaker.setLetterColor([1, 0.75, 0.25]).setBlockColor(null);
   buttonMaker.addButton(0, 0, "PAUSED", null);
 
+  var spiritId;
+
   // RESUME
   buttonMaker.setLetterColor([2, 1.5, 0.5]).setBlockColor([1, 0.75, 0.25]);
   spiritId = buttonMaker.addButton(0, -8, "RESUME", function(e) {
@@ -60,13 +60,11 @@ PauseScreen.prototype.initWorld = function() {
     controller.gotoScreen(Game1.SCREEN_PLAY);
     controller.requestPointerLock();
   });
-  var resumeSpirit = this.world.spirits[spiritId];
-  this.setSpaceButtonSpirit(resumeSpirit);
-  this.setPointerLockButtonSpirit(resumeSpirit);
+  this.resumeSpirit = this.world.spirits[spiritId];
 
   // FULL SCREEN
   buttonMaker.setScale(0.75);
-  var spiritId = buttonMaker.addButton(0, -8-6, "FULL SCREEN", function(e) {
+  spiritId = buttonMaker.addButton(0, -8-6, "FULL SCREEN", function(e) {
     var freq0 = 200;
     var freq1 = 2200;
     var delay = 0;
@@ -78,10 +76,10 @@ PauseScreen.prototype.initWorld = function() {
     this.soundLength = (attack + sustain + decay + delay) * 1000;
     controller.requestFullScreen();
   });
-  this.setFullScrnButtonSpirit(world.spirits[spiritId]);
+  this.fullScreenSpirit = world.spirits[spiritId];
 
   // QUIT
-  var spiritId = buttonMaker.addButton(0, -8-6-5, "QUIT", function(e) {
+  spiritId = buttonMaker.addButton(0, -8-6-5, "QUIT", function(e) {
     var freq0 = 200;
     var freq1 = 5;
     var delay = 0;
@@ -94,9 +92,9 @@ PauseScreen.prototype.initWorld = function() {
     controller.screens[Game1.SCREEN_PLAY].clearBalls();
     controller.gotoScreen(Game1.SCREEN_TITLE);
   });
-  this.quitButtonSpirit = world.spirits[spiritId];
+  this.quitSpirit = world.spirits[spiritId];
 
-  for (var spiritId in this.world.spirits) {
+  for (spiritId in this.world.spirits) {
     var s = this.world.spirits[spiritId];
     var b = this.world.bodies[s.bodyId];
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
