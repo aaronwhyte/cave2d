@@ -660,10 +660,10 @@ v Menu screens should not use power.
 v Rename Game1's "Main30" to "Game1".
 v Do not strain yourself with the world/spirit/body "pause" button on the play screen. Special-case it in
   a PointerEvent/SpaceKey handler (or something)
-- Remove MultiPointer w transforms+queue from Game1 completely. Leaking events right now!
-  - Don't use any MultiPointer at all.
-  - Read from raw DOM event objects with static helper methods.
-  - Transform to world coords individually.
+v Remove MultiPointer w transforms+queue from Game1 completely. Leaking events right now!
+  v Don't use any MultiPointer at all.
+  v Read from raw DOM event objects with BaseScreen helper methods.
+  v Transform to world coords individually.
 Game:
 - PlayScreen
   - current game state: levelNum, lives, score
