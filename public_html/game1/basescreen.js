@@ -30,7 +30,6 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 
   this.clipToWorldMatrix = new Matrix44();
   this.clipToWorldMatrixDirty = true;
-
   this.canvasToClipMatrix = new Matrix44();
   this.canvasToClipMatrixDirty = true;
 }
@@ -75,7 +74,6 @@ BaseScreen.prototype.getTouchStartFn = function() {
 BaseScreen.prototype.getResizeFn = function() {
   var self = this;
   return function() {
-    self.canvasToClipMatrixDirty = true;
     self.controller.requestAnimation();
   }
 };
@@ -106,8 +104,9 @@ BaseScreen.prototype.drawScreen = function(visibility) {
     this.clock();
   }
   this.updateViewMatrix(Date.now());
-  this.inverseViewMatrixDirty = true;
   this.drawScene();
+  this.canvasToClipMatrixDirty = true;
+  this.clipToWorldMatrixDirty = true;
 };
 
 BaseScreen.prototype.getClipToWorldMatrix = function() {
@@ -122,6 +121,7 @@ BaseScreen.prototype.getCanvasToClipMatrix = function() {
   if (this.canvasToClipMatrixDirty) {
     this.canvasToClipMatrix.toScaleOpXYZ(2 / this.canvas.width, -2 / this.canvas.height, 1);
     this.canvasToClipMatrix.multiply(this.mat4.toTranslateOpXYZ(-this.canvas.width / 2, -this.canvas.height / 2, 0));
+    this.canvasToClipMatrixDirty = false;
   }
   return this.canvasToClipMatrix;
 };

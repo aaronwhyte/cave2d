@@ -665,7 +665,9 @@ v Remove MultiPointer w transforms+queue from Game1 completely. Leaking events r
   v Read from raw DOM event objects with BaseScreen helper methods.
   v Transform to world coords individually.
 Game:
+v Fix button coords! Not dirty enough?
 - PlayScreen
+  - "pause button" hint at the top of the screen
   - current game state: levelNum, lives, score
   - current level state: nullable world, level-specific GL buffers
   - one-time setup: load re-usable models
