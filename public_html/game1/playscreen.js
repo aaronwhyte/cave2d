@@ -10,7 +10,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
 
-  // for sound throtling
+  // for sound throttling
   this.hitsThisFrame = 0;
 
   this.visibility = 0;
@@ -55,14 +55,15 @@ PlayScreen.prototype.pauseGame = function() {
   this.controller.gotoScreen(Game1.SCREEN_PAUSE);
 };
 
-/**
- * Called from BaseScreen the first time this is rendered.
- */
-PlayScreen.prototype.initWorld = function() {
-  this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
-  this.resolver = new HitResolver();
-  this.resolver.defaultElasticity = 0.8;
+PlayScreen.prototype.lazyInit = function() {
+  if (!this.readyToDraw) {
+    this.initPermanentStamps();
+    this.initWorld();
+    this.readyToDraw = true;
+  }
+};
 
+PlayScreen.prototype.initPermanentStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
 
   var sphereModel = RigidModel.createOctahedron()
@@ -71,17 +72,14 @@ PlayScreen.prototype.initWorld = function() {
       .createQuadrupleTriangleModel()
       .sphereize(Vec4.ZERO, 1);
   this.sphereStamp = sphereModel.createModelStamp(this.renderer.gl);
-
-  var rainbowModel = RigidModel.createOctahedron()
-      .createQuadrupleTriangleModel()
-      .createQuadrupleTriangleModel()
-      .createQuadrupleTriangleModel()
-      .sphereize(Vec4.ZERO, 1);
-  for (var i = 0; i < rainbowModel.vertexes.length; i++) {
-    var vertex = rainbowModel.vertexes[i];
-    vertex.color.setXYZ(0.5 + 0.1 *Math.random(), 0.5 + 0.1 * Math.random(), 0.9 + 0.1 *Math.random());
-  }
-  this.rainbowStamp = rainbowModel.createModelStamp(this.renderer.gl);
+};
+/**
+ * Called from BaseScreen the first time this is rendered.
+ */
+PlayScreen.prototype.initWorld = function() {
+  this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
+  this.resolver = new HitResolver();
+  this.resolver.defaultElasticity = 0.8;
 
   this.initBalls();
   this.initWalls();
@@ -106,13 +104,13 @@ PlayScreen.prototype.clearBalls = function() {
 };
 
 PlayScreen.prototype.initBalls = function() {
-  this.ballSpiritId = this.initBall(0, 30, 6, 1, 2, 2, 2, this.rainbowStamp);
+  this.ballSpiritId = this.initBall(0, 30, 6, 1, 2, 2, 0, this.sphereStamp);
   var r = 20;
   this.initBall(
           0, -30,
           r, 1,
           1.5, 1.5, 1.5,
-          this.rainbowStamp);
+          this.sphereStamp);
   var maxBalls = 18;
   for (var i = 0; i < maxBalls; i++) {
     r = 10 * i/maxBalls + 4;

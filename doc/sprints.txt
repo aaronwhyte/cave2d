@@ -667,10 +667,9 @@ v Remove MultiPointer w transforms+queue from Game1 completely. Leaking events r
 Game:
 v Fix button coords! Not dirty enough?
 - PlayScreen
-  - "pause button" hint at the top of the screen
-  - current game state: levelNum, lives, score
-  - current level state: nullable world, level-specific GL buffers
-  - one-time setup: load re-usable models
+  v current game state: levelNum, lives, score
+  v current level state: nullable world, level-specific GL buffers
+  v one-time setup: load re-usable models
   - loadLevel(data)
     - world/physics
     - static grx
@@ -680,3 +679,4 @@ v Fix button coords! Not dirty enough?
   - spawnPlayer
   - killPlayer
   - gameOver
+  - "pause button" hint at the top of the screen

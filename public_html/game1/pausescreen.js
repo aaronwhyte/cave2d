@@ -8,6 +8,13 @@ function PauseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 PauseScreen.prototype = new BaseScreen();
 PauseScreen.prototype.constructor = PauseScreen;
 
+PauseScreen.prototype.lazyInit = function() {
+  if (!this.readyToDraw) {
+    this.initWorld();
+    this.readyToDraw = true;
+  }
+};
+
 PauseScreen.prototype.onSpaceDown = function() {
   this.resumeSpirit.onClick();
 };

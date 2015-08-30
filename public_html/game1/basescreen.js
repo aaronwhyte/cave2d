@@ -96,10 +96,7 @@ BaseScreen.prototype.setScreenListening = function(listen) {
 
 BaseScreen.prototype.drawScreen = function(visibility) {
   this.visibility = visibility;
-  if (!this.readyToDraw) {
-    this.initWorld();
-    this.readyToDraw = true;
-  }
+  this.lazyInit();
   if (this.visibility == 1) {
     this.clock();
   }

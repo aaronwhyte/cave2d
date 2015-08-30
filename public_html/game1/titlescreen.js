@@ -8,6 +8,13 @@ function TitleScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 TitleScreen.prototype = new BaseScreen();
 TitleScreen.prototype.constructor = TitleScreen;
 
+TitleScreen.prototype.lazyInit = function() {
+  if (!this.readyToDraw) {
+    this.initWorld();
+    this.readyToDraw = true;
+  }
+};
+
 TitleScreen.prototype.initWorld = function() {
   this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
   this.resolver = new HitResolver();
