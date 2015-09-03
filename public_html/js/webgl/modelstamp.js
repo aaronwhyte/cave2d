@@ -27,3 +27,14 @@ ModelStamp.prototype.prepareToDraw = function(gl, aVertexPosition, aVertexColor)
 ModelStamp.prototype.draw = function(gl) {
   gl.drawElements(this.glType, this.indexCount, gl.UNSIGNED_SHORT, 0);
 };
+
+ModelStamp.prototype.dispose = function(gl) {
+  gl.deleteBuffer(this.posBuff);
+  gl.deleteBuffer(this.colorBuff);
+  gl.deleteBuffer(this.indexBuff);
+  this.glType = null;
+  this.posBuff = null;
+  this.colorBuff = null;
+  this.indexBuff = null;
+  this.indexCount = null;
+};

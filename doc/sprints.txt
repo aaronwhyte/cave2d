@@ -664,19 +664,49 @@ v Remove MultiPointer w transforms+queue from Game1 completely. Leaking events r
   v Don't use any MultiPointer at all.
   v Read from raw DOM event objects with BaseScreen helper methods.
   v Transform to world coords individually.
-Game:
+Game. Keep game extremely basic.
 v Fix button coords! Not dirty enough?
 - PlayScreen
   v current game state: levelNum, lives, score
   v current level state: nullable world, level-specific GL buffers
-  v one-time setup: load re-usable models
-  - loadLevel(data)
+  v one-time setup: load re-usable models (super-basic version)
+  - loadLevel(json)
+    - quadtreegrid of walls
+    - props
+      - player start
+      - exit[]
+      - chasebots
+      - extra credit:
+        - boulders
+        - chasebot factories
+        - juggernauts
+        - turrets
+        - fleeing shooters
+        - bombs
     - world/physics
     - static grx
-  - levelUnload
-    - world?
-    - unload GL grx: gl.deleteBuffer(WebGLBuffer? buffer)
   - spawnPlayer
   - killPlayer
   - gameOver
+  - levelUnload
+    - world?
+    - unload GL grx: gl.deleteBuffer(WebGLBuffer? buffer)
   - "pause button" hint at the top of the screen
+
+Goals for next game(s)
+* quadtree map format
+- better graphics
+  - player
+    - face/body
+    - eyes
+    - mouth rect
+  - pause button
+  - player missiles
+  - gnomes
+    - face/body
+    - eyes
+    - hat
+    - beard
+    - mouth rect
+  - robot missiles
+  - exit

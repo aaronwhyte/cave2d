@@ -9,9 +9,8 @@ TitleScreen.prototype = new BaseScreen();
 TitleScreen.prototype.constructor = TitleScreen;
 
 TitleScreen.prototype.lazyInit = function() {
-  if (!this.readyToDraw) {
+  if (!this.world) {
     this.initWorld();
-    this.readyToDraw = true;
   }
 };
 

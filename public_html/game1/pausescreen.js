@@ -9,9 +9,8 @@ PauseScreen.prototype = new BaseScreen();
 PauseScreen.prototype.constructor = PauseScreen;
 
 PauseScreen.prototype.lazyInit = function() {
-  if (!this.readyToDraw) {
+  if (!this.world) {
     this.initWorld();
-    this.readyToDraw = true;
   }
 };
 

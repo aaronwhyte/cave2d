@@ -14,7 +14,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.hitsThisFrame = 0;
 
   this.visibility = 0;
-  this.glBuffers = [];
+  this.permStamps = null;
   this.world = null;
 }
 PlayScreen.prototype = new BaseScreen();
@@ -56,15 +56,19 @@ PlayScreen.prototype.pauseGame = function() {
 };
 
 PlayScreen.prototype.lazyInit = function() {
-  if (!this.readyToDraw) {
-    this.initPermanentStamps();
+  if (!this.permStamps) {
+    this.initPermStamps();
+  }
+  if (!this.world) {
     this.initWorld();
-    this.readyToDraw = true;
   }
 };
 
-PlayScreen.prototype.initPermanentStamps = function() {
+PlayScreen.prototype.initPermStamps = function() {
+  this.permStamps = [];
+
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
+  this.permStamps.push(this.cubeStamp);
 
   var sphereModel = RigidModel.createOctahedron()
       .createQuadrupleTriangleModel()
@@ -72,10 +76,9 @@ PlayScreen.prototype.initPermanentStamps = function() {
       .createQuadrupleTriangleModel()
       .sphereize(Vec4.ZERO, 1);
   this.sphereStamp = sphereModel.createModelStamp(this.renderer.gl);
+  this.permStamps.push(this.sphereStamp);
 };
-/**
- * Called from BaseScreen the first time this is rendered.
- */
+
 PlayScreen.prototype.initWorld = function() {
   this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
   this.resolver = new HitResolver();
@@ -267,8 +270,8 @@ PlayScreen.prototype.drawScene = function() {
 
 PlayScreen.prototype.unloadLevel = function() {
   this.world = null;
-  while (this.glBuffers.length) {
-    this.renderer.gl.deleteBuffer(this.glBuffers.pop());
+  while (this.permStamps.length) {
+    this.permStamps.pop().dispose(this.renderer.gl);
   }
   this.levelLoaded = false;
 };
