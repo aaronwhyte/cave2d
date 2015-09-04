@@ -80,6 +80,7 @@ PlayScreen.prototype.initPermStamps = function() {
 };
 
 PlayScreen.prototype.initWorld = function() {
+  this.lastPathRefreshTime = -Infinity;
   this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
@@ -92,22 +93,15 @@ PlayScreen.prototype.initWorld = function() {
   }
 };
 
-PlayScreen.prototype.clearBalls = function() {
-  for (var spiritId in this.world.spirits) {
-    var s = this.world.spirits[spiritId];
-    var b = this.world.bodies[s.bodyId];
-    if (b.shape == Body.Shape.CIRCLE) {
-      this.world.removeSpiritId(spiritId);
-      this.world.removeBodyId(b.id);
-    }
-  }
-};
-
 PlayScreen.prototype.initBalls = function() {
+  this.ballSpiritId = this.initBall(0, 30, 10, 1,
+      2, 0.5, 2,
+      this.sphereStamp);
   var r = 20;
   this.initBall(
           0, -30,
           r, 1,
+          2, 1.5, 0.5,
           this.sphereStamp);
   var maxBalls = 18;
   for (var i = 0; i < maxBalls; i++) {
@@ -116,6 +110,7 @@ PlayScreen.prototype.initBalls = function() {
             Math.sin(Math.PI * 2 * i/maxBalls) * (90-r),
             Math.cos(Math.PI * 2 * i/maxBalls) * (90-r),
             r, 1,
+            0.5, 1.5, 0.5,
             this.sphereStamp);
   }
 };
@@ -137,11 +132,37 @@ PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, s
 };
 
 PlayScreen.prototype.initWalls = function() {
+  var grid = new QuadTreeGrid(64, 5);
+  function paintHall(p1, opt_p2) {
+    var p2 = opt_p2 || p1;
+    var segment = new Segment(p1, p2);
+    var painter = new HallPillPainter(segment, 100, 6);
+    grid.paint(painter);
+  }
+
+  var rad = 80;
+  paintHall(new Vec2d(-rad, -rad), new Vec2d(0, 0.7 * rad));
+  paintHall(new Vec2d(0, 0.7 * rad), new Vec2d(rad, -rad));
+  paintHall(new Vec2d(-rad, -rad), new Vec2d(rad, -rad));
+
+  var a = grid.getSquaresOfColor(2); //wall?
+  for (var i = 0; i < a.length; i++) {
+    var h = a[i];
+    //[color, centerX, centerY, radius]
+    this.initWall(h[1], h[2], h[3], h[3]);
+  }
+
+//  this.initWall(rad * 1.5, 0, 1, rad);
+//  this.initWall(-rad * 1.5, 0, 1, rad);
+//  this.initWall(0, rad, rad * 1.5, 1);
+//  this.initWall(0, -rad, rad * 1.5, 1);
 };
 
+PlayScreen.prototype.initWall = function(x, y, rx, ry) {
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
   b.setPosXYAtTime(x, y, this.world.now);
+  b.rectRad.setXY(rx, ry);
   b.hitGroup = 0;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
@@ -252,8 +273,15 @@ PlayScreen.prototype.drawScene = function() {
 };
 
 PlayScreen.prototype.unloadLevel = function() {
-  this.world = null;
-
+  if (this.world) {
+    for (var spiritId in this.world.spirits) {
+      var s = this.world.spirits[spiritId];
+      var b = this.world.bodies[s.bodyId];
+      this.world.removeBodyId(b.id);
+      this.world.removeSpiritId(spiritId);
+    }
+    this.world = null;
+  }
   // TODO this should be level Stamps, not permStamps. permStamps are permanent.
   while (this.permStamps.length) {
     this.permStamps.pop().dispose(this.renderer.gl);
