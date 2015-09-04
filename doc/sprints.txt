@@ -670,8 +670,14 @@ v Fix button coords! Not dirty enough?
   v current game state: levelNum, lives, score
   v current level state: nullable world, level-specific GL buffers
   v one-time setup: load re-usable models (super-basic version)
-  - loadLevel(json)
-    - quadtreegrid of walls
+  v levelUnload
+    v world?
+    v unload GL grx: gl.deleteBuffer(WebGLBuffer? buffer)
+  - loadLevel(levelNum)
+    v quadtreegrid of walls
+      v create grid using hallpainter
+      v generate wall spirits from that
+    - Make maze into one giant temporary stamp
     - props
       - player start
       - exit[]
@@ -688,9 +694,6 @@ v Fix button coords! Not dirty enough?
   - spawnPlayer
   - killPlayer
   - gameOver
-  - levelUnload
-    - world?
-    - unload GL grx: gl.deleteBuffer(WebGLBuffer? buffer)
   - "pause button" hint at the top of the screen
 
 Goals for next game(s)

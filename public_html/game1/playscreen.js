@@ -71,7 +71,7 @@ PlayScreen.prototype.initPermStamps = function() {
   this.permStamps.push(this.cubeStamp);
 
   var sphereModel = RigidModel.createOctahedron()
-      .createQuadrupleTriangleModel()
+//      .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .sphereize(Vec4.ZERO, 1);
@@ -104,12 +104,10 @@ PlayScreen.prototype.clearBalls = function() {
 };
 
 PlayScreen.prototype.initBalls = function() {
-  this.ballSpiritId = this.initBall(0, 30, 6, 1, 2, 2, 0, this.sphereStamp);
   var r = 20;
   this.initBall(
           0, -30,
           r, 1,
-          1.5, 1.5, 1.5,
           this.sphereStamp);
   var maxBalls = 18;
   for (var i = 0; i < maxBalls; i++) {
@@ -118,7 +116,6 @@ PlayScreen.prototype.initBalls = function() {
             Math.sin(Math.PI * 2 * i/maxBalls) * (90-r),
             Math.cos(Math.PI * 2 * i/maxBalls) * (90-r),
             r, 1,
-            Math.random() * 0.5 + 1, Math.random() * 0.5 + 1, Math.random() * 0.5 + 1,
             this.sphereStamp);
   }
 };
@@ -140,18 +137,11 @@ PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, s
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var rad = 100;
-  this.initWall(rad * 1.5, 0, 1, rad);
-  this.initWall(-rad * 1.5, 0, 1, rad);
-  this.initWall(0, rad, rad * 1.5, 1);
-  this.initWall(0, -rad, rad * 1.5, 1);
 };
 
-PlayScreen.prototype.initWall = function(x, y, h, v) {
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
   b.setPosXYAtTime(x, y, this.world.now);
-  b.rectRad.setXY(h, v);
   b.hitGroup = 0;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;

@@ -13,6 +13,7 @@
   <script src="../../js/quads/quadtree.js"></script>
   <script src="../../js/quads/quadtreegrid.js"></script>
   <script>
+
     addTest(function serializeDeserializeSomething() {
       var grid1 = new QuadTreeGrid(40, 6);
       grid1.paint(new CirclePainter(-10, -15, 63, 100));
@@ -24,6 +25,7 @@
       assertStringifyEquals(json1, json2);
       console.log(JSON.stringify(json2));
     });
+
     addTest(function serializeDeserializeNothing() {
       var grid1 = new QuadTreeGrid(20, 8);
       var json1 = grid1.toJSON();
@@ -33,6 +35,7 @@
       assertStringifyEquals(json1, json2);
       console.log(JSON.stringify(json2));
     });
+
   </script>
 </head>
 <body onload="runTests()"></body>
