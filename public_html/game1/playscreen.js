@@ -83,10 +83,8 @@ PlayScreen.prototype.initWorld = function() {
   this.world = new World(World.DEFAULT_CELL_SIZE, 2, [[0, 0], [1, 1]]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
-
   this.initBalls();
   this.initWalls();
-
   for (var spiritId in this.world.spirits) {
     var s = this.world.spirits[spiritId];
     var b = this.world.bodies[s.bodyId];
@@ -103,7 +101,6 @@ PlayScreen.prototype.clearBalls = function() {
       this.world.removeBodyId(b.id);
     }
   }
-  this.ballsCreated = false;
 };
 
 PlayScreen.prototype.initBalls = function() {
@@ -124,7 +121,6 @@ PlayScreen.prototype.initBalls = function() {
             Math.random() * 0.5 + 1, Math.random() * 0.5 + 1, Math.random() * 0.5 + 1,
             this.sphereStamp);
   }
-  this.ballsCreated = true;
 };
 
 PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, stamp) {
@@ -166,7 +162,7 @@ PlayScreen.prototype.initWall = function(x, y, h, v) {
 };
 
 PlayScreen.prototype.handleInput = function() {
-  if (!this.ballsCreated) return;
+  if (!this.world) return;
   var spirit = this.world.spirits[this.ballSpiritId];
   var body = this.world.bodies[spirit.bodyId];
   var newVel = Vec2d.alloc();
@@ -258,9 +254,6 @@ PlayScreen.prototype.updateViewMatrix = function() {
 
 PlayScreen.prototype.drawScene = function() {
   this.hitsThisFrame = 0;
-  if (!this.ballsCreated) {
-    this.initBalls();
-  }
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
@@ -270,8 +263,10 @@ PlayScreen.prototype.drawScene = function() {
 
 PlayScreen.prototype.unloadLevel = function() {
   this.world = null;
+
+  // TODO this should be level Stamps, not permStamps. permStamps are permanent.
   while (this.permStamps.length) {
     this.permStamps.pop().dispose(this.renderer.gl);
   }
-  this.levelLoaded = false;
+  this.permStamps = null;
 };

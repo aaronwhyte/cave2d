@@ -95,8 +95,7 @@ PauseScreen.prototype.initWorld = function() {
     sfx.sound(0, 0, 0, 0.5, attack, sustain, decay, freq0, freq1, 'square', delay);
     this.lastSoundMs = Date.now();
     this.soundLength = (attack + sustain + decay + delay) * 1000;
-    controller.screens[Game1.SCREEN_PLAY].clearBalls();
-    controller.gotoScreen(Game1.SCREEN_TITLE);
+    controller.quit();
   });
   this.quitSpirit = world.spirits[spiritId];
 
