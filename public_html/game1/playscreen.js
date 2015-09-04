@@ -96,7 +96,7 @@ PlayScreen.prototype.initBalls = function() {
   this.ballSpiritId = this.initBall(0, 30, 10, 1,
       2, 0.5, 2,
       this.sphereStamp);
-  var r = 20;
+  var r = 30;
   this.initBall(
           0, -30,
           r, 1,
@@ -131,7 +131,7 @@ PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, s
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var grid = new QuadTreeGrid(64, 5);
+  var grid = new QuadTreeGrid(64, 4);
   function paintHall(p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
@@ -143,7 +143,8 @@ PlayScreen.prototype.initWalls = function() {
   paintHall(new Vec2d(-rad, -rad), new Vec2d(0, 0.7 * rad));
   paintHall(new Vec2d(0, 0.7 * rad), new Vec2d(rad, -rad));
   paintHall(new Vec2d(-rad, -rad), new Vec2d(rad, -rad));
-  paintHall(new Vec2d(rad * 2.18, rad * 0.8));
+  paintHall(new Vec2d(rad * 2.14, rad * 0.8));
+  paintHall(new Vec2d(-rad * 2.14, rad * 0.8));
 
   this.levelModel = new RigidModel();
   var a = grid.getSquaresOfColor(2); //wall?
