@@ -163,7 +163,7 @@ BaseScreen.prototype.clock = function() {
     this.lastPathRefreshTime = this.world.now;
     for (var id in this.world.bodies) {
       var b = this.world.bodies[id];
-      if (b && b.pathDurationMax > PATH_DURATION) {
+      if (b && b.pathDurationMax > PATH_DURATION && b.pathDurationMax != Infinity) {
         b.invalidatePath();
         b.moveToTime(this.world.now);
       }

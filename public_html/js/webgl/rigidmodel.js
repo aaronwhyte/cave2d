@@ -191,6 +191,30 @@ RigidModel.prototype.createModelStamp = function(gl) {
 };
 
 /**
+ * Creates a unit-square, with points at 1 and -1 along each dimension X and Y, with Z=0,
+ * so edge-length is 2 and area is 4.
+ * @returns {RigidModel}
+ */
+RigidModel.createSquare = function() {
+  var m = new RigidModel();
+  var v = [];
+  for (var y = -1; y <= 1; y+= 2) {
+    for (var x = -1; x <= 1; x+= 2) {
+      v.push(m.addVertex(new Vertex().setPositionXYZ(x, y, 0).setColorRGB(1, 1, 1)));
+    }
+  }
+  function face(nw, ne, sw, se) {
+    m.addTriangle(v[nw], v[sw], v[ne]);
+    m.addTriangle(v[se], v[ne], v[sw]);
+  }
+  // 2   3
+  //
+  // 0   1
+  face(2, 3, 0, 1);
+  return m;
+};
+
+/**
  * Creates a unit-cube, with points at 1 and -1 along each dimension,
  * so edge-length is 2 and volume is 8.
  * @returns {RigidModel}

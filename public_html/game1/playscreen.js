@@ -71,7 +71,7 @@ PlayScreen.prototype.initPermStamps = function() {
   this.permStamps.push(this.cubeStamp);
 
   var sphereModel = RigidModel.createOctahedron()
-//      .createQuadrupleTriangleModel()
+      .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .createQuadrupleTriangleModel()
       .sphereize(Vec4.ZERO, 1);
@@ -86,9 +86,8 @@ PlayScreen.prototype.initWorld = function() {
   this.resolver.defaultElasticity = 0.8;
   this.initBalls();
   this.initWalls();
-  for (var spiritId in this.world.spirits) {
-    var s = this.world.spirits[spiritId];
-    var b = this.world.bodies[s.bodyId];
+  for (var bodyId in this.world.bodies) {
+    var b = this.world.bodies[bodyId];
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
 };
@@ -132,11 +131,11 @@ PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, s
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var grid = new QuadTreeGrid(64, 5);
+  var grid = new QuadTreeGrid(64, 6);
   function paintHall(p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
-    var painter = new HallPillPainter(segment, 100, 6);
+    var painter = new HallPillPainter(segment, 100, 2);
     grid.paint(painter);
   }
 
@@ -145,12 +144,17 @@ PlayScreen.prototype.initWalls = function() {
   paintHall(new Vec2d(0, 0.7 * rad), new Vec2d(rad, -rad));
   paintHall(new Vec2d(-rad, -rad), new Vec2d(rad, -rad));
 
+  this.levelModel = new RigidModel();
   var a = grid.getSquaresOfColor(2); //wall?
   for (var i = 0; i < a.length; i++) {
     var h = a[i];
     //[color, centerX, centerY, radius]
-    this.initWall(h[1], h[2], h[3], h[3]);
+    this.initWall(h[1], h[2], h[3] - 0.1, h[3] - 0.1);
   }
+  this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
+  this.permStamps.push(this.levelStamp);
+  this.levelModelMatrix = new Matrix44();
+  this.levelColorVector = new Vec4(0.5, 0.5, 2);
 
 //  this.initWall(rad * 1.5, 0, 1, rad);
 //  this.initWall(-rad * 1.5, 0, 1, rad);
@@ -166,10 +170,14 @@ PlayScreen.prototype.initWall = function(x, y, rx, ry) {
   b.hitGroup = 0;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
-  var spirit = new WallSpirit();
-  spirit.bodyId = this.world.addBody(b);
-  spirit.setModelStamp(this.cubeStamp);
-  return this.world.addSpirit(spirit);
+  var bodyId = this.world.addBody(b);
+  var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
+  var wallModel = RigidModel.createSquare().transformPositions(t);
+  this.levelModel.addRigidModel(wallModel);
+//  var spirit = new WallSpirit();
+//  spirit.bodyId = bodyId;
+//  spirit.setModelStamp(this.cubeStamp);
+//  return this.world.addSpirit(spirit);
 };
 
 PlayScreen.prototype.handleInput = function() {
@@ -268,6 +276,13 @@ PlayScreen.prototype.drawScene = function() {
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
+
+  this.renderer
+      .setStamp(this.levelStamp)
+      .setColorVector(this.levelColorVector)
+      .setModelMatrix(this.levelModelMatrix)
+      .drawStamp();
+
   // Animate whenever this thing draws.
   this.controller.requestAnimation();
 };
