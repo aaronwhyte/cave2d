@@ -131,25 +131,26 @@ PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, s
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var grid = new QuadTreeGrid(64, 6);
+  var grid = new QuadTreeGrid(64, 5);
   function paintHall(p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
-    var painter = new HallPillPainter(segment, 100, 2);
+    var painter = new HallPillPainter(segment, 100, 3);
     grid.paint(painter);
   }
 
-  var rad = 80;
+  var rad = 100;
   paintHall(new Vec2d(-rad, -rad), new Vec2d(0, 0.7 * rad));
   paintHall(new Vec2d(0, 0.7 * rad), new Vec2d(rad, -rad));
   paintHall(new Vec2d(-rad, -rad), new Vec2d(rad, -rad));
+  paintHall(new Vec2d(rad * 2.18, rad * 0.8));
 
   this.levelModel = new RigidModel();
   var a = grid.getSquaresOfColor(2); //wall?
   for (var i = 0; i < a.length; i++) {
     var h = a[i];
     //[color, centerX, centerY, radius]
-    this.initWall(h[1], h[2], h[3] - 0.1, h[3] - 0.1);
+    this.initWall(h[1], h[2], h[3] - 0.5, h[3] - 0.5);
   }
   this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
   this.permStamps.push(this.levelStamp);
