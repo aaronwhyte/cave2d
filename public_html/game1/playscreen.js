@@ -189,17 +189,19 @@ PlayScreen.prototype.handleInput = function() {
   var newVel = Vec2d.alloc();
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
+    var sensitivity = 3;
+    this.movement.scale(sensitivity);
     newVel.setXY(this.movement.x, -this.movement.y);
+
     var accel = Vec2d.alloc().set(newVel).subtract(body.vel);
-    var maxAccelSquared = 2 * 2;
-    var sensitivity = 2;
-    accel.scale(sensitivity).clipToMaxLength(maxAccelSquared);
+    var maxAccel = 10;
     // If it's over 1, then use a square root to lower it.
     // (If it's less than 1, then sqrt will make it bigger, so don't bother.)
     var mag = accel.magnitude();
     if (mag > 1) {
       accel.scaleToLength(Math.sqrt(mag));
     }
+    accel.clipToMaxLength(maxAccel);
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
     accel.free();
