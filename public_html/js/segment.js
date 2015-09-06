@@ -33,3 +33,10 @@ Segment.prototype.distanceToPointSquared = function(p3) {
   }
   return retval;
 };
+
+Segment.prototype.distanceToPointSquaredXY = function(x, y) {
+  var v = Vec2d.alloc(x, y);
+  var dist = this.distanceToPointSquared(v);
+  v.free();
+  return dist;
+};

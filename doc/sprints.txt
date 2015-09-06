@@ -676,11 +676,12 @@ v Fix button coords! Not dirty enough?
   v quadtreegrid of walls
     v create grid using hallpainter
     v generate wall spirits from that
-  - real thin walls, appearance of thick walls
+  - thin solid walls, fake thick walls
     - add "real wall" and "fake wall" to painter
-      - paint fake thick wall over void
-      - paint space
-      - paint real thin wall over... hm.
+      - paint fake wall over void
+      - paint plan wall
+      - paint floor
+      - replace plan wall with solidwall
   - basic combat
     - hit groups I
       - walls hit nothing

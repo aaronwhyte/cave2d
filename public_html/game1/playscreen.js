@@ -135,7 +135,7 @@ PlayScreen.prototype.initWalls = function() {
   function paintHall(p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
-    var painter = new HallPillPainter(segment, 100, 0);
+    var painter = new MazePainter(segment, 100, 20);
     grid.paint(painter);
   }
   var rad = 100;
@@ -146,11 +146,17 @@ PlayScreen.prototype.initWalls = function() {
   paintHall(new Vec2d(-rad * 2.14, rad * 0.8));
 
   this.levelModel = new RigidModel();
-  var a = grid.getSquaresOfColor(2); //wall?
+  var a = grid.getSquaresOfColor(MazePainter.SOLID);
   for (var i = 0; i < a.length; i++) {
     var h = a[i];
     //[color, centerX, centerY, radius]
-    this.initWall(h[1], h[2], h[3], h[3]);
+    this.initWall(h[0], h[1], h[2], h[3], h[3]);
+  }
+  var a = grid.getSquaresOfColor(MazePainter.FAKE);
+  for (var i = 0; i < a.length; i++) {
+    var h = a[i];
+    //[color, centerX, centerY, radius]
+    this.initWall(h[0], h[1], h[2], h[3], h[3]);
   }
   this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
   this.permStamps.push(this.levelStamp);
@@ -158,20 +164,25 @@ PlayScreen.prototype.initWalls = function() {
   this.levelColorVector = new Vec4(1, 1, 1);
 };
 
-PlayScreen.prototype.initWall = function(x, y, rx, ry) {
-  var b = Body.alloc();
-  b.shape = Body.Shape.RECT;
-  b.setPosXYAtTime(x, y, this.world.now);
-  b.rectRad.setXY(rx, ry);
-  b.hitGroup = 0;
-  b.mass = Infinity;
-  b.pathDurationMax = Infinity;
-  var bodyId = this.world.addBody(b);
-  var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
+PlayScreen.prototype.initWall = function(type, x, y, rx, ry) {
+  if (type == MazePainter.SOLID) {
+    var b = Body.alloc();
+    b.shape = Body.Shape.RECT;
+    b.setPosXYAtTime(x, y, this.world.now);
+    b.rectRad.setXY(rx, ry);
+    b.hitGroup = 0;
+    b.mass = Infinity;
+    b.pathDurationMax = Infinity;
+    this.world.addBody(b);
+  }
 
+  var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
   var wallModel = RigidModel.createSquare().transformPositions(t);
-  var c = 0.5 + Math.random() * 0.2 + 0.3 * Math.sin((x+y)/50);
-  wallModel.setColorRGB(1-c, c + 0.2 * Math.sin((100 + x-y)/50), c);
+  var c = 0.5 + Math.random() * 0.2 + 0.3 * Math.sin((x + y) / 50);
+//  if (type == MazePainter.SOLID) {
+//    c *= 1.3;
+//  }
+  wallModel.setColorRGB(1 - c, c + 0.2 * Math.sin((100 + x - y) / 50), c);
   this.levelModel.addRigidModel(wallModel);
 };
 

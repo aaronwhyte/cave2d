@@ -10,8 +10,6 @@ function HallPillPainter(segment, hallRadius, wallThickness) {
   this.hallRadius = hallRadius;
   this.wallThickness = wallThickness;
   this.radius = hallRadius + wallThickness;
-//  this.hallRadiusSq = this.hallRadius * this.hallRadius;
-//  this.radiusSq = this.radius * this.radius;
 }
 HallPillPainter.prototype = new Painter();
 HallPillPainter.prototype.constructor = HallPillPainter;
