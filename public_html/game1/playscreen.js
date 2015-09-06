@@ -93,8 +93,8 @@ PlayScreen.prototype.initWorld = function() {
 };
 
 PlayScreen.prototype.initBalls = function() {
-  this.ballSpiritId = this.initBall(0, 30, 10, 1,
-      2, 0.5, 2,
+  this.ballSpiritId = this.initBall(0, 30, 7, 1,
+      2, 0.2, 1.5,
       this.sphereStamp);
   var r = 30;
   this.initBall(
@@ -102,12 +102,12 @@ PlayScreen.prototype.initBalls = function() {
           r, 1,
           2, 1.5, 0.5,
           this.sphereStamp);
-  var maxBalls = 25;
+  var maxBalls = 45;
   for (var i = 0; i < maxBalls; i++) {
-    r = 6 * i/maxBalls + 4;
+    r = 6 * i/maxBalls + 2;
     this.initBall(
-            Math.sin(Math.PI * 2 * i/maxBalls) * (90-r),
-            Math.cos(Math.PI * 2 * i/maxBalls) * (90-r),
+            Math.sin(Math.PI * 2 * i/maxBalls) * (120-r),
+            Math.cos(Math.PI * 2 * i/maxBalls) * (120-r),
             r, 1,
             0.5, 1.5, 0.5,
             this.sphereStamp);
@@ -131,7 +131,7 @@ PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, s
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var grid = new QuadTreeGrid(66.375412352, 7);
+  var grid = new QuadTreeGrid(46.375412352, 6);
   function paintHall(p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
@@ -166,6 +166,7 @@ PlayScreen.prototype.initWalls = function() {
 
 PlayScreen.prototype.initWall = function(type, x, y, rx, ry) {
   if (type == MazePainter.SOLID) {
+    // Create a physics body
     var b = Body.alloc();
     b.shape = Body.Shape.RECT;
     b.setPosXYAtTime(x, y, this.world.now);
@@ -175,14 +176,10 @@ PlayScreen.prototype.initWall = function(type, x, y, rx, ry) {
     b.pathDurationMax = Infinity;
     this.world.addBody(b);
   }
-
+  // draw a square for both SOLID and FAKE walls
   var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
   var wallModel = RigidModel.createSquare().transformPositions(t);
-  var c = 0.5 + Math.random() * 0.2 + 0.3 * Math.sin((x + y) / 50);
-//  if (type == MazePainter.SOLID) {
-//    c *= 1.3;
-//  }
-  wallModel.setColorRGB(1 - c, c + 0.2 * Math.sin((100 + x - y) / 50), c);
+  wallModel.setColorRGB(0.3, 0.7, 0.9);
   this.levelModel.addRigidModel(wallModel);
 };
 
