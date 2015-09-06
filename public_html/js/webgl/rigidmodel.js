@@ -74,13 +74,24 @@ RigidModel.prototype.getBoundingRect = function() {
 };
 
 /**
- * Mutates all the vertexes in this model, using the matrix.
+ * Mutates all the vertex positions in this model.
  * @param {Matrix44} matrix
  * @return {RigidModel} this
  */
 RigidModel.prototype.transformPositions = function(matrix) {
   for (var i = 0; i < this.vertexes.length; i++) {
     this.vertexes[i].transformPosition(matrix);
+  }
+  return this;
+};
+
+/**
+ * Sets all the vertex colors in this model.
+ * @return {RigidModel} this
+ */
+RigidModel.prototype.setColorRGB = function(r, g, b) {
+  for (var i = 0; i < this.vertexes.length; i++) {
+    this.vertexes[i].setColorRGB(r, g, b);
   }
   return this;
 };

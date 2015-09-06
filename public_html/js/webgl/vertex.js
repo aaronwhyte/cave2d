@@ -45,3 +45,12 @@ Vertex.prototype.transformPosition = function(matrix) {
   this.position.transform(matrix);
   return this;
 };
+
+/**
+ * @param {Matrix44} matrix
+ * @return {Vertex} this
+ */
+Vertex.prototype.transformColor = function(matrix) {
+  this.color.transform(matrix);
+  return this;
+};

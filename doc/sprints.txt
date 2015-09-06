@@ -673,11 +673,42 @@ v Fix button coords! Not dirty enough?
   v levelUnload
     v world?
     v unload GL grx: gl.deleteBuffer(WebGLBuffer? buffer)
+  v quadtreegrid of walls
+    v create grid using hallpainter
+    v generate wall spirits from that
+  - real thin walls, appearance of thick walls
+    - add "real wall" and "fake wall" to painter
+      - paint fake thick wall over void
+      - paint space
+      - paint real thin wall over... hm.
+  - basic combat
+    - hit groups I
+      - walls hit nothing
+      - player hits walls
+      - player bullets hit walls
+      - enemies hit walls, player, player bullets, other enemies
+      - enemy bullets hit walls, player. Not other enemies.
+    - player controls
+      - scheme 1: One mode: move and shoot
+      - scheme 2: Two modes:
+        - move fast and shoot nearby (and aim)
+        - move slower and shoot faster/farther bullets, for
+      - scheme 3: Three modes: move, fire, shield
+        - one finger moves fast, aims. Thrust as weapon?
+        - button or second touch locks aim and fires, and allows slow strafing but not full movement
+        - No touch/button activates shield, which prevents all damage. Aim is unaltered
+  - better enemies
+    - hit groups III
+      - Enemy shoot-scan hits walls, player.
+      - Enemy move scan hits walls, player, player bullets, enemies, asteroids
+      - wall scan hits walls
+      - enemy bullet scan hits player bullets
+  - powerups
+    - hit groups II
+      - asteroids hit player, player bullets, enemies, enemy bullets. Not walls.
+      - powerups hit player (if you shot it, you can get to it)
   - loadLevel(levelNum)
-    v quadtreegrid of walls
-      v create grid using hallpainter
-      v generate wall spirits from that
-    - Make maze into one giant temporary stamp
+    v Make maze into one giant temporary stamp
     - props
       - player start
       - exit[]
@@ -690,7 +721,7 @@ v Fix button coords! Not dirty enough?
         - fleeing shooters
         - bombs
     - world/physics
-    - static grx
+    v static grx
   - spawnPlayer
   - killPlayer
   - gameOver

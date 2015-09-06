@@ -102,9 +102,9 @@ PlayScreen.prototype.initBalls = function() {
           r, 1,
           2, 1.5, 0.5,
           this.sphereStamp);
-  var maxBalls = 18;
+  var maxBalls = 25;
   for (var i = 0; i < maxBalls; i++) {
-    r = 10 * i/maxBalls + 4;
+    r = 6 * i/maxBalls + 4;
     this.initBall(
             Math.sin(Math.PI * 2 * i/maxBalls) * (90-r),
             Math.cos(Math.PI * 2 * i/maxBalls) * (90-r),
@@ -131,14 +131,13 @@ PlayScreen.prototype.initBall = function(x, y, rad, density, red, green, blue, s
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var grid = new QuadTreeGrid(64, 4);
+  var grid = new QuadTreeGrid(66.375412352, 7);
   function paintHall(p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
-    var painter = new HallPillPainter(segment, 100, 3);
+    var painter = new HallPillPainter(segment, 100, 0);
     grid.paint(painter);
   }
-
   var rad = 100;
   paintHall(new Vec2d(-rad, -rad), new Vec2d(0, 0.7 * rad));
   paintHall(new Vec2d(0, 0.7 * rad), new Vec2d(rad, -rad));
@@ -151,17 +150,12 @@ PlayScreen.prototype.initWalls = function() {
   for (var i = 0; i < a.length; i++) {
     var h = a[i];
     //[color, centerX, centerY, radius]
-    this.initWall(h[1], h[2], h[3] - 0.5, h[3] - 0.5);
+    this.initWall(h[1], h[2], h[3], h[3]);
   }
   this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
   this.permStamps.push(this.levelStamp);
   this.levelModelMatrix = new Matrix44();
-  this.levelColorVector = new Vec4(0.5, 0.5, 2);
-
-//  this.initWall(rad * 1.5, 0, 1, rad);
-//  this.initWall(-rad * 1.5, 0, 1, rad);
-//  this.initWall(0, rad, rad * 1.5, 1);
-//  this.initWall(0, -rad, rad * 1.5, 1);
+  this.levelColorVector = new Vec4(1, 1, 1);
 };
 
 PlayScreen.prototype.initWall = function(x, y, rx, ry) {
@@ -174,12 +168,11 @@ PlayScreen.prototype.initWall = function(x, y, rx, ry) {
   b.pathDurationMax = Infinity;
   var bodyId = this.world.addBody(b);
   var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
+
   var wallModel = RigidModel.createSquare().transformPositions(t);
+  var c = 0.5 + Math.random() * 0.2 + 0.3 * Math.sin((x+y)/50);
+  wallModel.setColorRGB(1-c, c + 0.2 * Math.sin((100 + x-y)/50), c);
   this.levelModel.addRigidModel(wallModel);
-//  var spirit = new WallSpirit();
-//  spirit.bodyId = bodyId;
-//  spirit.setModelStamp(this.cubeStamp);
-//  return this.world.addSpirit(spirit);
 };
 
 PlayScreen.prototype.handleInput = function() {
@@ -189,7 +182,7 @@ PlayScreen.prototype.handleInput = function() {
   var newVel = Vec2d.alloc();
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
-    var sensitivity = 3;
+    var sensitivity = 4;
     this.movement.scale(sensitivity);
     newVel.setXY(this.movement.x, -this.movement.y);
 
@@ -233,18 +226,20 @@ PlayScreen.prototype.bonk = function(body, mag) {
   this.vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
   this.vec4.transform(this.viewMatrix);
   if (body.shape == Body.Shape.RECT) {
-    vol = Math.min(1, mag / 10);
-    dur = Math.max(0.05, Math.min(0.1, mag / 10));
-    freq = 200 + 5 * Math.random();
-    freq2 = freq + 5 * (Math.random() - 0.5);
-    this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'square');
+    vol = Math.min(1, mag*mag/300);
+    if (vol > 0.01) {
+      dur = Math.min(0.1, 0.01 * mag*mag);
+      freq = mag + 200 + 5 * Math.random();
+      freq2 = 1;//freq;// + 5 * (Math.random() - 0.5);
+      this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'square');
+    }
   } else {
     mass = body.mass;
     var massSqrt = Math.sqrt(mass);
-    freq = 200 + 10000 / massSqrt;
-    vol = 2 * Math.min(1, mag/5 + (2 / freq));
+    vol = Math.min(1, 0.005*mag*mag);
     if (vol > 0.01) {
-      freq2 = freq * (1 + (Math.random() - 0.5) * 0.01);
+      freq = 200 + 10000 / massSqrt;
+      freq2 = 1;//freq/10;//freq * (1 + (Math.random() - 0.5) * 0.01);
       dur = Math.min(0.2, Math.max(Math.sqrt(mass) / 600, 0.05));
       this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
     }
