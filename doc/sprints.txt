@@ -676,36 +676,58 @@ v Fix button coords! Not dirty enough?
   v quadtreegrid of walls
     v create grid using hallpainter
     v generate wall spirits from that
-  - thin solid walls, fake thick walls
-    - add "real wall" and "fake wall" to painter
-      - paint fake wall over void
-      - paint plan wall
-      - paint floor
-      - replace plan wall with solidwall
+  v thin solid walls, fake thick walls
+    v refactor quadtree painters to test7
+    v make one for game1
   - basic combat
-    - hit groups I
-      - walls hit nothing
-      - player hits walls
-      - player bullets hit walls
-      - enemies hit walls, player, player bullets, other enemies
-      - enemy bullets hit walls, player. Not other enemies.
+    v groups
+      v walls hit nothing
+      v player hits walls
+      v player bullets hit walls
+      v enemies hit walls, player, player bullets, other enemies
+      v enemy bullets hit walls, player. Not other enemies.
+      x enemy LOS scan hits walls, player. Hm, I guess that's the same as enemy bullets.
+    - basic enemy
+      v wander around
+      - fire at player occasionally, if player is in line of sight (LOS).
+        v LOS scan
+        v fire missile body
+        v "zap" noise
+        - muzzle flash
+    - enemy missile collisions
+      v missiles vanish when hitting
+      - wall
+        - noise
+        - splash graphics
+      - player (unshielded)
+        v noise
+        - explosion
+        - remove player body
+        - PlayScreen.loseLife()
+          - restart level with fewer enemies?
     - player controls
-      - scheme 1: One mode: move and shoot
-      - scheme 2: Two modes:
-        - move fast and shoot nearby (and aim)
-        - move slower and shoot faster/farther bullets, for
-      - scheme 3: Three modes: move, fire, shield
-        - one finger moves fast, aims. Thrust as weapon?
-        - button or second touch locks aim and fires, and allows slow strafing but not full movement
-        - No touch/button activates shield, which prevents all damage. Aim is unaltered
+      * No touch: float with shields up // invent shield state
+      * One touch: move fast and aim
+      * Two touch: move lock aim, fire, move slower
+    - player missile collisions
+      - hits enemy
+      - hits wall
+    - enemy dies
+    - player dies
+
   - better enemies
-    - hit groups III
-      - Enemy shoot-scan hits walls, player.
+    - groups
       - Enemy move scan hits walls, player, player bullets, enemies, asteroids
       - wall scan hits walls
-      - enemy bullet scan hits player bullets
+      - enemy bullet scan hits player bullets?
+    - enemies
+      - grunts chase LOS player to get close, and use short-range medium-reload gun. dangerous in packs.
+      - crawlers walk along walls and use long-range medium-speed fire when player is LOS.
+      - turrets hold still and file rapidly and far at LOS.
+      - snipers hold still until player is in LOS for a second. Then they fire a fast shot and switch to "flee" mode
+        until two seconds have elapsed and the player has been out of LOS for 1 second.
   - powerups
-    - hit groups II
+    - groups
       - asteroids hit player, player bullets, enemies, enemy bullets. Not walls.
       - powerups hit player (if you shot it, you can get to it)
   - loadLevel(levelNum)

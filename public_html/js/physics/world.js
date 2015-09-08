@@ -130,7 +130,7 @@ World.prototype.removeSpiritId = function(id) {
 
 /**
  * Assigns an ID and adds the body.
- * @returns the new body ID.
+ * @returns {number} the new body ID
  */
 World.prototype.addBody = function(body) {
   body.id = this.newId();

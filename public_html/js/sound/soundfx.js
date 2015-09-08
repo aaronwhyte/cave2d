@@ -55,6 +55,7 @@ SoundFx.prototype.getMasterGain = function() {
  * @param {number} z
  * @param {number} vol
  * @param {number} attack
+ * @param {number} sustain
  * @param {number} decay
  * @param {number} freq1
  * @param {number} freq2
