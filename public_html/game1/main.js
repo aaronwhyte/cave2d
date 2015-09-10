@@ -94,6 +94,7 @@ Game1.prototype.gotoScreen = function(screenId) {
 };
 
 Game1.prototype.quit = function() {
+  this.exitPointerLock();
   this.screens[Game1.SCREEN_PLAY].unloadLevel();
   this.gotoScreen(Game1.SCREEN_TITLE);
 };
