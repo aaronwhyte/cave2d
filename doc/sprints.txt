@@ -631,9 +631,9 @@ v problem where calculating far into the future without rendering causes missed 
   v fix it
 
 Small Game 1
-* Multiple, levels of increasing difficulty
-* Smallish auto-generated arenas, 2x2 screens roughly
-* Player fires continuously in last direction of acceleration (maybe add direction-lock button too)
+* Multiple levels of increasing difficulty
+* Small levels, maybe non-scrolling single-screen like 80's games
+* Player starts at level 1. Dying makes you restart the level. Infinite lives. That's the simplest.
 * Enemies all appear immediately. Kill necessary ones to finish level.
 * Enemies (and the encouraged player tactics):
   * marching grunt - avoid and shoot
@@ -697,23 +697,29 @@ v Fix button coords! Not dirty enough?
     - enemy missile collisions
       v missiles vanish when hitting
       - wall
-        - noise
+        v noise
         - splash graphics
       - player (unshielded)
         v noise
         - explosion
-        - remove player body
-        - PlayScreen.loseLife()
-          - restart level with fewer enemies?
+        v remove player body
+        - PlayScreen.restartLevel()
     - player controls
       * No touch: float with shields up // invent shield state
       * One touch: move fast and aim
       * Two touch: move lock aim, fire, move slower
     - player missile collisions
       - hits enemy
+        - noise
+        - burst
+        - enemy health--
+        - enemy dies?
+          - explosion
+          - bigger noise
+          - maybe level cleared
       - hits wall
-    - enemy dies
-    - player dies
+        v noise
+        - splash graphics
 
   - better enemies
     - groups
@@ -726,6 +732,7 @@ v Fix button coords! Not dirty enough?
       - turrets hold still and file rapidly and far at LOS.
       - snipers hold still until player is in LOS for a second. Then they fire a fast shot and switch to "flee" mode
         until two seconds have elapsed and the player has been out of LOS for 1 second.
+      - mines that explode near unshielded player, or shotgun turrets that do the same.
   - powerups
     - groups
       - asteroids hit player, player bullets, enemies, enemy bullets. Not walls.
@@ -745,25 +752,4 @@ v Fix button coords! Not dirty enough?
         - bombs
     - world/physics
     v static grx
-  - spawnPlayer
-  - killPlayer
-  - gameOver
   - "pause button" hint at the top of the screen
-
-Goals for next game(s)
-* quadtree map format
-- better graphics
-  - player
-    - face/body
-    - eyes
-    - mouth rect
-  - pause button
-  - player missiles
-  - gnomes
-    - face/body
-    - eyes
-    - hat
-    - beard
-    - mouth rect
-  - robot missiles
-  - exit

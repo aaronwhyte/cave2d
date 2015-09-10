@@ -22,6 +22,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
+PlayScreen.ENEMY_MISSILE_RAD = 5;
 
 PlayScreen.Group = {
   EMPTY: 0,
@@ -121,7 +122,7 @@ PlayScreen.prototype.initCreatures = function() {
       2, 0.2, 1.5,
       this.sphereStamp);
 
-  var maxEnemies = 10;
+  var maxEnemies = 5;
   for (var i = 0; i < maxEnemies; i++) {
     var r = 6 * i/maxEnemies + 2;
     this.initEnemy(
@@ -156,11 +157,11 @@ PlayScreen.prototype.initEnemyMissile = function(pos, vel) {
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.world.now);
   b.setVelAtTime(vel, this.world.now);
-  b.rad = 4;
+  b.rad = PlayScreen.ENEMY_MISSILE_RAD;
   b.hitGroup = PlayScreen.Group.ENEMY_MISSILE;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = Infinity;
-  var spirit = new BallSpirit(); // TODO EnemyBulletSpirit
+  var spirit = new BallSpirit(); // TODO EnemyBulletSpirit?
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
@@ -187,7 +188,7 @@ PlayScreen.prototype.initPlayer = function(x, y, rad, density, red, green, blue,
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var grid = new QuadTreeGrid(46.375412352, 5);
+  var grid = new QuadTreeGrid(50.375412352, 5);
   function paintHall(p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
@@ -288,11 +289,17 @@ PlayScreen.prototype.onHitEvent = function(e) {
       this.world.removeBodyId(missileBody.id);
       var playerBody = this.bodyIfInGroup(PlayScreen.Group.PLAYER, b0, b1);
       if (playerBody) {
-        // TODO: player was hit
-        this.soundBang(this.getPlayerPos());
+        this.soundKaboom(this.getPlayerPos());
+        this.loseLife();
+      } else {
+        this.soundBing(missileBody.getPosAtTime(this.world.now, this.vec2d));
       }
     }
   }
+};
+
+PlayScreen.prototype.loseLife = function() {
+  this.quitting = true;
 };
 
 PlayScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
@@ -308,23 +315,9 @@ PlayScreen.prototype.bonk = function(body, mag) {
   this.vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
   this.vec4.transform(this.viewMatrix);
   if (body.shape == Body.Shape.RECT) {
-    vol = Math.min(1, mag*mag/300);
-    if (vol > 0.01) {
-      dur = Math.min(0.1, 0.01 * mag*mag);
-      freq = mag + 200 + 5 * Math.random();
-      freq2 = 1;//freq;// + 5 * (Math.random() - 0.5);
-      this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'square');
-    }
+    this.soundWallThump(bodyPos, mag);
   } else {
-    mass = body.mass;
-    var massSqrt = Math.sqrt(mass);
-    vol = Math.min(1, 0.005*mag*mag);
-    if (vol > 0.01) {
-      freq = 200 + 10000 / massSqrt;
-      freq2 = 1;//freq/10;//freq * (1 + (Math.random() - 0.5) * 0.01);
-      dur = Math.min(0.2, Math.max(Math.sqrt(mass) / 600, 0.05));
-      this.sfx.sound(this.vec4.v[0], this.vec4.v[1], 0, vol, 0, 0, dur, freq, freq2, 'sine');
-    }
+    this.soundBodyCheck(bodyPos, mag, body.mass);
   }
   bodyPos.free();
 };
@@ -364,8 +357,13 @@ PlayScreen.prototype.drawScene = function() {
       .setModelMatrix(this.levelModelMatrix)
       .drawStamp();
 
-  // Animate whenever this thing draws.
-  this.controller.requestAnimation();
+  if (this.quitting) {
+    this.controller.quit();
+    this.quitting = false;
+  } else {
+    // Animate whenever this thing draws.
+    this.controller.requestAnimation();
+  }
 };
 
 PlayScreen.prototype.unloadLevel = function() {
@@ -409,7 +407,7 @@ PlayScreen.prototype.scanForPlayer = function(fromPos, outVec) {
   req.pos.set(fromPos);
   req.vel.set(this.getPlayerPos()).subtract(fromPos);
   this.shape = Body.Shape.CIRCLE;
-  this.rad = 1; // TODO missile radius?
+  this.rad = PlayScreen.ENEMY_MISSILE_RAD;
   var resp = ScanResponse.alloc();
   var retval = null;
   var hit = this.world.rayscan(req, resp);
@@ -428,6 +426,10 @@ PlayScreen.prototype.enemyFire = function(fromPos, vel) {
 };
 
 
+////////////
+// Sounds //
+////////////
+
 PlayScreen.prototype.soundPew = function(pos) {
   this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
   var x = this.vec4.v[0];
@@ -441,8 +443,8 @@ PlayScreen.prototype.soundPew = function(pos) {
   this.sfx.sound(x, y, 0, 0.1, attack, sustain, decay, freq * (2 + Math.random()), 0.5, 'square');
 };
 
-PlayScreen.prototype.soundBang = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+PlayScreen.prototype.soundBang = function(worldPos) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
@@ -460,8 +462,57 @@ PlayScreen.prototype.soundBang = function(pos) {
   }
 };
 
-PlayScreen.prototype.soundKaboom = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+PlayScreen.prototype.soundWallThump = function(worldPos, mag) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var vol = Math.min(1, mag*mag/300);
+  if (vol > 0.01) {
+    var dur = Math.min(0.1, 0.01 * mag*mag);
+    var freq = mag + 200 + 5 * Math.random();
+    var freq2 = 1;
+    this.sfx.sound(x, y, 0, vol, 0, 0, dur, freq, freq2, 'square');
+  }
+};
+
+PlayScreen.prototype.soundBodyCheck = function(worldPos, mag, mass) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var massSqrt = Math.sqrt(mass);
+  var vol = Math.min(1, 0.005*mag*mag);
+  if (vol > 0.01) {
+    var freq = 200 + 10000 / massSqrt;
+    var freq2 = 1;//freq/10;//freq * (1 + (Math.random() - 0.5) * 0.01);
+    var dur = Math.min(0.2, Math.max(mass / 600, 0.05));
+    this.sfx.sound(x, y, 0, vol, 0, 0, dur, freq, freq2, 'sine');
+  }
+
+};
+
+PlayScreen.prototype.soundBing = function(worldPos) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var voices = 2;
+  var maxLength = 0;
+  var sustain = 0.05 * (Math.random() + 0.5);
+  var baseFreq = (Math.random() + 0.5) * 200;
+  for (var i = 0; i < voices; i++) {
+    var attack = 0;
+    var decay = sustain * 4;
+    maxLength = Math.max(maxLength, attack + decay);
+    var freq1 = baseFreq * (1 + i/3);
+    var freq2 = 1 + i;
+    this.sfx.sound(x, y, 0, 2/voices * 0.3, attack, sustain, decay, freq1, freq2, 'square');
+  }
+};
+
+PlayScreen.prototype.soundKaboom = function(worldPos) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 

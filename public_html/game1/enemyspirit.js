@@ -21,7 +21,7 @@ EnemySpirit.prototype.constructor = EnemySpirit;
 
 EnemySpirit.MOVE_TIMEOUT = 5;
 EnemySpirit.FIRE_TIMEOUT = 100;
-EnemySpirit.BULLET_SPEED = 10;
+EnemySpirit.MISSILE_SPEED = 7;
 
 EnemySpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
@@ -55,7 +55,7 @@ EnemySpirit.prototype.onTimeout = function(world) {
     body.getPosAtTime(world.now, this.tempBodyPos);
     var vecToPlayer = this.playScreen.scanForPlayer(this.tempBodyPos, this.vec2d);
     if (vecToPlayer) {
-      this.playScreen.enemyFire(this.tempBodyPos, vecToPlayer.scaleToLength(EnemySpirit.BULLET_SPEED));
+      this.playScreen.enemyFire(this.tempBodyPos, vecToPlayer.scaleToLength(EnemySpirit.MISSILE_SPEED));
     }
     this.fireTime = world.now + (Math.random() + 0.5) * EnemySpirit.FIRE_TIMEOUT;
   }
