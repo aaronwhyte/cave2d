@@ -18,11 +18,17 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.world = null;
   this.tempPlayerPos = new Vec2d();
   this.tempSoundPos = new Vec4();
+  this.lastPlayerFireTime = 0;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
 PlayScreen.ENEMY_MISSILE_RAD = 5;
+
+PlayScreen.PLAYER_MISSILE_RAD = 5;
+PlayScreen.PLAYER_FIRE_DELAY = 6;
+PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 0.1;
+PlayScreen.PLAYER_MISSILE_SPEED_BOOST = 15;
 
 PlayScreen.Group = {
   EMPTY: 0,
@@ -95,9 +101,9 @@ PlayScreen.prototype.initPermStamps = function() {
 PlayScreen.prototype.initWorld = function() {
   this.lastPathRefreshTime = -Infinity;
   var groupCount = Object.keys(PlayScreen.Group).length;
-  this.world = new World(World.DEFAULT_CELL_SIZE, Object.keys(PlayScreen.Group).length, [
+  this.world = new World(World.DEFAULT_CELL_SIZE, groupCount, [
     [PlayScreen.Group.EMPTY, PlayScreen.Group.EMPTY],
-    [PlayScreen.Group.WALL, PlayScreen.Group.EMPTY],
+    [PlayScreen.Group.WALL, PlayScreen.Group.WALL],
     [PlayScreen.Group.PLAYER, PlayScreen.Group.WALL],
     [PlayScreen.Group.PLAYER_MISSILE, PlayScreen.Group.WALL],
     [PlayScreen.Group.ENEMY, PlayScreen.Group.WALL],
@@ -107,8 +113,11 @@ PlayScreen.prototype.initWorld = function() {
     [PlayScreen.Group.ENEMY_MISSILE, PlayScreen.Group.WALL],
     [PlayScreen.Group.ENEMY_MISSILE, PlayScreen.Group.PLAYER]
   ]);
+  this.lastPlayerFireTime = 0;
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
+  this.initBoulder(new Vec2d(135, -125));
+  this.initBoulder(new Vec2d(-135, -125));
   this.initCreatures();
   this.initWalls();
   for (var bodyId in this.world.bodies) {
@@ -122,7 +131,7 @@ PlayScreen.prototype.initCreatures = function() {
       2, 0.2, 1.5,
       this.sphereStamp);
 
-  var maxEnemies = 5;
+  var maxEnemies = 20;
   for (var i = 0; i < maxEnemies; i++) {
     var r = 6 * i/maxEnemies + 2;
     this.initEnemy(
@@ -166,7 +175,45 @@ PlayScreen.prototype.initEnemyMissile = function(pos, vel) {
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(2, 0.2, 0.2);
+  this.world.spirits[spiritId].setColorRGB(0.5, 2, 0.5);
+  return spiritId;
+};
+
+PlayScreen.prototype.initPlayerMissile = function(pos, vel) {
+  var density = 2;
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, this.world.now);
+  b.setVelAtTime(vel, this.world.now);
+  b.rad = PlayScreen.PLAYER_MISSILE_RAD;
+  b.hitGroup = PlayScreen.Group.PLAYER_MISSILE;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = Infinity;
+  var spirit = new BallSpirit();
+  spirit.bodyId = this.world.addBody(b);
+  spirit.setModelStamp(this.sphereStamp);
+  var spiritId = this.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  this.world.spirits[spiritId].setColorRGB(2, 0.2, 1);
+  return spiritId;
+};
+
+PlayScreen.prototype.initBoulder = function(pos) {
+  var density = 1;
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, this.world.now);
+  b.rad = 50;
+  b.hitGroup = PlayScreen.Group.WALL;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = Infinity;
+  var spirit = new BallSpirit();
+  spirit.bodyId = this.world.addBody(b);
+  spirit.setModelStamp(this.sphereStamp);
+  var spiritId = this.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  this.world.spirits[spiritId].setColorRGB(0.3, 0.7, 0.9);
+//  this.world.spirits[spiritId].setColorRGB(0.5, 0.5, 0.5);
   return spiritId;
 };
 
@@ -189,18 +236,18 @@ PlayScreen.prototype.initPlayer = function(x, y, rad, density, red, green, blue,
 
 PlayScreen.prototype.initWalls = function() {
   var grid = new QuadTreeGrid(50.375412352, 5);
-  function paintHall(p1, opt_p2) {
+  function paintHall(hallRad, p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
-    var painter = new MazePainter(segment, 100, 20);
+    var painter = new MazePainter(segment, hallRad, 20);
     grid.paint(painter);
   }
   var rad = 100;
-  paintHall(new Vec2d(-rad, -rad), new Vec2d(0, 0.7 * rad));
-  paintHall(new Vec2d(0, 0.7 * rad), new Vec2d(rad, -rad));
-  paintHall(new Vec2d(-rad, -rad), new Vec2d(rad, -rad));
-  paintHall(new Vec2d(rad * 2.14, rad * 0.8));
-  paintHall(new Vec2d(-rad * 2.14, rad * 0.8));
+  paintHall(rad, new Vec2d(-rad*1.2, -rad), new Vec2d(0, 0.8 * rad));
+  paintHall(rad, new Vec2d(0, 0.8 * rad), new Vec2d(rad*1.2, -rad));
+  paintHall(rad, new Vec2d(-rad*1.2, -rad), new Vec2d(rad*1.2, -rad));
+  paintHall(rad*1.1, new Vec2d(rad * 2.15, rad));
+  paintHall(rad*1.1, new Vec2d(-rad * 2.15, rad));
 
   this.levelModel = new RigidModel();
   var a, h, i;
@@ -263,6 +310,17 @@ PlayScreen.prototype.handleInput = function() {
     accel.clipToMaxLength(maxAccel);
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
+
+    var missileVel = this.trackball.getVal(this.movement).scaleXY(1, -1);
+    var missileVelMag = missileVel.magnitude();
+    // Fire faster by moving faster
+    if (this.world.now + Math.sqrt(missileVelMag) >= this.lastPlayerFireTime + PlayScreen.PLAYER_FIRE_DELAY &&
+        missileVelMag >= PlayScreen.PLAYER_MIN_SPEED_TO_FIRE) {
+      missileVel.scaleToLength(missileVelMag + PlayScreen.PLAYER_MISSILE_SPEED_BOOST);
+      this.playerFire(this.getPlayerPos(), missileVel);
+//      this.playerFire(this.getPlayerPos(), missileVel.scaleXY(-1, -1));
+      this.lastPlayerFireTime = this.world.now;
+    }
     accel.free();
   }
   newVel.free();
@@ -283,23 +341,38 @@ PlayScreen.prototype.onHitEvent = function(e) {
     }
     strikeVec.free();
 
-    var missileBody = this.bodyIfInGroup(PlayScreen.Group.ENEMY_MISSILE, b0, b1);
-    if (missileBody) {
-      this.world.removeSpiritId(missileBody.spiritId);
-      this.world.removeBodyId(missileBody.id);
+    var enemyMissileBody = this.bodyIfInGroup(PlayScreen.Group.ENEMY_MISSILE, b0, b1);
+    if (enemyMissileBody) {
       var playerBody = this.bodyIfInGroup(PlayScreen.Group.PLAYER, b0, b1);
       if (playerBody) {
-        this.soundKaboom(this.getPlayerPos());
+        this.soundKaboom(this.getBodyPos(playerBody));
+        this.soundKaboom(this.getBodyPos(playerBody));
         this.loseLife();
       } else {
-        this.soundBing(missileBody.getPosAtTime(this.world.now, this.vec2d));
+        this.soundBing(this.getBodyPos(enemyMissileBody));
       }
+      this.world.removeSpiritId(enemyMissileBody.spiritId);
+      this.world.removeBodyId(enemyMissileBody.id);
+    }
+
+    var playerMissileBody = this.bodyIfInGroup(PlayScreen.Group.PLAYER_MISSILE, b0, b1);
+    if (playerMissileBody) {
+      var enemyBody = this.bodyIfInGroup(PlayScreen.Group.ENEMY, b0, b1);
+      if (enemyBody) {
+        this.soundKaboom(this.getBodyPos(enemyBody));
+        this.world.removeSpiritId(enemyBody.spiritId);
+        this.world.removeBodyId(enemyBody.id);
+      } else {
+        this.soundBing(this.getBodyPos(playerMissileBody));
+      }
+      this.world.removeSpiritId(playerMissileBody.spiritId);
+      this.world.removeBodyId(playerMissileBody.id);
     }
   }
 };
 
 PlayScreen.prototype.loseLife = function() {
-  this.quitting = true;
+  this.restarting = true;
 };
 
 PlayScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
@@ -309,7 +382,6 @@ PlayScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
 };
 
 PlayScreen.prototype.bonk = function(body, mag) {
-  var mass, vol, dur, freq, freq2;
   var bodyPos = Vec2d.alloc();
   body.getPosAtTime(this.world.now, bodyPos);
   this.vec4.setXYZ(bodyPos.x, bodyPos.y, 0);
@@ -357,9 +429,9 @@ PlayScreen.prototype.drawScene = function() {
       .setModelMatrix(this.levelModelMatrix)
       .drawStamp();
 
-  if (this.quitting) {
-    this.controller.quit();
-    this.quitting = false;
+  if (this.restarting) {
+    this.controller.restart();
+    this.restarting = false;
   } else {
     // Animate whenever this thing draws.
     this.controller.requestAnimation();
@@ -382,6 +454,11 @@ PlayScreen.prototype.unloadLevel = function() {
   }
   this.permStamps = null;
 };
+
+PlayScreen.prototype.getBodyPos = function(body) {
+  return body.getPosAtTime(this.world.now, this.vec2d);
+};
+
 
 PlayScreen.prototype.getPlayerPos = function() {
   var spirit = this.world.spirits[this.playerSpiritId];
@@ -422,6 +499,11 @@ PlayScreen.prototype.scanForPlayer = function(fromPos, outVec) {
 
 PlayScreen.prototype.enemyFire = function(fromPos, vel) {
   this.initEnemyMissile(fromPos, vel);
+  this.soundPew(fromPos);
+};
+
+PlayScreen.prototype.playerFire = function(fromPos, vel) {
+  this.initPlayerMissile(fromPos, vel);
   this.soundPew(fromPos);
 };
 
@@ -507,7 +589,7 @@ PlayScreen.prototype.soundBing = function(worldPos) {
     maxLength = Math.max(maxLength, attack + decay);
     var freq1 = baseFreq * (1 + i/3);
     var freq2 = 1 + i;
-    this.sfx.sound(x, y, 0, 2/voices * 0.3, attack, sustain, decay, freq1, freq2, 'square');
+    this.sfx.sound(x, y, 0, 2/voices * 0.2, attack, sustain, decay, freq1, freq2, 'square');
   }
 };
 

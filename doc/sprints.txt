@@ -679,6 +679,11 @@ v Fix button coords! Not dirty enough?
   v thin solid walls, fake thick walls
     v refactor quadtree painters to test7
     v make one for game1
+  - explosions/particles/whatevs
+    * Make it a single model draw (or two) from JS
+      * a handful of triangles (or squares)
+      * and an array saying how their position and color changes over time
+    * vertex shader case statement
   - basic combat
     v groups
       v walls hit nothing
@@ -687,39 +692,37 @@ v Fix button coords! Not dirty enough?
       v enemies hit walls, player, player bullets, other enemies
       v enemy bullets hit walls, player. Not other enemies.
       x enemy LOS scan hits walls, player. Hm, I guess that's the same as enemy bullets.
-    - basic enemy
+    v basic enemy
       v wander around
-      - fire at player occasionally, if player is in line of sight (LOS).
+      v fire at player occasionally, if player is in line of sight (LOS).
         v LOS scan
         v fire missile body
         v "zap" noise
-        - muzzle flash
-    - enemy missile collisions
+    v enemy missile collisions
       v missiles vanish when hitting
-      - wall
+      v wall noise
+      v player (unshielded)
         v noise
-        - splash graphics
-      - player (unshielded)
-        v noise
-        - explosion
         v remove player body
-        - PlayScreen.restartLevel()
-    - player controls
-      * No touch: float with shields up // invent shield state
-      * One touch: move fast and aim
-      * Two touch: move lock aim, fire, move slower
-    - player missile collisions
-      - hits enemy
-        - noise
-        - burst
-        - enemy health--
-        - enemy dies?
-          - explosion
-          - bigger noise
-          - maybe level cleared
-      - hits wall
+        v PlayScreen.restartLevel() or what have you.
+    v player controls
+      v aim and fire in direction of trackball move
+    v player missile collisions
+      v hits enemy
         v noise
-        - splash graphics
+        v enemy dies
+          v noise
+      v hits wall noise
+    - explosions
+      - muzzle flash
+        - enemy
+        - player
+      - missiles hit wall
+        - enemy
+        - player
+      - death explosions
+        - enemy
+        - player
 
   - better enemies
     - groups

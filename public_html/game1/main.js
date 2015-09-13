@@ -99,6 +99,11 @@ Game1.prototype.quit = function() {
   this.gotoScreen(Game1.SCREEN_TITLE);
 };
 
+Game1.prototype.restart = function() {
+  this.screens[Game1.SCREEN_PLAY].unloadLevel();
+  this.requestAnimation();
+};
+
 Game1.prototype.requestFullScreen = function() {
   var elem = document.body;
   if (elem.requestFullscreen) {

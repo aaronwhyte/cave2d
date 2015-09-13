@@ -19,7 +19,7 @@ function EnemySpirit(playScreen) {
 EnemySpirit.prototype = new Spirit();
 EnemySpirit.prototype.constructor = EnemySpirit;
 
-EnemySpirit.MOVE_TIMEOUT = 5;
+EnemySpirit.MOVE_TIMEOUT = 11;
 EnemySpirit.FIRE_TIMEOUT = 100;
 EnemySpirit.MISSILE_SPEED = 7;
 
@@ -41,7 +41,7 @@ EnemySpirit.prototype.onTimeout = function(world) {
   var thrust = Vec2d.alloc()
       .set(body.vel).scaleToLength(0.07).rot(this.turn)
       .addXY((Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.2);
-  body.setVelAtTime(body.vel
+  body.setVelAtTime(this.vec2d.set(body.vel)
       .add(friction.scale(EnemySpirit.MOVE_TIMEOUT))
       .add(thrust.scale(EnemySpirit.MOVE_TIMEOUT)),
       world.now);
@@ -49,7 +49,7 @@ EnemySpirit.prototype.onTimeout = function(world) {
   thrust.free();
 
   if (!this.fireTime) {
-    this.fireTime = world.now + (Math.random() + 0.1) * EnemySpirit.FIRE_TIMEOUT;
+    this.fireTime = world.now + (Math.random() + 0.5) * EnemySpirit.FIRE_TIMEOUT;
   }
   if (world.now > this.fireTime) {
     body.getPosAtTime(world.now, this.tempBodyPos);
