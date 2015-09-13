@@ -29,12 +29,12 @@ TitleScreen.prototype.initWorld = function() {
       .setPaddingXY(1.5, 0.5);
 
   // TITLE
-  buttonMaker.setLetterColor([0.25, 0.75, 1]).setBlockColor(null).setScale(1.5);
+  buttonMaker.setLetterColor([0.25*0.7, 0.75*0.7, 1*0.7]).setBlockColor(null).setScale(1.5);
   var spiritId = buttonMaker.addButton(0, 0, "GAME 1", null);
   buttonMaker.setScale(1);
 
   // PLAY
-  buttonMaker.setLetterColor([0.5, 1.5, 2]).setBlockColor([0.25, 0.75, 1]);
+  buttonMaker.setLetterColor([0.25, 0.75, 1]).setBlockColor([0.25*0.5, 0.75*0.5, 1*0.5]);
   spiritId = buttonMaker.addButton(0, -8, "PLAY", function(e) {
     var freq0 = 100;
     var freq1 = 5000;

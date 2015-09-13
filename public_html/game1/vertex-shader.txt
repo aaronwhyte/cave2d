@@ -11,5 +11,5 @@ void main(void) {
   gl_Position = aVertexPosition * uModelMatrix * uViewMatrix;
   vColor = aVertexColor * uModelColor;
   //vColor = vColor * (-gl_Position.z * 0.9 + 0.5);
-  vColor = vColor * 0.7;
+  //vColor = vColor * 0.7;
 }

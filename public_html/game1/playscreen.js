@@ -26,9 +26,9 @@ PlayScreen.prototype.constructor = PlayScreen;
 PlayScreen.ENEMY_MISSILE_RAD = 5;
 
 PlayScreen.PLAYER_MISSILE_RAD = 5;
-PlayScreen.PLAYER_FIRE_DELAY = 6;
-PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 0.1;
-PlayScreen.PLAYER_MISSILE_SPEED_BOOST = 15;
+PlayScreen.PLAYER_FIRE_DELAY = 10;
+PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 1;
+PlayScreen.PLAYER_MISSILE_SPEED_BOOST = 20;
 
 PlayScreen.Group = {
   EMPTY: 0,
@@ -155,7 +155,7 @@ PlayScreen.prototype.initEnemy = function(x, y) {
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(0.6, 1, 0.6);
+  this.world.spirits[spiritId].setColorRGB(0.2, 1, 0.6);
   this.world.spirits[spiritId].onTimeout(this.world);
   return spiritId;
 };
@@ -175,7 +175,7 @@ PlayScreen.prototype.initEnemyMissile = function(pos, vel) {
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(2, 0.5, 0.2);
+  this.world.spirits[spiritId].setColorRGB(1, 1, 0);
   return spiritId;
 };
 
@@ -194,7 +194,8 @@ PlayScreen.prototype.initPlayerMissile = function(pos, vel) {
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(1.5, 0.6, 2);
+//  this.world.spirits[spiritId].setColorRGB(1.5, 0.6, 2);
+  this.world.spirits[spiritId].setColorRGB(1, 0, 0.5);
   return spiritId;
 };
 
@@ -203,7 +204,7 @@ PlayScreen.prototype.initBoulder = function(pos) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.world.now);
-  b.rad = 50;
+  b.rad = 30;
   b.hitGroup = PlayScreen.Group.WALL;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = Infinity;
@@ -212,8 +213,8 @@ PlayScreen.prototype.initBoulder = function(pos) {
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(0.3, 0.7, 0.9);
-//  this.world.spirits[spiritId].setColorRGB(0.5, 0.5, 0.5);
+  this.world.spirits[spiritId].setColorRGB(0.5, 0.5, 0.5);
+//  this.world.spirits[spiritId].setColorRGB(1, 1, 0.5);
   return spiritId;
 };
 
@@ -235,11 +236,11 @@ PlayScreen.prototype.initPlayer = function(x, y, rad, density, red, green, blue,
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var grid = new QuadTreeGrid(50.375412352, 5);
+  var grid = new QuadTreeGrid(100.375412352, 6);
   function paintHall(hallRad, p1, opt_p2) {
     var p2 = opt_p2 || p1;
     var segment = new Segment(p1, p2);
-    var painter = new MazePainter(segment, hallRad, 20);
+    var painter = new MazePainter(segment, hallRad, 5);
     grid.paint(painter);
   }
   var rad = 100;
@@ -251,18 +252,18 @@ PlayScreen.prototype.initWalls = function() {
 
   this.levelModel = new RigidModel();
   var a, h, i;
-  a = grid.getSquaresOfColor(MazePainter.SOLID);
+  a = grid.getAllColoredSquares();
   for (i = 0; i < a.length; i++) {
     h = a[i];
     //[color, centerX, centerY, radius]
     this.initWall(h[0], h[1], h[2], h[3], h[3]);
   }
-  a = grid.getSquaresOfColor(MazePainter.FAKE);
-  for (i = 0; i < a.length; i++) {
-    h = a[i];
-    //[color, centerX, centerY, radius]
-    this.initWall(h[0], h[1], h[2], h[3], h[3]);
-  }
+//  a = grid.getSquaresOfColor(MazePainter.SOLID);
+//  for (i = 0; i < a.length; i++) {
+//    h = a[i];
+//    //[color, centerX, centerY, radius]
+//    this.initWall(h[0], h[1], h[2], h[3], h[3]);
+//  }
   this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
   this.permStamps.push(this.levelStamp);
   this.levelModelMatrix = new Matrix44();
@@ -281,11 +282,21 @@ PlayScreen.prototype.initWall = function(type, x, y, rx, ry) {
     b.pathDurationMax = Infinity;
     this.world.addBody(b);
   }
-  // draw a square for both SOLID and FAKE walls
-  var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
-  var wallModel = RigidModel.createSquare().transformPositions(t);
-  wallModel.setColorRGB(0.3, 0.7, 0.9);
-  this.levelModel.addRigidModel(wallModel);
+  if (type == MazePainter.SOLID || type == MazePainter.FAKE) {
+    var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
+    var wallModel = RigidModel.createSquare().transformPositions(t);
+    var color = 0.15 + 0.1 * Math.random();
+    wallModel.setColorRGB(color, color, color);
+    this.levelModel.addRigidModel(wallModel);
+  }
+  if (type == MazePainter.FLOOR) {
+    var inset = 0;
+    var t = new Matrix44().toTranslateOpXYZ(x, y, 0.99).multiply(new Matrix44().toScaleOpXYZ(rx - inset, ry -inset, 1));
+    var wallModel = RigidModel.createSquare().transformPositions(t);
+    var floorColor = 0.3 + 0.01 * (20/rx + 20/ry) * Math.random();
+    wallModel.setColorRGB(floorColor*0.7, floorColor, floorColor);
+    this.levelModel.addRigidModel(wallModel);
+  }
 };
 
 PlayScreen.prototype.handleInput = function() {
@@ -314,7 +325,7 @@ PlayScreen.prototype.handleInput = function() {
     var missileVel = this.trackball.getVal(this.movement).scaleXY(1, -1);
     var missileVelMag = missileVel.magnitude();
     // Fire faster by moving faster
-    if (this.world.now + Math.sqrt(missileVelMag) >= this.lastPlayerFireTime + PlayScreen.PLAYER_FIRE_DELAY &&
+    if (this.world.now + Math.sqrt(missileVelMag*2) >= this.lastPlayerFireTime + PlayScreen.PLAYER_FIRE_DELAY &&
         missileVelMag >= PlayScreen.PLAYER_MIN_SPEED_TO_FIRE) {
       missileVel.scaleToLength(missileVelMag + PlayScreen.PLAYER_MISSILE_SPEED_BOOST);
       this.playerFire(this.getPlayerPos(), missileVel);

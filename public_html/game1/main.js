@@ -50,7 +50,8 @@ Game1.prototype.initScreens = function() {
 
   this.visibility = {};
   for (var i = 0; i < Game1.SCREENS.length; i++) {
-    this.visibility[Game1.SCREENS[i]] = 0;
+    var screen = Game1.SCREENS[i];
+    this.visibility[screen] = screen == Game1.SCREEN_TITLE ? 1 : 0;
   }
   this.frontScreenId = Game1.SCREEN_TITLE;
   this.animationRequested = false;

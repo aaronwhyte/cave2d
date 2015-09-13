@@ -46,13 +46,13 @@ PauseScreen.prototype.initWorld = function() {
       .setNextCharMatrix(new Matrix44().toTranslateOpXYZ(3, 0, 0))
       .setPaddingXY(1.5, 0.5);
 
-  buttonMaker.setLetterColor([1, 0.75, 0.25]).setBlockColor(null);
+  buttonMaker.setLetterColor([1*0.7, 0.75*0.7, 0.25*0.7]).setBlockColor(null);
   buttonMaker.addButton(0, 0, "PAUSED", null);
 
   var spiritId;
 
   // RESUME
-  buttonMaker.setLetterColor([2, 1.5, 0.5]).setBlockColor([1, 0.75, 0.25]);
+  buttonMaker.setLetterColor([1, 0.75, 0.25]).setBlockColor([1*0.5, 0.75*0.5, 0.25*0.5]);
   spiritId = buttonMaker.addButton(0, -8, "RESUME", function(e) {
     var freq0 = 100;
     var freq1 = 5000;
