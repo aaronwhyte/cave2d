@@ -679,11 +679,6 @@ v Fix button coords! Not dirty enough?
   v thin solid walls, fake thick walls
     v refactor quadtree painters to test7
     v make one for game1
-  - explosions/particles/whatevs
-    * Make it a single model draw (or two) from JS
-      * a handful of triangles (or squares)
-      * and an array saying how their position and color changes over time
-    * vertex shader case statement
   - basic combat
     v groups
       v walls hit nothing
@@ -714,6 +709,12 @@ v Fix button coords! Not dirty enough?
           v noise
       v hits wall noise
     - explosions
+      * params; pos0, pos1, time
+
+      * Make it a single model draw (or two) from JS
+        * a handful of triangles (or squares)
+        * and an array saying how their position and color changes over time
+      * vertex shader case statement
       - muzzle flash
         - enemy
         - player
@@ -724,12 +725,14 @@ v Fix button coords! Not dirty enough?
         - enemy
         - player
 
+
   - better enemies
     - groups
-      - Enemy move scan hits walls, player, player bullets, enemies, asteroids
-      - wall scan hits walls
+      - Enemy obstacle scan hits walls, player, player bullets, enemies
+      - wall scan hits walls (just WALL group will do since WALL hits WALL now.)
       - enemy bullet scan hits player bullets?
     - enemies
+      - Multiple health
       - grunts chase LOS player to get close, and use short-range medium-reload gun. dangerous in packs.
       - crawlers walk along walls and use long-range medium-speed fire when player is LOS.
       - turrets hold still and file rapidly and far at LOS.
@@ -740,11 +743,12 @@ v Fix button coords! Not dirty enough?
     - groups
       - asteroids hit player, player bullets, enemies, enemy bullets. Not walls.
       - powerups hit player (if you shot it, you can get to it)
-  - loadLevel(levelNum)
+  - Multiple Levels
     v Make maze into one giant temporary stamp
+    - loadLevel(levelNum)
     - props
       - player start
-      - exit[]
+      - exit[]?
       - chasebots
       - extra credit:
         - boulders

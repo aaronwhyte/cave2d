@@ -39,6 +39,11 @@ BallSpirit.prototype.onDraw = function(world, renderer) {
   renderer.drawStamp();
 };
 
+BallSpirit.prototype.onTimeout = function(world, timeout) {
+  world.removeBodyId(this.bodyId);
+  world.removeSpiritId(this.id);
+};
+
 BallSpirit.prototype.getBody = function(world) {
   return world.bodies[this.bodyId];
 };

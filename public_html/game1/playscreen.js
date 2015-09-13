@@ -14,7 +14,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.hitsThisFrame = 0;
 
   this.visibility = 0;
-  this.permStamps = null;
+  this.levelStamps = null;
   this.world = null;
   this.tempPlayerPos = new Vec2d();
   this.tempSoundPos = new Vec4();
@@ -28,7 +28,9 @@ PlayScreen.ENEMY_MISSILE_RAD = 5;
 PlayScreen.PLAYER_MISSILE_RAD = 5;
 PlayScreen.PLAYER_FIRE_DELAY = 10;
 PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 1;
-PlayScreen.PLAYER_MISSILE_SPEED_BOOST = 20;
+PlayScreen.PLAYER_MISSILE_SPEED_BOOST = 12;
+PlayScreen.PLAYER_MISSILE_DURATION = 15;
+
 
 PlayScreen.Group = {
   EMPTY: 0,
@@ -75,7 +77,7 @@ PlayScreen.prototype.pauseGame = function() {
 };
 
 PlayScreen.prototype.lazyInit = function() {
-  if (!this.permStamps) {
+  if (!this.levelStamps) {
     this.initPermStamps();
   }
   if (!this.world) {
@@ -84,10 +86,10 @@ PlayScreen.prototype.lazyInit = function() {
 };
 
 PlayScreen.prototype.initPermStamps = function() {
-  this.permStamps = [];
+  this.levelStamps = [];
 
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
-  this.permStamps.push(this.cubeStamp);
+  this.levelStamps.push(this.cubeStamp);
 
   var sphereModel = RigidModel.createOctahedron()
       .createQuadrupleTriangleModel()
@@ -95,7 +97,7 @@ PlayScreen.prototype.initPermStamps = function() {
       .createQuadrupleTriangleModel()
       .sphereize(Vec4.ZERO, 1);
   this.sphereStamp = sphereModel.createModelStamp(this.renderer.gl);
-  this.permStamps.push(this.sphereStamp);
+  this.levelStamps.push(this.sphereStamp);
 };
 
 PlayScreen.prototype.initWorld = function() {
@@ -188,7 +190,7 @@ PlayScreen.prototype.initPlayerMissile = function(pos, vel) {
   b.rad = PlayScreen.PLAYER_MISSILE_RAD;
   b.hitGroup = PlayScreen.Group.PLAYER_MISSILE;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = Infinity;
+  b.pathDurationMax = PlayScreen.PLAYER_MISSILE_DURATION;
   var spirit = new BallSpirit();
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.sphereStamp);
@@ -196,6 +198,7 @@ PlayScreen.prototype.initPlayerMissile = function(pos, vel) {
   b.spiritId = spiritId;
 //  this.world.spirits[spiritId].setColorRGB(1.5, 0.6, 2);
   this.world.spirits[spiritId].setColorRGB(1, 0, 0.5);
+  this.world.addTimeout(this.world.now + PlayScreen.PLAYER_MISSILE_DURATION, spiritId);
   return spiritId;
 };
 
@@ -265,7 +268,7 @@ PlayScreen.prototype.initWalls = function() {
 //    this.initWall(h[0], h[1], h[2], h[3], h[3]);
 //  }
   this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
-  this.permStamps.push(this.levelStamp);
+  this.levelStamps.push(this.levelStamp);
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 };
@@ -459,11 +462,10 @@ PlayScreen.prototype.unloadLevel = function() {
     }
     this.world = null;
   }
-  // TODO this should be level Stamps, not permStamps. permStamps are permanent.
-  while (this.permStamps.length) {
-    this.permStamps.pop().dispose(this.renderer.gl);
+  while (this.levelStamps.length) {
+    this.levelStamps.pop().dispose(this.renderer.gl);
   }
-  this.permStamps = null;
+  this.levelStamps = null;
 };
 
 PlayScreen.prototype.getBodyPos = function(body) {
@@ -515,7 +517,10 @@ PlayScreen.prototype.enemyFire = function(fromPos, vel) {
 
 PlayScreen.prototype.playerFire = function(fromPos, vel) {
   this.initPlayerMissile(fromPos, vel);
-  this.soundPew(fromPos);
+  var spread = Math.PI/32;
+  this.initPlayerMissile(fromPos, vel.rot(-spread));
+  this.initPlayerMissile(fromPos, vel.rot(spread*2));
+  this.soundBang(fromPos);
 };
 
 
