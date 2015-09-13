@@ -175,7 +175,7 @@ PlayScreen.prototype.initEnemyMissile = function(pos, vel) {
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(0.5, 2, 0.5);
+  this.world.spirits[spiritId].setColorRGB(2, 0.5, 0.2);
   return spiritId;
 };
 
@@ -194,7 +194,7 @@ PlayScreen.prototype.initPlayerMissile = function(pos, vel) {
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(2, 0.2, 1);
+  this.world.spirits[spiritId].setColorRGB(1.5, 0.6, 2);
   return spiritId;
 };
 
