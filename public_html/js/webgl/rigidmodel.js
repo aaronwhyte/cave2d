@@ -242,6 +242,38 @@ RigidModel.createTriangle = function() {
   return m;
 };
 
+RigidModel.createCircleMesh = function(depth) {
+  var model = RigidModel.createTriangle();
+  for (var i = 0; i < depth; i++) {
+    model = model.createQuadrupleTriangleModel();
+  }
+  // Remove triangles outside circle.
+  var outsiders = [];
+  var circleRadius = 1;
+  for (var t = 0; t < model.triangles.length;) {
+    var tri = model.triangles[t];
+    outsiders.length = 0;
+    for (var v = 0; v < 3; v++) {
+      var vert = model.vertexes[tri[v]];
+      if (vert.position.magnitude() > circleRadius) {
+        outsiders.push(vert);
+      }
+    }
+    if (outsiders.length == 3) {
+      // All verts are outside the circle. Remove the triangle.
+      model.triangles[t] = model.triangles[model.triangles.length - 1];
+      model.triangles.pop();
+    } else {
+      // Reposition outside verts to be on the circle's edge.
+      for (var o = 0; o < outsiders.length; o++) {
+        outsiders[o].position.scaleToLength(circleRadius);
+      }
+      t++;
+    }
+  }
+  return model;
+};
+
 /**
  * Creates a unit-cube, with points at 1 and -1 along each dimension,
  * so edge-length is 2 and volume is 8.

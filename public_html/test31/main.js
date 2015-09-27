@@ -36,13 +36,11 @@ Test31.prototype.onRendererLoaded = function(r) {
 };
 
 Test31.prototype.initStamps = function() {
-  var model = RigidModel.createTriangle();
-  var levels = 5;
-  for (var i = 0; i < levels; i++) {
-    model = model.createQuadrupleTriangleModel();
-  }
+  var model = RigidModel.createCircleMesh(5);
   for (var i = 0, n = model.vertexes.length; i < n; i++) {
-    model.vertexes[i].setColorRGB(Math.random(), Math.random(), Math.random());
+    var p = model.vertexes[i].position;
+    var c = 1 - p.magnitudeSquared() * 0.8;
+    model.vertexes[i].setColorRGB(c, c, c);
   }
   this.triangleStamp = model.createModelStamp(this.renderer.gl);
 };
