@@ -112,7 +112,7 @@ RigidModel.prototype.sphereize = function(center, radius) {
 };
 
 /**
- * Creates a new RigidModel just like this one, but replacing all triangles with
+ * Creates a new RigidModel just like this one, but replaces all triangles with
  * four co-planer triangles covering the same area, creating a new vertex in the
  * middle of each edge. Color values for the new vertexes are the average of the
  * original two points along the edge.
@@ -222,6 +222,23 @@ RigidModel.createSquare = function() {
   //
   // 0   1
   face(2, 3, 0, 1);
+  return m;
+};
+
+/**
+ * Creates an equalateral triangle, with one point on the positive Y axis and two with negative Y and varying X,
+ * sized so it covers a unit circle. The highest Y is 2 and the lowest is -1.
+ * @returns {RigidModel}
+ */
+RigidModel.createTriangle = function() {
+  var m = new RigidModel();
+  var top = new Vertex().setPositionXYZ(0, 2, 0).setColorRGB(1, 1, 1);
+  var right = top.copy().transformPosition(new Matrix44().toRotateZOp(2*Math.PI/3));
+  var left = top.copy().transformPosition(new Matrix44().toRotateZOp(-2*Math.PI/3));
+  var topIndex = m.addVertex(top);
+  var leftIndex = m.addVertex(left);
+  var rightIndex = m.addVertex(right);
+  m.addTriangle(topIndex, leftIndex, rightIndex);
   return m;
 };
 

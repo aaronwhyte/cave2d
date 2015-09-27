@@ -630,7 +630,7 @@ v problem where calculating far into the future without rendering causes missed 
   v repro with basic sound test, time per frame cranked way up.
   v fix it
 
-Small Game 1
+Game 1 sprint 1
 * Multiple levels of increasing difficulty
 * Small levels, maybe non-scrolling single-screen like 80's games
 * Player starts at level 1. Dying makes you restart the level. Infinite lives. That's the simplest.
@@ -666,7 +666,7 @@ v Remove MultiPointer w transforms+queue from Game1 completely. Leaking events r
   v Transform to world coords individually.
 Game. Keep game extremely basic.
 v Fix button coords! Not dirty enough?
-- PlayScreen
+v PlayScreen
   v current game state: levelNum, lives, score
   v current level state: nullable world, level-specific GL buffers
   v one-time setup: load re-usable models (super-basic version)
@@ -679,7 +679,7 @@ v Fix button coords! Not dirty enough?
   v thin solid walls, fake thick walls
     v refactor quadtree painters to test7
     v make one for game1
-  - basic combat
+  v basic combat
     v groups
       v walls hit nothing
       v player hits walls
@@ -708,55 +708,42 @@ v Fix button coords! Not dirty enough?
         v enemy dies
           v noise
       v hits wall noise
-    - explosions
-      * params; pos0, pos1, time
+stopped 2015-09-24
 
-      * Make it a single model draw (or two) from JS
-        * a handful of triangles (or squares)
-        * and an array saying how their position and color changes over time
-      * vertex shader case statement
-      - muzzle flash
-        - enemy
-        - player
-      - missiles hit wall
-        - enemy
-        - player
-      - death explosions
-        - enemy
-        - player
+Vertex shader mesh distortions - test31
+- Make a circle that's a mesh of triangles
+- Make a ring that's a mesh of triangles, with an inner radius of 0.5
+- Make a vertex shader that takes a distortion x, y, radius, and repulsion-at-zero-dist
+- Make it several distortions
+  - per world
+  - per model draw
 
 
-  - better enemies
-    - groups
-      - Enemy obstacle scan hits walls, player, player bullets, enemies
-      - wall scan hits walls (just WALL group will do since WALL hits WALL now.)
-      - enemy bullet scan hits player bullets?
-    - enemies
-      - Multiple health
-      - grunts chase LOS player to get close, and use short-range medium-reload gun. dangerous in packs.
-      - crawlers walk along walls and use long-range medium-speed fire when player is LOS.
-      - turrets hold still and file rapidly and far at LOS.
-      - snipers hold still until player is in LOS for a second. Then they fire a fast shot and switch to "flee" mode
-        until two seconds have elapsed and the player has been out of LOS for 1 second.
-      - mines that explode near unshielded player, or shotgun turrets that do the same.
-  - powerups
-    - groups
-      - asteroids hit player, player bullets, enemies, enemy bullets. Not walls.
-      - powerups hit player (if you shot it, you can get to it)
-  - Multiple Levels
-    v Make maze into one giant temporary stamp
-    - loadLevel(levelNum)
-    - props
-      - player start
-      - exit[]?
-      - chasebots
-      - extra credit:
-        - boulders
-        - chasebot factories
-        - juggernauts
-        - turrets
-        - fleeing shooters
-        - bombs
-    - world/physics
-    v static grx
-  - "pause button" hint at the top of the screen
+
+Game 1 explosions
+- muzzle flash
+  - enemy
+  - player
+- missiles hit wall
+  - enemy
+  - player
+- death explosions
+  - enemy
+  - player
+
+Game 1 levels
+v Make maze into one giant temporary stamp
+- loadLevel(levelNum)
+- map
+- player start (or always in the middle a-la Robotron)
+- enemy start positions
+
+Game 1 enemies
+- Multiple health
+- grunts chase LOS player to get close, and use short-range medium-reload gun. dangerous in packs.
+- crawlers walk along walls and use long-range medium-speed fire when player is LOS.
+- turrets hold still and file rapidly and far at LOS.
+- snipers hold still until player is in LOS for a second. Then they fire a fast shot and switch to "flee" mode
+  until two seconds have elapsed and the player has been out of LOS for 1 second.
+- mines that explode near unshielded player, or shotgun turrets that do the same.
+
