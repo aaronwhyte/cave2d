@@ -12,8 +12,8 @@ void main(void) {
   gl_Position = aVertexPosition * uModelMatrix;
   vec4 modelCenter = vec4(0.0, 0.0, 0.0, 1.0) * uModelMatrix;
   float vertDist = distance(gl_Position.xy, warp);
-  float warpRad = 2.0;
-  float strength = 0.3;
+  float warpRad = 4.0;
+  float strength = 0.7;
   if (vertDist < warpRad && vertDist > 0.0) {
     vec2 distort = (gl_Position.xy - warp)/vertDist * (warpRad - vertDist) * strength;
     gl_Position.xy += distort;
