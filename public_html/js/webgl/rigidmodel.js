@@ -242,6 +242,14 @@ RigidModel.createTriangle = function() {
   return m;
 };
 
+/**
+ * Creates a unit-circle model made of a mesh of mostly equilateral triangles, except for those with vertexes which
+ * have been pulled towards the center to prevent them from protruding outside the circle.
+ * @param depth The number of createQuadrupleTriangleModel() calls to make on the starting triangle, resulting
+ * in something like depth^4 triangles.
+ * @returns {RigidModel}
+ */
+
 RigidModel.createCircleMesh = function(depth) {
   var model = RigidModel.createTriangle();
   for (var i = 0; i < depth; i++) {

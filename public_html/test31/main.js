@@ -20,7 +20,7 @@ function Test31() {
   this.loopFn = this.loop.bind(this);
 }
 
-Test31.VISIBLE_WORLD = 3;
+Test31.VISIBLE_WORLD = 6;
 
 Test31.prototype.unlockIosSound = function() {
   if (!this.iosSoundUnlocked) {
@@ -36,12 +36,12 @@ Test31.prototype.onRendererLoaded = function(r) {
 };
 
 Test31.prototype.initStamps = function() {
-  var model = RigidModel.createCircleMesh(5);
-  for (var i = 0, n = model.vertexes.length; i < n; i++) {
-    var p = model.vertexes[i].position;
-    var c = 1 - p.magnitudeSquared() * 0.8;
-    model.vertexes[i].setColorRGB(c, c, c);
-  }
+  var model = RigidModel.createCircleMesh(6);
+
+//  for (var i = 0, n = model.vertexes.length; i < n; i++) {
+//    var c = 1-0.7*model.vertexes[i].position.magnitudeSquared();
+//    model.vertexes[i].setColorRGB(c, c, c);
+//  }
   this.triangleStamp = model.createModelStamp(this.renderer.gl);
 };
 
@@ -66,8 +66,17 @@ Test31.prototype.draw = function() {
   this.renderer
       .resize()
       .clear()
-      .setStamp(this.triangleStamp)
-      .setColorVector(this.vec4)
-      .setModelMatrix(this.mat44)
-      .drawStamp();
+      .setStamp(this.triangleStamp);
+
+  for (var y = -2.5; y <= 2.5; y++) {
+    for (var x = -4; x <= 4; x++) {
+      var time = Date.now() / 2000;
+      this.renderer.setModelMatrix(this.mat44.toTranslateOpXYZ(
+              x*3 + 5.9 * Math.sin(time),
+              y*3 + 3 * Math.cos(time*0.9),
+              0));
+      this.renderer.setColorVector(this.vec4.setXYZ(Math.sin(y)/2+1 , Math.cos(x)/2+1, Math.sin(x*y)/2+1));
+      this.renderer.drawStamp();
+    }
+  }
 };
