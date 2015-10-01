@@ -710,14 +710,17 @@ v PlayScreen
       v hits wall noise
 stopped 2015-09-24
 
-Vertex shader mesh distortions - test31
-- Make a circle that's a mesh of triangles
-- Make a ring that's a mesh of triangles, with an inner radius of 0.5
-- Make a vertex shader that takes a distortion x, y, radius, and repulsion-at-zero-dist
+Vertex shader mesh distortion - test31
+v Make a circle that's a mesh of triangles
+v Make a ring that's a mesh of triangles, with an inner radius of 0.5
+v Make a vertex shader that creates a single distortion
+done 2015-09-27
+
+More mesh distortion - test32
+Multiple parameterized distortions
 - Make it several distortions
   - per world
   - per model draw
-
 
 
 Game 1 explosions

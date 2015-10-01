@@ -1,0 +1,27 @@
+uniform mat4 uViewMatrix;
+uniform mat4 uModelMatrix;
+uniform vec4 uModelColor;
+uniform vec4 uWarp;
+
+attribute vec4 aVertexPosition;
+attribute vec4 aVertexColor;
+
+varying lowp vec4 vColor;
+
+void main(void) {
+  vec2 warp = uWarp.xy;
+  gl_Position = aVertexPosition * uModelMatrix;
+  vec4 modelCenter = vec4(0.0, 0.0, 0.0, 1.0) * uModelMatrix;
+  float vertDist = distance(gl_Position.xy, warp);
+  float warpRad = 4.0;
+  float strength = 1.0;
+  float chunk = 2.11212;
+  if (vertDist < warpRad && vertDist > 0.0) {
+//    vec2 distort = (gl_Position.xy - warp)/vertDist * (warpRad - vertDist) * strength;
+    float influence = 1.0;//(warpRad - vertDist)/warpRad;
+    vec2 distort = (floor(gl_Position.xy * chunk + vec2(0.5, 0.5)) / chunk - gl_Position.xy) * influence * strength;
+    gl_Position.xy += distort;
+  }
+  vColor = aVertexColor * uModelColor;
+  gl_Position *= uViewMatrix;
+}

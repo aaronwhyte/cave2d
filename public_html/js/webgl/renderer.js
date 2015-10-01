@@ -15,24 +15,20 @@ function Renderer(canvas, gl, program) {
 }
 
 Renderer.prototype.initAttributesAndUniforms = function() {
-  var self = this;
+  this.createVertexAttribute('aVertexPosition');
+  this.createVertexAttribute('aVertexColor');
+  this.createUniform('uViewMatrix');
+  this.createUniform('uModelMatrix');
+  this.createUniform('uModelColor');
+};
 
-  // Attributes
-  function attribute(name) {
-    self[name] = self.gl.getAttribLocation(self.program, name);
-  }
-  attribute('aVertexPosition');
-  this.gl.enableVertexAttribArray(this.aVertexPosition);
-  attribute('aVertexColor');
-  this.gl.enableVertexAttribArray(this.aVertexColor);
+Renderer.prototype.createVertexAttribute = function(name) {
+  this[name] = this.gl.getAttribLocation(this.program, name);
+  this.gl.enableVertexAttribArray(this[name]);
+};
 
-  // Uniforms
-  function uniform(name) {
-    self[name] = self.gl.getUniformLocation(self.program, name);
-  }
-  uniform('uViewMatrix');
-  uniform('uModelMatrix');
-  uniform('uModelColor');
+Renderer.prototype.createUniform = function(name) {
+  this[name] = this.gl.getUniformLocation(this.program, name);
 };
 
 /**
