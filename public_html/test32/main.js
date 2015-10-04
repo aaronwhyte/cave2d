@@ -72,12 +72,12 @@ Test32.prototype.updateViewMatrix = function() {
   this.renderer.setWarps(
       [1, 1, 2, 0, 0, 0, 0, 0],
       [
-        -4, -4, 8.5+8*Math.sin(4*time), 0.1,
-        4, 4, 4, 0.5+0.5*Math.sin(10*time),
+        -4, -4, 8.5+8*Math.sin(5*time), 0.1,
+        4, 4, 4, 0.5+0.4*Math.sin(10*time),
 
-        Test32.GRID_RAD * Math.sin(3*time) * 2,
-        -Test32.GRID_RAD * Math.sin(3*time) * 2,
-        3, 2.17,
+        Test32.GRID_RAD * Math.sin(2.5*time) * 2,
+        -Test32.GRID_RAD * Math.sin(2.5*time) * 2,
+        3, 2.17 + Math.sin(5*time),
 
         0, 0, 0, 0,
         0, 0, 0, 0,
