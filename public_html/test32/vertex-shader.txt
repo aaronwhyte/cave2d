@@ -1,7 +1,10 @@
 uniform mat4 uViewMatrix;
 uniform mat4 uModelMatrix;
 uniform vec4 uModelColor;
-uniform vec4 uWarp;
+
+// not ready
+uniform int uWarpType[8];
+uniform vec4 uWarpData[8];
 
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
@@ -9,19 +12,33 @@ attribute vec4 aVertexColor;
 varying lowp vec4 vColor;
 
 void main(void) {
-  vec2 warp = uWarp.xy;
   gl_Position = aVertexPosition * uModelMatrix;
-  vec4 modelCenter = vec4(0.0, 0.0, 0.0, 1.0) * uModelMatrix;
-  float vertDist = distance(gl_Position.xy, warp);
-  float warpRad = 4.0;
-  float strength = 1.0;
-  float chunk = 2.11212;
-  if (vertDist < warpRad && vertDist > 0.0) {
-//    vec2 distort = (gl_Position.xy - warp)/vertDist * (warpRad - vertDist) * strength;
-    float influence = 1.0;//(warpRad - vertDist)/warpRad;
-    vec2 distort = (floor(gl_Position.xy * chunk + vec2(0.5, 0.5)) / chunk - gl_Position.xy) * influence * strength;
-    gl_Position.xy += distort;
+  vec2 distort = vec2(0, 0);
+  for (int i = 0; i < 8; i++) {
+    int warpType = uWarpType[i];
+    vec4 warpData = uWarpData[i];
+    vec2 warpPos = warpData.xy;
+
+    if (warpType == 1) {
+      // repel
+      float vertDist = distance(gl_Position.xy, warpPos);
+      float warpRad = warpData[2];
+      if (vertDist < warpRad && vertDist > 0.0) {
+        float strength = warpData[3];
+        distort += (gl_Position.xy - warpPos)/vertDist * (warpRad - vertDist) * strength;
+      }
+
+    } else if (warpType == 2) {
+      // quantize
+      float vertDist = distance(gl_Position.xy, warpPos);
+      float warpRad = warpData[2];
+      if (vertDist < warpRad && vertDist > 0.0) {
+        float chunk = warpData[3];
+        distort += floor(gl_Position.xy * chunk + vec2(0.5, 0.5)) / chunk - gl_Position.xy;
+      }
+    }
   }
   vColor = aVertexColor * uModelColor;
+  gl_Position.xy += distort;
   gl_Position *= uViewMatrix;
 }

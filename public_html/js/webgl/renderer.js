@@ -53,6 +53,14 @@ Renderer.prototype.clear = function() {
 };
 
 /**
+ * @return {Renderer}
+ */
+Renderer.prototype.clearColor = function(r, g, b, a) {
+  this.gl.clearColor(r, g, b, a);
+  return this;
+};
+
+/**
  * @param {Matrix44} viewMatrix
  * @return {Renderer}
  */

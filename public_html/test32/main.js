@@ -21,7 +21,7 @@ function Test32() {
   this.loopFn = this.loop.bind(this);
 }
 
-Test32.VISIBLE_WORLD = 6;
+Test32.VISIBLE_WORLD = 8;
 Test32.GRID_RAD = 2;
 
 Test32.prototype.unlockIosSound = function() {
@@ -33,10 +33,13 @@ Test32.prototype.unlockIosSound = function() {
 
 Test32.prototype.onRendererLoaded = function(r) {
   this.renderer = r;
-  this.renderer.createUniform('uWarp');
-  this.renderer.setWarp = function(v4) {
-    this.gl.uniform4fv(this.uWarp, v4.v);
+  this.renderer.createUniform('uWarpType');
+  this.renderer.createUniform('uWarpData');
+  this.renderer.setWarps = function(type, data) {
+    this.gl.uniform1iv(this.uWarpType, type);
+    this.gl.uniform4fv(this.uWarpData, data);
   };
+  this.renderer.clearColor(0.5, 0.5, 0.5, 1.0);
   this.initStamps();
   this.loop();
 };
@@ -59,23 +62,38 @@ Test32.prototype.updateViewMatrix = function() {
   this.viewMatrix.toScaleOpXYZ(
           scale / (Test32.VISIBLE_WORLD * canvas.width),
           scale / (Test32.VISIBLE_WORLD * canvas.height),
-          1)
-      .multiply(this.mat44.toTranslateOpXYZ(
-              Test32.GRID_RAD * Math.sin(time),
-              Test32.GRID_RAD * Math.cos(time*0.71),
-          0));
+          1);
+//      .multiply(this.mat44.toTranslateOpXYZ(
+//              Test32.GRID_RAD * Math.sin(time),
+//              Test32.GRID_RAD * Math.cos(time*0.71),
+//          0));
   this.renderer.setViewMatrix(this.viewMatrix);
-  this.warpVec4.setXYZ(
-          -3*Test32.GRID_RAD * Math.sin(2.1*time),
-          -3*Test32.GRID_RAD * Math.cos(2.1*time*0.71),
-          0);
-  this.renderer.setWarp(this.warpVec4);
+
+  this.renderer.setWarps(
+      [1, 1, 2, 0, 0, 0, 0, 0],
+      [
+        -4, -4, 8.5+8*Math.sin(4*time), 0.1,
+        4, 4, 4, 0.5+0.5*Math.sin(10*time),
+
+        Test32.GRID_RAD * Math.sin(3*time) * 2,
+        -Test32.GRID_RAD * Math.sin(3*time) * 2,
+        3, 2.17,
+
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0
+      ]
+  );
 };
 
 Test32.prototype.draw = function() {
   this.updateViewMatrix();
+  var time = Date.now() / 4000;
   this.renderer
       .resize()
+//      .clearColor(Math.sin(time)/2+0.5, Math.sin(0.9*time+2*Math.PI/3)/2+0.5, Math.sin(0.8*time-2*Math.PI/3)/2+0.5, 1.0)
       .clear()
       .setStamp(this.triangleStamp);
   for (var y = -Test32.GRID_RAD; y <= Test32.GRID_RAD; y++) {

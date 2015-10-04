@@ -718,10 +718,9 @@ done 2015-09-27
 
 More mesh distortion - test32
 Multiple parameterized distortions
-- Make it several distortions
-  - per world
-  - per model draw
-
+v Move one around.
+v Make it a Uniform list of distortions, an array of structs effectively
+  v pass it in through Renderer interface
 
 Game 1 explosions
 - muzzle flash
