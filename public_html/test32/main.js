@@ -21,8 +21,8 @@ function Test32() {
   this.loopFn = this.loop.bind(this);
 }
 
-Test32.VISIBLE_WORLD = 8;
-Test32.GRID_RAD = 2;
+Test32.VISIBLE_WORLD = 12;
+Test32.GRID_RAD = 3;
 
 Test32.prototype.unlockIosSound = function() {
   if (!this.iosSoundUnlocked) {
@@ -57,31 +57,31 @@ Test32.prototype.loop = function() {
 
 Test32.prototype.updateViewMatrix = function() {
   // set view matrix
-  var time = Date.now() / 2000;
+  var time = Date.now() / 3000 + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
   var scale = 2 * this.canvas.width * this.canvas.height / (this.canvas.width + this.canvas.height);
   this.viewMatrix.toScaleOpXYZ(
           scale / (Test32.VISIBLE_WORLD * canvas.width),
           scale / (Test32.VISIBLE_WORLD * canvas.height),
           1);
-//      .multiply(this.mat44.toTranslateOpXYZ(
-//              Test32.GRID_RAD * Math.sin(time),
-//              Test32.GRID_RAD * Math.cos(time*0.71),
-//          0));
   this.renderer.setViewMatrix(this.viewMatrix);
 
+  var flowerMag = 5;//1.25 + Math.sin(time*10);
+  var flowerAngle = -time * 5;//6*Math.sin(time);
   this.renderer.setWarps(
-      [1, 1, 2, 0, 0, 0, 0, 0],
+      [1, 1, 1, 2, 3, 0, 0, 0],
       [
-        -4, -4, 8.5+8*Math.sin(5*time), 0.1,
-        4, 4, 4, 0.5+0.4*Math.sin(10*time),
+        -2.5*2.3, -2.5*2.3, Math.max(0, 15*Math.sin(5*time)), 0.2,
 
-        Test32.GRID_RAD * Math.sin(2.5*time) * 2,
-        -Test32.GRID_RAD * Math.sin(2.5*time) * 2,
-        3, 2.17 + Math.sin(5*time),
+        2.5, 5, 5, Math.floor((0.3-0.3*Math.sin(4 * time)) * 15) /15,
+        5, 2.5, 5, Math.floor((0.3+0.3*Math.sin(4 * time)) * 15) /15,
 
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
+        -5, 5, 5 + 2.5/2, 2.5 + Math.sin(time/2),
+
+        5 + 4 * Math.sin(time),
+        -5 + 4 * Math.cos(time),
+        flowerMag*Math.sin(flowerAngle),
+        flowerMag*Math.cos(flowerAngle),
+
         0, 0, 0, 0,
         0, 0, 0, 0
       ]
@@ -93,7 +93,6 @@ Test32.prototype.draw = function() {
   var time = Date.now() / 4000;
   this.renderer
       .resize()
-//      .clearColor(Math.sin(time)/2+0.5, Math.sin(0.9*time+2*Math.PI/3)/2+0.5, Math.sin(0.8*time-2*Math.PI/3)/2+0.5, 1.0)
       .clear()
       .setStamp(this.triangleStamp);
   for (var y = -Test32.GRID_RAD; y <= Test32.GRID_RAD; y++) {

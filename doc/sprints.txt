@@ -721,6 +721,11 @@ Multiple parameterized distortions
 v Move one around.
 v Make it a Uniform list of distortions, an array of structs effectively
   v pass it in through Renderer interface
+v distortions:
+  v repel
+  v quantize
+  v flower
+done 2015-10-04
 
 Game 1 explosions
 - muzzle flash
