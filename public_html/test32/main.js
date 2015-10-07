@@ -22,7 +22,7 @@ function Test32() {
 }
 
 Test32.VISIBLE_WORLD = 12;
-Test32.GRID_RAD = 3;
+Test32.GRID_RAD = 4;
 
 Test32.prototype.unlockIosSound = function() {
   if (!this.iosSoundUnlocked) {
@@ -57,7 +57,7 @@ Test32.prototype.loop = function() {
 
 Test32.prototype.updateViewMatrix = function() {
   // set view matrix
-  var time = Date.now() / 3000 + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
+  var time = Date.now() / 3000;// + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
   var scale = 2 * this.canvas.width * this.canvas.height / (this.canvas.width + this.canvas.height);
   this.viewMatrix.toScaleOpXYZ(
           scale / (Test32.VISIBLE_WORLD * canvas.width),
@@ -65,23 +65,31 @@ Test32.prototype.updateViewMatrix = function() {
           1);
   this.renderer.setViewMatrix(this.viewMatrix);
 
-  var flowerMag = 5;//1.25 + Math.sin(time*10);
-  var flowerAngle = -time * 5;//6*Math.sin(time);
+  var maxRepulsorRad = 6;
+  var repulsorProgress = ((time*5) % 2) / 2;
+  repulsorProgress = repulsorProgress > 1 ? 0 : repulsorProgress;
+  var repulsorRad = Math.sqrt(maxRepulsorRad * maxRepulsorRad * Math.sin(repulsorProgress * Math.PI));
+  var repulsorStrength = (1 - repulsorProgress) * (0.7 - repulsorProgress);
+
+  var flowerMag = (2 + Math.sin(time*10)) * 2;
+  var flowerAngle = -time *2;
+
   this.renderer.setWarps(
-      [1, 1, 1, 2, 3, 0, 0, 0],
+      [1, 2, 3, 0, 0, 0, 0, 0],
       [
-        -2.5*2.3, -2.5*2.3, Math.max(0, 15*Math.sin(5*time)), 0.2,
+        -2.5 * (2 + Math.sin(time*1.2)),
+        -2.5 * (2 + Math.sin(time*1.3)),
+        repulsorRad, repulsorStrength,
 
-        2.5, 5, 5, Math.floor((0.3-0.3*Math.sin(4 * time)) * 15) /15,
-        5, 2.5, 5, Math.floor((0.3+0.3*Math.sin(4 * time)) * 15) /15,
+        -2.5*2 + Math.sin(time), 2.5*2 + Math.cos(time), 4, 4 + 2*Math.sin(time/2),
 
-        -5, 5, 5 + 2.5/2, 2.5 + Math.sin(time/2),
-
-        5 + 4 * Math.sin(time),
-        -5 + 4 * Math.cos(time),
+        5 + 3 * Math.sin(time*1.9),
+        -5 + 3 * Math.cos(time*1.1),
         flowerMag*Math.sin(flowerAngle),
         flowerMag*Math.cos(flowerAngle),
 
+        0, 0, 0, 0,
+        0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0
       ]
