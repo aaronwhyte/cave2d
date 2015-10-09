@@ -32,9 +32,9 @@ function main() {
   multiPointer = new MultiPointer(canvas, viewMatrix, true);
   multiPointer.startListening();
 
-//  // on-event sound unlocker for iOS
-  document.body.addEventListener('mousedown', iosUnlock);
-  document.body.addEventListener('touchstart', iosUnlock);
+  // on-event sound unlocker for iOS
+  document.body.addEventListener('mouseup', iosUnlock);
+  document.body.addEventListener('touchend', iosUnlock);
 }
 
 var iosUnlocked = false;

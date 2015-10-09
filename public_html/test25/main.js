@@ -34,8 +34,8 @@ function main() {
   sound.setListenerXYZ(0, 0, -2);
 
   // on-event sound unlocker for iOS
-  document.body.addEventListener('mousedown', eventSound);
-  document.body.addEventListener('touchstart', eventSound);
+  document.body.addEventListener('mouseup', eventSound);
+  document.body.addEventListener('touchend', eventSound);
 }
 
 function eventSound() {

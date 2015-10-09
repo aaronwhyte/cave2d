@@ -11,8 +11,8 @@ function Game1() {
 
   // on-event sound unlocker for iOS
   this.iosSoundUnlocked = false;
-  document.body.addEventListener('mousedown', this.unlockIosSound.bind(this));
-  document.body.addEventListener('touchstart', this.unlockIosSound.bind(this));
+  document.body.addEventListener('mouseup', this.unlockIosSound.bind(this));
+  document.body.addEventListener('touchend', this.unlockIosSound.bind(this));
 
   this.animateFrameFn = this.animateFrame.bind(this);
   this.looping = false;

@@ -35,8 +35,8 @@ function main() {
   multiPointer.startListening();
 
   // on-event sound unlocker for iOS
-  document.body.addEventListener('mousedown', iosUnlock);
-  document.body.addEventListener('touchstart', iosUnlock);
+  document.body.addEventListener('mouseup', iosUnlock);
+  document.body.addEventListener('touchend', iosUnlock);
 }
 
 function iosUnlock() {

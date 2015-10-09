@@ -17,6 +17,8 @@ function Test32() {
   this.iosSoundUnlocked = false;
   document.body.addEventListener('mousedown', this.unlockIosSound.bind(this));
   document.body.addEventListener('touchstart', this.unlockIosSound.bind(this));
+  document.body.addEventListener('mouseup', this.unlockIosSound.bind(this));
+  document.body.addEventListener('touchend', this.unlockIosSound.bind(this));
 
   this.loopFn = this.loop.bind(this);
 }
