@@ -45,7 +45,7 @@ Test32.prototype.onRendererLoaded = function(r) {
 };
 
 Test32.prototype.initStamps = function() {
-  var model = RigidModel.createRingMesh(6, 0.5);
+  var model = RigidModel.createRingMesh(5, 0.5);
   this.triangleStamp = model.createModelStamp(this.renderer.gl);
 };
 
@@ -57,38 +57,42 @@ Test32.prototype.loop = function() {
 
 Test32.prototype.updateViewMatrix = function() {
   // set view matrix
-  var time = Date.now() / 3000;// + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
   var scale = 2 * this.canvas.width * this.canvas.height / (this.canvas.width + this.canvas.height);
   this.viewMatrix.toScaleOpXYZ(
           scale / (Test32.VISIBLE_WORLD * canvas.width),
           scale / (Test32.VISIBLE_WORLD * canvas.height),
-          1);
+          1)
+      .multiply(this.mat44.toRotateZOp(0.25 * Math.sin(Date.now()/1000)))
+  ;
   this.renderer.setViewMatrix(this.viewMatrix);
+};
 
+Test32.prototype.updateWarps = function() {
+  var time = Date.now() / 3000;// + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
   var maxRepulsorRad = 6;
-  var repulsorProgress = ((time*5) % 2) / 2;
+  var repulsorProgress = ((time*4) % 2) / 2;
   repulsorProgress = repulsorProgress > 1 ? 0 : repulsorProgress;
   var repulsorRad = Math.sqrt(maxRepulsorRad * maxRepulsorRad * Math.sin(repulsorProgress * Math.PI));
-  var repulsorStrength = (1 - repulsorProgress) * (0.7 - repulsorProgress);
+  var repulsorStrength = (1 - repulsorProgress) * (0.8 - repulsorProgress);
 
-  var flowerMag = (2 + Math.sin(time*10)) * 2;
-  var flowerAngle = -time *2;
+  var flowerMag = 2.5;
+  var flowerAngle = -time * 2;
 
   this.renderer.setWarps(
-      [1, 2, 3, 0, 0, 0, 0, 0],
+      [1, 2, 3, 1, 0, 0, 0, 0],
       [
-        -2.5 * (2 + Math.sin(time*1.2)),
-        -2.5 * (2 + Math.sin(time*1.3)),
+            -2.5 * (2 + Math.sin(time*1.2)),
+            -2.5 * (2 + Math.sin(time*1.3)),
         repulsorRad, repulsorStrength,
 
-        -2.5*2 + Math.sin(time), 2.5*2 + Math.cos(time), 4, 4 + 2*Math.sin(time/2),
+            -2.5*2 + Math.sin(time), 2.5*2 + Math.cos(time), 4, 4 + 2*Math.sin(time/2),
 
-        5 + 3 * Math.sin(time*1.9),
-        -5 + 3 * Math.cos(time*1.1),
-        flowerMag*Math.sin(flowerAngle),
-        flowerMag*Math.cos(flowerAngle),
+            5 + 3 * Math.sin(time*1.9),
+            -5 + 3 * Math.cos(time*1.1),
+            flowerMag*Math.sin(flowerAngle),
+            flowerMag*Math.cos(flowerAngle),
 
-        0, 0, 0, 0,
+        3, 3, 2, 0.7,
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0
@@ -98,7 +102,7 @@ Test32.prototype.updateViewMatrix = function() {
 
 Test32.prototype.draw = function() {
   this.updateViewMatrix();
-  var time = Date.now() / 4000;
+  this.updateWarps();
   this.renderer
       .resize()
       .clear()

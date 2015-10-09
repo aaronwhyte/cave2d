@@ -727,7 +727,7 @@ v distortions:
   v flower
 done 2015-10-04
 
-Game 1 explosions
+Game 1 graphics
 - muzzle flash
   - enemy
   - player
