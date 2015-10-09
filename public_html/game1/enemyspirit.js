@@ -19,9 +19,9 @@ function EnemySpirit(playScreen) {
 EnemySpirit.prototype = new Spirit();
 EnemySpirit.prototype.constructor = EnemySpirit;
 
-EnemySpirit.MOVE_TIMEOUT = 11;
-EnemySpirit.FIRE_TIMEOUT = 100;
-EnemySpirit.MISSILE_SPEED = 5;
+EnemySpirit.FIRE_TIMEOUT = 64;
+EnemySpirit.MOVE_TIMEOUT = 32;
+EnemySpirit.MISSILE_SPEED = 7;
 
 EnemySpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
@@ -49,18 +49,18 @@ EnemySpirit.prototype.onTimeout = function(world) {
   thrust.free();
 
   if (!this.fireTime) {
-    this.fireTime = world.now + (Math.random() + 0.5) * EnemySpirit.FIRE_TIMEOUT;
+    this.fireTime = world.now + EnemySpirit.FIRE_TIMEOUT;
   }
-  if (world.now > this.fireTime) {
+  if (world.now >= this.fireTime) {
     body.getPosAtTime(world.now, this.tempBodyPos);
     var vecToPlayer = this.playScreen.scanForPlayer(this.tempBodyPos, this.vec2d);
     if (vecToPlayer) {
       this.playScreen.enemyFire(this.tempBodyPos, vecToPlayer.scaleToLength(EnemySpirit.MISSILE_SPEED));
     }
-    this.fireTime = world.now + (Math.random() + 0.5) * EnemySpirit.FIRE_TIMEOUT;
+    this.fireTime = world.now + EnemySpirit.FIRE_TIMEOUT;
   }
 
-  var wait = EnemySpirit.MOVE_TIMEOUT - Math.random();
+  var wait = EnemySpirit.MOVE_TIMEOUT;
   world.addTimeout(world.now + wait, this.id);
 };
 
