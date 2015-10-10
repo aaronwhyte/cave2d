@@ -1,30 +1,16 @@
 function main() {
-  var test32 = new Test32();
+  var test32 = new Test32(document.querySelector('#canvas'));
+  test32.start();
 }
 
-function Test32() {
-  this.canvas = document.querySelector('#canvas');
+function Test32(canvas) {
+  this.canvas = canvas;
   this.viewMatrix = new Matrix44();
   this.vec4 = new Vec4();
   this.warpVec4 = new Vec4();
   this.mat44 = new Matrix44();
-  new RendererLoader(this.canvas, 'vertex-shader.txt', 'fragment-shader.txt')
-      .load(this.onRendererLoaded.bind(this));
-  this.sfx = new SoundFx();
-  this.sfx.setListenerXYZ(0, 0, 5);
-
-  // on-event sound unlocker for iOS
   this.iosSoundUnlocked = false;
-  document.body.addEventListener('mousedown', this.unlockIosSound.bind(this));
-  document.body.addEventListener('touchstart', this.unlockIosSound.bind(this));
-  document.body.addEventListener('mouseup', this.unlockIosSound.bind(this));
-  document.body.addEventListener('touchend', this.unlockIosSound.bind(this));
-
-  this.loopFn = this.loop.bind(this);
 }
-
-Test32.VISIBLE_WORLD = 12;
-Test32.GRID_RAD = 4;
 
 Test32.prototype.unlockIosSound = function() {
   if (!this.iosSoundUnlocked) {
@@ -32,6 +18,24 @@ Test32.prototype.unlockIosSound = function() {
     this.iosSoundUnlocked = true;
   }
 };
+
+Test32.prototype.start = function() {
+  new RendererLoader(this.canvas, 'vertex-shader.txt', 'fragment-shader.txt')
+      .load(this.onRendererLoaded.bind(this));
+  this.sfx = new SoundFx();
+  this.sfx.setListenerXYZ(0, 0, 5);
+
+  // on-event sound unlocker for iOS
+  document.body.addEventListener('mousedown', this.unlockIosSound.bind(this));
+  document.body.addEventListener('touchstart', this.unlockIosSound.bind(this));
+  document.body.addEventListener('mouseup', this.unlockIosSound.bind(this));
+  document.body.addEventListener('touchend', this.unlockIosSound.bind(this));
+
+  this.loopFn = this.loop.bind(this);
+};
+
+Test32.VISIBLE_WORLD = 12;
+Test32.GRID_RAD = 4;
 
 Test32.prototype.onRendererLoaded = function(r) {
   this.renderer = r;
@@ -71,33 +75,45 @@ Test32.prototype.updateViewMatrix = function() {
 
 Test32.prototype.updateWarps = function() {
   var time = Date.now() / 3000;// + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
-  var maxRepulsorRad = 6;
+  var maxRepulsorRad = 7;
   var repulsorProgress = ((time*4) % 2) / 2;
   repulsorProgress = repulsorProgress > 1 ? 0 : repulsorProgress;
   var repulsorRad = Math.sqrt(maxRepulsorRad * maxRepulsorRad * Math.sin(repulsorProgress * Math.PI));
   var repulsorStrength = (1 - repulsorProgress) * (0.8 - repulsorProgress);
 
-  var flowerMag = 2.5;
+  var flowerMag = 5;
   var flowerAngle = -time * 2;
 
   this.renderer.setWarps(
       [1, 2, 3, 1, 0, 0, 0, 0],
       [
-            -2.5 * (2 + Math.sin(time*1.2)),
-            -2.5 * (2 + Math.sin(time*1.3)),
-        repulsorRad, repulsorStrength,
+          // explodey-repulsor
+          -5 + 5 * Math.sin(time*1.2),
+          -5 + 5 * Math.sin(time*1.3),
+          repulsorRad,
+          repulsorStrength,
 
-            -2.5*2 + Math.sin(time), 2.5*2 + Math.cos(time), 4, 4 + 2*Math.sin(time/2),
+          // quantizer
+          -5 + 5 * Math.sin(time),
+          5 + 5 * Math.cos(time),
+          6,
+          4 + 2 * Math.sin(time*2),
 
-            5 + 3 * Math.sin(time*1.9),
-            -5 + 3 * Math.cos(time*1.1),
-            flowerMag*Math.sin(flowerAngle),
-            flowerMag*Math.cos(flowerAngle),
+          // flower
+          5 + 4 * Math.sin(time*1.9),
+          -5 + 4 * Math.cos(time*1.1),
+          flowerMag*Math.sin(flowerAngle),
+          flowerMag*Math.cos(flowerAngle),
 
-        3, 3, 2, 0.7,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0
+          // vacuum repulsor
+          5 + 3*Math.sin(time),
+          5 + 3*Math.cos(time * 1.123),
+          5,
+          2 * (Math.sin(time*10) - 0.95),
+
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0
       ]
   );
 };
