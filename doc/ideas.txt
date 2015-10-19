@@ -51,7 +51,7 @@ Skip: short-range teleport
 
 Two-endpoint portals can be carried by two players with tractor beams.
 Or one player with a weapon can send things through a portal to assist a second player.
-Two-thumb trator beam: Release button to drop. Flick and release to throw. Magnitude of movement creates temporary
+Two-thumb tractor beam: Release button to drop. Flick and release to throw. Magnitude of movement creates temporary
 charge, which fades, and gets consumed as activation for tools, and builds kick for throwing.
 
 2014-12-22
@@ -64,18 +64,6 @@ Might only work with touch and mouse. Hard to do stuff like that on a trackpad, 
 I think the one-button tractor-beam is going to be the easiest, most intuitive, most portable thing, if I can get the
 forces right.
 
-2015-04-24
-Tactile, uniform level+menu system.
-
-Every screen is a pointer-sensitive level.
-Know how to map between screen and world coords all the time, with matrix and inverse matrix.
-A world is still effectively 2D, so letters become world objects.
-Multiple worlds coexist onscreen, with their own coord systems.
-This can help with an editor, and with button controls. I like the merger of title and level.
-And there's no reason the controls for title and play aren't the same.
-The Title can be level 0.
-The "Settings" shortcut is always a door to a spirit-world, or a mini-game.
-
 2015-05-06
 To stretch short sounds, use a delay node per sound, and change the amount of delay over time.
 A delay node can have a value from 0 to 3 minutes (180), so a one-second sound can be stretched 180x
@@ -83,3 +71,93 @@ For more continuous sounds, decrease oscillator frequencies, since there's not e
 
 Use suspend and resume when pausing? Or just drop the level's gain to 0 and stop animating, letting
 the existing sounds peter out.
+
+2015-08-31
+https://www.youtube.com/watch?v=WR8YGzeWsjk
+Your moves are based on a short beat-song. Remix the song (or certain tracks) before each level to determine your
+sequence of motions/actions for that level.
+Maybe there's tension between the musicality of it and the gameplay needs?
+Unlock new samples/instruments as you go.
+
+2015-09-14
+An action game is made of moves to master. Trackball control affords some good ones.
+* Excellent strafing w aim-lock
+* Precision aiming during aim-lock.
+* Precist fast evasion.
+* Very fast flings with some precision.
+
+Counter-blast:
+Enemy is shielded, and only drops shields during slightly foreshadowed laser-blast attack.
+Tactic: Aim off-angle, prepare R-Type-style blast, wait for enemy to fire. When enemy's shields are lowered,
+combine side-dodge and counter-attack.
+
+Dodging:
+Enemy fires left/right parallel sweep. Player has to weave in the middle.
+Very fast sweep-beam attack. Player needs to orbit carefully or take cover.
+
+Full speed:
+Unblockable blast or swift pursuers. Player needs to flee at top-speed.
+
+
+I would really love to do a tractor-beam game where you can use tools.
+Left touch to move.
+If left is touching,
+- right touch to grab in direction of trackball
+- else right touch to what? shield?
+Once grabbed:
+- lift both touched to release
+- lift right touch to let it rotate freely
+- right touch locks it in position, and right drag and pushes it, though it wants to return to default dist from plr.
+- Some things respond to tractor-lock, onEnter or onExit. Sometimes they need to warm up though.
+- Some things are triggered by onGrab or onRelease too.
+
+Simpler:
+- Right touch is grab (and lock angle), release is release.
+- Quick beam-button down/up does a kick. Hold-and-release is gentler. longhold, then up/down/up is bigger kick?
+- Some things are activated by being grabbed, staying grabbed, or being released. Or being bumped hard.
+This seems easy and flexible.
+- Wield and throw spike-balls, bumpers.
+- Lightsaber?
+- Catch things.
+- Rotate and position objects, like turrets, beamers, shovers, catchers, thrusters, smokers, scanners, scopes,
+  chow-ploppers, blippers, beamcaster, broadcaster, extractor...
+- Powerful items can be chained down.
+- Arrange things, build things, pull them apart. Combines mouse and physics-limits. YES.
+- Lure creatures with their favorite food.
+- Scoop up lots of stuff using a chain carried by two players.
+- Clog vacuum-hoses (like grip-switches)
+- Feed monsters (who can't bite while chewing)
+- Grab onto things
+
+Direct beams to parts. Acquire more parts. Build a thing to do what?
+"defeat monster" or "reach position" are OK. "survive for time T" and "collect N objects. What are other goals?
+
+
+MAKE WORLDS AND PLAY IN THEM, AS ONE UNIFIED EXPERIENCE
+
+Childhood play involves alternating between world-creator and world-participant.
+Constant role-switching and what-if-ing.
+
+Minecraft makes changing the world central, but it's limited to the player's
+powers. It's tedious to make huge changes.
+
+Vorp had fast switching, but "play" means starting the level from the beginning.
+And the editor was powerful but hard to use.
+
+I'd like to make a system that supports childhood play style. Changing
+between editing and playing is a shift in UI emphasis, not a major state change.
+
+The plan is to keep the world simple, and build the system. First, the proof of concept.
+* pause/resume.
+* World speed control?
+* mutually exclusive touch-modes:
+  * create wall
+  * create tunnel
+  * manipulate objects
+  * auto mode - starting touch target decides wall/tunnel/object choice for this gesture (maybe *only* this?)
+  * Control a playable character. No one character is always "you". Be anybody, change abilities & locations.
+  * Pan & zoom mode? Camera follows player? Camera is an in-world object that you can drag?
+
+Ideas for later:
+* Tap a complex object to zoom in, tap outside to zoom back out.
+* Split screen
