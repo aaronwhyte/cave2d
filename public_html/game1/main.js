@@ -1,22 +1,24 @@
 function main() {
-  var game1 = new Game1();
+  var game1 = new Game1(document.querySelector('#canvas'));
+  game1.start();
 }
 
-function Game1() {
-  this.canvas = document.querySelector('#canvas');
+function Game1(canvas) {
+  this.canvas = canvas;
+  this.iosSoundUnlocked = false;
+  this.animateFrameFn = this.animateFrame.bind(this);
+}
+
+Game1.prototype.start = function() {
   new RendererLoader(this.canvas, 'vertex-shader.txt', 'fragment-shader.txt')
       .load(this.onRendererLoaded.bind(this));
   this.sfx = new SoundFx();
   this.sfx.setListenerXYZ(0, 0, 5);
 
   // on-event sound unlocker for iOS
-  this.iosSoundUnlocked = false;
   document.body.addEventListener('mouseup', this.unlockIosSound.bind(this));
   document.body.addEventListener('touchend', this.unlockIosSound.bind(this));
-
-  this.animateFrameFn = this.animateFrame.bind(this);
-  this.looping = false;
-}
+};
 
 var MS_PER_FRAME = 1000 / 60;
 var CLOCKS_PER_FRAME = 0.5;
