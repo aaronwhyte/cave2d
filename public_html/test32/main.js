@@ -7,7 +7,6 @@ function Test32(canvas) {
   this.canvas = canvas;
   this.viewMatrix = new Matrix44();
   this.vec4 = new Vec4();
-  this.warpVec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.iosSoundUnlocked = false;
 }
