@@ -1,30 +1,30 @@
 /**
  * An 2d HallPillPainter, which paint tunnels bordered with walls,
  * but never erases a tunnel square.
- * @extends {Painter}
+ * @extends {QuadPainter}
  * @constructor
  */
 function HallPillPainter(segment, hallRadius, wallThickness) {
-  Painter.call(this);
+  QuadPainter.call(this);
   this.segment = segment;
   this.hallRadius = hallRadius;
   this.wallThickness = wallThickness;
   this.radius = hallRadius + wallThickness;
 }
-HallPillPainter.prototype = new Painter();
+HallPillPainter.prototype = new QuadPainter();
 HallPillPainter.prototype.constructor = HallPillPainter;
 
 HallPillPainter.prototype.getEffect = function(x, y, r, maxed, oldColor) {
   var squareCenter = new Vec2d(x, y);
   if (oldColor == 1) {
     // Never paint over a hall
-    return Painter.PAINT_NOTHING;
+    return QuadPainter.PAINT_NOTHING;
   }
   r *= Math.SQRT2;
   var dist = Math.sqrt(this.segment.distanceToPointSquared(squareCenter));
   if (dist > this.radius + r) {
     // The square is totally outside the pill.
-    return Painter.PAINT_NOTHING;
+    return QuadPainter.PAINT_NOTHING;
   }
   if (dist < this.hallRadius - r) {
     // The square is totally inside the inner pill.
@@ -33,7 +33,7 @@ HallPillPainter.prototype.getEffect = function(x, y, r, maxed, oldColor) {
 //  if (dist > this.hallRadius + r && dist < this.radius - r) {
 //    return 2;
 //  }
-  return maxed ? 2 : Painter.PAINT_DETAILS;
+  return maxed ? 2 : QuadPainter.PAINT_DETAILS;
 };
 
 /**

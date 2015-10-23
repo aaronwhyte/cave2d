@@ -40,10 +40,10 @@ QuadTree.prototype.paintQuadrants = function(painter, quadrants, depth, centerX,
 
       var effect = painter.getEffect(cx, cy, halfR, maxed, oldColor);
 
-      if (effect === Painter.PAINT_NOTHING) {
+      if (effect === QuadPainter.PAINT_NOTHING) {
         // skip
 
-      } else if (effect === Painter.PAINT_DETAILS) {
+      } else if (effect === QuadPainter.PAINT_DETAILS) {
         if (maxed) throw Error('Cannot paint more detail when at max depth');
         if (!Array.isArray(quadrants[index])) {
           // break a leaf node into sub-quadrants

@@ -1,17 +1,17 @@
 /**
- * An 2d QuadTree Painter, which paint tunnels bordered with thin solid walls
+ * An 2d QuadTree QuadPainter, which paint tunnels bordered with thin solid walls
  * and thicker fake walls. It never erases a floor square.
- * @extends {Painter}
+ * @extends {QuadPainter}
  * @constructor
  */
 function MazePainter(segment, floorRadius, wallThickness) {
-  Painter.call(this);
+  QuadPainter.call(this);
   this.segment = segment;
   this.floorRadius = floorRadius;
   this.wallThickness = wallThickness;
   this.radius = floorRadius + wallThickness;
 }
-MazePainter.prototype = new Painter();
+MazePainter.prototype = new QuadPainter();
 MazePainter.prototype.constructor = MazePainter;
 
 MazePainter.VOID = 0;
@@ -24,13 +24,13 @@ MazePainter.prototype.getEffect = function(x, y, boxRad, maxed, oldColor) {
   if (oldColor == MazePainter.FLOOR) {
     // Never paint over a floor
     retz++;
-    return Painter.PAINT_NOTHING;
+    return QuadPainter.PAINT_NOTHING;
   }
   var cornerRad = boxRad * Math.SQRT2; // radius of the diagonal of the box
   var dist = Math.sqrt(this.segment.distanceToPointSquaredXY(x, y));
   if (dist - cornerRad > this.radius) {
     // The square is totally outside the pill.
-    return Painter.PAINT_NOTHING;
+    return QuadPainter.PAINT_NOTHING;
   }
   if (dist + cornerRad < this.floorRadius) {
     // The square is totally inside the inner pill.
@@ -46,10 +46,10 @@ MazePainter.prototype.getEffect = function(x, y, boxRad, maxed, oldColor) {
     if (oldColor != MazePainter.SOLID) {
       return dist - cornerRad > this.floorRadius ? MazePainter.FAKE : MazePainter.SOLID;
     } else {
-      return Painter.PAINT_NOTHING;
+      return QuadPainter.PAINT_NOTHING;
     }
   } else {
-    return Painter.PAINT_DETAILS;
+    return QuadPainter.PAINT_DETAILS;
   }
 };
 

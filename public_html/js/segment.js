@@ -40,3 +40,8 @@ Segment.prototype.distanceToPointSquaredXY = function(x, y) {
   v.free();
   return dist;
 };
+
+Segment.prototype.getBoundingRect = function(rectOut) {
+  if (!rectOut) rectOut = new Rect();
+  return rectOut.setToCorners(this.p1, this.p2);
+};

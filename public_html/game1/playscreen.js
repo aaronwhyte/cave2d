@@ -133,7 +133,7 @@ PlayScreen.prototype.initCreatures = function() {
       2, 0.2, 1.5,
       this.sphereStamp);
 
-  var maxEnemies = 20;
+  var maxEnemies = 8;
   for (var i = 0; i < maxEnemies; i++) {
     var r = 6 * i/maxEnemies + 2;
     this.initEnemy(
@@ -239,34 +239,34 @@ PlayScreen.prototype.initPlayer = function(x, y, rad, density, red, green, blue,
 };
 
 PlayScreen.prototype.initWalls = function() {
-  var grid = new QuadTreeGrid(100.375412352, 6);
-  function paintHall(hallRad, p1, opt_p2) {
-    var p2 = opt_p2 || p1;
-    var segment = new Segment(p1, p2);
-    var painter = new MazePainter(segment, hallRad, 5);
-    grid.paint(painter);
-  }
   var rad = 100;
-  paintHall(rad, new Vec2d(-rad*1.2, -rad), new Vec2d(0, 0.8 * rad));
-  paintHall(rad, new Vec2d(0, 0.8 * rad), new Vec2d(rad*1.2, -rad));
-  paintHall(rad, new Vec2d(-rad*1.2, -rad), new Vec2d(rad*1.2, -rad));
-  paintHall(rad*1.1, new Vec2d(rad * 2.15, rad));
-  paintHall(rad*1.1, new Vec2d(-rad * 2.15, rad));
-
   this.levelModel = new RigidModel();
-  var a, h, i;
-  a = grid.getAllColoredSquares();
-  for (i = 0; i < a.length; i++) {
-    h = a[i];
-    //[color, centerX, centerY, radius]
-    this.initWall(h[0], h[1], h[2], h[3], h[3]);
+
+  var grid = new BitGrid(3.011212);
+  grid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(0, 0.8 * rad)), rad, 1);
+  grid.drawPill(new Segment(new Vec2d(0, 0.8 * rad), new Vec2d(rad*1.2, -rad)), rad, 1);
+  grid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(rad*1.2, -rad)), rad, 1);
+
+  grid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.1, 1);
+  grid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.1, 1);
+
+  //grid.drawPill(new Segment(new Vec2d(rad*1.5, 0), new Vec2d(rad*1.5, 0)), rad/2 , 0);
+
+  var cellIds = grid.getDirtyCellIds();
+  for (var i = 0; i < cellIds.length; i++) {
+    var cellId = cellIds[i];
+    var rects = grid.getRectsOfColorForCellId(0, cellId);
+    for (var r = 0; r < rects.length; r++) {
+      var rect = rects[r];
+      this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+    }
+    var rects = grid.getRectsOfColorForCellId(1, cellId);
+    for (var r = 0; r < rects.length; r++) {
+      var rect = rects[r];
+      this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+    }
   }
-//  a = grid.getSquaresOfColor(MazePainter.SOLID);
-//  for (i = 0; i < a.length; i++) {
-//    h = a[i];
-//    //[color, centerX, centerY, radius]
-//    this.initWall(h[0], h[1], h[2], h[3], h[3]);
-//  }
+
   this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.levelStamp);
   this.levelModelMatrix = new Matrix44();
@@ -285,11 +285,11 @@ PlayScreen.prototype.initWall = function(type, x, y, rx, ry) {
     b.pathDurationMax = Infinity;
     this.world.addBody(b);
   }
-  if (type == MazePainter.SOLID || type == MazePainter.FAKE) {
+  if (type == MazePainter.SOLID) {
     var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
     var wallModel = RigidModel.createSquare().transformPositions(t);
-    var color = 0.15 + 0.1 * Math.random();
-    wallModel.setColorRGB(color, color, color);
+    var color = 0.75 + 0.25 * Math.random();
+    wallModel.setColorRGB(color, 0, 0);
     this.levelModel.addRigidModel(wallModel);
   }
   if (type == MazePainter.FLOOR) {

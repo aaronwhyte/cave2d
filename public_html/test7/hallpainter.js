@@ -1,11 +1,11 @@
 /**
  * An 2d HallPainter, which paint tunnels bordered with walls,
  * but never erases a tunnel square.
- * @extends {Painter}
+ * @extends {QuadPainter}
  * @constructor
  */
 function HallPainter(centerX, centerY, hallRadius, wallThickness) {
-  Painter.call(this);
+  QuadPainter.call(this);
   this.x = centerX;
   this.y = centerY;
   this.hallRadius = hallRadius;
@@ -14,18 +14,18 @@ function HallPainter(centerX, centerY, hallRadius, wallThickness) {
   this.hallRadiusSq = this.hallRadius * this.hallRadius;
   this.radiusSq = this.radius * this.radius;
 }
-HallPainter.prototype = new Painter();
+HallPainter.prototype = new QuadPainter();
 HallPainter.prototype.constructor = HallPainter;
 
 HallPainter.prototype.getEffect = function(x, y, r, maxed, oldColor) {
   if (oldColor == 1) {
     // Never paint over a hall
-    return Painter.PAINT_NOTHING;
+    return QuadPainter.PAINT_NOTHING;
   }
   var cdx = Math.abs(this.x - x);
   var cdy = Math.abs(this.y - y);
   if (cdx > this.radius + r || cdy > this.radius + r) {
-    return Painter.PAINT_NOTHING;
+    return QuadPainter.PAINT_NOTHING;
   }
   // test closest point or edge
   var ndx = cdx < r ? 0 : cdx - r;
@@ -34,7 +34,7 @@ HallPainter.prototype.getEffect = function(x, y, r, maxed, oldColor) {
   var nDistSq = Vec2d.distanceSq(0, 0, ndx, ndy);
   if (this.radiusSq < nDistSq) {
     // closest point on the square is outside the while paint radius
-    return Painter.PAINT_NOTHING;
+    return QuadPainter.PAINT_NOTHING;
   }
 
   var fdx = cdx + r;
@@ -50,10 +50,10 @@ HallPainter.prototype.getEffect = function(x, y, r, maxed, oldColor) {
     return 2; // wall
   }
 
-  if (!maxed) return Painter.PAINT_DETAILS;
+  if (!maxed) return QuadPainter.PAINT_DETAILS;
 
   // maxed
-  return oldColor === 0 ? 2 : Painter.PAINT_NOTHING;
+  return oldColor === 0 ? 2 : QuadPainter.PAINT_NOTHING;
 };
 
 /**

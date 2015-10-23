@@ -27,7 +27,7 @@ QuadTreeGrid.prototype.paint = function(painter) {
     for (var cellY = cellY0; cellY <= cellY1; cellY++) {
       var worldX = this.getWorldXForIndexX(cellX);
       var worldY = this.getWorldYForIndexY(cellY);
-      if (painter.getEffect(worldX, worldY, this.radius, false, null) != Painter.PAINT_NOTHING) {
+      if (painter.getEffect(worldX, worldY, this.radius, false, null) != QuadPainter.PAINT_NOTHING) {
         var col = this.grid[cellX];
         if (!col) {
           col = this.grid[cellX] = {};

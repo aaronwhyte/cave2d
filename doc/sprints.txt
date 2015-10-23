@@ -1,9 +1,10 @@
 2015-10-17
 Mutable Terrain with BitGrid and good old Grid?
-- Nigh-infinite grid of cells (what I have today)
-- Each cell is also a grid, 32x32 (an array of 32 32-bit numbers)
-- Quadtree mutation algorithm applied to bit grid
-- Rect Compression
+v Nigh-infinite grid of cells
+v drawPill
+v getDirtyCells
+v clearDirtyCells
+- getCompressedWorldRectsForCellAndColor(cellId, color)
 
   - unload and reload graphics
   - remove and add bodies

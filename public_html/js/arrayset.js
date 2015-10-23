@@ -54,3 +54,7 @@ ArraySet.prototype.removeIndex = function(index) {
 ArraySet.prototype.isEmpty = function() {
   return this.vals.length == 0;
 };
+
+ArraySet.prototype.getValues = function() {
+  return this.vals.concat();
+};

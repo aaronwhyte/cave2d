@@ -1,7 +1,9 @@
 /**
+ * Interface for a thing that paints QuadTreeGrids.
+ * Deprecated because it's a bit overly complex. Try a BitGrid instead.
  * @constructor
  */
-function Painter() {
+function QuadPainter() {
 }
 
 /**
@@ -13,9 +15,9 @@ function Painter() {
  * an array of four elements if it is a mix of four children.
  * @return PAINT_NOTHING, PAINT_DETAILS (only on a non-maxed square), or a paint color
  */
-Painter.prototype.getEffect = function(cx, cy, radius, maxed, oldColor) {
-  return Painter.PAINT_NOTHING;
+QuadPainter.prototype.getEffect = function(cx, cy, radius, maxed, oldColor) {
+  return QuadPainter.PAINT_NOTHING;
 };
 
-Painter.PAINT_NOTHING = -1;
-Painter.PAINT_DETAILS = -2;
+QuadPainter.PAINT_NOTHING = -1;
+QuadPainter.PAINT_DETAILS = -2;
