@@ -58,15 +58,18 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
   var cell = this.cells[cellId];
   if (this.cellEqualsColor(cell, color)) {
     rects.push(new Rect(
-        (cx + 0.5) * this.cellWorldSize, (cy + 0.5) * this.cellWorldSize,
-        this.cellWorldSize / 2, this.cellWorldSize / 2));
+        (cx + 0.5) * this.cellWorldSize - this.bitWorldSize/2,
+        (cy + 0.5) * this.cellWorldSize - this.bitWorldSize/2,
+        this.cellWorldSize / 2,
+        this.cellWorldSize / 2));
   } else if (Array.isArray(cell)) {
+
     var oldRects = {};
     for (var by = 0; by < BitGrid.BITS; by++) {
       var newRects = {};
       var runStartX = -1;
+      // Record newRects in this row.
       for (var bx = 0; bx < BitGrid.BITS; bx++) {
-        // Record newRects.
         var bit = (cell[by] >> bx) & 1;
         if (bit == color) {
           // Color match.
@@ -83,7 +86,6 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
           runStartX = -1;
         }
       }
-
       var isLastRow = by == BitGrid.BITS - 1;
       for (var bx = 0; bx < BitGrid.BITS; bx++) {
         var oldRect = oldRects[bx];
