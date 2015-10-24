@@ -254,8 +254,6 @@ PlayScreen.prototype.initWalls = function() {
 
   grid.drawPill(new Segment(new Vec2d(rad/2, -rad/4), new Vec2d(-rad/2, -rad/4)), rad/3, 0);
 
-  grid.drawPill(new Segment(new Vec2d(rad*1.5, 0), new Vec2d(rad*1.5, 0)), rad/2 , 0);
-
   var cellIds = grid.flushChangedCellIds();
   for (var i = 0; i < cellIds.length; i++) {
     var cellId = cellIds[i];
@@ -292,16 +290,21 @@ PlayScreen.prototype.initWall = function(type, x, y, rx, ry) {
   if (type == MazePainter.SOLID) {
     var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
     var wallModel = RigidModel.createSquare().transformPositions(t);
-    var color = 0.75 + 0.25 * Math.random();
-    wallModel.setColorRGB(color, 0, 0);
+    function c() {
+      return 0.4 + 0.6 * Math.random();
+    }
+    var color = c();
+    wallModel.setColorRGB(c(), color, color);
     this.levelModel.addRigidModel(wallModel);
   }
   if (type == MazePainter.FLOOR) {
     var inset = 0;
     var t = new Matrix44().toTranslateOpXYZ(x, y, 0.99).multiply(new Matrix44().toScaleOpXYZ(rx - inset, ry -inset, 1));
     var wallModel = RigidModel.createSquare().transformPositions(t);
-    var floorColor = 0.3 + 0.01 * (20/rx + 20/ry) * Math.random();
-    wallModel.setColorRGB(floorColor*0.7, floorColor, floorColor);
+    function f() {
+      return 0.2 + 0.02 * (rx/30 + ry/20);// * Math.random();
+    }
+    wallModel.setColorRGB(0, f(), f());
     this.levelModel.addRigidModel(wallModel);
   }
 };
