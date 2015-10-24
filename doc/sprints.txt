@@ -1,13 +1,14 @@
 2015-10-17
-Mutable Terrain with BitGrid and good old Grid?
+Mutable Terrain with BitGrid
 v Nigh-infinite grid of cells
 v drawPill
 v getDirtyCells
 v clearDirtyCells
-- getCompressedWorldRectsForCellAndColor(cellId, color)
+- compress rects
 
-  - unload and reload graphics
-  - remove and add bodies
+Game logic
+- unload and reload graphics
+- remove and add bodies
 
 Playtime Editor
 - Edit mode
