@@ -11,7 +11,9 @@ function BitGrid(pixelSize) {
   // A cell can be nonexistent (value 0), or have a value of 1, or an array of 16 16-bit integers forming a
   // 16x16 pixel subgrid.
   this.cells = {};
-  this.dirtyCellIds = new ArraySet();
+
+  // A map from touched cellIds to their old values, so callers can see which were modified.
+  this.changedCells = {};
 }
 BitGrid.BITS = 16;
 
@@ -26,12 +28,16 @@ BitGrid.ROW_OF_ONES = (function() {
   return row;
 })();
 
-BitGrid.prototype.getDirtyCellIds = function() {
-  return this.dirtyCellIds.getValues();
-};
-
-BitGrid.prototype.clearDirtyCellIds = function() {
-  this.dirtyCellIds.reset();
+BitGrid.prototype.flushChangedCellIds = function() {
+  var changedIds = [];
+  for (var id in this.changedCells) {
+    if (this.changedCells[id] != this.cells[id]) {
+      console.log(this.changedCells[id] + " != " + this.cells[id]);
+      changedIds.push(id);
+    }
+  }
+  this.changedCells = {};
+  return changedIds;
 };
 
 BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
@@ -116,65 +122,62 @@ BitGrid.prototype.drawPill = function(seg, rad, color) {
 };
 
 BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
-  var pixelWorldPos = Vec2d.alloc();
+  console.log('pill on cell');
+  var pixelCenter = Vec2d.alloc();
   var cell = this.getCellAtIndexXY(cx, cy);
-  var wasArray = Array.isArray(cell);
-  var wasColor = -1;
-  if (!wasArray) {
-    wasColor = cell ? 1 : 0;
-  }
+
+  var cellId = this.getCellIdAtIndexXY(cx, cy);
+  var clean = !(cellId in this.changedCells);
+
   var radSquared = rad * rad;
-  if (!Array.isArray(cell)) {
-    cell = this.createCell();
-    this.setCellAtIndexXY(cx, cy, cell);
-  }
-  var orRows = 0;
-  var andRows = BitGrid.ROW_OF_ONES;
-  var dirty = false;
+  var isArray = Array.isArray(cell);
+  var startingColor = isArray ? 0.5 : (cell ? 1 : 0);
+  var sumOfRows = 0;
   for (var by = 0; by < BitGrid.BITS; by++) {
-    var oldRow = cell[by];
-    pixelWorldPos.y = cy * this.cellWorldSize + (by + 0.5) * this.bitWorldSize;
+    var oldRowVal = isArray ? cell[by] : (startingColor ? BitGrid.ROW_OF_ONES : 0);
+    var newRowVal = oldRowVal;
+    pixelCenter.y = cy * this.cellWorldSize + (by + 0.5) * this.bitWorldSize;
     for (var bx = 0; bx < BitGrid.BITS; bx++) {
-      pixelWorldPos.x = cx * this.cellWorldSize + (bx + 0.5) * this.bitWorldSize;
-      if (seg.distanceToPointSquared(pixelWorldPos) < radSquared) {
-        if (color) {
-          cell[by] |= (1 << bx);
-        } else {
-          cell[by] &= ((1 << bx) ^ BitGrid.ROW_OF_ONES);
-        }
-      }
-      if (oldRow != cell[by]) {
-        dirty = true;
+      pixelCenter.x = cx * this.cellWorldSize + (bx + 0.5) * this.bitWorldSize;
+      if (seg.distanceToPointSquared(pixelCenter) <= radSquared) {
+        newRowVal = color
+            ? (newRowVal | (1 << bx))
+            : (newRowVal & (BitGrid.ROW_OF_ONES ^ (1 << bx)));
       }
     }
-    orRows |= cell[by];
-    andRows &= cell[by];
+    sumOfRows += newRowVal;
+    if (newRowVal != oldRowVal) {
+      // If it was clean to start with, then preserve the clean value in changedCells.
+      if (clean) {
+        this.changedCells[cellId] = Array.isArray(cell) ? cell.concat() : cell;
+        clean = false;
+      }
+      // If it wasn't an array already, make it one now so we can adjust this row.
+      if (!isArray) {
+        cell = this.createCellArray(startingColor);
+        this.setCellAtIndexXY(cx, cy, cell);
+        isArray = true;
+      }
+      cell[by] = newRowVal;
+    }
   }
 
   // Simplify the grid?
-  if (orRows == 0) {
+  if (sumOfRows == 0) {
     this.deleteCellAtIndexXY(cx, cy);
-  } else if (andRows == BitGrid.ROW_OF_ONES) {
+  } else if (sumOfRows == BitGrid.ROW_OF_ONES * BitGrid.BITS) {
     this.setCellAtIndexXY(cx, cy, 1);
   }
-
-  if (dirty) {
-    // TODO: Remove this extra 8-cells of dirt
-    for (var dy = -1; dy <= 1; dy++) {
-      for (var dx = -1; dx <= 1; dx++) {
-        this.dirtyCellIds.put(this.getCellIdAtIndexXY(cx + dx, cy + dy));
-      }
-    }
-  }
-  pixelWorldPos.free();
+  pixelCenter.free();
 };
 
-BitGrid.prototype.createCell = function() {
-  var retval = [];
+BitGrid.prototype.createCellArray = function(color) {
+  var cell = new Array(BitGrid.BITS);
+  var rowVal = color ? BitGrid.ROW_OF_ONES : 0;
   for (var i = 0; i < BitGrid.BITS; i++) {
-    retval.push(0);
+    cell[i] = rowVal;
   }
-  return retval;
+  return cell;
 };
 
 BitGrid.prototype.toJSON = function() {

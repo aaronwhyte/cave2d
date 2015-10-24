@@ -247,12 +247,16 @@ PlayScreen.prototype.initWalls = function() {
   grid.drawPill(new Segment(new Vec2d(0, 0.8 * rad), new Vec2d(rad*1.2, -rad)), rad, 1);
   grid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(rad*1.2, -rad)), rad, 1);
 
-  grid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.1, 1);
-  grid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.1, 1);
+  grid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
+  grid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.2, 1);
+  grid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*0.9, 0);
+  grid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*0.9, 0);
+
+  grid.drawPill(new Segment(new Vec2d(rad/2, -rad/4), new Vec2d(-rad/2, -rad/4)), rad/3, 0);
 
   //grid.drawPill(new Segment(new Vec2d(rad*1.5, 0), new Vec2d(rad*1.5, 0)), rad/2 , 0);
 
-  var cellIds = grid.getDirtyCellIds();
+  var cellIds = grid.flushChangedCellIds();
   for (var i = 0; i < cellIds.length; i++) {
     var cellId = cellIds[i];
     var rects = grid.getRectsOfColorForCellId(0, cellId);
@@ -260,11 +264,11 @@ PlayScreen.prototype.initWalls = function() {
       var rect = rects[r];
       this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
     }
-    var rects = grid.getRectsOfColorForCellId(1, cellId);
-    for (var r = 0; r < rects.length; r++) {
-      var rect = rects[r];
-      this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
-    }
+    //var rects = grid.getRectsOfColorForCellId(1, cellId);
+    //for (var r = 0; r < rects.length; r++) {
+    //  var rect = rects[r];
+    //  this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+    //}
   }
 
   this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
