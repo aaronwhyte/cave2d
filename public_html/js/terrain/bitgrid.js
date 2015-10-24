@@ -14,6 +14,11 @@ function BitGrid(pixelSize) {
 
   // A map from touched cellIds to their old values, so callers can see which were modified.
   this.changedCells = {};
+  // bounding rect of changed cells.
+  this.changeX0 = null;
+  this.changeY0 = null;
+  this.changeX1 = null;
+  this.changeY1 = null;
 }
 BitGrid.BITS = 16;
 
@@ -32,11 +37,14 @@ BitGrid.prototype.flushChangedCellIds = function() {
   var changedIds = [];
   for (var id in this.changedCells) {
     if (this.changedCells[id] != this.cells[id]) {
-      console.log(this.changedCells[id] + " != " + this.cells[id]);
       changedIds.push(id);
     }
   }
   this.changedCells = {};
+  this.changeX0 = null;
+  this.changeY0 = null;
+  this.changeX1 = null;
+  this.changeY1 = null;
   return changedIds;
 };
 
@@ -200,6 +208,10 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
         this.changedCells[cellId] = Array.isArray(cell) ? cell.concat() : cell;
+        this.changeX0 = Math.min(this.changeX0, cx);
+        this.changeY0 = Math.min(this.changeY0, cy);
+        this.changeX1 = Math.max(this.changeX1, cx);
+        this.changeY1 = Math.max(this.changeY1, cy);
         clean = false;
       }
       // If it wasn't an array already, make it one now so we can adjust this row.
