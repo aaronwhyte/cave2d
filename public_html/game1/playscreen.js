@@ -20,9 +20,10 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.lastPlayerFireTime = 0;
 
   this.cameraPos = new Vec2d();
-  this.maxCameraDist = 20;
-  this.viewDist = 450;
-  this.pixelSize = 2.601212;
+  this.minCameraDist = 30;
+  this.maxCameraDist = 100;
+  this.viewDist = 400;
+  this.pixelSize = 4;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -265,16 +266,17 @@ PlayScreen.prototype.initWalls = function() {
   var neighbor = new Vec2d();
   var center = new Vec2d();
   var rects, rect, r;
+  var walls = 0;
   for (var i = 0; i < changedCellIds.length; i++) {
     var cellId = changedCellIds[i];
     grid.cellIdToIndexVec(cellId, center);
     for (var dy = -1; dy <= 1; dy++) {
       for (var dx = -1; dx <= 1; dx++) {
-        rects = grid.getRectsOfColorForCellId(1, cellId);
-        for (r = 0; r < rects.length; r++) {
-          rect = rects[r];
-          this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
-        }
+        //rects = grid.getRectsOfColorForCellId(1, cellId);
+        //for (r = 0; r < rects.length; r++) {
+        //  rect = rects[r];
+        //  this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+        //}
         if (dx && dy) continue;
         neighbor.set(center).addXY(dx, dy);
         var dirtyId = grid.getCellIdAtIndexXY(neighbor.x, neighbor.y);
@@ -284,11 +286,13 @@ PlayScreen.prototype.initWalls = function() {
           for (r = 0; r < rects.length; r++) {
             rect = rects[r];
             this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+            walls++;
           }
         }
       }
     }
   }
+  console.log("walls: " + walls);
 
   //for (var cy = grid.changeY0-1; cy <= grid.changeY1+1; cy++) {
   //  for (var cx = grid.changeX0-1; cx <= grid.changeX1+1; cx++) {
@@ -454,15 +458,22 @@ PlayScreen.prototype.bonk = function(body, mag) {
 };
 
 PlayScreen.prototype.updateViewMatrix = function() {
-  //var br = this.worldBoundingRect;
   var cameraDist = this.getPlayerPos().distance(this.cameraPos);
-  if (cameraDist > this.maxCameraDist) {
-    var temp = Vec2d.alloc()
-        .set(this.getPlayerPos())
+  if (cameraDist > this.minCameraDist) {
+    var temp = Vec2d.alloc();
+    temp.set(this.getPlayerPos())
         .subtract(this.cameraPos)
-        .scaleToLength(cameraDist - this.maxCameraDist)
+        .scaleToLength((cameraDist-this.minCameraDist) * 0.1)
         .add(this.cameraPos);
     this.cameraPos.set(temp);
+    var cameraDist = this.getPlayerPos().distance(this.cameraPos);
+    if (cameraDist > this.maxCameraDist) {
+      temp.set(this.getPlayerPos())
+          .subtract(this.cameraPos)
+          .scaleToLength(cameraDist - this.maxCameraDist)
+          .add(this.cameraPos);
+      this.cameraPos.set(temp);
+    }
     temp.free();
   }
   this.viewMatrix.toIdentity();
@@ -533,6 +544,12 @@ PlayScreen.prototype.getPlayerPos = function() {
   var body = this.world.bodies[spirit.bodyId];
   body.getPosAtTime(this.world.now, this.tempPlayerPos);
   return this.tempPlayerPos;
+};
+
+PlayScreen.prototype.getPlayerVel = function() {
+  var spirit = this.world.spirits[this.playerSpiritId];
+  var body = this.world.bodies[spirit.bodyId];
+  return body.vel;
 };
 
 PlayScreen.prototype.isPlayerPathId = function(pathId) {

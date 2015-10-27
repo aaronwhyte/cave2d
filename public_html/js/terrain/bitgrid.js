@@ -20,7 +20,7 @@ function BitGrid(pixelSize) {
   this.changeX1 = null;
   this.changeY1 = null;
 }
-BitGrid.BITS = 16;
+BitGrid.BITS = 32;
 
 // It's got over 67 million columns.
 BitGrid.COLUMNS = 0x4000000;
