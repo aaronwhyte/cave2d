@@ -130,7 +130,7 @@ This seems easy and flexible.
 - Grab onto things
 
 Direct beams to parts. Acquire more parts. Build a thing to do what?
-"defeat monster" or "reach position" are OK. "survive for time T" and "collect N objects. What are other goals?
+"defeat monster" or "reach position" are OK. "survive for time T" and "collect N objects". What are other goals?
 
 
 MAKE WORLDS AND PLAY IN THEM, AS ONE UNIFIED EXPERIENCE
@@ -161,3 +161,11 @@ The plan is to keep the world simple, and build the system. First, the proof of 
 Ideas for later:
 * Tap a complex object to zoom in, tap outside to zoom back out.
 * Split screen
+
+Open-world support:
+We need bodies for cells that are going to be interacted with, but not really more than that.
+It's not about where a player is. It's about every real body/rayscan that terrain can affect.
+The collider needs a "load terrain" step when calculating interations with walls in a sector.
+That way, things always exist where they're needed, and they can still get unloaded safely
+when they've been quiet for a long time.
+Loading everything a human can see is another thing on top of that.
