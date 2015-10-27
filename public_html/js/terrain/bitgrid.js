@@ -33,6 +33,20 @@ BitGrid.ROW_OF_ONES = (function() {
   return row;
 })();
 
+BitGrid.prototype.cellIdToIndexVec = function(cellId, out) {
+  if (!out) out = new Vec2d();
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  out.setXY(cx, cy);
+  return out;
+};
+
+BitGrid.prototype.cellIdToIndexX = function(cellId) {
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  return cx;
+};
+
 BitGrid.prototype.flushChangedCellIds = function() {
   var changedIds = [];
   for (var id in this.changedCells) {
@@ -49,7 +63,6 @@ BitGrid.prototype.flushChangedCellIds = function() {
 };
 
 BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
-
   var self = this;
   function createRect(bx0, by0, bx1, by1) {
     var wx0 = cx * self.cellWorldSize + (bx0 - 0.5) * self.bitWorldSize;
@@ -180,7 +193,6 @@ BitGrid.prototype.drawPill = function(seg, rad, color) {
 };
 
 BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
-  console.log('pill on cell');
   var pixelCenter = Vec2d.alloc();
   var cell = this.getCellAtIndexXY(cx, cy);
 

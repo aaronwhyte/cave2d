@@ -17,8 +17,12 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.levelStamps = null;
   this.world = null;
   this.tempPlayerPos = new Vec2d();
-  this.tempSoundPos = new Vec4();
   this.lastPlayerFireTime = 0;
+
+  this.cameraPos = new Vec2d();
+  this.maxCameraDist = 20;
+  this.viewDist = 450;
+  this.pixelSize = 2.601212;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -242,7 +246,8 @@ PlayScreen.prototype.initWalls = function() {
   var rad = 100;
   this.levelModel = new RigidModel();
 
-  var grid = new BitGrid(2.601212);
+  var grid = new BitGrid(this.pixelSize);
+
   grid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(0, 0.8 * rad)), rad, 1);
   grid.drawPill(new Segment(new Vec2d(0, 0.8 * rad), new Vec2d(rad*1.2, -rad)), rad, 1);
   grid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(rad*1.2, -rad)), rad, 1);
@@ -250,41 +255,54 @@ PlayScreen.prototype.initWalls = function() {
   grid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
   grid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.2, 1);
 
-
   grid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*0.5, 0);
   grid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*0.9, 0);
 
   grid.drawPill(new Segment(new Vec2d(rad/2, -rad/4), new Vec2d(-rad/4, -rad/2)), rad/3, 0);
 
-  console.log(grid.changeX0, grid.changeY0, grid.changeX1, grid.changeY1);
-  for (var cy = grid.changeY0; cy <= grid.changeY1; cy++) {
-    for (var cx = grid.changeX0; cx <= grid.changeX1; cx++) {
-      var cellId = grid.getCellIdAtIndexXY(cx, cy);
-      var rects = grid.getRectsOfColorForCellId(0, cellId);
-      for (var r = 0; r < rects.length; r++) {
-        var rect = rects[r];
-        this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
-      }
-      var rects = grid.getRectsOfColorForCellId(1, cellId);
-      for (var r = 0; r < rects.length; r++) {
-        var rect = rects[r];
-        this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+  var dirtyCellIds = {};
+  var changedCellIds = grid.flushChangedCellIds();
+  var neighbor = new Vec2d();
+  var center = new Vec2d();
+  var rects, rect, r;
+  for (var i = 0; i < changedCellIds.length; i++) {
+    var cellId = changedCellIds[i];
+    grid.cellIdToIndexVec(cellId, center);
+    for (var dy = -1; dy <= 1; dy++) {
+      for (var dx = -1; dx <= 1; dx++) {
+        rects = grid.getRectsOfColorForCellId(1, cellId);
+        for (r = 0; r < rects.length; r++) {
+          rect = rects[r];
+          this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+        }
+        if (dx && dy) continue;
+        neighbor.set(center).addXY(dx, dy);
+        var dirtyId = grid.getCellIdAtIndexXY(neighbor.x, neighbor.y);
+        if (!(dirtyId in dirtyCellIds)) {
+          dirtyCellIds[dirtyId] = true;
+          rects = grid.getRectsOfColorForCellId(0, dirtyId);
+          for (r = 0; r < rects.length; r++) {
+            rect = rects[r];
+            this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+          }
+        }
       }
     }
   }
 
-  var cellIds = grid.flushChangedCellIds();
-  //for (var i = 0; i < cellIds.length; i++) {
-  //  var cellId = cellIds[i];
-  //  var rects = grid.getRectsOfColorForCellId(0, cellId);
-  //  for (var r = 0; r < rects.length; r++) {
-  //    var rect = rects[r];
-  //    this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
-  //  }
-  //  var rects = grid.getRectsOfColorForCellId(1, cellId);
-  //  for (var r = 0; r < rects.length; r++) {
-  //    var rect = rects[r];
-  //    this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+  //for (var cy = grid.changeY0-1; cy <= grid.changeY1+1; cy++) {
+  //  for (var cx = grid.changeX0-1; cx <= grid.changeX1+1; cx++) {
+  //    var cellId = grid.getCellIdAtIndexXY(cx, cy);
+  //    var rects = grid.getRectsOfColorForCellId(0, cellId);
+  //    for (var r = 0; r < rects.length; r++) {
+  //      var rect = rects[r];
+  //      this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+  //    }
+  //    var rects = grid.getRectsOfColorForCellId(1, cellId);
+  //    for (var r = 0; r < rects.length; r++) {
+  //      var rect = rects[r];
+  //      this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
+  //    }
   //  }
   //}
 
@@ -436,9 +454,19 @@ PlayScreen.prototype.bonk = function(body, mag) {
 };
 
 PlayScreen.prototype.updateViewMatrix = function() {
-  var br = this.worldBoundingRect;
+  //var br = this.worldBoundingRect;
+  var cameraDist = this.getPlayerPos().distance(this.cameraPos);
+  if (cameraDist > this.maxCameraDist) {
+    var temp = Vec2d.alloc()
+        .set(this.getPlayerPos())
+        .subtract(this.cameraPos)
+        .scaleToLength(cameraDist - this.maxCameraDist)
+        .add(this.cameraPos);
+    this.cameraPos.set(temp);
+    temp.free();
+  }
   this.viewMatrix.toIdentity();
-  var ratio = Math.min(this.canvas.height / br.rad.y, this.canvas.width / br.rad.x);
+  var ratio = (this.canvas.height + this.canvas.width) / (2 + this.viewDist);
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
               ratio / this.canvas.width,
@@ -451,8 +479,8 @@ PlayScreen.prototype.updateViewMatrix = function() {
 
   // center
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(
-      -br.pos.x,
-      -br.pos.y,
+      -this.cameraPos.x,
+      -this.cameraPos.y,
       0));
 
   this.renderer.setViewMatrix(this.viewMatrix);

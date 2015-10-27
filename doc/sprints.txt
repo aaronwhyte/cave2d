@@ -4,11 +4,22 @@ v Nigh-infinite grid of cells
 v drawPill
 v getDirtyCells
 v clearDirtyCells
-- compress rects
+v compress rects
 
-Game logic
-- unload and reload graphics
-- remove and add bodies
+2015-10-25
+Game logic for mutable, explorable, yet limited terrain, v1.
+All bodies will always be in memory, and all models will be in GL, but we'll only draw visible models.
+v Load all dirty wall cells after level creation, and all adjacent uniform wall cells, so we get no gaps adjacent to
+  dirty cells.
+  v get x,y from cellId
+v push-scroll camera - drag it so focal object (player body for now) is never more than X world dist away from camera.
+- Draw each cell separately
+  - Have separate GL models for every non-uniform cell.
+  - Use one model for uniorm cells.
+  - Draw solid cells that have no bodies? Or draw floor cells only? Kinda digging the floor idea.
+- Draw every cell on the screen, and a little more for shader-distortion padding, but no more.
+- mutation: unload and reload any loaded cells that change, and doublecheck adjacent cells.
+  - Make bullets destroy terrain, to test mutation
 
 Playtime Editor
 - Edit mode
