@@ -89,44 +89,8 @@ if (!'WebGLRenderingContext' in window) {
       STREAM_DRAW: 1,
       ARRAY_BUFFER: 1,
       ELEMENT_ARRAY_BUFFER: 1,
-
-      WebGLBuffer: {},
-      createShader: f,
-      shaderSource: f,
-      compileShader: f,
-      getShaderParameter: f,
-      getShaderInfoLog: f,
-      createProgram: f,
-      attachShader: f,
-      linkProgram: f,
-      getProgramParameter: f,
-      getProgramInfoLog: f,
-      useProgram: f,
-
-      clearColor: f,
-      enable: f,
-      disable: f,
-      depthFunc: f,
-      blendFunc: f,
-      deleteBuffer: f,
-      getAttribLocation: f,
-      enableVertexAttribArray: f,
-      getUniformLocation: f,
-      createBuffer: f,
-      bindBuffer: f,
-      bufferData: f,
-      vertexAttribPointer: f,
-      drawArrays: f,
-      drawElements: f,
-      uniform4f: f,
-      uniform4fv: f,
-      uniform3f: f,
-      uniform3fv: f,
-      uniform1i: f,
-      uniform1f: f,
-      uniformMatrix4fv: f
+      WebGLBuffer: {}
     };
-
     window.WebGLShader = f;
     window.WebGLProgram = f;
   })();
