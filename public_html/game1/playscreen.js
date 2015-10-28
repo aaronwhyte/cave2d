@@ -268,6 +268,14 @@ PlayScreen.prototype.initWalls = function() {
   }
 };
 
+PlayScreen.prototype.digTerrainAtPos = function(pos) {
+  this.bitGrid.drawPill(new Segment(pos, pos), 15, 1);
+  var changedCellIds = this.bitGrid.flushChangedCellIds();
+  for (var i = 0; i < changedCellIds.length; i++) {
+    this.changeTerrain(changedCellIds[i]);
+  }
+};
+
 /**
  * The cell at the cellId definitely changes, so unload it and reload it.
  * Make sure the four cardinal neighbors are also loaded.
@@ -358,11 +366,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
-  function c() {
-    return 0.5 + 0.2 * Math.random();
-  }
-  var color = c();
-  wallModel.setColorRGB(color, color*0.6, c()*0.3);
+  wallModel.setColorRGB(0.6, 0.5, 0.3);
   return wallModel;
 };
 
@@ -407,6 +411,10 @@ PlayScreen.prototype.handleInput = function() {
 PlayScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
+  //// TODO: Find out why these bodies aren't legit after a timeout removes them
+  b0 = b0 && this.world.getBody(b0.id);
+  b1 = b1 && this.world.getBody(b1.id);
+
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
     var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
@@ -428,8 +436,9 @@ PlayScreen.prototype.onHitEvent = function(e) {
       } else {
         this.soundBing(this.getBodyPos(enemyMissileBody));
       }
-      this.world.removeSpiritId(enemyMissileBody.spiritId);
+      this.digTerrainAtPos(this.getBodyPos(enemyMissileBody));
       this.world.removeBodyId(enemyMissileBody.id);
+      this.world.removeSpiritId(enemyMissileBody.spiritId);
     }
 
     var playerMissileBody = this.bodyIfInGroup(PlayScreen.Group.PLAYER_MISSILE, b0, b1);
@@ -442,6 +451,7 @@ PlayScreen.prototype.onHitEvent = function(e) {
       } else {
         this.soundBing(this.getBodyPos(playerMissileBody));
       }
+      this.digTerrainAtPos(this.getBodyPos(playerMissileBody));
       this.world.removeSpiritId(playerMissileBody.spiritId);
       this.world.removeBodyId(playerMissileBody.id);
     }
