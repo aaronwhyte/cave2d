@@ -146,6 +146,10 @@ World.prototype.addBody = function(body) {
   return body.id;
 };
 
+/**
+ * Removes the body and frees the body from the class pool.
+ * @param bodyId
+ */
 World.prototype.removeBodyId = function(bodyId) {
   var body = this.bodies[bodyId];
   if (body) {

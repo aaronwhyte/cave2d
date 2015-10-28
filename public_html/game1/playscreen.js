@@ -13,9 +13,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   // for sound throttling
   this.hitsThisFrame = 0;
 
-  this.visibility = 0;
-  this.levelStamps = null;
   this.world = null;
+  this.tiles = null;
   this.tempPlayerPos = new Vec2d();
   this.lastPlayerFireTime = 0;
 
@@ -24,6 +23,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.maxCameraDist = 100;
   this.viewDist = 400;
   this.pixelSize = 4;
+  this.levelModelMatrix = new Matrix44();
+  this.levelColorVector = new Vec4(1, 1, 1);
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -44,6 +45,12 @@ PlayScreen.Group = {
   PLAYER_MISSILE: 3,
   ENEMY: 4,
   ENEMY_MISSILE: 5
+};
+
+PlayScreen.Terrain = {
+  WALL: 0,
+  FLOOR: 1,
+  MIXED: 2
 };
 
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
@@ -127,10 +134,6 @@ PlayScreen.prototype.initWorld = function() {
   this.initBoulder(new Vec2d(-135, -125));
   this.initCreatures();
   this.initWalls();
-  for (var bodyId in this.world.bodies) {
-    var b = this.world.bodies[bodyId];
-    this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
-  }
 };
 
 PlayScreen.prototype.initCreatures = function() {
@@ -201,7 +204,6 @@ PlayScreen.prototype.initPlayerMissile = function(pos, vel) {
   spirit.setModelStamp(this.sphereStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-//  this.world.spirits[spiritId].setColorRGB(1.5, 0.6, 2);
   this.world.spirits[spiritId].setColorRGB(1, 0, 0.5);
   this.world.addTimeout(this.world.now + PlayScreen.PLAYER_MISSILE_DURATION, spiritId);
   return spiritId;
@@ -222,7 +224,6 @@ PlayScreen.prototype.initBoulder = function(pos) {
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
   this.world.spirits[spiritId].setColorRGB(0.5, 0.5, 0.5);
-//  this.world.spirits[spiritId].setColorRGB(1, 1, 0.5);
   return spiritId;
 };
 
@@ -245,110 +246,124 @@ PlayScreen.prototype.initPlayer = function(x, y, rad, density, red, green, blue,
 
 PlayScreen.prototype.initWalls = function() {
   var rad = 100;
-  this.levelModel = new RigidModel();
 
-  var grid = new BitGrid(this.pixelSize);
+  this.bitGrid = new BitGrid(this.pixelSize);
 
-  grid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(0, 0.8 * rad)), rad, 1);
-  grid.drawPill(new Segment(new Vec2d(0, 0.8 * rad), new Vec2d(rad*1.2, -rad)), rad, 1);
-  grid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(rad*1.2, -rad)), rad, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(0, 0.8 * rad)), rad, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(0, 0.8 * rad), new Vec2d(rad*1.2, -rad)), rad, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-rad*1.2, -rad), new Vec2d(rad*1.2, -rad)), rad, 1);
 
-  grid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
-  grid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.2, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.2, 1);
 
-  grid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*0.5, 0);
-  grid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*0.9, 0);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*0.5, 0);
+  this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*0.9, 0);
 
-  grid.drawPill(new Segment(new Vec2d(rad/2, -rad/4), new Vec2d(-rad/4, -rad/2)), rad/3, 0);
+  this.bitGrid.drawPill(new Segment(new Vec2d(rad/2, -rad/4), new Vec2d(-rad/4, -rad/2)), rad/3, 0);
 
-  var dirtyCellIds = {};
-  var changedCellIds = grid.flushChangedCellIds();
-  var neighbor = new Vec2d();
-  var center = new Vec2d();
-  var rects, rect, r;
-  var walls = 0;
+  this.tiles = {};
+  var changedCellIds = this.bitGrid.flushChangedCellIds();
   for (var i = 0; i < changedCellIds.length; i++) {
-    var cellId = changedCellIds[i];
-    grid.cellIdToIndexVec(cellId, center);
-    for (var dy = -1; dy <= 1; dy++) {
-      for (var dx = -1; dx <= 1; dx++) {
-        //rects = grid.getRectsOfColorForCellId(1, cellId);
-        //for (r = 0; r < rects.length; r++) {
-        //  rect = rects[r];
-        //  this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
-        //}
-        if (dx && dy) continue;
-        neighbor.set(center).addXY(dx, dy);
-        var dirtyId = grid.getCellIdAtIndexXY(neighbor.x, neighbor.y);
-        if (!(dirtyId in dirtyCellIds)) {
-          dirtyCellIds[dirtyId] = true;
-          rects = grid.getRectsOfColorForCellId(0, dirtyId);
-          for (r = 0; r < rects.length; r++) {
-            rect = rects[r];
-            this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
-            walls++;
-          }
-        }
-      }
-    }
+    this.changeTerrain(changedCellIds[i]);
   }
-  console.log("walls: " + walls);
-
-  //for (var cy = grid.changeY0-1; cy <= grid.changeY1+1; cy++) {
-  //  for (var cx = grid.changeX0-1; cx <= grid.changeX1+1; cx++) {
-  //    var cellId = grid.getCellIdAtIndexXY(cx, cy);
-  //    var rects = grid.getRectsOfColorForCellId(0, cellId);
-  //    for (var r = 0; r < rects.length; r++) {
-  //      var rect = rects[r];
-  //      this.initWall(MazePainter.SOLID, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
-  //    }
-  //    var rects = grid.getRectsOfColorForCellId(1, cellId);
-  //    for (var r = 0; r < rects.length; r++) {
-  //      var rect = rects[r];
-  //      this.initWall(MazePainter.FLOOR, rect.pos.x, rect.pos.y, rect.rad.x, rect.rad.y);
-  //    }
-  //  }
-  //}
-
-  this.levelStamp = this.levelModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.levelStamp);
-  this.levelModelMatrix = new Matrix44();
-  this.levelColorVector = new Vec4(1, 1, 1);
 };
 
-PlayScreen.prototype.initWall = function(type, x, y, rx, ry) {
-  if (type == MazePainter.SOLID) {
-    // Create a physics body
-    var b = Body.alloc();
-    b.shape = Body.Shape.RECT;
-    b.setPosXYAtTime(x, y, this.world.now);
-    b.rectRad.setXY(rx, ry);
-    b.hitGroup = PlayScreen.Group.WALL;
-    b.mass = Infinity;
-    b.pathDurationMax = Infinity;
-    this.world.addBody(b);
+/**
+ * The cell at the cellId definitely changes, so unload it and reload it.
+ * Make sure the four cardinal neighbors are also loaded.
+ * @param cellId
+ */
+PlayScreen.prototype.changeTerrain = function(cellId) {
+  var center = Vec2d.alloc();
+  this.bitGrid.cellIdToIndexVec(cellId, center);
+  this.loadCellXY(center.x - 1, center.y);
+  this.loadCellXY(center.x + 1, center.y);
+  this.loadCellXY(center.x, center.y - 1);
+  this.loadCellXY(center.x, center.y + 1);
+  this.unloadCellXY(center.x, center.y);
+  this.loadCellXY(center.x, center.y);
+  center.free();
+};
+
+PlayScreen.prototype.loadCellXY = function(cx, cy) {
+  var cellId = this.bitGrid.getCellIdAtIndexXY(cx, cy);
+  var tile = this.tiles[cellId];
+  if (!tile) {
+    this.tiles[cellId] = tile = {
+      cellId: cellId,
+      stamp: null,
+      bodyIds: null
+    };
   }
-  if (type == MazePainter.SOLID) {
-    var t = new Matrix44().toTranslateOpXYZ(x, y, 0).multiply(new Matrix44().toScaleOpXYZ(rx, ry, 1));
-    var wallModel = RigidModel.createSquare().transformPositions(t);
-    function c() {
-      return 0.5 + 0.2 * Math.random();
+  if (!tile.bodyIds) {
+    tile.bodyIds = [];
+    // Create wall bodies and remember their IDs.
+    var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    for (var r = 0; r < rects.length; r++) {
+      var rect = rects[r];
+      var body = this.createWallBody(rect);
+      tile.bodyIds.push(this.world.addBody(body));
     }
-    var color = c();
-    wallModel.setColorRGB(color, color*0.6, c()*0.3);
-    this.levelModel.addRigidModel(wallModel);
   }
-  if (type == MazePainter.FLOOR) {
-    var inset = 0;
-    var t = new Matrix44().toTranslateOpXYZ(x, y, 0.99).multiply(new Matrix44().toScaleOpXYZ(rx - inset, ry -inset, 1));
-    var wallModel = RigidModel.createSquare().transformPositions(t);
-    function f() {
-      //return 0;
-      return 0.15 + 0.02 * (rx/30 + ry/20);
+  // TODO don't repeat stamp for solid walls
+  if (!tile.stamp) {
+    if (!rects) rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    tile.stamp = this.createTileStamp(rects);
+  }
+};
+
+PlayScreen.prototype.unloadCellXY = function(cx, cy) {
+  this.unloadCellId(this.bitGrid.getCellIdAtIndexXY(cx, cy));
+};
+
+PlayScreen.prototype.unloadCellId = function(cellId) {
+  var tile = this.tiles[cellId];
+  if (!tile) return;
+  if (tile.stamp) {
+    tile.stamp.dispose(this.renderer.gl);
+    tile.stamp = null;
+  }
+  if (tile.bodyIds) {
+    for (var i = 0; i < tile.bodyIds.length; i++) {
+      var id = tile.bodyIds[i];
+      this.world.removeBodyId(id);
     }
-    wallModel.setColorRGB(0, f(), f());
-    this.levelModel.addRigidModel(wallModel);
+    tile.bodyIds = null;
   }
+};
+
+PlayScreen.prototype.createWallBody = function(rect) {
+  var b = Body.alloc();
+  b.shape = Body.Shape.RECT;
+  b.setPosAtTime(rect.pos, this.world.now);
+  b.rectRad.set(rect.rad);
+  b.hitGroup = PlayScreen.Group.WALL;
+  b.mass = Infinity;
+  b.pathDurationMax = Infinity;
+  this.world.addBody(b);
+  return b;
+};
+
+PlayScreen.prototype.createTileStamp = function(rects) {
+  var model = new RigidModel();
+  for (var i = 0; i < rects.length; i++) {
+    model.addRigidModel(this.createWallModel(rects[i]));
+  }
+  return model.createModelStamp(this.renderer.gl);
+};
+
+PlayScreen.prototype.createWallModel = function(rect) {
+  var transformation, wallModel;
+  transformation = new Matrix44()
+      .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
+      .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
+  wallModel = RigidModel.createSquare().transformPositions(transformation);
+  function c() {
+    return 0.5 + 0.2 * Math.random();
+  }
+  var color = c();
+  wallModel.setColorRGB(color, color*0.6, c()*0.3);
+  return wallModel;
 };
 
 PlayScreen.prototype.handleInput = function() {
@@ -381,7 +396,6 @@ PlayScreen.prototype.handleInput = function() {
         missileVelMag >= PlayScreen.PLAYER_MIN_SPEED_TO_FIRE) {
       missileVel.scaleToLength(missileVelMag + PlayScreen.PLAYER_MISSILE_SPEED_BOOST);
       this.playerFire(this.getPlayerPos(), missileVel);
-//      this.playerFire(this.getPlayerPos(), missileVel.scaleXY(-1, -1));
       this.lastPlayerFireTime = this.world.now;
     }
     accel.free();
@@ -466,7 +480,7 @@ PlayScreen.prototype.updateViewMatrix = function() {
         .scaleToLength((cameraDist-this.minCameraDist) * 0.1)
         .add(this.cameraPos);
     this.cameraPos.set(temp);
-    var cameraDist = this.getPlayerPos().distance(this.cameraPos);
+    cameraDist = this.getPlayerPos().distance(this.cameraPos);
     if (cameraDist > this.maxCameraDist) {
       temp.set(this.getPlayerPos())
           .subtract(this.cameraPos)
@@ -484,10 +498,6 @@ PlayScreen.prototype.updateViewMatrix = function() {
               ratio / this.canvas.height,
           0.2));
 
-  // scale
-  var v = this.visibility;
-  this.viewMatrix.multiply(this.mat4.toScaleOpXYZ(3 - v*2, v * v, 1));
-
   // center
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(
       -this.cameraPos.x,
@@ -503,11 +513,25 @@ PlayScreen.prototype.drawScene = function() {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 
-  this.renderer
-      .setStamp(this.levelStamp)
-      .setColorVector(this.levelColorVector)
-      .setModelMatrix(this.levelModelMatrix)
-      .drawStamp();
+  if (this.tiles) {
+    this.renderer
+        .setColorVector(this.levelColorVector)
+        .setModelMatrix(this.levelModelMatrix);
+    var cx = Math.round((this.cameraPos.x - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
+    var cy = Math.round((this.cameraPos.y - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
+    for (var dy = -2; dy <= 2; dy++) {
+      for (var dx = -2; dx <= 2; dx++) {
+        this.loadCellXY(cx + dx, cy + dy);
+        var cellId = this.bitGrid.getCellIdAtIndexXY(cx + dx, cy + dy);
+        var tile = this.tiles[cellId];
+        if (tile && tile.stamp) {
+          this.renderer
+              .setStamp(tile.stamp)
+              .drawStamp();
+        }
+      }
+    }
+  }
 
   if (this.restarting) {
     this.controller.restart();
@@ -519,6 +543,12 @@ PlayScreen.prototype.drawScene = function() {
 };
 
 PlayScreen.prototype.unloadLevel = function() {
+  if (this.tiles) {
+    for (var cellId in this.tiles) {
+      this.unloadCellId(cellId);
+    }
+    this.tiles = null;
+  }
   if (this.world) {
     for (var spiritId in this.world.spirits) {
       var s = this.world.spirits[spiritId];
@@ -528,10 +558,6 @@ PlayScreen.prototype.unloadLevel = function() {
     }
     this.world = null;
   }
-  while (this.levelStamps.length) {
-    this.levelStamps.pop().dispose(this.renderer.gl);
-  }
-  this.levelStamps = null;
 };
 
 PlayScreen.prototype.getBodyPos = function(body) {

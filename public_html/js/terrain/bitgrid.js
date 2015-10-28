@@ -14,11 +14,6 @@ function BitGrid(pixelSize) {
 
   // A map from touched cellIds to their old values, so callers can see which were modified.
   this.changedCells = {};
-  // bounding rect of changed cells.
-  this.changeX0 = null;
-  this.changeY0 = null;
-  this.changeX1 = null;
-  this.changeY1 = null;
 }
 BitGrid.BITS = 32;
 
@@ -41,12 +36,6 @@ BitGrid.prototype.cellIdToIndexVec = function(cellId, out) {
   return out;
 };
 
-BitGrid.prototype.cellIdToIndexX = function(cellId) {
-  var cy = Math.floor(cellId / BitGrid.COLUMNS);
-  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
-  return cx;
-};
-
 BitGrid.prototype.flushChangedCellIds = function() {
   var changedIds = [];
   for (var id in this.changedCells) {
@@ -55,14 +44,11 @@ BitGrid.prototype.flushChangedCellIds = function() {
     }
   }
   this.changedCells = {};
-  this.changeX0 = null;
-  this.changeY0 = null;
-  this.changeX1 = null;
-  this.changeY1 = null;
   return changedIds;
 };
 
 BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
+  var bx, by;
   var self = this;
   function createRect(bx0, by0, bx1, by1) {
     var wx0 = cx * self.cellWorldSize + (bx0 - 0.5) * self.bitWorldSize;
@@ -86,11 +72,11 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
   } else if (Array.isArray(cell)) {
 
     var oldRects = {};
-    for (var by = 0; by < BitGrid.BITS; by++) {
+    for (by = 0; by < BitGrid.BITS; by++) {
       var newRects = {};
       var runStartX = -1;
       // Record newRects in this row.
-      for (var bx = 0; bx < BitGrid.BITS; bx++) {
+      for (bx = 0; bx < BitGrid.BITS; bx++) {
         var bit = (cell[by] >> bx) & 1;
         if (bit == color) {
           // Color match.
@@ -108,7 +94,7 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
         }
       }
       var isLastRow = by == BitGrid.BITS - 1;
-      for (var bx = 0; bx < BitGrid.BITS; bx++) {
+      for (bx = 0; bx < BitGrid.BITS; bx++) {
         var oldRect = oldRects[bx];
         var newRect = newRects[bx];
         // Harvest unmatched old ones.
@@ -220,10 +206,6 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
         this.changedCells[cellId] = Array.isArray(cell) ? cell.concat() : cell;
-        this.changeX0 = Math.min(this.changeX0, cx);
-        this.changeY0 = Math.min(this.changeY0, cy);
-        this.changeX1 = Math.max(this.changeX1, cx);
-        this.changeY1 = Math.max(this.changeY1, cy);
         clean = false;
       }
       // If it wasn't an array already, make it one now so we can adjust this row.
