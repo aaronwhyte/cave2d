@@ -21,7 +21,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.cameraPos = new Vec2d();
   this.minCameraDist = 30;
   this.maxCameraDist = 100;
-  this.viewDist = 400;
+  this.viewDist = 500;
   this.pixelSize = 4;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
@@ -539,8 +539,9 @@ PlayScreen.prototype.drawScene = function() {
         .setModelMatrix(this.levelModelMatrix);
     var cx = Math.round((this.cameraPos.x - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
     var cy = Math.round((this.cameraPos.y - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-    for (var dy = -2; dy <= 2; dy++) {
-      for (var dx = -2; dx <= 2; dx++) {
+    var cellRad = 3;
+    for (var dy = -cellRad; dy <= cellRad; dy++) {
+      for (var dx = -cellRad; dx <= cellRad; dx++) {
         this.loadCellXY(cx + dx, cy + dy);
         var cellId = this.bitGrid.getCellIdAtIndexXY(cx + dx, cy + dy);
         var tile = this.tiles[cellId];
