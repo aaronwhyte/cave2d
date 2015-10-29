@@ -21,7 +21,7 @@ EnemySpirit.prototype.constructor = EnemySpirit;
 
 EnemySpirit.FIRE_TIMEOUT = 64;
 EnemySpirit.MOVE_TIMEOUT = 32;
-EnemySpirit.MISSILE_SPEED = 7;
+EnemySpirit.MISSILE_SPEED = 5;
 
 EnemySpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
