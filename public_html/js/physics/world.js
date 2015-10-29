@@ -164,6 +164,8 @@ World.prototype.removeBodyId = function(bodyId) {
     delete this.paths[body.pathId];
     delete this.invalidBodies[body.id];
     body.free();
+  } else {
+    console.log("couldn't find or remove bodyId " + bodyId);
   }
 };
 
@@ -268,7 +270,7 @@ World.prototype.addPathToCell = function(body, cell) {
       var otherBody = this.paths[pathId];
       if (otherBody && otherBody.pathId == pathId) {
         var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
-        if (hitEvent) {
+        if (hitEvent && hitEvent.time < Infinity) {
           // Pad the collision time to prevent numerical-challenge interpenetration.
           hitEvent.time = Math.max(hitEvent.time - this.hitTimePadding, this.now);
           // Add the existing event and allocate the next one.

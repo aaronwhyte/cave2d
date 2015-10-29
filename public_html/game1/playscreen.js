@@ -29,6 +29,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
+PlayScreen.WORLD_CELL_SIZE = 4 * 32;
+
 PlayScreen.ENEMY_MISSILE_RAD = 5;
 
 PlayScreen.PLAYER_MISSILE_RAD = 5;
@@ -41,10 +43,11 @@ PlayScreen.PLAYER_MISSILE_DURATION = 15;
 PlayScreen.Group = {
   EMPTY: 0,
   WALL: 1,
-  PLAYER: 2,
-  PLAYER_MISSILE: 3,
-  ENEMY: 4,
-  ENEMY_MISSILE: 5
+  ROCK: 2,
+  PLAYER: 3,
+  PLAYER_MISSILE: 4,
+  ENEMY: 5,
+  ENEMY_MISSILE: 6
 };
 
 PlayScreen.Terrain = {
@@ -115,16 +118,21 @@ PlayScreen.prototype.initPermStamps = function() {
 PlayScreen.prototype.initWorld = function() {
   this.lastPathRefreshTime = -Infinity;
   var groupCount = Object.keys(PlayScreen.Group).length;
-  this.world = new World(World.DEFAULT_CELL_SIZE, groupCount, [
+  this.world = new World(PlayScreen.WORLD_CELL_SIZE, groupCount, [
     [PlayScreen.Group.EMPTY, PlayScreen.Group.EMPTY],
-    [PlayScreen.Group.WALL, PlayScreen.Group.WALL],
+    [PlayScreen.Group.ROCK, PlayScreen.Group.WALL],
+    [PlayScreen.Group.ROCK, PlayScreen.Group.ROCK],
     [PlayScreen.Group.PLAYER, PlayScreen.Group.WALL],
+    [PlayScreen.Group.PLAYER, PlayScreen.Group.ROCK],
     [PlayScreen.Group.PLAYER_MISSILE, PlayScreen.Group.WALL],
+    [PlayScreen.Group.PLAYER_MISSILE, PlayScreen.Group.ROCK],
     [PlayScreen.Group.ENEMY, PlayScreen.Group.WALL],
+    [PlayScreen.Group.ENEMY, PlayScreen.Group.ROCK],
     [PlayScreen.Group.ENEMY, PlayScreen.Group.PLAYER],
     [PlayScreen.Group.ENEMY, PlayScreen.Group.PLAYER_MISSILE],
     [PlayScreen.Group.ENEMY, PlayScreen.Group.ENEMY],
     [PlayScreen.Group.ENEMY_MISSILE, PlayScreen.Group.WALL],
+    [PlayScreen.Group.ENEMY_MISSILE, PlayScreen.Group.ROCK],
     [PlayScreen.Group.ENEMY_MISSILE, PlayScreen.Group.PLAYER]
   ]);
   this.lastPlayerFireTime = 0;
@@ -215,7 +223,7 @@ PlayScreen.prototype.initBoulder = function(pos) {
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.world.now);
   b.rad = 30;
-  b.hitGroup = PlayScreen.Group.WALL;
+  b.hitGroup = PlayScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = Infinity;
   var spirit = new BallSpirit();
@@ -340,6 +348,9 @@ PlayScreen.prototype.unloadCellId = function(cellId) {
   }
 };
 
+/**
+ * Creates but DOES NOT ADD the body to the world
+ */
 PlayScreen.prototype.createWallBody = function(rect) {
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
@@ -348,7 +359,6 @@ PlayScreen.prototype.createWallBody = function(rect) {
   b.hitGroup = PlayScreen.Group.WALL;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
-  this.world.addBody(b);
   return b;
 };
 

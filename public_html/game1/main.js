@@ -1,5 +1,6 @@
+var game1;
 function main() {
-  var game1 = new Game1(document.querySelector('#canvas'));
+  game1 = new Game1(document.querySelector('#canvas'));
   game1.start();
 }
 
