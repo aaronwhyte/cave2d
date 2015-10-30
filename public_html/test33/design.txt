@@ -1,0 +1,43 @@
+This game is basically a demo, so make it fun but not frustrating.
+
+Features:
+* Multiple short levels.
+* Single player, trackball, fire button.
+? switch-weapon buttons?
+* Multiple weapons.
+  * shotgun
+  * crossbow
+  * machinegun
+  * explosive bullets
+  * bouncy shots
+  ? Hold to guild shot, release for it to take off or burst
+  ? Hold to guide attack robot
+  ? Hold to create boulder and fire through it from current pos
+  ? Hold to aim and build up power and shield, release to start firing.
+  ? Hold to create and aim ramming shield & wind spring, release to lunge fwd with it.
+  ? Hold to eat enemy missiles & aim, release to fire them back
+
+* Death and progress:
+  ? Modern Casual: One life, and dying restarts the level. Easiest to manage and understand.
+    * Powerups are lost upon death - that's your motivation.
+  ? Unkillable: You are unkillable, but powers are lost.
+    * When you're harmeless (a ghost?), most enemies ignore you.
+    ? Powerups are always available.
+    ? Some powerups are easier to get if you have other powerups.
+    ? Intelligent enemies seek powerups too.
+    ? Some temporary powerups can be re-acquired at a location.
+  ? 80's Arcade: Limited lives, earn new ones.
+    * Dead enemies stay dead.
+    ? Dying repositions things
+    ? New life every level
+    ? Score system
+    ? Temporary power when starting new life. "blinking".
+  ? Roguelike: One life, retain health and powerups
+  ? Doing better in early levels helps prepare you for later ones, so replaying early ones isn't a grind.
+    ? Maybe more powerup slots, or other permanent attributes?
+    * Nuclear Throne has permanent mutations, and temporary weapons.
+    * Lovers in a Dangerous Spacetime has bunnies rescued and power-gem slots.
+    * Roguelikes have level, stats, and inventory.
+  ? Starting class provides variety
+    * N.T has characters w important powers.
+    * Force a specialization - don't allow "balanced".

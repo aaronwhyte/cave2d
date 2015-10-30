@@ -200,6 +200,9 @@ World.prototype.getBodyByPathId = function(pathId) {
     delete this.paths[pathId];
     body = null;
   }
+  if (body && !this.bodies[body.id]) {
+    console.warn("getBodyByPathId is writing checks that bodies cannot cash. pathId", pathId, "body.id:", body.id);
+  }
   return body;
 };
 

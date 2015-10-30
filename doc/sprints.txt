@@ -34,24 +34,60 @@ Nope. The problems were:
 4) The event queue had events with times of Infinity. Good luck with that.
 Done 2013-10-28 but nearly 24 hours later.
 
-Playtime Editor
-- Edit mode
-  - no pointerlock
-  - S space mode
-  - W wall mode
-  - O prop mode
-    - garbage can when dragging props
-  - A AUTO-mode selects from the three above depending on where a touch starts
-  - + add-prop menu
-  - play controls in corners while in an edit-y mode?
-  - possession selector? Decorates a possessable prop? Or last-
-- P possession mode, with camera following possessed prop
-  * make as many props playable as possible
-  * make as many characters into usable props as possible too
-  - pointerlock
-  - maximize trackpad controller
+Cursor
+v Set up new test33, with game1's tech mostly.
+v Cursor movement: Same as game1 player, sans body (probably) and without worrying about collisions.
+v Camera control: Also same as game1 player. (Hm. Extract common logic?)
+- Hover detection and indicator
+  v Render a ring
+  - Hover mode:
+    - Overlaps object(s): Highlight closest object (where obj surface is dist 0) or smallest object in case of tie.
+    - Centered on wall block: wall extender
+    - nothing: floor extender
+  - different cursor styles for each mode.
+
+Refactor
+- Pull up cursor/player accel logic from test33 and game1
+- Pull up camera control too.
+
+Trigger
+- keyboard: pick a bunch of keys
+- touchscreen trigger
+  - circle on viewport coords, not world coords.
+  - on-screen touch-target circle too, if there have been touch events in the last N seconds.
+  - Adjust center position towards last trigger touch, so it adjusts to you.
+  - Handle rotation/resize...
+    - Track trigger pos as fraction of screen width/height, 0..1
+    - Start at 0.9, 0.9
+- Add trigger to game1 - no more auto-firing.
+- Use trigger in test for terrain editing.
+  - triggerDown with wall/floor indicator starts floor/wall initial position, draws first pill.
+  - drawPill from old to new position, then let old=new.
+  - triggerUp ends it
+  - Bonus: Push stuff out of the way when adding walls, with particle storm?
+
+Dragging
+- triggerDown centers cursor on object
+- dragging accelerates object? Or teleports it? Depends on distance?
+
+save and load from string
+- terrain: BitGrid s27n
+- objects, positions, velocities
+
+Add & delete objects
+- Add action, menu... oh no, menus!
+- Delete pseudomode
+
+Particles
+- test page - fireworks?
+- game1 every kind of explosion
+- game1 muzzle flash
+- test33 digging
 
 Tractor Beam
+- game1 change gun to tractor beam
+- game1 add tools
+- game1 make critters grabbable
 
 Bomb Factory
 

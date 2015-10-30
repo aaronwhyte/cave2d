@@ -421,9 +421,6 @@ PlayScreen.prototype.handleInput = function() {
 PlayScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
-  //// TODO: Find out why these bodies aren't legit after a timeout removes them
-  b0 = b0 && this.world.getBody(b0.id);
-  b1 = b1 && this.world.getBody(b1.id);
 
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
