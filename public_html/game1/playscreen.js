@@ -612,8 +612,8 @@ PlayScreen.prototype.scanForPlayer = function(fromPos, outVec) {
   // write the body's position into the req's position slot.
   req.pos.set(fromPos);
   req.vel.set(this.getPlayerPos()).subtract(fromPos);
-  this.shape = Body.Shape.CIRCLE;
-  this.rad = PlayScreen.ENEMY_MISSILE_RAD;
+  req.shape = Body.Shape.CIRCLE;
+  req.rad = PlayScreen.ENEMY_MISSILE_RAD;
   var resp = ScanResponse.alloc();
   var retval = null;
   var hit = this.world.rayscan(req, resp);
