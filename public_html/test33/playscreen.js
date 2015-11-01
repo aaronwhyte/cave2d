@@ -19,9 +19,11 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.cursorPos = new Vec2d();
   this.cursorVel = new Vec2d();
   this.cursorStamp = null; // it'll be a ring
-  this.cursorColorVector = new Vec4(0.5, 0.9, 1);
-  this.cursorRad = 20;
+  this.cursorColorVector = new Vec4();
+  this.cursorRad = 15;
   this.cursorModelMatrix = new Matrix44();
+  this.cursorMode = PlayScreen.CursorMode.FLOOR;
+  this.cursorBody = this.createCursorBody();
 
   this.cameraPos = new Vec2d();
   this.minCameraDist = 60;
@@ -38,17 +40,23 @@ PlayScreen.prototype.constructor = PlayScreen;
 
 PlayScreen.WORLD_CELL_SIZE = 4 * 32;
 
-
 PlayScreen.Group = {
   EMPTY: 0,
   WALL: 1,
-  ROCK: 2
+  ROCK: 2,
+  CURSOR: 3
 };
 
 PlayScreen.Terrain = {
   WALL: 0,
   FLOOR: 1,
   MIXED: 2
+};
+
+PlayScreen.CursorMode = {
+  WALL: 0,
+  FLOOR: 1,
+  OBJECT: 2
 };
 
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
@@ -116,10 +124,13 @@ PlayScreen.prototype.initWorld = function() {
   this.world = new World(PlayScreen.WORLD_CELL_SIZE, groupCount, [
     [PlayScreen.Group.EMPTY, PlayScreen.Group.EMPTY],
     [PlayScreen.Group.ROCK, PlayScreen.Group.WALL],
-    [PlayScreen.Group.ROCK, PlayScreen.Group.ROCK]
+    [PlayScreen.Group.ROCK, PlayScreen.Group.ROCK],
+    [PlayScreen.Group.CURSOR, PlayScreen.Group.WALL],
+    [PlayScreen.Group.CURSOR, PlayScreen.Group.ROCK]
   ]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
+  this.initBoulder(new Vec2d(0,  100));
   this.initBoulder(new Vec2d(135, -125));
   this.initBoulder(new Vec2d(-135, -125));
   this.initWalls();
@@ -139,8 +150,16 @@ PlayScreen.prototype.initBoulder = function(pos) {
   spirit.setModelStamp(this.circleStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(0.5, 0.5, 0.5);
+  this.world.spirits[spiritId].setColorRGB(0.5, 0.7, 1);
   return spiritId;
+};
+
+PlayScreen.prototype.createCursorBody = function() {
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.rad = this.cursorRad;
+  b.hitGroup = PlayScreen.Group.CURSOR;
+  return b;
 };
 
 PlayScreen.prototype.initWalls = function() {
@@ -293,8 +312,33 @@ PlayScreen.prototype.handleInput = function() {
   this.cursorPos.add(this.cursorVel);
   this.cursorVel.scale(0.95);
 
-  // TODO: What are we hovering over?
+  // TODO if (trigger is up) {
+  this.doCursorHoverScan();
+};
 
+PlayScreen.prototype.doCursorHoverScan = function() {
+  this.cursorBody.setPosAtTime(this.cursorPos, this.world.now);
+  var i, hitBody, overlapBodyIds;
+  this.cursorBody.rad = this.cursorRad;
+  overlapBodyIds = this.world.getOverlaps(this.cursorBody);
+  for (i = 0; i < overlapBodyIds.length; i++) {
+    hitBody = this.world.bodies[overlapBodyIds[i]];
+    if (hitBody && hitBody.hitGroup != PlayScreen.Group.WALL) {
+      this.cursorMode = PlayScreen.CursorMode.OBJECT;
+      // TODO: pick the closest object and remember it.
+      return;
+    }
+  }
+  this.cursorBody.rad = 0;
+  overlapBodyIds = this.world.getOverlaps(this.cursorBody);
+  for (i = 0; i < overlapBodyIds.length; i++) {
+    hitBody = this.world.bodies[overlapBodyIds[i]];
+    if (hitBody && hitBody.hitGroup == PlayScreen.Group.WALL) {
+      this.cursorMode = PlayScreen.CursorMode.WALL;
+      return;
+    }
+  }
+  this.cursorMode = PlayScreen.CursorMode.FLOOR;
 };
 
 PlayScreen.prototype.onHitEvent = function(e) {
@@ -376,9 +420,10 @@ PlayScreen.prototype.drawScene = function() {
     }
   }
 
+  // draw cursor
   this.renderer
       .setStamp(this.cursorStamp)
-      .setColorVector(this.cursorColorVector);
+      .setColorVector(this.getCursorColorVector());
   this.cursorModelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
       .multiply(this.mat44.toScaleOpXYZ(this.cursorRad, this.cursorRad, 1));
@@ -393,6 +438,21 @@ PlayScreen.prototype.drawScene = function() {
     // Animate whenever this thing draws.
     this.controller.requestAnimation();
   }
+};
+
+PlayScreen.prototype.getCursorColorVector = function() {
+  switch(this.cursorMode) {
+    case PlayScreen.CursorMode.FLOOR:
+      this.cursorColorVector.setXYZ(0.4, 0.4, 0.4);
+      break;
+    case PlayScreen.CursorMode.WALL:
+      this.cursorColorVector.setXYZ(1, 1, 0);
+      break;
+    case PlayScreen.CursorMode.OBJECT:
+      this.cursorColorVector.setXYZ(0, 1, 0);
+      break;
+  }
+  return this.cursorColorVector;
 };
 
 PlayScreen.prototype.unloadLevel = function() {
@@ -411,6 +471,9 @@ PlayScreen.prototype.unloadLevel = function() {
     }
     this.world = null;
   }
+  this.cursorPos.reset();
+  this.cursorVel.reset();
+  this.cameraPos.reset();
 };
 
 PlayScreen.prototype.getBodyPos = function(body) {

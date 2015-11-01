@@ -621,3 +621,49 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
   }
   return retval;
 };
+
+/**
+ * Gets the instantaneous overlaps of a body with the objects in the world, at world.now.
+ * Takes the body's hitGtoup into account, but not its path duration.
+ * @param {Body} body  the query, as a Body.
+ * @return {Array.<String>} body IDs
+ */
+World.prototype.getOverlaps = function(body) {
+  var retval = [];
+  this.validateBodies();
+  this.scannedBodyIds.reset();
+  var brect = body.getBoundingRectAtTime(this.now, Rect.alloc());
+  var range = this.getCellRangeForRect(brect, CellRange.alloc());
+  for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
+    for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
+      var cell = this.getCell(ix, iy);
+      if (cell) {
+        var hitGroups = this.groupHitsGroups[body.hitGroup];
+        for (var gi = 0; gi < hitGroups.length; gi++) {
+          var otherGroup = hitGroups[gi];
+          var pathIdSet = cell.getPathIdsForGroup(otherGroup);
+          var pathIdArray = pathIdSet.vals;
+          for (var pi = 0; pi < pathIdArray.length;) {
+            var pathId = pathIdArray[pi];
+            var otherBody = this.paths[pathId];
+            if (otherBody && otherBody.pathId == pathId) {
+              if (!this.scannedBodyIds.contains(otherBody.id)) {
+                this.scannedBodyIds.put(otherBody.id);
+                if (OverlapDetector.isBodyOverlappingBodyAtTime(body, otherBody, this.now)) {
+                  retval.push(otherBody.id);
+                }
+              }
+              pi++;
+            } else {
+              // opportunistically erase obsolete path from cell
+              pathIdSet.removeIndex(pi);
+            }
+          }
+        }
+      }
+    }
+  }
+  brect.free();
+  range.free();
+  return retval;
+};

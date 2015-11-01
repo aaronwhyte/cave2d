@@ -16,7 +16,7 @@ OverlapDetector.isBodyOverlappingBodyAtTime = function(b0, b1, t) {
   } else if (b0.shape == Body.Shape.RECT) {
     overlap = OverlapDetector.isRectOverlappingCircle(p0, b0.rectRad, p1, b1.rad);
   } else {
-    overlap = OverlapDetector.isRectOverlappingCircle(p1, b1.rad, p0, b0.rectRad);
+    overlap = OverlapDetector.isRectOverlappingCircle(p1, b1.rectRad, p0, b0.rad);
   }
   p0.free();
   p1.free();

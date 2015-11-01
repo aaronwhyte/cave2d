@@ -38,13 +38,15 @@ Cursor
 v Set up new test33, with game1's tech mostly.
 v Cursor movement: Same as game1 player, sans body (probably) and without worrying about collisions.
 v Camera control: Also same as game1 player. (Hm. Extract common logic?)
-- Hover detection and indicator
+v Hover detection and indicator
   v Render a ring
-  - Hover mode:
-    - Overlaps object(s): Highlight closest object (where obj surface is dist 0) or smallest object in case of tie.
-    - Centered on wall block: wall extender
-    - nothing: floor extender
-  - different cursor styles for each mode.
+  v different cursor styles for each mode.
+  v world.getOverlaps(body) returns list of bodies
+  v Hover mode:
+    v Overlaps object(s): Highlight closest object (where obj surface is dist 0) or smallest object in case of tie.
+    v Centered on wall block: wall extender
+    v nothing: floor extender
+Done 2015-10-31
 
 Refactor
 - Pull up cursor/player accel logic from test33 and game1
