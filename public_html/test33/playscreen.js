@@ -20,10 +20,11 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.cursorVel = new Vec2d();
   this.cursorStamp = null; // it'll be a ring
   this.cursorColorVector = new Vec4();
-  this.cursorRad = 15;
+  this.cursorRad = 10;
   this.cursorModelMatrix = new Matrix44();
   this.cursorMode = PlayScreen.CursorMode.FLOOR;
   this.cursorBody = this.createCursorBody();
+  this.indicatedBodyId = null;
 
   this.cameraPos = new Vec2d();
   this.minCameraDist = 60;
@@ -113,7 +114,10 @@ PlayScreen.prototype.initPermStamps = function() {
   this.circleStamp = circleModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
-  var cursorModel = RigidModel.createRingMesh(5, 0.8);
+  var thickness = 0.1;
+  var innerRadius = 1 - thickness;
+  var cursorModel = RigidModel.createRingMesh(5, innerRadius);
+  cursorModel.transformPositions(new Matrix44().toScaleOpXYZ(1/innerRadius, 1/innerRadius, 1));
   this.cursorStamp = cursorModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cursorStamp);
 };
@@ -130,18 +134,18 @@ PlayScreen.prototype.initWorld = function() {
   ]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
-  this.initBoulder(new Vec2d(0,  100));
-  this.initBoulder(new Vec2d(135, -125));
-  this.initBoulder(new Vec2d(-135, -125));
+  for (var i = 0; i < 30; i++) {
+    this.initBoulder(new Vec2d(400 * (Math.random()-0.5), 400 * (Math.random()-0.5)), 30 * (Math.random() + 0.5));
+  }
   this.initWalls();
 };
 
-PlayScreen.prototype.initBoulder = function(pos) {
+PlayScreen.prototype.initBoulder = function(pos, rad) {
   var density = 1;
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.world.now);
-  b.rad = 30;
+  b.rad = rad;
   b.hitGroup = PlayScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = Infinity;
@@ -150,7 +154,7 @@ PlayScreen.prototype.initBoulder = function(pos) {
   spirit.setModelStamp(this.circleStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(0.5, 0.7, 1);
+  this.world.spirits[spiritId].setColorRGB(Math.random(), Math.random(), Math.random());
   return spiritId;
 };
 
@@ -319,26 +323,53 @@ PlayScreen.prototype.handleInput = function() {
 PlayScreen.prototype.doCursorHoverScan = function() {
   this.cursorBody.setPosAtTime(this.cursorPos, this.world.now);
   var i, hitBody, overlapBodyIds;
+  this.indicatedBodyId = null;
+
+  // center pinpoint check
+  this.cursorBody.rad = 0;
+  overlapBodyIds = this.world.getOverlaps(this.cursorBody);
+  var lowestArea = Infinity;
+  var smallestBody = null;
+  var overWall = false;
+  for (i = 0; i < overlapBodyIds.length; i++) {
+    hitBody = this.world.bodies[overlapBodyIds[i]];
+    if (hitBody) {
+      if (hitBody.hitGroup == PlayScreen.Group.WALL) {
+        overWall = true;
+      } else if (hitBody.getArea() < lowestArea) {
+        lowestArea = hitBody.getArea();
+        smallestBody = hitBody;
+      }
+    }
+  }
+  if (smallestBody) {
+    this.indicatedBodyId = smallestBody.id;
+    this.cursorMode = PlayScreen.CursorMode.OBJECT;
+    return;
+  }
+
+  // full cursor radius check for objects
   this.cursorBody.rad = this.cursorRad;
   overlapBodyIds = this.world.getOverlaps(this.cursorBody);
+  var lowestSurfaceDist = Infinity;
   for (i = 0; i < overlapBodyIds.length; i++) {
     hitBody = this.world.bodies[overlapBodyIds[i]];
     if (hitBody && hitBody.hitGroup != PlayScreen.Group.WALL) {
-      this.cursorMode = PlayScreen.CursorMode.OBJECT;
-      // TODO: pick the closest object and remember it.
-      return;
+      // TODO: var surfaceDist = hitBody.surfaceDistToPoint(this.cursorPos);
+      var surfaceDist = this.getBodyPos(hitBody).distance(this.cursorPos);
+      if (surfaceDist < lowestSurfaceDist) {
+        lowestSurfaceDist = surfaceDist;
+        this.indicatedBodyId = hitBody.id;
+      }
     }
   }
-  this.cursorBody.rad = 0;
-  overlapBodyIds = this.world.getOverlaps(this.cursorBody);
-  for (i = 0; i < overlapBodyIds.length; i++) {
-    hitBody = this.world.bodies[overlapBodyIds[i]];
-    if (hitBody && hitBody.hitGroup == PlayScreen.Group.WALL) {
-      this.cursorMode = PlayScreen.CursorMode.WALL;
-      return;
-    }
+  if (this.indicatedBodyId) {
+    this.cursorMode = PlayScreen.CursorMode.OBJECT;
+  } else if (overWall) {
+    this.cursorMode = PlayScreen.CursorMode.WALL;
+  } else {
+    this.cursorMode = PlayScreen.CursorMode.FLOOR;
   }
-  this.cursorMode = PlayScreen.CursorMode.FLOOR;
 };
 
 PlayScreen.prototype.onHitEvent = function(e) {
@@ -430,6 +461,20 @@ PlayScreen.prototype.drawScene = function() {
   this.renderer.setModelMatrix(this.cursorModelMatrix);
   this.renderer.drawStamp();
 
+  // body indicator
+  var body = this.world.bodies[this.indicatedBodyId];
+  if (body) {
+    var bodyPos = this.getBodyPos(body);
+    this.renderer
+        .setStamp(this.cursorStamp)
+        .setColorVector(this.getCursorColorVector());
+    //var edge = Math.sqrt(body.getArea()) / 2;
+    this.cursorModelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
+        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
+    this.renderer.setModelMatrix(this.cursorModelMatrix);
+    this.renderer.drawStamp();
+  }
 
   if (this.restarting) {
     this.controller.restart();
@@ -449,7 +494,7 @@ PlayScreen.prototype.getCursorColorVector = function() {
       this.cursorColorVector.setXYZ(1, 1, 0);
       break;
     case PlayScreen.CursorMode.OBJECT:
-      this.cursorColorVector.setXYZ(0, 1, 0);
+      this.cursorColorVector.setXYZ(1, 1, 1);
       break;
   }
   return this.cursorColorVector;

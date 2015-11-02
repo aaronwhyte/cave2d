@@ -31,8 +31,10 @@ BallSpirit.prototype.onDraw = function(world, renderer) {
   renderer
       .setStamp(this.modelStamp)
       .setColorVector(this.color);
+  // Render the smaller ones in front.
+  // TODO standardize Z
   this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -1 + body.rad / 1000))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
 
   renderer.setModelMatrix(this.modelMatrix);

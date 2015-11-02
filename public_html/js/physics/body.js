@@ -88,6 +88,17 @@ Body.prototype.getBoundingRectAtTime = function(t, opt_out) {
   return out;
 };
 
+/**
+ * @returns {Number}
+ */
+Body.prototype.getArea = function() {
+  if (this.shape == Body.Shape.CIRCLE) {
+    return Math.PI * this.rad * this.rad;
+  } else {
+    return this.rectRad.x * this.rectRad.y;
+  }
+};
+
 Body.prototype.invalidatePath = function() {
   if (this.invalidBodies && this.id) {
     this.invalidBodies[this.id] = this;

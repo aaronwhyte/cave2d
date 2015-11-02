@@ -42,18 +42,16 @@ v Hover detection and indicator
   v Render a ring
   v different cursor styles for each mode.
   v world.getOverlaps(body) returns list of bodies
-  v Hover mode:
-    v Overlaps object(s): Highlight closest object (where obj surface is dist 0) or smallest object in case of tie.
-    v Centered on wall block: wall extender
-    v nothing: floor extender
-Done 2015-10-31
-
-Refactor
-- Pull up cursor/player accel logic from test33 and game1
-- Pull up camera control too.
+  v Hover mode - what are we pointing at?:
+    - pinpoint center check
+      - if objects overlap, pick the one with the smallest area
+      v Centered on wall block: WALL mode
+    - broader check, objects only
+      - If there are any, take the one with the lowest distance-to-surface.
+    v finally, FLOOR mode
 
 Trigger
-- keyboard: pick a bunch of keys
+- keyboard: assignable keys
 - touchscreen trigger
   - circle on viewport coords, not world coords.
   - on-screen touch-target circle too, if there have been touch events in the last N seconds.
@@ -67,6 +65,10 @@ Trigger
   - drawPill from old to new position, then let old=new.
   - triggerUp ends it
   - Bonus: Push stuff out of the way when adding walls, with particle storm?
+
+Refactor
+- Pull up cursor/player accel logic from test33 and game1
+- Pull up camera control too.
 
 Dragging
 - triggerDown centers cursor on object
