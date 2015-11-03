@@ -20,11 +20,14 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.cursorVel = new Vec2d();
   this.cursorStamp = null; // it'll be a ring
   this.cursorColorVector = new Vec4();
-  this.cursorRad = 10;
+  this.cursorRad = 12;
   this.cursorModelMatrix = new Matrix44();
   this.cursorMode = PlayScreen.CursorMode.FLOOR;
   this.cursorBody = this.createCursorBody();
   this.indicatedBodyId = null;
+  this.indicatorChangeTime = 0;
+  this.indicatorStamp = null; // it'll be a ring
+  this.indicatorColorVector = new Vec4();
 
   this.cameraPos = new Vec2d();
   this.minCameraDist = 60;
@@ -114,12 +117,20 @@ PlayScreen.prototype.initPermStamps = function() {
   this.circleStamp = circleModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
-  var thickness = 0.1;
+  var thickness = 0.66;
   var innerRadius = 1 - thickness;
-  var cursorModel = RigidModel.createRingMesh(5, innerRadius);
-  cursorModel.transformPositions(new Matrix44().toScaleOpXYZ(1/innerRadius, 1/innerRadius, 1));
-  this.cursorStamp = cursorModel.createModelStamp(this.renderer.gl);
+  var model = RigidModel.createRingMesh(5, innerRadius);
+  //model.transformPositions(new Matrix44().toScaleOpXYZ(1/innerRadius, 1/innerRadius, 1));
+  this.cursorStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cursorStamp);
+
+  thickness = 0.2;
+  innerRadius = 1 - thickness;
+  model = RigidModel.createRingMesh(6, innerRadius);
+  model.transformPositions(new Matrix44().toScaleOpXYZ(1/innerRadius, 1/innerRadius, 1));
+  //model.transformPositions(new Matrix44().toScaleOpXYZ(1-(1-1/innerRadius)/2, 1-(1-1/innerRadius)/2, 1));
+  this.indicatorStamp = model.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.indicatorStamp);
 };
 
 PlayScreen.prototype.initWorld = function() {
@@ -299,14 +310,15 @@ PlayScreen.prototype.handleInput = function() {
     newVel.setXY(this.movement.x, -this.movement.y);
 
     var accel = Vec2d.alloc().set(newVel).subtract(this.cursorVel);
-    var maxAccel = 10;
+
     // If it's over 1, then use a square root to lower it.
     // (If it's less than 1, then sqrt will make it bigger, so don't bother.)
-    var mag = accel.magnitude();
-    if (mag > 1) {
-      accel.scaleToLength(Math.sqrt(mag));
-    }
-    accel.clipToMaxLength(maxAccel);
+    //var mag = accel.magnitude();
+    //if (mag > 1) {
+    //  accel.scaleToLength(Math.sqrt(mag));
+    //}
+    //var maxAccel = 10;
+    //accel.clipToMaxLength(maxAccel);
     newVel.set(this.cursorVel).add(accel);
     this.cursorVel.set(newVel);
     accel.free();
@@ -314,7 +326,8 @@ PlayScreen.prototype.handleInput = function() {
   newVel.free();
   this.trackball.reset();
   this.cursorPos.add(this.cursorVel);
-  this.cursorVel.scale(0.95);
+  var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/10));
+  this.cursorVel.scale(0.98 - 0.1 * slowness);
 
   // TODO if (trigger is up) {
   this.doCursorHoverScan();
@@ -323,7 +336,6 @@ PlayScreen.prototype.handleInput = function() {
 PlayScreen.prototype.doCursorHoverScan = function() {
   this.cursorBody.setPosAtTime(this.cursorPos, this.world.now);
   var i, hitBody, overlapBodyIds;
-  this.indicatedBodyId = null;
 
   // center pinpoint check
   this.cursorBody.rad = 0;
@@ -343,32 +355,43 @@ PlayScreen.prototype.doCursorHoverScan = function() {
     }
   }
   if (smallestBody) {
-    this.indicatedBodyId = smallestBody.id;
+    this.setIndicatedBodyId(smallestBody.id);
     this.cursorMode = PlayScreen.CursorMode.OBJECT;
-    return;
-  }
-
-  // full cursor radius check for objects
-  this.cursorBody.rad = this.cursorRad;
-  overlapBodyIds = this.world.getOverlaps(this.cursorBody);
-  var lowestSurfaceDist = Infinity;
-  for (i = 0; i < overlapBodyIds.length; i++) {
-    hitBody = this.world.bodies[overlapBodyIds[i]];
-    if (hitBody && hitBody.hitGroup != PlayScreen.Group.WALL) {
-      // TODO: var surfaceDist = hitBody.surfaceDistToPoint(this.cursorPos);
-      var surfaceDist = this.getBodyPos(hitBody).distance(this.cursorPos);
-      if (surfaceDist < lowestSurfaceDist) {
-        lowestSurfaceDist = surfaceDist;
-        this.indicatedBodyId = hitBody.id;
-      }
-    }
-  }
-  if (this.indicatedBodyId) {
-    this.cursorMode = PlayScreen.CursorMode.OBJECT;
+  //  return;
+  //}
+  //
+  //// full cursor radius check for objects
+  //this.cursorBody.rad = this.cursorRad;
+  //overlapBodyIds = this.world.getOverlaps(this.cursorBody);
+  //var lowestSurfaceDist = Infinity;
+  //var id = null;
+  //for (i = 0; i < overlapBodyIds.length; i++) {
+  //  hitBody = this.world.bodies[overlapBodyIds[i]];
+  //  if (hitBody && hitBody.hitGroup != PlayScreen.Group.WALL) {
+  //    // TODO: var surfaceDist = hitBody.surfaceDistToPoint(this.cursorPos);
+  //    var surfaceDist = this.getBodyPos(hitBody).distance(this.cursorPos);
+  //    if (surfaceDist < lowestSurfaceDist) {
+  //      lowestSurfaceDist = surfaceDist;
+  //      id = hitBody.id;
+  //    }
+  //  }
+  //}
+  //this.setIndicatedBodyId(id);
+  //if (this.indicatedBodyId) {
+  //  this.cursorMode = PlayScreen.CursorMode.OBJECT;
   } else if (overWall) {
+    this.setIndicatedBodyId(null);
     this.cursorMode = PlayScreen.CursorMode.WALL;
   } else {
+    this.setIndicatedBodyId(null);
     this.cursorMode = PlayScreen.CursorMode.FLOOR;
+  }
+};
+
+PlayScreen.prototype.setIndicatedBodyId = function(id) {
+  if (id != this.indicatedBodyId) {
+    this.indicatedBodyId = id;
+    this.indicatorChangeTime = Date.now();
   }
 };
 
@@ -451,6 +474,7 @@ PlayScreen.prototype.drawScene = function() {
     }
   }
 
+  this.renderer.setBlendingEnabled(true);
   // draw cursor
   this.renderer
       .setStamp(this.cursorStamp)
@@ -466,15 +490,18 @@ PlayScreen.prototype.drawScene = function() {
   if (body) {
     var bodyPos = this.getBodyPos(body);
     this.renderer
-        .setStamp(this.cursorStamp)
-        .setColorVector(this.getCursorColorVector());
-    //var edge = Math.sqrt(body.getArea()) / 2;
+        .setStamp(this.indicatorStamp)
+        .setColorVector(this.getIndicatorColorVector());
+    //var indicatorSwell = 1 - Math.max(0, Math.min(1, (Date.now() - this.indicatorChangeTime) / 200));
+    //var extraScale = 1.00 + indicatorSwell * 0.02;
+    var extraScale = 1.00;
     this.cursorModelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
+        .multiply(this.mat44.toScaleOpXYZ(body.rad * extraScale, body.rad * extraScale, 1));
     this.renderer.setModelMatrix(this.cursorModelMatrix);
     this.renderer.drawStamp();
   }
+  this.renderer.setBlendingEnabled(false);
 
   if (this.restarting) {
     this.controller.restart();
@@ -488,16 +515,27 @@ PlayScreen.prototype.drawScene = function() {
 PlayScreen.prototype.getCursorColorVector = function() {
   switch(this.cursorMode) {
     case PlayScreen.CursorMode.FLOOR:
-      this.cursorColorVector.setXYZ(0.4, 0.4, 0.4);
+      this.cursorColorVector.setXYZ(1, 0, 0);
+      this.cursorColorVector.v[3] = 0.8;
       break;
     case PlayScreen.CursorMode.WALL:
-      this.cursorColorVector.setXYZ(1, 1, 0);
+      this.cursorColorVector.setXYZ(0, 1, 0);
+      this.cursorColorVector.v[3] = 0.8;
       break;
     case PlayScreen.CursorMode.OBJECT:
       this.cursorColorVector.setXYZ(1, 1, 1);
+      this.cursorColorVector.v[3] = 0.3;
       break;
   }
   return this.cursorColorVector;
+};
+
+PlayScreen.prototype.getIndicatorColorVector = function() {
+  var t = (Date.now() - this.indicatorChangeTime) / 400;
+  var c = -Math.cos(t)/5+0.5;
+  this.indicatorColorVector.setXYZ(c, c, c);
+  this.indicatorColorVector.v[3] = 0.4;
+  return this.indicatorColorVector;
 };
 
 PlayScreen.prototype.unloadLevel = function() {
