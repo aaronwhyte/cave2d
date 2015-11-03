@@ -304,7 +304,8 @@ PlayScreen.prototype.handleInput = function() {
   var newVel = Vec2d.alloc();
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
-    var sensitivity = 4;
+    // Keep sensitivity low(1) for tiny movements, ramping up to 4
+    var sensitivity = Math.min(4, this.movement.magnitude()*4);
     this.movement.scale(sensitivity);
     newVel.setXY(this.movement.x, -this.movement.y);
 
@@ -317,8 +318,8 @@ PlayScreen.prototype.handleInput = function() {
   newVel.free();
   this.trackball.reset();
   this.cursorPos.add(this.cursorVel);
-  var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/10));
-  this.cursorVel.scale(0.98 - 0.2 * slowness);
+  var slowness = Math.max(0, (1 - this.cursorVel.magnitude()*0.3));
+  this.cursorVel.scale(0.98 - 0.1 * slowness);
 
   // TODO if (trigger is up) {
   this.doCursorHoverScan();
