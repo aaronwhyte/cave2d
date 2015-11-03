@@ -128,7 +128,6 @@ PlayScreen.prototype.initPermStamps = function() {
   innerRadius = 1 - thickness;
   model = RigidModel.createRingMesh(6, innerRadius);
   model.transformPositions(new Matrix44().toScaleOpXYZ(1/innerRadius, 1/innerRadius, 1));
-  //model.transformPositions(new Matrix44().toScaleOpXYZ(1-(1-1/innerRadius)/2, 1-(1-1/innerRadius)/2, 1));
   this.indicatorStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.indicatorStamp);
 };
@@ -311,14 +310,6 @@ PlayScreen.prototype.handleInput = function() {
 
     var accel = Vec2d.alloc().set(newVel).subtract(this.cursorVel);
 
-    // If it's over 1, then use a square root to lower it.
-    // (If it's less than 1, then sqrt will make it bigger, so don't bother.)
-    //var mag = accel.magnitude();
-    //if (mag > 1) {
-    //  accel.scaleToLength(Math.sqrt(mag));
-    //}
-    //var maxAccel = 10;
-    //accel.clipToMaxLength(maxAccel);
     newVel.set(this.cursorVel).add(accel);
     this.cursorVel.set(newVel);
     accel.free();
@@ -327,7 +318,7 @@ PlayScreen.prototype.handleInput = function() {
   this.trackball.reset();
   this.cursorPos.add(this.cursorVel);
   var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/10));
-  this.cursorVel.scale(0.98 - 0.1 * slowness);
+  this.cursorVel.scale(0.98 - 0.2 * slowness);
 
   // TODO if (trigger is up) {
   this.doCursorHoverScan();
@@ -357,28 +348,6 @@ PlayScreen.prototype.doCursorHoverScan = function() {
   if (smallestBody) {
     this.setIndicatedBodyId(smallestBody.id);
     this.cursorMode = PlayScreen.CursorMode.OBJECT;
-  //  return;
-  //}
-  //
-  //// full cursor radius check for objects
-  //this.cursorBody.rad = this.cursorRad;
-  //overlapBodyIds = this.world.getOverlaps(this.cursorBody);
-  //var lowestSurfaceDist = Infinity;
-  //var id = null;
-  //for (i = 0; i < overlapBodyIds.length; i++) {
-  //  hitBody = this.world.bodies[overlapBodyIds[i]];
-  //  if (hitBody && hitBody.hitGroup != PlayScreen.Group.WALL) {
-  //    // TODO: var surfaceDist = hitBody.surfaceDistToPoint(this.cursorPos);
-  //    var surfaceDist = this.getBodyPos(hitBody).distance(this.cursorPos);
-  //    if (surfaceDist < lowestSurfaceDist) {
-  //      lowestSurfaceDist = surfaceDist;
-  //      id = hitBody.id;
-  //    }
-  //  }
-  //}
-  //this.setIndicatedBodyId(id);
-  //if (this.indicatedBodyId) {
-  //  this.cursorMode = PlayScreen.CursorMode.OBJECT;
   } else if (overWall) {
     this.setIndicatedBodyId(null);
     this.cursorMode = PlayScreen.CursorMode.WALL;
@@ -492,12 +461,9 @@ PlayScreen.prototype.drawScene = function() {
     this.renderer
         .setStamp(this.indicatorStamp)
         .setColorVector(this.getIndicatorColorVector());
-    //var indicatorSwell = 1 - Math.max(0, Math.min(1, (Date.now() - this.indicatorChangeTime) / 200));
-    //var extraScale = 1.00 + indicatorSwell * 0.02;
-    var extraScale = 1.00;
     this.cursorModelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad * extraScale, body.rad * extraScale, 1));
+        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
     this.renderer.setModelMatrix(this.cursorModelMatrix);
     this.renderer.drawStamp();
   }
@@ -524,7 +490,7 @@ PlayScreen.prototype.getCursorColorVector = function() {
       break;
     case PlayScreen.CursorMode.OBJECT:
       this.cursorColorVector.setXYZ(1, 1, 1);
-      this.cursorColorVector.v[3] = 0.3;
+      this.cursorColorVector.v[3] = 0.4;
       break;
   }
   return this.cursorColorVector;
