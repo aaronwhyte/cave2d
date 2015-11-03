@@ -55,6 +55,19 @@ Renderer.prototype.clear = function() {
 /**
  * @return {Renderer}
  */
+Renderer.prototype.setBlendingEnabled = function(blend) {
+  if (blend) {
+    this.gl.enable(this.gl.BLEND);
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE)
+  } else {
+    this.gl.disable(this.gl.BLEND);
+  }
+  return this;
+};
+
+/**
+ * @return {Renderer}
+ */
 Renderer.prototype.clearColor = function(r, g, b, a) {
   this.gl.clearColor(r, g, b, a);
   return this;
