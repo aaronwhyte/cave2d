@@ -7,9 +7,13 @@ function TouchTrackball() {
   Trackball.call(this);
   this.listening = false;
   this.oldPagePos = new Vec2d();
-  this.touchMotion = new Vec2d();
   this.touched = false;
-  this.speed = 0.3;
+  this.speed = 0.2;
+
+  // The final speed will be a weighted average of the 1:1 motion and an exponent of that motion.
+  this.motionExpContribution = 0.1;
+  this.motionExpMax = 100;
+
   this.dirtyVal = false;
   this.startZoneFn = function(x, y) {
     return true;
@@ -83,7 +87,17 @@ TouchTrackball.prototype.onTouchMove = function(e) {
         this.val.reset();
         this.dirtyVal = false;
       }
-      this.val.addXY((touch.pageX - this.oldPagePos.x) * this.speed, (touch.pageY - this.oldPagePos.y) * this.speed);
+      var motionX = (touch.pageX - this.oldPagePos.x) * this.speed;
+      var motionY = (touch.pageY - this.oldPagePos.y) * this.speed;
+      var motionMag = Vec2d.magnitude(motionX, motionY);
+      var motionMagExp = Math.min(this.motionExpMax, Math.pow(motionMag, 1.5));
+      var accelX =
+          motionX * (1 - this.motionExpContribution) +
+          motionX * motionMagExp * this.motionExpContribution;
+      var accelY =
+          motionY * (1 - this.motionExpContribution) +
+          motionY * motionMagExp * this.motionExpContribution;
+      this.val.addXY(accelX,  accelY);
       this.oldPagePos.setXY(touch.pageX, touch.pageY);
       break;
     }
@@ -110,7 +124,7 @@ TouchTrackball.prototype.reset = function() {
     if (this.dirtyVal) {
       // Touched, but there were no events in the last iteration.
       // Tap the brakes.
-      this.val.scale(0.9);
+      this.val.scale(0.5);
     }
   }
   this.dirtyVal = true;
