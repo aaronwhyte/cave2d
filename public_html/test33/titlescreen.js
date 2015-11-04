@@ -38,7 +38,7 @@ TitleScreen.prototype.initWorld = function() {
 
   // PLAY
   buttonMaker.setLetterColor([0.25, 0.75, 1]).setBlockColor([0.25*0.5, 0.75*0.5, 1*0.5]);
-  spiritId = buttonMaker.addButton(0, -8, "PLAY", function(e) {
+  spiritId = buttonMaker.addButton(0, -8, "START", function(e) {
     var freq0 = 100;
     var freq1 = 5000;
     var delay = 0;
