@@ -8,11 +8,12 @@ function TouchTrackball() {
   this.listening = false;
   this.oldPagePos = new Vec2d();
   this.touched = false;
-  this.speed = 0.2;
+  this.speed = 0.15;
 
   // The final speed will be a weighted average of the 1:1 motion and an exponent of that motion.
   this.motionExpContribution = 0.1;
-  this.motionExpMax = 100;
+  this.motionExponent = 1.7;
+  this.motionExpMax = 20;
 
   this.dirtyVal = false;
   this.startZoneFn = function(x, y) {
@@ -90,7 +91,7 @@ TouchTrackball.prototype.onTouchMove = function(e) {
       var motionX = (touch.pageX - this.oldPagePos.x) * this.speed;
       var motionY = (touch.pageY - this.oldPagePos.y) * this.speed;
       var motionMag = Vec2d.magnitude(motionX, motionY);
-      var motionMagExp = Math.min(this.motionExpMax, Math.pow(motionMag, 1.5));
+      var motionMagExp = Math.min(this.motionExpMax, Math.pow(motionMag, this.motionExponent));
       var accelX =
           motionX * (1 - this.motionExpContribution) +
           motionX * motionMagExp * this.motionExpContribution;
