@@ -32,7 +32,7 @@ Nope. The problems were:
 2) Double-adding bodies when terrain changed was certainly bad.
 3) Walls were declared to collide with themselves, which was wrong.
 4) The event queue had events with times of Infinity. Good luck with that.
-Done 2013-10-28 but nearly 24 hours later.
+Done 2015-10-28 but nearly 24 hours later.
 
 Cursor
 v Set up new test33, with game1's tech mostly.
@@ -40,17 +40,21 @@ v Cursor movement: Same as game1 player, sans body (probably) and without worryi
 v Camera control: Also same as game1 player. (Hm. Extract common logic?)
 v Hover detection and indicator
   v Render a ring
+    v sweet sweet alpha blending
   v different cursor styles for each mode.
   v world.getOverlaps(body) returns list of bodies
   v Hover mode - what are we pointing at?:
-    - pinpoint center check
-      - if objects overlap, pick the one with the smallest area
+    v pinpoint center check
+      v if objects overlap, pick the one with the smallest area
       v Centered on wall block: WALL mode
-    - broader check, objects only
-      - If there are any, take the one with the lowest distance-to-surface.
+    x broader check, objects only
+      x If there are any, take the one with the lowest distance-to-surface.
     v finally, FLOOR mode
+v Tweak cursor acceleration curves until it feels right.
+Even more done, 2015-11-03
 
 Trigger
+v test34, copy of test33
 - keyboard: assignable keys
 - touchscreen trigger
   - circle on viewport coords, not world coords.
@@ -59,12 +63,14 @@ Trigger
   - Handle rotation/resize...
     - Track trigger pos as fraction of screen width/height, 0..1
     - Start at 0.9, 0.9
-- Add trigger to game1 - no more auto-firing.
+  - trackball interaction
+    - Either one can be the first touch. Don't assume trackball is the only thing.
+    - Layer buttons. Trigger is on top, trackball gets the rest.
 - Use trigger in test for terrain editing.
   - triggerDown with wall/floor indicator starts floor/wall initial position, draws first pill.
   - drawPill from old to new position, then let old=new.
   - triggerUp ends it
-  - Bonus: Push stuff out of the way when adding walls, with particle storm?
+- Add trigger to game1 - no more auto-firing.
 
 Refactor
 - Pull up cursor/player accel logic from test33 and game1
