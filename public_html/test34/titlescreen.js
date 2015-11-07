@@ -32,8 +32,9 @@ TitleScreen.prototype.initWorld = function() {
 
   // TITLE
   buttonMaker.setLetterColor([0.75*0.7, 0.25 * 0.7, 1*0.7]).setBlockColor(null).setScale(1);
-  buttonMaker.addButton(0, 5, "TEST 34", null);
-  buttonMaker.addButton(0, 0, "TRIGGER", null);
+  buttonMaker.addButton(0, 6, "TEST 34", null);
+  buttonMaker.addButton(0, 1, "TRIGGER", null);
+  buttonMaker.setScale(0.5).addButton(0, -3, "USE THE 'Z' KEY", null);
   buttonMaker.setScale(1);
 
   // PLAY

@@ -4,11 +4,16 @@
  */
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
+
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball());
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
+
+  this.trigger = new MultiTrigger()
+      .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
+      .addTrigger(new TouchTrigger());
 
   // for sound throttling
   this.hitsThisFrame = 0;
@@ -80,8 +85,10 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     this.trackball.startListening();
+    this.trigger.startListening();
   } else {
     this.trackball.stopListening();
+    this.trigger.stopListening();
   }
   this.listening = listen;
 };
@@ -188,14 +195,15 @@ PlayScreen.prototype.initWalls = function() {
   this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*0.9, 0);
 
   this.tiles = {};
-  var changedCellIds = this.bitGrid.flushChangedCellIds();
-  for (var i = 0; i < changedCellIds.length; i++) {
-    this.changeTerrain(changedCellIds[i]);
-  }
+  this.flushTerrainChanges();
 };
 
 PlayScreen.prototype.digTerrainAtPos = function(pos) {
   this.bitGrid.drawPill(new Segment(pos, pos), 15, 1);
+  this.flushTerrainChanges();
+};
+
+PlayScreen.prototype.flushTerrainChanges = function() {
   var changedCellIds = this.bitGrid.flushChangedCellIds();
   for (var i = 0; i < changedCellIds.length; i++) {
     this.changeTerrain(changedCellIds[i]);
@@ -300,29 +308,40 @@ PlayScreen.prototype.createWallModel = function(rect) {
 
 PlayScreen.prototype.handleInput = function() {
   if (!this.world) return;
-
-  var newVel = Vec2d.alloc();
+  var triggered = this.trigger.getVal();
+  var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
-    var sensitivity = 3;
-    this.movement.scale(sensitivity);
-    newVel.setXY(this.movement.x, -this.movement.y);
-
-    var accel = Vec2d.alloc().set(newVel).subtract(this.cursorVel);
-
-    newVel.set(this.cursorVel).add(accel);
-    this.cursorVel.set(newVel);
-    accel.free();
+    var sensitivity = 4;
+    var inertia = 0.5;
+    var newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y).scale(sensitivity);
+    this.cursorVel.scale(inertia).add(newVel.scale(1 - inertia));
+    newVel.free();
   }
-  newVel.free();
   this.trackball.reset();
   this.cursorPos.add(this.cursorVel);
-  // Increase friction at speeds less than 10, to help make smaller movements.
+  // Increase friction at speeds less than 2, to help make smaller movements.
   var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/2));
   this.cursorVel.scale(0.95 - 0.2 * slowness);
+  if (triggered) {
+    this.doTriggerAction(oldCursorPos);
+  } else {
+    this.doCursorHoverScan();
+  }
+  oldCursorPos.free();
+};
 
-  // TODO if (trigger is up) {
-  this.doCursorHoverScan();
+PlayScreen.prototype.doTriggerAction = function(oldCursorPos) {
+  switch (this.cursorMode) {
+    case PlayScreen.CursorMode.FLOOR:
+      this.bitGrid.drawPill(new Segment(oldCursorPos, this.cursorPos), this.cursorRad, 1);
+      this.flushTerrainChanges();
+      break;
+    case PlayScreen.CursorMode.WALL:
+      this.bitGrid.drawPill(new Segment(oldCursorPos, this.cursorPos), this.cursorRad, 0);
+      this.flushTerrainChanges();
+      break;
+  }
 };
 
 PlayScreen.prototype.doCursorHoverScan = function() {
