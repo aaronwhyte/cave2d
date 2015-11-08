@@ -13,6 +13,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 
   this.trigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
+      .addTrigger(new MouseTrigger())
       .addTrigger(new TouchTrigger());
 
   // for sound throttling
