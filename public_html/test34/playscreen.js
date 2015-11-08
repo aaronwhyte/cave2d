@@ -21,11 +21,13 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.world = null;
   this.tiles = null;
 
+  this.viewDist = 30;
+
   this.cursorPos = new Vec2d();
   this.cursorVel = new Vec2d();
   this.cursorStamp = null; // it'll be a ring
   this.cursorColorVector = new Vec4();
-  this.cursorRad = 12;
+  this.cursorRad = this.viewDist / 20;
   this.cursorModelMatrix = new Matrix44();
   this.cursorMode = PlayScreen.CursorMode.FLOOR;
   this.cursorBody = this.createCursorBody();
@@ -35,10 +37,10 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.indicatorColorVector = new Vec4();
 
   this.cameraPos = new Vec2d();
-  this.minCameraDist = 60;
-  this.maxCameraDist = 100;
-  this.viewDist = 500;
-  this.pixelSize = 4;
+  this.minCameraDist = this.viewDist / 10;
+  this.maxCameraDist = this.viewDist / 5;
+  this.bitSize = 0.5;
+  this.bitGridMetersPerCell = this.bitSize * 32;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 
@@ -152,7 +154,7 @@ PlayScreen.prototype.initWorld = function() {
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
   for (var i = 0; i < 4; i++) {
-    this.initBoulder(new Vec2d(400 * (Math.random()-0.5), 400 * (Math.random()-0.5)), 30 * (Math.random() + 0.5));
+    this.initBoulder(new Vec2d(100 * (Math.random()-0.5), 100 * (Math.random()-0.5)), 4 * (Math.random() + 0.5));
   }
   this.initWalls();
 };
@@ -184,8 +186,8 @@ PlayScreen.prototype.createCursorBody = function() {
 };
 
 PlayScreen.prototype.initWalls = function() {
-  this.bitGrid = new BitGrid(this.pixelSize);
-  var rad = 100;
+  this.bitGrid = new BitGrid(this.bitSize);
+  var rad = 15;
   this.bitGrid.drawPill(new Segment(new Vec2d(-rad, -rad*1.2), new Vec2d(rad, -rad*1.2)), rad, 1);
 
   this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
@@ -310,9 +312,9 @@ PlayScreen.prototype.handleInput = function() {
   if (!this.world) return;
   var triggered = this.trigger.getVal();
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
+  var sensitivity = this.viewDist * 0.02;
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
-    var sensitivity = 4;
     var inertia = 0.5;
     var newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y).scale(sensitivity);
     this.cursorVel.scale(inertia).add(newVel.scale(1 - inertia));
@@ -320,8 +322,8 @@ PlayScreen.prototype.handleInput = function() {
   }
   this.trackball.reset();
   this.cursorPos.add(this.cursorVel);
-  // Increase friction at speeds less than 2, to help make smaller movements.
-  var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/2));
+  // Increase friction at low speeds, to help make smaller movements.
+  var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/sensitivity));
   this.cursorVel.scale(0.95 - 0.2 * slowness);
   if (triggered) {
     this.doTriggerAction(oldCursorPos);
@@ -420,11 +422,11 @@ PlayScreen.prototype.updateViewMatrix = function() {
 
   // scale
   this.viewMatrix.toIdentity();
-  var ratio = (this.canvas.height + this.canvas.width) / (2 + this.viewDist);
+  var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.viewDist;
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
-              ratio / this.canvas.width,
-              ratio / this.canvas.height,
+          pixelsPerMeter / this.canvas.width,
+          pixelsPerMeter / this.canvas.height,
           0.2));
 
   // center
@@ -448,9 +450,15 @@ PlayScreen.prototype.drawScene = function() {
         .setModelMatrix(this.levelModelMatrix);
     var cx = Math.round((this.cameraPos.x - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
     var cy = Math.round((this.cameraPos.y - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-    var cellRad = 3;
-    for (var dy = -cellRad; dy <= cellRad; dy++) {
-      for (var dx = -cellRad; dx <= cellRad; dx++) {
+
+    var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.viewDist;
+    var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
+    var cellsPerScreenX = this.canvas.width / pixelsPerCell;
+    var cellsPerScreenY = this.canvas.height / pixelsPerCell;
+    var rx = Math.ceil(cellsPerScreenX);
+    var ry = Math.ceil(cellsPerScreenY);
+    for (var dy = -ry; dy <= ry; dy++) {
+      for (var dx = -rx; dx <= rx; dx++) {
         this.loadCellXY(cx + dx, cy + dy);
         var cellId = this.bitGrid.getCellIdAtIndexXY(cx + dx, cy + dy);
         var tile = this.tiles[cellId];

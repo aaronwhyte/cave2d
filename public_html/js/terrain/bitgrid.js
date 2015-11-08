@@ -192,9 +192,9 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   for (var by = 0; by < BitGrid.BITS; by++) {
     var oldRowVal = isArray ? cell[by] : (startingColor ? BitGrid.ROW_OF_ONES : 0);
     var newRowVal = oldRowVal;
-    pixelCenter.y = cy * this.cellWorldSize + (by + 0.5) * this.bitWorldSize;
+    pixelCenter.y = cy * this.cellWorldSize + by * this.bitWorldSize;
     for (var bx = 0; bx < BitGrid.BITS; bx++) {
-      pixelCenter.x = cx * this.cellWorldSize + (bx + 0.5) * this.bitWorldSize;
+      pixelCenter.x = cx * this.cellWorldSize + bx * this.bitWorldSize;
       if (seg.distanceToPointSquared(pixelCenter) <= radSquared) {
         newRowVal = color
             ? (newRowVal | (1 << bx))
