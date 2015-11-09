@@ -6,7 +6,7 @@ function TouchDetector() {
   this.score = 0;
 
   var self = this;
-  this.touchListener = function(e) {
+  this.touchListener = function() {
     self.score = Math.min(5, self.score + 0.1);
   };
 }
@@ -31,8 +31,12 @@ TouchDetector.prototype.stopListening = function() {
   return this;
 };
 
-TouchDetector.prototype.getVal = function() {
+
+TouchDetector.prototype.decrease = function() {
   this.score -= 0.01;
+};
+
+TouchDetector.prototype.getVal = function() {
   return Math.max(0, Math.min(1, this.score));
 };
 
