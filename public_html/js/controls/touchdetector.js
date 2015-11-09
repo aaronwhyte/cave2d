@@ -33,7 +33,7 @@ TouchDetector.prototype.stopListening = function() {
 
 
 TouchDetector.prototype.decrease = function() {
-  this.score -= 0.01;
+  this.score = Math.max(0, this.score - 0.01);
 };
 
 TouchDetector.prototype.getVal = function() {
