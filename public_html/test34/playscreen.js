@@ -29,7 +29,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.world = null;
   this.tiles = null;
 
-  this.viewDist = 30;
+  this.viewDist = 45;
 
   this.cursorPos = new Vec2d();
   this.cursorVel = new Vec2d();
@@ -81,9 +81,9 @@ PlayScreen.CursorMode = {
 
 PlayScreen.prototype.setTouchTriggerArea = function() {
   this.triggerPixelRad = 0.5 * (this.canvas.width + this.canvas.height) * 0.17;
-  this.visibleTriggerScale = 0.8 * this.touchDetector.getVal();
+  this.visibleTriggerScale = 2/3 * this.touchDetector.getVal();
   this.triggerPixelX = this.triggerPixelRad * 0.6;
-  this.triggerPixelY = this.canvas.height * 0.6;
+  this.triggerPixelY = this.canvas.height - this.triggerPixelRad * 0.6;
 };
 
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
@@ -140,7 +140,7 @@ PlayScreen.prototype.initPermStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
 
-  var circleModel = RigidModel.createCircleMesh(4);
+  var circleModel = RigidModel.createCircleMesh(5);
   this.circleStamp = circleModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
