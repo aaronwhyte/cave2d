@@ -24,6 +24,11 @@ function TouchTrigger() {
 TouchTrigger.prototype = new Trigger();
 TouchTrigger.prototype.constructor = TouchTrigger;
 
+/**
+ * @param {function} fn  A function that takes screen coords (x, y) and returns true if the coords are
+ * within the touch trigger start zone.
+ * @returns {TouchTrigger}
+ */
 TouchTrigger.prototype.setStartZoneFunction = function(fn) {
   this.startZoneFn = fn;
   return this;

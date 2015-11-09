@@ -48,12 +48,12 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
   }
   var body = this.getBody(world);
   var bodyPos = body.getPosAtTime(world.now, this.vec2d);
+  this.modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
   renderer
       .setStamp(this.modelStamp)
-      .setColorVector(this.color);
-  this.modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
-  renderer.setModelMatrix(this.modelMatrix);
-  renderer.drawStamp();
+      .setColorVector(this.color)
+      .setModelMatrix(this.modelMatrix)
+      .drawStamp();
   this.animating = !!life;
 };
 

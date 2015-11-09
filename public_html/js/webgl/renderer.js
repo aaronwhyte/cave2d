@@ -116,10 +116,10 @@ Renderer.prototype.setColorVector = function(colorVector) {
  * @return {Renderer}
  */
 Renderer.prototype.setStamp = function(stamp) {
-  if (this.modelStamp !== stamp) {
+  //if (this.modelStamp !== stamp) {
     this.modelStamp = stamp;
     stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor);
-  }
+  //}
   return this;
 };
 

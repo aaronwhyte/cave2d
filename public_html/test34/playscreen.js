@@ -7,14 +7,21 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
-      .addTrackball(new TouchTrackball());
+      .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
+        return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) > self.triggerPixelRad;
+      }));
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
 
+  this.setTouchTriggerArea();
+  var self = this;
   this.trigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
       .addTrigger(new MouseTrigger())
-      .addTrigger(new TouchTrigger());
+      .addTrigger(new TouchTrigger().setStartZoneFunction(function(x, y) {
+        return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) <= self.triggerPixelRad;
+      }));
+  this.touchDetector = new TouchDetector();
 
   // for sound throttling
   this.hitsThisFrame = 0;
@@ -29,17 +36,18 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.cursorStamp = null; // it'll be a ring
   this.cursorColorVector = new Vec4();
   this.cursorRad = this.viewDist / 20;
-  this.cursorModelMatrix = new Matrix44();
+  this.modelMatrix = new Matrix44();
   this.cursorMode = PlayScreen.CursorMode.FLOOR;
   this.cursorBody = this.createCursorBody();
   this.indicatedBodyId = null;
   this.indicatorChangeTime = 0;
   this.indicatorStamp = null; // it'll be a ring
   this.indicatorColorVector = new Vec4();
+  this.hudViewMatrix = new Matrix44();
 
   this.cameraPos = new Vec2d();
-  this.minCameraDist = this.viewDist / 10;
-  this.maxCameraDist = this.viewDist / 5;
+  this.minCameraDist = this.viewDist * 0.2;
+  this.maxCameraDist = this.viewDist * 0.6;
   this.bitSize = 0.5;
   this.bitGridMetersPerCell = this.bitSize * 32;
   this.levelModelMatrix = new Matrix44();
@@ -71,6 +79,12 @@ PlayScreen.CursorMode = {
   OBJECT: 2
 };
 
+PlayScreen.prototype.setTouchTriggerArea = function() {
+  this.triggerPixelRad = 0.5 * (this.canvas.width + this.canvas.height) * 0.17;
+  this.triggerPixelX = this.triggerPixelRad * 0.5;
+  this.triggerPixelY = this.canvas.height * 0.6;
+};
+
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
   if (Vec2d.distance(pageX, pageY, this.canvas.width/2, 0) < Math.min(this.canvas.height, this.canvas.width)/4) {
     this.pauseGame();
@@ -89,9 +103,11 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen) {
     this.trackball.startListening();
     this.trigger.startListening();
+    this.touchDetector.startListening();
   } else {
     this.trackball.stopListening();
     this.trigger.stopListening();
+    this.touchDetector.stopListening();
   }
   this.listening = listen;
 };
@@ -311,6 +327,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
 
 PlayScreen.prototype.handleInput = function() {
   if (!this.world) return;
+  this.setTouchTriggerArea();
   var triggered = this.trigger.getVal();
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.viewDist * 0.02;
@@ -435,11 +452,11 @@ PlayScreen.prototype.updateViewMatrix = function() {
       -this.cameraPos.x,
       -this.cameraPos.y,
       0));
-
-  this.renderer.setViewMatrix(this.viewMatrix);
 };
 
 PlayScreen.prototype.drawScene = function() {
+  this.renderer.setBlendingEnabled(false);
+  this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
@@ -473,14 +490,15 @@ PlayScreen.prototype.drawScene = function() {
   }
 
   this.renderer.setBlendingEnabled(true);
+
   // draw cursor
   this.renderer
       .setStamp(this.cursorStamp)
       .setColorVector(this.getCursorColorVector());
-  this.cursorModelMatrix.toIdentity()
+  this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
       .multiply(this.mat44.toScaleOpXYZ(this.cursorRad, this.cursorRad, 1));
-  this.renderer.setModelMatrix(this.cursorModelMatrix);
+  this.renderer.setModelMatrix(this.modelMatrix);
   this.renderer.drawStamp();
 
   // body indicator
@@ -490,13 +508,13 @@ PlayScreen.prototype.drawScene = function() {
     this.renderer
         .setStamp(this.indicatorStamp)
         .setColorVector(this.getIndicatorColorVector());
-    this.cursorModelMatrix.toIdentity()
+    this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
-    this.renderer.setModelMatrix(this.cursorModelMatrix);
+    this.renderer.setModelMatrix(this.modelMatrix);
     this.renderer.drawStamp();
   }
-  this.renderer.setBlendingEnabled(false);
+  this.drawHud();
 
   if (this.restarting) {
     this.controller.restart();
@@ -506,6 +524,31 @@ PlayScreen.prototype.drawScene = function() {
     this.controller.requestAnimation();
   }
 };
+
+/**
+ * Draw stuff on screen coords, with 0,0 at the top left and canvas.width, canvas.height at the bottom right.
+ */
+PlayScreen.prototype.drawHud = function() {
+  // Set hud view matrix
+  this.hudViewMatrix.toIdentity()
+      .multiply(this.mat4.toScaleOpXYZ(
+          2 / this.canvas.width,
+          -2 / this.canvas.height,
+          1))
+      .multiply(this.mat4.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
+  this.renderer.setViewMatrix(this.hudViewMatrix);
+
+  // draw trigger
+  this.renderer
+      .setStamp(this.circleStamp)
+      .setColorVector(this.getTriggerColorVector());
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(this.triggerPixelX, this.triggerPixelY, -0.99))
+      .multiply(this.mat44.toScaleOpXYZ(this.triggerPixelRad, this.triggerPixelRad, 1));
+  this.renderer.setModelMatrix(this.modelMatrix);
+  this.renderer.drawStamp();
+};
+
 
 PlayScreen.prototype.getCursorColorVector = function() {
   switch(this.cursorMode) {
@@ -522,6 +565,14 @@ PlayScreen.prototype.getCursorColorVector = function() {
       this.cursorColorVector.v[3] = 0.4;
       break;
   }
+  return this.cursorColorVector;
+};
+
+PlayScreen.prototype.getTriggerColorVector = function() {
+  this.cursorColorVector.setXYZ(1, 1, 1);
+  var val = this.touchDetector.getVal();
+  console.log(val);
+  this.cursorColorVector.v[3] = 0.15 * val;
   return this.cursorColorVector;
 };
 

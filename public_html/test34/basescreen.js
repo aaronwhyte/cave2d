@@ -99,7 +99,7 @@ BaseScreen.prototype.drawScreen = function(visibility) {
   if (this.visibility == 1) {
     this.clock();
   }
-  this.updateViewMatrix(Date.now());
+  this.updateViewMatrix();
   this.drawScene();
   this.canvasToClipMatrixDirty = true;
   this.clipToWorldMatrixDirty = true;
