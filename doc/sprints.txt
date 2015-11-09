@@ -59,20 +59,20 @@ v multitrigger
   v regular trigger
   v keytrigger
   v touchtrigger
-  - add invisible touch trigger and key trigger to multitrigger and see if it goes.
+  v add invisible touch trigger and key trigger to multitrigger and see if it goes.
     v multi keys down/up separately and are ORed together
     v unlisten works
-    - touch trigger blocks touch trackball from eventing. order of add? zone function sharing?
+    v touch trigger blocks touch trackball from eventing. order of add? zone function sharing?
 v Use trigger in test for terrain editing.
   v triggerDown with wall/floor indicator starts floor/wall initial position, draws first pill.
   v drawPill from old to new position, then let old=new.
   v triggerUp ends it
-- draw touchscreen trigger
-  - circle on viewport coords, not world coords.
-  ? only draw if there have been touch events in the last N seconds.
-- Handle rotation/resize...
-  - Track trigger pos as fraction of screen width/height, 0..1
-  - Start at 0.9, 0.9
+v draw touchscreen trigger
+  v circle on viewport coords, not world coords.
+  v only draw if there have been touch events in the last N seconds.
+v Handle rotation/resize...
+  v Track trigger pos as fraction of screen width/height, 0..1
+  v Start at 0.9, 0.9
 - Add trigger to game1 - no more auto-firing.
 
 Refactor
