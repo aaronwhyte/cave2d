@@ -456,7 +456,6 @@ PlayScreen.prototype.updateViewMatrix = function() {
 };
 
 PlayScreen.prototype.drawScene = function() {
-  this.renderer.setBlendingEnabled(false);
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
   for (var id in this.world.spirits) {
@@ -490,8 +489,8 @@ PlayScreen.prototype.drawScene = function() {
     }
   }
 
-  this.renderer.setBlendingEnabled(true);
 
+  this.renderer.setBlendingEnabled(true);
   // draw cursor
   this.renderer
       .setStamp(this.cursorStamp)
@@ -516,6 +515,7 @@ PlayScreen.prototype.drawScene = function() {
     this.renderer.drawStamp();
   }
   this.drawHud();
+  this.renderer.setBlendingEnabled(false);
 
   if (this.restarting) {
     this.controller.restart();

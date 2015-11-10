@@ -73,11 +73,8 @@ v draw touchscreen trigger
 v Handle rotation/resize...
   v Track trigger pos as fraction of screen width/height, 0..1
   v Start at 0.9, 0.9
-- Add trigger to game1 - no more auto-firing.
-
-Refactor
-- Pull up cursor/player accel logic from test33 and game1
-- Pull up camera control too.
+v Add trigger to game1 - no more auto-firing.
+Done 2015-11-09
 
 Dragging objects
 - triggerDown centers cursor on object?
@@ -89,13 +86,12 @@ save and load from string
 
 Add & delete objects
 - Add action, menu... oh no, menus!
-- Delete pseudomode
+- Deletion pseudomode
 
 Particles
 - test page - fireworks?
 - game1 every kind of explosion
 - game1 muzzle flash
-- test33 digging
 
 Tractor Beam
 - game1 change gun to tractor beam

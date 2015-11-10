@@ -4,11 +4,24 @@
  */
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
+
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
-      .addTrackball(new TouchTrackball());
+      .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
+        return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) > self.triggerPixelRad;
+      }));
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
+
+  this.touchDetector = new TouchDetector();
+  this.setTouchTriggerArea();
+  var self = this;
+  this.trigger = new MultiTrigger()
+      .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
+      .addTrigger(new MouseTrigger())
+      .addTrigger(new TouchTrigger().setStartZoneFunction(function(x, y) {
+        return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) <= self.triggerPixelRad;
+      }));
 
   // for sound throttling
   this.hitsThisFrame = 0;
@@ -17,6 +30,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.tiles = null;
   this.tempPlayerPos = new Vec2d();
   this.lastPlayerFireTime = 0;
+  this.aim = new Vec2d();
 
   this.cameraPos = new Vec2d();
   this.minCameraDist = 30;
@@ -25,6 +39,11 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.pixelSize = 4;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
+
+  this.colorVector = new Vec4();
+  this.modelMatrix = new Matrix44();
+  this.mat44 = new Matrix44();
+  this.hudViewMatrix = new Matrix44();
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -34,9 +53,9 @@ PlayScreen.WORLD_CELL_SIZE = 4 * 32;
 PlayScreen.ENEMY_MISSILE_RAD = 5;
 
 PlayScreen.PLAYER_MISSILE_RAD = 5;
-PlayScreen.PLAYER_FIRE_DELAY = 10;
-PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 1;
-PlayScreen.PLAYER_MISSILE_SPEED_BOOST = 12;
+PlayScreen.PLAYER_FIRE_DELAY = 7;
+PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 0.1;
+PlayScreen.PLAYER_MISSILE_SPEED = 18;
 PlayScreen.PLAYER_MISSILE_DURATION = 15;
 
 
@@ -56,6 +75,13 @@ PlayScreen.Terrain = {
   MIXED: 2
 };
 
+PlayScreen.prototype.setTouchTriggerArea = function() {
+  this.triggerPixelRad = 0.5 * (this.canvas.width + this.canvas.height) * 0.17;
+  this.visibleTriggerScale = 2/3 * this.touchDetector.getVal();
+  this.triggerPixelX = this.triggerPixelRad * 0.6;
+  this.triggerPixelY = this.canvas.height - this.triggerPixelRad * 0.6;
+};
+
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
   if (Vec2d.distance(pageX, pageY, this.canvas.width/2, 0) < Math.min(this.canvas.height, this.canvas.width)/4) {
     this.pauseGame();
@@ -73,8 +99,12 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     this.trackball.startListening();
+    this.trigger.startListening();
+    this.touchDetector.startListening();
   } else {
     this.trackball.stopListening();
+    this.trigger.stopListening();
+    this.touchDetector.stopListening();
   }
   this.listening = listen;
 };
@@ -105,6 +135,10 @@ PlayScreen.prototype.initPermStamps = function() {
 
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
+
+  var circleModel = RigidModel.createCircleMesh(5);
+  this.circleStamp = circleModel.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.circleStamp);
 
   var sphereModel = RigidModel.createOctahedron()
       .createQuadrupleTriangleModel()
@@ -382,17 +416,21 @@ PlayScreen.prototype.createWallModel = function(rect) {
 
 PlayScreen.prototype.handleInput = function() {
   if (!this.world) return;
+
+  this.setTouchTriggerArea();
+  var triggered = this.trigger.getVal();
+
   var spirit = this.world.spirits[this.playerSpiritId];
   var body = this.world.bodies[spirit.bodyId];
   var newVel = Vec2d.alloc();
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
-    var sensitivity = 4;
+    var sensitivity = 4;//triggered ? 0.5 : 4;
     this.movement.scale(sensitivity);
     newVel.setXY(this.movement.x, -this.movement.y);
 
     var accel = Vec2d.alloc().set(newVel).subtract(body.vel);
-    var maxAccel = 10;
+    var maxAccel = triggered ? 0.4 : 10;
     // If it's over 1, then use a square root to lower it.
     // (If it's less than 1, then sqrt will make it bigger, so don't bother.)
     var mag = accel.magnitude();
@@ -402,19 +440,26 @@ PlayScreen.prototype.handleInput = function() {
     accel.clipToMaxLength(maxAccel);
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
-
-    var missileVel = this.trackball.getVal(this.movement).scaleXY(1, -1);
-    var missileVelMag = missileVel.magnitude();
-    // Fire faster by moving faster
-    if (this.world.now + Math.sqrt(missileVelMag*2) >= this.lastPlayerFireTime + PlayScreen.PLAYER_FIRE_DELAY &&
-        missileVelMag >= PlayScreen.PLAYER_MIN_SPEED_TO_FIRE) {
-      missileVel.scaleToLength(missileVelMag + PlayScreen.PLAYER_MISSILE_SPEED_BOOST);
-      this.playerFire(this.getPlayerPos(), missileVel);
-      this.lastPlayerFireTime = this.world.now;
-    }
     accel.free();
   }
   newVel.free();
+
+  if (!triggered) {
+    this.aim.reset();
+  } else {
+    if (this.aim.isZero()) {
+      var missileVel = this.trackball.getVal(this.movement).scaleXY(1, -1);
+      var missileVelMag = missileVel.magnitude();
+      if (missileVelMag > PlayScreen.PLAYER_MIN_SPEED_TO_FIRE) {
+        this.aim.set(missileVel).scaleToLength(PlayScreen.PLAYER_MISSILE_SPEED);
+      }
+    }
+    if (this.world.now >= this.lastPlayerFireTime + PlayScreen.PLAYER_FIRE_DELAY && !this.aim.isZero()) {
+      this.playerFire(this.getPlayerPos(), this.aim);
+      this.lastPlayerFireTime = this.world.now;
+    }
+  }
+
   this.trackball.reset();
 };
 
@@ -551,6 +596,8 @@ PlayScreen.prototype.drawScene = function() {
     }
   }
 
+  this.drawHud();
+
   if (this.restarting) {
     this.controller.restart();
     this.restarting = false;
@@ -558,6 +605,44 @@ PlayScreen.prototype.drawScene = function() {
     // Animate whenever this thing draws.
     this.controller.requestAnimation();
   }
+};
+
+/**
+ * Draw stuff on screen coords, with 0,0 at the top left and canvas.width, canvas.height at the bottom right.
+ */
+PlayScreen.prototype.drawHud = function() {
+  this.renderer.setBlendingEnabled(true);
+  this.touchDetector.decrease();
+
+  // Set hud view matrix
+  this.hudViewMatrix.toIdentity()
+      .multiply(this.mat4.toScaleOpXYZ(
+              2 / this.canvas.width,
+              -2 / this.canvas.height,
+          1))
+      .multiply(this.mat4.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
+  this.renderer.setViewMatrix(this.hudViewMatrix);
+
+  // draw trigger
+  this.renderer
+      .setStamp(this.circleStamp)
+      .setColorVector(this.getTriggerColorVector());
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(this.triggerPixelX, this.triggerPixelY, -0.99))
+      .multiply(this.mat44.toScaleOpXYZ(
+              this.triggerPixelRad * this.visibleTriggerScale,
+              this.triggerPixelRad * this.visibleTriggerScale,
+          1));
+  this.renderer.setModelMatrix(this.modelMatrix);
+  this.renderer.drawStamp();
+  this.renderer.setBlendingEnabled(false);
+};
+
+PlayScreen.prototype.getTriggerColorVector = function() {
+  this.colorVector.setXYZ(1, 1, 1);
+  var touchiness = this.touchDetector.getVal();
+  this.colorVector.v[3] = this.trigger.getVal() ? 0.2 : 0.1 * touchiness;
+  return this.colorVector;
 };
 
 PlayScreen.prototype.unloadLevel = function() {
@@ -633,9 +718,9 @@ PlayScreen.prototype.enemyFire = function(fromPos, vel) {
 
 PlayScreen.prototype.playerFire = function(fromPos, vel) {
   this.initPlayerMissile(fromPos, vel);
-  var spread = Math.PI/32;
-  this.initPlayerMissile(fromPos, vel.rot(-spread));
-  this.initPlayerMissile(fromPos, vel.rot(spread*2));
+//  var spread = Math.PI/32;
+//  this.initPlayerMissile(fromPos, vel.rot(-spread));
+//  this.initPlayerMissile(fromPos, vel.rot(spread*2));
   this.soundBang(fromPos);
 };
 
