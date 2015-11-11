@@ -54,9 +54,9 @@ PlayScreen.ENEMY_MISSILE_RAD = 5;
 
 PlayScreen.PLAYER_MISSILE_RAD = 5;
 PlayScreen.PLAYER_FIRE_DELAY = 7;
-PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 0.1;
-PlayScreen.PLAYER_MISSILE_SPEED = 18;
-PlayScreen.PLAYER_MISSILE_DURATION = 15;
+PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 0.01;
+PlayScreen.PLAYER_MISSILE_SPEED = 15;
+PlayScreen.PLAYER_MISSILE_DURATION = 10;
 
 
 PlayScreen.Group = {
@@ -425,29 +425,26 @@ PlayScreen.prototype.handleInput = function() {
   var newVel = Vec2d.alloc();
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
-    var sensitivity = 4;//triggered ? 0.5 : 4;
+    var sensitivity = 4;
     this.movement.scale(sensitivity);
     newVel.setXY(this.movement.x, -this.movement.y);
 
     var accel = Vec2d.alloc().set(newVel).subtract(body.vel);
-    var maxAccel = triggered ? 0.4 : 10;
-    // If it's over 1, then use a square root to lower it.
-    // (If it's less than 1, then sqrt will make it bigger, so don't bother.)
-    var mag = accel.magnitude();
-    if (mag > 1) {
-      accel.scaleToLength(Math.sqrt(mag));
-    }
+    var maxAccel = 10;
     accel.clipToMaxLength(maxAccel);
+
+    // Firing makes you much less maneuverable
+    if (triggered) accel.scale(0.02);
+
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
     accel.free();
   }
-  newVel.free();
 
   if (!triggered) {
     this.aim.reset();
   } else {
-    if (this.aim.isZero()) {
+    if (true || this.aim.isZero()) {
       var missileVel = this.trackball.getVal(this.movement).scaleXY(1, -1);
       var missileVelMag = missileVel.magnitude();
       if (missileVelMag > PlayScreen.PLAYER_MIN_SPEED_TO_FIRE) {
@@ -459,6 +456,8 @@ PlayScreen.prototype.handleInput = function() {
       this.lastPlayerFireTime = this.world.now;
     }
   }
+
+  newVel.free();
 
   this.trackball.reset();
 };
