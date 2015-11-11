@@ -334,7 +334,7 @@ PlayScreen.prototype.handleInput = function() {
   var sensitivity = this.viewDist * 0.02;
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
-    var inertia = 0.5;
+    var inertia = 0.75;
     var newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y).scale(sensitivity);
     this.cursorVel.scale(inertia).add(newVel.scale(1 - inertia));
     newVel.free();
