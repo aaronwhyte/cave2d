@@ -322,7 +322,8 @@ PlayScreen.prototype.createWallModel = function(rect) {
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
-  wallModel.setColorRGB(0.5, 0.3, 0.7);
+//  wallModel.setColorRGB(0.5, 0.3, 0.7);
+  wallModel.setColorRGB(Math.random()/2+0.3, Math.random() * 0.5, Math.random()/2+0.5);
   return wallModel;
 };
 
@@ -489,9 +490,11 @@ PlayScreen.prototype.drawScene = function() {
     }
   }
 
+  // Draw UI stuff that goes on top of the world
 
   this.renderer.setBlendingEnabled(true);
-  // draw cursor
+
+  // cursor
   this.renderer
       .setStamp(this.cursorStamp)
       .setColorVector(this.getCursorColorVector());
@@ -501,7 +504,7 @@ PlayScreen.prototype.drawScene = function() {
   this.renderer.setModelMatrix(this.modelMatrix);
   this.renderer.drawStamp();
 
-  // body indicator
+  // highlighted body indicator
   var body = this.world.bodies[this.indicatedBodyId];
   if (body) {
     var bodyPos = this.getBodyPos(body);
