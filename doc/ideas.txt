@@ -18,8 +18,8 @@ x Very loose coupling?
 v Web Audio
 v Multiple renderers
 v Touch and mouse support
-- Event-driven, using predicted inter-frame delays to do expected work and prep a graphics frame.
-- Quad-tree wall/space support
+v Event-driven, using predicted inter-frame delays to do expected work and prep a graphics frame.
+v Quad-tree wall/space support
 - Focus on letting people (me) make new games, not new levels in existing game?
 - Robots.
 v WebGL!
