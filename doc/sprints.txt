@@ -76,27 +76,59 @@ v Handle rotation/resize...
 v Add trigger to game1 - no more auto-firing.
 Done 2015-11-09
 
-Dragging objects
-- triggerDown centers cursor on object?
-- dragging accelerates object? Or teleports it? Depends on distance?
+Systematize
+Adding a cursor should probably not take hundreds of lines of code.
+Figure out what the key objects and interfaces are, and try to factor out the reusable code. Some ideas:
+* Camera, in tests and game
+* World - OK as-is
+* Terrain, in tests and game
+* Cursor as a renderable world thingy, in tests
+* Trackball moves cursor. Good enough as-is?
+* cursor+camera = panning. Utility with inner/outer thresholds?
+* cursor+trigger+world = pointing, highlighting, modes
+* editable terrain - invalidation, pill drawing, etc.
 
-save and load from string
-- terrain: BitGrid s27n
-- objects, positions, velocities
+Drag objects
+You can drag things by applying force to them in the world, or you can simply lift them out of the world and relocate
+them.
+v test35 exists
+- Put objects in the tunnel parts.
+- Dragging applies force to objects to accelerate them towards the cursor.
+  - Remember model-coord grip point
+  - adjust force to be proportional to object's mass.
+- Lifting
+  - If cursor distance is too great for too long (low-pass average dist?), "lift" the object.
+  - Lifted objects are treated as though they are uniform density, normal MOI, with no physics or collisions.
+  - Can lifted objects be sensed with rayscans? No, they're transferred to the "none" group.
+  - Only one object can be lifted at a time (wory about multi-user in the distant future).
+  - Lifting ends when you release the object.
+  * When time is frozen (upcoming feature), all object-movement is by lifting, because there is no time for physics.
+  * When adding objects, they are lifted as they leave the menu.
+- Alter orientation
+  - Bodies have orientation and a moment of inertia.
+  - Force can rotate bodies
+
 
 Add & delete objects
 - Add action, menu... oh no, menus!
 - Deletion pseudomode
+
+Save and load from string
+- terrain: BitGrid s27n
+- bodies
+- spirits
+- time, timeouts
 
 Particles
 - test page - fireworks?
 - game1 every kind of explosion
 - game1 muzzle flash
 
+Zoomable UI
+- Scrollwheel zooms between some fixed zoom levels
+- Touching the zoom indicator buttons zooms to that level Maybe four: close, medium, wide, far.
+
 Tractor Beam
-- game1 change gun to tractor beam
-- game1 add tools
-- game1 make critters grabbable
 
 Bomb Factory
 
