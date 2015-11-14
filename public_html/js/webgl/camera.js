@@ -1,14 +1,14 @@
-function Camera(viewDist, minDistFraction, maxDistFraction) {
+function Camera(minDistFraction, maxDistFraction, viewDist) {
   this.cameraPos = new Vec2d();
-  this.viewDist = viewDist;
   this.minDistFraction = minDistFraction;
   this.maxDistFraction = maxDistFraction;
+  this.viewDist = viewDist;
 }
 
 Camera.prototype.follow = function(followPos) {
   var cameraDist = followPos.distance(this.cameraPos);
-  var minCameraDist = this.viewDist * 0.2;
-  var maxCameraDist = this.viewDist * 0.6;
+  var minCameraDist = this.viewDist * this.minDistFraction;
+  var maxCameraDist = this.viewDist * this.maxDistFraction;
 
   // Move towards min dist
   if (cameraDist > minCameraDist) {
@@ -32,6 +32,10 @@ Camera.prototype.follow = function(followPos) {
   }
 };
 
+Camera.prototype.setXY = function(x, y) {
+  this.cameraPos.setXY(x, y);
+};
+
 Camera.prototype.getX = function() {
   return this.cameraPos.x;
 };
@@ -43,3 +47,4 @@ Camera.prototype.getY = function() {
 Camera.prototype.getViewDist = function() {
   return this.viewDist;
 };
+

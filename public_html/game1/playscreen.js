@@ -32,10 +32,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.lastPlayerFireTime = 0;
   this.aim = new Vec2d();
 
-  this.cameraPos = new Vec2d();
-  this.minCameraDist = 30;
-  this.maxCameraDist = 100;
-  this.viewDist = 500;
+  this.camera = new Camera(0.06, 0.2, 500);
   this.pixelSize = 4;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
@@ -533,26 +530,9 @@ PlayScreen.prototype.bonk = function(body, mag) {
 };
 
 PlayScreen.prototype.updateViewMatrix = function() {
-  var cameraDist = this.getPlayerPos().distance(this.cameraPos);
-  if (cameraDist > this.minCameraDist) {
-    var temp = Vec2d.alloc();
-    temp.set(this.getPlayerPos())
-        .subtract(this.cameraPos)
-        .scaleToLength((cameraDist-this.minCameraDist) * 0.1)
-        .add(this.cameraPos);
-    this.cameraPos.set(temp);
-    cameraDist = this.getPlayerPos().distance(this.cameraPos);
-    if (cameraDist > this.maxCameraDist) {
-      temp.set(this.getPlayerPos())
-          .subtract(this.cameraPos)
-          .scaleToLength(cameraDist - this.maxCameraDist)
-          .add(this.cameraPos);
-      this.cameraPos.set(temp);
-    }
-    temp.free();
-  }
+  this.camera.follow(this.getPlayerPos());
   this.viewMatrix.toIdentity();
-  var ratio = (this.canvas.height + this.canvas.width) / (2 + this.viewDist);
+  var ratio = (this.canvas.height + this.canvas.width) / (2 + this.camera.getViewDist());
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
               ratio / this.canvas.width,
@@ -561,8 +541,8 @@ PlayScreen.prototype.updateViewMatrix = function() {
 
   // center
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(
-      -this.cameraPos.x,
-      -this.cameraPos.y,
+      -this.camera.getX(),
+      -this.camera.getY(),
       0));
 
   this.renderer.setViewMatrix(this.viewMatrix);
@@ -578,8 +558,8 @@ PlayScreen.prototype.drawScene = function() {
     this.renderer
         .setColorVector(this.levelColorVector)
         .setModelMatrix(this.levelModelMatrix);
-    var cx = Math.round((this.cameraPos.x - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-    var cy = Math.round((this.cameraPos.y - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
+    var cx = Math.round((this.camera.getX() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
+    var cy = Math.round((this.camera.getY() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
     var cellRad = 3;
     for (var dy = -cellRad; dy <= cellRad; dy++) {
       for (var dx = -cellRad; dx <= cellRad; dx++) {

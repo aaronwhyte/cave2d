@@ -29,14 +29,13 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.world = null;
   this.tiles = null;
 
-  this.viewDist = 45;
-  this.camera = new Camera(this.viewDist, 0.2, 0.6);
+  this.camera = new Camera(0.2, 0.6, 45);
 
   this.cursorPos = new Vec2d();
   this.cursorVel = new Vec2d();
   this.cursorStamp = null; // it'll be a ring
   this.cursorColorVector = new Vec4();
-  this.cursorRad = this.viewDist / 20;
+  this.cursorRad = this.camera.getViewDist() / 20;
   this.modelMatrix = new Matrix44();
   this.cursorMode = PlayScreen.CursorMode.FLOOR;
   this.cursorBody = this.createCursorBody();
@@ -330,7 +329,7 @@ PlayScreen.prototype.handleInput = function() {
   this.setTouchTriggerArea();
   var triggered = this.trigger.getVal();
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
-  var sensitivity = this.viewDist * 0.02;
+  var sensitivity = this.camera.getViewDist() * 0.02;
   if (this.trackball.isTouched()) {
     this.trackball.getVal(this.movement);
     var inertia = 0.75;
@@ -451,7 +450,7 @@ PlayScreen.prototype.drawScene = function() {
     var cx = Math.round((this.camera.getX() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
     var cy = Math.round((this.camera.getY() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
 
-    var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.viewDist;
+    var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
     var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
     var cellsPerScreenX = this.canvas.width / pixelsPerCell;
     var cellsPerScreenY = this.canvas.height / pixelsPerCell;
@@ -592,6 +591,7 @@ PlayScreen.prototype.unloadLevel = function() {
   }
   this.cursorPos.reset();
   this.cursorVel.reset();
+  this.camera.setXY(0, 0);
 };
 
 PlayScreen.prototype.getBodyPos = function(body) {
