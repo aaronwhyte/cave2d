@@ -30,6 +30,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.tiles = null;
 
   this.viewDist = 45;
+  this.camera = new Camera(this.viewDist, 0.2, 0.6);
 
   this.cursorPos = new Vec2d();
   this.cursorVel = new Vec2d();
@@ -45,9 +46,6 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.indicatorColorVector = new Vec4();
   this.hudViewMatrix = new Matrix44();
 
-  this.cameraPos = new Vec2d();
-  this.minCameraDist = this.viewDist * 0.2;
-  this.maxCameraDist = this.viewDist * 0.6;
   this.bitSize = 0.5;
   this.bitGridMetersPerCell = this.bitSize * 32;
   this.levelModelMatrix = new Matrix44();
@@ -323,7 +321,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
 //  wallModel.setColorRGB(0.5, 0.3, 0.7);
-  wallModel.setColorRGB(Math.random()/2+0.3, Math.random() * 0.5, Math.random()/2+0.5);
+  wallModel.setColorRGB(Math.random()/2+0.3 , Math.random() * 0.5, Math.random()/2+0.5);
   return wallModel;
 };
 
@@ -421,28 +419,9 @@ PlayScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
 };
 
 PlayScreen.prototype.updateViewMatrix = function() {
-  var cameraDist = this.cursorPos.distance(this.cameraPos);
-  if (cameraDist > this.minCameraDist) {
-    var temp = Vec2d.alloc();
-    temp.set(this.cursorPos)
-        .subtract(this.cameraPos)
-        .scaleToLength((cameraDist-this.minCameraDist) * 0.1)
-        .add(this.cameraPos);
-    this.cameraPos.set(temp);
-    cameraDist = this.cursorPos.distance(this.cameraPos);
-    if (cameraDist > this.maxCameraDist) {
-      temp.set(this.cursorPos)
-          .subtract(this.cameraPos)
-          .scaleToLength(cameraDist - this.maxCameraDist)
-          .add(this.cameraPos);
-      this.cameraPos.set(temp);
-    }
-    temp.free();
-  }
-
   // scale
   this.viewMatrix.toIdentity();
-  var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.viewDist;
+  var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
   this.viewMatrix
       .multiply(this.mat4.toScaleOpXYZ(
           pixelsPerMeter / this.canvas.width,
@@ -451,12 +430,14 @@ PlayScreen.prototype.updateViewMatrix = function() {
 
   // center
   this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(
-      -this.cameraPos.x,
-      -this.cameraPos.y,
+      -this.camera.getX(),
+      -this.camera.getY(),
       0));
 };
 
 PlayScreen.prototype.drawScene = function() {
+  this.camera.follow(this.cursorPos);
+
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
   for (var id in this.world.spirits) {
@@ -467,8 +448,8 @@ PlayScreen.prototype.drawScene = function() {
     this.renderer
         .setColorVector(this.levelColorVector)
         .setModelMatrix(this.levelModelMatrix);
-    var cx = Math.round((this.cameraPos.x - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-    var cy = Math.round((this.cameraPos.y - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
+    var cx = Math.round((this.camera.getX() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
+    var cy = Math.round((this.camera.getY() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
 
     var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.viewDist;
     var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
@@ -611,7 +592,6 @@ PlayScreen.prototype.unloadLevel = function() {
   }
   this.cursorPos.reset();
   this.cursorVel.reset();
-  this.cameraPos.reset();
 };
 
 PlayScreen.prototype.getBodyPos = function(body) {
