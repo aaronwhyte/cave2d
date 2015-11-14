@@ -32,9 +32,9 @@ TitleScreen.prototype.initWorld = function() {
 
   // TITLE
   buttonMaker.setLetterColor([0.75*0.7, 0.25 * 0.7, 1*0.7]).setBlockColor(null).setScale(1);
-  buttonMaker.addButton(0, 5, "TEST 34", null);
-  buttonMaker.addButton(0, 0, "TRIGGER", null);
-  //buttonMaker.setScale(0.5).addButton(0, -3, "USE THE 'Z' KEY", null);
+  buttonMaker.addButton(0, 12, "TEST 34", null);
+  buttonMaker.addButton(0, 5, "TERRAIN", null);
+  buttonMaker.addButton(0, 0, "DRAGGING", null);
   buttonMaker.setScale(1);
 
   // PLAY
@@ -75,6 +75,7 @@ TitleScreen.prototype.initWorld = function() {
     var b = this.world.bodies[s.bodyId];
     this.worldBoundingRect.coverRect(b.getBoundingRectAtTime(this.world.now));
   }
+  this.worldBoundingRect.pad(1);
 };
 
 TitleScreen.prototype.onSpaceDown = function() {
