@@ -434,7 +434,7 @@ PlayScreen.prototype.handleInput = function() {
     accel.clipToMaxLength(maxAccel);
 
     // Firing makes you much less maneuverable
-    if (triggered) accel.scale(0.02);
+    if (triggered) accel.scale(0.1);
 
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
