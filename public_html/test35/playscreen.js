@@ -36,13 +36,19 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.cursorStamp = null; // it'll be a ring
   this.cursorColorVector = new Vec4();
   this.cursorRad = this.camera.getViewDist() / 20;
-  this.modelMatrix = new Matrix44();
   this.cursorMode = PlayScreen.CursorMode.FLOOR;
   this.cursorBody = this.createCursorBody();
+
   this.indicatedBodyId = null;
   this.indicatorChangeTime = 0;
   this.indicatorStamp = null; // it'll be a ring
   this.indicatorColorVector = new Vec4();
+
+  this.gripPoint = null;
+  this.gripAccelFraction = 0.3;
+  this.gripFriction = 0.2;
+
+  this.modelMatrix = new Matrix44();
   this.hudViewMatrix = new Matrix44();
 
   this.bitSize = 0.5;
@@ -345,6 +351,10 @@ PlayScreen.prototype.handleInput = function() {
   if (triggered) {
     this.doTriggerAction(oldCursorPos);
   } else {
+    if (this.gripPoint) {
+      this.gripPoint.free();
+      this.gripPoint = null;
+    }
     this.doCursorHoverScan();
   }
   oldCursorPos.free();
@@ -360,7 +370,31 @@ PlayScreen.prototype.doTriggerAction = function(oldCursorPos) {
       this.bitGrid.drawPill(new Segment(oldCursorPos, this.cursorPos), this.cursorRad, 0);
       this.flushTerrainChanges();
       break;
+    case PlayScreen.CursorMode.OBJECT:
+      this.dragObject();
+      break;
   }
+};
+
+PlayScreen.prototype.dragObject = function() {
+  var body = this.world.bodies[this.indicatedBodyId];
+  var bodyPos = this.getBodyPos(body);
+  if (!this.gripPoint) {
+    // Get a grip.
+    this.gripPoint = Vec2d.alloc()
+        .set(this.cursorPos)
+        .subtract(bodyPos);
+  }
+  // Drag it! Drag it? Drag it!
+  var newVel = Vec2d.alloc()
+      .set(this.cursorPos)
+      .subtract(bodyPos)
+      .subtract(this.gripPoint)
+      .scale(this.gripAccelFraction)
+      .add(body.vel)
+      .scale(1 - this.gripFriction);
+  body.setVelAtTime(newVel, this.world.now);
+  newVel.free();
 };
 
 PlayScreen.prototype.doCursorHoverScan = function() {
@@ -538,38 +572,32 @@ PlayScreen.prototype.drawHud = function() {
   this.renderer.drawStamp();
 };
 
-
 PlayScreen.prototype.getCursorColorVector = function() {
   var brightness = 0.5 + 0.5 * this.trigger.getVal();
   switch(this.cursorMode) {
     case PlayScreen.CursorMode.FLOOR:
-      this.cursorColorVector.setXYZ(1, 0, 0);
-      this.cursorColorVector.v[3] = 0.8 * brightness;
+      this.cursorColorVector.setRGBA(1, 0, 0, 0.8 * brightness);
       break;
     case PlayScreen.CursorMode.WALL:
-      this.cursorColorVector.setXYZ(0, 1, 0);
-      this.cursorColorVector.v[3] = 0.8 * brightness;
+      this.cursorColorVector.setRGBA(0, 1, 0, 0.8 * brightness);
       break;
     case PlayScreen.CursorMode.OBJECT:
-      this.cursorColorVector.setXYZ(1, 1, 1);
-      this.cursorColorVector.v[3] = 0.5 * brightness;
+      this.cursorColorVector.setRGBA(1, 1, 1, 0.5 * brightness);
       break;
   }
   return this.cursorColorVector;
 };
 
 PlayScreen.prototype.getTriggerColorVector = function() {
-  this.cursorColorVector.setXYZ(1, 1, 1);
   var touchiness = this.touchDetector.getVal();
-  this.cursorColorVector.v[3] = this.trigger.getVal() ? 0.2 : 0.1 * touchiness;
+  this.cursorColorVector.setRGBA(1, 1, 1, this.trigger.getVal() ? 0.2 : 0.1 * touchiness);
   return this.cursorColorVector;
 };
 
 PlayScreen.prototype.getIndicatorColorVector = function() {
   var t = (Date.now() - this.indicatorChangeTime) / 400;
-  var c = -Math.cos(t)/5+0.5;
-  this.indicatorColorVector.setXYZ(c, c, c);
-  this.indicatorColorVector.v[3] = 0.4;
+  var c = Math.cos(t)/5+0.5;
+  this.indicatorColorVector.setRGBA(c, c, c, 0.5);
   return this.indicatorColorVector;
 };
 

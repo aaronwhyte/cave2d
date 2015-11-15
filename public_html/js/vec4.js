@@ -98,6 +98,14 @@ Vec4.prototype.setXYZ = function(x, y, z) {
   return this;
 };
 
+Vec4.prototype.setRGBA = function(r, g, b, a) {
+  this.v[0] = r;
+  this.v[1] = g;
+  this.v[2] = b;
+  this.v[3] = a;
+  return this;
+};
+
 Vec4.prototype.scale1 = function(s) {
   for (var i = 0; i < 3; i++) {
     this.v[i] *= s;
