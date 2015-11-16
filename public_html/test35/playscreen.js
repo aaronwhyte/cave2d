@@ -47,6 +47,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.gripPoint = null;
   this.gripAccelFraction = 0.3;
   this.gripFriction = 0.2;
+  this.maxGripAccel = 10;
 
   this.modelMatrix = new Matrix44();
   this.hudViewMatrix = new Matrix44();
@@ -174,9 +175,11 @@ PlayScreen.prototype.initWorld = function() {
   ]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
-  for (var i = 0; i < 4; i++) {
-    this.initBoulder(new Vec2d(100 * (Math.random()-0.5), 100 * (Math.random()-0.5)), 4 * (Math.random() + 0.5));
+  for (var i = 0; i < 20; i++) {
+    this.initBoulder(new Vec2d(30 * (Math.random()-0.5), -20 +10* (Math.random()-0.5)), 1 + Math.random() * 2);
   }
+  this.initBoulder(new Vec2d(10, -20), 6);
+  this.initBoulder(new Vec2d(-10, -20), 6);
   this.initWalls();
 };
 
@@ -209,7 +212,7 @@ PlayScreen.prototype.createCursorBody = function() {
 PlayScreen.prototype.initWalls = function() {
   this.bitGrid = new BitGrid(this.bitSize);
   var rad = 15;
-  this.bitGrid.drawPill(new Segment(new Vec2d(-rad, -rad*1.2), new Vec2d(rad, -rad*1.2)), rad, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-rad*2, -rad*1.2), new Vec2d(rad*2, -rad*1.2)), rad*1.2, 1);
 
   this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
   this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.2, 1);
@@ -393,6 +396,9 @@ PlayScreen.prototype.dragObject = function() {
       .scale(this.gripAccelFraction)
       .add(body.vel)
       .scale(1 - this.gripFriction);
+  if (newVel.distance(body.vel) > this.maxGripAccel) {
+    newVel.subtract(body.vel).clipToMaxLength(this.maxGripAccel).add(body.vel);
+  }
   body.setVelAtTime(newVel, this.world.now);
   newVel.free();
 };
