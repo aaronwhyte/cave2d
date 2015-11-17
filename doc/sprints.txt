@@ -76,28 +76,26 @@ v Handle rotation/resize...
 v Add trigger to game1 - no more auto-firing.
 Done 2015-11-09
 
-Systematize
-Adding a cursor should probably not take hundreds of lines of code.
-Figure out what the key objects and interfaces are, and try to factor out the reusable code. Some ideas:
-* Camera, in tests and game
-* World - OK as-is
-* Terrain, in tests and game
-* Cursor as a renderable world thingy, in tests
-* Trackball moves cursor. Good enough as-is?
-* cursor+camera = panning. Utility with inner/outer thresholds?
-* cursor+trigger+world = pointing, highlighting, modes
-* editable terrain - invalidation, pill drawing, etc.
-
 Drag objects
 You can drag things by applying force to them in the world, or you can simply lift them out of the world and relocate
 them.
 v test35 exists
-- Put objects in the tunnel parts.
-- Dragging applies force to objects to accelerate them towards the cursor.
-  - Remember model-coord grip point
-  - adjust force to be proportional to object's mass.
+v Put objects in the tunnel parts.
+v Dragging applies force to objects to accelerate them towards the cursor.
+  v Remember model-coord grip point
+  v adjust force to be proportional to object's mass.
+
+v Fix BitGrid "sudden square" bug. Easy to repro with KeyTrackball in test35.
+
+Arrow key trackball, for those poor bastards using IE or Safari.
+v game1
+v test35
+- test30
+- test33
+- test34
+
 - Lifting
-  - If cursor distance is too great for too long (low-pass average dist?), "lift" the object.
+  - If cursor distance is too great for too long (low-pass average dist?), "lift" the object
   - Lifted objects are treated as though they are uniform density, normal MOI, with no physics or collisions.
   - Can lifted objects be sensed with rayscans? No, they're transferred to the "none" group.
   - Only one object can be lifted at a time (wory about multi-user in the distant future).
