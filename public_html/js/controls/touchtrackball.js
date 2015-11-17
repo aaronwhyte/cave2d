@@ -5,7 +5,6 @@
  */
 function TouchTrackball() {
   Trackball.call(this);
-  this.listening = false;
   this.oldPagePos = new Vec2d();
   this.touched = false;
 

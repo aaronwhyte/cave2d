@@ -9,7 +9,12 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
         return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) > self.triggerPixelRad;
-      }));
+      }))
+      .addTrackball(
+          new KeyTrackball(
+              new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
+          .setAccel(0.1)
+  );
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
 
@@ -401,6 +406,19 @@ PlayScreen.prototype.dragObject = function() {
   }
   body.setVelAtTime(newVel, this.world.now);
   newVel.free();
+
+  // Move the cursor closer to the grip point, too, for tactile-like feedback.
+  var newCursorPos = Vec2d.alloc().set(bodyPos).add(this.gripPoint);
+  var tugDist = this.camera.getViewDist()/3;
+  if (newCursorPos.distance(this.cursorPos) > tugDist) {
+    var cursorAccel = Vec2d.alloc()
+        .set(newCursorPos)
+        .subtract(this.cursorPos);
+    cursorAccel.scaleToLength(cursorAccel.magnitude() - tugDist).scale(0.02);
+    this.cursorVel.add(cursorAccel).scale(1);
+    cursorAccel.free();
+  }
+  newCursorPos.free();
 };
 
 PlayScreen.prototype.doCursorHoverScan = function() {

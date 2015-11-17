@@ -73,3 +73,12 @@ KeyStick.prototype.getVal = function(out) {
   this.clip();
   return out.set(this.val);
 };
+
+KeyStick.prototype.isAnyKeyPressed = function() {
+  for (var code in this.codeToState) {
+    if (this.codeToState[code]) {
+      return true;;
+    }
+  }
+  return false;
+};

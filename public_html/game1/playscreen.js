@@ -9,7 +9,9 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
         return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) > self.triggerPixelRad;
-      }));
+      }))
+      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
+          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT)));
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
 
