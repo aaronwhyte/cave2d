@@ -188,7 +188,8 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   var radSquared = rad * rad;
   var isArray = Array.isArray(cell);
   var startingColor = isArray ? 0.5 : (cell ? 1 : 0);
-  var sumOfRows = 0;
+  var zeroRows = 0;
+  var oneRows = 0;
   for (var by = 0; by < BitGrid.BITS; by++) {
     var oldRowVal = isArray ? cell[by] : (startingColor ? BitGrid.ROW_OF_ONES : 0);
     var newRowVal = oldRowVal;
@@ -201,7 +202,12 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
             : (newRowVal & (BitGrid.ROW_OF_ONES ^ (1 << bx)));
       }
     }
-    sumOfRows += newRowVal;
+    if (newRowVal == 0) {
+      zeroRows++;
+    } else if (newRowVal == BitGrid.ROW_OF_ONES) {
+      oneRows++;
+    }
+
     if (newRowVal != oldRowVal) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
@@ -219,10 +225,12 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   }
 
   // Simplify the grid?
-  if (sumOfRows == 0) {
+  if (zeroRows == BitGrid.BITS) {
     this.deleteCellAtIndexXY(cx, cy);
-  } else if (sumOfRows == BitGrid.ROW_OF_ONES * BitGrid.BITS) {
+    console.log("delete 0 cell");
+  } else if (oneRows == BitGrid.BITS) {
     this.setCellAtIndexXY(cx, cy, 1);
+    console.log("uniform 1 cell");
   }
   pixelCenter.free();
 };
