@@ -4,23 +4,31 @@
  * @param glType probably gl.TRIANGLES
  * @param posBuff GL vertex position buffer, with four floats per position
  * @param colorBuff GL vertex color buffer, with four floats per position
+ * @param groupBuff vertex group number buffer, with one byte per position
  * @param indexBuff pointer to the element index buffer
  * @param indexCount the total number of index values. Ten triangles would be thirty.
  * @constructor
  */
-function ModelStamp(glType, posBuff, colorBuff, indexBuff, indexCount) {
+function ModelStamp(glType, posBuff, colorBuff, groupBuff, indexBuff, indexCount) {
   this.glType = glType;
   this.posBuff = posBuff;
   this.colorBuff = colorBuff;
+  this.groupBuff = groupBuff;
   this.indexBuff = indexBuff;
   this.indexCount = indexCount;
 }
 
-ModelStamp.prototype.prepareToDraw = function(gl, aVertexPosition, aVertexColor) {
+
+ModelStamp.prototype.prepareToDraw = function(gl, aVertexPosition, aVertexColor, aVertexGroup) {
   gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuff);
   gl.vertexAttribPointer(aVertexPosition, 4, gl.FLOAT, false, 0, 0);
+
   gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuff);
   gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.groupBuff);
+  gl.vertexAttribPointer(aVertexGroup, 1, gl.FLOAT, false, 0, 0);
+
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuff);
 };
 
@@ -31,10 +39,12 @@ ModelStamp.prototype.draw = function(gl) {
 ModelStamp.prototype.dispose = function(gl) {
   gl.deleteBuffer(this.posBuff);
   gl.deleteBuffer(this.colorBuff);
+  gl.deleteBuffer(this.groupBuff);
   gl.deleteBuffer(this.indexBuff);
   this.glType = null;
   this.posBuff = null;
   this.colorBuff = null;
+  this.groupBuff = null;
   this.indexBuff = null;
   this.indexCount = null;
 };

@@ -4,6 +4,7 @@
 function Vertex() {
   this.position = new Vec4();
   this.color = new Vec4();
+  this.group = 0;
 }
 
 Vertex.prototype.setPositionXYZ = function(x, y, z) {
@@ -16,7 +17,6 @@ Vertex.prototype.setPositionArray = function(xyz) {
   return this;
 };
 
-
 Vertex.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
   return this;
@@ -27,6 +27,11 @@ Vertex.prototype.setColorArray = function(rgb) {
   return this;
 };
 
+Vertex.prototype.setGroup = function(g) {
+  this.group = g;
+  return this;
+};
+
 /**
  * @returns {Vertex} a deep copy of this vertex
  */
@@ -34,6 +39,7 @@ Vertex.prototype.copy = function() {
   var copy = new Vertex();
   copy.position.set(this.position);
   copy.color.set(this.color);
+  copy.group = this.group;
   return copy;
 };
 

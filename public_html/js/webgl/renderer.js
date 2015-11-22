@@ -17,12 +17,15 @@ function Renderer(canvas, gl, program) {
 Renderer.prototype.initAttributesAndUniforms = function() {
   this.createVertexAttribute('aVertexPosition');
   this.createVertexAttribute('aVertexColor');
+  this.createVertexAttribute('aVertexGroup');
   this.createUniform('uViewMatrix');
   this.createUniform('uModelMatrix');
+  this.createUniform('uModelMatrix2');
   this.createUniform('uModelColor');
 };
 
 Renderer.prototype.createVertexAttribute = function(name) {
+  console.log(name);
   this[name] = this.gl.getAttribLocation(this.program, name);
   this.gl.enableVertexAttribArray(this[name]);
 };
@@ -101,6 +104,16 @@ Renderer.prototype.setModelMatrix = function(modelMatrix) {
 };
 
 /**
+ * Sets the shader's second model matrix uniform.
+ * @param {Matrix44} modelMatrix
+ * @return {Renderer}
+ */
+Renderer.prototype.setModelMatrix2 = function(modelMatrix2) {
+  this.gl.uniformMatrix4fv(this.uModelMatrix2, this.gl.FALSE, modelMatrix2.m);
+  return this;
+};
+
+/**
  * Sets the shader's color vector uniform.
  * @param {Vec4} colorVector
  * @return {Renderer}
@@ -116,10 +129,8 @@ Renderer.prototype.setColorVector = function(colorVector) {
  * @return {Renderer}
  */
 Renderer.prototype.setStamp = function(stamp) {
-  //if (this.modelStamp !== stamp) {
-    this.modelStamp = stamp;
-    stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor);
-  //}
+  this.modelStamp = stamp;
+  stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor, this.aVertexGroup);
   return this;
 };
 

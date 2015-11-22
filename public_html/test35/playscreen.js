@@ -55,6 +55,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.maxGripAccel = 10;
 
   this.modelMatrix = new Matrix44();
+  this.modelMatrix2 = new Matrix44();
   this.hudViewMatrix = new Matrix44();
 
   this.bitSize = 0.5;
@@ -153,17 +154,11 @@ PlayScreen.prototype.initPermStamps = function() {
   this.circleStamp = circleModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
-  var thickness = 0.66;
-  var innerRadius = 1 - thickness;
-  var model = RigidModel.createRingMesh(5, innerRadius);
-  //model.transformPositions(new Matrix44().toScaleOpXYZ(1/innerRadius, 1/innerRadius, 1));
+  var model = RigidModel.createDoubleRing(32);
   this.cursorStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cursorStamp);
 
-  thickness = 0.2;
-  innerRadius = 1 - thickness;
-  model = RigidModel.createRingMesh(6, innerRadius);
-  model.transformPositions(new Matrix44().toScaleOpXYZ(1/innerRadius, 1/innerRadius, 1));
+  model = RigidModel.createDoubleRing(64);
   this.indicatorStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.indicatorStamp);
 };
@@ -409,13 +404,13 @@ PlayScreen.prototype.dragObject = function() {
 
   // Move the cursor closer to the grip point, too, for tactile-like feedback.
   var newCursorPos = Vec2d.alloc().set(bodyPos).add(this.gripPoint);
-  var tugDist = this.camera.getViewDist()/3;
+  var tugDist = 0;//this.camera.getViewDist()/5;
   if (newCursorPos.distance(this.cursorPos) > tugDist) {
     var cursorAccel = Vec2d.alloc()
         .set(newCursorPos)
         .subtract(this.cursorPos);
     cursorAccel.scaleToLength(cursorAccel.magnitude() - tugDist).scale(0.02);
-    this.cursorVel.add(cursorAccel).scale(1);
+    this.cursorVel.add(cursorAccel);
     cursorAccel.free();
   }
   newCursorPos.free();
@@ -529,32 +524,43 @@ PlayScreen.prototype.drawScene = function() {
   }
 
   // Draw UI stuff that goes on top of the world
-
   this.renderer.setBlendingEnabled(true);
 
-  // cursor
-  this.renderer
-      .setStamp(this.cursorStamp)
-      .setColorVector(this.getCursorColorVector());
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
-      .multiply(this.mat44.toScaleOpXYZ(this.cursorRad, this.cursorRad, 1));
-  this.renderer.setModelMatrix(this.modelMatrix);
-  this.renderer.drawStamp();
-
   // highlighted body indicator
-  var body = this.world.bodies[this.indicatedBodyId];
-  if (body) {
-    var bodyPos = this.getBodyPos(body);
+  var indicatedBody = this.world.bodies[this.indicatedBodyId];
+  if (indicatedBody) {
+    var bodyPos = this.getBodyPos(indicatedBody);
+    var indicatorRad = indicatedBody.rad + this.camera.getViewDist() * 0.02;
     this.renderer
         .setStamp(this.indicatorStamp)
         .setColorVector(this.getIndicatorColorVector());
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
+        .multiply(this.mat44.toScaleOpXYZ(indicatedBody.rad, indicatedBody.rad, 1));
     this.renderer.setModelMatrix(this.modelMatrix);
+    this.modelMatrix2.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
+        .multiply(this.mat44.toScaleOpXYZ(indicatorRad, indicatorRad, 1));
+    this.renderer.setModelMatrix2(this.modelMatrix2);
     this.renderer.drawStamp();
   }
+
+  // cursor
+  this.renderer
+      .setStamp(this.cursorStamp)
+      .setColorVector(this.getCursorColorVector());
+  var outerCursorRad = indicatedBody ? this.cursorRad * 0.3 : this.cursorRad;
+  var innerCursorRad = indicatedBody ? 0 : this.cursorRad * 0.3;
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
+      .multiply(this.mat44.toScaleOpXYZ(outerCursorRad, outerCursorRad, 1));
+  this.renderer.setModelMatrix(this.modelMatrix);
+  this.modelMatrix2.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
+      .multiply(this.mat44.toScaleOpXYZ(innerCursorRad, innerCursorRad, 1));
+  this.renderer.setModelMatrix2(this.modelMatrix2);
+  this.renderer.drawStamp();
+
   this.drawHud();
   this.renderer.setBlendingEnabled(false);
 
@@ -619,7 +625,7 @@ PlayScreen.prototype.getTriggerColorVector = function() {
 };
 
 PlayScreen.prototype.getIndicatorColorVector = function() {
-  var t = (Date.now() - this.indicatorChangeTime) / 400;
+  var t = (Date.now() - this.indicatorChangeTime) / 200;
   var c = Math.cos(t)/5+0.5;
   this.indicatorColorVector.setRGBA(c, c, c, 0.5);
   return this.indicatorColorVector;

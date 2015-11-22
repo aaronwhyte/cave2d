@@ -94,23 +94,27 @@ v test34
 v test33
 v test30
 
-Better Ring Renderer and more
+test35 better ring indicator
 * for indicators, explosions, and stuff.
-- For each vertex, say which model transformation number it should use.
-- Multiple model transformations - an array.
+v For each vertex, say which model transformation group it belongs to.
+  v Vertex.group, defaults to 0
+  v RigidModel can create double-ring
+  v ModelStamp can prepare to draw using group attribute
+  v Renderer support for group attribute
+v test35
+  v vertex shader
+  v Second model mat44 in PlayScreen
+  v use new doubleRingIndicator
+    v Ring indicator should be of uniform pixel-width, regardless of scale or object size.
+x retrofit all previous vertex-shaders paired with Renderer.
 
-Zoomable
-- two-touch pinch/unpinch
-- mouse onscroll, like Vorp
-- keys, maybe "[" and "]" or "," and "."
-
-Separate trigger for object grabbing
-- actual Trigger
-- separate object hover indicator from terrain indicator, make it grabbier
-  - use new Ring renderer to keep the ring width proportional to the view size.
+test36 double trigger
+- move terrain trigger up
+- separate object trigger
+- separate object cursor
+- make it easy to intercept small moving objects, since terrain and object cursors are decoupled
 
 Non-pointerlocked mouse UI, perhaps direct-touch UI too?
-
 
 - Lifting
   - If cursor distance is too great for too long (low-pass average dist?), "lift" the object
@@ -124,7 +128,6 @@ Non-pointerlocked mouse UI, perhaps direct-touch UI too?
   - Bodies have orientation and a moment of inertia.
   - Force can rotate bodies
 
-
 Add & delete objects
 - Add action, menu... oh no, menus!
 - Deletion pseudomode
@@ -133,13 +136,11 @@ Save and load from string
 - terrain: BitGrid s27n
 - bodies
 - spirits
-- time, timeouts
+- time, timeouts ?
 
-Particles
-- test page - fireworks?
-- game1 every kind of explosion
-- game1 muzzle flash
-
-Zoomable UI
-- Scrollwheel zooms between some fixed zoom levels
+Zoomable
+- two-touch pinch/unpinch
+- mouse onscroll, like Vorp
+- keys, maybe "[" and "]" or "," and "."
 - Touching the zoom indicator buttons zooms to that level Maybe four: close, medium, wide, far.
+

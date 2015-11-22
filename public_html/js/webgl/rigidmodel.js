@@ -172,20 +172,26 @@ RigidModel.prototype.createQuadrupleTriangleModel = function() {
  * @returns {ModelStamp}
  */
 RigidModel.prototype.createModelStamp = function(gl) {
-  var i, positionArray = [], colorArray = [];
+  var i, positionArray = [], colorArray = [], groupArray = [];
   for (i = 0; i < this.vertexes.length; i++) {
     var vertex = this.vertexes[i];
     for (var d = 0; d < 4; d++) {
       positionArray.push(vertex.position.v[d]);
       colorArray.push(vertex.color.v[d]);
     }
+    groupArray.push(vertex.group || 0);
   }
   var posBuff = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, posBuff);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionArray), gl.STATIC_DRAW);
+
   var colorBuff = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorArray), gl.STATIC_DRAW);
+
+  var groupBuff = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, groupBuff);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(groupArray), gl.STATIC_DRAW);
 
   var elementsArray = [];
   for (i = 0; i < this.triangles.length; i++) {
@@ -198,7 +204,12 @@ RigidModel.prototype.createModelStamp = function(gl) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuff);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(elementsArray), gl.STATIC_DRAW);
 
-  return new ModelStamp(gl.TRIANGLES, posBuff, colorBuff, elementBuff, elementsArray.length);
+  return new ModelStamp(gl.TRIANGLES,
+      posBuff,
+      colorBuff,
+      groupBuff,
+      elementBuff, elementsArray.length
+  );
 };
 
 /**
@@ -309,6 +320,32 @@ RigidModel.createRingMesh = function(depth, innerRadius) {
     }
   }
   return model;
+};
+
+/**
+ * Creates a model for a white unit circle on the XY plane, where there are two vertexes at each position,
+ * one in group 0 and one in group 1. Group 0 and Group 1 are opposite ends of this dimensionless tube.
+ * @param corners
+ * @returns {RigidModel}
+ */
+RigidModel.createDoubleRing = function(corners) {
+  var m = new RigidModel(), v = [], i;
+  for (i = 0; i < corners; i++) {
+    var a = 2 * Math.PI * i / corners;
+    v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(0)));
+    v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(1)));
+  }
+  function face(nw, ne, sw, se) {
+    m.addTriangle(v[nw], v[sw], v[ne]);
+    m.addTriangle(v[se], v[ne], v[sw]);
+  }
+  for (i = 0; i < v.length; i += 2) {
+    // 0 2
+    // 1 3
+    face(i, (i + 2) % v.length, i + 1, (i + 3) % v.length);
+  }
+
+  return m;
 };
 
 /**
