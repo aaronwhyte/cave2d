@@ -6,7 +6,10 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
-      .addTrackball(new TouchTrackball());
+      .addTrackball(new TouchTrackball())
+      .addTrackball(new KeyTrackball(
+          new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
+  );
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
 

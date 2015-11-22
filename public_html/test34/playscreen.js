@@ -9,7 +9,10 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
         return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) > self.triggerPixelRad;
-      }));
+      }))
+      .addTrackball(new KeyTrackball(
+          new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
+  );
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
 
@@ -168,28 +171,7 @@ PlayScreen.prototype.initWorld = function() {
   ]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
-  for (var i = 0; i < 4; i++) {
-    this.initBoulder(new Vec2d(100 * (Math.random()-0.5), 100 * (Math.random()-0.5)), 4 * (Math.random() + 0.5));
-  }
   this.initWalls();
-};
-
-PlayScreen.prototype.initBoulder = function(pos, rad) {
-  var density = 1;
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, this.world.now);
-  b.rad = rad;
-  b.hitGroup = PlayScreen.Group.ROCK;
-  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = Infinity;
-  var spirit = new BallSpirit();
-  spirit.bodyId = this.world.addBody(b);
-  spirit.setModelStamp(this.circleStamp);
-  var spiritId = this.world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(Math.random(), Math.random(), Math.random());
-  return spiritId;
 };
 
 PlayScreen.prototype.createCursorBody = function() {
