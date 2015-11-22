@@ -227,10 +227,8 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   // Simplify the grid?
   if (zeroRows == BitGrid.BITS) {
     this.deleteCellAtIndexXY(cx, cy);
-    console.log("delete 0 cell");
   } else if (oneRows == BitGrid.BITS) {
     this.setCellAtIndexXY(cx, cy, 1);
-    console.log("uniform 1 cell");
   }
   pixelCenter.free();
 };
