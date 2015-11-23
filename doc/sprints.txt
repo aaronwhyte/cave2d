@@ -108,6 +108,19 @@ v test35
     v Ring indicator should be of uniform pixel-width, regardless of scale or object size.
 x retrofit all previous vertex-shaders paired with Renderer.
 
+Splashes!
+v Splash, with pooling
+v Splasher
+  v add splash
+  v draw splashes, with auto-remove
+- Game1 splashes
+  v player trail
+  - bullet hits wall
+  - enemy explodes
+  - muzzle flash
+    - player
+    - enemy
+
 test36 double trigger
 - move terrain trigger up
 - separate object trigger

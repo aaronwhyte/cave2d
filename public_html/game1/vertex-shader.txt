@@ -1,15 +1,19 @@
 uniform mat4 uViewMatrix;
 uniform mat4 uModelMatrix;
+uniform mat4 uModelMatrix2;
 uniform vec4 uModelColor;
 
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
+attribute float aVertexGroup;
 
 varying lowp vec4 vColor;
 
 void main(void) {
-  gl_Position = aVertexPosition * uModelMatrix * uViewMatrix;
+  if (aVertexGroup == 0.0) {
+    gl_Position = aVertexPosition * uModelMatrix * uViewMatrix;
+  } else {
+    gl_Position = aVertexPosition * uModelMatrix2 * uViewMatrix;
+  }
   vColor = aVertexColor * uModelColor;
-  //vColor = vColor * (-gl_Position.z * 0.9 + 0.5);
-  //vColor = vColor * 0.7;
 }

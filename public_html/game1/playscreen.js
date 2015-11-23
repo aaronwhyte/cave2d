@@ -51,6 +51,7 @@ PlayScreen.WORLD_CELL_SIZE = 4 * 32;
 
 PlayScreen.ENEMY_MISSILE_RAD = 5;
 
+PlayScreen.PLAYER_RAD = 8;
 PlayScreen.PLAYER_MISSILE_RAD = 5;
 PlayScreen.PLAYER_FIRE_DELAY = 7;
 PlayScreen.PLAYER_MIN_SPEED_TO_FIRE = 0.01;
@@ -127,6 +128,9 @@ PlayScreen.prototype.lazyInit = function() {
   if (!this.world) {
     this.initWorld();
   }
+  if (!this.splasher) {
+    this.splasher = new Splasher();
+  }
 };
 
 PlayScreen.prototype.initPermStamps = function() {
@@ -178,7 +182,7 @@ PlayScreen.prototype.initWorld = function() {
 };
 
 PlayScreen.prototype.initCreatures = function() {
-  this.playerSpiritId = this.initPlayer(0, 30, 8, 1,
+  this.playerSpiritId = this.initPlayer(0, 30, PlayScreen.PLAYER_RAD, 1,
       2, 0.2, 1.5,
       this.sphereStamp);
 
@@ -552,6 +556,11 @@ PlayScreen.prototype.updateViewMatrix = function() {
 
 PlayScreen.prototype.drawScene = function() {
   this.hitsThisFrame = 0;
+
+  var playerPos = this.getPlayerPos();
+  this.addPlayerTrail(playerPos.x, playerPos.y);
+  this.splasher.draw(this.renderer, this.world.now);
+
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
@@ -586,6 +595,25 @@ PlayScreen.prototype.drawScene = function() {
     // Animate whenever this thing draws.
     this.controller.requestAnimation();
   }
+};
+
+PlayScreen.prototype.addPlayerTrail = function(x, y) {
+  var rad = 10;
+  var self = this;
+  var pv = this.getPlayerVel();
+  var dir = 2 * Math.PI * Math.random();
+  var dx = pv.x + 10*Math.sin(dir);
+  var dy = pv.y + 10*Math.cos(dir);
+  this.splasher.add(Splash.alloc(this.circleStamp, this.world.now, this.world.now + 15,
+      function(t) {
+        return self.vec4.setXYZ(1-t, t, t);
+      },
+      function(t) {
+        var rad = PlayScreen.PLAYER_RAD * (1-t);
+        return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
+            .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
+      }
+  ));
 };
 
 /**
@@ -642,6 +670,7 @@ PlayScreen.prototype.unloadLevel = function() {
     }
     this.world = null;
   }
+  this.splasher = null;
 };
 
 PlayScreen.prototype.getBodyPos = function(body) {
