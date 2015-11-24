@@ -115,11 +115,14 @@ v Splasher
   v draw splashes, with auto-remove
 - Game1 splashes
   v player trail
-  - bullet hits wall
-  - enemy explodes
+  v enemy destruct
+  - bounce
+  - wall destruct
+  - bullet destruct
   - muzzle flash
-    - player
-    - enemy
+    - player fire
+    - enemy fire
+  - boulder bounce?
 
 test36 double trigger
 - move terrain trigger up

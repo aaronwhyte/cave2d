@@ -43,12 +43,15 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.modelMatrix = new Matrix44();
   this.mat44 = new Matrix44();
   this.hudViewMatrix = new Matrix44();
+
+  this.playerThrustSum = 0;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
 PlayScreen.WORLD_CELL_SIZE = 4 * 32;
 
+PlayScreen.ENEMY_RAD = 8;
 PlayScreen.ENEMY_MISSILE_RAD = 5;
 
 PlayScreen.PLAYER_RAD = 8;
@@ -196,7 +199,7 @@ PlayScreen.prototype.initCreatures = function() {
 };
 
 PlayScreen.prototype.initEnemy = function(x, y) {
-  var rad = 8;
+  var rad = PlayScreen.ENEMY_RAD;
   var density = 1;
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -441,6 +444,7 @@ PlayScreen.prototype.handleInput = function() {
 
     newVel.set(body.vel).add(accel);
     body.setVelAtTime(newVel, this.world.now);
+    this.playerThrustSum += this.movement.magnitude();
     accel.free();
   }
 
@@ -499,9 +503,11 @@ PlayScreen.prototype.onHitEvent = function(e) {
     if (playerMissileBody) {
       var enemyBody = this.bodyIfInGroup(PlayScreen.Group.ENEMY, b0, b1);
       if (enemyBody) {
-        this.soundKaboom(this.getBodyPos(enemyBody));
+        var pos = this.getBodyPos(enemyBody);
+        this.soundKaboom(pos);
         this.world.removeSpiritId(enemyBody.spiritId);
         this.world.removeBodyId(enemyBody.id);
+        this.addEnemyExplosion(pos.x, pos.y);
       } else {
         this.soundBing(this.getBodyPos(playerMissileBody));
       }
@@ -558,7 +564,11 @@ PlayScreen.prototype.drawScene = function() {
   this.hitsThisFrame = 0;
 
   var playerPos = this.getPlayerPos();
-  this.addPlayerTrail(playerPos.x, playerPos.y);
+  while (this.playerThrustSum > 0) {
+    this.playerThrustSum -= 30;
+    this.addPlayerTrail(playerPos.x, playerPos.y);
+    this.playerThrustSum = 0;
+  }
   this.splasher.draw(this.renderer, this.world.now);
 
   for (var id in this.world.spirits) {
@@ -598,7 +608,6 @@ PlayScreen.prototype.drawScene = function() {
 };
 
 PlayScreen.prototype.addPlayerTrail = function(x, y) {
-  var rad = 10;
   var self = this;
   var pv = this.getPlayerVel();
   var dir = 2 * Math.PI * Math.random();
@@ -609,11 +618,48 @@ PlayScreen.prototype.addPlayerTrail = function(x, y) {
         return self.vec4.setXYZ(1-t, t, t);
       },
       function(t) {
-        var rad = PlayScreen.PLAYER_RAD * (1-t);
+        var rad = 0.8 * PlayScreen.PLAYER_RAD * (1-t);
         return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
             .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
       }
   ));
+};
+
+PlayScreen.prototype.addEnemyExplosion = function(x, y) {
+  var self = this;
+  var particles, explosionRad, dirOffset, i, dir, dx, dy;
+  function createSplash(x, y, dx, dy, duration, sizeFactor) {
+    return Splash.alloc(self.circleStamp, self.world.now, self.world.now + duration,
+        function(t) {
+          return self.vec4.setXYZ(1-t/2, 1, 1-t);
+        },
+        function(t) {
+          var rad = sizeFactor * PlayScreen.ENEMY_RAD * (1-t);
+          return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
+              .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
+        }
+    )
+  }
+
+  particles = Math.ceil(8 * (1 + Math.random()));
+  explosionRad = 50;
+  dirOffset = 2 * Math.PI * Math.random();
+  for (i = 0; i < particles; i++) {
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    this.splasher.add(createSplash(x, y, dx, dy, 7 * (1 + Math.random()), 1));
+  }
+
+  particles = Math.ceil(12 * (1 + Math.random()));
+  explosionRad = 25;
+  dirOffset = 2 * Math.PI * Math.random();
+  for (i = 0; i < particles; i++) {
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    this.splasher.add(createSplash(x, y, dx, dy, 14 * (1 + Math.random()), 1.5));
+  }
 };
 
 /**
