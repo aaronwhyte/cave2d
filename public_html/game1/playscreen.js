@@ -322,6 +322,7 @@ PlayScreen.prototype.digTerrainAtPos = function(pos) {
   for (var i = 0; i < changedCellIds.length; i++) {
     this.changeTerrain(changedCellIds[i]);
   }
+  this.addDiggingDust(pos.x, pos.y);
 };
 
 /**
@@ -493,8 +494,8 @@ PlayScreen.prototype.onHitEvent = function(e) {
         this.loseLife();
       } else {
         this.soundBing(this.getBodyPos(enemyMissileBody));
+        this.digTerrainAtPos(this.getBodyPos(enemyMissileBody));
       }
-      this.digTerrainAtPos(this.getBodyPos(enemyMissileBody));
       this.world.removeBodyId(enemyMissileBody.id);
       this.world.removeSpiritId(enemyMissileBody.spiritId);
     }
@@ -510,8 +511,8 @@ PlayScreen.prototype.onHitEvent = function(e) {
         this.addEnemyExplosion(pos.x, pos.y);
       } else {
         this.soundBing(this.getBodyPos(playerMissileBody));
+        this.digTerrainAtPos(this.getBodyPos(playerMissileBody));
       }
-      this.digTerrainAtPos(this.getBodyPos(playerMissileBody));
       this.world.removeSpiritId(playerMissileBody.spiritId);
       this.world.removeBodyId(playerMissileBody.id);
     }
@@ -631,7 +632,7 @@ PlayScreen.prototype.addEnemyExplosion = function(x, y) {
   function createSplash(x, y, dx, dy, duration, sizeFactor) {
     return Splash.alloc(self.circleStamp, self.world.now, self.world.now + duration,
         function(t) {
-          return self.vec4.setXYZ(1-t/2, 1, 1-t);
+          return self.vec4.setXYZ(1, 1, 1);
         },
         function(t) {
           var rad = sizeFactor * PlayScreen.ENEMY_RAD * (1-t);
@@ -642,7 +643,7 @@ PlayScreen.prototype.addEnemyExplosion = function(x, y) {
   }
 
   particles = Math.ceil(8 * (1 + Math.random()));
-  explosionRad = 50;
+  explosionRad = 80;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
@@ -652,13 +653,40 @@ PlayScreen.prototype.addEnemyExplosion = function(x, y) {
   }
 
   particles = Math.ceil(12 * (1 + Math.random()));
-  explosionRad = 25;
+  explosionRad = 40;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
     dx = Math.sin(dir) * explosionRad;
     dy = Math.cos(dir) * explosionRad;
     this.splasher.add(createSplash(x, y, dx, dy, 14 * (1 + Math.random()), 1.5));
+  }
+};
+
+PlayScreen.prototype.addDiggingDust = function(x, y) {
+  var self = this;
+  var particles, explosionRad, dirOffset, i, dir, dx, dy;
+  function createSplash(x, y, dx, dy, duration) {
+    return Splash.alloc(self.circleStamp, self.world.now, self.world.now + duration,
+        function(t) {
+          //0.6, 0.5, 0.3
+          return self.vec4.setXYZ(0.6 + (1-t) * 0.4, 0.5, 0.3).scale1(1 - t/2);
+        },
+        function(t) {
+          var rad = 17 * (1-t);
+          return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
+              .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
+        }
+    )
+  }
+  particles = Math.ceil(6 * (1 + Math.random()));
+  explosionRad = 30 + 5 * Math.random();
+  dirOffset = 2 * Math.PI * Math.random();
+  for (i = 0; i < particles; i++) {
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    this.splasher.add(createSplash(x, y, dx, dy, 15 * (1 + Math.random())));
   }
 };
 

@@ -116,12 +116,13 @@ v Splasher
 - Game1 splashes
   v player trail
   v enemy destruct
-  - bounce
-  - wall destruct
-  - bullet destruct
+  v wall destruct
   - muzzle flash
     - player fire
     - enemy fire
+  - bounce
+    - need point of contact!
+  - bullet destruct
   - boulder bounce?
 
 test36 double trigger
