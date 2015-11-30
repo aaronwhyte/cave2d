@@ -337,7 +337,7 @@ BitGrid.fromJSON = function(json) {
       dequeueQuad(startX + half, startY + half, half);
     }
   }
-  
+
   var bitGrid = new BitGrid(json.bitWorldSize);
   for (var cellId32 in json.cells) {
     var cellId = parseInt(cellId32, 32);
