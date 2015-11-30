@@ -1,6 +1,6 @@
 /**
  * An very big grid of pixels, optimized for memory, speed, and serialization size.
- * It has over 67 million rows and columns, each holding a 16x16 subgrid of pixels.
+ * It has over 67 million rows and columns, each holding a 32x32 subgrid of pixels.
  * Values are 0 and 1, defaulting to 0.
  * @constructor
  */
@@ -8,13 +8,20 @@ function BitGrid(pixelSize) {
   this.bitWorldSize = pixelSize;
   this.cellWorldSize = this.bitWorldSize * BitGrid.BITS;
 
-  // A cell can be nonexistent (value 0), or have a value of 1, or an array of 16 16-bit integers forming a
-  // 16x16 pixel subgrid.
+  // A cell can be nonexistent (value 0), or have a value of 1, or an array of 32 32-bit integers forming a
+  // 32x32 pixel subgrid.
   this.cells = {};
 
   // A map from touched cellIds to their old values, so callers can see which were modified.
   this.changedCells = {};
 }
+
+/**
+ * Quadtree compression assumes that this is a power of 2.
+ * JavaScript bitwise operations only work on the first 32 bits of a number.
+ * So 32 is a good number.
+ * @type {number}
+ */
 BitGrid.BITS = 32;
 
 // It's got over 67 million columns.
@@ -242,15 +249,119 @@ BitGrid.prototype.createCellArray = function(color) {
   return cell;
 };
 
+BitGrid.SOLID = 1;
+BitGrid.DETAILED = 0;
+
+/**
+ * The "cells" field is an object where
+ * each key is a cellId in base 32,
+ * and each value is a base64-encoded BitQueue quadtree representation of the cell.
+ * @returns {{bitWorldSize: *, cells: {}}}
+ */
 BitGrid.prototype.toJSON = function() {
-  return {
+  function enqueueQuad(startX, startY, size) {
+    var startColor = (cell[startY] & (1 << startX)) ? 1 : 0;
+    if (size == 1) {
+      bitQueue.enqueueNumber(startColor, 1);
+      return;
+    }
+    for (var by = startY; by < startY + size; by++) {
+      for (var bx = startX; bx < startX + size; bx++) {
+        var pixel = (cell[by] & (1 << bx)) ? 1 : 0;
+        if (pixel != startColor) {
+          // non-uniform square. Lets get quadruple recursive!
+          bitQueue.enqueueNumber(BitGrid.DETAILED, 1);
+          var half = size/2;
+          enqueueQuad(startX, startY, half);
+          enqueueQuad(startX + half, startY, half);
+          enqueueQuad(startX, startY + half, half);
+          enqueueQuad(startX + half, startY + half, half);
+          return;
+        }
+      }
+    }
+    // uniform square
+    bitQueue.enqueueNumber(BitGrid.SOLID, 1);
+    bitQueue.enqueueNumber(startColor, 1);
+  }
+
+  var json = {
     bitWorldSize: this.bitWorldSize,
-    cells: this.cells
+    cells:{}
   };
+  for (var cellId in this.cells) {
+    var cell = this.cells[cellId];
+    var bitQueue = new BitQueue();
+    if (Array.isArray(cell)) {
+      enqueueQuad(0, 0, BitGrid.BITS);
+    } else {
+      // Uniform cell
+      bitQueue.enqueueNumber(BitGrid.SOLID, 1);
+      bitQueue.enqueueNumber(cell, 1);
+    }
+    json.cells[Number(cellId).toString(32)] = btoa(bitQueue.dequeueToBytesAndPadZerosRight());
+  }
+  return json;
 };
 
 BitGrid.fromJSON = function(json) {
+  function plot(x, y, c) {
+    if (c) {
+      cell[y] |= 1 << x;
+    } else {
+      cell[y] &= BitGrid.ROW_OF_ONES ^ (1 << x);
+    }
+  }
+
+  function dequeueQuad(startX, startY, size) {
+    var color;
+    if (size == 1) {
+      color = bitQueue.dequeueNumber(1);
+      plot(startX, startY, color);
+      return;
+    }
+    var kind = bitQueue.dequeueNumber(1);
+    if (kind == BitGrid.SOLID) {
+      color = bitQueue.dequeueNumber(1);
+      for (var by = startY; by < startY + size; by++) {
+        for (var bx = startX; bx < startX + size; bx++) {
+          plot(bx, by, color);
+        }
+      }
+    } else {
+      // DETAILED
+      var half = size/2;
+      dequeueQuad(startX, startY, half);
+      dequeueQuad(startX + half, startY, half);
+      dequeueQuad(startX, startY + half, half);
+      dequeueQuad(startX + half, startY + half, half);
+    }
+  }
+  
   var bitGrid = new BitGrid(json.bitWorldSize);
-  bitGrid.cells = json.cells;
+  for (var cellId32 in json.cells) {
+    var cellId = parseInt(cellId32, 32);
+    var cellBytes = atob(json.cells[cellId32]);
+    var bitQueue = new BitQueue();
+    bitQueue.enqueueBytes(cellBytes);
+    var cell = bitGrid.createCellArray(0);
+    dequeueQuad(0, 0, 32);
+    bitGrid.cells[cellId] = cell;
+  }
   return bitGrid;
 };
+
+// Old naive serializer/deserializer.
+//BitGrid.prototype.toJSON = function() {
+//  return {
+//    bitWorldSize: this.bitWorldSize,
+//    cells: this.cells
+//  };
+//};
+//
+//BitGrid.fromJSON = function(json) {
+//  var bitGrid = new BitGrid(json.bitWorldSize);
+//  bitGrid.cells = json.cells;
+//  return bitGrid;
+//};
+
