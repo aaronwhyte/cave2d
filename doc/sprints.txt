@@ -108,22 +108,59 @@ v test35
     v Ring indicator should be of uniform pixel-width, regardless of scale or object size.
 x retrofit all previous vertex-shaders paired with Renderer.
 
-Splashes!
+Splashes 1
 v Splash, with pooling
 v Splasher
   v add splash
   v draw splashes, with auto-remove
-- Game1 splashes
+v Game1 splashes
   v player trail
   v enemy destruct
   v wall destruct
-  - muzzle flash
-    - player fire
-    - enemy fire
-  - bounce
-    - need point of contact!
-  - bullet destruct
-  - boulder bounce?
+
+Save and Load from squished JSON
+- test36 saving and loading nest, based on editor.
+  - no multiple screens?
+  - pause button
+    - draw it
+    - pause stops rendering loop, pause sound(?)
+    - pause menu is regular DOM, over the canvas
+      - resume
+      - fullscreen
+      - create sharable link
+  - init from URL onLoad
+v BitGrid to/from JSON
+  x done already in worst way
+  v rad optimized quadtree bits, around 1/3 the size.
+- Make bitGrid save/load work in test
+- World to/from JSON
+  - now
+  - Bodies
+    - but not terrain bodies! Identify those somehow and don't serialize 'em, since the terrain thing above does it.
+    - id
+    - spiritId
+    - pos (at world snapshot time)
+    - vel (default is 0, 0)
+    - shape, size
+    - hitgroup, pathDurationMax
+    - mass, elasticity
+  - Spirits
+    - id
+    - extras
+      - migrate all spirit values to "extras"
+  - Timeout events from queue. Everything else can be built from scratch
+- Splashes
+  - move data out of closures and into standard fields and "extras"
+
+
+Splashes 2
+- muzzle flash
+  - player fire
+  - enemy fire
+- bounce
+  - need point of contact!
+- bullet destruct
+- boulder bounce?
 
 test36 double trigger
 - move terrain trigger up
