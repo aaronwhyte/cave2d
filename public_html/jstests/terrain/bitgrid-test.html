@@ -24,24 +24,32 @@
       var json2 = bg2.toJSON();
       assertStringifyEquals(json1, json2);
 
-//      var jsonStr = JSON.stringify(json1);
-//      var s = new Squisher();
-//      console.log([jsonStr.length, s.squish(jsonStr).length, jsonStr, s.squish(jsonStr)].join('\n'));
+      var jsonStr = JSON.stringify(json1);
+      var s = new Squisher();
+      console.log([jsonStr.length, s.squish(jsonStr).length, jsonStr, s.squish(jsonStr)].join('\n'));
       // 7678 naive JSON
       // 2853 naive JSON squished
       // 2174 quadtree JSON
       // 1389 quadtree JSON squished
     });
-//
-//    addTest(function serializeDeserializeNothing() {
-//      var quad1 = new QuadTree(1, 2, 200, 8);
-//      var json1 = quad1.toJSON();
-//
-//      var quad2 = QuadTree.fromJSON(json1);
-//      var json2 = quad2.toJSON();
-//      assertStringifyEquals(json1, json2);
-//      console.log(JSON.stringify(json1));
-//    });
+
+    addTest(function serializeDeserializeNothing() {
+      var bg1 = new BitGrid(1);
+      var json1 = bg1.toJSON();
+
+      var bg2 = BitGrid.fromJSON(json1);
+      var json2 = bg2.toJSON();
+      assertStringifyEquals(json1, json2);
+      assertStringifyEquals(json1.cells, {});
+      console.log(JSON.stringify(json1));
+    });
+
+    addTest(function drawAndUndrawPill() {
+      var bg = new BitGrid(1);
+      bg.drawPill(new Segment(new Vec2d(-100, -200), new Vec2d(300, 0)), 50, 1);
+      bg.drawPill(new Segment(new Vec2d(-100, -200), new Vec2d(300, 0)), 50, 0);
+      assertStringifyEquals(bg.cells, {});
+    });
   </script>
 </head>
 <body onload="runTests()"></body>
