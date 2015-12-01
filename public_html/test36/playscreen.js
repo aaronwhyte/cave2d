@@ -59,7 +59,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.hudViewMatrix = new Matrix44();
 
   this.bitSize = 0.5;
-  this.bitGridMetersPerCell = this.bitSize * 32;
+  this.bitGridMetersPerCell = this.bitSize * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 

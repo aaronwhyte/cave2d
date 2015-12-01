@@ -25,7 +25,6 @@ Renderer.prototype.initAttributesAndUniforms = function() {
 };
 
 Renderer.prototype.createVertexAttribute = function(name) {
-  console.log(name);
   this[name] = this.gl.getAttribLocation(this.program, name);
   this.gl.enableVertexAttribArray(this[name]);
 };

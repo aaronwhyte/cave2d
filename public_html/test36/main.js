@@ -21,10 +21,6 @@ Test36.prototype.start = function() {
   document.body.addEventListener('touchend', this.unlockIosSound.bind(this));
 };
 
-var MS_PER_FRAME = 1000 / 60;
-var CLOCKS_PER_FRAME = 0.5;
-var PATH_DURATION = CLOCKS_PER_FRAME * 2;
-
 Test36.SCREEN_PLAY = 'play';
 
 Test36.SCREENS = [Test36.SCREEN_PLAY];

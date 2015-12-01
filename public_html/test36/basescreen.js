@@ -35,6 +35,11 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
 
+BaseScreen.MS_PER_FRAME = 1000 / 60;
+BaseScreen.CLOCKS_PER_FRAME = 0.5;
+BaseScreen.PATH_DURATION = BaseScreen.CLOCKS_PER_FRAME * 2;
+
+
 BaseScreen.prototype.onSpaceDown = null;
 BaseScreen.prototype.onPointerDown = null;
 
@@ -152,18 +157,18 @@ BaseScreen.prototype.destroyScreen = function() {
 };
 
 BaseScreen.prototype.clock = function() {
-  var endTimeMs = Date.now() + MS_PER_FRAME;
-  var endClock = this.world.now + CLOCKS_PER_FRAME;
+  var endTimeMs = Date.now() + BaseScreen.MS_PER_FRAME;
+  var endClock = this.world.now + BaseScreen.CLOCKS_PER_FRAME;
 
   if (this.handleInput) {
     this.handleInput();
   }
 
-  if (this.lastPathRefreshTime + PATH_DURATION <= endClock) {
+  if (this.lastPathRefreshTime + BaseScreen.PATH_DURATION <= endClock) {
     this.lastPathRefreshTime = this.world.now;
     for (var id in this.world.bodies) {
       var b = this.world.bodies[id];
-      if (b && b.pathDurationMax > PATH_DURATION && b.pathDurationMax != Infinity) {
+      if (b && b.pathDurationMax > BaseScreen.PATH_DURATION && b.pathDurationMax != Infinity) {
         b.invalidatePath();
         b.moveToTime(this.world.now);
       }
