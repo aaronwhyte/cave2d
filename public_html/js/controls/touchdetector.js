@@ -1,4 +1,5 @@
 /**
+ * Detects that the user is using touch (vs keys/mouse), so we can decide to show touch UI, or not.
  * @constructor
  */
 function TouchDetector() {
