@@ -120,19 +120,24 @@ v Game1 splashes
 
 Save and Load from squished JSON
 - test36 saving and loading nest, based on editor.
-  - no multiple screens?
+  v no multiple screens
   - pause button
-    - draw it
-    - pause stops rendering loop, pause sound(?)
-    - pause menu is regular DOM, over the canvas
-      - resume
+    - draw button
+      - circle
+      - parallel rects for "pause".
+    - stop rendering/clocking loop
+    - turn sound down
+    - deactivate pointerlock
+    - menu
+      * regular DOM, over the canvas
       - fullscreen
       - create sharable link
   - init from URL onLoad
 v BitGrid to/from JSON
   x done already in worst way
   v rad optimized quadtree bits, around 1/3 the size.
-- Make bitGrid save/load work in test
+  v unit test a little
+- Make bitGrid save/load work in test36
 - World to/from JSON
   - now
   - Bodies
@@ -152,6 +157,9 @@ v BitGrid to/from JSON
 - Splashes
   - move data out of closures and into standard fields and "extras"
 
+Make the cursor be just another Spirit, saved/loaded like everyone else.
+* Empower Spirits to get at World and Game to make this happen.
+- spirit can get world trackball and triggers
 
 Splashes 2
 - muzzle flash
