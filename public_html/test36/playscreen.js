@@ -5,28 +5,33 @@
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
 
+  this.listeners = new ArraySet();
+  this.touchDetector = new TouchDetector();
+  this.listeners.put(this.touchDetector);
+
+  var self = this;
+
+  this.gripTouchTrigger = new RoundTouchTrigger()
+      .setCanvas(this.canvas).setPosFractionXY(0.05, 1 - 0.05).setRadCoefsXY(0.05, 0.05);
+  this.gripTrigger = new MultiTrigger()
+      .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
+      .addTrigger(new MouseTrigger())
+      .addTrigger(this.gripTouchTrigger);
+  this.listeners.put(this.gripTrigger);
+
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
-        return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) > self.triggerPixelRad;
+        return !self.gripTouchTrigger.startZoneFn(x, y);
       }))
       .addTrackball(
-          new KeyTrackball(
-              new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
+      new KeyTrackball(
+          new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
           .setAccel(0.1)
   );
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
-
-  this.touchDetector = new TouchDetector();
-  this.setTouchTriggerArea();
-  var self = this;
-  this.trigger = new MultiTrigger()
-      .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
-      .addTrigger(new MouseTrigger())
-      .addTrigger(new TouchTrigger().setStartZoneFunction(function(x, y) {
-        return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) <= self.triggerPixelRad;
-      }));
+  this.listeners.put(this.trackball);
 
   // for sound throttling
   this.hitsThisFrame = 0;
@@ -87,13 +92,6 @@ PlayScreen.CursorMode = {
   OBJECT: 2
 };
 
-PlayScreen.prototype.setTouchTriggerArea = function() {
-  this.triggerPixelRad = 0.5 * (this.canvas.width + this.canvas.height) * 0.17;
-  this.visibleTriggerScale = 2/3 * this.touchDetector.getVal();
-  this.triggerPixelX = this.triggerPixelRad * 0.6;
-  this.triggerPixelY = this.canvas.height - this.triggerPixelRad * 0.6;
-};
-
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
   if (Vec2d.distance(pageX, pageY, this.canvas.width/2, 0) < Math.min(this.canvas.height, this.canvas.width)/4) {
     this.pauseGame();
@@ -109,14 +107,12 @@ PlayScreen.prototype.onSpaceDown = function() {
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   BaseScreen.prototype.setScreenListening.call(this, listen);
-  if (listen) {
-    this.trackball.startListening();
-    this.trigger.startListening();
-    this.touchDetector.startListening();
-  } else {
-    this.trackball.stopListening();
-    this.trigger.stopListening();
-    this.touchDetector.stopListening();
+  for (var i = 0; i < this.listeners.vals.length; i++) {
+    if (listen) {
+      this.listeners.vals[i].startListening();
+    } else {
+      this.listeners.vals[i].stopListening();
+    }
   }
   this.listening = listen;
 };
@@ -321,8 +317,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
 
 PlayScreen.prototype.handleInput = function() {
   if (!this.world) return;
-  this.setTouchTriggerArea();
-  var triggered = this.trigger.getVal();
+  var triggered = this.gripTrigger.getVal();
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.camera.getViewDist() * 0.02;
   if (this.trackball.isTouched()) {
@@ -574,22 +569,20 @@ PlayScreen.prototype.drawHud = function() {
       .multiply(this.mat44.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
   this.renderer.setViewMatrix(this.hudViewMatrix);
 
-  // draw trigger
+  // draw grip trigger
   this.renderer
       .setStamp(this.circleStamp)
-      .setColorVector(this.getTriggerColorVector());
+      .setColorVector(this.getGripTriggerColorVector());
+  var gripTriggerRad = this.gripTouchTrigger.getRad() * this.touchDetector.getVal();
   this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.triggerPixelX, this.triggerPixelY, -0.99))
-      .multiply(this.mat44.toScaleOpXYZ(
-              this.triggerPixelRad * this.visibleTriggerScale,
-              this.triggerPixelRad * this.visibleTriggerScale,
-          1));
+      .multiply(this.mat44.toTranslateOpXYZ(this.gripTouchTrigger.getX(), this.gripTouchTrigger.getY(), -0.99))
+      .multiply(this.mat44.toScaleOpXYZ(gripTriggerRad, gripTriggerRad, 1));
   this.renderer.setModelMatrix(this.modelMatrix);
   this.renderer.drawStamp();
 };
 
 PlayScreen.prototype.getCursorColorVector = function() {
-  var brightness = 0.5 + 0.5 * this.trigger.getVal();
+  var brightness = 0.5 + 0.5 * this.gripTrigger.getVal();
   switch(this.cursorMode) {
     case PlayScreen.CursorMode.FLOOR:
       this.cursorColorVector.setRGBA(1, 0, 0, 0.8 * brightness);
@@ -604,9 +597,9 @@ PlayScreen.prototype.getCursorColorVector = function() {
   return this.cursorColorVector;
 };
 
-PlayScreen.prototype.getTriggerColorVector = function() {
+PlayScreen.prototype.getGripTriggerColorVector = function() {
   var touchiness = this.touchDetector.getVal();
-  this.cursorColorVector.setRGBA(1, 1, 1, this.trigger.getVal() ? 0.2 : 0.1 * touchiness);
+  this.cursorColorVector.setRGBA(1, 1, 1, this.gripTrigger.getVal() ? 0.2 : 0.1 * touchiness);
   return this.cursorColorVector;
 };
 

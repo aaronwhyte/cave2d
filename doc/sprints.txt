@@ -122,16 +122,23 @@ Save and Load from squished JSON
 - test36 saving and loading nest, based on editor.
   v no multiple screens
   - pause button
-    - draw button
-      - circle
-      - parallel rects for "pause".
-    - stop rendering/clocking loop
-    - turn sound down
-    - deactivate pointerlock
-    - menu
-      * regular DOM, over the canvas
-      - fullscreen
-      - create sharable link
+    - support multiple triggers
+      v grip trigger is not so special
+      v "listeners" arraySet
+      v RoundTouchTrigger
+      - pause is a trigger
+        - draw it
+          - circle
+          - parallel rects for "pause".
+        - subtract it from trackball startRegion
+    - pause trigger down toggles pause state
+      - stop rendering/clocking loop
+      - turn sound down
+      - deactivate pointerlock
+      - menu
+        * regular DOM, over the canvas
+        - fullscreen
+        - create sharable link
   - init from URL onLoad
 v BitGrid to/from JSON
   x done already in worst way
