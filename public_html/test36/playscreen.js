@@ -62,8 +62,6 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.bitGridMetersPerCell = this.bitSize * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
-
-  this.mat44 = new Matrix44();
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -463,13 +461,13 @@ PlayScreen.prototype.updateViewMatrix = function() {
   this.viewMatrix.toIdentity();
   var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
   this.viewMatrix
-      .multiply(this.mat4.toScaleOpXYZ(
+      .multiply(this.mat44.toScaleOpXYZ(
               pixelsPerMeter / this.canvas.width,
               pixelsPerMeter / this.canvas.height,
           0.2));
 
   // center
-  this.viewMatrix.multiply(this.mat4.toTranslateOpXYZ(
+  this.viewMatrix.multiply(this.mat44.toTranslateOpXYZ(
       -this.camera.getX(),
       -this.camera.getY(),
       0));
@@ -569,11 +567,11 @@ PlayScreen.prototype.drawHud = function() {
 
   // Set hud view matrix
   this.hudViewMatrix.toIdentity()
-      .multiply(this.mat4.toScaleOpXYZ(
+      .multiply(this.mat44.toScaleOpXYZ(
               2 / this.canvas.width,
               -2 / this.canvas.height,
           1))
-      .multiply(this.mat4.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
+      .multiply(this.mat44.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
   this.renderer.setViewMatrix(this.hudViewMatrix);
 
   // draw trigger

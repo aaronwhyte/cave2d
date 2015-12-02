@@ -14,7 +14,7 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.viewMatrix = new Matrix44();
   this.vec2d = new Vec2d();
   this.vec4 = new Vec4();
-  this.mat4 = new Matrix44();
+  this.mat44 = new Matrix44();
   this.nextButtonNum = 0;
   this.worldBoundingRect = new Rect();
 
