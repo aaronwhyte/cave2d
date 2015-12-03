@@ -115,7 +115,6 @@ Test36.prototype.requestPointerLock = function() {
   if (this.canvas.requestPointerLock) {
     this.canvas.requestPointerLock();
   }
-  this.requestAnimation();
 };
 
 Test36.prototype.exitPointerLock = function() {
@@ -127,7 +126,6 @@ Test36.prototype.exitPointerLock = function() {
   } else {
     console.log('exitPointerLock UNPOSSIBLE');
   }
-  this.requestAnimation();
 };
 
 Test36.prototype.requestAnimation = function() {

@@ -30,6 +30,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.clipToWorldMatrixDirty = true;
   this.canvasToClipMatrix = new Matrix44();
   this.canvasToClipMatrixDirty = true;
+
+  this.paused = false;
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -143,6 +145,7 @@ BaseScreen.prototype.destroyScreen = function() {
 };
 
 BaseScreen.prototype.clock = function() {
+  if (this.paused) return;
   var endTimeMs = Date.now() + BaseScreen.MS_PER_FRAME;
   var endClock = this.world.now + BaseScreen.CLOCKS_PER_FRAME;
 

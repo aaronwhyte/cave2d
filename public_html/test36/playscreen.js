@@ -21,7 +21,6 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.listeners.put(this.gripTrigger);
 
   // pause trigger and function
-  this.paused = false;
   this.pauseTouchTrigger = new RoundTouchTrigger()
       .setCanvas(this.canvas).setPosFractionXY(0.5, 0.035).setRadCoefsXY(0.015, 0.015);
   this.pauseTrigger = new MultiTrigger()
@@ -114,7 +113,9 @@ PlayScreen.CursorMode = {
 };
 
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
-  this.controller.requestPointerLock();
+  if (!this.paused) {
+    this.controller.requestPointerLock();
+  }
 };
 
 PlayScreen.prototype.setScreenListening = function(listen) {
