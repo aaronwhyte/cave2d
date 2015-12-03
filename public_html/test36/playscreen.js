@@ -43,7 +43,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
-        return !self.gripTouchTrigger.startZoneFn(x, y);
+        return !self.gripTouchTrigger.startZoneFn(x, y) && !self.pauseTouchTrigger.startZoneFn(x, y);
       }))
       .addTrackball(
       new KeyTrackball(
