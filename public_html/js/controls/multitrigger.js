@@ -52,7 +52,7 @@ MultiTrigger.prototype.getVal = function() {
 };
 
 MultiTrigger.prototype.addTriggerDownListener = function(fn) {
-  this.downPubSub.subscribe(thisfn);
+  this.downPubSub.subscribe(fn);
 };
 
 MultiTrigger.prototype.removeTriggerDownListener = function(fn) {
