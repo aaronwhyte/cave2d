@@ -22,7 +22,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 
   // pause trigger and function
   this.pauseTouchTrigger = new RoundTouchTrigger()
-      .setCanvas(this.canvas).setPosFractionXY(0.5, 0.035).setRadCoefsXY(0.015, 0.015);
+      .setCanvas(this.canvas).setPosFractionXY(0.5, 0.03).setRadCoefsXY(0.02, 0.02);
   this.pauseTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName(Key.Name.SPACE))
       .addTrigger(this.pauseTouchTrigger);
@@ -634,7 +634,7 @@ PlayScreen.prototype.getGripTriggerColorVector = function() {
 
 PlayScreen.prototype.getPauseTriggerColorVector = function() {
   var touchiness = this.touchDetector.getVal();
-  this.colorVector.setRGBA(1, 1, 1, this.pauseTrigger.getVal() ? 0.2 : 0.1 * touchiness);
+  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0.5 : 0.1 * touchiness);
   return this.colorVector;
 };
 
