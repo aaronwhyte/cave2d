@@ -22,7 +22,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 
   // pause trigger and function
   this.pauseTouchTrigger = new RoundTouchTrigger()
-      .setCanvas(this.canvas).setPosFractionXY(0.5, 0.03).setRadCoefsXY(0.02, 0.02);
+      .setCanvas(this.canvas).setPosFractionXY(0.5, 0).setRadCoefsXY(0.07, 0.07);
   this.pauseTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName(Key.Name.SPACE))
       .addTrigger(this.pauseTouchTrigger);
@@ -602,7 +602,7 @@ PlayScreen.prototype.drawHud = function() {
   this.renderer
       .setStamp(this.circleStamp)
       .setColorVector(this.getPauseTriggerColorVector());
-  var pauseTriggerRad = this.pauseTouchTrigger.getRad() * this.touchDetector.getVal();
+  var pauseTriggerRad = this.pauseTouchTrigger.getRad() * this.touchDetector.getVal() * 0.3;
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.pauseTouchTrigger.getX(), this.pauseTouchTrigger.getY(), -0.99))
       .multiply(this.mat44.toScaleOpXYZ(pauseTriggerRad, pauseTriggerRad, 1));
