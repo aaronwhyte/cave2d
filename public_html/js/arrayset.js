@@ -45,6 +45,12 @@ ArraySet.prototype.remove = function(v) {
   return this;
 };
 
+ArraySet.prototype.clear = function(v) {
+  this.vals.length = 0;
+  return this;
+};
+
+
 ArraySet.prototype.removeIndex = function(index) {
   this.vals[index] = this.vals[this.vals.length - 1];
   this.vals.pop();

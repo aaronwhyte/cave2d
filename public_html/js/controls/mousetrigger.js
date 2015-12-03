@@ -10,11 +10,15 @@ function MouseTrigger() {
   this.buttonToState = {};
   this.downListener = function(e) {
     if (!e) e = window.event;
+    var oldVal = self.getVal();
     self.buttonToState[e.button] = true;
+    if (!oldVal) self.publishTriggerDown();
   };
   this.upListener = function(e) {
     if (!e) e = window.event;
+    var oldVal = self.getVal();
     self.buttonToState[e.button] = false;
+    if (oldVal && !self.getVal()) self.publishTriggerUp();
   };
 }
 

@@ -61,6 +61,7 @@ TouchTrigger.prototype.onTouchStart = function(e) {
       // Start tracking this one.
       this.touchId = touch.identifier;
       this.val = true;
+      this.publishTriggerDown();
       break;
     }
   }
@@ -74,6 +75,7 @@ TouchTrigger.prototype.onTouchEnd = function(e) {
     if (touch.identifier == this.touchId) {
       this.touchId = null;
       this.val = false;
+      this.publishTriggerUp();
       break;
     }
   }

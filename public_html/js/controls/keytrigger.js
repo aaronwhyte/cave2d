@@ -14,13 +14,17 @@ function KeyTrigger() {
   this.downListener = function(e) {
     if (!e) e = window.event;
     if (self.triggerKeyCodes[e.keyCode]) {
+      var oldVal = self.getVal();
       self.codeToState[e.keyCode] = true;
+      if (!oldVal) self.publishTriggerDown();
     }
   };
   this.upListener = function(e) {
     if (!e) e = window.event;
     if (self.triggerKeyCodes[e.keyCode]) {
+      var oldVal = self.getVal();
       self.codeToState[e.keyCode] = false;
+      if (oldVal && !self.getVal()) self.publishTriggerUp();
     }
   };
 }
