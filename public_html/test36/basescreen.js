@@ -22,7 +22,6 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.visibility = 0;
   this.listening = false;
 
-  this.spacebarFn = this.getSpacebarFn();
   this.mouseDownFn = this.getMouseDownFn();
   this.touchStartFn = this.getTouchStartFn();
   this.resizeFn = this.getResizeFn();
@@ -39,19 +38,8 @@ BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
 BaseScreen.PATH_DURATION = BaseScreen.CLOCKS_PER_FRAME * 2;
 
-
-BaseScreen.prototype.onSpaceDown = null;
 BaseScreen.prototype.onPointerDown = null;
-
-BaseScreen.prototype.getSpacebarFn = function() {
-  var self = this;
-  return function(e) {
-    // space is keyCode 32
-    if (e.keyCode == 32 && self.onSpaceDown) {
-      self.onSpaceDown();
-    }
-  };
-};
+BaseScreen.prototype.onPointerDown = null;
 
 BaseScreen.prototype.getMouseDownFn = function() {
   var self = this;
@@ -87,12 +75,10 @@ BaseScreen.prototype.setScreenListening = function(listen) {
   if (listen) {
     document.body.addEventListener('mousedown', this.mouseDownFn);
     document.body.addEventListener('touchstart', this.touchStartFn);
-    document.body.addEventListener('keydown', this.spacebarFn);
     window.addEventListener('resize', this.resizeFn);
   } else {
     document.body.removeEventListener('mousedown', this.mouseDownFn);
     document.body.removeEventListener('touchstart', this.touchStartFn);
-    document.body.removeEventListener('keydown', this.spacebarFn);
     window.removeEventListener('resize', this.resizeFn);
   }
   this.listening = listen;

@@ -11,14 +11,35 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
 
   var self = this;
 
+  // grip trigger
   this.gripTouchTrigger = new RoundTouchTrigger()
-      .setCanvas(this.canvas).setPosFractionXY(0.05, 1 - 0.05).setRadCoefsXY(0.05, 0.05);
+      .setCanvas(this.canvas).setPosFractionXY(0.07, 1 - 0.1).setRadCoefsXY(0.07, 0.07);
   this.gripTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
       .addTrigger(new MouseTrigger())
       .addTrigger(this.gripTouchTrigger);
   this.listeners.put(this.gripTrigger);
 
+  // pause trigger and function
+  this.paused = false;
+  this.pauseTouchTrigger = new RoundTouchTrigger()
+      .setCanvas(this.canvas).setPosFractionXY(0.5, 0.035).setRadCoefsXY(0.015, 0.015);
+  this.pauseTrigger = new MultiTrigger()
+      .addTrigger((new KeyTrigger()).addTriggerKeyByName(Key.Name.SPACE))
+      .addTrigger(this.pauseTouchTrigger);
+  this.listeners.put(this.pauseTrigger);
+  this.pauseDownFn = function() {
+    self.paused = !self.paused;
+    if (self.paused) {
+      self.controller.exitPointerLock();
+    } else {
+      self.controller.requestPointerLock();
+      self.controller.requestAnimation();
+      self.trackball.reset();
+    }
+  };
+
+  // trackball
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
@@ -44,7 +65,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.cursorPos = new Vec2d();
   this.cursorVel = new Vec2d();
   this.cursorStamp = null; // it'll be a ring
-  this.cursorColorVector = new Vec4();
+  this.colorVector = new Vec4();
   this.cursorRad = this.camera.getViewDist() / 20;
   this.cursorMode = PlayScreen.CursorMode.FLOOR;
   this.cursorBody = this.createCursorBody();
@@ -93,15 +114,7 @@ PlayScreen.CursorMode = {
 };
 
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
-  if (Vec2d.distance(pageX, pageY, this.canvas.width/2, 0) < Math.min(this.canvas.height, this.canvas.width)/4) {
-    this.pauseGame();
-  } else {
-    this.controller.requestPointerLock();
-  }
-};
-
-PlayScreen.prototype.onSpaceDown = function() {
-  this.pauseGame();
+  this.controller.requestPointerLock();
 };
 
 PlayScreen.prototype.setScreenListening = function(listen) {
@@ -110,8 +123,10 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   for (var i = 0; i < this.listeners.vals.length; i++) {
     if (listen) {
       this.listeners.vals[i].startListening();
+      this.pauseTrigger.addTriggerDownListener(this.pauseDownFn);
     } else {
       this.listeners.vals[i].stopListening();
+      this.pauseTrigger.removeTriggerDownListener(this.pauseDownFn);
     }
   }
   this.listening = listen;
@@ -550,7 +565,9 @@ PlayScreen.prototype.drawScene = function() {
     this.restarting = false;
   } else {
     // Animate whenever this thing draws.
-    this.controller.requestAnimation();
+    if (!this.paused) {
+      this.controller.requestAnimation();
+    }
   }
 };
 
@@ -579,28 +596,45 @@ PlayScreen.prototype.drawHud = function() {
       .multiply(this.mat44.toScaleOpXYZ(gripTriggerRad, gripTriggerRad, 1));
   this.renderer.setModelMatrix(this.modelMatrix);
   this.renderer.drawStamp();
+  
+  // draw pause trigger
+  this.renderer
+      .setStamp(this.circleStamp)
+      .setColorVector(this.getPauseTriggerColorVector());
+  var pauseTriggerRad = this.pauseTouchTrigger.getRad() * this.touchDetector.getVal();
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(this.pauseTouchTrigger.getX(), this.pauseTouchTrigger.getY(), -0.99))
+      .multiply(this.mat44.toScaleOpXYZ(pauseTriggerRad, pauseTriggerRad, 1));
+  this.renderer.setModelMatrix(this.modelMatrix);
+  this.renderer.drawStamp();
 };
 
 PlayScreen.prototype.getCursorColorVector = function() {
   var brightness = 0.5 + 0.5 * this.gripTrigger.getVal();
   switch(this.cursorMode) {
     case PlayScreen.CursorMode.FLOOR:
-      this.cursorColorVector.setRGBA(1, 0, 0, 0.8 * brightness);
+      this.colorVector.setRGBA(1, 0, 0, 0.8 * brightness);
       break;
     case PlayScreen.CursorMode.WALL:
-      this.cursorColorVector.setRGBA(0, 1, 0, 0.8 * brightness);
+      this.colorVector.setRGBA(0, 1, 0, 0.8 * brightness);
       break;
     case PlayScreen.CursorMode.OBJECT:
-      this.cursorColorVector.setRGBA(1, 1, 1, 0.5 * brightness);
+      this.colorVector.setRGBA(1, 1, 1, 0.5 * brightness);
       break;
   }
-  return this.cursorColorVector;
+  return this.colorVector;
 };
 
 PlayScreen.prototype.getGripTriggerColorVector = function() {
   var touchiness = this.touchDetector.getVal();
-  this.cursorColorVector.setRGBA(1, 1, 1, this.gripTrigger.getVal() ? 0.2 : 0.1 * touchiness);
-  return this.cursorColorVector;
+  this.colorVector.setRGBA(1, 1, 1, this.gripTrigger.getVal() ? 0.2 : 0.1 * touchiness);
+  return this.colorVector;
+};
+
+PlayScreen.prototype.getPauseTriggerColorVector = function() {
+  var touchiness = this.touchDetector.getVal();
+  this.colorVector.setRGBA(1, 1, 1, this.pauseTrigger.getVal() ? 0.2 : 0.1 * touchiness);
+  return this.colorVector;
 };
 
 PlayScreen.prototype.getIndicatorColorVector = function() {
