@@ -83,6 +83,15 @@
 
 <body>
 <canvas id="canvas"></canvas>
+
+<div id="pausedOverlay">
+  <div class="pausedMenu">
+    <h1>paused</h1>
+    <button id="fullScreenButton">full screen</button><br>
+    <button id="createSharableUrlButton">create sharable URL</button><br>
+    <input type="text" size="12">
+  </div>
+</div>
 <script>
 function pd(event) {
   event.preventDefault();

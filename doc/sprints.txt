@@ -122,6 +122,10 @@ Save and Load from squished JSON
 v test36 nest, based on test35
   v no multiple screens
   v no spaceFn
+v BitGrid to/from JSON
+  x done already in worst way
+  v rad optimized quadtree bits, around 1/3 the size.
+  v unit test a little
 v pause button
   v support multiple triggers
     v grip trigger is not so special
@@ -139,14 +143,10 @@ v pause button
         v multitrigger only fires on change
       v handler in test36 playscreen
 - paused menu
-  * regular DOM, over the canvas
-  - fullscreen button
-  - create sharable URL - input field
+  v regular DOM, over the canvas
+  v fullscreen button
+  - create sharable URL -> input field
 - init from URL onLoad
-v BitGrid to/from JSON
-  x done already in worst way
-  v rad optimized quadtree bits, around 1/3 the size.
-  v unit test a little
 - Make bitGrid save/load work in test36
 - World to/from JSON
   - now

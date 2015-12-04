@@ -31,7 +31,9 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
     self.paused = !self.paused;
     if (self.paused) {
       self.controller.exitPointerLock();
+      self.showPausedOverlay();
     } else {
+      self.hidePausedOverlay();
       self.controller.requestPointerLock();
       self.controller.requestAnimation();
       self.trackball.reset();
@@ -87,6 +89,13 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.bitGridMetersPerCell = this.bitSize * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
+
+  var fsb = document.querySelector('#fullScreenButton');
+  var fullScreenFn = function() {
+    self.controller.requestFullScreen();
+  };
+  fsb.addEventListener('click', fullScreenFn);
+  fsb.addEventListener('touchend', fullScreenFn);
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -668,4 +677,12 @@ PlayScreen.prototype.unloadLevel = function() {
 
 PlayScreen.prototype.getBodyPos = function(body) {
   return body.getPosAtTime(this.world.now, this.vec2d);
+};
+
+PlayScreen.prototype.showPausedOverlay = function() {
+  document.querySelector('#pausedOverlay').style.display = 'block';
+};
+
+PlayScreen.prototype.hidePausedOverlay = function() {
+  document.querySelector('#pausedOverlay').style.display = 'none';
 };
