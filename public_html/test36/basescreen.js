@@ -75,12 +75,12 @@ BaseScreen.prototype.getResizeFn = function() {
 BaseScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   if (listen) {
-    document.body.addEventListener('mousedown', this.mouseDownFn);
-    document.body.addEventListener('touchstart', this.touchStartFn);
+    this.canvas.addEventListener('mousedown', this.mouseDownFn);
+    this.canvas.addEventListener('touchstart', this.touchStartFn);
     window.addEventListener('resize', this.resizeFn);
   } else {
-    document.body.removeEventListener('mousedown', this.mouseDownFn);
-    document.body.removeEventListener('touchstart', this.touchStartFn);
+    this.canvas.removeEventListener('mousedown', this.mouseDownFn);
+    this.canvas.removeEventListener('touchstart', this.touchStartFn);
     window.removeEventListener('resize', this.resizeFn);
   }
   this.listening = listen;

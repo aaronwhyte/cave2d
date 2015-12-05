@@ -17,8 +17,8 @@ Test36.prototype.start = function() {
   this.sfx.setListenerXYZ(0, 0, 5);
 
   // on-event sound unlocker for iOS
-  document.body.addEventListener('mouseup', this.unlockIosSound.bind(this));
-  document.body.addEventListener('touchend', this.unlockIosSound.bind(this));
+  this.canvas.addEventListener('mouseup', this.unlockIosSound.bind(this));
+  this.canvas.addEventListener('touchend', this.unlockIosSound.bind(this));
 };
 
 Test36.SCREEN_PLAY = 'play';

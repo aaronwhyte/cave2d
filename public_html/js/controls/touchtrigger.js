@@ -3,9 +3,10 @@
  * @constructor
  * @extends {Trigger}
  */
-function TouchTrigger() {
+function TouchTrigger(opt_elem) {
   Trigger.call(this);
   this.listening = false;
+  this.elem = opt_elem || document.body;
 
   this.startZoneFn = function(x, y) {
     return true;
@@ -35,18 +36,18 @@ TouchTrigger.prototype.setStartZoneFunction = function(fn) {
 };
 
 TouchTrigger.prototype.startListening = function() {
-  document.body.addEventListener('touchstart', this.touchStartListener);
-  document.body.addEventListener('touchmove', this.touchMoveListener);
-  document.body.addEventListener('touchend', this.touchEndListener);
-  document.body.addEventListener('touchcancel', this.touchEndListener);
+  this.elem.addEventListener('touchstart', this.touchStartListener);
+  this.elem.addEventListener('touchmove', this.touchMoveListener);
+  this.elem.addEventListener('touchend', this.touchEndListener);
+  this.elem.addEventListener('touchcancel', this.touchEndListener);
   return this;
 };
 
 TouchTrigger.prototype.stopListening = function() {
-  document.body.removeEventListener('touchstart', this.touchStartListener);
-  document.body.removeEventListener('touchmove', this.touchMoveListener);
-  document.body.removeEventListener('touchend', this.touchEndListener);
-  document.body.removeEventListener('touchcancel', this.touchEndListener);
+  this.elem.removeEventListener('touchstart', this.touchStartListener);
+  this.elem.removeEventListener('touchmove', this.touchMoveListener);
+  this.elem.removeEventListener('touchend', this.touchEndListener);
+  this.elem.removeEventListener('touchcancel', this.touchEndListener);
   this.touchId = null;
   this.val = false;
   return this;

@@ -101,11 +101,14 @@
 function pd(event) {
   event.preventDefault();
 }
-window.addEventListener("load", main);
-window.addEventListener("scroll", pd);
-document.body.addEventListener("touchstart", pd);
-document.body.addEventListener("touchmove", pd);
-document.body.addEventListener("touchend", pd);
+(function() {
+  window.addEventListener("load", main);
+  window.addEventListener("scroll", pd);
+  var canvas = document.getElementById("canvas");
+  canvas.addEventListener("touchstart", pd);
+  canvas.addEventListener("touchmove", pd);
+  canvas.addEventListener("touchend", pd);
+})();
 </script>
 <script>
 if (document.location.hostname.indexOf('cave2d.com') > -1) {

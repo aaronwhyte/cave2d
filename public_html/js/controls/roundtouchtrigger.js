@@ -4,14 +4,14 @@
  * @constructor
  * @extends {TouchTrigger}
  */
-function RoundTouchTrigger() {
-  TouchTrigger.call(this);
+function RoundTouchTrigger(canvas) {
+  TouchTrigger.call(this, canvas);
 
   this.px = 0.5;
   this.py = 0.5;
   this.rx = 0.05;
   this.ry = 0.05;
-  this.canvas = null;
+  this.canvas = canvas;
 
   var self = this;
   this.setStartZoneFunction(function(x, y) {
@@ -22,11 +22,6 @@ function RoundTouchTrigger() {
 
 RoundTouchTrigger.prototype = new TouchTrigger();
 RoundTouchTrigger.prototype.constructor = RoundTouchTrigger;
-
-RoundTouchTrigger.prototype.setCanvas = function(canvas) {
-  this.canvas = canvas;
-  return this;
-};
 
 /**
  * @param xFraction a fraction (0-1) of the canvas width

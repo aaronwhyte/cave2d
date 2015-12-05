@@ -12,8 +12,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   var self = this;
 
   // grip trigger
-  this.gripTouchTrigger = new RoundTouchTrigger()
-      .setCanvas(this.canvas).setPosFractionXY(0.07, 1 - 0.1).setRadCoefsXY(0.07, 0.07);
+  this.gripTouchTrigger = new RoundTouchTrigger(canvas)
+      .setPosFractionXY(0.07, 1 - 0.1).setRadCoefsXY(0.07, 0.07);
   this.gripTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
       .addTrigger(new MouseTrigger())
@@ -21,8 +21,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.listeners.put(this.gripTrigger);
 
   // pause trigger and function
-  this.pauseTouchTrigger = new RoundTouchTrigger()
-      .setCanvas(this.canvas).setPosFractionXY(0.5, 0).setRadCoefsXY(0.07, 0.07);
+  this.pauseTouchTrigger = new RoundTouchTrigger(canvas)
+      .setPosFractionXY(0.5, 0).setRadCoefsXY(0.07, 0.07);
   this.pauseTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName(Key.Name.SPACE))
       .addTrigger(this.pauseTouchTrigger);
@@ -30,17 +30,21 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.pauseDownFn = function() {
     self.paused = !self.paused;
     if (self.paused) {
-      // resume
+      // pause
       self.controller.exitPointerLock();
       self.showPausedOverlay();
       self.updateSharableUrl();
     } else {
-      // pause
+      // resume
       self.hidePausedOverlay();
       self.controller.requestPointerLock();
       self.controller.requestAnimation();
       self.trackball.reset();
     }
+  };
+
+  this.fullScreenFn = function() {
+    self.controller.requestFullScreen();
   };
 
   // trackball
@@ -92,16 +96,6 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.bitGridMetersPerCell = this.bitSize * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
-
-  var fsb = document.querySelector('#fullScreenButton');
-  var fullScreenFn = function() {
-    self.controller.requestFullScreen();
-  };
-  fsb.addEventListener('click', fullScreenFn);
-  fsb.addEventListener('touchend', fullScreenFn);
-
-  var rb = document.querySelector('#resumeButton');
-  rb.addEventListener('click', this.pauseDownFn);
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -145,15 +139,36 @@ PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
 
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
+  var self = this;
+  var fsb, rb, i;
   BaseScreen.prototype.setScreenListening.call(this, listen);
-  for (var i = 0; i < this.listeners.vals.length; i++) {
-    if (listen) {
+  if (listen) {
+    for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
-      this.pauseTrigger.addTriggerDownListener(this.pauseDownFn);
-    } else {
-      this.listeners.vals[i].stopListening();
-      this.pauseTrigger.removeTriggerDownListener(this.pauseDownFn);
     }
+    this.pauseTrigger.addTriggerDownListener(this.pauseDownFn);
+
+    fsb = document.querySelector('#fullScreenButton');
+    fsb.addEventListener('click', this.fullScreenFn);
+    fsb.addEventListener('touchend', this.fullScreenFn);
+
+    rb = document.querySelector('#resumeButton');
+    rb.addEventListener('click', this.pauseDownFn);
+    rb.addEventListener('touchend', this.pauseDownFn);
+
+  } else {
+    for (i = 0; i < this.listeners.vals.length; i++) {
+      this.listeners.vals[i].stopListening();
+    }
+    this.pauseTrigger.removeTriggerDownListener(this.pauseDownFn);
+
+    fsb = document.querySelector('#fullScreenButton');
+    fsb.removeEventListener('click', this.fullScreenFn);
+    fsb.removeEventListener('touchend', this.fullScreenFn);
+
+    rb = document.querySelector('#resumeButton');
+    rb.removeEventListener('click', this.pauseDownFn);
+    rb.removeEventListener('touchend', this.pauseDownFn);
   }
   this.listening = listen;
 };
