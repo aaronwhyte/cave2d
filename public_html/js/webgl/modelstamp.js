@@ -4,7 +4,7 @@
  * @param glType probably gl.TRIANGLES
  * @param posBuff GL vertex position buffer, with four floats per position
  * @param colorBuff GL vertex color buffer, with four floats per position
- * @param groupBuff vertex group number buffer, with one byte per position
+ * @param groupBuff vertex group number buffer, with one float per position
  * @param indexBuff pointer to the element index buffer
  * @param indexCount the total number of index values. Ten triangles would be thirty.
  * @constructor
@@ -26,8 +26,10 @@ ModelStamp.prototype.prepareToDraw = function(gl, aVertexPosition, aVertexColor,
   gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuff);
   gl.vertexAttribPointer(aVertexColor, 4, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.groupBuff);
-  gl.vertexAttribPointer(aVertexGroup, 1, gl.FLOAT, false, 0, 0);
+  if (typeof aVertexGroup != 'undefined') {
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.groupBuff);
+    gl.vertexAttribPointer(aVertexGroup, 1, gl.FLOAT, false, 0, 0);
+  }
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuff);
 };

@@ -1,15 +1,21 @@
 uniform mat4 uViewMatrix;
 uniform mat4 uModelMatrix;
 uniform vec4 uModelColor;
+uniform mat4 uModelMatrix2;
 
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
+attribute float aVertexGroup;
 
 varying lowp vec4 vColor;
 
 void main(void) {
   vec2 warp = vec2(0, 0);
-  gl_Position = aVertexPosition * uModelMatrix;
+  if (aVertexGroup == 0.0) {
+    gl_Position = aVertexPosition * uModelMatrix;
+  } else {
+    gl_Position = aVertexPosition * uModelMatrix2;
+  }
   vec4 modelCenter = vec4(0.0, 0.0, 0.0, 1.0) * uModelMatrix;
   float vertDist = distance(gl_Position.xy, warp);
   float warpRad = 4.0;

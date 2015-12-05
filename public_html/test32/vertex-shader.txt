@@ -1,5 +1,6 @@
 uniform mat4 uViewMatrix;
 uniform mat4 uModelMatrix;
+uniform mat4 uModelMatrix2;
 uniform vec4 uModelColor;
 
 uniform int uWarpType[8];
@@ -7,11 +8,16 @@ uniform vec4 uWarpData[8];
 
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
+attribute float aVertexGroup;
 
 varying lowp vec4 vColor;
 
 void main(void) {
-  gl_Position = aVertexPosition * uModelMatrix;
+  if (aVertexGroup == 0.0) {
+    gl_Position = aVertexPosition * uModelMatrix;
+  } else {
+    gl_Position = aVertexPosition * uModelMatrix2;
+  }
   vec2 distort = vec2(0, 0);
 
   for (int i = 0; i < 8; i++) {
