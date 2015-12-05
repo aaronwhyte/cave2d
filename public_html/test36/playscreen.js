@@ -30,9 +30,12 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.pauseDownFn = function() {
     self.paused = !self.paused;
     if (self.paused) {
+      // resume
       self.controller.exitPointerLock();
       self.showPausedOverlay();
+      self.updateSharableUrl();
     } else {
+      // pause
       self.hidePausedOverlay();
       self.controller.requestPointerLock();
       self.controller.requestAnimation();
@@ -96,6 +99,9 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   };
   fsb.addEventListener('click', fullScreenFn);
   fsb.addEventListener('touchend', fullScreenFn);
+
+  var rb = document.querySelector('#resumeButton');
+  rb.addEventListener('click', this.pauseDownFn);
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -119,6 +125,16 @@ PlayScreen.CursorMode = {
   WALL: 0,
   FLOOR: 1,
   OBJECT: 2
+};
+
+PlayScreen.prototype.updateSharableUrl = function() {
+  var squisher = new Squisher();
+  var anchor = document.querySelector('#sharableUrl');
+  var levelJson = {
+    terrain: this.bitGrid.toJSON()
+  };
+  var hashString = squisher.squish(JSON.stringify(levelJson));
+  anchor.href = window.location.href.split("#")[0] + "#" + hashString;
 };
 
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {

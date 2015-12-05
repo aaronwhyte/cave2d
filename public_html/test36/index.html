@@ -17,12 +17,16 @@
 <script src="../js/pubsub.js"></script>
 <script src="../js/textloader.js"></script>
 <script src="../js/rect.js"></script>
+<script src="../js/strings.js"></script>
 <script src="../js/skipqueue.js"></script>
 <script src="../js/arrayset.js"></script>
+<script src="../js/map.js"></script>
 <script src="../js/circularqueue.js"></script>
 
 <script src="../js/bits/base64.js"></script>
 <script src="../js/bits/bitqueue.js"></script>
+<script src="../js/bits/lempelziv.js"></script>
+<script src="../js/bits/squisher.js"></script>
 <script src="../js/segment.js"></script>
 <script src="../js/terrain/bitgrid.js"></script>
 
@@ -87,9 +91,10 @@
 <div id="pausedOverlay">
   <div class="pausedMenu">
     <h1>paused</h1>
+    <button id="resumeButton">resume</button><br>
     <button id="fullScreenButton">full screen</button><br>
-    <button id="createSharableUrlButton">create sharable URL</button><br>
-    <input type="text" size="12">
+    <hr>
+    <a id="sharableUrl" href="#">sharable URL</a>
   </div>
 </div>
 <script>

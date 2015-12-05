@@ -142,12 +142,16 @@ v pause button
         v trigger up/down pubsub
         v multitrigger only fires on change
       v handler in test36 playscreen
-- paused menu
+v paused menu
   v regular DOM, over the canvas
   v fullscreen button
-  - create sharable URL -> input field
-- init from URL onLoad
+  v create nest for sharable hyperlink
+- nest for reading URL onload
+  - read level from URL
+  - create new level
 - Make bitGrid save/load work in test36
+  v save
+  - load
 - World to/from JSON
   - now
   - Bodies
