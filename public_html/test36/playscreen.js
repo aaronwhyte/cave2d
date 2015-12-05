@@ -674,7 +674,7 @@ PlayScreen.prototype.getGripTriggerColorVector = function() {
 
 PlayScreen.prototype.getPauseTriggerColorVector = function() {
   var touchiness = this.touchDetector.getVal();
-  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0.5 : 0.1 * touchiness);
+  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1 * touchiness);
   return this.colorVector;
 };
 
