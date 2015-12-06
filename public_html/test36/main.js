@@ -62,6 +62,9 @@ Test36.prototype.initStamps = function() {
   }
 };
 
+/**
+ * Manages changing screen visibility, and calls drawScreen() on visible screens.
+ */
 Test36.prototype.animateFrame = function() {
   this.animationRequested = false;
   this.renderer.resize().clear();

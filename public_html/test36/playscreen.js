@@ -213,6 +213,30 @@ PlayScreen.prototype.initWorld = function() {
   ]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
+  var frag = Url.getFragment();
+  if (!frag || !this.maybeLoadWorldFromFragment(frag)) {
+    this.createDefaultWorld();
+  }
+};
+
+PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
+  try {
+    var squisher = new Squisher();
+    var jsonStr = squisher.unsquish(frag);
+    var jsonObj = JSON.parse(jsonStr);
+    if (jsonObj && jsonObj.terrain) {
+      this.bitGrid = BitGrid.fromJSON(jsonObj.terrain);
+      this.tiles = {};
+      this.flushTerrainChanges();
+    }
+  } catch (e) {
+    console.error("maybeLoadWorldFromFragment error", e);
+    return false;
+  }
+  return true;
+};
+
+PlayScreen.prototype.createDefaultWorld = function() {
   for (var i = 0; i < 20; i++) {
     this.initBoulder(new Vec2d(30 * (Math.random()-0.5), -20 +10* (Math.random()-0.5)), 1 + Math.random() * 2);
   }
