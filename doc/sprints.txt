@@ -146,12 +146,12 @@ v paused menu
   v regular DOM, over the canvas
   v fullscreen button
   v create nest for sharable hyperlink
-- nest for reading URL onload
-  - read level from URL
-  - create new level
-- Make bitGrid save/load work in test36
+v nest for reading URL onload
+  v read level from URL
+  v create new level
+v Make bitGrid save/load work in test36
   v save
-  - load
+  v load
 - World to/from JSON
   - now
   - Bodies
