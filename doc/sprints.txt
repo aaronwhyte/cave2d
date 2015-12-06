@@ -118,7 +118,7 @@ v Game1 splashes
   v enemy destruct
   v wall destruct
 
-Save and Load from squished JSON
+Save and Load from squished JSON, part I
 v test36 nest, based on test35
   v no multiple screens
   v no spaceFn
@@ -152,6 +152,8 @@ v nest for reading URL onload
 v Make bitGrid save/load work in test36
   v save
   v load
+v Fix performance bug: world goes slow when touch trigger is up, sometimes, and fast when it's down?
+  * World cells were 64 times too big by area, and there was an n^2 overlap check algorithm, so O(1000^2) per frame!
 - World to/from JSON
   - now
   - Bodies

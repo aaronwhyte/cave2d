@@ -64,3 +64,7 @@ ArraySet.prototype.isEmpty = function() {
 ArraySet.prototype.getValues = function() {
   return this.vals.concat();
 };
+
+ArraySet.prototype.size = function() {
+  return this.vals.length;
+};

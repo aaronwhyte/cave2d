@@ -60,8 +60,8 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs) {
   this.hitDetector = new HitDetector();
   this.hitTimePadding = 0.01;
 
-  // cache for rayscans.
-  this.scannedBodyIds = new ArraySet();
+  // cache for rayscans and overlap scans.
+  this.scannedBodyIds = new ObjSet();
 }
 
 World.SKIP_QUEUE_BASE = 2;

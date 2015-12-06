@@ -93,14 +93,15 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.hudViewMatrix = new Matrix44();
 
   this.bitSize = 0.5;
-  this.bitGridMetersPerCell = this.bitSize * BitGrid.BITS;
+  this.bitGridMetersPerCell = PlayScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
-PlayScreen.WORLD_CELL_SIZE = 4 * 32;
+PlayScreen.BIT_SIZE = 0.5;
+PlayScreen.WORLD_CELL_SIZE = PlayScreen.BIT_SIZE * BitGrid.BITS;
 
 PlayScreen.Group = {
   EMPTY: 0,
