@@ -7,6 +7,13 @@
 function Body() {
   this.pathStartPos = new Vec2d();
   this.vel = new Vec2d();
+
+  // The pathStartTime is guaranteed to get updated in this amount of time,
+  // so do not add events for this path beyond pathStartTime + pathDurationMax.
+  // Most spirits will accelerate their bodies at a fixed frequency, so this value
+  // will not usually change during a body's lifetime unless its spirit changes.
+  this.pathDurationMax = Infinity;
+
   this.rectRad = new Vec2d();
 
   this.freezePathStartPos = new Vec2d();
@@ -32,12 +39,6 @@ Body.prototype.reset = function() {
   this.pathStartPos.reset();
   this.vel.reset();
 
-  // The pathStartTime is guaranteed to get updated in this amount of time,
-  // so do not add events for this path beyond pathStartTime + pathDurationMax.
-  // Most spirits will accelerate their bodies at a fixed frequency, so this value
-  // will not usually change during a body's lifetime unless its spirit changes.
-  this.pathDurationMax = Infinity;
-
   // The World's map of Body objects that need to have their paths validated.
   this.invalidBodies = null;
 
@@ -61,6 +62,84 @@ Body.prototype.reset = function() {
   this.freezeVel.reset();
   this.freezePathStartTime = 0;
   this.freezePathDurationMax = 0;
+};
+
+Body.SCHEMA = {
+  0: 'id',
+  1: 'spiritId',
+  2: 'pathStartTime',
+  3: 'pathStartPos',
+  4: 'vel',
+  5: 'pathDurationMax',
+  6: 'shape',
+  7: 'rad',
+  8: 'rectRad',
+  9: 'hitGroup',
+  10: 'mass',
+  11: 'elasticity'
+};
+
+Body.prototype.toJSON = function() {
+  var json = [];
+  for (var fieldNum in Body.SCHEMA) {
+    var fieldName = Body.SCHEMA[fieldNum];
+    var bodyVal = this[fieldName];
+    var jsonVal;
+    if (typeof bodyVal == "Vec2d") {
+      jsonVal = bodyVal.toJSON();
+    } else if (bodyVal == Infinity) {
+      // JSON spec doesn't include Infinity :-(
+      jsonVal = "Infinity";
+    } else if (bodyVal == -Infinity) {
+      jsonVal = "-Infinity";
+    } else {
+      jsonVal = bodyVal;
+    }
+    json[fieldNum] = jsonVal;
+  }
+  return json;
+//  return {
+//    id: this.id,
+//    spiritId: this.spiritId,
+//    pathStartTime: this.pathStartTime,
+//    pathStartPos: this.pathStartPos.toJSON(),
+//    vel: this.vel.toJSON(),
+//    pathDurationMax: this.pathDurationMax,
+//    shape: this.shape,
+//    rad: this.rad,
+//    rectRad: this.rectRad.toJSON(),
+//    hitGroup: this.hitGroup,
+//    mass: this.mass,
+//    elasticity: this.elasticity
+//  };
+};
+
+Body.prototype.setFromJSON = function(json) {
+  for (var fieldNum in Body.SCHEMA) {
+    var fieldName = Body.SCHEMA[fieldNum];
+    var jsonVal = json[fieldNum];
+    if (typeof this[fieldName] == "Vec2d") {
+      this[fieldName].set(Vec2d.fromJSON(jsonVal));
+    } else if (jsonVal == "Infinity") {
+      this[fieldName] = Infinity;
+    } else if (jsonVal == "-Infinity") {
+      this[fieldName] = -Infinity;
+    } else {
+      this[fieldName] = jsonVal;
+    }
+  }
+//  this.id = json.id;
+//  this.spiritId = json.spiritId;
+//  this.pathStartTime = json.pathStartTime;
+//  this.pathStartPos.set(Vec2d.fromJSON(json.pathStartPos));
+//  this.vel.set(json.vel || Vec2d.ZERO);
+//  this.pathDurationMax = json.pathDurationMax;
+//  this.shape = json.shape;
+//  this.rad = json.rad;
+//  this.rectRad = json.rectRad.toJSON();
+//  this.hitGroup = json.hitGroup;
+//  this.mass = json.mass;
+//  this.elasticity = json.elasticity;
 };
 
 /**
@@ -195,3 +274,4 @@ Body.prototype.unfreeze = function() {
   this.pathStartTime = this.freezePathStartTime;
   this.pathDurationMax = this.freezePathDurationMax;
 };
+

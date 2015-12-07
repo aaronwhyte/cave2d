@@ -156,26 +156,25 @@ v Fix performance bug: world goes slow when touch trigger is up, sometimes, and 
   * World cells were 64 times too big by area, and there was an n^2 overlap check algorithm, so O(1000^2) per frame!
 - World to/from JSON
   - now
+    v save
+    - load
   - Bodies
-    - but not terrain bodies! Identify those somehow and don't serialize 'em, since the terrain thing above does it.
-    - id
-    - spiritId
-    - pos (at world snapshot time)
-    - vel (default is 0, 0)
-    - shape, size
-    - hitgroup, pathDurationMax
-    - mass, elasticity
+    v save
+      v Serialize body by body. Let the game client decide what to keep.
+    - load
+      - world.loadBody(body) accepts client ID
+  - generalize schema util
   - Spirits
-    - id
-    - extras
-      - migrate all spirit values to "extras"
-  - Timeout events from queue. Everything else can be built from scratch
+    - each must declare a schema, to save/load anything beyond "id".
+    - world.loadSpirit(spirit)
+  - Timeout events from queue.
 - Splashes
-  - move data out of closures and into standard fields and "extras"
+  - move data out of closures and into standard fields, with schema
 
 Make the cursor be just another Spirit, saved/loaded like everyone else.
 * Empower Spirits to get at World and Game to make this happen.
 - spirit can get world trackball and triggers
+- prove it: Something else can get trackball/trigger
 
 double edit trigger
 - move terrain trigger up
