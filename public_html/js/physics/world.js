@@ -134,16 +134,23 @@ World.prototype.removeSpiritId = function(id) {
  */
 World.prototype.addBody = function(body) {
   body.id = this.newId();
+  this.loadBody(body);
+  return body.id;
+};
 
+/**
+ * Adds the body using the ID it already has.
+ */
+World.prototype.loadBody = function(body) {
+  if (this.bodies[body.id]) throw Error("Body with id '" + body.id + "' already exists!");
   // Add it to the bodies index and to the invalid bodies index.
   // The next time the clock moves forward, the invalid body will be addressed.
   this.bodies[body.id] = body;
+  this.nextId = Math.max(this.nextId, body.id + 1);
 
   // Hook the path invalidator into the body. A wee bit hacky.
   body.invalidBodies = this.invalidBodies;
   body.invalidatePath();
-
-  return body.id;
 };
 
 /**

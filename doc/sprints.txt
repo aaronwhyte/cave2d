@@ -154,15 +154,16 @@ v Make bitGrid save/load work in test36
   v load
 v Fix performance bug: world goes slow when touch trigger is up, sometimes, and fast when it's down?
   * World cells were 64 times too big by area, and there was an n^2 overlap check algorithm, so O(1000^2) per frame!
+- Fix trigger-down bug. Why does it get stuck?
 - World to/from JSON
-  - now
+  v now
     v save
-    - load
-  - Bodies
+    v load
+  v Bodies
     v save
       v Serialize body by body. Let the game client decide what to keep.
-    - load
-      - world.loadBody(body) accepts client ID
+    v load
+      v world.loadBody(body) accepts client ID
   - generalize schema util
   - Spirits
     - each must declare a schema, to save/load anything beyond "id".

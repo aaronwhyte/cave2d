@@ -122,31 +122,11 @@ PlayScreen.CursorMode = {
   OBJECT: 2
 };
 
-PlayScreen.prototype.toJSON = function() {
-  var json = {
-    terrain: this.bitGrid.toJSON(),
-    now: this.world.now,
-    bodies: []
-  };
-  // bodies
-  for (var bodyId in this.world.bodies) {
-    var body = this.world.bodies[bodyId];
-    if (body.hitGroup != PlayScreen.Group.WALL) {
-      json.bodies.push(body.toJSON());
-    }
-  }
-//  console.log(JSON.stringify(json));
-//  console.log(JSON.stringify(json).length);
-  return json;
-};
-
 PlayScreen.prototype.updateSharableUrl = function() {
   var levelJson = this.toJSON();
   var squisher = new Squisher();
   var anchor = document.querySelector('#sharableUrl');
   var hashString = squisher.squish(JSON.stringify(levelJson));
-//  console.log(hashString);
-//  console.log(hashString.length);
   anchor.href = window.location.href.split("#")[0] + "#" + hashString;
 };
 
@@ -238,12 +218,37 @@ PlayScreen.prototype.initWorld = function() {
   }
 };
 
+PlayScreen.prototype.toJSON = function() {
+  var json = {
+    terrain: this.bitGrid.toJSON(),
+    now: this.world.now,
+    bodies: []
+  };
+  // bodies
+  for (var bodyId in this.world.bodies) {
+    var body = this.world.bodies[bodyId];
+    if (body.hitGroup != PlayScreen.Group.WALL) {
+      json.bodies.push(body.toJSON());
+    }
+  }
+  return json;
+};
+
 PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
   try {
     var squisher = new Squisher();
     var jsonStr = squisher.unsquish(frag);
     var jsonObj = JSON.parse(jsonStr);
-    if (jsonObj && jsonObj.terrain) {
+    if (jsonObj) {
+      this.world.now = jsonObj.now;
+      console.log(jsonObj.bodies);
+      for (var i = 0; i < jsonObj.bodies.length; i++) {
+        var bodyJson = jsonObj.bodies[i];
+        var body = new Body();
+        body.setFromJSON(bodyJson);
+        this.world.loadBody(body);
+      }
+
       this.bitGrid = BitGrid.fromJSON(jsonObj.terrain);
       this.tiles = {};
       this.flushTerrainChanges();

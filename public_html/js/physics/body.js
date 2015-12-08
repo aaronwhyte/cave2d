@@ -85,7 +85,7 @@ Body.prototype.toJSON = function() {
     var fieldName = Body.SCHEMA[fieldNum];
     var bodyVal = this[fieldName];
     var jsonVal;
-    if (typeof bodyVal == "Vec2d") {
+    if (bodyVal instanceof Vec2d) {
       jsonVal = bodyVal.toJSON();
     } else if (bodyVal == Infinity) {
       // JSON spec doesn't include Infinity :-(
@@ -118,7 +118,7 @@ Body.prototype.setFromJSON = function(json) {
   for (var fieldNum in Body.SCHEMA) {
     var fieldName = Body.SCHEMA[fieldNum];
     var jsonVal = json[fieldNum];
-    if (typeof this[fieldName] == "Vec2d") {
+    if (this[fieldName] instanceof Vec2d) {
       this[fieldName].set(Vec2d.fromJSON(jsonVal));
     } else if (jsonVal == "Infinity") {
       this[fieldName] = Infinity;
