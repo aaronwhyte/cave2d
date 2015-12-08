@@ -154,7 +154,6 @@ v Make bitGrid save/load work in test36
   v load
 v Fix performance bug: world goes slow when touch trigger is up, sometimes, and fast when it's down?
   * World cells were 64 times too big by area, and there was an n^2 overlap check algorithm, so O(1000^2) per frame!
-- Fix trigger-down bug. Why does it get stuck?
 - World to/from JSON
   v now
     v save
@@ -164,11 +163,12 @@ v Fix performance bug: world goes slow when touch trigger is up, sometimes, and 
       v Serialize body by body. Let the game client decide what to keep.
     v load
       v world.loadBody(body) accepts client ID
-  - generalize schema util
-  - Spirits
-    - each must declare a schema, to save/load anything beyond "id".
-    - world.loadSpirit(spirit)
+  v generalize schema util. "Jsonizer"
+  v Spirits
+    v each must declare a schema, to save/load anything beyond "id".
+    v world.loadSpirit(spirit)
   - Timeout events from queue.
+    - Add some robots with periodic timeouts.
 - Splashes
   - move data out of closures and into standard fields, with schema
 
@@ -176,6 +176,8 @@ Make the cursor be just another Spirit, saved/loaded like everyone else.
 * Empower Spirits to get at World and Game to make this happen.
 - spirit can get world trackball and triggers
 - prove it: Something else can get trackball/trigger
+
+- Fix trigger-down bug. Why does it get stuck? Repro?
 
 double edit trigger
 - move terrain trigger up

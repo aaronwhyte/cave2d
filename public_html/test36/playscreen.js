@@ -122,6 +122,10 @@ PlayScreen.CursorMode = {
   OBJECT: 2
 };
 
+PlayScreen.SpiritType = {
+  BALL: 1
+};
+
 PlayScreen.prototype.updateSharableUrl = function() {
   var levelJson = this.toJSON();
   var squisher = new Squisher();
@@ -222,7 +226,8 @@ PlayScreen.prototype.toJSON = function() {
   var json = {
     terrain: this.bitGrid.toJSON(),
     now: this.world.now,
-    bodies: []
+    bodies: [],
+    spirits: []
   };
   // bodies
   for (var bodyId in this.world.bodies) {
@@ -230,6 +235,11 @@ PlayScreen.prototype.toJSON = function() {
     if (body.hitGroup != PlayScreen.Group.WALL) {
       json.bodies.push(body.toJSON());
     }
+  }
+  // spirits
+  for (var spiritId in this.world.spirits) {
+    var spirit = this.world.spirits[spiritId];
+    json.spirits.push(spirit.toJSON());
   }
   return json;
 };
@@ -241,14 +251,24 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
     var jsonObj = JSON.parse(jsonStr);
     if (jsonObj) {
       this.world.now = jsonObj.now;
-      console.log(jsonObj.bodies);
       for (var i = 0; i < jsonObj.bodies.length; i++) {
         var bodyJson = jsonObj.bodies[i];
         var body = new Body();
         body.setFromJSON(bodyJson);
         this.world.loadBody(body);
       }
-
+      for (var i = 0; i < jsonObj.spirits.length; i++) {
+        var spiritJson = jsonObj.spirits[i];
+        var spiritType = spiritJson[0];
+        if (spiritType == PlayScreen.SpiritType.BALL) {
+          var spirit = new BallSpirit(this);
+          spirit.setModelStamp(this.circleStamp);
+          spirit.setFromJSON(spiritJson);
+          this.world.loadSpirit(spirit);
+        } else {
+          console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
+        }
+      }
       this.bitGrid = BitGrid.fromJSON(jsonObj.terrain);
       this.tiles = {};
       this.flushTerrainChanges();

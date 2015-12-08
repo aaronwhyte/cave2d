@@ -79,67 +79,14 @@ Body.SCHEMA = {
   11: 'elasticity'
 };
 
+Body.JSONER = new Jsoner(Body.SCHEMA);
+
 Body.prototype.toJSON = function() {
-  var json = [];
-  for (var fieldNum in Body.SCHEMA) {
-    var fieldName = Body.SCHEMA[fieldNum];
-    var bodyVal = this[fieldName];
-    var jsonVal;
-    if (bodyVal instanceof Vec2d) {
-      jsonVal = bodyVal.toJSON();
-    } else if (bodyVal == Infinity) {
-      // JSON spec doesn't include Infinity :-(
-      jsonVal = "Infinity";
-    } else if (bodyVal == -Infinity) {
-      jsonVal = "-Infinity";
-    } else {
-      jsonVal = bodyVal;
-    }
-    json[fieldNum] = jsonVal;
-  }
-  return json;
-//  return {
-//    id: this.id,
-//    spiritId: this.spiritId,
-//    pathStartTime: this.pathStartTime,
-//    pathStartPos: this.pathStartPos.toJSON(),
-//    vel: this.vel.toJSON(),
-//    pathDurationMax: this.pathDurationMax,
-//    shape: this.shape,
-//    rad: this.rad,
-//    rectRad: this.rectRad.toJSON(),
-//    hitGroup: this.hitGroup,
-//    mass: this.mass,
-//    elasticity: this.elasticity
-//  };
+  return Body.JSONER.toJSON(this);
 };
 
 Body.prototype.setFromJSON = function(json) {
-  for (var fieldNum in Body.SCHEMA) {
-    var fieldName = Body.SCHEMA[fieldNum];
-    var jsonVal = json[fieldNum];
-    if (this[fieldName] instanceof Vec2d) {
-      this[fieldName].set(Vec2d.fromJSON(jsonVal));
-    } else if (jsonVal == "Infinity") {
-      this[fieldName] = Infinity;
-    } else if (jsonVal == "-Infinity") {
-      this[fieldName] = -Infinity;
-    } else {
-      this[fieldName] = jsonVal;
-    }
-  }
-//  this.id = json.id;
-//  this.spiritId = json.spiritId;
-//  this.pathStartTime = json.pathStartTime;
-//  this.pathStartPos.set(Vec2d.fromJSON(json.pathStartPos));
-//  this.vel.set(json.vel || Vec2d.ZERO);
-//  this.pathDurationMax = json.pathDurationMax;
-//  this.shape = json.shape;
-//  this.rad = json.rad;
-//  this.rectRad = json.rectRad.toJSON();
-//  this.hitGroup = json.hitGroup;
-//  this.mass = json.mass;
-//  this.elasticity = json.elasticity;
+  Body.JSONER.setFromJSON(json, this);
 };
 
 /**

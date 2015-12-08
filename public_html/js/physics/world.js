@@ -114,8 +114,18 @@ World.prototype.newId = function() {
  */
 World.prototype.addSpirit = function(spirit) {
   spirit.id = this.newId();
+  // If spirit loading gets more complicated, then call loadSpirit instead of inlining.
   this.spirits[spirit.id] = spirit;
   return spirit.id;
+};
+
+/**
+ * Adds the spirit using the ID it already has.
+ */
+World.prototype.loadSpirit = function(spirit) {
+  if (this.spirits[spirit.id]) throw Error("Spirit with id '" + spirit.id + "' already exists!");
+  this.spirits[spirit.id] = spirit;
+  this.nextId = Math.max(this.nextId, spirit.id + 1);
 };
 
 World.prototype.removeSpiritId = function(id) {

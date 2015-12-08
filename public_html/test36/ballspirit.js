@@ -5,10 +5,14 @@
 function BallSpirit(playScreen) {
   Spirit.call(this);
   this.playScreen = playScreen;
-  this.bodyId = -1;
+
+  this.type = PlayScreen.SpiritType.BALL;
   this.id = -1;
+  this.bodyId = -1;
   this.modelStamp = null;
   this.color = new Vec4();
+
+  // temps
   this.vec2d = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
@@ -16,6 +20,15 @@ function BallSpirit(playScreen) {
 }
 BallSpirit.prototype = new Spirit();
 BallSpirit.prototype.constructor = BallSpirit;
+
+BallSpirit.SCHEMA = {
+  0: "type",
+  1: "id",
+  2: "bodyId",
+  3: "color"
+};
+
+BallSpirit.JSONER = new Jsoner(BallSpirit.SCHEMA);
 
 BallSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
@@ -32,7 +45,7 @@ BallSpirit.prototype.onDraw = function(world, renderer) {
       .setStamp(this.modelStamp)
       .setColorVector(this.color);
   // Render the smaller ones in front.
-  // TODO standardize Z
+  // TODO: standardize Z
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -1 + Math.max(0, body.rad / 100)))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
@@ -49,3 +62,13 @@ BallSpirit.prototype.onTimeout = function(world, timeout) {
 BallSpirit.prototype.getBody = function(world) {
   return world.bodies[this.bodyId];
 };
+
+
+BallSpirit.prototype.toJSON = function() {
+  return BallSpirit.JSONER.toJSON(this);
+};
+
+BallSpirit.prototype.setFromJSON = function(json) {
+  BallSpirit.JSONER.setFromJSON(json, this);
+};
+
