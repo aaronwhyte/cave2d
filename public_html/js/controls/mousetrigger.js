@@ -1,5 +1,5 @@
 /**
- * A single control Trigger, using all mouse keys.
+ * A single control Trigger, using the left mouse button.
  * @constructor
  * @extends {Trigger}
  */
@@ -7,23 +7,34 @@ function MouseTrigger() {
   Trigger.call(this);
 
   var self = this;
-  this.buttonToState = {};
   this.downListener = function(e) {
     if (!e) e = window.event;
-    var oldVal = self.getVal();
-    self.buttonToState[e.button] = true;
-    if (!oldVal) self.publishTriggerDown();
+    if (MouseTrigger.isLeftButton(e)) {
+      self.val = true;
+      self.publishTriggerDown();
+    }
   };
   this.upListener = function(e) {
     if (!e) e = window.event;
-    var oldVal = self.getVal();
-    self.buttonToState[e.button] = false;
-    if (oldVal && !self.getVal()) self.publishTriggerUp();
+    if (MouseTrigger.isLeftButton(e)) {
+      self.val = false;
+      self.publishTriggerUp();
+    }
   };
 }
 
 MouseTrigger.prototype = new Trigger();
 MouseTrigger.prototype.constructor = MouseTrigger;
+
+MouseTrigger.isLeftButton = function(e) {
+  if (e.buttons) {
+    return !!(e.buttons & 1);
+  } else if ((typeof e.button) != 'undefined') {
+    return e.button == 0;
+  } else {
+    return e.which == 1;
+  }
+};
 
 MouseTrigger.prototype.startListening = function() {
   document.addEventListener('mousedown', this.downListener);
@@ -34,14 +45,10 @@ MouseTrigger.prototype.startListening = function() {
 MouseTrigger.prototype.stopListening = function() {
   document.removeEventListener('mousedown', this.downListener);
   document.removeEventListener('mouseup', this.upListener);
-  for (var b in this.buttonToState) {
-    this.buttonToState[b] = false;
-  }
+  this.val = false;
   return this;
 };
 
 MouseTrigger.prototype.getVal = function() {
-  for (var b in this.buttonToState) {
-    if (this.buttonToState[b]) return true;
-  }
+  return this.val;
 };
