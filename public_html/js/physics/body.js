@@ -79,14 +79,19 @@ Body.SCHEMA = {
   11: 'elasticity'
 };
 
-Body.JSONER = new Jsoner(Body.SCHEMA);
+Body.getJsoner = function() {
+  if (!Body.jsoner) {
+    Body.jsoner = new Jsoner(Body.SCHEMA);
+  }
+  return Body.jsoner;
+};
 
 Body.prototype.toJSON = function() {
-  return Body.JSONER.toJSON(this);
+  return Body.getJsoner().toJSON(this);
 };
 
 Body.prototype.setFromJSON = function(json) {
-  Body.JSONER.setFromJSON(json, this);
+  Body.getJsoner().setFromJSON(json, this);
 };
 
 /**

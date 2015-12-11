@@ -28,7 +28,12 @@ BallSpirit.SCHEMA = {
   3: "color"
 };
 
-BallSpirit.JSONER = new Jsoner(BallSpirit.SCHEMA);
+BallSpirit.getJsoner = function() {
+  if (!BallSpirit.jsoner) {
+    BallSpirit.jsoner = new Jsoner(BallSpirit.SCHEMA);
+  }
+  return Body.jsoner;
+};
 
 BallSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
@@ -65,10 +70,10 @@ BallSpirit.prototype.getBody = function(world) {
 
 
 BallSpirit.prototype.toJSON = function() {
-  return BallSpirit.JSONER.toJSON(this);
+  return BallSpirit.getJsoner().toJSON(this);
 };
 
 BallSpirit.prototype.setFromJSON = function(json) {
-  BallSpirit.JSONER.setFromJSON(json, this);
+  BallSpirit.getJsoner().setFromJSON(json, this);
 };
 
