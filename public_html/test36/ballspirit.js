@@ -32,7 +32,7 @@ BallSpirit.getJsoner = function() {
   if (!BallSpirit.jsoner) {
     BallSpirit.jsoner = new Jsoner(BallSpirit.SCHEMA);
   }
-  return Body.jsoner;
+  return BallSpirit.jsoner;
 };
 
 BallSpirit.prototype.setModelStamp = function(modelStamp) {
