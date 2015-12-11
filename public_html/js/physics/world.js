@@ -66,6 +66,9 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs) {
 
 World.SKIP_QUEUE_BASE = 2;
 
+// 5% fudge factor when deciding what cells an object is in.
+World.BRECT_FUDGE_FACTOR = 0.05;
+
 World.GRID_HUGENESS = 10000;
 
 /**
@@ -171,7 +174,7 @@ World.prototype.removeBodyId = function(bodyId) {
   var body = this.bodies[bodyId];
   if (body) {
     var rect = Rect.alloc();
-    body.getBoundingRectAtTime(this.now, rect);
+    this.getPaddedBodyBoundingRect(body, this.now, rect);
     var range = CellRange.alloc();
     this.getCellRangeForRect(rect, range);
     this.removeBodyFromCellRange(body, range);
@@ -257,7 +260,7 @@ World.prototype.getCellRangeForRect = function(rect, range) {
 };
 
 World.prototype.addPathToGrid = function(body) {
-  var brect = body.getBoundingRectAtTime(this.now, Rect.alloc());
+  var brect = this.getPaddedBodyBoundingRect(body, this.now, Rect.alloc());
   var range = this.getCellRangeForRect(brect, CellRange.alloc());
   for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
@@ -350,7 +353,7 @@ World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
     e.cellRange.p0[axis] = e.cellRange.p1[axis] = this.cellCoord(c[axis]) +
         (eventType === WorldEvent.TYPE_GRID_ENTER ? vSign[axis] : 0);
     // The length of the crossing, in cells, depends on the position of the bounding rect at that time.
-    body.getBoundingRectAtTime(t, rect);
+    this.getPaddedBodyBoundingRect(body, t, rect);
     e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
     e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
   }
@@ -417,7 +420,7 @@ World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
     e.cellRange.p0[axis] = e.cellRange.p1[axis] = nextCellIndex;
     // The length of the crossing, in cells, depends on the position of the bounding rect at that time.
     var rect = Rect.alloc();
-    body.getBoundingRectAtTime(t, rect);
+    this.getPaddedBodyBoundingRect(body, t, rect);
     e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
     e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
     rect.free();
@@ -495,7 +498,7 @@ World.prototype.addTimeout = function(time, spiritId, vals) {
   this.queue.add(e);
 };
 
-// TODO removeTimeout
+// TODO World.prototype.removeTimeout
 
 /**
  * Performs an immediate rayscan. If there's a hit, this will return true,
@@ -649,7 +652,7 @@ World.prototype.getOverlaps = function(body) {
   var retval = [];
   this.validateBodies();
   this.scannedBodyIds.reset();
-  var brect = body.getBoundingRectAtTime(this.now, Rect.alloc());
+  var brect = this.getPaddedBodyBoundingRect(body, this.now, Rect.alloc());
   var range = this.getCellRangeForRect(brect, CellRange.alloc());
   for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
@@ -684,3 +687,7 @@ World.prototype.getOverlaps = function(body) {
   range.free();
   return retval;
 };
+
+World.prototype.getPaddedBodyBoundingRect = function(body, time, rectOut) {
+  return body.getBoundingRectAtTime(time, rectOut).pad(this.cellSize * World.BRECT_FUDGE_FACTOR)
+}

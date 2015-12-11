@@ -89,13 +89,13 @@ BaseScreen.prototype.setScreenListening = function(listen) {
 BaseScreen.prototype.drawScreen = function(visibility) {
   this.visibility = visibility;
   this.lazyInit();
-  if (this.visibility == 1) {
-    this.clock();
-  }
   this.updateViewMatrix();
   this.drawScene();
   this.canvasToClipMatrixDirty = true;
   this.clipToWorldMatrixDirty = true;
+  if (this.visibility == 1) {
+    this.clock();
+  }
 };
 
 BaseScreen.prototype.getClipToWorldMatrix = function() {

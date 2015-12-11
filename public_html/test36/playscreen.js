@@ -249,33 +249,33 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
     var squisher = new Squisher();
     var jsonStr = squisher.unsquish(frag);
     var jsonObj = JSON.parse(jsonStr);
-    if (jsonObj) {
-      this.world.now = jsonObj.now;
-      for (var i = 0; i < jsonObj.bodies.length; i++) {
-        var bodyJson = jsonObj.bodies[i];
-        var body = new Body();
-        body.setFromJSON(bodyJson);
-        this.world.loadBody(body);
-      }
-      for (var i = 0; i < jsonObj.spirits.length; i++) {
-        var spiritJson = jsonObj.spirits[i];
-        var spiritType = spiritJson[0];
-        if (spiritType == PlayScreen.SpiritType.BALL) {
-          var spirit = new BallSpirit(this);
-          spirit.setModelStamp(this.circleStamp);
-          spirit.setFromJSON(spiritJson);
-          this.world.loadSpirit(spirit);
-        } else {
-          console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
-        }
-      }
-      this.bitGrid = BitGrid.fromJSON(jsonObj.terrain);
-      this.tiles = {};
-      this.flushTerrainChanges();
-    }
   } catch (e) {
     console.error("maybeLoadWorldFromFragment error", e);
     return false;
+  }
+  if (jsonObj) {
+    this.world.now = jsonObj.now;
+    for (var i = 0; i < jsonObj.bodies.length; i++) {
+      var bodyJson = jsonObj.bodies[i];
+      var body = new Body();
+      body.setFromJSON(bodyJson);
+      this.world.loadBody(body);
+    }
+    for (var i = 0; i < jsonObj.spirits.length; i++) {
+      var spiritJson = jsonObj.spirits[i];
+      var spiritType = spiritJson[0];
+      if (spiritType == PlayScreen.SpiritType.BALL) {
+        var spirit = new BallSpirit(this);
+        spirit.setModelStamp(this.circleStamp);
+        spirit.setFromJSON(spiritJson);
+        this.world.loadSpirit(spirit);
+      } else {
+        console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
+      }
+    }
+    this.bitGrid = BitGrid.fromJSON(jsonObj.terrain);
+    this.tiles = {};
+    this.flushTerrainChanges();
   }
   return true;
 };
@@ -297,7 +297,7 @@ PlayScreen.prototype.initBoulder = function(pos, rad) {
   b.rad = rad;
   b.hitGroup = PlayScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = Infinity;
+  b.pathDurationMax = 0xffffff; // a really big number, but NOT Infinity.
   var spirit = new BallSpirit();
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.circleStamp);
