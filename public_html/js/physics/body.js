@@ -40,7 +40,7 @@ Body.prototype.reset = function() {
   this.vel.reset();
 
   // The World's map of Body objects that need to have their paths validated.
-  this.invalidBodies = null;
+  this.invalidBodyIds = null;
 
   this.shape = Body.Shape.CIRCLE;
 
@@ -131,8 +131,8 @@ Body.prototype.getArea = function() {
 };
 
 Body.prototype.invalidatePath = function() {
-  if (this.invalidBodies && this.id) {
-    this.invalidBodies[this.id] = this;
+  if (this.invalidBodyIds && this.id) {
+    this.invalidBodyIds[this.id] = true;
   }
 };
 

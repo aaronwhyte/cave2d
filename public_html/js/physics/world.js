@@ -44,9 +44,11 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs) {
   // pathId to Body. Obsolete pathIds might still point to their old Bodies, so check the body's pathId.
   this.paths = {};
 
-  // bodyId to body. Body objects that need to have their paths processed by the collider
+  // bodyId to "true". Holds IDs of body objects that need to have their paths processed by the collider
   // before time can move forward. This includes newly-added bodies.
-  this.invalidBodies = {};
+  // Bodies can be invalid for a time, so that they can be manipulated while time is standing still,
+  // without having to recompute collisions every time.
+  this.invalidBodyIds = {};
 
   this.nextId = 10;
 
@@ -162,7 +164,7 @@ World.prototype.loadBody = function(body) {
   this.nextId = Math.max(this.nextId, body.id + 1);
 
   // Hook the path invalidator into the body. A wee bit hacky.
-  body.invalidBodies = this.invalidBodies;
+  body.invalidBodyIds = this.invalidBodyIds;
   body.invalidatePath();
 };
 
@@ -182,7 +184,7 @@ World.prototype.removeBodyId = function(bodyId) {
     rect.free();
     delete this.bodies[body.id];
     delete this.paths[body.pathId];
-    delete this.invalidBodies[body.id];
+    delete this.invalidBodyIds[body.id];
     body.free();
   } else {
     console.log("couldn't find or remove bodyId " + bodyId);
@@ -227,10 +229,10 @@ World.prototype.getBodyByPathId = function(pathId) {
 };
 
 World.prototype.validateBodies = function() {
-  for (var bodyId in this.invalidBodies) {
-    var body = this.invalidBodies[bodyId];
+  for (var bodyId in this.invalidBodyIds) {
+    delete this.invalidBodyIds[bodyId];
+    var body = this.bodies[bodyId];
     if (!body) continue;
-    delete this.invalidBodies[bodyId];
     if (body.pathId) {
       delete this.paths[body.pathId];
     }
