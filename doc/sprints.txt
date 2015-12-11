@@ -168,7 +168,7 @@ v World to/from JSON I
     v each must declare a schema, to save/load anything beyond "id".
     v world.loadSpirit(spirit)
 v Fix trigger-down bug. Why does it get stuck? Repro? Seems like mobile long-press --> right-click
-- Fix balls going through walls on level start.
+v Fix balls going through walls on level start. (I think I got it but we'll see)
 - World to/from JSON II
   - Timeout events from queue.
     - Add some robots with periodic timeouts.

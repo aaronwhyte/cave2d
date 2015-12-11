@@ -38,7 +38,7 @@ BaseScreen.prototype.constructor = BaseScreen;
 
 BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
-BaseScreen.PATH_DURATION = BaseScreen.CLOCKS_PER_FRAME * 2;
+BaseScreen.PATH_DURATION = 0xffff;
 
 BaseScreen.prototype.onPointerDown = null;
 BaseScreen.prototype.onPointerDown = null;

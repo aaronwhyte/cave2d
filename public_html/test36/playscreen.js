@@ -282,10 +282,10 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
 
 PlayScreen.prototype.createDefaultWorld = function() {
   for (var i = 0; i < 20; i++) {
-    this.initBoulder(new Vec2d(30 * (Math.random()-0.5), -20 +10* (Math.random()-0.5)), 1 + Math.random() * 2);
+    this.initBoulder(new Vec2d(30 * (Math.random()-0.5), 10* (Math.random()-0.5)), 1 + Math.random() * 2);
   }
-  this.initBoulder(new Vec2d(10, -20), 6);
-  this.initBoulder(new Vec2d(-10, -20), 6);
+  this.initBoulder(new Vec2d(10, 0), 6);
+  this.initBoulder(new Vec2d(-10, 0), 6);
   this.initWalls();
 };
 
@@ -303,7 +303,7 @@ PlayScreen.prototype.initBoulder = function(pos, rad) {
   spirit.setModelStamp(this.circleStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(Math.random(), Math.random(), Math.random());
+  this.world.spirits[spiritId].setColorRGB(Math.random()*0.7+0.3, Math.random()*0.7+0.3, Math.random()*0.7+0.3);
   return spiritId;
 };
 
@@ -318,13 +318,13 @@ PlayScreen.prototype.createCursorBody = function() {
 PlayScreen.prototype.initWalls = function() {
   this.bitGrid = new BitGrid(this.bitSize);
   var rad = 15;
-  this.bitGrid.drawPill(new Segment(new Vec2d(-rad*2, -rad*1.2), new Vec2d(rad*2, -rad*1.2)), rad*1.2, 1);
-
-  this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
-  this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.2, 1);
-
-  this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*0.5, 0);
-  this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*0.9, 0);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-rad*2, 0), new Vec2d(rad*2, 0)), rad, 1);
+//
+//  this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
+//  this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.2, 1);
+//
+//  this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*0.5, 0);
+//  this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*0.9, 0);
 
   this.tiles = {};
   this.flushTerrainChanges();
@@ -434,7 +434,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
-  wallModel.setColorRGB(0.5, 0.3, 0.7);
+  wallModel.setColorRGB(0.5, 0.5, 0.7);
 //  wallModel.setColorRGB(Math.random()/2+0.3 , Math.random() * 0.5, Math.random()/2+0.5);
   return wallModel;
 };
