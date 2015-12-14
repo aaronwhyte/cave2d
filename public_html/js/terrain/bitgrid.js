@@ -347,6 +347,9 @@ BitGrid.fromJSON = function(json) {
     var cell = bitGrid.createCellArray(0);
     dequeueQuad(0, 0, 32);
     bitGrid.cells[cellId] = cell;
+
+    // Mark this cell as dirty. Its old value was 0, the default full-empty value.
+    bitGrid.changedCells[cellId] = 0;
   }
   return bitGrid;
 };
