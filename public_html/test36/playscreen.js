@@ -319,12 +319,6 @@ PlayScreen.prototype.initWalls = function() {
   this.bitGrid = new BitGrid(this.bitSize);
   var rad = 15;
   this.bitGrid.drawPill(new Segment(new Vec2d(-rad*2, 0), new Vec2d(rad*2, 0)), rad, 1);
-//
-//  this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*1.2, 1);
-//  this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*1.2, 1);
-//
-//  this.bitGrid.drawPill(new Segment(new Vec2d(-rad * 2.15, rad), new Vec2d(-rad * 2.15, rad)), rad*0.5, 0);
-//  this.bitGrid.drawPill(new Segment(new Vec2d(rad * 2.15, rad), new Vec2d(rad * 2.15, rad)), rad*0.9, 0);
 
   this.tiles = {};
   this.flushTerrainChanges();
