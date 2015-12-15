@@ -4,7 +4,6 @@
  */
 function WorldEvent() {
   this.next = [];
-  this.timeoutVals = [];
   this.cellRange = new CellRange(0, 0, -1, -1);
 
   // This is a vector along which collision acceleration should be applied,
@@ -28,7 +27,7 @@ WorldEvent.prototype.reset = function() {
 
   // timeout fields
   this.spiritId = 0;
-  this.timeoutVals.length = 0;
+  this.timeoutVal = null;
 
   // grid enter/exit cell range
   this.axis = null; // one of Vec2d.X or Vec2d.Y
@@ -61,7 +60,7 @@ WorldEvent.prototype.toString = function() {
   var s = [];
   s.push('{time: ', this.time, ', type: ', this.type);
   if (this.type === WorldEvent.TYPE_TIMEOUT) {
-    s.push(', spiritId: ', this.spiritId);
+    s.push(', spiritId: ', this.spiritId, ', timeoutVal: ', this.timeoutVal);
   } else if (this.type === WorldEvent.TYPE_GRID_ENTER || this.type === WorldEvent.TYPE_GRID_EXIT) {
     s.push(', pathId: ', this.pathId, ', axis: ' + this.axis, ', cellRange: ' + JSON.stringify(this.cellRange));
   } else if (this.type === WorldEvent.TYPE_HIT) {

@@ -491,12 +491,12 @@ World.prototype.processNextEvent = function() {
   e.free();
 };
 
-World.prototype.addTimeout = function(time, spiritId, vals) {
+World.prototype.addTimeout = function(time, spiritId, val) {
   var e = WorldEvent.alloc();
   e.type = WorldEvent.TYPE_TIMEOUT;
   e.time = time;
   e.spiritId = spiritId;
-  // TODO e.vals
+  e.timeoutVal = val;
   this.queue.add(e);
 };
 
