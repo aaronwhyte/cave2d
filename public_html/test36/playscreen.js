@@ -2,8 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
-  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
+function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
+  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx);
 
   this.listeners = new ArraySet();
   this.touchDetector = new TouchDetector();
@@ -123,7 +123,8 @@ PlayScreen.CursorMode = {
 };
 
 PlayScreen.SpiritType = {
-  BALL: 1
+  BALL: 1,
+  SOUND: 2
 };
 
 PlayScreen.prototype.updateSharableUrl = function() {
@@ -269,6 +270,12 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
         spirit.setModelStamp(this.circleStamp);
         spirit.setFromJSON(spiritJson);
         this.world.loadSpirit(spirit);
+      } else if (spiritType == PlayScreen.SpiritType.SOUND) {
+        var spirit = new SoundSpirit(this);
+        spirit.setModelStamp(this.circleStamp);
+        spirit.setFromJSON(spiritJson);
+        this.world.loadSpirit(spirit);
+        this.world.addTimeout(this.world.now, spirit.id, -1);
       } else {
         console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
       }
@@ -281,11 +288,14 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
 };
 
 PlayScreen.prototype.createDefaultWorld = function() {
-  for (var i = 0; i < 20; i++) {
-    this.initBoulder(new Vec2d(30 * (Math.random()-0.5), 10* (Math.random()-0.5)), 1 + Math.random() * 2);
+  for (var i = 0; i < 16; i++) {
+    this.initSoundSpirit(new Vec2d(i/16 * 50 - 25, (Math.random()-0.5)), 1.3, i/16);
   }
-  this.initBoulder(new Vec2d(10, 0), 6);
-  this.initBoulder(new Vec2d(-10, 0), 6);
+  for (var i = 0; i < 4; i++) {
+    this.initSoundSpirit(new Vec2d(i/4 * 50 - 25, 4+(Math.random()-0.5)), 1.3, i/4);
+  }
+  this.initBoulder(new Vec2d(35, 0), 5);
+  this.initBoulder(new Vec2d(-35, 0), 5);
   this.initWalls();
 };
 
@@ -303,7 +313,48 @@ PlayScreen.prototype.initBoulder = function(pos, rad) {
   spirit.setModelStamp(this.circleStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(Math.random()*0.7+0.3, Math.random()*0.7+0.3, Math.random()*0.7+0.3);
+  this.world.spirits[spiritId].setColorRGB(0.5, 0.5, 0.6);
+  return spiritId;
+};
+
+PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
+  var density = 1;
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, this.world.now);
+  b.rad = rad;
+  b.hitGroup = PlayScreen.Group.ROCK;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = 0xffffff; // a really big number, but NOT Infinity.
+  var spirit = new SoundSpirit(this);
+  spirit.bodyId = this.world.addBody(b);
+  spirit.setModelStamp(this.circleStamp);
+  var maxPow = 5;
+  var notes = 4 * maxPow;
+  var f = Math.pow(2,
+          6 + Math.floor(Math.random() * notes)/notes * maxPow);
+  spirit.setSounds([
+      [
+        measureFraction,
+        3,
+        0.02*Math.random(), 0.07 + 0.05 * Math.random(), 0.1 + 0.1 * Math.random(),
+        f, f + (Math.random() - 0.5) * 10,
+        'square'
+      ],
+      [
+        measureFraction,
+        3,
+            0.02*Math.random(), 0.01 + 0.1 * Math.random(), 0.05 + 0.1 * Math.random(),
+        f+ (Math.random() - 0.5) * 10, f + (Math.random() - 0.5) * 10,
+        'sine'
+      ]
+  ]);
+  var spiritId = this.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  var r = Math.random() / 2;
+  this.world.spirits[spiritId].setColorRGB(r, 0.5 - r, measureFraction);
+  this.world.addTimeout(this.world.now, spiritId, -1);
+
   return spiritId;
 };
 
@@ -595,13 +646,14 @@ PlayScreen.prototype.drawScene = function() {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 
+  this.sfx.setListenerXYZ(this.camera.getX(), this.camera.getY(), 5);
+
   if (this.tiles) {
     this.renderer
         .setColorVector(this.levelColorVector)
         .setModelMatrix(this.levelModelMatrix);
     var cx = Math.round((this.camera.getX() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
     var cy = Math.round((this.camera.getY() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-
     var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
     var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
     var cellsPerScreenX = this.canvas.width / pixelsPerCell;
