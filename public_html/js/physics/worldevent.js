@@ -12,6 +12,29 @@ function WorldEvent() {
   this.reset();
 }
 
+// Only for TYPE_TIMEOUT events so far.
+WorldEvent.SCHEMA = {
+  0: 'time',
+  1: 'type',
+  2: 'spiritId',
+  3: 'timeoutVal'
+};
+
+WorldEvent.getJsoner = function() {
+  if (!WorldEvent.jsoner) {
+    WorldEvent.jsoner = new Jsoner(WorldEvent.SCHEMA);
+  }
+  return WorldEvent.jsoner;
+};
+
+WorldEvent.prototype.toJSON = function() {
+  return WorldEvent.getJsoner().toJSON(this);
+};
+
+WorldEvent.prototype.setFromJSON = function(json) {
+  WorldEvent.getJsoner().setFromJSON(json, this);
+};
+
 WorldEvent.TYPE_TIMEOUT = 'timeout';
 WorldEvent.TYPE_GRID_ENTER = 'enter';
 WorldEvent.TYPE_GRID_EXIT = 'exit';

@@ -168,28 +168,90 @@ v World to/from JSON I
     v each must declare a schema, to save/load anything beyond "id".
     v world.loadSpirit(spirit)
 v Fix trigger-down bug. Why does it get stuck? Repro? Seems like mobile long-press --> right-click
-v Fix balls going through walls on level start. (I think I got it but we'll see)
+v Fix balls going through walls on level start.
+  v pad world brects. Maybe be a good iea regardless.
+  v Ahah! Fix bug where distant wall bodies don't exist yet.
 - World to/from JSON II
-  - Timeout events from queue.
-    - Add some robots with periodic timeouts.
-      - 16 quarter-notes, arranged in a grid for starters. Cursor is listener.
-- Splashes
-  - move data out of closures and into standard fields, with schema
+  v Add some robots with periodic timeouts.
+    v Sound
+      What's the simplest solution? Just a pile of sounds, with in-measure time...
+      (And voice number? If the spirits allocate their own audio nodes, they don't get GCed. Optional.)
+      [
+        ['sound', in-measure time, voice?, vol, attack, sustain, decay, freq1, freq2, type],
+        ['sound', in-measure time, voice?, vol, attack, sustain, decay, freq1, freq2, type],
+        ...
+      ]
+      v Add measure timeout
+        v remember timestamp
+        v create all note timeouts
+    v Movement
+      v Accel on each sound, based on volume?
+    v spashes
+  v save/load Timeout events
+  - save/load splashes
+    - move data out of closures and into standard fields, with schema?
+
+More triggers, with icons and keyboard tips.
+- wall trigger
+  - icon
+  - key tip
+  - spash
+  - sound
+- floor trigger
+  - icon
+  - key tip
+  - spash
+  - sound
+- Last in wins
+- grab trigger
+  - icon
+  - key tip
+  - separate grab indicator
+  - make it easy to intercept small moving objects, since terrain and object cursors are decoupled
+
+- pause button
+  - icon
+  - move to top-right corner
+
+Rotation
+- Body
+  - orientation
+  - angular velocity
+  - moment of inertia
+- Pulling from off-center can change orientation
+- Collisions w friction can change angVel? Hm...
+
+More Objects
+- Bumper
+- cave speeder
+- tractor-beam player
+-
+
+Delete
+- Trigger
+  - icon
+  - tip
+- instantly delete grabbed object if any
+- otherwise go into grab-and-delete mode, which grabs and foreshadows deletion in, say, 500ms, gradually reducing timeout
+  until it gets to 0ms? Releasing the trigger sets the timeout back to 500ms?
+- splash
+- sound
+
+Add
+* parts menu is just a bunch of triggers. Maybe add "repeat last add" button in more convenient place?
+* Add at cursor. No need for "bubble".
+
+Possession
+- "enter" button
 
 Make the cursor be just another Spirit, saved/loaded like everyone else.
 * Empower Spirits to get at World and Game to make this happen.
 - spirit can get world trackball and triggers
 - prove it: Something else can get trackball/trigger
 
-
-double edit trigger
-- move terrain trigger up
-- separate object trigger
-- separate object indicator
-- make it easy to intercept small moving objects, since terrain and object cursors are decoupled
-
 Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
+- create repeller turrets
 - Cursor force can rotate bodies.
 
 Game1 Splashes II
@@ -206,6 +268,10 @@ Add & delete objects
 - Deletion pseudomode
 
 Non-pointerlocked mouse UI, perhaps direct-touch UI too?
+* flip between non-scrolling direct-touch/mouse, and scrolling trachball cursor.
+- touchscreen toggle on left
+- keyboard key toggles it
+- still draw cursor
 
 Zoomable?
 - two-touch pinch/unpinch

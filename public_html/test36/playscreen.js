@@ -5,6 +5,7 @@
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx);
 
+  this.splasher = new Splasher();
   this.listeners = new ArraySet();
   this.touchDetector = new TouchDetector();
   this.listeners.put(this.touchDetector);
@@ -203,6 +204,10 @@ PlayScreen.prototype.initPermStamps = function() {
   model = RigidModel.createDoubleRing(64);
   this.indicatorStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.indicatorStamp);
+
+  model = RigidModel.createDoubleRing(4);
+  this.soundStamp = model.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.soundStamp);
 };
 
 PlayScreen.prototype.initWorld = function() {
@@ -228,7 +233,8 @@ PlayScreen.prototype.toJSON = function() {
     terrain: this.bitGrid.toJSON(),
     now: this.world.now,
     bodies: [],
-    spirits: []
+    spirits: [],
+    timeouts: []
   };
   // bodies
   for (var bodyId in this.world.bodies) {
@@ -242,6 +248,16 @@ PlayScreen.prototype.toJSON = function() {
     var spirit = this.world.spirits[spiritId];
     json.spirits.push(spirit.toJSON());
   }
+  // timeouts
+  for (var e = this.world.queue.getFirst(); e; e = e.next[0]) {
+    if (e.type === WorldEvent.TYPE_TIMEOUT) {
+      var spirit = this.world.spirits[e.spiritId];
+      if (spirit) {
+        json.timeouts.push(e.toJSON());
+      }
+    }
+  }
+  console.log(json);
   return json;
 };
 
@@ -256,12 +272,14 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
   }
   if (jsonObj) {
     this.world.now = jsonObj.now;
+    // bodies
     for (var i = 0; i < jsonObj.bodies.length; i++) {
       var bodyJson = jsonObj.bodies[i];
       var body = new Body();
       body.setFromJSON(bodyJson);
       this.world.loadBody(body);
     }
+    // spirits
     for (var i = 0; i < jsonObj.spirits.length; i++) {
       var spiritJson = jsonObj.spirits[i];
       var spiritType = spiritJson[0];
@@ -275,11 +293,19 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
         spirit.setModelStamp(this.circleStamp);
         spirit.setFromJSON(spiritJson);
         this.world.loadSpirit(spirit);
-        this.world.addTimeout(this.world.now, spirit.id, -1);
       } else {
         console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
       }
     }
+    // timeouts
+    for (var i = 0; i < jsonObj.timeouts.length; i++) {
+      var timeoutJson = jsonObj.timeouts[i];
+      var e = WorldEvent.alloc();
+      e.setFromJSON(timeoutJson);
+      this.world.loadTimeout(e);
+    }
+
+    // terrain
     this.bitGrid = BitGrid.fromJSON(jsonObj.terrain);
     this.tiles = {};
     this.flushTerrainChanges();
@@ -288,14 +314,14 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
 };
 
 PlayScreen.prototype.createDefaultWorld = function() {
-  for (var i = 0; i < 16; i++) {
-    this.initSoundSpirit(new Vec2d(i/16 * 50 - 25, (Math.random()-0.5)), 1.3, i/16);
+  for (var i = 0; i < 25; i++) {
+    this.initSoundSpirit(new Vec2d(i/25 * 60 - 30, (Math.random()-0.5)), 1.2, i/25);
   }
-  for (var i = 0; i < 4; i++) {
-    this.initSoundSpirit(new Vec2d(i/4 * 50 - 25, 4+(Math.random()-0.5)), 1.3, i/4);
+  for (var i = 0; i < 5; i++) {
+    this.initSoundSpirit(new Vec2d(i/5 * 60 - 30, 4+(Math.random()-0.5)), 1.2, (i+0.2)/5);
   }
-  this.initBoulder(new Vec2d(35, 0), 5);
-  this.initBoulder(new Vec2d(-35, 0), 5);
+  this.initBoulder(new Vec2d(40, 0), 4);
+  this.initBoulder(new Vec2d(-40, 0), 4);
   this.initWalls();
 };
 
@@ -329,24 +355,32 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
   var spirit = new SoundSpirit(this);
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.circleStamp);
-  var maxPow = 5;
+  var maxPow = 5.5;
   var notes = 4 * maxPow;
+  var rand = 2;
   var f = Math.pow(2,
-          6 + Math.floor(Math.random() * notes)/notes * maxPow);
+          5.75 + Math.floor(Math.random() * notes)/notes * maxPow);
   spirit.setSounds([
       [
         measureFraction,
-        3,
-        0.02*Math.random(), 0.07 + 0.05 * Math.random(), 0.1 + 0.1 * Math.random(),
-        f, f + (Math.random() - 0.5) * 10,
-        'square'
+        1,
+        0, 0.15 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        f + (Math.random() - 0.5) * rand, f,
+        'sine'
       ],
       [
         measureFraction,
-        3,
-            0.02*Math.random(), 0.01 + 0.1 * Math.random(), 0.05 + 0.1 * Math.random(),
-        f+ (Math.random() - 0.5) * 10, f + (Math.random() - 0.5) * 10,
+        0.5,
+        0.1*Math.random(), 0.15 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        f*2 + (Math.random() - 0.5) * rand, f*2,
         'sine'
+      ],
+      [
+        measureFraction,
+        0.5,
+        0.1*Math.random(), 0.15 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        f*3 + (Math.random() - 0.5) * rand, f*3,
+        'triange'
       ]
   ]);
   var spiritId = this.world.addSpirit(spirit);
@@ -606,6 +640,32 @@ PlayScreen.prototype.setIndicatedBodyId = function(id) {
   }
 };
 
+PlayScreen.prototype.addNoteSplash = function(x, y, r, g, b, bodyRad) {
+  var fullRad = bodyRad * 3;// * (1+Math.random()/2);
+  var self = this;
+  function createSplash(x, y, dx, dy, duration) {
+    return Splash.alloc(
+        self.soundStamp, self.world.now, self.world.now + duration,
+        function(t) {
+          return self.vec4.setXYZ(r, g, b);
+        },
+        function(t) {
+          var rad = 0.6*fullRad + 0.4*fullRad * t;
+          return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
+              .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
+        },
+        function(t) {
+          var rad = Math.max(0, fullRad * (2*t - 1));
+          return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
+              .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
+        }
+    )
+  }
+  this.splasher.add(createSplash(x, y, 0, 0, 16 + 2*(Math.random() - 0.5)));
+};
+
+
+
 PlayScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
@@ -673,6 +733,7 @@ PlayScreen.prototype.drawScene = function() {
       }
     }
   }
+  this.splasher.draw(this.renderer, this.world.now);
 
   // Draw UI stuff that goes on top of the world
   this.renderer.setBlendingEnabled(true);

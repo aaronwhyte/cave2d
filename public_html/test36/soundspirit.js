@@ -24,7 +24,7 @@ function SoundSpirit(playScreen) {
 SoundSpirit.prototype = new Spirit();
 SoundSpirit.prototype.constructor = SoundSpirit;
 
-SoundSpirit.MEASURE_TIMEOUT = 90;
+SoundSpirit.MEASURE_TIMEOUT = 180;
 
 SoundSpirit.SOUND_MEASURE_TIME = 0;
 SoundSpirit.SOUND_VOLUME = 1;
@@ -69,9 +69,11 @@ SoundSpirit.prototype.onTimeout = function(world, event) {
   // Play a sound?
   var measureTime = event.timeoutVal;
   var bodyPos = body.getPosAtTime(world.now, this.vec2d);
+  var makesSound = false;
   for (var i = 0; i < this.sounds.length; i++) {
     var s = this.sounds[i];
     if (s[SoundSpirit.SOUND_MEASURE_TIME] == measureTime) {
+      makesSound = true;
       this.playScreen.sfx.sound(bodyPos.x, bodyPos.y, 0,
           s[SoundSpirit.SOUND_VOLUME],
           s[SoundSpirit.SOUND_ATTACK],
@@ -87,6 +89,12 @@ SoundSpirit.prototype.onTimeout = function(world, event) {
       body.setVelAtTime(newVel, world.now);
       newVel.free();
     }
+  }
+  if (makesSound) {
+    this.vec4.set(this.color).scale1(2);
+    this.playScreen.addNoteSplash(bodyPos.x, bodyPos.y,
+        this.vec4.v[0], this.vec4.v[1], this.vec4.v[2],
+        body.rad);
   }
 
   // TODO: be less dumb
@@ -109,7 +117,7 @@ SoundSpirit.prototype.onTimeout = function(world, event) {
 SoundSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody(world);
   body.getPosAtTime(world.now, this.tempBodyPos);
-  var colorScale = 1+4*Math.max(0, Math.min(1, 1 - 6*(world.now - this.lastSoundTime)/SoundSpirit.MEASURE_TIMEOUT));
+  var colorScale = 1+1.5*Math.max(0, Math.min(1, 1 - 6*(world.now - this.lastSoundTime)/SoundSpirit.MEASURE_TIMEOUT));
   renderer
       .setStamp(this.modelStamp)
       .setColorVector(this.vec4.set(this.color).scale1(colorScale));

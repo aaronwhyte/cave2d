@@ -500,6 +500,13 @@ World.prototype.addTimeout = function(time, spiritId, val) {
   this.queue.add(e);
 };
 
+/**
+ * Adds the timeout to the event queue.
+ */
+World.prototype.loadTimeout = function(e) {
+  this.addTimeout(e.time, e.spiritId, e.timeoutVal);
+};
+
 // TODO World.prototype.removeTimeout
 
 /**
