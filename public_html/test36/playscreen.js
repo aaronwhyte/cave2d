@@ -298,11 +298,13 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
       }
     }
     // timeouts
-    for (var i = 0; i < jsonObj.timeouts.length; i++) {
-      var timeoutJson = jsonObj.timeouts[i];
-      var e = WorldEvent.alloc();
-      e.setFromJSON(timeoutJson);
-      this.world.loadTimeout(e);
+    if (jsonObj.timeouts) {
+      for (var i = 0; i < jsonObj.timeouts.length; i++) {
+        var timeoutJson = jsonObj.timeouts[i];
+        var e = WorldEvent.alloc();
+        e.setFromJSON(timeoutJson);
+        this.world.loadTimeout(e);
+      }
     }
 
     // terrain
@@ -663,8 +665,6 @@ PlayScreen.prototype.addNoteSplash = function(x, y, r, g, b, bodyRad) {
   }
   this.splasher.add(createSplash(x, y, 0, 0, 16 + 2*(Math.random() - 0.5)));
 };
-
-
 
 PlayScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
