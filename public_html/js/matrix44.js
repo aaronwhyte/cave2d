@@ -163,6 +163,13 @@ Matrix44.prototype.set = function(that) {
   return this;
 };
 
+Matrix44.prototype.setToPose = function(pose) {
+  var temp = Matrix44.tempArray;
+  return this.toTranslateOp(pose.pos)
+      .multiply(temp.toScaleOp(pose.scale))
+      .multiply(temp.toRotateZOp(pose.rotZ));
+};
+
 Matrix44.prototype.equals = function(that, opt_slop) {
   var slop = opt_slop || 0;
   for (var i = 0; i < 16; i++) {

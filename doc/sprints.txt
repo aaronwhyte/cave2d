@@ -171,7 +171,7 @@ v Fix trigger-down bug. Why does it get stuck? Repro? Seems like mobile long-pre
 v Fix balls going through walls on level start.
   v pad world brects. Maybe be a good iea regardless.
   v Ahah! Fix bug where distant wall bodies don't exist yet.
-- World to/from JSON II
+v World to/from JSON II: Timeouts
   v Add some robots with periodic timeouts.
     v Sound
       What's the simplest solution? Just a pile of sounds, with in-measure time...
@@ -188,8 +188,35 @@ v Fix balls going through walls on level start.
       v Accel on each sound, based on volume?
     v spashes
   v save/load Timeout events
-  - save/load splashes
-    - move data out of closures and into standard fields, with schema?
+- Splash 2.0
+  v helpers
+    v Pose class
+      v pos, scale, rot
+      v Jsoner
+      v setToInterpolation(a, b, t)
+    v Matrix44.prototype.setToPose(pose)
+    v Vec4.prototype.setToInterpolation(a, b, t)
+  - Splash class
+    - poses
+      - sp0, sp1
+      - s2p0, s2p1 (for double-model stamp splashes which should be *awesome*)
+    - color0, color1 - Vec4 instances
+    - startTime, duration
+    - type, stamp
+    - isExpired(time)
+    - isVisible(time)
+    - getModelMatrix(time, m44)
+    - getModelMatrix2(time, m44)
+    - getColor(time, v4)
+    - static Jsoner
+  - Splasher: Collection of Spashes
+    * Not like World+Body. Spashes are immutable. Fire and forget.
+    * Copy the ten params from ?????????????????????????????????????
+    - use new spash methods instead of function objects
+    - createSplash(
+    - Jsoner
+- World to/from JSON III: Splashes
+  - save/load Splasher
 
 More triggers, with icons and keyboard tips.
 - wall trigger

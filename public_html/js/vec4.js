@@ -165,12 +165,12 @@ Vec4.prototype.clipToMaxLength = function(maxLength) {
   return this;
 };
 
-//Vec4.prototype.slideByFraction = function(towardsPoint, fraction) {
-//  this.x = this.x * (1 - fraction) + towardsPoint.x * fraction;
-//  this.y = this.y * (1 - fraction) + towardsPoint.y * fraction;
-//  this.z = this.z * (1 - fraction) + towardsPoint.z * fraction;
-//};
-//
+Vec4.prototype.setToInterpolation = function(a, b, t) {
+  for (var i = 0; i < 4; i++) {
+    this.v[i] = a.v[i] * (1-t) + b.v[i] * t;
+  }
+};
+
 
 Vec4.prototype.equals = function(that, opt_slop) {
   var slop = opt_slop || 0;
