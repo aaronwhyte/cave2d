@@ -5,6 +5,9 @@
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sound);
 
+  // temp
+  this.splash = new Splash();
+
   this.trackball = new MultiTrackball()
       .addTrackball(new MouseTrackball())
       .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
@@ -77,6 +80,13 @@ PlayScreen.Terrain = {
   FLOOR: 1,
   MIXED: 2
 };
+
+PlayScreen.SplashType = {
+  PLAYER_TRAIL: 1,
+  EXPLOSION: 2,
+  TERRAIN_DUST: 3
+};
+
 
 PlayScreen.prototype.setTouchTriggerArea = function() {
   this.triggerPixelRad = 0.5 * (this.canvas.width + this.canvas.height) * 0.17;
@@ -564,12 +574,15 @@ PlayScreen.prototype.updateViewMatrix = function() {
 PlayScreen.prototype.drawScene = function() {
   this.hitsThisFrame = 0;
 
+  // TODO: Make player add player trail, in timeout.
   var playerPos = this.getPlayerPos();
+  var playerVel = this.getPlayerVel();
   while (this.playerThrustSum > 0) {
     this.playerThrustSum -= 30;
-    this.addPlayerTrail(playerPos.x, playerPos.y);
+    this.addPlayerTrail(playerPos.x, playerPos.y, playerVel.x, playerVel.y);
     this.playerThrustSum = 0;
   }
+
   this.splasher.draw(this.renderer, this.world.now);
 
   for (var id in this.world.spirits) {
@@ -608,85 +621,102 @@ PlayScreen.prototype.drawScene = function() {
   }
 };
 
-PlayScreen.prototype.addPlayerTrail = function(x, y) {
-  var self = this;
-  var pv = this.getPlayerVel();
+PlayScreen.prototype.addPlayerTrail = function(x, y, dx, dy) {
+  var s = this.splash;
+  s.reset(PlayScreen.SplashType.PLAYER_TRAIL, this.circleStamp);
+  s.startTime = this.world.now;
+  s.duration = 15;
+
   var dir = 2 * Math.PI * Math.random();
-  var dx = pv.x + 10*Math.sin(dir);
-  var dy = pv.y + 10*Math.cos(dir);
-  this.splasher.add(Splash.alloc(this.circleStamp, this.world.now, this.world.now + 15,
-      function(t) {
-        return self.vec4.setXYZ(1-t, t, t);
-      },
-      function(t) {
-        var rad = 0.8 * PlayScreen.PLAYER_RAD * (1-t);
-        return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
-            .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
-      }
-  ));
+  dx = (-dx + 10 * Math.sin(dir)) / 15;
+  dy = (-dy + 10 * Math.cos(dir)) / 15;
+
+  s.startPose.pos.setXYZ(x, y, 0);
+  s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+  var startRad = 0.8 * PlayScreen.PLAYER_RAD;
+  s.startPose.scale.setXYZ(startRad, startRad, 1);
+  s.endPose.scale.setXYZ(0, 0, 1);
+
+  s.startColor.setXYZ(1, 0, 0);
+  s.endColor.setXYZ(0, 1, 1);
+
+  this.splasher.addCopy(s);
 };
 
 PlayScreen.prototype.addEnemyExplosion = function(x, y) {
   var self = this;
-  var particles, explosionRad, dirOffset, i, dir, dx, dy;
-  function createSplash(x, y, dx, dy, duration, sizeFactor) {
-    return Splash.alloc(self.circleStamp, self.world.now, self.world.now + duration,
-        function(t) {
-          return self.vec4.setXYZ(1, 1, 1);
-        },
-        function(t) {
-          var rad = sizeFactor * PlayScreen.ENEMY_RAD * (1-t);
-          return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
-              .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
-        }
-    )
+  var s = this.splash;
+  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+
+  function addSplash(x, y, dx, dy, duration, sizeFactor) {
+    s.reset(PlayScreen.SplashType.EXPLOSION, self.circleStamp);
+    s.startTime = self.world.now;
+    s.duration = duration;
+
+    s.startPose.pos.setXYZ(x, y, 0);
+    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+    var startRad = sizeFactor * PlayScreen.ENEMY_RAD;
+    s.startPose.scale.setXYZ(startRad, startRad, 1);
+    s.endPose.scale.setXYZ(0, 0, 1);
+
+    s.startColor.setXYZ(1, 1, 1);
+    s.endColor.setXYZ(1, 1, 1);
+    self.splasher.addCopy(s);
+  }
+
+  particles = Math.ceil(15 * (1 + Math.random()));
+  explosionRad = 60;
+  dirOffset = 2 * Math.PI * Math.random();
+  for (i = 0; i < particles; i++) {
+    duration = 8 * (1 + Math.random());
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
+    dx = Math.sin(dir) * explosionRad / duration;
+    dy = Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 1);
   }
 
   particles = Math.ceil(8 * (1 + Math.random()));
-  explosionRad = 80;
+  explosionRad = 30;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
-    dx = Math.sin(dir) * explosionRad;
-    dy = Math.cos(dir) * explosionRad;
-    this.splasher.add(createSplash(x, y, dx, dy, 7 * (1 + Math.random()), 1));
-  }
-
-  particles = Math.ceil(12 * (1 + Math.random()));
-  explosionRad = 40;
-  dirOffset = 2 * Math.PI * Math.random();
-  for (i = 0; i < particles; i++) {
+    duration = 20 * (1 + Math.random()*0.5);
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = Math.sin(dir) * explosionRad;
-    dy = Math.cos(dir) * explosionRad;
-    this.splasher.add(createSplash(x, y, dx, dy, 14 * (1 + Math.random()), 1.5));
+    dx = Math.sin(dir) * explosionRad / duration;
+    dy = Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 1.5);
   }
 };
 
 PlayScreen.prototype.addDiggingDust = function(x, y) {
   var self = this;
-  var particles, explosionRad, dirOffset, i, dir, dx, dy;
-  function createSplash(x, y, dx, dy, duration) {
-    return Splash.alloc(self.circleStamp, self.world.now, self.world.now + duration,
-        function(t) {
-          //0.6, 0.5, 0.3
-          return self.vec4.setXYZ(0.6 + (1-t) * 0.4, 0.5, 0.3).scale1(1 - t/2);
-        },
-        function(t) {
-          var rad = 17 * (1-t);
-          return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
-              .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
-        }
-    )
+  var s = this.splash;
+  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+
+  function addSplash(x, y, dx, dy, duration) {
+    s.reset(PlayScreen.SplashType.TERRAIN_DUST, self.circleStamp);
+    s.startTime = self.world.now;
+    s.duration = duration;
+
+    s.startPose.pos.setXYZ(x, y, 0);
+    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+    s.startPose.scale.setXYZ(17, 17, 1);
+    s.endPose.scale.setXYZ(0, 0, 1);
+
+    //return self.vec4.setXYZ(0.6 + (1-t) * 0.4, 0.5, 0.3).scale1(1 - t/2);
+    s.startColor.setXYZ(1, 0.5, 0.3);
+    s.endColor.setXYZ(0.3, 0.25, 0.15);
+    self.splasher.addCopy(s);
   }
+
   particles = Math.ceil(6 * (1 + Math.random()));
   explosionRad = 30 + 5 * Math.random();
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
+    duration = 15 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = Math.sin(dir) * explosionRad;
-    dy = Math.cos(dir) * explosionRad;
-    this.splasher.add(createSplash(x, y, dx, dy, 15 * (1 + Math.random())));
+    dx = Math.sin(dir) * explosionRad / duration;
+    dy = Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration);
   }
 };
 

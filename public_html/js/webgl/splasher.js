@@ -3,33 +3,30 @@
  */
 function Splasher() {
   this.splashes = [];
+  this.matrix44 = new Matrix44();
+  this.vec4 = new Vec4();
 }
 
-Splasher.prototype.add = function(splash) {
-  this.splashes.push(splash);
+Splasher.prototype.addCopy = function(copyMe) {
+  this.splashes.push(Splash.alloc().set(copyMe));
 };
 
 Splasher.prototype.draw = function(renderer, now) {
   for (var i = 0; i < this.splashes.length;) {
     var splash = this.splashes[i];
-    if (splash.endTime < now) {
+    if (splash.isExpired(now)) {
       // remove
-      this.splashes[i].free();
+      splash.free();
       this.splashes[i] = this.splashes[this.splashes.length - 1];
       this.splashes.pop();
     } else {
-      if (splash.startTime <= now) {
-        // draw
-        var duration = splash.endTime - splash.startTime;
-        var t = (now - splash.startTime) / duration;
+      if (splash.isVisible(now)) {
         renderer
             .setStamp(splash.stamp)
-            .setColorVector(splash.colorFn(t))
-            .setModelMatrix(splash.model1Fn(t));
-        if (splash.model2Fn) {
-          renderer.setModelMatrix2(splash.model2Fn(t));
-        }
-        renderer.drawStamp();
+            .setColorVector(splash.getColor(now, this.vec4))
+            .setModelMatrix(splash.getModelMatrix(now, this.matrix44))
+            .setModelMatrix2(splash.getModelMatrix2(now, this.matrix44))
+            .drawStamp();
       }
       i++;
     }

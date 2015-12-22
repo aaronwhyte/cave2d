@@ -13,9 +13,7 @@ Jsoner.prototype.toJSON = function(that) {
     var fieldName = this.schema[fieldNum];
     var thatVal = that[fieldName];
     var jsonVal;
-    if (thatVal instanceof Vec2d) {
-      jsonVal = thatVal.toJSON();
-    } else if (thatVal instanceof Vec4) {
+    if (thatVal.toJSON) {
       jsonVal = thatVal.toJSON();
     } else if (thatVal == Infinity) {
       // JSON spec doesn't include Infinity :-(
@@ -34,10 +32,8 @@ Jsoner.prototype.setFromJSON = function(json, that) {
   for (var fieldNum in this.schema) {
     var fieldName = this.schema[fieldNum];
     var jsonVal = json[fieldNum];
-    if (that[fieldName] instanceof Vec2d) {
-      that[fieldName].set(Vec2d.fromJSON(jsonVal));
-    } else if (that[fieldName] instanceof Vec4) {
-      that[fieldName].set(Vec4.fromJSON(jsonVal));
+    if (that[fieldName] && that[fieldName].setFromJSON) {
+      that[fieldName].setFromJSON(jsonVal);
     } else if (typeof that[fieldName] == "number" && jsonVal == "Infinity") {
       that[fieldName] = Infinity;
     } else if (typeof that[fieldName] == "number" && jsonVal == "-Infinity") {

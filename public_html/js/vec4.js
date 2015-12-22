@@ -169,6 +169,7 @@ Vec4.prototype.setToInterpolation = function(a, b, t) {
   for (var i = 0; i < 4; i++) {
     this.v[i] = a.v[i] * (1-t) + b.v[i] * t;
   }
+  return this;
 };
 
 
@@ -214,6 +215,12 @@ Vec4.prototype.projectOnto = function(that) {
 
 Vec4.prototype.toJSON = function() {
   return [this.v[0], this.v[1], this.v[2], this.v[3]];
+};
+
+Vec4.prototype.setFromJSON = function(json) {
+  for (var i = 0; i < 3; i++) {
+    this.v[i] = json[i];
+  }
 };
 
 Vec4.fromJSON = function(json) {

@@ -6,6 +6,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx);
 
   this.splasher = new Splasher();
+  this.splash = new Splash();
+
   this.listeners = new ArraySet();
   this.touchDetector = new TouchDetector();
   this.listeners.put(this.touchDetector);
@@ -128,6 +130,10 @@ PlayScreen.SpiritType = {
   SOUND: 2
 };
 
+PlayScreen.SplashType = {
+  NOTE: 1
+};
+
 PlayScreen.prototype.updateSharableUrl = function() {
   var levelJson = this.toJSON();
   var squisher = new Squisher();
@@ -205,7 +211,7 @@ PlayScreen.prototype.initPermStamps = function() {
   this.indicatorStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.indicatorStamp);
 
-  model = RigidModel.createDoubleRing(4);
+  model = RigidModel.createDoubleRing(6);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.soundStamp);
 };
@@ -234,7 +240,8 @@ PlayScreen.prototype.toJSON = function() {
     now: this.world.now,
     bodies: [],
     spirits: [],
-    timeouts: []
+    timeouts: [],
+    splashes: []
   };
   // bodies
   for (var bodyId in this.world.bodies) {
@@ -257,7 +264,11 @@ PlayScreen.prototype.toJSON = function() {
       }
     }
   }
-  console.log(json);
+  // splashes
+  var splashes = this.splasher.splashes;
+  for (var i = 0; i < splashes.length; i++) {
+    json.splashes.push(splashes[i].toJSON());
+  }
   return json;
 };
 
@@ -299,14 +310,27 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
     }
     // timeouts
     if (jsonObj.timeouts) {
+      var e = new WorldEvent();
       for (var i = 0; i < jsonObj.timeouts.length; i++) {
-        var timeoutJson = jsonObj.timeouts[i];
-        var e = WorldEvent.alloc();
-        e.setFromJSON(timeoutJson);
+        e.setFromJSON(jsonObj.timeouts[i]);
         this.world.loadTimeout(e);
       }
     }
-
+    // splashes
+    if (jsonObj.splashes) {
+      var splash = new Splash();
+      for (var i = 0; i < jsonObj.splashes.length; i++) {
+        var splashJson = jsonObj.splashes[i];
+        var splashType = splashJson[0];
+        if (splashType == PlayScreen.SplashType.NOTE) {
+          splash.setFromJSON(splashJson);
+          splash.stamp = this.soundStamp;
+          this.splasher.addCopy(splash);
+        } else {
+          console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
+        }
+      }
+    }
     // terrain
     this.bitGrid = BitGrid.fromJSON(jsonObj.terrain);
     this.tiles = {};
@@ -316,11 +340,9 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
 };
 
 PlayScreen.prototype.createDefaultWorld = function() {
-  for (var i = 0; i < 25; i++) {
-    this.initSoundSpirit(new Vec2d(i/25 * 60 - 30, (Math.random()-0.5)), 1.2, i/25);
-  }
-  for (var i = 0; i < 5; i++) {
-    this.initSoundSpirit(new Vec2d(i/5 * 60 - 30, 4+(Math.random()-0.5)), 1.2, (i+0.2)/5);
+  for (var i = 0; i < 16; i++) {
+    this.initSoundSpirit(new Vec2d(i/16 * 60 - 30, 2), 1.2, i/16, i);
+    this.initSoundSpirit(new Vec2d(i/16 * 60 - 30, -2), 1.2, i/16, i);
   }
   this.initBoulder(new Vec2d(40, 0), 4);
   this.initBoulder(new Vec2d(-40, 0), 4);
@@ -345,7 +367,7 @@ PlayScreen.prototype.initBoulder = function(pos, rad) {
   return spiritId;
 };
 
-PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
+PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction, sixteenth) {
   var density = 1;
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -357,38 +379,44 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
   var spirit = new SoundSpirit(this);
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.circleStamp);
-  var maxPow = 5.5;
-  var notes = 4 * maxPow;
+
+  var hard = !(sixteenth % 4) || sixteenth == 7 || sixteenth == 10;
+  var low = sixteenth == 0 || sixteenth == 7 || sixteenth == 8 || sixteenth == 10;
+  var high = sixteenth == 4 || sixteenth == 12;
+
+  var maxPow = 2;
+  var notes = 2 * maxPow;
   var rand = 2;
-  var f = Math.pow(2,
-          5.75 + Math.floor(Math.random() * notes)/notes * maxPow);
+  var base = 7 + (low ? -1 : 0) + (high ? 1 : 0);
+  var f = Math.pow(2, base + Math.floor(Math.random() * notes)/notes * maxPow);
   spirit.setSounds([
       [
         measureFraction,
-        1,
-        0, 0.15 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        (hard ? 1.4 : 0.5),
+        0, 0.2 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
         f + (Math.random() - 0.5) * rand, f,
-        'sine'
+        low || hard ? 'square' : 'sine'
       ],
       [
         measureFraction,
-        0.5,
-        0.1*Math.random(), 0.15 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        hard ? 1.3 : 0.5,
+        0.02*Math.random(), 0.3 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
         f*2 + (Math.random() - 0.5) * rand, f*2,
         'sine'
       ],
       [
         measureFraction,
-        0.5,
-        0.1*Math.random(), 0.15 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        hard ? 1 : 0.5,
+        0.02*Math.random(), 0.3 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
         f*3 + (Math.random() - 0.5) * rand, f*3,
-        'triange'
+        'triangle'
       ]
   ]);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
   var r = Math.random() / 2;
   this.world.spirits[spiritId].setColorRGB(r, 0.5 - r, measureFraction);
+  this.world.spirits[spiritId].hard = hard;
   this.world.addTimeout(this.world.now, spiritId, -1);
 
   return spiritId;
@@ -404,8 +432,10 @@ PlayScreen.prototype.createCursorBody = function() {
 
 PlayScreen.prototype.initWalls = function() {
   this.bitGrid = new BitGrid(this.bitSize);
-  var rad = 15;
-  this.bitGrid.drawPill(new Segment(new Vec2d(-rad*2, 0), new Vec2d(rad*2, 0)), rad, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-30, 0), new Vec2d(30, 0)), 15, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-100, 0), new Vec2d(100, 0)), 2, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-100, 0), new Vec2d(-100, 0)), 15, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(100, 0), new Vec2d(100, 0)), 15, 1);
 
   this.tiles = {};
   this.flushTerrainChanges();
@@ -642,28 +672,31 @@ PlayScreen.prototype.setIndicatedBodyId = function(id) {
   }
 };
 
-PlayScreen.prototype.addNoteSplash = function(x, y, r, g, b, bodyRad) {
+PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   var fullRad = bodyRad * 3;// * (1+Math.random()/2);
-  var self = this;
-  function createSplash(x, y, dx, dy, duration) {
-    return Splash.alloc(
-        self.soundStamp, self.world.now, self.world.now + duration,
-        function(t) {
-          return self.vec4.setXYZ(r, g, b);
-        },
-        function(t) {
-          var rad = 0.6*fullRad + 0.4*fullRad * t;
-          return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
-              .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
-        },
-        function(t) {
-          var rad = Math.max(0, fullRad * (2*t - 1));
-          return self.modelMatrix.toTranslateOpXYZ(x + t*dx, y + t*dy, t)
-              .multiply(self.mat44.toScaleOpXYZ(rad, rad, 1));
-        }
-    )
-  }
-  this.splasher.add(createSplash(x, y, 0, 0, 16 + 2*(Math.random() - 0.5)));
+  var s = this.splash;
+  s.reset(PlayScreen.SplashType.NOTE, this.soundStamp);
+
+  s.startTime = this.world.now;
+  s.duration = 30 + 2 * (Math.random() - 0.5);
+
+  s.startPose.pos.setXYZ(x, y, 0);
+  s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+  s.startPose.scale.setXYZ(fullRad/2, fullRad/2, 1);
+  s.endPose.scale.setXYZ(fullRad, fullRad, 1);
+
+  s.startPose2.pos.setXYZ(x, y, 0);
+  s.endPose2.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+  s.startPose2.scale.setXYZ(-fullRad/2, -fullRad/2, 1);
+  s.endPose2.scale.setXYZ(fullRad, fullRad, 1);
+
+  s.startPose.rotZ = s.startPose2.rotZ = Math.PI * 2 * Math.random();
+  s.endPose.rotZ = s.endPose2.rotZ = s.startPose.rotZ + Math.PI * (Math.random() - 0.5);
+
+  s.startColor.setXYZ(r, g, b);
+  s.endColor.setXYZ(r, g, b);
+
+  this.splasher.addCopy(s);
 };
 
 PlayScreen.prototype.onHitEvent = function(e) {

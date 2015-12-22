@@ -20,11 +20,12 @@ function SoundSpirit(playScreen) {
   this.modelMatrix = new Matrix44();
   this.turn = 0;
   this.lastSoundTime = -Infinity;
+  this.hard = false;
 }
 SoundSpirit.prototype = new Spirit();
 SoundSpirit.prototype.constructor = SoundSpirit;
 
-SoundSpirit.MEASURE_TIMEOUT = 180;
+SoundSpirit.MEASURE_TIMEOUT = 120;
 
 SoundSpirit.SOUND_MEASURE_TIME = 0;
 SoundSpirit.SOUND_VOLUME = 1;
@@ -40,7 +41,8 @@ SoundSpirit.SCHEMA = {
   1: "id",
   2: "bodyId",
   3: "color",
-  4: "sounds"
+  4: "sounds",
+  5: "hard"
 };
 
 SoundSpirit.getJsoner = function() {
@@ -48,6 +50,14 @@ SoundSpirit.getJsoner = function() {
     SoundSpirit.jsoner = new Jsoner(SoundSpirit.SCHEMA);
   }
   return SoundSpirit.jsoner;
+};
+
+SoundSpirit.prototype.toJSON = function() {
+  return SoundSpirit.getJsoner().toJSON(this);
+};
+
+SoundSpirit.prototype.setFromJSON = function(json) {
+  SoundSpirit.getJsoner().setFromJSON(json, this);
 };
 
 
@@ -84,17 +94,17 @@ SoundSpirit.prototype.onTimeout = function(world, event) {
           s[SoundSpirit.SOUND_TYPE]);
       this.lastSoundTime = world.now;
       var newVel = Vec2d.alloc()
-          .set(body.vel).scale(1.2)
-          .addXY(0.5 * (Math.random() - 0.5), 0.5 * (Math.random() - 0.5));
+          .set(body.vel).scale(0.9)
+          .addXY(0.1 * (Math.random() - 0.5), 0.1 * (Math.random() - 0.5));
       body.setVelAtTime(newVel, world.now);
       newVel.free();
     }
   }
   if (makesSound) {
     this.vec4.set(this.color).scale1(2);
-    this.playScreen.addNoteSplash(bodyPos.x, bodyPos.y,
+    this.playScreen.addNoteSplash(bodyPos.x, bodyPos.y, body.vel.x, body.vel.y,
         this.vec4.v[0], this.vec4.v[1], this.vec4.v[2],
-        body.rad);
+        body.rad * (this.hard ? 1.7 : 0.7));
   }
 
   // TODO: be less dumb
@@ -131,12 +141,3 @@ SoundSpirit.prototype.onDraw = function(world, renderer) {
 SoundSpirit.prototype.getBody = function(world) {
   return world.bodies[this.bodyId];
 };
-
-SoundSpirit.prototype.toJSON = function() {
-  return SoundSpirit.getJsoner().toJSON(this);
-};
-
-SoundSpirit.prototype.setFromJSON = function(json) {
-  SoundSpirit.getJsoner().setFromJSON(json, this);
-};
-

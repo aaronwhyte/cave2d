@@ -265,6 +265,11 @@ Vec2d.prototype.toJSON = function() {
   return [this.x, this.y];
 };
 
+Vec2d.prototype.setFromJSON = function(json) {
+  this.x = json[0];
+  this.y = json[1];
+};
+
 Vec2d.fromJSON = function(json) {
   return new Vec2d(json[0], json[1]);
 };

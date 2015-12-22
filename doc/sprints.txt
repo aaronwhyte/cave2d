@@ -188,7 +188,7 @@ v World to/from JSON II: Timeouts
       v Accel on each sound, based on volume?
     v spashes
   v save/load Timeout events
-- Splash 2.0
+v Splash 2.0
   v helpers
     v Pose class
       v pos, scale, rot
@@ -196,27 +196,30 @@ v World to/from JSON II: Timeouts
       v setToInterpolation(a, b, t)
     v Matrix44.prototype.setToPose(pose)
     v Vec4.prototype.setToInterpolation(a, b, t)
-  - Splash class
-    - poses
-      - sp0, sp1
-      - s2p0, s2p1 (for double-model stamp splashes which should be *awesome*)
-    - color0, color1 - Vec4 instances
-    - startTime, duration
-    - type, stamp
-    - isExpired(time)
-    - isVisible(time)
-    - getModelMatrix(time, m44)
-    - getModelMatrix2(time, m44)
-    - getColor(time, v4)
-    - static Jsoner
-  - Splasher: Collection of Spashes
+  v Splash class
+    v two poses, times one or two model transformations
+      v sp0, sp1
+      v s2p0, s2p1 (for double-model stamp splashes which should be *awesome*)
+    v color0, color1 - Vec4 instances
+    v startTime, duration
+    v type, stamp
+    v pool
+    v Jsoner
+    ((( Jeez, that was a fat chunk of boilerplate )))
+    v isVisible(time)
+    v isExpired(time)
+    v getModelMatrix(time, m44)
+    v getModelMatrix2(time, m44)
+    v getColor(time, v4)
+  v Splasher: Collection of Spashes
     * Not like World+Body. Spashes are immutable. Fire and forget.
-    * Copy the ten params from ?????????????????????????????????????
-    - use new spash methods instead of function objects
-    - createSplash(
-    - Jsoner
-- World to/from JSON III: Splashes
-  - save/load Splasher
+    v use new spash methods instead of function objects
+    v addSplash(copyMe)
+    v Jsoner
+  v use in test36
+  v use in game1
+v World to/from JSON III: Splashes
+  v save/load Splasher
 
 More triggers, with icons and keyboard tips.
 - wall trigger
