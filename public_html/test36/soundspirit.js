@@ -102,7 +102,7 @@ SoundSpirit.prototype.onTimeout = function(world, event) {
   }
   if (makesSound) {
     this.vec4.set(this.color).scale1(2);
-    this.playScreen.addNoteSplash(bodyPos.x, bodyPos.y, body.vel.x, body.vel.y,
+    this.playScreen.addNoteSplash(bodyPos.x, bodyPos.y, body.vel.x/3, body.vel.y/3,
         this.vec4.v[0], this.vec4.v[1], this.vec4.v[2],
         body.rad * (this.hard ? 1.7 : 0.7));
   }
