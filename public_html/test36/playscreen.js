@@ -241,7 +241,9 @@ PlayScreen.prototype.toJSON = function() {
     bodies: [],
     spirits: [],
     timeouts: [],
-    splashes: []
+    splashes: [],
+    cursorPos: this.cursorPos.toJSON(),
+    cameraPos: this.camera.cameraPos.toJSON()
   };
   // bodies
   for (var bodyId in this.world.bodies) {
@@ -335,6 +337,14 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
     this.bitGrid = BitGrid.fromJSON(jsonObj.terrain);
     this.tiles = {};
     this.flushTerrainChanges();
+
+    // cursor and camera
+    if (jsonObj.cursorPos) {
+      this.cursorPos.set(Vec2d.fromJSON(jsonObj.cursorPos));
+    }
+    if (jsonObj.cameraPos) {
+      this.camera.cameraPos.set(Vec2d.fromJSON(jsonObj.cameraPos));
+    }
   }
   return true;
 };
