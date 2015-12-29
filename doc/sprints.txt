@@ -220,64 +220,74 @@ v Splash 2.0
   v use in game1
 v World to/from JSON III: Splashes
   v save/load Splasher
+v Editor state
+  v cursor location (but not vel)
+  v camera location
 
-More triggers, with icons and keyboard tips.
-- wall trigger
-  - icon
-  - key tip
-  - spash
-  - sound
-- floor trigger
-  - icon
-  - key tip
-  - spash
-  - sound
-- Last in wins
-- grab trigger
-  - icon
-  - key tip
-  - separate grab indicator
-  - make it easy to intercept small moving objects, since terrain and object cursors are decoupled
+Test 37: Mouse and trigger enhancements
+v code nest
+v new Editor class limping along
+- cursor follows mouse
+- new "pan" trigger
+  - keeps cursor still in the world, and moves viewport
+  - mouse button and keyboard link, and touch target, what the heck.
+- multiple action triggers, with graphics
+  - class with icon stamp, key code, title
+    - renders icon in touch target
+    - listens to key and touch, but not mouse
+  - List of Triggers managed all of them
+    - listen/unlisten
+    - draw in order
+  - separate action triggers
+    - grab
+    - dig
+    - fill
+- update pan trigger
+- update pause toggle trigger
+- better grabber logic
+  - Separate "seeking" and "holding" submodes.
+  - Use collision detection to grab first object that passes through cursor?
+  - grab effects
+    - splash
+    - sound
+  - release effects?
 
-- pause button
-  - icon
-  - move to top-right corner
+Test XX: Possession
+- "enter" button in editor
+- standard interface for playable spirits to implement
+  - trackballs and sticks
+  - onscreen triggers
+  - callbacks
+  - maybe control passage of time
+- PlayScreen "play" mode separate from "edit" mode
+- "exit" trigger to return to edit mode, at current location
+- two playable spirits at least
+  - Gnome Generator - generate
+  - Gnome - move, lunge
+  - Ninja - move, fire
 
-Rotation
-- Body
-  - orientation
-  - angular velocity
-  - moment of inertia
-- Pulling from off-center can change orientation
-- Collisions w friction can change angVel? Hm...
-
-More Objects
-- Bumper
-- cave speeder
-- tractor-beam player
--
-
+Test XX: Editor Add and Delete
+Add
+- list of addable things
+- show hotbar of addable things
+- highlight current addable-thing
+- trigger for adding current addable-thing at cursor
+- splash
+- sound
 Delete
-- Trigger
-  - icon
-  - tip
+- qmode trigger
 - instantly delete grabbed object if any
 - otherwise go into grab-and-delete mode, which grabs and foreshadows deletion in, say, 500ms, gradually reducing timeout
-  until it gets to 0ms? Releasing the trigger sets the timeout back to 500ms?
+  until it gets to 0ms? Releasing the trigger sets the timeout back to 500ms? Or am I overthinking?
 - splash
 - sound
 
-Add
-* parts menu is just a bunch of triggers. Maybe add "repeat last add" button in more convenient place?
-* Add at cursor. No need for "bubble".
-
-Possession
-- "enter" button
-
-Make the cursor be just another Spirit, saved/loaded like everyone else.
-* Empower Spirits to get at World and Game to make this happen.
-- spirit can get world trackball and triggers
-- prove it: Something else can get trackball/trigger
+Test XX: Undo and Redo
+- retain last N JSON serializations in RAM or wherevs.
+- Create new ones using one-token-bucket throttle right before mutations, w 1/sec(realtime) restore rate.
+- Always save the just-after mutation camera and cursor pos, to bring the area into focus before undoing.
+  Keep that as a separate kind of undo record, since it's so tiny and easy to restore.
+- Button for creating an undo record just because time went by. Snapshot?
 
 Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
@@ -292,16 +302,6 @@ Game1 Splashes II
   - need point of contact!
 - bullet destruct
 - boulder bounce?
-
-Add & delete objects
-- Add action, menu... oh no, menus!
-- Deletion pseudomode
-
-Non-pointerlocked mouse UI, perhaps direct-touch UI too?
-* flip between non-scrolling direct-touch/mouse, and scrolling trachball cursor.
-- touchscreen toggle on left
-- keyboard key toggles it
-- still draw cursor
 
 Zoomable?
 - two-touch pinch/unpinch
