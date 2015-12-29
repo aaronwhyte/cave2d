@@ -14,15 +14,6 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
 
   var self = this;
 
-  // grip trigger
-  this.gripTouchTrigger = new RoundTouchTrigger(canvas)
-      .setPosFractionXY(0.07, 1 - 0.1).setRadCoefsXY(0.07, 0.07);
-  this.gripTrigger = new MultiTrigger()
-      .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
-      .addTrigger(new MouseTrigger())
-      .addTrigger(this.gripTouchTrigger);
-  this.listeners.put(this.gripTrigger);
-
   // pause trigger and function
   this.pauseTouchTrigger = new RoundTouchTrigger(canvas)
       .setPosFractionXY(0.5, 0).setRadCoefsXY(0.07, 0.07);
@@ -34,36 +25,18 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
     self.paused = !self.paused;
     if (self.paused) {
       // pause
-      self.controller.exitPointerLock();
       self.showPausedOverlay();
       self.updateSharableUrl();
     } else {
       // resume
       self.hidePausedOverlay();
-      self.controller.requestPointerLock();
       self.controller.requestAnimation();
-      self.trackball.reset();
     }
   };
 
   this.fullScreenFn = function() {
     self.controller.requestFullScreen();
   };
-
-  // trackball
-  this.trackball = new MultiTrackball()
-      .addTrackball(new MouseTrackball())
-      .addTrackball(new TouchTrackball().setStartZoneFunction(function(x, y) {
-        return !self.gripTouchTrigger.startZoneFn(x, y) && !self.pauseTouchTrigger.startZoneFn(x, y);
-      }))
-      .addTrackball(
-      new KeyTrackball(
-          new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
-          .setAccel(0.1)
-  );
-  this.trackball.setFriction(0.02);
-  this.movement = new Vec2d();
-  this.listeners.put(this.trackball);
 
   // for sound throttling
   this.hitsThisFrame = 0;
@@ -73,24 +46,6 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
 
   this.camera = new Camera(0.2, 0.6, 45);
 
-  this.cursorPos = new Vec2d();
-  this.cursorVel = new Vec2d();
-  this.cursorStamp = null; // it'll be a ring
-  this.colorVector = new Vec4();
-  this.cursorRad = this.camera.getViewDist() / 20;
-  this.cursorMode = PlayScreen.CursorMode.FLOOR;
-  this.cursorBody = this.createCursorBody();
-
-  this.indicatedBodyId = null;
-  this.indicatorChangeTime = 0;
-  this.indicatorStamp = null; // it'll be a ring
-  this.indicatorColorVector = new Vec4();
-
-  this.gripPoint = null;
-  this.gripAccelFraction = 0.3;
-  this.gripFriction = 0.2;
-  this.maxGripAccel = 10;
-
   this.modelMatrix = new Matrix44();
   this.modelMatrix2 = new Matrix44();
   this.hudViewMatrix = new Matrix44();
@@ -99,6 +54,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.bitGridMetersPerCell = PlayScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
+
+  this.editor = new Editor(this, this.canvas, this.renderer);
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -119,12 +76,6 @@ PlayScreen.Terrain = {
   MIXED: 2
 };
 
-PlayScreen.CursorMode = {
-  WALL: 0,
-  FLOOR: 1,
-  OBJECT: 2
-};
-
 PlayScreen.SpiritType = {
   BALL: 1,
   SOUND: 2
@@ -143,9 +94,6 @@ PlayScreen.prototype.updateSharableUrl = function() {
 };
 
 PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
-  if (!this.paused) {
-    this.controller.requestPointerLock();
-  }
 };
 
 PlayScreen.prototype.setScreenListening = function(listen) {
@@ -194,26 +142,24 @@ PlayScreen.prototype.lazyInit = function() {
 };
 
 PlayScreen.prototype.initPermStamps = function() {
+  var model;
   this.levelStamps = [];
 
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
 
-  var circleModel = RigidModel.createCircleMesh(5);
-  this.circleStamp = circleModel.createModelStamp(this.renderer.gl);
+  model = RigidModel.createCircleMesh(5);
+  this.circleStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
-
-  var model = RigidModel.createDoubleRing(32);
-  this.cursorStamp = model.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.cursorStamp);
-
-  model = RigidModel.createDoubleRing(64);
-  this.indicatorStamp = model.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.indicatorStamp);
 
   model = RigidModel.createDoubleRing(6);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.soundStamp);
+
+  var editorStamps = this.editor.getStamps();
+  for (var i = 0; i < editorStamps.length; i++) {
+    this.levelStamps.push(editorStamps[i]);
+  }
 };
 
 PlayScreen.prototype.initWorld = function() {
@@ -242,7 +188,7 @@ PlayScreen.prototype.toJSON = function() {
     spirits: [],
     timeouts: [],
     splashes: [],
-    cursorPos: this.cursorPos.toJSON(),
+    cursorPos: this.editor.cursorPos.toJSON(),
     cameraPos: this.camera.cameraPos.toJSON()
   };
   // bodies
@@ -311,26 +257,22 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
       }
     }
     // timeouts
-    if (jsonObj.timeouts) {
-      var e = new WorldEvent();
-      for (var i = 0; i < jsonObj.timeouts.length; i++) {
-        e.setFromJSON(jsonObj.timeouts[i]);
-        this.world.loadTimeout(e);
-      }
+    var e = new WorldEvent();
+    for (var i = 0; i < jsonObj.timeouts.length; i++) {
+      e.setFromJSON(jsonObj.timeouts[i]);
+      this.world.loadTimeout(e);
     }
     // splashes
-    if (jsonObj.splashes) {
-      var splash = new Splash();
-      for (var i = 0; i < jsonObj.splashes.length; i++) {
-        var splashJson = jsonObj.splashes[i];
-        var splashType = splashJson[0];
-        if (splashType == PlayScreen.SplashType.NOTE) {
-          splash.setFromJSON(splashJson);
-          splash.stamp = this.soundStamp;
-          this.splasher.addCopy(splash);
-        } else {
-          console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
-        }
+    var splash = new Splash();
+    for (var i = 0; i < jsonObj.splashes.length; i++) {
+      var splashJson = jsonObj.splashes[i];
+      var splashType = splashJson[0];
+      if (splashType == PlayScreen.SplashType.NOTE) {
+        splash.setFromJSON(splashJson);
+        splash.stamp = this.soundStamp;
+        this.splasher.addCopy(splash);
+      } else {
+        console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
       }
     }
     // terrain
@@ -339,12 +281,8 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
     this.flushTerrainChanges();
 
     // cursor and camera
-    if (jsonObj.cursorPos) {
-      this.cursorPos.set(Vec2d.fromJSON(jsonObj.cursorPos));
-    }
-    if (jsonObj.cameraPos) {
-      this.camera.cameraPos.set(Vec2d.fromJSON(jsonObj.cameraPos));
-    }
+    this.editor.cursorPos.set(Vec2d.fromJSON(jsonObj.cursorPos));
+    this.camera.cameraPos.set(Vec2d.fromJSON(jsonObj.cameraPos));
   }
   return true;
 };
@@ -430,14 +368,6 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction, sixte
   this.world.addTimeout(this.world.now, spiritId, -1);
 
   return spiritId;
-};
-
-PlayScreen.prototype.createCursorBody = function() {
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.rad = this.cursorRad;
-  b.hitGroup = PlayScreen.Group.CURSOR;
-  return b;
 };
 
 PlayScreen.prototype.initWalls = function() {
@@ -560,128 +490,6 @@ PlayScreen.prototype.createWallModel = function(rect) {
   return wallModel;
 };
 
-PlayScreen.prototype.handleInput = function() {
-  if (!this.world) return;
-  var triggered = this.gripTrigger.getVal();
-  var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
-  var sensitivity = this.camera.getViewDist() * 0.02;
-  if (this.trackball.isTouched()) {
-    this.trackball.getVal(this.movement);
-    var inertia = 0.75;
-    var newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y).scale(sensitivity);
-    this.cursorVel.scale(inertia).add(newVel.scale(1 - inertia));
-    newVel.free();
-  }
-  this.trackball.reset();
-  this.cursorPos.add(this.cursorVel);
-  // Increase friction at low speeds, to help make smaller movements.
-  var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/sensitivity));
-  this.cursorVel.scale(0.95 - 0.2 * slowness);
-  if (triggered) {
-    this.doTriggerAction(oldCursorPos);
-  } else {
-    if (this.gripPoint) {
-      this.gripPoint.free();
-      this.gripPoint = null;
-    }
-    this.doCursorHoverScan();
-  }
-  oldCursorPos.free();
-};
-
-PlayScreen.prototype.doTriggerAction = function(oldCursorPos) {
-  switch (this.cursorMode) {
-    case PlayScreen.CursorMode.FLOOR:
-      this.bitGrid.drawPill(new Segment(oldCursorPos, this.cursorPos), this.cursorRad, 1);
-      this.flushTerrainChanges();
-      break;
-    case PlayScreen.CursorMode.WALL:
-      this.bitGrid.drawPill(new Segment(oldCursorPos, this.cursorPos), this.cursorRad, 0);
-      this.flushTerrainChanges();
-      break;
-    case PlayScreen.CursorMode.OBJECT:
-      this.dragObject();
-      break;
-  }
-};
-
-PlayScreen.prototype.dragObject = function() {
-  var body = this.world.bodies[this.indicatedBodyId];
-  var bodyPos = this.getBodyPos(body);
-  if (!this.gripPoint) {
-    // Get a grip.
-    this.gripPoint = Vec2d.alloc()
-        .set(this.cursorPos)
-        .subtract(bodyPos);
-  }
-  // Drag it! Drag it? Drag it!
-  var newVel = Vec2d.alloc()
-      .set(this.cursorPos)
-      .subtract(bodyPos)
-      .subtract(this.gripPoint)
-      .scale(this.gripAccelFraction)
-      .add(body.vel)
-      .scale(1 - this.gripFriction);
-  if (newVel.distance(body.vel) > this.maxGripAccel) {
-    newVel.subtract(body.vel).clipToMaxLength(this.maxGripAccel).add(body.vel);
-  }
-  body.setVelAtTime(newVel, this.world.now);
-  newVel.free();
-
-  // Move the cursor closer to the grip point, too, for tactile-like feedback.
-  var newCursorPos = Vec2d.alloc().set(bodyPos).add(this.gripPoint);
-  var tugDist = 0;//this.camera.getViewDist()/5;
-  if (newCursorPos.distance(this.cursorPos) > tugDist) {
-    var cursorAccel = Vec2d.alloc()
-        .set(newCursorPos)
-        .subtract(this.cursorPos);
-    cursorAccel.scaleToLength(cursorAccel.magnitude() - tugDist).scale(0.02);
-    this.cursorVel.add(cursorAccel);
-    cursorAccel.free();
-  }
-  newCursorPos.free();
-};
-
-PlayScreen.prototype.doCursorHoverScan = function() {
-  this.cursorBody.setPosAtTime(this.cursorPos, this.world.now);
-  var i, hitBody, overlapBodyIds;
-
-  // center pinpoint check
-  this.cursorBody.rad = 0;
-  overlapBodyIds = this.world.getOverlaps(this.cursorBody);
-  var lowestArea = Infinity;
-  var smallestBody = null;
-  var overWall = false;
-  for (i = 0; i < overlapBodyIds.length; i++) {
-    hitBody = this.world.bodies[overlapBodyIds[i]];
-    if (hitBody) {
-      if (hitBody.hitGroup == PlayScreen.Group.WALL) {
-        overWall = true;
-      } else if (hitBody.getArea() < lowestArea) {
-        lowestArea = hitBody.getArea();
-        smallestBody = hitBody;
-      }
-    }
-  }
-  if (smallestBody) {
-    this.setIndicatedBodyId(smallestBody.id);
-    this.cursorMode = PlayScreen.CursorMode.OBJECT;
-  } else if (overWall) {
-    this.setIndicatedBodyId(null);
-    this.cursorMode = PlayScreen.CursorMode.WALL;
-  } else {
-    this.setIndicatedBodyId(null);
-    this.cursorMode = PlayScreen.CursorMode.FLOOR;
-  }
-};
-
-PlayScreen.prototype.setIndicatedBodyId = function(id) {
-  if (id != this.indicatedBodyId) {
-    this.indicatedBodyId = id;
-    this.indicatorChangeTime = Date.now();
-  }
-};
-
 PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   var fullRad = bodyRad * 3;// * (1+Math.random()/2);
   var s = this.splash;
@@ -740,8 +548,13 @@ PlayScreen.prototype.updateViewMatrix = function() {
       0));
 };
 
+PlayScreen.prototype.handleInput = function () {
+  if (!this.world) return;
+  this.editor.handleInput();
+};
+
 PlayScreen.prototype.drawScene = function() {
-  this.camera.follow(this.cursorPos);
+//  this.camera.follow(this.cursorPos);
 
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
@@ -778,46 +591,7 @@ PlayScreen.prototype.drawScene = function() {
   }
   this.splasher.draw(this.renderer, this.world.now);
 
-  // Draw UI stuff that goes on top of the world
-  this.renderer.setBlendingEnabled(true);
-
-  // highlighted body indicator
-  var indicatedBody = this.world.bodies[this.indicatedBodyId];
-  if (indicatedBody) {
-    var bodyPos = this.getBodyPos(indicatedBody);
-    var indicatorRad = indicatedBody.rad + this.camera.getViewDist() * 0.02;
-    this.renderer
-        .setStamp(this.indicatorStamp)
-        .setColorVector(this.getIndicatorColorVector());
-    this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
-        .multiply(this.mat44.toScaleOpXYZ(indicatedBody.rad, indicatedBody.rad, 1));
-    this.renderer.setModelMatrix(this.modelMatrix);
-    this.modelMatrix2.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
-        .multiply(this.mat44.toScaleOpXYZ(indicatorRad, indicatorRad, 1));
-    this.renderer.setModelMatrix2(this.modelMatrix2);
-    this.renderer.drawStamp();
-  }
-
-  // cursor
-  this.renderer
-      .setStamp(this.cursorStamp)
-      .setColorVector(this.getCursorColorVector());
-  var outerCursorRad = indicatedBody ? this.cursorRad * 0.3 : this.cursorRad;
-  var innerCursorRad = indicatedBody ? 0 : this.cursorRad * 0.3;
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
-      .multiply(this.mat44.toScaleOpXYZ(outerCursorRad, outerCursorRad, 1));
-  this.renderer.setModelMatrix(this.modelMatrix);
-  this.modelMatrix2.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
-      .multiply(this.mat44.toScaleOpXYZ(innerCursorRad, innerCursorRad, 1));
-  this.renderer.setModelMatrix2(this.modelMatrix2);
-  this.renderer.drawStamp();
-
-  this.drawHud();
-  this.renderer.setBlendingEnabled(false);
+  this.editor.drawScene();
 
   if (this.restarting) {
     this.controller.restart();
@@ -830,77 +604,10 @@ PlayScreen.prototype.drawScene = function() {
   }
 };
 
-/**
- * Draw stuff on screen coords, with 0,0 at the top left and canvas.width, canvas.height at the bottom right.
- */
-PlayScreen.prototype.drawHud = function() {
-  this.touchDetector.decrease();
-
-  // Set hud view matrix
-  this.hudViewMatrix.toIdentity()
-      .multiply(this.mat44.toScaleOpXYZ(
-              2 / this.canvas.width,
-              -2 / this.canvas.height,
-          1))
-      .multiply(this.mat44.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
-  this.renderer.setViewMatrix(this.hudViewMatrix);
-
-  // draw grip trigger
-  this.renderer
-      .setStamp(this.circleStamp)
-      .setColorVector(this.getGripTriggerColorVector());
-  var gripTriggerRad = this.gripTouchTrigger.getRad() * this.touchDetector.getVal();
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.gripTouchTrigger.getX(), this.gripTouchTrigger.getY(), -0.99))
-      .multiply(this.mat44.toScaleOpXYZ(gripTriggerRad, gripTriggerRad, 1));
-  this.renderer.setModelMatrix(this.modelMatrix);
-  this.renderer.drawStamp();
-  
-  // draw pause trigger
-  this.renderer
-      .setStamp(this.circleStamp)
-      .setColorVector(this.getPauseTriggerColorVector());
-  var pauseTriggerRad = this.pauseTouchTrigger.getRad() * this.touchDetector.getVal() * 0.3;
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.pauseTouchTrigger.getX(), this.pauseTouchTrigger.getY(), -0.99))
-      .multiply(this.mat44.toScaleOpXYZ(pauseTriggerRad, pauseTriggerRad, 1));
-  this.renderer.setModelMatrix(this.modelMatrix);
-  this.renderer.drawStamp();
-};
-
-PlayScreen.prototype.getCursorColorVector = function() {
-  var brightness = 0.5 + 0.5 * this.gripTrigger.getVal();
-  switch(this.cursorMode) {
-    case PlayScreen.CursorMode.FLOOR:
-      this.colorVector.setRGBA(1, 0, 0, 0.8 * brightness);
-      break;
-    case PlayScreen.CursorMode.WALL:
-      this.colorVector.setRGBA(0, 1, 0, 0.8 * brightness);
-      break;
-    case PlayScreen.CursorMode.OBJECT:
-      this.colorVector.setRGBA(1, 1, 1, 0.5 * brightness);
-      break;
-  }
-  return this.colorVector;
-};
-
-PlayScreen.prototype.getGripTriggerColorVector = function() {
-  var touchiness = this.touchDetector.getVal();
-  this.colorVector.setRGBA(1, 1, 1, this.gripTrigger.getVal() ? 0.2 : 0.1 * touchiness);
-  return this.colorVector;
-};
-
 PlayScreen.prototype.getPauseTriggerColorVector = function() {
   var touchiness = this.touchDetector.getVal();
   this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1 * touchiness);
   return this.colorVector;
-};
-
-PlayScreen.prototype.getIndicatorColorVector = function() {
-  var t = (Date.now() - this.indicatorChangeTime) / 200;
-  var c = Math.cos(t)/5+0.5;
-  this.indicatorColorVector.setRGBA(c, c, c, 0.5);
-  return this.indicatorColorVector;
 };
 
 PlayScreen.prototype.unloadLevel = function() {
@@ -919,13 +626,9 @@ PlayScreen.prototype.unloadLevel = function() {
     }
     this.world = null;
   }
-  this.cursorPos.reset();
-  this.cursorVel.reset();
+  this.editor.cursorPos.reset();
+  this.editor.cursorVel.reset();
   this.camera.setXY(0, 0);
-};
-
-PlayScreen.prototype.getBodyPos = function(body) {
-  return body.getPosAtTime(this.world.now, this.vec2d);
 };
 
 PlayScreen.prototype.showPausedOverlay = function() {
@@ -934,4 +637,49 @@ PlayScreen.prototype.showPausedOverlay = function() {
 
 PlayScreen.prototype.hidePausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'none';
+};
+
+/////////////////////
+// Editor API stuff
+/////////////////////
+
+PlayScreen.prototype.getBodyPos = function(body, outVec2d) {
+  return body.getPosAtTime(this.world.now, outVec2d);
+};
+
+PlayScreen.prototype.getCanvas = function() {
+  return this.canvas;
+};
+
+PlayScreen.prototype.addListener = function(listener) {
+  this.listeners.put(listener);
+};
+
+PlayScreen.prototype.getBodyOverlaps = function(body) {
+  return this.world.getOverlaps(body);
+};
+
+PlayScreen.prototype.getBodyById = function(id) {
+  return this.world.bodies[id];
+};
+
+PlayScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
+  this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
+  this.flushTerrainChanges();
+};
+
+PlayScreen.prototype.getCursorHitGroup = function() {
+  return PlayScreen.Group.CURSOR;
+};
+
+PlayScreen.prototype.getWallHitGroup = function() {
+  return PlayScreen.Group.WALL;
+};
+
+PlayScreen.prototype.getWorldTime = function() {
+  return this.world.now;
+};
+
+PlayScreen.prototype.getViewDist = function() {
+  return this.camera.getViewDist();
 };
