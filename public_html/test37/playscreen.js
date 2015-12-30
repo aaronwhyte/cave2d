@@ -94,9 +94,6 @@ PlayScreen.prototype.updateSharableUrl = function() {
   anchor.href = window.location.href.split("#")[0] + "#" + hashString;
 };
 
-PlayScreen.prototype.onPointerDown = function(pageX, pageY) {
-};
-
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var self = this;

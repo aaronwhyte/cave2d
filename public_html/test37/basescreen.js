@@ -22,14 +22,7 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.visibility = 0;
   this.listening = false;
 
-  this.mouseDownFn = this.getMouseDownFn();
-  this.touchStartFn = this.getTouchStartFn();
   this.resizeFn = this.getResizeFn();
-
-  this.clipToWorldMatrix = new Matrix44();
-  this.clipToWorldMatrixDirty = true;
-  this.canvasToClipMatrix = new Matrix44();
-  this.canvasToClipMatrixDirty = true;
 
   this.paused = false;
 }
@@ -39,31 +32,6 @@ BaseScreen.prototype.constructor = BaseScreen;
 BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
 BaseScreen.PATH_DURATION = 0xffff;
-
-BaseScreen.prototype.onPointerDown = null;
-BaseScreen.prototype.onPointerDown = null;
-
-BaseScreen.prototype.getMouseDownFn = function() {
-  var self = this;
-  return function(e) {
-    if (self.onPointerDown) {
-      self.onPointerDown(e.pageX, e.pageY);
-    }
-  };
-};
-
-BaseScreen.prototype.getTouchStartFn = function() {
-  var self = this;
-  return function(e) {
-    if (self.onPointerDown) {
-      var touches = e.changedTouches;
-      for (var i = 0; i < touches.length; i++) {
-        var touch = touches[i];
-        self.onPointerDown(touch.pageX, touch.pageY);
-      }
-    }
-  };
-};
 
 BaseScreen.prototype.getResizeFn = function() {
   var self = this;
@@ -75,12 +43,8 @@ BaseScreen.prototype.getResizeFn = function() {
 BaseScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   if (listen) {
-    this.canvas.addEventListener('mousedown', this.mouseDownFn);
-    this.canvas.addEventListener('touchstart', this.touchStartFn);
     window.addEventListener('resize', this.resizeFn);
   } else {
-    this.canvas.removeEventListener('mousedown', this.mouseDownFn);
-    this.canvas.removeEventListener('touchstart', this.touchStartFn);
     window.removeEventListener('resize', this.resizeFn);
   }
   this.listening = listen;
@@ -91,32 +55,12 @@ BaseScreen.prototype.drawScreen = function(visibility) {
   this.lazyInit();
   this.updateViewMatrix();
   this.drawScene();
-  this.canvasToClipMatrixDirty = true;
-  this.clipToWorldMatrixDirty = true;
   if (this.visibility == 1) {
     this.clock();
   }
 };
 
-BaseScreen.prototype.getClipToWorldMatrix = function() {
-  if (this.clipToWorldMatrixDirty) {
-    this.viewMatrix.getInverse(this.clipToWorldMatrix);
-    this.clipToWorldMatrixDirty = false;
-  }
-  return this.clipToWorldMatrix;
-};
-
-BaseScreen.prototype.drawScene = function() {
-  var animationRequested = false;
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    spirit.onDraw(this.world, this.renderer);
-    if (!animationRequested && spirit.animating) {
-      this.controller.requestAnimation();
-      animationRequested = true;
-    }
-  }
-};
+BaseScreen.prototype.drawScene = function() {};
 
 BaseScreen.prototype.destroyScreen = function() {
   // Unload button models? Need a nice utility for loading, remembering, and unloading models.
