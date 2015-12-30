@@ -27,7 +27,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
       .addTrigger((new KeyTrigger()).addTriggerKeyByName(Key.Name.SPACE))
       .addTrigger(this.pauseTouchTrigger);
   this.listeners.put(this.pauseTrigger);
-  this.pauseDownFn = function() {
+  this.pauseDownFn = function(e) {
+    e = e || event;
     self.paused = !self.paused;
     if (self.paused) {
       // pause
@@ -38,10 +39,16 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
       self.hidePausedOverlay();
       self.controller.requestAnimation();
     }
+    // Stop the flow of mouse-emulation events on touchscreens, so the
+    // mouse events don't cause weird cursors teleports.
+    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
+    e.preventDefault();
   };
 
-  this.fullScreenFn = function() {
+  this.fullScreenFn = function(e) {
+    e = e || event;
     self.controller.requestFullScreen();
+    e.preventDefault();
   };
 
   // for sound throttling
