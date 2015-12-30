@@ -26,6 +26,10 @@ function Editor(host, canvas, renderer) {
   this.movement = new Vec2d();
   this.host.addListener(this.trackball);
 
+  // mouse for cursor control
+  this.mousePointer = new MousePointer(this.canvas, this.host.getViewMatrix(), false);
+  this.host.addListener(this.mousePointer);
+
   this.modelMatrix = new Matrix44();
   this.modelMatrix2 = new Matrix44();
   this.hudViewMatrix = new Matrix44();
@@ -51,6 +55,9 @@ function Editor(host, canvas, renderer) {
   this.vec2d = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
+
+  this.touched = false;
+  this.moused = false;
 }
 
 Editor.CursorMode = {
@@ -88,7 +95,12 @@ Editor.prototype.handleInput = function() {
   var triggered = this.gripTrigger.getVal();
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.host.getViewDist() * 0.02;
+  this.touched = false;
+  this.moused = false;
+
+  // touch trackball movement
   if (this.trackball.isTouched()) {
+    this.touched = true;
     this.trackball.getVal(this.movement);
     var inertia = 0.75;
     var newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y).scale(sensitivity);
@@ -100,6 +112,15 @@ Editor.prototype.handleInput = function() {
   // Increase friction at low speeds, to help make smaller movements.
   var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/sensitivity));
   this.cursorVel.scale(0.95 - 0.2 * slowness);
+
+  // mouse pointer movement
+  if (!this.mousePointer.position.equals(this.mousePointer.oldPosition)) {
+    this.moused = true;
+    this.mousePointer.setViewMatrix(this.host.getViewMatrix());
+    this.cursorVel.reset();
+    this.cursorPos.set(this.mousePointer.position);
+  }
+
   if (triggered) {
     this.doTriggerAction(oldCursorPos);
   } else {
@@ -242,7 +263,6 @@ Editor.prototype.drawScene = function() {
  * Draw stuff on screen coords, with 0,0 at the top left and canvas.width, canvas.height at the bottom right.
  */
 Editor.prototype.drawHud = function() {
-
   // Set hud view matrix
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(

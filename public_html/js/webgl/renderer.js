@@ -86,7 +86,7 @@ Renderer.prototype.setViewMatrix = function(viewMatrix) {
 };
 
 /**
- * @return {Matrix44}
+ * @return {Matrix44} A reference to the inner viewMatrix, which may change.
  */
 Renderer.prototype.getViewMatrix = function() {
   return this.viewMatrix;

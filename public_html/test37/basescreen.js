@@ -106,28 +106,6 @@ BaseScreen.prototype.getClipToWorldMatrix = function() {
   return this.clipToWorldMatrix;
 };
 
-BaseScreen.prototype.getCanvasToClipMatrix = function() {
-  if (this.canvasToClipMatrixDirty) {
-    this.canvasToClipMatrix.toScaleOpXYZ(2 / this.canvas.width, -2 / this.canvas.height, 1);
-    this.canvasToClipMatrix.multiply(this.mat4.toTranslateOpXYZ(-this.canvas.width / 2, -this.canvas.height / 2, 0));
-    this.canvasToClipMatrixDirty = false;
-  }
-  return this.canvasToClipMatrix;
-};
-
-/**
- * Transforms a vec2d in place.
- * @param {Vec2d} vec2d
- * @returns {Vec2d}
- */
-BaseScreen.prototype.transformCanvasToWorld = function(vec2d) {
-  this.vec4
-      .setXYZ(vec2d.x, vec2d.y, 0)
-      .transform(this.getCanvasToClipMatrix())
-      .transform(this.getClipToWorldMatrix());
-  return vec2d.setXY(this.vec4.v[0], this.vec4.v[1]);
-};
-
 BaseScreen.prototype.drawScene = function() {
   var animationRequested = false;
   for (var id in this.world.spirits) {

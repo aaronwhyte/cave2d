@@ -8,9 +8,15 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.splasher = new Splasher();
   this.splash = new Splash();
 
+  this.modelMatrix = new Matrix44();
+  this.modelMatrix2 = new Matrix44();
+  this.hudViewMatrix = new Matrix44();
+
+  this.camera = new Camera(0.2, 0.6, 45);
+  this.updateViewMatrix();
+  this.renderer.setViewMatrix(this.viewMatrix);
+
   this.listeners = new ArraySet();
-  this.touchDetector = new TouchDetector();
-  this.listeners.put(this.touchDetector);
 
   var self = this;
 
@@ -44,11 +50,6 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.world = null;
   this.tiles = null;
 
-  this.camera = new Camera(0.2, 0.6, 45);
-
-  this.modelMatrix = new Matrix44();
-  this.modelMatrix2 = new Matrix44();
-  this.hudViewMatrix = new Matrix44();
 
   this.bitSize = 0.5;
   this.bitGridMetersPerCell = PlayScreen.BIT_SIZE * BitGrid.BITS;
@@ -605,8 +606,7 @@ PlayScreen.prototype.drawScene = function() {
 };
 
 PlayScreen.prototype.getPauseTriggerColorVector = function() {
-  var touchiness = this.touchDetector.getVal();
-  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1 * touchiness);
+  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
   return this.colorVector;
 };
 
@@ -653,6 +653,9 @@ PlayScreen.prototype.getCanvas = function() {
 
 PlayScreen.prototype.addListener = function(listener) {
   this.listeners.put(listener);
+  if (this.listening) {
+    listener.startListening();
+  }
 };
 
 PlayScreen.prototype.getBodyOverlaps = function(body) {
@@ -682,4 +685,8 @@ PlayScreen.prototype.getWorldTime = function() {
 
 PlayScreen.prototype.getViewDist = function() {
   return this.camera.getViewDist();
+};
+
+PlayScreen.prototype.getViewMatrix = function() {
+  return this.viewMatrix;
 };
