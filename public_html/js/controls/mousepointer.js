@@ -49,9 +49,9 @@ MousePointer.MOUSE_ID = 'mouse';
 
 MousePointer.prototype.startListening = function() {
   if (!this.listening) {
-    document.body.addEventListener('mousedown', this.mouseDownListener);
-    document.body.addEventListener('mousemove', this.mouseMoveListener);
-    document.body.addEventListener('mouseup', this.mouseUpListener);
+    this.canvas.addEventListener('mousedown', this.mouseDownListener);
+    this.canvas.addEventListener('mousemove', this.mouseMoveListener);
+    this.canvas.addEventListener('mouseup', this.mouseUpListener);
     this.listening = true;
   }
   return this;
@@ -59,20 +59,11 @@ MousePointer.prototype.startListening = function() {
 
 MousePointer.prototype.stopListening = function() {
   if (this.listening) {
-    document.body.removeEventListener('mousedown', this.mouseDownListener);
-    document.body.removeEventListener('mousemove', this.mouseMoveListener);
-    document.body.removeEventListener('mouseup', this.mouseUpListener);
+    this.canvas.removeEventListener('mousedown', this.mouseDownListener);
+    this.canvas.removeEventListener('mousemove', this.mouseMoveListener);
+    this.canvas.removeEventListener('mouseup', this.mouseUpListener);
     this.listening = false;
     this.clearEventQueue();
-    for (var id in this.positions) {
-      delete this.positions[id];
-    }
-    for (var id in this.oldPositions) {
-      delete this.oldPositions[id];
-    }
-    for (var id in this.eventCoords) {
-      delete this.eventCoords[id];
-    }
   }
   return this;
 };

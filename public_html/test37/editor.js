@@ -11,7 +11,7 @@ function Editor(host, canvas, renderer) {
 
   // grip trigger
   this.gripTouchTrigger = new RoundTouchTrigger(this.host.getCanvas())
-      .setPosFractionXY(0.03, 1 - 0.1).setRadCoefsXY(0.04, 0.04);
+      .setPosFractionXY(0.03, 1 - 0.1).setRadCoefsXY(0.05, 0.05);
   this.gripTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
       .addTrigger(this.gripTouchTrigger);
@@ -19,13 +19,14 @@ function Editor(host, canvas, renderer) {
 
   // pan trigger
   this.panTouchTrigger = new RoundTouchTrigger(this.host.getCanvas())
-      .setPosFractionXY(0.03, 1 - 0.3).setRadCoefsXY(0.04, 0.04);
+      .setPosFractionXY(0.03, 1 - 0.3).setRadCoefsXY(0.05, 0.05);
   this.panTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('x'))
       .addTrigger(new MouseTrigger())
       .addTrigger(this.panTouchTrigger);
   this.host.addListener(this.panTrigger);
 
+  this.oldPanTriggerVal = false;
   this.mousePanVec = new Vec2d();
 
   // trackball for touch only
@@ -68,6 +69,7 @@ function Editor(host, canvas, renderer) {
 
   this.touched = false;
   this.moused = false;
+  this.oldMouseEventCoords = new Vec2d();
 }
 
 Editor.CursorMode = {
@@ -128,9 +130,9 @@ Editor.prototype.handleInput = function() {
   }
 
   // mouse pointer movement
-  if (!this.mousePointer.position.equals(this.mousePointer.oldPosition)) {
+  if (!this.mousePointer.eventCoords.equals(this.oldMouseEventCoords)) {
     this.moused = true;
-    if (this.panTrigger.getVal()) {
+    if (this.panTrigger.getVal() && this.oldPanTriggerVal) {
       this.mousePanVec.set(this.cursorPos).subtract(this.mousePointer.position);
       this.host.camera.add(this.mousePanVec);
       this.host.updateViewMatrix();
@@ -139,6 +141,9 @@ Editor.prototype.handleInput = function() {
     this.cursorVel.reset();
     this.cursorPos.set(this.mousePointer.position);
   }
+  this.mousePointer.setViewMatrix(this.host.getViewMatrix());
+  this.oldMouseEventCoords.set(this.mousePointer.eventCoords);
+  this.oldPanTriggerVal = this.panTrigger.getVal();
 
   if (triggered) {
     this.doTriggerAction(oldCursorPos);
