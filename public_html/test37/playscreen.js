@@ -561,7 +561,7 @@ PlayScreen.prototype.drawScene = function() {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 
-  this.sfx.setListenerXYZ(this.camera.getX(), this.camera.getY(), 5);
+  this.sfx.setListenerXYZ(this.editor.cursorPos.x, this.editor.cursorPos.y, 5);
 
   if (this.tiles) {
     this.renderer
