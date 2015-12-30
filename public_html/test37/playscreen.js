@@ -150,7 +150,7 @@ PlayScreen.prototype.initPermStamps = function() {
   this.circleStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
-  model = RigidModel.createDoubleRing(6);
+  model = RigidModel.createDoubleRing(3);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.soundStamp);
 
@@ -286,9 +286,8 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
 };
 
 PlayScreen.prototype.createDefaultWorld = function() {
-  for (var i = 0; i < 16; i++) {
-    this.initSoundSpirit(new Vec2d(i/16 * 60 - 30, 2), 1.2, i/16, i);
-    this.initSoundSpirit(new Vec2d(i/16 * 60 - 30, -2), 1.2, i/16, i);
+  for (var i = 0; i < 32; i++) {
+    this.initSoundSpirit(new Vec2d(i/32 * 60 - 30, 0), 0.9, (i + (Math.random() < 0.33 ? (1.05 - Math.random() * 0.1) : 0))/32);
   }
   this.initBoulder(new Vec2d(40, 0), 4);
   this.initBoulder(new Vec2d(-40, 0), 4);
@@ -309,11 +308,11 @@ PlayScreen.prototype.initBoulder = function(pos, rad) {
   spirit.setModelStamp(this.circleStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(0.5, 0.5, 0.6);
+  this.world.spirits[spiritId].setColorRGB(1, 0.2, 0.6);
   return spiritId;
 };
 
-PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction, sixteenth) {
+PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
   var density = 1;
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -326,34 +325,34 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction, sixte
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.circleStamp);
 
-  var hard = !(sixteenth % 4) || sixteenth == 7 || sixteenth == 10;
-  var low = sixteenth == 0 || sixteenth == 7 || sixteenth == 8 || sixteenth == 10;
-  var high = sixteenth == 4 || sixteenth == 12;
+  var high = Math.random() < 0.5;
+  var hard = Math.random() < 0.5;
+  var low = !high && hard && Math.random() < 0.5;
 
   var maxPow = 2;
-  var notes = 2 * maxPow;
+  var notes = 4 * maxPow;
   var rand = 2;
-  var base = 7 + (low ? -1 : 0) + (high ? 1 : 0);
-  var f = Math.pow(2, base + Math.floor(Math.random() * notes)/notes * maxPow);
+  var base = 7 + (low ? -1 : 0) + (high ? 2 : 0);
+  var f = Math.pow(2, base + Math.floor((high ? 1-Math.random()/2 : Math.random()) * notes)/notes * maxPow);
   spirit.setSounds([
       [
         measureFraction,
-        (hard ? 1.4 : 0.5),
-        0, 0.2 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        hard ? 2 : 1,
+        0, low ? 0.2 : 0, 0.2 + 0.1 * Math.random(),
         f + (Math.random() - 0.5) * rand, f,
         low || hard ? 'square' : 'sine'
       ],
       [
         measureFraction,
-        hard ? 1.3 : 0.5,
-        0.02*Math.random(), 0.3 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        hard ? 2 : 1,
+        0, low ? 0.2 : 0, 0.2 + 0.1 * Math.random(),
         f*2 + (Math.random() - 0.5) * rand, f*2,
         'sine'
       ],
       [
         measureFraction,
-        hard ? 1 : 0.5,
-        0.02*Math.random(), 0.3 + 0.1 * Math.random(), 0.5 + 0.1 * Math.random(),
+        hard ? 2 : 1,
+        0, low ? 0.2 : 0, 0.2 + 0.1 * Math.random(),
         f*3 + (Math.random() - 0.5) * rand, f*3,
         'triangle'
       ]
@@ -483,7 +482,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
-  wallModel.setColorRGB(0.5, 0.5, 0.7);
+  wallModel.setColorRGB(0.2, 0.7, 1);
 //  wallModel.setColorRGB(Math.random()/2+0.3 , Math.random() * 0.5, Math.random()/2+0.5);
   return wallModel;
 };
@@ -494,24 +493,28 @@ PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   s.reset(PlayScreen.SplashType.NOTE, this.soundStamp);
 
   s.startTime = this.world.now;
-  s.duration = 30 + 2 * (Math.random() - 0.5);
+  s.duration = 100;
 
   s.startPose.pos.setXYZ(x, y, 0);
   s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
-  s.startPose.scale.setXYZ(fullRad/2, fullRad/2, 1);
-  s.endPose.scale.setXYZ(fullRad, fullRad, 1);
+  s.startPose.scale.setXYZ(fullRad, fullRad, 1);
+  s.endPose.scale.setXYZ(fullRad*2, fullRad*2, 1);
 
   s.startPose2.pos.setXYZ(x, y, 0);
   s.endPose2.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
-  s.startPose2.scale.setXYZ(-fullRad/2, -fullRad/2, 1);
-  s.endPose2.scale.setXYZ(fullRad, fullRad, 1);
+  s.startPose2.scale.setXYZ(fullRad*0.5, fullRad*0.5, 1);
+  s.endPose2.scale.setXYZ(fullRad*2, fullRad*2, 1);
 
   s.startPose.rotZ = s.startPose2.rotZ = Math.PI * 2 * Math.random();
-  s.endPose.rotZ = s.endPose2.rotZ = s.startPose.rotZ + Math.PI * (Math.random() - 0.5);
+  s.endPose.rotZ = s.endPose2.rotZ = s.startPose.rotZ + 0.3 * Math.PI * (Math.random() - 0.5);
 
   s.startColor.setXYZ(r, g, b);
   s.endColor.setXYZ(r, g, b);
 
+  this.splasher.addCopy(s);
+
+  s.duration = 5;
+  s.endPose.rotZ = s.endPose2.rotZ =s.startPose2.rotZ;
   this.splasher.addCopy(s);
 };
 
@@ -552,8 +555,6 @@ PlayScreen.prototype.handleInput = function () {
 };
 
 PlayScreen.prototype.drawScene = function() {
-//  this.camera.follow(this.cursorPos);
-
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
   for (var id in this.world.spirits) {

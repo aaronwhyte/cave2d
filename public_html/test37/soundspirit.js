@@ -25,7 +25,7 @@ function SoundSpirit(playScreen) {
 SoundSpirit.prototype = new Spirit();
 SoundSpirit.prototype.constructor = SoundSpirit;
 
-SoundSpirit.MEASURE_TIMEOUT = 120;
+SoundSpirit.MEASURE_TIMEOUT = 180;
 
 SoundSpirit.SOUND_MEASURE_TIME = 0;
 SoundSpirit.SOUND_VOLUME = 1;
@@ -104,7 +104,7 @@ SoundSpirit.prototype.onTimeout = function(world, event) {
     this.vec4.set(this.color).scale1(2);
     this.playScreen.addNoteSplash(bodyPos.x, bodyPos.y, body.vel.x/3, body.vel.y/3,
         this.vec4.v[0], this.vec4.v[1], this.vec4.v[2],
-        body.rad * (this.hard ? 1.7 : 0.7));
+        body.rad * (this.hard ? 1.5 : 1));
   }
 
   // TODO: be less dumb

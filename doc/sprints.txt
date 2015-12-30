@@ -228,11 +228,12 @@ Test 37: Mouse and trigger enhancements
 v code nest
 v new Editor class limping along
 v cursor follows mouse
-- new "pan" trigger
-  - keeps cursor still in the world, and moves viewport
-  - mouse button and keyboard link, and touch target, what the heck.
-- multiple action triggers, with graphics
-  - class with icon stamp, key code, title
+v new "pan" trigger Mark I.
+  v keeps cursor still in the world, and moves viewport
+  v keyboard
+  v mouse button
+- multiple action triggers, with better graphics
+  - class with icon stamp, key code, help text
     - renders icon in touch target
     - listens to key and touch, but not mouse
   - List of Triggers managed all of them
@@ -242,7 +243,6 @@ v cursor follows mouse
     - grab
     - dig
     - fill
-- update pan trigger
 - update pause toggle trigger
 - better grabber logic
   - Separate "seeking" and "holding" submodes.

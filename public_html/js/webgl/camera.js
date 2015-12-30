@@ -32,6 +32,10 @@ Camera.prototype.follow = function(followPos) {
   }
 };
 
+Camera.prototype.add = function(vec) {
+  this.cameraPos.add(vec);
+};
+
 Camera.prototype.setXY = function(x, y) {
   this.cameraPos.setXY(x, y);
 };

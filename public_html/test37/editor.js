@@ -3,7 +3,6 @@
  * @constructor
  */
 function Editor(host, canvas, renderer) {
-
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
@@ -12,11 +11,22 @@ function Editor(host, canvas, renderer) {
 
   // grip trigger
   this.gripTouchTrigger = new RoundTouchTrigger(this.host.getCanvas())
-      .setPosFractionXY(0.07, 1 - 0.1).setRadCoefsXY(0.07, 0.07);
+      .setPosFractionXY(0.03, 1 - 0.1).setRadCoefsXY(0.04, 0.04);
   this.gripTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
       .addTrigger(this.gripTouchTrigger);
   this.host.addListener(this.gripTrigger);
+
+  // pan trigger
+  this.panTouchTrigger = new RoundTouchTrigger(this.host.getCanvas())
+      .setPosFractionXY(0.03, 1 - 0.3).setRadCoefsXY(0.04, 0.04);
+  this.panTrigger = new MultiTrigger()
+      .addTrigger((new KeyTrigger()).addTriggerKeyByName('x'))
+      .addTrigger(new MouseTrigger())
+      .addTrigger(this.panTouchTrigger);
+  this.host.addListener(this.panTrigger);
+
+  this.mousePanVec = new Vec2d();
 
   // trackball for touch only
   this.trackball = new TouchTrackball().setStartZoneFunction(function(x, y) {
@@ -112,10 +122,19 @@ Editor.prototype.handleInput = function() {
   // Increase friction at low speeds, to help make smaller movements.
   var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/sensitivity));
   this.cursorVel.scale(0.95 - 0.2 * slowness);
+  if (!this.cursorVel.isZero()) {
+    this.host.camera.follow(this.cursorPos);
+    this.host.updateViewMatrix();
+  }
 
   // mouse pointer movement
   if (!this.mousePointer.position.equals(this.mousePointer.oldPosition)) {
     this.moused = true;
+    if (this.panTrigger.getVal()) {
+      this.mousePanVec.set(this.cursorPos).subtract(this.mousePointer.position);
+      this.host.camera.add(this.mousePanVec);
+      this.host.updateViewMatrix();
+    }
     this.mousePointer.setViewMatrix(this.host.getViewMatrix());
     this.cursorVel.reset();
     this.cursorPos.set(this.mousePointer.position);
@@ -275,13 +294,24 @@ Editor.prototype.drawHud = function() {
   // draw grip trigger
   this.renderer
       .setStamp(this.circleStamp)
-      .setColorVector(this.getGripTriggerColorVector());
+      .setColorVector(this.getTriggerColorVector(this.gripTrigger.getVal()));
   var gripTriggerRad = this.gripTouchTrigger.getRad();
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.gripTouchTrigger.getX(), this.gripTouchTrigger.getY(), -0.99))
       .multiply(this.mat44.toScaleOpXYZ(gripTriggerRad, gripTriggerRad, 1));
   this.renderer.setModelMatrix(this.modelMatrix);
   this.renderer.drawStamp();
+
+//  // draw pan trigger
+//  this.renderer
+//      .setStamp(this.circleStamp)
+//      .setColorVector(this.getTriggerColorVector(this.panTrigger.getVal()));
+//  var panTriggerRad = this.panTouchTrigger.getRad();
+//  this.modelMatrix.toIdentity()
+//      .multiply(this.mat44.toTranslateOpXYZ(this.panTouchTrigger.getX(), this.panTouchTrigger.getY(), -0.99))
+//      .multiply(this.mat44.toScaleOpXYZ(panTriggerRad, panTriggerRad, 1));
+//  this.renderer.setModelMatrix(this.modelMatrix);
+//  this.renderer.drawStamp();
 };
 
 Editor.prototype.getCursorColorVector = function() {
@@ -300,8 +330,8 @@ Editor.prototype.getCursorColorVector = function() {
   return this.colorVector;
 };
 
-Editor.prototype.getGripTriggerColorVector = function() {
-  this.colorVector.setRGBA(1, 1, 1, this.gripTrigger.getVal() ? 0.2 : 0.1);
+Editor.prototype.getTriggerColorVector = function(down) {
+  this.colorVector.setRGBA(1, 1, 1, down ? 0.2 : 0.1);
   return this.colorVector;
 };
 
