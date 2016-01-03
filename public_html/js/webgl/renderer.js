@@ -104,7 +104,7 @@ Renderer.prototype.setModelMatrix = function(modelMatrix) {
 
 /**
  * Sets the shader's second model matrix uniform.
- * @param {Matrix44} modelMatrix
+ * @param {Matrix44} modelMatrix2
  * @return {Renderer}
  */
 Renderer.prototype.setModelMatrix2 = function(modelMatrix2) {
