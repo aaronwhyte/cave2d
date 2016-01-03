@@ -1,6 +1,9 @@
 /**
  * A round control Trigger using a touchscreen.
  * Use setCanvas() and setXYR() to set it up, then just read its value.
+ *
+ * @deprecated Use TriggerWidget instead
+ * 
  * @constructor
  * @extends {TouchTrigger}
  */
