@@ -21,7 +21,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   var self = this;
   this.trigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
-      .addTrigger(new MouseTrigger())
+      .addTrigger(new MouseButtonTrigger())
       .addTrigger(new TouchTrigger().setStartZoneFunction(function(x, y) {
         return Vec2d.distance(x, y, self.triggerPixelX, self.triggerPixelY) <= self.triggerPixelRad;
       }));

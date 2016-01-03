@@ -19,7 +19,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
       .setPosFractionXY(0.07, 1 - 0.1).setRadCoefsXY(0.07, 0.07);
   this.gripTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
-      .addTrigger(new MouseTrigger())
+      .addTrigger(new MouseButtonTrigger())
       .addTrigger(this.gripTouchTrigger);
   this.listeners.put(this.gripTrigger);
 
