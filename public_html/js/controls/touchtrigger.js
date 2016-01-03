@@ -15,10 +15,10 @@ function TouchTrigger(opt_elem) {
 
   var self = this;
   this.touchStartListener = function(e) {
-    self.onTouchStart(e);
+    return self.onTouchStart(e);
   };
   this.touchEndListener = function(e) {
-    self.onTouchEnd(e);
+    return self.onTouchEnd(e);
   };
 }
 
@@ -37,7 +37,6 @@ TouchTrigger.prototype.setStartZoneFunction = function(fn) {
 
 TouchTrigger.prototype.startListening = function() {
   this.elem.addEventListener('touchstart', this.touchStartListener);
-  this.elem.addEventListener('touchmove', this.touchMoveListener);
   this.elem.addEventListener('touchend', this.touchEndListener);
   this.elem.addEventListener('touchcancel', this.touchEndListener);
   return this;
@@ -45,7 +44,6 @@ TouchTrigger.prototype.startListening = function() {
 
 TouchTrigger.prototype.stopListening = function() {
   this.elem.removeEventListener('touchstart', this.touchStartListener);
-  this.elem.removeEventListener('touchmove', this.touchMoveListener);
   this.elem.removeEventListener('touchend', this.touchEndListener);
   this.elem.removeEventListener('touchcancel', this.touchEndListener);
   this.touchId = null;
@@ -63,7 +61,9 @@ TouchTrigger.prototype.onTouchStart = function(e) {
       this.touchId = touch.identifier;
       this.val = true;
       this.publishTriggerDown();
-      break;
+
+      // For LayeredEventDistributor
+      return false;
     }
   }
 };
@@ -77,7 +77,9 @@ TouchTrigger.prototype.onTouchEnd = function(e) {
       this.touchId = null;
       this.val = false;
       this.publishTriggerUp();
-      break;
+
+      // For LayeredEventDistributor
+      return false;
     }
   }
 };
