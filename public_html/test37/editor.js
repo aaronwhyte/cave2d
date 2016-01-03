@@ -6,32 +6,37 @@ function Editor(host, canvas, renderer) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
+  this.getStamps();
 
   var self = this;
 
-  // grip trigger
-  this.gripTouchTrigger = new RoundTouchTrigger(this.host.getCanvas())
-      .setPosFractionXY(0.03, 1 - 0.1).setRadCoefsXY(0.05, 0.05);
-  this.gripTrigger = new MultiTrigger()
-      .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
-      .addTrigger(this.gripTouchTrigger);
-  this.host.addListener(this.gripTrigger);
+  this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
+      .setCanvasScaleXY(50, 50)
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .setStamp(this.circleStamp)
+      .listenToTouch()
+      .addTriggerKeyByName('z')
+      .startListening();
 
-  // pan trigger
-  this.panTouchTrigger = new RoundTouchTrigger(this.host.getCanvas())
-      .setPosFractionXY(0.03, 1 - 0.3).setRadCoefsXY(0.05, 0.05);
-  this.panTrigger = new MultiTrigger()
-      .addTrigger((new KeyTrigger()).addTriggerKeyByName('x'))
-      .addTrigger(new MouseTrigger())
-      .addTrigger(this.panTouchTrigger);
-  this.host.addListener(this.panTrigger);
+  this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
+      .setCanvasScaleXY(0, 0)
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .setStamp(this.circleStamp)
+      .listenToMouseButton()
+      .addTriggerKeyByName('x')
+      .startListening();
+
+  this.updateHudLayout();
 
   this.oldPanTriggerVal = false;
   this.mousePanVec = new Vec2d();
 
   // trackball for touch only
-  this.trackball = new TouchTrackball().setStartZoneFunction(function(x, y) {
-        return !self.gripTouchTrigger.startZoneFn(x, y);
+  this.trackball = new TouchTrackball(this.host.getWorldEventTarget())
+      .setStartZoneFunction(function(x, y) {
+        return true;
       });
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
@@ -78,6 +83,11 @@ Editor.CursorMode = {
   OBJECT: 2
 };
 
+Editor.prototype.updateHudLayout = function() {
+  this.gripTriggerWidget.setCanvasPositionXY(50, this.canvas.height - 50);
+  this.panTriggerWidget.setCanvasPositionXY(50, this.canvas.height - 150);
+};
+
 Editor.prototype.getStamps = function() {
   var model;
   if (!this.cursorStamp) {
@@ -104,7 +114,7 @@ Editor.prototype.createCursorBody = function() {
 };
 
 Editor.prototype.handleInput = function() {
-  var triggered = this.gripTrigger.getVal();
+  var triggered = this.gripTriggerWidget.getVal();
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.host.getViewDist() * 0.02;
   this.touched = false;
@@ -132,7 +142,7 @@ Editor.prototype.handleInput = function() {
   // mouse pointer movement
   if (!this.mousePointer.eventCoords.equals(this.oldMouseEventCoords)) {
     this.moused = true;
-    if (this.panTrigger.getVal() && this.oldPanTriggerVal) {
+    if (this.panTriggerWidget.getVal() && this.oldPanTriggerVal) {
       this.mousePanVec.set(this.cursorPos).subtract(this.mousePointer.position);
       this.host.camera.add(this.mousePanVec);
       this.host.updateViewMatrix();
@@ -143,7 +153,7 @@ Editor.prototype.handleInput = function() {
   }
   this.mousePointer.setViewMatrix(this.host.getViewMatrix());
   this.oldMouseEventCoords.set(this.mousePointer.eventCoords);
-  this.oldPanTriggerVal = this.panTrigger.getVal();
+  this.oldPanTriggerVal = this.panTriggerWidget.getVal();
 
   if (triggered) {
     this.doTriggerAction(oldCursorPos);
@@ -287,6 +297,7 @@ Editor.prototype.drawScene = function() {
  * Draw stuff on screen coords, with 0,0 at the top left and canvas.width, canvas.height at the bottom right.
  */
 Editor.prototype.drawHud = function() {
+  this.updateHudLayout();
   // Set hud view matrix
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
@@ -296,31 +307,12 @@ Editor.prototype.drawHud = function() {
       .multiply(this.mat44.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
   this.renderer.setViewMatrix(this.hudViewMatrix);
 
-  // draw grip trigger
-  this.renderer
-      .setStamp(this.circleStamp)
-      .setColorVector(this.getTriggerColorVector(this.gripTrigger.getVal()));
-  var gripTriggerRad = this.gripTouchTrigger.getRad();
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.gripTouchTrigger.getX(), this.gripTouchTrigger.getY(), -0.99))
-      .multiply(this.mat44.toScaleOpXYZ(gripTriggerRad, gripTriggerRad, 1));
-  this.renderer.setModelMatrix(this.modelMatrix);
-  this.renderer.drawStamp();
-
-//  // draw pan trigger
-//  this.renderer
-//      .setStamp(this.circleStamp)
-//      .setColorVector(this.getTriggerColorVector(this.panTrigger.getVal()));
-//  var panTriggerRad = this.panTouchTrigger.getRad();
-//  this.modelMatrix.toIdentity()
-//      .multiply(this.mat44.toTranslateOpXYZ(this.panTouchTrigger.getX(), this.panTouchTrigger.getY(), -0.99))
-//      .multiply(this.mat44.toScaleOpXYZ(panTriggerRad, panTriggerRad, 1));
-//  this.renderer.setModelMatrix(this.modelMatrix);
-//  this.renderer.drawStamp();
+  this.gripTriggerWidget.draw(this.renderer);
+  this.panTriggerWidget.draw(this.renderer);
 };
 
 Editor.prototype.getCursorColorVector = function() {
-  var brightness = 0.5 + 0.5 * this.gripTrigger.getVal();
+  var brightness = 0.5 + 0.5 * this.gripTriggerWidget.getVal();
   switch(this.cursorMode) {
     case Editor.CursorMode.FLOOR:
       this.colorVector.setRGBA(1, 0, 0, 0.8 * brightness);
@@ -332,11 +324,6 @@ Editor.prototype.getCursorColorVector = function() {
       this.colorVector.setRGBA(1, 1, 1, 0.5 * brightness);
       break;
   }
-  return this.colorVector;
-};
-
-Editor.prototype.getTriggerColorVector = function(down) {
-  this.colorVector.setRGBA(1, 1, 1, down ? 0.2 : 0.1);
   return this.colorVector;
 };
 

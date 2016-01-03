@@ -232,13 +232,17 @@ v new "pan" trigger Mark I.
   v keeps cursor still in the world, and moves viewport
   v keyboard
   v mouse button
+v fix touch cursor teleport. It was browser mouse emulation's fault.
 - multiple action triggers, with better graphics
-  - class with icon stamp, key code, help text
-    - renders icon in touch target
-    - listens to key and touch, but not mouse
-  - List of Triggers managed all of them
-    - listen/unlisten
-    - draw in order
+  v LayeredEventDistributor, so UI buttons can block world-canvas listeners, with each knowing about the other.
+    v write it
+    - use layer fake elements instead of canvas, in test37
+      v grip
+      v pan
+      - pause
+  v TriggerWidget class with icon stamp, key code, help text
+    v renders icon in touch target
+    v can listen to key, touch, mouse-down, and mouse-button
   - separate action triggers
     - grab
     - dig

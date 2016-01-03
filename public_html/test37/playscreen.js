@@ -5,6 +5,7 @@
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx);
 
+  this.listeners = new ArraySet();
   this.splasher = new Splasher();
   this.splash = new Splash();
 
@@ -16,12 +17,13 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
-  this.listeners = new ArraySet();
-
   var self = this;
 
+  this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
+  this.addListener(this.eventDistributor);
+
   // pause trigger and function
-  this.pauseTouchTrigger = new RoundTouchTrigger(canvas)
+  this.pauseTouchTrigger = new RoundTouchTrigger(this.getHudEventTarget())
       .setPosFractionXY(0.5, 0).setRadCoefsXY(0.07, 0.07);
   this.pauseTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName(Key.Name.SPACE))
@@ -70,6 +72,12 @@ PlayScreen.prototype.constructor = PlayScreen;
 
 PlayScreen.BIT_SIZE = 0.5;
 PlayScreen.WORLD_CELL_SIZE = PlayScreen.BIT_SIZE * BitGrid.BITS;
+
+PlayScreen.EventLayer = {
+  POPUP: 0,
+  HUD: 1,
+  WORLD: 2
+};
 
 PlayScreen.Group = {
   EMPTY: 0,
@@ -293,8 +301,12 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
 };
 
 PlayScreen.prototype.createDefaultWorld = function() {
-  for (var i = 0; i < 32; i++) {
-    this.initSoundSpirit(new Vec2d(i/32 * 60 - 30, 0), 0.9, (i + (Math.random() < 0.33 ? (1.05 - Math.random() * 0.1) : 0))/32);
+  var count = 32;
+  for (var i = 0; i < count; i++) {
+    this.initSoundSpirit(
+        new Vec2d(i/count * 60 - 30, 0),
+        0.9,
+            (i + (Math.random() < 0.33 ? (1.05 - Math.random() * 0.1) : 0))/count);
   }
   this.initBoulder(new Vec2d(40, 0), 4);
   this.initBoulder(new Vec2d(-40, 0), 4);
@@ -694,4 +706,16 @@ PlayScreen.prototype.getViewDist = function() {
 
 PlayScreen.prototype.getViewMatrix = function() {
   return this.viewMatrix;
+};
+
+PlayScreen.prototype.getPopupEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(PlayScreen.EventLayer.POPUP);
+};
+
+PlayScreen.prototype.getHudEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(PlayScreen.EventLayer.HUD);
+};
+
+PlayScreen.prototype.getWorldEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(PlayScreen.EventLayer.WORLD);
 };
