@@ -4,8 +4,10 @@
  * @constructor
  * @extends {Trackball}
  */
-function MouseTrackball() {
+function MouseTrackball(opt_elem) {
   Trackball.call(this);
+
+  this.elem = opt_elem || document.body;
   var self = this;
   this.listening = false;
   this.mouseMotion = new Vec2d();
@@ -23,15 +25,15 @@ MouseTrackball.prototype = new Trackball();
 MouseTrackball.prototype.constructor = MouseTrackball;
 
 MouseTrackball.prototype.startListening = function() {
-  document.body.addEventListener('mousemove', this.mouseMoveListener);
-  document.body.addEventListener('mousedown', this.mouseDownListener);
+  this.elem.addEventListener('mousemove', this.mouseMoveListener);
+  this.elem.addEventListener('mousedown', this.mouseDownListener);
   this.listening = true;
   return this;
 };
 
 MouseTrackball.prototype.stopListening = function() {
-  document.body.removeEventListener('mousemove', this.mouseMoveListener);
-  document.body.removeEventListener('mousedown', this.mouseDownListener);
+  this.elem.removeEventListener('mousemove', this.mouseMoveListener);
+  this.elem.removeEventListener('mousedown', this.mouseDownListener);
   this.listening = false;
   return this;
 };

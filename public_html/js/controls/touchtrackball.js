@@ -3,8 +3,9 @@
  * @constructor
  * @extends {Trackball}
  */
-function TouchTrackball() {
+function TouchTrackball(opt_elem) {
   Trackball.call(this);
+  this.elem = opt_elem || document.body;
   this.oldPagePos = new Vec2d();
   this.touched = false;
 
@@ -40,18 +41,18 @@ TouchTrackball.prototype.setStartZoneFunction = function(fn) {
 };
 
 TouchTrackball.prototype.startListening = function() {
-  document.body.addEventListener('touchstart', this.touchStartListener);
-  document.body.addEventListener('touchmove', this.touchMoveListener);
-  document.body.addEventListener('touchend', this.touchEndListener);
-  document.body.addEventListener('touchcancel', this.touchEndListener);
+  this.elem.addEventListener('touchstart', this.touchStartListener);
+  this.elem.addEventListener('touchmove', this.touchMoveListener);
+  this.elem.addEventListener('touchend', this.touchEndListener);
+  this.elem.addEventListener('touchcancel', this.touchEndListener);
   return this;
 };
 
 TouchTrackball.prototype.stopListening = function() {
-  document.body.removeEventListener('touchstart', this.touchStartListener);
-  document.body.removeEventListener('touchmove', this.touchMoveListener);
-  document.body.removeEventListener('touchend', this.touchEndListener);
-  document.body.removeEventListener('touchcancel', this.touchEndListener);
+  this.elem.removeEventListener('touchstart', this.touchStartListener);
+  this.elem.removeEventListener('touchmove', this.touchMoveListener);
+  this.elem.removeEventListener('touchend', this.touchEndListener);
+  this.elem.removeEventListener('touchcancel', this.touchEndListener);
   this.touchId = null;
   return this;
 };
