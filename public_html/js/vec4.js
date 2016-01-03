@@ -4,23 +4,25 @@
  * @param {=number} opt_x
  * @param {=number} opt_y
  * @param {=number} opt_z
+ * @param {=number} opt_w
  * @constructor
  */
-function Vec4(opt_x, opt_y, opt_z) {
+function Vec4(opt_x, opt_y, opt_z, opt_w) {
   this.v = [0, 0, 0, 1];
-  this.reset(opt_x, opt_y, opt_z);
+  this.reset(opt_x, opt_y, opt_z, opt_w);
 }
 
 /**
  * @param {=number} opt_x
  * @param {=number} opt_y
  * @param {=number} opt_z
+ * @param {=number} opt_w
  */
-Vec4.prototype.reset = function(opt_x, opt_y, opt_z) {
+Vec4.prototype.reset = function(opt_x, opt_y, opt_z, opt_w) {
   this.v[0] = opt_x || 0;
   this.v[1] = opt_y || 0;
   this.v[2] = opt_z || 0;
-  this.v[3] = 1;
+  this.v[3] = (typeof opt_w != 'undefined' ? opt_w : 1);
   return this;
 };
 
@@ -30,12 +32,13 @@ Vec4.pool = [];
  * @param {=number} opt_x
  * @param {=number} opt_y
  * @param {=number} opt_z
+ * @param {=number} opt_w
  */
-Vec4.alloc = function(opt_x, opt_y, opt_z) {
+Vec4.alloc = function(opt_x, opt_y, opt_z, opt_w) {
   if (Vec4.pool.length) {
-    return Vec4.pool.pop().reset(opt_x, opt_y, opt_z);
+    return Vec4.pool.pop().reset(opt_x, opt_y, opt_z, opt_w);
   }
-  return new Vec4(opt_x, opt_y, opt_z);
+  return new Vec4(opt_x, opt_y, opt_z, opt_w);
 };
 
 Vec4.prototype.free = function() {
