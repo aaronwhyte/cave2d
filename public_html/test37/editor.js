@@ -48,7 +48,6 @@ function Editor(host, canvas, renderer) {
 
   this.modelMatrix = new Matrix44();
   this.modelMatrix2 = new Matrix44();
-  this.hudViewMatrix = new Matrix44();
 
   this.cursorPos = new Vec2d();
   this.cursorVel = new Vec2d();
@@ -252,7 +251,6 @@ Editor.prototype.bodyIfInGroup = function(group, b0, b1) {
 };
 
 Editor.prototype.drawScene = function() {
-  this.renderer.setBlendingEnabled(true);
 
   // highlighted body indicator
   var indicatedBody = this.host.getBodyById(this.indicatedBodyId);
@@ -288,25 +286,12 @@ Editor.prototype.drawScene = function() {
       .multiply(this.mat44.toScaleOpXYZ(innerCursorRad, innerCursorRad, 1));
   this.renderer.setModelMatrix2(this.modelMatrix2);
   this.renderer.drawStamp();
-
-  this.drawHud();
-  this.renderer.setBlendingEnabled(false);
 };
 
 /**
  * Draw stuff on screen coords, with 0,0 at the top left and canvas.width, canvas.height at the bottom right.
  */
 Editor.prototype.drawHud = function() {
-  this.updateHudLayout();
-  // Set hud view matrix
-  this.hudViewMatrix.toIdentity()
-      .multiply(this.mat44.toScaleOpXYZ(
-              2 / this.canvas.width,
-              -2 / this.canvas.height,
-          1))
-      .multiply(this.mat44.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
-  this.renderer.setViewMatrix(this.hudViewMatrix);
-
   this.gripTriggerWidget.draw(this.renderer);
   this.panTriggerWidget.draw(this.renderer);
 };

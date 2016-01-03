@@ -22,13 +22,15 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
   this.addListener(this.eventDistributor);
 
-  // pause trigger and function
-  this.pauseTouchTrigger = new RoundTouchTrigger(this.getHudEventTarget())
-      .setPosFractionXY(0.5, 0).setRadCoefsXY(0.07, 0.07);
-  this.pauseTrigger = new MultiTrigger()
-      .addTrigger((new KeyTrigger()).addTriggerKeyByName(Key.Name.SPACE))
-      .addTrigger(this.pauseTouchTrigger);
-  this.listeners.put(this.pauseTrigger);
+  this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
+      .setCanvasScaleXY(20, 20)
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .listenToTouch()
+      .listenToMousePointer()
+      .addTriggerKeyByName(Key.Name.SPACE)
+      .startListening();
+
   this.pauseDownFn = function(e) {
     e = e || event;
     self.paused = !self.paused;
@@ -40,6 +42,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
       // resume
       self.hidePausedOverlay();
       self.controller.requestAnimation();
+      // TODO: clear the pause button's val
     }
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
@@ -59,13 +62,13 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.world = null;
   this.tiles = null;
 
-
   this.bitSize = 0.5;
   this.bitGridMetersPerCell = PlayScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 
   this.editor = new Editor(this, this.canvas, this.renderer);
+  this.updateHudLayout();
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -101,6 +104,12 @@ PlayScreen.SplashType = {
   NOTE: 1
 };
 
+PlayScreen.prototype.updateHudLayout = function() {
+  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width / 2, 20);
+  this.editor.updateHudLayout();
+};
+
+
 PlayScreen.prototype.updateSharableUrl = function() {
   var levelJson = this.toJSON();
   var squisher = new Squisher();
@@ -111,14 +120,13 @@ PlayScreen.prototype.updateSharableUrl = function() {
 
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
-  var self = this;
   var fsb, rb, i;
   BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
-    this.pauseTrigger.addTriggerDownListener(this.pauseDownFn);
+    this.pauseTriggerWidget.addTriggerDownListener(this.pauseDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
@@ -132,7 +140,7 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
-    this.pauseTrigger.removeTriggerDownListener(this.pauseDownFn);
+    this.pauseTriggerWidget.removeTriggerDownListener(this.pauseDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
@@ -164,6 +172,8 @@ PlayScreen.prototype.initPermStamps = function() {
   model = RigidModel.createCircleMesh(5);
   this.circleStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
+
+  this.pauseTriggerWidget.setStamp(this.circleStamp); // TODO better stamp
 
   model = RigidModel.createDoubleRing(3);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
@@ -608,8 +618,8 @@ PlayScreen.prototype.drawScene = function() {
     }
   }
   this.splasher.draw(this.renderer, this.world.now);
-
   this.editor.drawScene();
+  this.drawHud();
 
   if (this.restarting) {
     this.controller.restart();
@@ -620,6 +630,22 @@ PlayScreen.prototype.drawScene = function() {
       this.controller.requestAnimation();
     }
   }
+};
+
+PlayScreen.prototype.drawHud = function() {
+  this.hudViewMatrix.toIdentity()
+      .multiply(this.mat44.toScaleOpXYZ(
+              2 / this.canvas.width,
+              -2 / this.canvas.height,
+          1))
+      .multiply(this.mat44.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
+  this.renderer.setViewMatrix(this.hudViewMatrix);
+
+  this.updateHudLayout();
+  this.renderer.setBlendingEnabled(true);
+  this.pauseTriggerWidget.draw(this.renderer);
+  this.editor.drawHud();
+  this.renderer.setBlendingEnabled(false);
 };
 
 PlayScreen.prototype.getPauseTriggerColorVector = function() {

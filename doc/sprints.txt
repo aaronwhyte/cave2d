@@ -236,18 +236,21 @@ v fix touch cursor teleport. It was browser mouse emulation's fault.
 - multiple action triggers, with better graphics
   v LayeredEventDistributor, so UI buttons can block world-canvas listeners, with each knowing about the other.
     v write it
-    - use layer fake elements instead of canvas, in test37
+    v use layer fake elements instead of canvas, in test37
       v grip
       v pan
-      - pause
+      v pause
   v TriggerWidget class with icon stamp, key code, help text
     v renders icon in touch target
     v can listen to key, touch, mouse-down, and mouse-button
+  - update pause toggle trigger
+    v most stuff
+    v clear val on resume
+    - better stamp
   - separate action triggers
     - grab
     - dig
     - fill
-- update pause toggle trigger
 - better grabber logic
   - Separate "seeking" and "holding" submodes.
   - Use collision detection to grab first object that passes through cursor?
