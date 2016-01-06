@@ -24,7 +24,7 @@ function Editor(host, canvas, renderer) {
       .addTriggerKeyByName('x')
       .startListening();
 
-  this.fillTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
+  this.fillTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.3))
       .setPressedColorVec4(new Vec4(1, 1, 1, 0.9))
       .setStamp(this.circleStamp)
