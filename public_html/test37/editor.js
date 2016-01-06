@@ -8,24 +8,39 @@ function Editor(host, canvas, renderer) {
   this.renderer = renderer;
   this.getStamps();
 
-  var self = this;
+  this.triggerRad = 70;
+  this.triggerSpacing = this.triggerRad * 0.2;
 
   this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
-      .setCanvasScaleXY(50, 50)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.3))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 0.9))
       .setStamp(this.circleStamp)
       .listenToTouch()
       .addTriggerKeyByName('z')
       .startListening();
 
+  this.digTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.3))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 0.9))
+      .setStamp(this.circleStamp)
+      .listenToTouch()
+      .addTriggerKeyByName('x')
+      .startListening();
+
+  this.fillTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.3))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 0.9))
+      .setStamp(this.circleStamp)
+      .listenToTouch()
+      .addTriggerKeyByName('c')
+      .startListening();
+
   this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
-      .setCanvasScaleXY(0, 0)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .setReleasedColorVec4(new Vec4(0.9, 0.9, 0.9, 0.5))
+      .setPressedColorVec4(new Vec4(0.9, 0.9, 0.9, 1))
       .setStamp(this.circleStamp)
       .listenToMouseButton()
-      .addTriggerKeyByName('x')
+      .addTriggerKeyByName('b')
       .startListening();
 
   this.updateHudLayout();
@@ -83,8 +98,23 @@ Editor.CursorMode = {
 };
 
 Editor.prototype.updateHudLayout = function() {
-  this.gripTriggerWidget.setCanvasPositionXY(50, this.canvas.height - 50);
-  this.panTriggerWidget.setCanvasPositionXY(50, this.canvas.height - 150);
+  var triggerNum = 0;
+
+  var self = this;
+
+  function triggerY(n) {
+    return self.canvas.height - (2 * n * self.triggerRad + n * self.triggerSpacing + self.triggerRad);
+  }
+  this.gripTriggerWidget
+      .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
+      .setCanvasScaleXY(this.triggerRad, this.triggerRad);
+  this.digTriggerWidget
+      .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
+      .setCanvasScaleXY(this.triggerRad, this.triggerRad);
+  this.fillTriggerWidget
+      .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
+      .setCanvasScaleXY(this.triggerRad, this.triggerRad);
+  this.panTriggerWidget.setCanvasPositionXY(-1, -1).setCanvasScaleXY(0, 0);
 };
 
 Editor.prototype.getStamps = function() {
@@ -113,7 +143,6 @@ Editor.prototype.createCursorBody = function() {
 };
 
 Editor.prototype.handleInput = function() {
-  var triggered = this.gripTriggerWidget.getVal();
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.host.getViewDist() * 0.02;
   this.touched = false;
@@ -154,8 +183,8 @@ Editor.prototype.handleInput = function() {
   this.oldMouseEventCoords.set(this.mousePointer.eventCoords);
   this.oldPanTriggerVal = this.panTriggerWidget.getVal();
 
-  if (triggered) {
-    this.doTriggerAction(oldCursorPos);
+  if (this.gripTriggerWidget.getVal() && this.indicatedBodyId) {
+    this.dragObject();
   } else {
     if (this.gripPoint) {
       this.gripPoint.free();
@@ -163,21 +192,12 @@ Editor.prototype.handleInput = function() {
     }
     this.doCursorHoverScan();
   }
-  oldCursorPos.free();
-};
-
-Editor.prototype.doTriggerAction = function(oldCursorPos) {
-  switch (this.cursorMode) {
-    case Editor.CursorMode.FLOOR:
-      this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 1);
-      break;
-    case Editor.CursorMode.WALL:
-      this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 0);
-      break;
-    case Editor.CursorMode.OBJECT:
-      this.dragObject();
-      break;
+  if (this.digTriggerWidget.getVal()) {
+    this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 1);
+  } else if (this.fillTriggerWidget.getVal()) {
+    this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 0);
   }
+  oldCursorPos.free();
 };
 
 Editor.prototype.dragObject = function() {
@@ -213,28 +233,17 @@ Editor.prototype.doCursorHoverScan = function() {
   overlapBodyIds = this.host.getBodyOverlaps(this.cursorBody);
   var lowestArea = Infinity;
   var smallestBody = null;
-  var overWall = false;
   for (i = 0; i < overlapBodyIds.length; i++) {
     hitBody = this.host.getBodyById(overlapBodyIds[i]);
     if (hitBody) {
-      if (hitBody.hitGroup == this.host.getWallHitGroup()) {
-        overWall = true;
-      } else if (hitBody.getArea() < lowestArea) {
+      if (hitBody.hitGroup != this.host.getWallHitGroup() &&
+          hitBody.getArea() < lowestArea) {
         lowestArea = hitBody.getArea();
         smallestBody = hitBody;
       }
     }
   }
-  if (smallestBody) {
-    this.setIndicatedBodyId(smallestBody.id);
-    this.cursorMode = Editor.CursorMode.OBJECT;
-  } else if (overWall) {
-    this.setIndicatedBodyId(null);
-    this.cursorMode = Editor.CursorMode.WALL;
-  } else {
-    this.setIndicatedBodyId(null);
-    this.cursorMode = Editor.CursorMode.FLOOR;
-  }
+  this.setIndicatedBodyId(smallestBody ? smallestBody.id : null);
 };
 
 Editor.prototype.setIndicatedBodyId = function(id) {
@@ -251,6 +260,7 @@ Editor.prototype.bodyIfInGroup = function(group, b0, b1) {
 };
 
 Editor.prototype.drawScene = function() {
+  this.renderer.setBlendingEnabled(true);
 
   // highlighted body indicator
   var indicatedBody = this.host.getBodyById(this.indicatedBodyId);
@@ -261,11 +271,11 @@ Editor.prototype.drawScene = function() {
         .setStamp(this.indicatorStamp)
         .setColorVector(this.getIndicatorColorVector());
     this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.98))
         .multiply(this.mat44.toScaleOpXYZ(indicatedBody.rad, indicatedBody.rad, 1));
     this.renderer.setModelMatrix(this.modelMatrix);
     this.modelMatrix2.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.99))
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.98))
         .multiply(this.mat44.toScaleOpXYZ(indicatorRad, indicatorRad, 1));
     this.renderer.setModelMatrix2(this.modelMatrix2);
     this.renderer.drawStamp();
@@ -274,9 +284,9 @@ Editor.prototype.drawScene = function() {
   // cursor
   this.renderer
       .setStamp(this.cursorStamp)
-      .setColorVector(this.getCursorColorVector());
-  var outerCursorRad = indicatedBody ? this.cursorRad * 0.3 : this.cursorRad;
-  var innerCursorRad = indicatedBody ? 0 : this.cursorRad * 0.3;
+      .setColorVector(this.colorVector.setRGBA(1, 1, 1, 0.9));
+  var outerCursorRad = this.cursorRad;
+  var innerCursorRad = this.cursorRad * 0.8;
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
       .multiply(this.mat44.toScaleOpXYZ(outerCursorRad, outerCursorRad, 1));
@@ -286,6 +296,8 @@ Editor.prototype.drawScene = function() {
       .multiply(this.mat44.toScaleOpXYZ(innerCursorRad, innerCursorRad, 1));
   this.renderer.setModelMatrix2(this.modelMatrix2);
   this.renderer.drawStamp();
+
+  this.renderer.setBlendingEnabled(false);
 };
 
 /**
@@ -293,28 +305,11 @@ Editor.prototype.drawScene = function() {
  */
 Editor.prototype.drawHud = function() {
   this.gripTriggerWidget.draw(this.renderer);
-  this.panTriggerWidget.draw(this.renderer);
-};
-
-Editor.prototype.getCursorColorVector = function() {
-  var brightness = 0.5 + 0.5 * this.gripTriggerWidget.getVal();
-  switch(this.cursorMode) {
-    case Editor.CursorMode.FLOOR:
-      this.colorVector.setRGBA(1, 0, 0, 0.8 * brightness);
-      break;
-    case Editor.CursorMode.WALL:
-      this.colorVector.setRGBA(0, 1, 0, 0.8 * brightness);
-      break;
-    case Editor.CursorMode.OBJECT:
-      this.colorVector.setRGBA(1, 1, 1, 0.5 * brightness);
-      break;
-  }
-  return this.colorVector;
+  this.digTriggerWidget.draw(this.renderer);
+  this.fillTriggerWidget.draw(this.renderer);
 };
 
 Editor.prototype.getIndicatorColorVector = function() {
-  var t = (Date.now() - this.indicatorChangeTime) / 200;
-  var c = Math.cos(t)/5+0.5;
-  this.indicatorColorVector.setRGBA(c, c, c, 0.5);
+  this.indicatorColorVector.setRGBA(1, 1, 1, 0.5);
   return this.indicatorColorVector;
 };

@@ -243,23 +243,22 @@ v fix touch cursor teleport. It was browser mouse emulation's fault.
   v TriggerWidget class with icon stamp, key code, help text
     v renders icon in touch target
     v can listen to key, touch, mouse-down, and mouse-button
-  - update pause toggle trigger
+  v update pause toggle trigger
     v most stuff
     v clear val on resume
-    - better stamp
-  - separate action triggers
+  v separate action triggers
+    v grab
+    v dig
+    v fill
+  - Cool stamps for everybodyyyy!
     - grab
     - dig
     - fill
-- better grabber logic
-  - Separate "seeking" and "holding" submodes.
-  - Use collision detection to grab first object that passes through cursor?
-  - grab effects
-    - splash
-    - sound
-  - release effects?
+    - pause
+v better grabber logic
 
 Test XX: Possession
+Do this before add/delete, because this will be fuuunnnn.
 - "enter" button in editor
 - standard interface for playable spirits to implement
   - trackballs and sticks
@@ -299,7 +298,10 @@ Test XX: Undo and Redo
 Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
 - create repeller turrets
-- Cursor force can rotate bodies.
+- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
+
+YOU WIIINNN!
+NOW WRITE A GAME YOU NUT!
 
 Game1 Splashes II
 - muzzle flash
