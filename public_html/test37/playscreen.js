@@ -531,7 +531,7 @@ PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
 
   s.startPose2.pos.setXYZ(x, y, 0);
   s.endPose2.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
-  s.startPose2.scale.setXYZ(fullRad*0.5, fullRad*0.5, 1);
+  s.startPose2.scale.setXYZ(fullRad*0.8, fullRad*0.8, 1);
   s.endPose2.scale.setXYZ(fullRad*2, fullRad*2, 1);
 
   s.startPose.rotZ = s.startPose2.rotZ = Math.PI * 2 * Math.random();
