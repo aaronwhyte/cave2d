@@ -185,7 +185,7 @@ Vec4.prototype.equals = function(that, opt_slop) {
 };
 
 Vec4.prototype.toString = function() {
-  return '(' + this.v[0] + ', ' + this.v[1] + ', ' + this.v[2] + ', ' + this.v[3] + ')';
+  return '(' + this.v.join(', ') + ')';
 };
 
 Vec4.alongRayDistance = function(startPoint, towardsPoint, distance) {
