@@ -33,9 +33,6 @@ function Editor(host, canvas, renderer) {
       .startListening();
 
   this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
-      .setReleasedColorVec4(new Vec4(0.9, 0.9, 0.9, 0.5))
-      .setPressedColorVec4(new Vec4(0.9, 0.9, 0.9, 1))
-      .setStamp(this.circleStamp)
       .listenToMouseButton()
       .addTriggerKeyByName('b')
       .startListening();
