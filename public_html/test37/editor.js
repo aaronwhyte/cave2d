@@ -8,9 +8,6 @@ function Editor(host, canvas, renderer) {
   this.renderer = renderer;
   this.getStamps();
 
-  this.triggerRad = 70;
-  this.triggerSpacing = this.triggerRad * 0.2;
-
   this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.3))
       .setPressedColorVec4(new Vec4(1, 1, 1, 0.9))
@@ -98,12 +95,13 @@ Editor.CursorMode = {
 };
 
 Editor.prototype.updateHudLayout = function() {
+  this.triggerRad = Math.min(50, 0.2 * Math.min(this.canvas.height, this.canvas.width) * 0.5);
+  this.triggerSpacing = this.triggerRad * 0.333;
   var triggerNum = 0;
-
   var self = this;
 
   function triggerY(n) {
-    return self.canvas.height - (2 * n * self.triggerRad + n * self.triggerSpacing + self.triggerRad);
+    return self.canvas.height - (2 * n * self.triggerRad + (n+1) * self.triggerSpacing + self.triggerRad);
   }
   this.gripTriggerWidget
       .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))

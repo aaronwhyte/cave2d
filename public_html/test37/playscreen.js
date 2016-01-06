@@ -13,7 +13,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.modelMatrix2 = new Matrix44();
   this.hudViewMatrix = new Matrix44();
 
-  this.camera = new Camera(0.2, 0.6, 45);
+  this.camera = new Camera(0.2, 0.6, 35);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
@@ -388,8 +388,8 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
   ]);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  var r = Math.random() / 2;
-  this.world.spirits[spiritId].setColorRGB(r, 0.5 - r, measureFraction);
+  var r = Math.random();
+  this.world.spirits[spiritId].setColorRGB(r, 1 - r, measureFraction);
   this.world.spirits[spiritId].hard = hard;
   this.world.addTimeout(this.world.now, spiritId, -1);
 
