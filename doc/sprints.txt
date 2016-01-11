@@ -233,7 +233,7 @@ v new "pan" trigger Mark I.
   v keyboard
   v mouse button
 v fix touch cursor teleport. It was browser mouse emulation's fault.
-- multiple action triggers, with better graphics
+v multiple action triggers
   v LayeredEventDistributor, so UI buttons can block world-canvas listeners, with each knowing about the other.
     v write it
     v use layer fake elements instead of canvas, in test37
@@ -250,12 +250,15 @@ v fix touch cursor teleport. It was browser mouse emulation's fault.
     v grab
     v dig
     v fill
-  - Cool stamps for everybodyyyy!
-    - grab
-    - dig
-    - fill
-    - pause
-v better grabber logic
+- Better graphics
+  v Cool stamps for everybodyyyy!
+    v grab: hand? Something less anthropomorphic? Should be reflected in grabber grx...
+    v dig: digging into semicircle, caption
+    v fill: filling in other half of semicircle, caption
+    v pause: easy, two vertical rects on a button-y background.
+  - Appropriate trigger grx affordances
+    - mouse/keyboard users see keyboard guide for triggers - auto-gen using glyphs and trigger keynames
+    v touch users get obvious button-y touch targets. Cool round button graphic?
 
 Test XX: Possession
 Do this before add/delete, because this will be fuuunnnn.

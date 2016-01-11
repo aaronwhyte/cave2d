@@ -36,7 +36,7 @@ div {
 </head>
 <body>
 
-HTML5 experiments and game stuff, targetting phones, tablets, and laptops.<br>
+HTML5 experiments and game stuff. Most things work with touchscreens, mice, and keyboards.<br>
 Source code is at <a href="https://github.com/aaronwhyte/cave2d">github.com/aaronwhyte/cave2d</a><br>
 Random screenshots and gifs sometimes on <a href="http://aaryte.tumblr.com/">aaryte.tumblr.com</a><br>
 
@@ -54,21 +54,15 @@ Now it's a demonstration of basic combat and infinite digging.
 <h1>Editor</h1>
 
 <h2><a href="test37">Test 37 - Mouse and Trigger Improvements</a></h2>
-This is still under construction.
-<h3>Done:</h3>
+Under construction. Progress so far:
 <ul>
-  <li>Made the cursor follow the mouse, because
+  <li>Now the cursor follows the mouse, because
     <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/requestPointerLock#Browser_compatibility">
       the Pointer Lock API isn't widely supported</a>,
-    and because I will need the normal mouse pointer for menus.
-    To scroll, hold the left mouse button and drag the mouse.
-  <li>Tweaked the sounds and graphics, because it's fun.
-</ul>
-<h3>To Do:</h3>
-<ul>
-  <li>Add separate triggers for digging, filling terrain, and grabbing objects.
-  <li>Make it easier to grab small, fast-moving objects.
-  <li>Improve grabbed-object indicator
+    and because I'll need the mouse pointer for menus.
+  <li>You can pan with the mouse button to drag the map, like in most mapping programs.
+  <li>Each action (grab, dig, fill) has its own touchscreen trigger and keyboard trigger. The keys are C, X, and Z.
+  <li>Real trigger icons!
 </ul>
 
 <h2><a href="test36">Test 36 - Save and Load</a></h2>

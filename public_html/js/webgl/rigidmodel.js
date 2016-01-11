@@ -55,6 +55,7 @@ RigidModel.prototype.addRigidModel = function(that) {
         vertexMap[thatTri[1]],
         vertexMap[thatTri[2]]);
   }
+  return this;
 };
 
 /**

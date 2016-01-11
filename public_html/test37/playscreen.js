@@ -173,7 +173,18 @@ PlayScreen.prototype.initPermStamps = function() {
   this.circleStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
-  this.pauseTriggerWidget.setStamp(this.circleStamp); // TODO better stamp
+  model = new RigidModel();
+  for (var x = -1; x <= 1; x+=2) {
+    model.addRigidModel(RigidModel.createSquare().transformPositions(
+        new Matrix44()
+            .multiply(new Matrix44().toScaleOpXYZ(0.15, 0.6, 1)
+            .multiply(new Matrix44().toTranslateOpXYZ(x*2, 0, 0)
+    ))));
+  }
+  model.addRigidModel(RigidModel.createSquare().setColorRGB(0.3, 0.3, 0.3));
+  this.pauseStamp = model.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.pauseStamp);
+  this.pauseTriggerWidget.setStamp(this.pauseStamp);
 
   model = RigidModel.createDoubleRing(3);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
@@ -511,7 +522,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
-  wallModel.setColorRGB(0.2, 0.7, 1);
+  wallModel.setColorRGB(0.2, 0.3, 0.8);
 //  wallModel.setColorRGB(Math.random()/2+0.3 , Math.random() * 0.5, Math.random()/2+0.5);
   return wallModel;
 };
@@ -676,10 +687,12 @@ PlayScreen.prototype.unloadLevel = function() {
 
 PlayScreen.prototype.showPausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'block';
+  this.canvas.style.cursor = "auto";
 };
 
 PlayScreen.prototype.hidePausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'none';
+  this.canvas.style.cursor = "";
 };
 
 /////////////////////
