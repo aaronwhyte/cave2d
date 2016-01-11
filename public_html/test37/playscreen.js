@@ -32,7 +32,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
       .startListening();
 
   this.pauseDownFn = function(e) {
-    e = e || event;
+    e = e || window.event;
     self.paused = !self.paused;
     if (self.paused) {
       // pause
@@ -51,7 +51,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   };
 
   this.fullScreenFn = function(e) {
-    e = e || event;
+    e = e || window.event;
     self.controller.requestFullScreen();
     e.preventDefault();
   };

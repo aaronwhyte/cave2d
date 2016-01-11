@@ -11,7 +11,7 @@ function MouseButtonTrigger(elem) {
     if (!e) e = window.event;
     if (MouseButtonTrigger.isLeftButton(e)) {
       self.val = true;
-      self.publishTriggerDown();
+      self.publishTriggerDown(e);
 
       // For LayeredEventDistributor
       return false;
@@ -21,7 +21,7 @@ function MouseButtonTrigger(elem) {
     if (!e) e = window.event;
     if (MouseButtonTrigger.isLeftButton(e)) {
       self.val = false;
-      self.publishTriggerUp();
+      self.publishTriggerUp(e);
 
       // For LayeredEventDistributor
       return false;

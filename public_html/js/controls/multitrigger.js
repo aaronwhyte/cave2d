@@ -9,15 +9,15 @@ function MultiTrigger() {
   this.oldVal = false;
 
   var self = this;
-  this.downListener = function() {
+  this.downListener = function(e) {
     if (!self.oldVal && self.getVal()) {
-      self.publishTriggerDown();
+      self.publishTriggerDown(e);
       self.oldVal = true;
     }
   };
-  this.upListener = function() {
+  this.upListener = function(e) {
     if (self.oldVal && !self.getVal()) {
-      self.publishTriggerUp();
+      self.publishTriggerUp(e);
       self.oldVal = false;
     }
   };
@@ -68,10 +68,10 @@ MultiTrigger.prototype.removeTriggerUpListener = function(fn) {
 };
 
 
-MultiTrigger.prototype.publishTriggerDown = function() {
-  this.downPubSub.publish();
+MultiTrigger.prototype.publishTriggerDown = function(e) {
+  this.downPubSub.publish(e);
 };
 
-MultiTrigger.prototype.publishTriggerUp = function() {
-  this.upPubSub.publish();
+MultiTrigger.prototype.publishTriggerUp = function(e) {
+  this.upPubSub.publish(e);
 };

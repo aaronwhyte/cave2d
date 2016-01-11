@@ -53,6 +53,7 @@ TouchTrigger.prototype.stopListening = function() {
 
 TouchTrigger.prototype.onTouchStart = function(e) {
   if (this.touchId !== null) return;
+  e = e || window.event;
   var touches = e.changedTouches;
   for (var i = 0; i < touches.length; i++) {
     var touch = touches[i];
@@ -60,7 +61,7 @@ TouchTrigger.prototype.onTouchStart = function(e) {
       // Start tracking this one.
       this.touchId = touch.identifier;
       this.val = true;
-      this.publishTriggerDown();
+      this.publishTriggerDown(e);
 
       // For LayeredEventDistributor
       return false;
@@ -70,13 +71,14 @@ TouchTrigger.prototype.onTouchStart = function(e) {
 
 TouchTrigger.prototype.onTouchEnd = function(e) {
   if (this.touchId === null) return;
+  e = e || window.event;
   var touches = e.changedTouches;
   for (var i = 0; i < touches.length; i++) {
     var touch = touches[i];
     if (touch.identifier == this.touchId) {
       this.touchId = null;
       this.val = false;
-      this.publishTriggerUp();
+      this.publishTriggerUp(e);
 
       // For LayeredEventDistributor
       return false;

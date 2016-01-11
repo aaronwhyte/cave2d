@@ -36,10 +36,10 @@ Trigger.prototype.removeTriggerUpListener = function(fn) {
 };
 
 
-Trigger.prototype.publishTriggerDown = function() {
-  this.downPubSub.publish();
+Trigger.prototype.publishTriggerDown = function(e) {
+  this.downPubSub.publish(e);
 };
 
-Trigger.prototype.publishTriggerUp = function() {
-  this.upPubSub.publish();
+Trigger.prototype.publishTriggerUp = function(e) {
+  this.upPubSub.publish(e);
 };

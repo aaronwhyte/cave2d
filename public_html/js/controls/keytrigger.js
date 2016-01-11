@@ -16,7 +16,7 @@ function KeyTrigger() {
     if (self.triggerKeyCodes[e.keyCode]) {
       var oldVal = self.getVal();
       self.codeToState[e.keyCode] = true;
-      if (!oldVal) self.publishTriggerDown();
+      if (!oldVal) self.publishTriggerDown(e);
     }
   };
   this.upListener = function(e) {
@@ -24,7 +24,7 @@ function KeyTrigger() {
     if (self.triggerKeyCodes[e.keyCode]) {
       var oldVal = self.getVal();
       self.codeToState[e.keyCode] = false;
-      if (oldVal && !self.getVal()) self.publishTriggerUp();
+      if (oldVal && !self.getVal()) self.publishTriggerUp(e);
     }
   };
 }

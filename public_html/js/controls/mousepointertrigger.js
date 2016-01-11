@@ -48,9 +48,10 @@ MousePointerTrigger.prototype.stopListening = function() {
 };
 
 MousePointerTrigger.prototype.onMouseDown = function(e) {
+  e = e || window.event;
   if (this.startZoneFn(e.pageX, e.pageY)) {
     this.val = true;
-    this.publishTriggerDown();
+    this.publishTriggerDown(e);
 
     // For LayeredEventDistributor
     return false;
@@ -58,9 +59,10 @@ MousePointerTrigger.prototype.onMouseDown = function(e) {
 };
 
 MousePointerTrigger.prototype.onMouseUp = function(e) {
+  e = e || window.event;
   if (this.val) {
     this.val = false;
-    this.publishTriggerUp();
+    this.publishTriggerUp(e);
 
     // For LayeredEventDistributor
     return false;
