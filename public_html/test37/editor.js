@@ -42,11 +42,14 @@ function Editor(host, canvas, renderer) {
   this.oldPanTriggerVal = false;
   this.mousePanVec = new Vec2d();
 
-  // trackball for touch only
-  this.trackball = new TouchTrackball(this.host.getWorldEventTarget())
-      .setStartZoneFunction(function(x, y) {
-        return true;
-      });
+  // trackball for touch and keyboard
+  this.trackball = new MultiTrackball()
+      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
+          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT)))
+      .addTrackball(new TouchTrackball(this.host.getWorldEventTarget())
+          .setStartZoneFunction(function(x, y) {
+            return true;
+          }));
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
   this.host.addListener(this.trackball);
