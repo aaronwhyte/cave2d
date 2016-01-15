@@ -250,15 +250,15 @@ v multiple action triggers
     v grab
     v dig
     v fill
-- Better graphics
-  v Cool stamps for everybodyyyy!
-    v grab: hand? Something less anthropomorphic? Should be reflected in grabber grx...
-    v dig: digging into semicircle, caption
-    v fill: filling in other half of semicircle, caption
-    v pause: easy, two vertical rects on a button-y background.
-  - Appropriate trigger grx affordances
-    - mouse/keyboard users see keyboard guide for triggers - auto-gen using glyphs and trigger keynames
-    v touch users get obvious button-y touch targets. Cool round button graphic?
+v Cool stamps for everybodyyyy!
+  v grab: hand? Something less anthropomorphic? Should be reflected in grabber grx...
+  v dig: digging into semicircle, caption
+  v fill: filling in other half of semicircle, caption
+  v pause: easy, two vertical rects on a button-y background.
+v Debug & fix iPad trackball freeze. Repro is to tap a trigger and the world at the same time.
+- Mouse fling
+- mouse/keyboard users see keyboard guide for triggers
+  - auto-gen using glyphs and trigger keynames
 
 Test XX: Possession
 Do this before add/delete, because this will be fuuunnnn.
@@ -302,6 +302,18 @@ Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
 - create repeller turrets
 - Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
+
+Very Optional: Always do something for editor triggers
+- "Grab"
+  - Always grabs best candidate up to full-screen distance.
+    - Show rapidly-expanding scan-bubble?
+  - If there's nothing, say that.
+  - Show connection to grabbed thing
+  - Strength is proportional to dist up to some limit, then is inversely proportinal? Or levels off?
+- Terrain editors
+  - Nice sparks when they change something.
+  - Fizzle-sparks when they don't something.
+  - If you hold still, you get an expanding effect bubble (up to some limit) to make big chambers n stuff easy?
 
 YOU WIIINNN!
 NOW WRITE A GAME YOU NUT!

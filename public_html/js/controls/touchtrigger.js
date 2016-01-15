@@ -80,8 +80,10 @@ TouchTrigger.prototype.onTouchEnd = function(e) {
       this.val = false;
       this.publishTriggerUp(e);
 
-      // For LayeredEventDistributor
-      return false;
+      // Never claim to have handled a touchEnd, because touch events contain multiple
+      // touches, and if a trigger touch and a world touch end at the same time, then
+      // the LayeredEventDistributor will refuse to tell the world touch about the end.
+      return true;
     }
   }
 };
