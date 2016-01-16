@@ -40,23 +40,25 @@ function Editor(host, canvas, renderer) {
   this.updateHudLayout();
 
   this.oldPanTriggerVal = false;
-  this.mousePanVec = new Vec2d();
+  this.cameraVel = new Vec2d();
 
-  // trackball for touch and keyboard
-  this.trackball = new MultiTrackball()
-      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
-          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT)))
-      .addTrackball(new TouchTrackball(this.host.getWorldEventTarget())
-          .setStartZoneFunction(function(x, y) {
-            return true;
-          }));
+  // touchscreen trackball, for pointing and panning
+  this.trackball = new TouchTrackball(this.host.getWorldEventTarget())
+      .setStartZoneFunction(function(x, y) {
+        return true;
+      });
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
   this.host.addListener(this.trackball);
 
-  // mouse for cursor control
+  // mouse for pointing and panning
   this.mousePointer = new MousePointer(this.canvas, this.host.getViewMatrix(), false);
   this.host.addListener(this.mousePointer);
+
+  // arrow keys for panning
+  this.keyStick = new KeyStick().setUpRightDownLeftByName(
+      Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT);
+  this.host.addListener(this.keyStick);
 
   this.modelMatrix = new Matrix44();
   this.modelMatrix2 = new Matrix44();
@@ -66,7 +68,6 @@ function Editor(host, canvas, renderer) {
   this.cursorStamp = null; // it'll be a ring
   this.colorVector = new Vec4();
   this.cursorRad = 2;
-  this.cursorMode = Editor.CursorMode.FLOOR;
   this.cursorBody = this.createCursorBody();
 
   this.indicatedBodyId = null;
@@ -83,16 +84,8 @@ function Editor(host, canvas, renderer) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
 
-  this.touched = false;
-  this.moused = false;
   this.oldMouseEventCoords = new Vec2d();
 }
-
-Editor.CursorMode = {
-  WALL: 0,
-  FLOOR: 1,
-  OBJECT: 2
-};
 
 Editor.prototype.updateHudLayout = function() {
   this.triggerRad = Math.min(50, 0.2 * Math.min(this.canvas.height, this.canvas.width) * 0.5);
@@ -211,43 +204,64 @@ Editor.prototype.createCursorBody = function() {
 Editor.prototype.handleInput = function() {
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.host.getViewDist() * 0.02;
-  this.touched = false;
-  this.moused = false;
 
   // touch trackball movement
+  this.trackball.getVal(this.movement);
   if (this.trackball.isTouched()) {
-    this.touched = true;
-    this.trackball.getVal(this.movement);
     var inertia = 0.75;
     var newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y).scale(sensitivity);
     this.cursorVel.scale(inertia).add(newVel.scale(1 - inertia));
     newVel.free();
   }
   this.trackball.reset();
-  this.cursorPos.add(this.cursorVel);
-  // Increase friction at low speeds, to help make smaller movements.
-  var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/sensitivity));
-  this.cursorVel.scale(0.95 - 0.2 * slowness);
-  if (!this.cursorVel.isZero()) {
-    this.host.camera.follow(this.cursorPos);
-    this.host.updateViewMatrix();
-  }
 
   // mouse pointer movement
-  if (!this.mousePointer.eventCoords.equals(this.oldMouseEventCoords)) {
-    this.moused = true;
-    if (this.panTriggerWidget.getVal() && this.oldPanTriggerVal) {
-      this.mousePanVec.set(this.cursorPos).subtract(this.mousePointer.position);
-      this.host.camera.add(this.mousePanVec);
-      this.host.updateViewMatrix();
-    }
-    this.mousePointer.setViewMatrix(this.host.getViewMatrix());
-    this.cursorVel.reset();
-    this.cursorPos.set(this.mousePointer.position);
-  }
   this.mousePointer.setViewMatrix(this.host.getViewMatrix());
+  if (!this.mousePointer.eventCoords.equals(this.oldMouseEventCoords) || this.panTriggerWidget.getVal()) {
+    this.cursorVel.reset();
+    if (this.panTriggerWidget.getVal() && this.oldPanTriggerVal) {
+      // panning
+      this.cameraVel.set(this.cursorPos).subtract(this.mousePointer.position);
+    } else if (this.panTriggerWidget.getVal()) {
+      // halt
+      this.cameraVel.reset();
+    } else {
+      // pointing
+      this.cursorPos.set(this.mousePointer.position);
+    }
+  }
   this.oldMouseEventCoords.set(this.mousePointer.eventCoords);
   this.oldPanTriggerVal = this.panTriggerWidget.getVal();
+
+  // arrow key panning
+  this.keyStick.getVal(this.movement);
+  if (!this.movement.isZero()) {
+    this.cameraVel.add(this.movement.scale(0.1));
+  }
+
+  if (!this.cursorVel.isZero()) {
+    this.cursorPos.add(this.cursorVel);
+    // Increase friction at low speeds, to help make smaller movements.
+    var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/sensitivity));
+
+    this.host.camera.follow(this.cursorPos);
+    this.host.updateViewMatrix();
+    this.mousePointer.setViewMatrix(this.host.getViewMatrix());
+
+    this.cursorVel.scale(0.95 - 0.2 * slowness);
+  }
+
+  if (!this.cameraVel.isZero()) {
+    this.host.camera.add(this.cameraVel);
+    this.host.updateViewMatrix();
+    this.mousePointer.setViewMatrix(this.host.getViewMatrix());
+
+    if (!this.panTriggerWidget.getVal()) {
+      // The camera is making the world drift beneath the mouse.
+      this.cursorPos.set(this.mousePointer.position);
+    }
+    this.cameraVel.scale(0.94);
+  }
 
   if (this.gripTriggerWidget.getVal() && this.indicatedBodyId) {
     this.dragObject();

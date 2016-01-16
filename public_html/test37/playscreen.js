@@ -533,7 +533,7 @@ PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   s.reset(PlayScreen.SplashType.NOTE, this.soundStamp);
 
   s.startTime = this.world.now;
-  s.duration = 100;
+  s.duration = 10;
 
   s.startPose.pos.setXYZ(x, y, 0);
   s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);

@@ -256,24 +256,11 @@ v Cool stamps for everybodyyyy!
   v fill: filling in other half of semicircle, caption
   v pause: easy, two vertical rects on a button-y background.
 v Debug & fix iPad trackball freeze. Repro is to tap a trigger and the world at the same time.
-- Mouse fling
+v Mouse fling (and full revamp of input handling)
+v arrow key panning that doesn't fight the mouse
+- pointy finger when mouse is over pause trigger
 - mouse/keyboard users see keyboard guide for triggers
   - auto-gen using glyphs and trigger keynames
-
-Test XX: Possession
-Do this before add/delete, because this will be fuuunnnn.
-- "enter" button in editor
-- standard interface for playable spirits to implement
-  - trackballs and sticks
-  - onscreen triggers
-  - callbacks
-  - maybe control passage of time
-- PlayScreen "play" mode separate from "edit" mode
-- "exit" trigger to return to edit mode, at current location
-- two playable spirits at least
-  - Gnome Generator - generate
-  - Gnome - move, lunge
-  - Ninja - move, fire
 
 Test XX: Editor Add and Delete
 Add
@@ -290,6 +277,20 @@ Delete
   until it gets to 0ms? Releasing the trigger sets the timeout back to 500ms? Or am I overthinking?
 - splash
 - sound
+
+Test XX: Possession
+- "enter" button in editor
+- standard interface for playable spirits to implement
+  - trackballs and sticks
+  - onscreen triggers
+  - callbacks
+  - maybe control passage of time
+- PlayScreen "play" mode separate from "edit" mode
+- "exit" trigger to return to edit mode, at current location
+- two playable spirits at least
+  - Gnome Generator - generate
+  - Gnome - move, lunge
+  - Ninja - move, fire
 
 Test XX: Undo and Redo
 - retain last N JSON serializations in RAM or wherevs.
