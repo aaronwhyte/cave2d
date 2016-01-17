@@ -363,9 +363,18 @@ Editor.prototype.drawScene = function() {
   }
 
   // cursor
+  var gt = this.gripTriggerWidget.getVal();
+  var dt = this.digTriggerWidget.getVal();
+  var ft = this.fillTriggerWidget.getVal();
+  var any = ft || dt || gt;
+  var coef = any ? 1 : 0.8;
   this.renderer
       .setStamp(this.cursorStamp)
-      .setColorVector(this.colorVector.setRGBA(1, 1, 1, this.indicatedBodyId ? 0.3 : 0.5));
+      .setColorVector(this.colorVector.setRGBA(
+          ft ? 0.5 : coef,
+          dt ? 0.5 : coef,
+          gt ? 0.5 : coef,
+          this.indicatedBodyId && gt && !(dt || ft) ? 0.3 : 0.8));
   var outerCursorRad = this.cursorRad;
   var innerCursorRad = this.cursorRad * 0.1;
   this.modelMatrix.toIdentity()
@@ -379,11 +388,6 @@ Editor.prototype.drawScene = function() {
   this.renderer.drawStamp();
 
   this.renderer.setBlendingEnabled(false);
-
-  if (this.indicatedBodyId) {
-  } else {
-
-  }
 };
 
 /**
@@ -398,4 +402,12 @@ Editor.prototype.drawHud = function() {
 Editor.prototype.getIndicatorColorVector = function() {
   this.indicatorColorVector.setRGBA(1, 1, 1, 0.7);
   return this.indicatorColorVector;
+};
+
+Editor.prototype.getMousePageX = function() {
+  return this.oldMouseEventCoords.x;
+};
+
+Editor.prototype.getMousePageY = function() {
+  return this.oldMouseEventCoords.y;
 };

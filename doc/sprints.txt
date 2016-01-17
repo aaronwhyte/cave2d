@@ -258,7 +258,7 @@ v Cool stamps for everybodyyyy!
 v Debug & fix iPad trackball freeze. Repro is to tap a trigger and the world at the same time.
 v Mouse fling (and full revamp of input handling)
 v arrow key panning that doesn't fight the mouse
-- pointy finger when mouse is over pause trigger
+v mouse pointer when hovering over pause trigger
 - mouse/keyboard users see keyboard guide for triggers
   - auto-gen using glyphs and trigger keynames
 

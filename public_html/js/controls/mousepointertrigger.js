@@ -6,6 +6,7 @@
 function MousePointerTrigger(opt_elem) {
   Trigger.call(this);
   this.listening = false;
+  this.hovered = false;
   this.elem = opt_elem || document.body;
 
   this.startZoneFn = function(x, y) {
@@ -15,6 +16,9 @@ function MousePointerTrigger(opt_elem) {
   var self = this;
   this.mouseDownListener = function(e) {
     return self.onMouseDown(e);
+  };
+  this.mouseMoveListener = function(e) {
+    return self.onMouseMove(e);
   };
   this.mouseUpListener = function(e) {
     return self.onMouseUp(e);
@@ -36,14 +40,17 @@ MousePointerTrigger.prototype.setStartZoneFunction = function(fn) {
 
 MousePointerTrigger.prototype.startListening = function() {
   this.elem.addEventListener('mousedown', this.mouseDownListener);
+  this.elem.addEventListener('mousemove', this.mouseMoveListener);
   this.elem.addEventListener('mouseup', this.mouseUpListener);
   return this;
 };
 
 MousePointerTrigger.prototype.stopListening = function() {
   this.elem.removeEventListener('mousedown', this.mouseDownListener);
+  this.elem.removeEventListener('mousemove', this.mouseMoveListener);
   this.elem.removeEventListener('mouseup', this.mouseUpListener);
   this.val = false;
+  this.hovered = false;
   return this;
 };
 
@@ -56,6 +63,11 @@ MousePointerTrigger.prototype.onMouseDown = function(e) {
     // For LayeredEventDistributor
     return false;
   }
+};
+
+MousePointerTrigger.prototype.onMouseMove = function(e) {
+  e = e || window.event;
+  this.hovered = this.startZoneFn(e.pageX, e.pageY);
 };
 
 MousePointerTrigger.prototype.onMouseUp = function(e) {

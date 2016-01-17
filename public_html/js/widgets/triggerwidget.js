@@ -12,7 +12,7 @@ function TriggerWidget(elem) {
   this.touchTrigger = null;
   this.mousePointerTrigger = null;
   this.stamp = null;
-  this.pressedColorVec4 = new Vec4().setXYZ(1, 1, 1);
+  this.pressedColorVec4 = new Vec4().setXYZ(0.8, 0.8, 0.8);
   this.releasedColorVec4 = new Vec4().setXYZ(0.5, 0.5, 0.5);
   this.canvasPos = new Vec2d(0, 0);
   this.canvasScale = new Vec2d(1, 1);
@@ -121,6 +121,9 @@ TriggerWidget.prototype.draw = function(renderer) {
   return this;
 };
 
+TriggerWidget.prototype.isMouseHovered = function() {
+  return this.mousePointerTrigger && this.mousePointerTrigger.hovered;
+};
 
 TriggerWidget.prototype.updateStartZone = function() {
   var self = this;

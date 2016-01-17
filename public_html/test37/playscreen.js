@@ -177,11 +177,10 @@ PlayScreen.prototype.initPermStamps = function() {
   for (var x = -1; x <= 1; x+=2) {
     model.addRigidModel(RigidModel.createSquare().transformPositions(
         new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(0.15, 0.6, 1)
-            .multiply(new Matrix44().toTranslateOpXYZ(x*2, 0, 0)
+            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.6, 1)
+            .multiply(new Matrix44().toTranslateOpXYZ(x*1.9, 0, 0)
     ))));
   }
-  model.addRigidModel(RigidModel.createSquare().setColorRGB(0.3, 0.3, 0.3));
   this.pauseStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.pauseStamp);
   this.pauseTriggerWidget.setStamp(this.pauseStamp);
@@ -631,6 +630,7 @@ PlayScreen.prototype.drawScene = function() {
   this.splasher.draw(this.renderer, this.world.now);
   this.editor.drawScene();
   this.drawHud();
+  this.configMousePointer();
 
   if (this.restarting) {
     this.controller.restart();
@@ -657,6 +657,16 @@ PlayScreen.prototype.drawHud = function() {
   this.pauseTriggerWidget.draw(this.renderer);
   this.editor.drawHud();
   this.renderer.setBlendingEnabled(false);
+};
+
+PlayScreen.prototype.configMousePointer = function() {
+  if (this.pauseTriggerWidget.isMouseHovered()) {
+    this.canvas.style.cursor = "auto"
+  } else if (this.paused) {
+    this.canvas.style.cursor = "";
+  } else {
+    this.canvas.style.cursor = "crosshair";
+  }
 };
 
 PlayScreen.prototype.getPauseTriggerColorVector = function() {
