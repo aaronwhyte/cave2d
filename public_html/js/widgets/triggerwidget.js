@@ -12,10 +12,20 @@ function TriggerWidget(elem) {
   this.touchTrigger = null;
   this.mousePointerTrigger = null;
   this.stamp = null;
+
   this.pressedColorVec4 = new Vec4().setXYZ(0.8, 0.8, 0.8);
   this.releasedColorVec4 = new Vec4().setXYZ(0.5, 0.5, 0.5);
+
   this.canvasPos = new Vec2d(0, 0);
   this.canvasScale = new Vec2d(1, 1);
+
+  this.keyboardTipModelMatrix = new Matrix44();
+  this.keyboardTipOffset = new Vec2d(0, 0);
+  this.keyboardTipScale = new Vec2d(1, 1);
+  this.keyboardTipStamp = null;
+
+  // Time at which the keyboard tip will stop being rendered
+  this.keyboardTipUntilTimeMs = -Infinity;
 
   this.updateModelMatrix();
 }
@@ -53,6 +63,11 @@ TriggerWidget.prototype.setStamp = function(stamp) {
   return this;
 };
 
+TriggerWidget.prototype.setKeyboardTipStamp = function(stamp) {
+  this.keyboardTipStamp = stamp;
+  return this;
+};
+
 TriggerWidget.prototype.setPressedColorVec4 = function(vec4) {
   this.pressedColorVec4.set(vec4);
   return this;
@@ -74,6 +89,27 @@ TriggerWidget.prototype.setCanvasScaleXY = function(x, y) {
   this.canvasScale.setXY(x, y);
   this.updateStartZone();
   this.updateModelMatrix();
+  return this;
+};
+
+TriggerWidget.prototype.setKeyboardTipOffsetXY = function(x, y) {
+  this.keyboardTipOffset.setXY(x, y);
+  this.updateModelMatrix();
+  return this;
+};
+
+TriggerWidget.prototype.setKeyboardTipScaleXY = function(x, y) {
+  this.keyboardTipScale.setXY(x, y);
+  this.updateModelMatrix();
+  return this;
+};
+
+/**
+ * Sets the absolute time, in ms, at which the keyboard tip will stop being rendered.
+ * @param {Number} timeMs
+ */
+TriggerWidget.prototype.setKeyboardTipTimeoutMs = function(timeMs) {
+  this.keyboardTipUntilTimeMs = timeMs;
   return this;
 };
 
@@ -112,12 +148,18 @@ TriggerWidget.prototype.removeTriggerUpListener = function(fn) {
 };
 
 TriggerWidget.prototype.draw = function(renderer) {
-  if (!this.stamp) return;
-  renderer
-      .setStamp(this.stamp)
-      .setColorVector(this.getVal() ? this.pressedColorVec4 : this.releasedColorVec4)
-      .setModelMatrix(this.modelMatrix)
-      .drawStamp();
+  renderer.setColorVector(this.getVal() ? this.pressedColorVec4 : this.releasedColorVec4)
+  if (this.stamp) {
+    renderer
+        .setStamp(this.stamp)
+        .setModelMatrix(this.modelMatrix)
+        .drawStamp();
+  }
+  if (this.keyboardTipStamp && Date.now() < this.keyboardTipUntilTimeMs) {
+    renderer.setStamp(this.keyboardTipStamp)
+        .setModelMatrix(this.keyboardTipModelMatrix)
+        .drawStamp();
+  }
   return this;
 };
 
@@ -145,5 +187,10 @@ TriggerWidget.prototype.updateStartZone = function() {
 TriggerWidget.prototype.updateModelMatrix = function() {
   this.modelMatrix.toTranslateOpXYZ(this.canvasPos.x, this.canvasPos.y, -0.99)
       .multiply(this.mat44.toScaleOpXYZ(this.canvasScale.x, this.canvasScale.y, 1));
+  this.keyboardTipModelMatrix.toTranslateOpXYZ(
+      this.canvasPos.x + this.keyboardTipOffset.x,
+      this.canvasPos.y + this.keyboardTipOffset.y,
+      -0.99)
+      .multiply(this.mat44.toScaleOpXYZ(this.keyboardTipScale.x, this.keyboardTipScale.y, 1));
   return this;
 };

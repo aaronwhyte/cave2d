@@ -67,7 +67,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 
-  this.editor = new Editor(this, this.canvas, this.renderer);
+  this.editor = new Editor(this, this.canvas, this.renderer, glyphs);
   this.updateHudLayout();
 }
 PlayScreen.prototype = new BaseScreen();

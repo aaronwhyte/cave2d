@@ -2,10 +2,11 @@
  * Owns the cursor and edit-related triggers
  * @constructor
  */
-function Editor(host, canvas, renderer) {
+function Editor(host, canvas, renderer, glyphs) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
+  this.glyphs = glyphs;
   this.getStamps();
 
   this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -14,6 +15,7 @@ function Editor(host, canvas, renderer) {
       .setStamp(this.gripTriggerStamp)
       .listenToTouch()
       .addTriggerKeyByName('c')
+      .setKeyboardTipStamp(glyphs.stamps['C'])
       .startListening();
 
   this.digTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -22,6 +24,7 @@ function Editor(host, canvas, renderer) {
       .setStamp(this.digTriggerStamp)
       .listenToTouch()
       .addTriggerKeyByName('x')
+      .setKeyboardTipStamp(glyphs.stamps['X'])
       .startListening();
 
   this.fillTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -30,12 +33,15 @@ function Editor(host, canvas, renderer) {
       .setStamp(this.fillTriggerStamp)
       .listenToTouch()
       .addTriggerKeyByName('z')
+      .setKeyboardTipStamp(glyphs.stamps['Z'])
       .startListening();
 
   this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
       .listenToMouseButton()
       .addTriggerKeyByName('b')
       .startListening();
+
+  this.leftTriggers = [this.fillTriggerWidget, this.digTriggerWidget, this.gripTriggerWidget];
 
   this.updateHudLayout();
 
@@ -87,24 +93,26 @@ function Editor(host, canvas, renderer) {
   this.oldMouseEventCoords = new Vec2d();
 }
 
+Editor.KEYBOARD_TIP_TIMEOUT_MS = 30 * 1000;
+
 Editor.prototype.updateHudLayout = function() {
   this.triggerRad = Math.min(50, 0.2 * Math.min(this.canvas.height, this.canvas.width) * 0.5);
   this.triggerSpacing = this.triggerRad /3;
+  var tipOffset = this.triggerRad * 1.4;
+  var tipScale = this.triggerRad * 0.15;
   var triggerNum = 0;
   var self = this;
 
   function triggerY(n) {
     return self.canvas.height - (2 * n * self.triggerRad + (n+1) * self.triggerSpacing + self.triggerRad);
   }
-  this.fillTriggerWidget
-      .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
-      .setCanvasScaleXY(this.triggerRad, this.triggerRad);
-  this.digTriggerWidget
-      .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
-      .setCanvasScaleXY(this.triggerRad, this.triggerRad);
-  this.gripTriggerWidget
-      .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
-      .setCanvasScaleXY(this.triggerRad, this.triggerRad);
+  for (var i = 0; i < this.leftTriggers.length; i++) {
+    this.leftTriggers[i]
+        .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
+        .setCanvasScaleXY(this.triggerRad, this.triggerRad)
+        .setKeyboardTipOffsetXY(tipOffset, 0)
+        .setKeyboardTipScaleXY(tipScale, -tipScale);
+  }
   this.panTriggerWidget.setCanvasPositionXY(-1, -1).setCanvasScaleXY(0, 0);
 };
 
@@ -218,6 +226,10 @@ Editor.prototype.handleInput = function() {
   // mouse pointer movement
   this.mousePointer.setViewMatrix(this.host.getViewMatrix());
   if (!this.mousePointer.eventCoords.equals(this.oldMouseEventCoords) || this.panTriggerWidget.getVal()) {
+    var timeout = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
+    for (var i = 0; i < this.leftTriggers.length; i++) {
+      this.leftTriggers[i].setKeyboardTipTimeoutMs(timeout);
+    }
     this.cursorVel.reset();
     if (this.panTriggerWidget.getVal() && this.oldPanTriggerVal) {
       // panning
