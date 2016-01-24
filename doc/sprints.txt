@@ -259,24 +259,36 @@ v Debug & fix iPad trackball freeze. Repro is to tap a trigger and the world at 
 v Mouse fling (and full revamp of input handling)
 v arrow key panning that doesn't fight the mouse
 v mouse pointer when hovering over pause trigger
-- mouse/keyboard users see keyboard guide for triggers
-  - auto-gen using glyphs and trigger keynames
+v mouse/keyboard users see keyboard guide for triggers
+Done 2016-01-18
 
-Test XX: Editor Add and Delete
+Test 38: Editor Add and Delete
 Add
-- list of addable things
-- show hotbar of addable things
-- highlight current addable-thing
-- trigger for adding current addable-thing at cursor
-- splash
-- sound
+- ModeMenuWidget, modeled after TriggerWidget
+  - constructor(elem)
+  - state
+    - array (groups) of array (ranks) of items.
+    - group & rank of currently selected item.
+  - methods
+    - setCanvasCornerPositionXY(x, y) sets the center position for the group-0, rank-0 element
+    - setItem(id, model, group, rank) assumes the model is constrained to a unit square
+    - setGridOffsets(groupOffset, rankOffset)
+    - setCanvasItemScaleXY(x, y) // usually less than gridOffsets, for separation. Plus sign flipping maybe.
+    - setSelectionHighlightStamp(stamp)
+    - draw(renderer) lazily (re)inits monolithic stamp if gridOffsets or item scales changed
+      - one big stamp
+      - selection highlight
+      - keyboard multi-tap time-reset thing, for muscle-memory?
+    - listen, unlisten
+    - getSelectedId
+- "Add" trigger, "A", in upper-right
+- Editor acts on trigger-down by adding, and the added part is instantly grabbed
 Delete
 - qmode trigger
-- instantly delete grabbed object if any
-- otherwise go into grab-and-delete mode, which grabs and foreshadows deletion in, say, 500ms, gradually reducing timeout
-  until it gets to 0ms? Releasing the trigger sets the timeout back to 500ms? Or am I overthinking?
-- splash
-- sound
+- xtra credit complicated junk:
+  - instantly delete grabbed object if any
+  - otherwise go into grab-and-delete mode, which grabs and foreshadows deletion in, say, 500ms, gradually reducing timeout
+    until it gets to 0ms? Releasing the trigger sets the timeout back to 500ms? Or am I overthinking?
 
 Test XX: Possession
 - "enter" button in editor
