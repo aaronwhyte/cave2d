@@ -52,3 +52,8 @@ Camera.prototype.getViewDist = function() {
   return this.viewDist;
 };
 
+Camera.prototype.setViewDist = function(d) {
+  this.viewDist = d;
+  return this;
+};
+
