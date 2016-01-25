@@ -265,30 +265,47 @@ Done 2016-01-18
 Test 38: Editor Add and Delete
 Add
 - ModeMenuWidget, modeled after TriggerWidget
-  - constructor(elem)
-  - state
-    - array (groups) of array (ranks) of items.
-    - group & rank of currently selected item.
-  - methods
-    - setCanvasCornerPositionXY(x, y) sets the center position for the group-0, rank-0 element
-    - setItem(id, model, group, rank) assumes the model is constrained to a unit square
-    - setGridOffsets(groupOffset, rankOffset)
-    - setCanvasItemScaleXY(x, y) // usually less than gridOffsets, for separation. Plus sign flipping maybe.
-    - setSelectionHighlightStamp(stamp)
-    - draw(renderer) lazily (re)inits monolithic stamp if gridOffsets or item scales changed
-      - one big stamp
-      - selection highlight
-      - keyboard multi-tap time-reset thing, for muscle-memory?
+  v constructor(elem)
+  v state
+    v array (groups) of array (ranks) of items
+    v group & rank of currently selected item
+    v keyboard shortcuts (groupNum, keyName)
+  - Show a menu
+    v setItem(id, group, rank, model) assumes the model is constrained to a unit square
+    v setPosition(pos) sets the center position for the group-0, rank-0 element
+    v setGridOffsets(groupOffset, rankOffset)
+    v setItemScale(scale) // usually less than gridOffsets, for separation. Plus sign flipping maybe.
+    v draw() lazy-inits
+      v menu stamp
+      v menu matrix
+    - use in test38
+      - need multiple things to add. Use A-Z glyphs for now, to test menu grx.
+  - Show indicator
+    - create "corners" indicator in test38
+  - Keyboard support
+    v addKeyboardShortcut(groupNum, keyName)
+    - keydown handler: jump to group, or shift rank in same group
     - listen, unlisten
-    - getSelectedId
-- "Add" trigger, "A", in upper-right
-- Editor acts on trigger-down by adding, and the added part is instantly grabbed
+  - Mouse and touch support
+    - custom mouseDown and touchStart listeners
+    - listen, unlisten
+    - find target item, or nothing, based on event screen x/y
+      - rig to mouse/touch startzone callbacks
+  - getSelectedName for client
+- "Add item" trigger, "A", in upper-right
+  - add the addMenu.getSelectedName thing
+  - added part is grabbed until add trigger is released
 Delete
 - qmode trigger
 - xtra credit complicated junk:
   - instantly delete grabbed object if any
   - otherwise go into grab-and-delete mode, which grabs and foreshadows deletion in, say, 500ms, gradually reducing timeout
     until it gets to 0ms? Releasing the trigger sets the timeout back to 500ms? Or am I overthinking?
+More fun things to add
+- lovebot
+- slambot
+- fleebot
+- distbot
 
 Test XX: Possession
 - "enter" button in editor
