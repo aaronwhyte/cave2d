@@ -24,6 +24,7 @@ function ModeMenuWidget(elem, glyphs) {
   this.groupNumToKeyStamp = [];
 
   this.matrixesValid = false;
+  this.stampsValid = false;
 
   // single stamp for the entire set of items
   this.menuStamp = null;
@@ -135,12 +136,22 @@ ModeMenuWidget.prototype.invalidateMatrixes = function() {
 };
 
 ModeMenuWidget.prototype.invalidateStamps = function() {
-  this.menuStamp = null;
-  this.keyTipsStamp = null;
+  this.stampsValid = false;
   // indicator stamp is unaffected
 };
 
 ModeMenuWidget.prototype.validateStamps = function(gl) {
+  if (!this.stampsValid) {
+    if (this.menuStamp) {
+      this.menuStamp.dispose(gl);
+    }
+    this.menuStamp = null;
+
+    if (this.keyTipsStamp) {
+      this.keyTipsStamp.dispose(gl);
+    }
+    this.keyTipsStamp = null;
+  }
   if (!this.menuStamp) {
     var menuModel = new RigidModel();
     var groupOffset = Vec2d.alloc();
@@ -166,6 +177,7 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
   if (!this.keyTipsStamp) {
     // TODO key tip stamp
   }
+  this.stampsValid = true;
 };
 
 ModeMenuWidget.prototype.validateMatrixes = function() {

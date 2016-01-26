@@ -280,6 +280,7 @@ Add
       v menu matrix
     v use in test38
       v need multiple things to add. Use A-Z glyphs for now, to test menu grx.
+  v Dispose of old stamps when invalidating
   - Show indicator
     - create "corners" indicator in test38
   - Keyboard support
