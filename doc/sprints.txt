@@ -270,7 +270,7 @@ Add
     v array (groups) of array (ranks) of items
     v group & rank of currently selected item
     v keyboard shortcuts (groupNum, keyName)
-  - Show a menu
+  v Show a menu
     v setItem(id, group, rank, model) assumes the model is constrained to a unit square
     v setPosition(pos) sets the center position for the group-0, rank-0 element
     v setGridOffsets(groupOffset, rankOffset)
@@ -278,8 +278,8 @@ Add
     v draw() lazy-inits
       v menu stamp
       v menu matrix
-    - use in test38
-      - need multiple things to add. Use A-Z glyphs for now, to test menu grx.
+    v use in test38
+      v need multiple things to add. Use A-Z glyphs for now, to test menu grx.
   - Show indicator
     - create "corners" indicator in test38
   - Keyboard support

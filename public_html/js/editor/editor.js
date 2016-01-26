@@ -43,8 +43,6 @@ function Editor(host, canvas, renderer, glyphs) {
 
   this.leftTriggers = [this.fillTriggerWidget, this.digTriggerWidget, this.gripTriggerWidget];
 
-  this.updateHudLayout();
-
   this.oldPanTriggerVal = false;
   this.cameraVel = new Vec2d();
 
@@ -91,9 +89,17 @@ function Editor(host, canvas, renderer, glyphs) {
   this.mat44 = new Matrix44();
 
   this.oldMouseEventCoords = new Vec2d();
+
+  this.menu = new ModeMenuWidget(this.canvas, this.glyphs);
+
+  this.updateHudLayout();
 }
 
 Editor.KEYBOARD_TIP_TIMEOUT_MS = 30 * 1000;
+
+Editor.prototype.addMenuItem = function(group, rank, name, model) {
+  this.menu.setItem(group, rank, name, model);
+};
 
 Editor.prototype.updateHudLayout = function() {
   this.triggerRad = Math.min(50, 0.2 * Math.min(this.canvas.height, this.canvas.width) * 0.5);
@@ -114,6 +120,13 @@ Editor.prototype.updateHudLayout = function() {
         .setKeyboardTipScaleXY(tipScale, -tipScale);
   }
   this.panTriggerWidget.setCanvasPositionXY(-1, -1).setCanvasScaleXY(0, 0);
+
+  // TODO make this righter
+  var menuItemSize = this.triggerRad * 0.7;
+  this.menu.setPosition(new Vec2d(this.triggerRad * 4, this.triggerRad * 2));
+  this.menu.setGridOffsets(new Vec2d(menuItemSize, 0), new Vec2d(0, menuItemSize));
+  this.menu.setItemScale(new Vec2d(0.7, -0.7).scale(menuItemSize * 0.33));
+
 };
 
 Editor.prototype.getStamps = function() {
@@ -409,6 +422,7 @@ Editor.prototype.drawHud = function() {
   this.gripTriggerWidget.draw(this.renderer);
   this.digTriggerWidget.draw(this.renderer);
   this.fillTriggerWidget.draw(this.renderer);
+  this.menu.draw(this.renderer);
 };
 
 Editor.prototype.getIndicatorColorVector = function() {

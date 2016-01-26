@@ -68,6 +68,15 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.levelColorVector = new Vec4(1, 1, 1);
 
   this.editor = new Editor(this, this.canvas, this.renderer, glyphs);
+  this.addEditorItemGroup(0, 'ABCD');
+  this.addEditorItemGroup(1, 'EFGH');
+  this.addEditorItemGroup(2, 'IJK');
+  this.addEditorItemGroup(3, 'LMN');
+  this.addEditorItemGroup(4, 'OPQ');
+  this.addEditorItemGroup(5, 'RST');
+  this.addEditorItemGroup(6, 'UVWX');
+  this.addEditorItemGroup(7, 'YZ');
+
   this.updateHudLayout();
 }
 PlayScreen.prototype = new BaseScreen();
@@ -102,6 +111,13 @@ PlayScreen.SpiritType = {
 
 PlayScreen.SplashType = {
   NOTE: 1
+};
+
+PlayScreen.prototype.addEditorItemGroup = function(groupNum, letters) {
+  for (var i = 0; i < letters.length; i++) {
+    var char = letters.charAt(i);
+    this.editor.addMenuItem(groupNum, i, char, this.glyphs.models[char]);
+  }
 };
 
 PlayScreen.prototype.updateHudLayout = function() {

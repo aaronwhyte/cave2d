@@ -70,7 +70,7 @@ function ModeMenuWidget(elem, glyphs) {
 // Rendering //
 ///////////////
 
-ModeMenuWidget.prototype.setItem = function(name, group, rank, model) {
+ModeMenuWidget.prototype.setItem = function(group, rank, name, model) {
   if (!this.groups[group]) this.groups[group] = [];
   this.groups[group][rank] = {
     name: name,
@@ -130,17 +130,6 @@ ModeMenuWidget.prototype.draw = function(renderer) {
   return this;
 };
 
-ModeMenuWidget.prototype.updateModelMatrix = function() {
-  this.modelMatrix.toTranslateOpXYZ(this.menuPos.x, this.menuPos.y, -0.99)
-      .multiply(this.mat44.toScaleOpXYZ(this.canvasScale.x, this.canvasScale.y, 1));
-  this.keyTipsMatrix.toTranslateOpXYZ(
-      this.menuPos.x + this.keyTipsOffset.x,
-      this.menuPos.y + this.keyTipsOffset.y,
-      -0.99)
-      .multiply(this.mat44.toScaleOpXYZ(this.keyTipsScale.x, this.keyTipsScale.y, 1));
-  return this;
-};
-
 ModeMenuWidget.prototype.invalidateMatrixes = function() {
   this.matrixesValid = false;
 };
@@ -161,8 +150,8 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
       var group = this.groups[g];
       for (var r = 0; r < group.length; r++) {
         var item = group[r];
-        groupOffset.set(this.groupOffset).scale1(g);
-        rankOffset.set(this.rankOffset).scale1(r);
+        groupOffset.set(this.groupOffset).scale(g);
+        rankOffset.set(this.rankOffset).scale(r);
         totalOffset.set(groupOffset).add(rankOffset);
         var itemModel = new RigidModel()
             .addRigidModel(item.model)
@@ -181,7 +170,7 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
 
 ModeMenuWidget.prototype.validateMatrixes = function() {
   if (this.matrixesValid) return;
-  this.menuMatrix.toTranslateOpXYZ(this.menuPos.x, this.menuPos.y);
+  this.menuMatrix.toTranslateOpXYZ(this.menuPos.x, this.menuPos.y, -0.9);
   this.matrixesValid = true;
 };
 
