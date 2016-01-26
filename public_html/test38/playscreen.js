@@ -121,7 +121,7 @@ PlayScreen.prototype.addEditorItemGroup = function(groupNum, letters) {
 };
 
 PlayScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width / 2, 20);
+  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - 20, 20);
   this.editor.updateHudLayout();
 };
 

@@ -123,7 +123,7 @@ Editor.prototype.updateHudLayout = function() {
 
   // TODO make this righter
   var menuItemSize = this.triggerRad * 0.7;
-  this.menu.setPosition(new Vec2d(this.triggerRad * 4, this.triggerRad * 2));
+  this.menu.setPosition(new Vec2d(this.triggerRad * 4, this.triggerRad));
   this.menu.setGridOffsets(new Vec2d(menuItemSize, 0), new Vec2d(0, menuItemSize));
   this.menu.setItemScale(new Vec2d(0.7, -0.7).scale(menuItemSize * 0.33));
 

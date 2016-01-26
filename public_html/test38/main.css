@@ -22,8 +22,9 @@ canvas {
 #pausedOverlay {
   display:none;
   position:absolute;
-  text-align:center;
+  text-align:right;
   top:40px;
+  left: 20px;
   width:100%;
   z-index:2;
 }
@@ -33,9 +34,10 @@ canvas {
   background: rgba(200, 200, 200, 0.85);
   color:#000;
   font-family:verdana, arial, sans-serif;
-  margin:0;
+  margin:0 40px;
   border:0;
-  border-radius: 2em;
+  text-align:center;
+  border-radius: 0.5em;
   padding:1em;
 }
 
