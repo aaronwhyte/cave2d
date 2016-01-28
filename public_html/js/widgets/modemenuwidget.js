@@ -14,9 +14,6 @@ function ModeMenuWidget(elem, glyphs) {
 
   this.mat44 = new Matrix44();
 
-  this.itemColor = new Vec4(1, 1, 1, 1);
-  this.indicatorColor = new Vec4(1, 1, 1, 1);
-
   // for interpreting keypresses. Index is group num, value is key name.
   this.groupKeyNames = [];
 
@@ -29,17 +26,17 @@ function ModeMenuWidget(elem, glyphs) {
   // single stamp for the entire set of items
   this.menuStamp = null;
   this.menuMatrix = new Matrix44();
-  this.menuColor = new Vec4(1, 1, 1, 1);
+  this.menuColor = new Vec4(1, 1, 1, 0.5);
 
   // selection indicator, like a box around the selection
   this.indicatorStamp = null;
   this.indicatorMatrix = new Matrix44();
-  this.indicatorColor = new Vec4(1, 1, 1, 1);
+  this.indicatorColor = new Vec4(1, 1, 1, 0.6);
 
   // keyboard tips, for people who like that sort of thing
   this.keyTipsStamp = null;
   this.keyTipsMatrix = new Matrix44();
-  this.keyTipsColor = new Vec4(1, 1, 1, 1);
+  this.keyTipsColor = new Vec4(1, 1, 1, 0.5);
 
   // center of the group-0, rank-0 item
   this.menuPos = new Vec2d(0, 0);
@@ -66,6 +63,14 @@ function ModeMenuWidget(elem, glyphs) {
   this.selectedGroup = 0;
   this.selectedRank = 0;
 }
+
+ModeMenuWidget.prototype.setSelectedGroupAndRank = function(group, rank) {
+  if (this.selectedGroup != group || this.selectedRank != rank) {
+    this.selectedGroup = group;
+    this.selectedRank = rank;
+    this.invalidateMatrixes();
+  }
+};
 
 ///////////////
 // Rendering //
@@ -116,9 +121,16 @@ ModeMenuWidget.prototype.draw = function(renderer) {
 
   if (this.menuStamp) {
     renderer
-        .setColorVector(this.itemColor)
+        .setColorVector(this.menuColor)
         .setStamp(this.menuStamp)
         .setModelMatrix(this.menuMatrix)
+        .drawStamp();
+  }
+  if (this.indicatorStamp) {
+    renderer
+        .setColorVector(this.indicatorColor)
+        .setStamp(this.indicatorStamp)
+        .setModelMatrix(this.indicatorMatrix)
         .drawStamp();
   }
   if (Date.now() < this.keyTipsUntilTimeMs && this.keyTipsStamp) {
@@ -166,7 +178,7 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
         totalOffset.set(groupOffset).add(rankOffset);
         var itemModel = new RigidModel()
             .addRigidModel(item.model)
-            .transformPositions(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y, 0))
+            .transformPositions(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y, 1))
             .transformPositions(this.mat44.toTranslateOpXYZ(totalOffset.x, totalOffset.y, 0));
         menuModel.addRigidModel(itemModel);
       }
@@ -183,6 +195,13 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
 ModeMenuWidget.prototype.validateMatrixes = function() {
   if (this.matrixesValid) return;
   this.menuMatrix.toTranslateOpXYZ(this.menuPos.x, this.menuPos.y, -0.9);
+  this.indicatorMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(
+          this.menuPos.x + this.groupOffset.x * this.selectedGroup + this.rankOffset.x * this.selectedRank,
+          this.menuPos.y + this.groupOffset.y * this.selectedGroup + this.rankOffset.y * this.selectedRank,
+          -0.9))
+      .multiply(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y, 1))
+  ;
   this.matrixesValid = true;
 };
 

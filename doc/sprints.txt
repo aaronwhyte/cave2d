@@ -282,21 +282,22 @@ Add
       v need multiple things to add. Use A-Z glyphs for now, to test menu grx.
   v Dispose of old stamps when invalidating
   v Move "pause" out of the way, to the right top corner
-  - Show indicator
-    - create "corners" indicator in test38
-  - Keyboard support
-    v addKeyboardShortcut(groupNum, keyName)
-    - keydown handler: jump to group, or shift rank in same group
+  v Show indicator
+    v create "corners" indicator in test38
+  - event handling
     - listen, unlisten
-  - Mouse and touch support
-    - custom mouseDown and touchStart listeners
-    - listen, unlisten
-    - find target item, or nothing, based on event screen x/y
-      - rig to mouse/touch startzone callbacks
-  - getSelectedName for client
+    - Keyboard support
+      v addKeyboardShortcut(groupNum, keyName)
+      - keydown handler: jump to group, or shift rank in same group
+    - Mouse and touch support
+      - custom mouseDown and touchStart listeners
+      - listen, unlisten
+      - find target item, or nothing, based on event screen x/y
+  - getSelectedName() method
 - "Add item" trigger, "A", in upper-right
   - add the addMenu.getSelectedName thing
   - added part is grabbed until add trigger is released
+- Put some real things in there.
 Delete
 - qmode trigger
 - xtra credit complicated junk:

@@ -90,7 +90,8 @@ function Editor(host, canvas, renderer, glyphs) {
 
   this.oldMouseEventCoords = new Vec2d();
 
-  this.menu = new ModeMenuWidget(this.canvas, this.glyphs);
+  this.menu = new ModeMenuWidget(this.canvas, this.glyphs)
+      .setIndicatorStamp(this.addMenuIndicatorStamp);
 
   this.updateHudLayout();
 }
@@ -101,8 +102,16 @@ Editor.prototype.addMenuItem = function(group, rank, name, model) {
   this.menu.setItem(group, rank, name, model);
 };
 
+Editor.prototype.getTriggerRad = function() {
+  return Math.min(50, 0.2 * Math.min(this.canvas.height, this.canvas.width) * 0.5);
+};
+
+Editor.prototype.getMenuItemSize = function() {
+  return this.getTriggerRad() * 0.8;
+};
+
 Editor.prototype.updateHudLayout = function() {
-  this.triggerRad = Math.min(50, 0.2 * Math.min(this.canvas.height, this.canvas.width) * 0.5);
+  this.triggerRad = this.getTriggerRad();
   this.triggerSpacing = this.triggerRad /3;
   var tipOffset = this.triggerRad * 1.4;
   var tipScale = this.triggerRad * 0.15;
@@ -122,11 +131,11 @@ Editor.prototype.updateHudLayout = function() {
   this.panTriggerWidget.setCanvasPositionXY(-1, -1).setCanvasScaleXY(0, 0);
 
   // TODO make this righter
-  var menuItemSize = this.triggerRad * 0.7;
-  this.menu.setPosition(new Vec2d(this.triggerRad * 4, this.triggerRad));
+  var menuItemSize = this.getMenuItemSize();
+  var pauseHeight = 50;
   this.menu.setGridOffsets(new Vec2d(menuItemSize, 0), new Vec2d(0, menuItemSize));
-  this.menu.setItemScale(new Vec2d(0.7, -0.7).scale(menuItemSize * 0.33));
-
+  this.menu.setItemScale(new Vec2d(1, -1).scale(menuItemSize * 0.2));
+  this.menu.setPosition(new Vec2d(this.triggerRad * 3.5, Math.max(this.triggerRad, pauseHeight + menuItemSize * 0.2)));
 };
 
 Editor.prototype.getStamps = function() {
@@ -210,8 +219,41 @@ Editor.prototype.getStamps = function() {
     this.fillTriggerStamp = model.createModelStamp(this.renderer.gl);
   }
 
+  if (!this.addMenuIndicatorStamp) {
+    var thickness = 0.4;
+    var length = 0.6 + thickness;
+    model = new RigidModel();
+    var size = 2.1;
+    for (var i = 0; i < 4; i++) {
+      model
+          .addRigidModel(RigidModel.createSquare().transformPositions(
+              new Matrix44()
+                  .multiply(new Matrix44().toScaleOpXYZ(size, size, 1))
+                  .multiply(new Matrix44().toRotateZOp(i * Math.PI/2))
+                  .multiply(new Matrix44().toTranslateOpXYZ(-1 + length/2 - thickness, -1 - thickness/2, 0))
+                  .multiply(new Matrix44().toScaleOpXYZ(length/2, thickness/2, 1))
+          ))
+          .addRigidModel(RigidModel.createSquare().transformPositions(
+              new Matrix44()
+                  .multiply(new Matrix44().toScaleOpXYZ(size, size, 1))
+                  .multiply(new Matrix44().toRotateZOp(i * Math.PI/2))
+                  .multiply(new Matrix44().toTranslateOpXYZ(-1 - thickness/2, -1 + length/2 - thickness, 0))
+                  .multiply(new Matrix44().toScaleOpXYZ(thickness/2, length/2, 1))
+          ))
+      ;
+    }
+//      model
+//          .addRigidModel(RigidModel.createRingMesh(4, 0.8).transformPositions(
+//              new Matrix44()
+//                  .multiply(new Matrix44().toScaleOpXYZ(3.5, 3.5, 1))
+//          ))
+//      ;
+    this.addMenuIndicatorStamp = model.createModelStamp(this.renderer.gl);
+  }
+
   return [this.cursorStamp, this.indicatorStamp, this.circleStamp,
-    this.gripTriggerStamp, this.digTriggerStamp, this.fillTriggerStamp];
+    this.gripTriggerStamp, this.digTriggerStamp, this.fillTriggerStamp,
+    this.addMenuIndicatorStamp];
 };
 
 Editor.prototype.createCursorBody = function() {
@@ -365,6 +407,7 @@ Editor.prototype.bodyIfInGroup = function(group, b0, b1) {
 };
 
 Editor.prototype.drawScene = function() {
+  this.menu.setSelectedGroupAndRank(Math.floor(Date.now() / 1000) % 8, 0);
   this.renderer.setBlendingEnabled(true);
 
   // highlighted body indicator
