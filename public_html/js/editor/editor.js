@@ -90,8 +90,12 @@ function Editor(host, canvas, renderer, glyphs) {
 
   this.oldMouseEventCoords = new Vec2d();
 
-  this.menu = new ModeMenuWidget(this.canvas, this.glyphs)
-      .setIndicatorStamp(this.addMenuIndicatorStamp);
+  this.menu = new ModeMenuWidget(this.host.getHudEventTarget(), this.glyphs)
+      .setIndicatorStamp(this.addMenuIndicatorStamp)
+      .startListening();
+  for (var group = 0; group < 8; group++) {
+    this.menu.addKeyboardShortcut(group, group + 1);
+  }
 
   this.updateHudLayout();
 }
@@ -407,7 +411,6 @@ Editor.prototype.bodyIfInGroup = function(group, b0, b1) {
 };
 
 Editor.prototype.drawScene = function() {
-  this.menu.setSelectedGroupAndRank(Math.floor(Date.now() / 1000) % 8, 0);
   this.renderer.setBlendingEnabled(true);
 
   // highlighted body indicator
@@ -444,7 +447,7 @@ Editor.prototype.drawScene = function() {
           gt ? 0.5 : coef,
           this.indicatedBodyId && gt && !(dt || ft) ? 0.3 : 0.8));
   var outerCursorRad = this.cursorRad;
-  var innerCursorRad = this.cursorRad * 0.1;
+  var innerCursorRad = this.cursorRad * 0.9;
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
       .multiply(this.mat44.toScaleOpXYZ(outerCursorRad, outerCursorRad, 1));

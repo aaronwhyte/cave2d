@@ -14,8 +14,8 @@ function ModeMenuWidget(elem, glyphs) {
 
   this.mat44 = new Matrix44();
 
-  // for interpreting keypresses. Index is group num, value is key name.
-  this.groupKeyNames = [];
+  // for interpreting keypresses.
+  this.keyNameToGroup = {};
 
   // for drawing keyboard shortcuts
   this.groupNumToKeyStamp = [];
@@ -62,6 +62,27 @@ function ModeMenuWidget(elem, glyphs) {
   // what is selected?
   this.selectedGroup = 0;
   this.selectedRank = 0;
+
+  this.keys = new Keys();
+
+  var self = this;
+  this.downListener = function(e) {
+    if (!e) e = window.event;
+    var keyName = self.keys.getNameForKeyCode(e.keyCode);
+    if (keyName in self.keyNameToGroup) {
+      var newGroup = self.keyNameToGroup[keyName];
+      if (newGroup == self.selectedGroup) {
+        // advance rank
+        self.selectedRank = (self.selectedRank + 1) % self.groups[self.selectedGroup].length;
+      } else {
+        self.selectedGroup = newGroup;
+        self.selectedRank = 0;
+      }
+      self.invalidateMatrixes();
+      // for layer thing
+      return false;
+    }
+  };
 }
 
 ModeMenuWidget.prototype.setSelectedGroupAndRank = function(group, rank) {
@@ -209,8 +230,18 @@ ModeMenuWidget.prototype.validateMatrixes = function() {
 // Event handling //
 ////////////////////
 
+ModeMenuWidget.prototype.startListening = function() {
+  document.addEventListener('keydown', this.downListener);
+  return this;
+};
+
+ModeMenuWidget.prototype.stopListening = function() {
+  document.removeEventListener('keydown', this.downListener);
+  return this;
+};
+
 ModeMenuWidget.prototype.addKeyboardShortcut = function(groupNum, keyName) {
-  this.groupKeyNames[groupNum] = keyName;
+  this.keyNameToGroup[keyName] = groupNum;
   return this;
 };
 
@@ -240,17 +271,3 @@ ModeMenuWidget.prototype.setKeyboardTipTimeoutMs = function(timeMs) {
   this.keyTipsUntilTimeMs = timeMs;
   return this;
 };
-
-ModeMenuWidget.prototype.startListening = function() {
-  this.trigger.startListening();
-  // TODO keything
-  return this;
-};
-
-ModeMenuWidget.prototype.stopListening = function() {
-  this.trigger.stopListening();
-  // TODO keything
-  return this;
-};
-
-

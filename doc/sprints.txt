@@ -284,11 +284,11 @@ Add
   v Move "pause" out of the way, to the right top corner
   v Show indicator
     v create "corners" indicator in test38
-  - event handling
-    - listen, unlisten
-    - Keyboard support
+  v event handling
+    v listen, unlisten
+    v Keyboard support
       v addKeyboardShortcut(groupNum, keyName)
-      - keydown handler: jump to group, or shift rank in same group
+      v keydown handler: jump to group, or shift rank in same group
     - Mouse and touch support
       - custom mouseDown and touchStart listeners
       - listen, unlisten
@@ -300,15 +300,14 @@ Add
 - Put some real things in there.
 Delete
 - qmode trigger
-- xtra credit complicated junk:
-  - instantly delete grabbed object if any
-  - otherwise go into grab-and-delete mode, which grabs and foreshadows deletion in, say, 500ms, gradually reducing timeout
-    until it gets to 0ms? Releasing the trigger sets the timeout back to 500ms? Or am I overthinking?
-More fun things to add
+Make real addable objects
 - lovebot
 - slambot
 - fleebot
 - distbot
+Later...
+- draw keyboard tips
+
 
 Test XX: Possession
 - "enter" button in editor
