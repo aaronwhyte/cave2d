@@ -41,7 +41,8 @@ function ModeMenuWidget(elem, glyphs) {
   // center of the group-0, rank-0 item
   this.menuPos = new Vec2d(0, 0);
 
-  this.itemPositionMatrix = new Matrix44();
+  this.itemPosMatrix = new Matrix44();
+  this.inverseItemPosMatrix = new Matrix44();
 
   // How to map from page coords to (group, rank) coords.
   this.pageToItemMatrix = new Matrix44();
@@ -91,15 +92,27 @@ function ModeMenuWidget(elem, glyphs) {
       }
     }
   };
+  this.mouseDownListener = function(e) {
+    if (!e) e = window.event;
+    if (self.maybeSelectPageXY(e.clientX, e.clientY)) {
+      // for layer thing
+      return false;
+    }
+  };
 }
 
 ModeMenuWidget.prototype.maybeSelectPageXY = function(pageX, pageY) {
-  var retval = false;
-//  var coords = Vec2d.alloc();
-//  coords.set(this.menuPos).addXY(pageX, pageY);
-//  coords.add(groupOffset
-//  coords.free();
-  return retval;
+  var selected = false;
+  var pos = Vec4.alloc().setXYZ(pageX - this.menuPos.x, pageY - this.menuPos.y, 0);
+  pos.transform(this.inverseItemPosMatrix);
+  var group = Math.round(pos.getX());
+  var rank = Math.round(pos.getY());
+  if (this.groups[group] && this.groups[group][rank]) {
+    this.setSelectedGroupAndRank(group, rank);
+    selected = true;
+  }
+  pos.free();
+  return selected;
 };
 
 
@@ -138,9 +151,11 @@ ModeMenuWidget.prototype.setPosition = function(pos) {
 };
 
 ModeMenuWidget.prototype.setItemPositionMatrix = function(m) {
-  if (!this.itemPositionMatrix.equals(m)) {
-    this.itemPositionMatrix.set(m);
+  if (!this.itemPosMatrix.equals(m)) {
+    this.itemPosMatrix.set(m);
+    this.itemPosMatrix.getInverse(this.inverseItemPosMatrix);
     this.invalidateStamps();
+    this.invalidateMatrixes();
   }
   return this;
 };
@@ -248,7 +263,7 @@ ModeMenuWidget.prototype.validateMatrixes = function() {
 
 ModeMenuWidget.prototype.getItemOffset = function(group, rank, vec4Out) {
   vec4Out.setXYZ(group, rank, 0);
-  vec4Out.transform(this.itemPositionMatrix);
+  vec4Out.transform(this.itemPosMatrix);
   return vec4Out;
 };
 
@@ -258,34 +273,20 @@ ModeMenuWidget.prototype.getItemOffset = function(group, rank, vec4Out) {
 
 ModeMenuWidget.prototype.startListening = function() {
   document.addEventListener('keydown', this.keyDownListener);
+  this.elem.addEventListener('touchstart', this.touchStartListener);
+  this.elem.addEventListener('mousedown', this.mouseDownListener);
   return this;
 };
 
 ModeMenuWidget.prototype.stopListening = function() {
   document.removeEventListener('keydown', this.keyDownListener);
+  this.elem.removeEventListener('touchstart', this.touchStartListener);
+  this.elem.removeEventListener('mousedown', this.mouseDownListener);
   return this;
 };
 
 ModeMenuWidget.prototype.addKeyboardShortcut = function(groupNum, keyName) {
   this.keyNameToGroup[keyName] = groupNum;
-  return this;
-};
-
-ModeMenuWidget.prototype.listenToTouch = function() {
-  if (!this.touchTrigger) {
-    this.touchTrigger = new TouchTrigger(this.elem).startListening();
-    this.trigger.addTrigger(this.touchTrigger);
-    // TODO startzone
-  }
-  return this;
-};
-
-ModeMenuWidget.prototype.listenToMousePointer = function() {
-  if (!this.mousePointerTrigger) {
-    this.mousePointerTrigger = new MousePointerTrigger(this.elem).startListening();
-    this.trigger.addTrigger(this.mousePointerTrigger);
-    // TODO startzone
-  }
   return this;
 };
 

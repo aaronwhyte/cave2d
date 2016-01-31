@@ -289,10 +289,10 @@ Add
     v Keyboard support
       v addKeyboardShortcut(groupNum, keyName)
       v keydown handler: jump to group, or shift rank in same group
-    - Mouse and touch support
-      - custom mouseDown and touchStart listeners
-      - listen, unlisten
-      - find target item, or nothing, based on event screen x/y
+    v Mouse and touch support
+      v custom mouseDown and touchStart listeners
+      v listen, unlisten
+      v find target item, or nothing, based on event screen x/y
   - getSelectedName() method
 - "Add item" trigger, "A", in upper-right
   - add the addMenu.getSelectedName thing
