@@ -101,32 +101,9 @@ function ModeMenuWidget(elem, glyphs) {
   };
 }
 
-ModeMenuWidget.prototype.maybeSelectPageXY = function(pageX, pageY) {
-  var selected = false;
-  var pos = Vec4.alloc().setXYZ(pageX - this.menuPos.x, pageY - this.menuPos.y, 0);
-  pos.transform(this.inverseItemPosMatrix);
-  var group = Math.round(pos.getX());
-  var rank = Math.round(pos.getY());
-  if (this.groups[group] && this.groups[group][rank]) {
-    this.setSelectedGroupAndRank(group, rank);
-    selected = true;
-  }
-  pos.free();
-  return selected;
-};
-
-
-ModeMenuWidget.prototype.setSelectedGroupAndRank = function(group, rank) {
-  if (this.selectedGroup != group || this.selectedRank != rank) {
-    this.selectedGroup = group;
-    this.selectedRank = rank;
-    this.invalidateMatrixes();
-  }
-};
-
-///////////////
-// Rendering //
-///////////////
+////////////
+// Public //
+////////////
 
 ModeMenuWidget.prototype.setItem = function(group, rank, name, model) {
   if (!this.groups[group]) this.groups[group] = [];
@@ -137,9 +114,23 @@ ModeMenuWidget.prototype.setItem = function(group, rank, name, model) {
   return this;
 };
 
+ModeMenuWidget.prototype.addKeyboardShortcut = function(groupNum, keyName) {
+  this.keyNameToGroup[keyName] = groupNum;
+  return this;
+};
+
+/**
+ * Sets the absolute time, in ms, at which the keyboard tip will stop being rendered.
+ * @param {Number} timeMs
+ */
+ModeMenuWidget.prototype.setKeyboardTipTimeoutMs = function(timeMs) {
+  this.keyTipsUntilTimeMs = timeMs;
+  return this;
+};
+
 /**
  * Set the position of the zero-group, zero-rank item
- * @param pos
+ * @param {Vec2d} pos
  * @returns {ModeMenuWidget}
  */
 ModeMenuWidget.prototype.setPosition = function(pos) {
@@ -150,6 +141,13 @@ ModeMenuWidget.prototype.setPosition = function(pos) {
   return this;
 };
 
+/**
+ * Sets the matrix for transforming an item <group. rank> to a
+ * screen-offset for the center of that item, relative to the menu position.
+ * This is also used to calculate the selection-indicator position.
+ * @param {Matrix44} m
+ * @returns {ModeMenuWidget}
+ */
 ModeMenuWidget.prototype.setItemPositionMatrix = function(m) {
   if (!this.itemPosMatrix.equals(m)) {
     this.itemPosMatrix.set(m);
@@ -160,6 +158,11 @@ ModeMenuWidget.prototype.setItemPositionMatrix = function(m) {
   return this;
 };
 
+/**
+ * Used to help draw an item stamp, after the item position has been computed.
+ * @param {Vec2d} scale
+ * @returns {ModeMenuWidget}
+ */
 ModeMenuWidget.prototype.setItemScale = function(scale) {
   if (!this.itemScale.equals(scale)) {
     this.itemScale.set(scale);
@@ -168,8 +171,27 @@ ModeMenuWidget.prototype.setItemScale = function(scale) {
   return this;
 };
 
+/**
+ * Stamp for the selection indicator.
+ * @param {ModelStamp} stamp
+ * @returns {ModeMenuWidget}
+ */
 ModeMenuWidget.prototype.setIndicatorStamp = function(stamp) {
   this.indicatorStamp = stamp;
+  return this;
+};
+
+ModeMenuWidget.prototype.startListening = function() {
+  document.addEventListener('keydown', this.keyDownListener);
+  this.elem.addEventListener('touchstart', this.touchStartListener);
+  this.elem.addEventListener('mousedown', this.mouseDownListener);
+  return this;
+};
+
+ModeMenuWidget.prototype.stopListening = function() {
+  document.removeEventListener('keydown', this.keyDownListener);
+  this.elem.removeEventListener('touchstart', this.touchStartListener);
+  this.elem.removeEventListener('mousedown', this.mouseDownListener);
   return this;
 };
 
@@ -200,6 +222,11 @@ ModeMenuWidget.prototype.draw = function(renderer) {
   }
   return this;
 };
+
+/////////////
+// Private //
+/////////////
+
 
 ModeMenuWidget.prototype.invalidateMatrixes = function() {
   this.matrixesValid = false;
@@ -267,34 +294,25 @@ ModeMenuWidget.prototype.getItemOffset = function(group, rank, vec4Out) {
   return vec4Out;
 };
 
-////////////////////
-// Event handling //
-////////////////////
-
-ModeMenuWidget.prototype.startListening = function() {
-  document.addEventListener('keydown', this.keyDownListener);
-  this.elem.addEventListener('touchstart', this.touchStartListener);
-  this.elem.addEventListener('mousedown', this.mouseDownListener);
-  return this;
+ModeMenuWidget.prototype.maybeSelectPageXY = function(pageX, pageY) {
+  var selected = false;
+  var pos = Vec4.alloc().setXYZ(pageX - this.menuPos.x, pageY - this.menuPos.y, 0);
+  pos.transform(this.inverseItemPosMatrix);
+  var group = Math.round(pos.getX());
+  var rank = Math.round(pos.getY());
+  if (this.groups[group] && this.groups[group][rank]) {
+    this.setSelectedGroupAndRank(group, rank);
+    selected = true;
+  }
+  pos.free();
+  return selected;
 };
 
-ModeMenuWidget.prototype.stopListening = function() {
-  document.removeEventListener('keydown', this.keyDownListener);
-  this.elem.removeEventListener('touchstart', this.touchStartListener);
-  this.elem.removeEventListener('mousedown', this.mouseDownListener);
-  return this;
+ModeMenuWidget.prototype.setSelectedGroupAndRank = function(group, rank) {
+  if (this.selectedGroup != group || this.selectedRank != rank) {
+    this.selectedGroup = group;
+    this.selectedRank = rank;
+    this.invalidateMatrixes();
+  }
 };
 
-ModeMenuWidget.prototype.addKeyboardShortcut = function(groupNum, keyName) {
-  this.keyNameToGroup[keyName] = groupNum;
-  return this;
-};
-
-/**
- * Sets the absolute time, in ms, at which the keyboard tip will stop being rendered.
- * @param {Number} timeMs
- */
-ModeMenuWidget.prototype.setKeyboardTipTimeoutMs = function(timeMs) {
-  this.keyTipsUntilTimeMs = timeMs;
-  return this;
-};
