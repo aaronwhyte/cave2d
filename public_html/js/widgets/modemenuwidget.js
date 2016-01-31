@@ -223,10 +223,13 @@ ModeMenuWidget.prototype.draw = function(renderer) {
   return this;
 };
 
+ModeMenuWidget.prototype.getSelectedName = function() {
+  return this.groups[this.selectedGroup][this.selectedRank].name;
+};
+
 /////////////
 // Private //
 /////////////
-
 
 ModeMenuWidget.prototype.invalidateMatrixes = function() {
   this.matrixesValid = false;

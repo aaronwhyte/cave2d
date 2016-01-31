@@ -264,7 +264,7 @@ Done 2016-01-18
 
 Test 38: Editor Add and Delete
 Add
-- ModeMenuWidget, modeled after TriggerWidget
+v ModeMenuWidget, modeled after TriggerWidget
   v constructor(elem)
   v state
     v array (groups) of array (ranks) of items
@@ -293,18 +293,25 @@ Add
       v custom mouseDown and touchStart listeners
       v listen, unlisten
       v find target item, or nothing, based on event screen x/y
-  - getSelectedName() method
-- "Add item" trigger, "A", in upper-right
+  v getSelectedName() method
+- "Add" button
+  v Trigger, "A"
+  v "+" icon
+  v place trigger in upper-left
   - add the addMenu.getSelectedName thing
+    - look up thing to add by name - pass up to editor host
   - added part is grabbed until add trigger is released
-- Put some real things in there.
+- Put some real items in the menu.
+  - boulder
+  - red soldier
+  - red base - soldiers(and sheep) respawn at base when killed
+  - blue soldier
+  - blue base
+  - sheep base
+  - sheep
+  - beast - has high max-health, attacks/eats soldiers and sheep when healthy & hungry, runs from soldiers when hurt or full
 Delete
 - qmode trigger
-Make real addable objects
-- lovebot
-- slambot
-- fleebot
-- distbot
 Later...
 - draw keyboard tips
 
