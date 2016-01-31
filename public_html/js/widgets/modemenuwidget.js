@@ -41,11 +41,10 @@ function ModeMenuWidget(elem, glyphs) {
   // center of the group-0, rank-0 item
   this.menuPos = new Vec2d(0, 0);
 
-  // transform from group to group
-  this.groupOffset = new Vec2d();
+  this.itemPositionMatrix = new Matrix44();
 
-  // transform from rank to rank
-  this.rankOffset = new Vec2d();
+  // How to map from page coords to (group, rank) coords.
+  this.pageToItemMatrix = new Matrix44();
 
   // scale to apply to individual items
   this.itemScale = new Vec2d(1, -1);
@@ -66,24 +65,43 @@ function ModeMenuWidget(elem, glyphs) {
   this.keys = new Keys();
 
   var self = this;
-  this.downListener = function(e) {
+  this.keyDownListener = function(e) {
     if (!e) e = window.event;
     var keyName = self.keys.getNameForKeyCode(e.keyCode);
     if (keyName in self.keyNameToGroup) {
       var newGroup = self.keyNameToGroup[keyName];
+      var newRank = self.selectedRank;
       if (newGroup == self.selectedGroup) {
         // advance rank
-        self.selectedRank = (self.selectedRank + 1) % self.groups[self.selectedGroup].length;
+        newRank = (newRank + 1) % self.groups[newGroup].length;
       } else {
-        self.selectedGroup = newGroup;
-        self.selectedRank = 0;
+        newRank = 0;
       }
-      self.invalidateMatrixes();
-      // for layer thing
-      return false;
+      self.setSelectedGroupAndRank(newGroup, newRank);
+    }
+  };
+  this.touchStartListener = function(e) {
+    if (!e) e = window.event;
+    var touches = e.changedTouches;
+    for (var i = 0; i < touches.length; i++) {
+      var touch = touches[i];
+      if (self.maybeSelectPageXY(touch.pageX, touch.pageY)) {
+        // for layer thing
+        return false;
+      }
     }
   };
 }
+
+ModeMenuWidget.prototype.maybeSelectPageXY = function(pageX, pageY) {
+  var retval = false;
+//  var coords = Vec2d.alloc();
+//  coords.set(this.menuPos).addXY(pageX, pageY);
+//  coords.add(groupOffset
+//  coords.free();
+  return retval;
+};
+
 
 ModeMenuWidget.prototype.setSelectedGroupAndRank = function(group, rank) {
   if (this.selectedGroup != group || this.selectedRank != rank) {
@@ -106,6 +124,11 @@ ModeMenuWidget.prototype.setItem = function(group, rank, name, model) {
   return this;
 };
 
+/**
+ * Set the position of the zero-group, zero-rank item
+ * @param pos
+ * @returns {ModeMenuWidget}
+ */
 ModeMenuWidget.prototype.setPosition = function(pos) {
   if (!this.menuPos.equals(pos)) {
     this.menuPos.set(pos);
@@ -114,10 +137,9 @@ ModeMenuWidget.prototype.setPosition = function(pos) {
   return this;
 };
 
-ModeMenuWidget.prototype.setGridOffsets = function(groupOffset, rankOffset) {
-  if (!this.groupOffset.equals(groupOffset) || !this.rankOffset.equals(rankOffset)) {
-    this.groupOffset.set(groupOffset);
-    this.rankOffset.set(rankOffset);
+ModeMenuWidget.prototype.setItemPositionMatrix = function(m) {
+  if (!this.itemPositionMatrix.equals(m)) {
+    this.itemPositionMatrix.set(m);
     this.invalidateStamps();
   }
   return this;
@@ -187,23 +209,20 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
   }
   if (!this.menuStamp) {
     var menuModel = new RigidModel();
-    var groupOffset = Vec2d.alloc();
-    var rankOffset = Vec2d.alloc();
-    var totalOffset = Vec2d.alloc();
+    var itemOffset = Vec4.alloc();
     for (var g = 0; g < this.groups.length; g++) {
       var group = this.groups[g];
       for (var r = 0; r < group.length; r++) {
         var item = group[r];
-        groupOffset.set(this.groupOffset).scale(g);
-        rankOffset.set(this.rankOffset).scale(r);
-        totalOffset.set(groupOffset).add(rankOffset);
+        this.getItemOffset(g, r, itemOffset);
         var itemModel = new RigidModel()
             .addRigidModel(item.model)
             .transformPositions(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y, 1))
-            .transformPositions(this.mat44.toTranslateOpXYZ(totalOffset.x, totalOffset.y, 0));
+            .transformPositions(this.mat44.toTranslateOpXYZ(itemOffset.getX(), itemOffset.getY(), 0));
         menuModel.addRigidModel(itemModel);
       }
     }
+    itemOffset.free();
     this.menuStamp = menuModel.createModelStamp(gl);
   }
 
@@ -216,14 +235,21 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
 ModeMenuWidget.prototype.validateMatrixes = function() {
   if (this.matrixesValid) return;
   this.menuMatrix.toTranslateOpXYZ(this.menuPos.x, this.menuPos.y, -0.9);
+  var indicatorOffset = this.getItemOffset(this.selectedGroup, this.selectedRank, Vec4.alloc());
   this.indicatorMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(
-          this.menuPos.x + this.groupOffset.x * this.selectedGroup + this.rankOffset.x * this.selectedRank,
-          this.menuPos.y + this.groupOffset.y * this.selectedGroup + this.rankOffset.y * this.selectedRank,
+          this.menuPos.x + indicatorOffset.getX(),
+          this.menuPos.y + indicatorOffset.getY(),
           -0.9))
-      .multiply(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y, 1))
-  ;
+      .multiply(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y, 1));
   this.matrixesValid = true;
+  indicatorOffset.free();
+};
+
+ModeMenuWidget.prototype.getItemOffset = function(group, rank, vec4Out) {
+  vec4Out.setXYZ(group, rank, 0);
+  vec4Out.transform(this.itemPositionMatrix);
+  return vec4Out;
 };
 
 ////////////////////
@@ -231,12 +257,12 @@ ModeMenuWidget.prototype.validateMatrixes = function() {
 ////////////////////
 
 ModeMenuWidget.prototype.startListening = function() {
-  document.addEventListener('keydown', this.downListener);
+  document.addEventListener('keydown', this.keyDownListener);
   return this;
 };
 
 ModeMenuWidget.prototype.stopListening = function() {
-  document.removeEventListener('keydown', this.downListener);
+  document.removeEventListener('keydown', this.keyDownListener);
   return this;
 };
 

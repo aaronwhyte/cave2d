@@ -137,7 +137,7 @@ Editor.prototype.updateHudLayout = function() {
   // TODO make this righter
   var menuItemSize = this.getMenuItemSize();
   var pauseHeight = 50;
-  this.menu.setGridOffsets(new Vec2d(menuItemSize, 0), new Vec2d(0, menuItemSize));
+  this.menu.setItemPositionMatrix(new Matrix44().toScaleOpXYZ(menuItemSize, menuItemSize, 1));
   this.menu.setItemScale(new Vec2d(1, -1).scale(menuItemSize * 0.2));
   this.menu.setPosition(new Vec2d(this.triggerRad * 3.5, Math.max(this.triggerRad, pauseHeight + menuItemSize * 0.2)));
 };

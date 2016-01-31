@@ -109,6 +109,22 @@ Vec4.prototype.setRGBA = function(r, g, b, a) {
   return this;
 };
 
+Vec4.prototype.getX = Vec4.prototype.getR = function() {
+  return this.v[0];
+};
+
+Vec4.prototype.getY = Vec4.prototype.getG = function() {
+  return this.v[1];
+};
+
+Vec4.prototype.getZ = Vec4.prototype.getB = function() {
+  return this.v[2];
+};
+
+Vec4.prototype.getW = Vec4.prototype.getA = function() {
+  return this.v[2];
+};
+
 Vec4.prototype.scale1 = function(s) {
   for (var i = 0; i < 3; i++) {
     this.v[i] *= s;
