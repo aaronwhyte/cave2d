@@ -310,12 +310,11 @@ v ModeMenuWidget, modeled after TriggerWidget
 Delete
 - qmode trigger
 Ants
-- facing direction
-  - add that to the model
-- forward
-- front left and right antenna
-- left and right proximastatis
-- s27n
+v facing direction
+  v add that to the model
+v forward
+v front left and right antenna
+v s27n
 Later...
 - draw keyboard tips
 

@@ -13,6 +13,8 @@ function AntSpirit(playScreen) {
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   // 0 is up, PI/2 is right
   this.dir = 0;//Math.random() * Math.PI * 2;
+  this.angVel = 0;
+  this.stress = 0;
 
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
@@ -31,7 +33,9 @@ AntSpirit.SCHEMA = {
   1: "id",
   2: "bodyId",
   3: "color",
-  4: "dir"
+  4: "dir",
+  5: "angVel",
+  6: "stress"
 };
 
 AntSpirit.getJsoner = function() {
@@ -57,35 +61,58 @@ AntSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
-AntSpirit.prototype.scan = function(pos, rot, dist) {
-  return this.playScreen.scan(PlayScreen.Group.ROCK, pos, this.scanVec.setXY(
+AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
+  return this.playScreen.scan(
+      PlayScreen.Group.ROCK,
+      pos,
+      this.scanVec.setXY(
           Math.sin(this.dir + rot) * dist,
-          Math.cos(this.dir + rot) * dist));
+          Math.cos(this.dir + rot) * dist),
+      rad);
 };
 
 AntSpirit.prototype.onTimeout = function(world, event) {
+  this.stress = this.stress || 0;
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
-  var basicThrust = 0.1;
+  var basicThrust = 0.025;
+  var maxTurn = 0.03;
   var thrust = basicThrust;
   var friction = 0.1;
-  this.dir += 0.1 * (Math.random() - 0.5);
 
-  var antennaRot = Math.PI / 3;
-  var scanDist = body.rad * 2;
+  var antennaRot = Math.PI / 6;
+  var scanDist = body.rad * 3;
   var turn = 0;
   var dist;
-  dist = this.scan(pos, -antennaRot * Math.random(), scanDist);
+  var seen = 0;
+  var scanRot;
+  scanRot = antennaRot * Math.random();
+  dist = this.scan(pos, scanRot, scanDist, body.rad);
   if (dist >= 0) {
-    turn += Math.random();
-    thrust -= basicThrust * 0.6;
+    seen++;
+    turn += maxTurn * -scanRot;
+    thrust -= basicThrust * 0.4;
   }
-  dist = this.scan(pos, antennaRot * Math.random(), scanDist);
+  scanRot = -antennaRot * Math.random();
+  dist = this.scan(pos, scanRot, scanDist, body.rad);
   if (dist >= 0) {
-    turn -= Math.random();
-    thrust -= basicThrust * 0.6;
+    seen++;
+    turn += maxTurn * -scanRot;
+    thrust -= basicThrust * 0.4;
   }
-  this.dir += turn;
+
+  if (seen == 2) {
+    this.stress += 0.1;
+  } else {
+    this.stress = 0;
+  }
+  this.stress = Math.max(1, Math.max(0, this.stress));
+  //this.dir += 0.01 * (Math.random() - 0.5);
+  this.angVel *= 0.9;
+  this.angVel += turn * (1 + this.stress);
+  if (this.angVel > Math.PI/2) this.angVel = Math.PI/2;
+  if (this.angVel < -Math.PI/2) this.angVel = -Math.PI/2;
+  this.dir += this.angVel;
   var newVel = this.vec2d
     .set(body.vel).scale(1 - friction)
     .addXY(Math.sin(this.dir) * thrust, Math.cos(this.dir) * thrust);
@@ -101,7 +128,8 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
       .setColorVector(this.vec4.set(this.color));
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.tempBodyPos.x, this.tempBodyPos.y, 0))
-      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
+      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+      .multiply(this.mat44.toRotateZOp(-this.dir));
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
 };

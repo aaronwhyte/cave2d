@@ -184,6 +184,18 @@ PlayScreen.prototype.initPermStamps = function() {
   this.circleStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
+  model = RigidModel.createCircleMesh(4)
+      .addRigidModel(RigidModel.createSquare()
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.6, 1))
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
+          .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
+      .addRigidModel(RigidModel.createSquare()
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.6, 1))
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
+          .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)));
+  this.antStamp = model.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.antStamp);
+
   model = new RigidModel();
   for (var x = -1; x <= 1; x+=2) {
     model.addRigidModel(RigidModel.createSquare().transformPositions(
@@ -298,7 +310,7 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
         this.world.loadSpirit(spirit);
       } else if (spiritType == PlayScreen.SpiritType.ANT) {
         var spirit = new AntSpirit(this);
-        spirit.setModelStamp(this.circleStamp);
+        spirit.setModelStamp(this.antStamp);
         spirit.setFromJSON(spiritJson);
         this.world.loadSpirit(spirit);
       } else {
@@ -361,7 +373,7 @@ PlayScreen.prototype.initAntSpirit = function(pos, rad) {
   b.pathDurationMax = 0xffffff; // a really big number, but NOT Infinity.
   var spirit = new AntSpirit(this);
   spirit.bodyId = this.world.addBody(b);
-  spirit.setModelStamp(this.circleStamp);
+  spirit.setModelStamp(this.antStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
   this.world.spirits[spiritId].setColorRGB(1, 0, 0);
@@ -810,15 +822,16 @@ PlayScreen.prototype.getWorldEventTarget = function() {
  * @param {number} hitGroup
  * @param {Vec2d} pos
  * @param {Vec2d} vel
+ * @param {number} rad
  * @returns {number} fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
  */
-PlayScreen.prototype.scan = function(hitGroup, pos, vel) {
+PlayScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
   this.scanReq.hitGroup = hitGroup;
   // write the body's position into the req's position slot.
   this.scanReq.pos.set(pos);
   this.scanReq.vel.set(vel);
   this.scanReq.shape = Body.Shape.CIRCLE;
-  this.scanReq.rad = 1;
+  this.scanReq.rad = rad;
   var retval = -1;
   var hit = this.world.rayscan(this.scanReq, this.scanResp);
   if (hit) {
