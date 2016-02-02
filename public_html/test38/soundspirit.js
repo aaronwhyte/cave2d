@@ -18,7 +18,6 @@ function SoundSpirit(playScreen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
-  this.turn = 0;
   this.lastSoundTime = -Infinity;
   this.hard = false;
 }

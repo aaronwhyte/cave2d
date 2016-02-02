@@ -299,22 +299,28 @@ v ModeMenuWidget, modeled after TriggerWidget
   v "+" icon
   v place trigger in upper-left
   - add the addMenu.getSelectedName thing
-    - look up thing to add by name - pass up to editor host
+    - host callback "add A at X, Y"
+  - Put some real items in the menu, with real stamps
+    - rock
+    - red ant
+    - blue ant
+    - red nest
+    - blue nest
   - added part is grabbed until add trigger is released
-- Put some real items in the menu.
-  - boulder
-  - red soldier
-  - red base - soldiers(and sheep) respawn at base when killed
-  - blue soldier
-  - blue base
-  - sheep base
-  - sheep
-  - beast - has high max-health, attacks/eats soldiers and sheep when healthy & hungry, runs from soldiers when hurt or full
 Delete
 - qmode trigger
+Ants
+- facing direction
+  - add that to the model
+- forward
+- front left and right antenna
+- left and right proximastatis
+- s27n
 Later...
 - draw keyboard tips
 
+Fix test37
+- don't show menu or add button if there's nothing to add? Make client explicitly request them?
 
 Test XX: Possession
 - "enter" button in editor

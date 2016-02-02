@@ -227,7 +227,7 @@ Editor.prototype.getStamps = function() {
                   .multiply(new Matrix44().toScaleOpXYZ(1/16, 0.5 * (1 - indent), 1))
                   .multiply(new Matrix44().toTranslateOpXYZ(0, 1, 0))));
     }
-    model.addRigidModel(RigidModel.createRingMesh(5, 0.15).transformPositions(
+    model.addRigidModel(RigidModel.createRingMesh(5, 0.8).transformPositions(
         new Matrix44()
             .multiply(new Matrix44().toScaleOpXYZ(cursorIconRad, cursorIconRad, 1)))
         .setColorRGB(1, 1, 1));
@@ -248,7 +248,7 @@ Editor.prototype.getStamps = function() {
               .multiply(new Matrix44().toScaleOpXYZ(1/16, 0.5 * (1 + outdent), 1))
               .multiply(new Matrix44().toTranslateOpXYZ(0, 1, 0))));
     }
-    model.addRigidModel(RigidModel.createRingMesh(5, 0.15).transformPositions(
+    model.addRigidModel(RigidModel.createRingMesh(5, 0.8).transformPositions(
         new Matrix44()
             .multiply(new Matrix44().toScaleOpXYZ(cursorIconRad, cursorIconRad, 1)))
         .setColorRGB(0.5, 0.5, 0.5));

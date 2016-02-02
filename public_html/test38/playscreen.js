@@ -13,6 +13,9 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.modelMatrix2 = new Matrix44();
   this.hudViewMatrix = new Matrix44();
 
+  this.scanReq = new ScanRequest();
+  this.scanResp = new ScanResponse();
+
   this.camera = new Camera(0.2, 0.6, 35);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
@@ -68,14 +71,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.levelColorVector = new Vec4(1, 1, 1);
 
   this.editor = new Editor(this, this.canvas, this.renderer, glyphs);
-  this.addEditorItemGroup(0, 'ABCD');
-  this.addEditorItemGroup(1, 'EFGH');
-  this.addEditorItemGroup(2, 'IJK');
-  this.addEditorItemGroup(3, 'LMN');
-  this.addEditorItemGroup(4, 'OPQ');
-  this.addEditorItemGroup(5, 'RST');
-  this.addEditorItemGroup(6, 'UVWX');
-  this.addEditorItemGroup(7, 'YZ');
+  this.editor.addMenuItem(0, 0, PlayScreen.MenuItem.ROCK, RigidModel.createTriangle().transformPositions(new Matrix44().toScaleOpXYZ(1, 1, 0)));
+  this.editor.addMenuItem(1, 0, PlayScreen.MenuItem.ROCK, RigidModel.createOctahedron().transformPositions(new Matrix44().toScaleOpXYZ(2, 2, 0)));
 
   this.updateHudLayout();
 }
@@ -84,6 +81,10 @@ PlayScreen.prototype.constructor = PlayScreen;
 
 PlayScreen.BIT_SIZE = 0.5;
 PlayScreen.WORLD_CELL_SIZE = PlayScreen.BIT_SIZE * BitGrid.BITS;
+
+PlayScreen.MenuItem = {
+  ROCK: 'rock'
+};
 
 PlayScreen.EventLayer = {
   POPUP: 0,
@@ -106,18 +107,12 @@ PlayScreen.Terrain = {
 
 PlayScreen.SpiritType = {
   BALL: 1,
-  SOUND: 2
+  SOUND: 2,
+  ANT: 3
 };
 
 PlayScreen.SplashType = {
   NOTE: 1
-};
-
-PlayScreen.prototype.addEditorItemGroup = function(groupNum, letters) {
-  for (var i = 0; i < letters.length; i++) {
-    var char = letters.charAt(i);
-    this.editor.addMenuItem(groupNum, i, char, this.glyphs.models[char]);
-  }
 };
 
 PlayScreen.prototype.updateHudLayout = function() {
@@ -301,6 +296,11 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
         spirit.setModelStamp(this.circleStamp);
         spirit.setFromJSON(spiritJson);
         this.world.loadSpirit(spirit);
+      } else if (spiritType == PlayScreen.SpiritType.ANT) {
+        var spirit = new AntSpirit(this);
+        spirit.setModelStamp(this.circleStamp);
+        spirit.setFromJSON(spiritJson);
+        this.world.loadSpirit(spirit);
       } else {
         console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
       }
@@ -337,16 +337,36 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
 };
 
 PlayScreen.prototype.createDefaultWorld = function() {
-  var count = 32;
+  var count = 16;
   for (var i = 0; i < count; i++) {
     this.initSoundSpirit(
         new Vec2d(i/count * 60 - 30, 0),
         0.9,
-            (i + (Math.random() < 0.33 ? (1.05 - Math.random() * 0.1) : 0))/count);
+        (i + (Math.random() < 0.33 ? (1.05 - Math.random() * 0.1) : 0))/count);
+    this.initAntSpirit(new Vec2d(i/count * 60 - 30, -10), 0.8);
   }
   this.initBoulder(new Vec2d(40, 0), 4);
   this.initBoulder(new Vec2d(-40, 0), 4);
   this.initWalls();
+};
+
+PlayScreen.prototype.initAntSpirit = function(pos, rad) {
+  var density = 1;
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, this.world.now);
+  b.rad = rad;
+  b.hitGroup = PlayScreen.Group.ROCK;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = 0xffffff; // a really big number, but NOT Infinity.
+  var spirit = new AntSpirit(this);
+  spirit.bodyId = this.world.addBody(b);
+  spirit.setModelStamp(this.circleStamp);
+  var spiritId = this.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  this.world.spirits[spiritId].setColorRGB(1, 0, 0);
+  this.world.addTimeout(this.world.now, spiritId, -1);
+  return spiritId;
 };
 
 PlayScreen.prototype.initBoulder = function(pos, rad) {
@@ -414,8 +434,7 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
   ]);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
-  var r = Math.random();
-  this.world.spirits[spiritId].setColorRGB(r, 1 - r, measureFraction);
+  this.world.spirits[spiritId].setColorRGB(0, 1, hard ? 1 : 0);
   this.world.spirits[spiritId].hard = hard;
   this.world.addTimeout(this.world.now, spiritId, -1);
 
@@ -537,7 +556,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
-  wallModel.setColorRGB(0.2, 0.3, 0.8);
+  wallModel.setColorRGB(0.3, 0.3, 0.3);
 //  wallModel.setColorRGB(Math.random()/2+0.3 , Math.random() * 0.5, Math.random()/2+0.5);
   return wallModel;
 };
@@ -781,4 +800,29 @@ PlayScreen.prototype.getHudEventTarget = function() {
 
 PlayScreen.prototype.getWorldEventTarget = function() {
   return this.eventDistributor.getFakeLayerElement(PlayScreen.EventLayer.WORLD);
+};
+
+/////////////////
+// Spirit APIs //
+/////////////////
+
+/**
+ * @param {number} hitGroup
+ * @param {Vec2d} pos
+ * @param {Vec2d} vel
+ * @returns {number} fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
+ */
+PlayScreen.prototype.scan = function(hitGroup, pos, vel) {
+  this.scanReq.hitGroup = hitGroup;
+  // write the body's position into the req's position slot.
+  this.scanReq.pos.set(pos);
+  this.scanReq.vel.set(vel);
+  this.scanReq.shape = Body.Shape.CIRCLE;
+  this.scanReq.rad = 1;
+  var retval = -1;
+  var hit = this.world.rayscan(this.scanReq, this.scanResp);
+  if (hit) {
+    retval = this.scanResp.timeOffset;
+  }
+  return retval;
 };
