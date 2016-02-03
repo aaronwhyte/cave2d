@@ -22,11 +22,22 @@ function Body() {
   this.reset();
 }
 
-Poolify(Body);
-
 Body.Shape = {
   CIRCLE: 1,
   RECT: 2
+};
+
+Body.pool = [];
+
+Body.alloc = function() {
+  if (Body.pool.length) {
+    return Body.pool.pop().reset();
+  }
+  return new Body();
+};
+
+Body.prototype.free = function() {
+  Body.pool.push(this);
 };
 
 Body.prototype.reset = function() {
@@ -62,6 +73,8 @@ Body.prototype.reset = function() {
   this.freezeVel.reset();
   this.freezePathStartTime = 0;
   this.freezePathDurationMax = 0;
+
+  return this;
 };
 
 Body.SCHEMA = {
