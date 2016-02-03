@@ -28,6 +28,8 @@ BallSpirit.SCHEMA = {
   3: "color"
 };
 
+BallSpirit.MEASURE_TIMEOUT = 100;
+
 BallSpirit.getJsoner = function() {
   if (!BallSpirit.jsoner) {
     BallSpirit.jsoner = new Jsoner(BallSpirit.SCHEMA);
@@ -60,8 +62,9 @@ BallSpirit.prototype.onDraw = function(world, renderer) {
 };
 
 BallSpirit.prototype.onTimeout = function(world, timeout) {
-  world.removeBodyId(this.bodyId);
-  world.removeSpiritId(this.id);
+  var body = this.getBody(world);
+  if (body) body.invalidatePath();
+  world.addTimeout(world.now + BallSpirit.MEASURE_TIMEOUT);
 };
 
 BallSpirit.prototype.getBody = function(world) {

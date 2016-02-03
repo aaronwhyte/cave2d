@@ -26,7 +26,7 @@ function AntSpirit(playScreen) {
 AntSpirit.prototype = new Spirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 1;
+AntSpirit.MEASURE_TIMEOUT = 0.5;
 
 AntSpirit.SCHEMA = {
   0: "type",
@@ -75,41 +75,37 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   this.stress = this.stress || 0;
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
-  var basicThrust = 0.025;
-  var maxTurn = 0.03;
+  var basicThrust = 0.04;
+  var maxTurn = 0.07;
   var thrust = basicThrust;
-  var friction = 0.1;
+  var friction = 0.08;
 
-  var antennaRot = Math.PI / 6;
-  var scanDist = body.rad * 3;
+  var antennaRot = Math.PI / 3.5;
+  var scanDist = body.rad * 5;
   var turn = 0;
   var dist;
   var seen = 0;
   var scanRot;
-  scanRot = antennaRot * Math.random();
-  dist = this.scan(pos, scanRot, scanDist, body.rad);
+  scanRot = antennaRot * (Math.random() - 0.5);
+  dist = this.scan(pos, scanRot, scanDist, body.rad/2);
   if (dist >= 0) {
     seen++;
-    turn += maxTurn * -scanRot;
-    thrust -= basicThrust * 0.4;
+    if (scanRot > 0) {
+      turn += maxTurn * (-antennaRot/2 - scanRot) * (1 - dist/2);
+    } else {
+      turn += maxTurn * (antennaRot/2 - scanRot) * (1 - dist/2);
+    }
+    thrust -= basicThrust * (1 - dist);
   }
-  scanRot = -antennaRot * Math.random();
-  dist = this.scan(pos, scanRot, scanDist, body.rad);
-  if (dist >= 0) {
-    seen++;
-    turn += maxTurn * -scanRot;
-    thrust -= basicThrust * 0.4;
-  }
-
-  if (seen == 2) {
-    this.stress += 0.1;
+  if (seen) {
+    this.stress += 0.01;
   } else {
-    this.stress = 0;
+    this.stress -= 0.1;
   }
   this.stress = Math.max(1, Math.max(0, this.stress));
   //this.dir += 0.01 * (Math.random() - 0.5);
-  this.angVel *= 0.9;
-  this.angVel += turn * (1 + this.stress);
+  this.angVel *= 0.90;
+  this.angVel += turn * (1 + 0*this.stress);
   if (this.angVel > Math.PI/2) this.angVel = Math.PI/2;
   if (this.angVel < -Math.PI/2) this.angVel = -Math.PI/2;
   this.dir += this.angVel;

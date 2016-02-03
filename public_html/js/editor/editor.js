@@ -50,7 +50,7 @@ function Editor(host, canvas, renderer, glyphs) {
 
   this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
       .listenToMouseButton()
-      .addTriggerKeyByName('b')
+      .addTriggerKeyByName('v')
       .startListening();
 
   this.leftTriggers = [this.fillTriggerWidget, this.digTriggerWidget, this.gripTriggerWidget, this.addTriggerWidget];

@@ -355,7 +355,7 @@ PlayScreen.prototype.createDefaultWorld = function() {
         new Vec2d(i/count * 60 - 30, 0),
         0.9,
         (i + (Math.random() < 0.33 ? (1.05 - Math.random() * 0.1) : 0))/count);
-    this.initAntSpirit(new Vec2d(i/count * 60 - 30, -10), 0.8);
+    this.initAntSpirit(new Vec2d(i/count * 60 - 30, -5), 0.8);
   }
   this.initBoulder(new Vec2d(40, 0), 4);
   this.initBoulder(new Vec2d(-40, 0), 4);
@@ -370,7 +370,7 @@ PlayScreen.prototype.initAntSpirit = function(pos, rad) {
   b.rad = rad;
   b.hitGroup = PlayScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = 0xffffff; // a really big number, but NOT Infinity.
+  b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 2;
   var spirit = new AntSpirit(this);
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.antStamp);
@@ -389,13 +389,14 @@ PlayScreen.prototype.initBoulder = function(pos, rad) {
   b.rad = rad;
   b.hitGroup = PlayScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = 0xffffff; // a really big number, but NOT Infinity.
+  b.pathDurationMax = BallSpirit.MEASURE_TIMEOUT;
   var spirit = new BallSpirit();
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.circleStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
   this.world.spirits[spiritId].setColorRGB(1, 0.2, 0.6);
+  this.world.addTimeout(this.world.now, spiritId, -1);
   return spiritId;
 };
 
@@ -407,7 +408,7 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
   b.rad = rad;
   b.hitGroup = PlayScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = 0xffffff; // a really big number, but NOT Infinity.
+  b.pathDurationMax = SoundSpirit.MEASURE_TIMEOUT * 2;
   var spirit = new SoundSpirit(this);
   spirit.bodyId = this.world.addBody(b);
   spirit.setModelStamp(this.circleStamp);
@@ -454,11 +455,14 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
 };
 
 PlayScreen.prototype.initWalls = function() {
+  function randVec() {
+    return new Vec2d(Math.random()-0.5, Math.random()-0.5).scale(100);
+  }
   this.bitGrid = new BitGrid(this.bitSize);
-  this.bitGrid.drawPill(new Segment(new Vec2d(-30, 0), new Vec2d(30, 0)), 15, 1);
-  this.bitGrid.drawPill(new Segment(new Vec2d(-100, 0), new Vec2d(100, 0)), 2, 1);
-  this.bitGrid.drawPill(new Segment(new Vec2d(-100, 0), new Vec2d(-100, 0)), 15, 1);
-  this.bitGrid.drawPill(new Segment(new Vec2d(100, 0), new Vec2d(100, 0)), 15, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-40, 0), new Vec2d(40, 0)), 10, 1);
+  for (var i = 0; i < 16; i++) {
+    this.bitGrid.drawPill(new Segment(randVec(), randVec()), 2, 1);
+  }
 
   this.tiles = {};
   this.flushTerrainChanges();
@@ -568,7 +572,7 @@ PlayScreen.prototype.createWallModel = function(rect) {
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
-  wallModel.setColorRGB(0.3, 0.3, 0.3);
+  wallModel.setColorRGB(0.2, 0.3, 0.6);
 //  wallModel.setColorRGB(Math.random()/2+0.3 , Math.random() * 0.5, Math.random()/2+0.5);
   return wallModel;
 };
