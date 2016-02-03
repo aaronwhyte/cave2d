@@ -459,7 +459,7 @@ PlayScreen.prototype.initWalls = function() {
     return new Vec2d(Math.random()-0.5, Math.random()-0.5).scale(100);
   }
   this.bitGrid = new BitGrid(this.bitSize);
-  this.bitGrid.drawPill(new Segment(new Vec2d(-40, 0), new Vec2d(40, 0)), 10, 1);
+  this.bitGrid.drawPill(new Segment(new Vec2d(-50, 0), new Vec2d(50, 0)), 10, 1);
   for (var i = 0; i < 16; i++) {
     this.bitGrid.drawPill(new Segment(randVec(), randVec()), 2, 1);
   }

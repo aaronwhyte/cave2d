@@ -63,8 +63,11 @@ BallSpirit.prototype.onDraw = function(world, renderer) {
 
 BallSpirit.prototype.onTimeout = function(world, timeout) {
   var body = this.getBody(world);
-  if (body) body.invalidatePath();
-  world.addTimeout(world.now + BallSpirit.MEASURE_TIMEOUT);
+  if (body) {
+    body.moveToTime(world.now);
+    body.invalidatePath();
+  }
+  world.addTimeout(world.now + BallSpirit.MEASURE_TIMEOUT, this.id);
 };
 
 BallSpirit.prototype.getBody = function(world) {
