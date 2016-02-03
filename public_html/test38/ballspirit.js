@@ -67,7 +67,7 @@ BallSpirit.prototype.onTimeout = function(world, timeout) {
     body.moveToTime(world.now);
     body.invalidatePath();
   }
-  world.addTimeout(world.now + BallSpirit.MEASURE_TIMEOUT, this.id);
+  world.addTimeout(world.now + BallSpirit.MEASURE_TIMEOUT, this.id, -1);
 };
 
 BallSpirit.prototype.getBody = function(world) {
