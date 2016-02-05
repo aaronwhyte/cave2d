@@ -70,11 +70,8 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 
-  this.editor = new Editor(this, this.canvas, this.renderer, glyphs);
-  this.editor.addMenuItem(0, 0, PlayScreen.MenuItem.ROCK, RigidModel.createTriangle().transformPositions(new Matrix44().toScaleOpXYZ(1, 1, 0)));
-  this.editor.addMenuItem(1, 0, PlayScreen.MenuItem.ROCK, RigidModel.createOctahedron().transformPositions(new Matrix44().toScaleOpXYZ(2, 2, 0)));
-
-  this.updateHudLayout();
+  this.levelStamps = [];
+  this.initialized = false;
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -82,8 +79,12 @@ PlayScreen.prototype.constructor = PlayScreen;
 PlayScreen.BIT_SIZE = 0.5;
 PlayScreen.WORLD_CELL_SIZE = PlayScreen.BIT_SIZE * BitGrid.BITS;
 
+PlayScreen.ANT_RAD = 0.8;
+PlayScreen.ROCK_RAD = 1.4;
+
 PlayScreen.MenuItem = {
-  ROCK: 'rock'
+  ROCK: 'rock',
+  RED_ANT: 'red_ant'
 };
 
 PlayScreen.EventLayer = {
@@ -113,6 +114,28 @@ PlayScreen.SpiritType = {
 
 PlayScreen.SplashType = {
   NOTE: 1
+};
+
+PlayScreen.prototype.initEditor = function() {
+  this.rockModel = RigidModel.createCircleMesh(5);
+  this.rockStamp = this.rockModel.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.rockStamp);
+
+  this.antModel = RigidModel.createCircleMesh(4)
+      .addRigidModel(RigidModel.createSquare()
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.6, 1))
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
+          .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
+      .addRigidModel(RigidModel.createSquare()
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.6, 1))
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
+          .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)));
+  this.antStamp = this.antModel.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.antStamp);
+
+  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
+  this.editor.addMenuItem(0, 0, PlayScreen.MenuItem.ROCK, this.rockModel);
+  this.editor.addMenuItem(1, 0, PlayScreen.MenuItem.RED_ANT, this.antModel);
 };
 
 PlayScreen.prototype.updateHudLayout = function() {
@@ -165,50 +188,32 @@ PlayScreen.prototype.setScreenListening = function(listen) {
 };
 
 PlayScreen.prototype.lazyInit = function() {
-  if (!this.levelStamps) {
+  if (!this.initialized) {
+    this.initEditor();
+    this.updateHudLayout();
     this.initPermStamps();
-  }
-  if (!this.world) {
     this.initWorld();
+    this.initialized = true;
   }
 };
 
 PlayScreen.prototype.initPermStamps = function() {
-  var model;
-  this.levelStamps = [];
-
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
 
-  model = RigidModel.createCircleMesh(5);
-  this.circleStamp = model.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.circleStamp);
-
-  model = RigidModel.createCircleMesh(4)
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.6, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.6, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)));
-  this.antStamp = model.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.antStamp);
-
-  model = new RigidModel();
+  var pauseModel = new RigidModel();
   for (var x = -1; x <= 1; x+=2) {
-    model.addRigidModel(RigidModel.createSquare().transformPositions(
+    pauseModel.addRigidModel(RigidModel.createSquare().transformPositions(
         new Matrix44()
             .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.6, 1)
             .multiply(new Matrix44().toTranslateOpXYZ(x*1.9, 0, 0)
     ))));
   }
-  this.pauseStamp = model.createModelStamp(this.renderer.gl);
+  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.pauseStamp);
   this.pauseTriggerWidget.setStamp(this.pauseStamp);
 
-  model = RigidModel.createDoubleRing(64);
+  var model = RigidModel.createDoubleRing(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.soundStamp);
 
@@ -300,12 +305,12 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
       var spiritType = spiritJson[0];
       if (spiritType == PlayScreen.SpiritType.BALL) {
         var spirit = new BallSpirit(this);
-        spirit.setModelStamp(this.circleStamp);
+        spirit.setModelStamp(this.rockStamp);
         spirit.setFromJSON(spiritJson);
         this.world.loadSpirit(spirit);
       } else if (spiritType == PlayScreen.SpiritType.SOUND) {
         var spirit = new SoundSpirit(this);
-        spirit.setModelStamp(this.circleStamp);
+        spirit.setModelStamp(this.rockStamp);
         spirit.setFromJSON(spiritJson);
         this.world.loadSpirit(spirit);
       } else if (spiritType == PlayScreen.SpiritType.ANT) {
@@ -355,10 +360,10 @@ PlayScreen.prototype.createDefaultWorld = function() {
         new Vec2d(i/count * 60 - 30, 0),
         0.9,
         (i + (Math.random() < 0.33 ? (1.05 - Math.random() * 0.1) : 0))/count);
-    this.initAntSpirit(new Vec2d(i/count * 60 - 30, -5), 0.8);
+    this.initAntSpirit(new Vec2d(i/count * 60 - 30, -5), PlayScreen.ANT_RAD);
   }
-  this.initBoulder(new Vec2d(40, 0), 4);
-  this.initBoulder(new Vec2d(-40, 0), 4);
+  this.initRock(new Vec2d(40, 0), PlayScreen.ROCK_RAD);
+  this.initRock(new Vec2d(-40, 0), PlayScreen.ROCK_RAD);
   this.initWalls();
 };
 
@@ -381,7 +386,7 @@ PlayScreen.prototype.initAntSpirit = function(pos, rad) {
   return spiritId;
 };
 
-PlayScreen.prototype.initBoulder = function(pos, rad) {
+PlayScreen.prototype.initRock = function(pos, rad) {
   var density = 1;
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -392,7 +397,7 @@ PlayScreen.prototype.initBoulder = function(pos, rad) {
   b.pathDurationMax = BallSpirit.MEASURE_TIMEOUT;
   var spirit = new BallSpirit();
   spirit.bodyId = this.world.addBody(b);
-  spirit.setModelStamp(this.circleStamp);
+  spirit.setModelStamp(this.rockStamp);
   var spiritId = this.world.addSpirit(spirit);
   b.spiritId = spiritId;
   this.world.spirits[spiritId].setColorRGB(1, 0.2, 0.6);
@@ -411,7 +416,7 @@ PlayScreen.prototype.initSoundSpirit = function(pos, rad, measureFraction) {
   b.pathDurationMax = SoundSpirit.MEASURE_TIMEOUT * 2;
   var spirit = new SoundSpirit(this);
   spirit.bodyId = this.world.addBody(b);
-  spirit.setModelStamp(this.circleStamp);
+  spirit.setModelStamp(this.rockStamp);
 
   var high = Math.random() < 0.5;
   var hard = Math.random() < 0.5;
@@ -784,6 +789,17 @@ PlayScreen.prototype.getBodyById = function(id) {
 PlayScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
   this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
   this.flushTerrainChanges();
+};
+
+PlayScreen.prototype.addItem = function(name, pos) {
+  switch (name) {
+    case PlayScreen.MenuItem.ROCK:
+      this.initRock(pos, PlayScreen.ROCK_RAD);
+      break;
+    case PlayScreen.MenuItem.RED_ANT:
+      this.initAntSpirit(pos, PlayScreen.ANT_RAD);
+      break;
+  }
 };
 
 PlayScreen.prototype.getCursorHitGroup = function() {

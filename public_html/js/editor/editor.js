@@ -58,6 +58,7 @@ function Editor(host, canvas, renderer, glyphs) {
   this.bottomLeftTriggers = [this.fillTriggerWidget, this.digTriggerWidget, this.gripTriggerWidget];
 
   this.oldPanTriggerVal = false;
+  this.oldAddTriggerVal = false;
   this.cameraVel = new Vec2d();
 
   // touchscreen trackball, for pointing and panning
@@ -376,14 +377,18 @@ Editor.prototype.handleInput = function() {
     }
     this.doCursorHoverScan();
   }
+
   if (this.digTriggerWidget.getVal()) {
     this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 1);
   } else if (this.fillTriggerWidget.getVal()) {
     this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 0);
   }
-  if (this.addTriggerWidget.getVal()) {
-    console.log(this.menu.getSelectedName());
+
+  if (this.addTriggerWidget.getVal() && !this.oldAddTriggerVal) {
+    this.host.addItem(this.menu.getSelectedName(), this.cursorPos);
   }
+  this.oldAddTriggerVal = this.addTriggerWidget.getVal();
+
   oldCursorPos.free();
 };
 

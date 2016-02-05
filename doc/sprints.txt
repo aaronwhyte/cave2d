@@ -294,19 +294,16 @@ v ModeMenuWidget, modeled after TriggerWidget
       v listen, unlisten
       v find target item, or nothing, based on event screen x/y
   v getSelectedName() method
-- "Add" button
+v "Add" button
   v Trigger, "A"
   v "+" icon
   v place trigger in upper-left
-  - add the addMenu.getSelectedName thing
-    - host callback "add A at X, Y"
-  - Put some real items in the menu, with real stamps
-    - rock
-    - red ant
-    - blue ant
-    - red nest
-    - blue nest
-  - added part is grabbed until add trigger is released
+  v add the addMenu.getSelectedName thing
+    v host callback "add A at X, Y"
+  v Put some real items in the menu, with real stamps
+    v rock
+    v red ant
+  x added part is grabbed until add trigger is released
 Delete
 - qmode trigger
 Ants
