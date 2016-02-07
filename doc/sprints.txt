@@ -305,7 +305,7 @@ v "Add" button
     v red ant
   x added part is grabbed until add trigger is released
 Delete
-- qmode trigger
+v qmode trigger
 Ants
 v facing direction
   v add that to the model
@@ -313,7 +313,7 @@ v forward
 v front left and right antenna
 v s27n
 Later...
-- draw keyboard tips
+- draw keyboard tips for add menu?
 
 Fix test37
 - don't show menu or add button if there's nothing to add? Make client explicitly request them?

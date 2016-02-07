@@ -123,11 +123,11 @@ PlayScreen.prototype.initEditor = function() {
 
   this.antModel = RigidModel.createCircleMesh(4)
       .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.6, 1))
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
           .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
       .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.6, 1))
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
           .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)));
   this.antStamp = this.antModel.createModelStamp(this.renderer.gl);
@@ -799,6 +799,16 @@ PlayScreen.prototype.addItem = function(name, pos) {
     case PlayScreen.MenuItem.RED_ANT:
       this.initAntSpirit(pos, PlayScreen.ANT_RAD);
       break;
+  }
+};
+
+PlayScreen.prototype.removeByBodyId = function(bodyId) {
+  var body = this.world.getBody(bodyId);
+  if (body) {
+    if (body.spiritId) {
+      this.world.removeSpiritId(body.spiritId);
+    }
+    this.world.removeBodyId(bodyId);
   }
 };
 

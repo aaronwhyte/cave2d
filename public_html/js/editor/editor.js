@@ -17,8 +17,17 @@ function Editor(host, canvas, renderer, glyphs) {
       .setPressedColorVec4(this.pressedColorVec4)
       .setStamp(this.addTriggerStamp)
       .listenToTouch()
-      .addTriggerKeyByName('a')
-      .setKeyboardTipStamp(glyphs.stamps['A'])
+      .addTriggerKeyByName('e')
+      .setKeyboardTipStamp(glyphs.stamps['E'])
+      .startListening();
+
+  this.removeTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
+      .setReleasedColorVec4(this.releasedColorVec4)
+      .setPressedColorVec4(this.pressedColorVec4)
+      .setStamp(this.removeTriggerStamp)
+      .listenToTouch()
+      .addTriggerKeyByName('q')
+      .setKeyboardTipStamp(glyphs.stamps['Q'])
       .startListening();
 
   this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -26,8 +35,8 @@ function Editor(host, canvas, renderer, glyphs) {
       .setPressedColorVec4(this.pressedColorVec4)
       .setStamp(this.gripTriggerStamp)
       .listenToTouch()
-      .addTriggerKeyByName('c')
-      .setKeyboardTipStamp(glyphs.stamps['C'])
+      .addTriggerKeyByName('d')
+      .setKeyboardTipStamp(glyphs.stamps['D'])
       .startListening();
 
   this.digTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -35,8 +44,8 @@ function Editor(host, canvas, renderer, glyphs) {
       .setPressedColorVec4(this.pressedColorVec4)
       .setStamp(this.digTriggerStamp)
       .listenToTouch()
-      .addTriggerKeyByName('x')
-      .setKeyboardTipStamp(glyphs.stamps['X'])
+      .addTriggerKeyByName('s')
+      .setKeyboardTipStamp(glyphs.stamps['S'])
       .startListening();
 
   this.fillTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -44,18 +53,18 @@ function Editor(host, canvas, renderer, glyphs) {
       .setPressedColorVec4(this.pressedColorVec4)
       .setStamp(this.fillTriggerStamp)
       .listenToTouch()
-      .addTriggerKeyByName('z')
-      .setKeyboardTipStamp(glyphs.stamps['Z'])
+      .addTriggerKeyByName('a')
+      .setKeyboardTipStamp(glyphs.stamps['A'])
       .startListening();
 
   this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
       .listenToMouseButton()
-      .addTriggerKeyByName('v')
+      .addTriggerKeyByName('w')
       .startListening();
 
-  this.leftTriggers = [this.fillTriggerWidget, this.digTriggerWidget, this.gripTriggerWidget, this.addTriggerWidget];
-  this.topLeftTriggers = [this.addTriggerWidget];
+  this.topLeftTriggers = [this.addTriggerWidget, this.removeTriggerWidget];
   this.bottomLeftTriggers = [this.fillTriggerWidget, this.digTriggerWidget, this.gripTriggerWidget];
+  this.leftTriggers = this.topLeftTriggers.concat(this.bottomLeftTriggers);
 
   this.oldPanTriggerVal = false;
   this.oldAddTriggerVal = false;
@@ -122,18 +131,19 @@ Editor.prototype.addMenuItem = function(group, rank, name, model) {
 };
 
 Editor.prototype.getTriggerRad = function() {
-  return Math.min(50, 0.2 * Math.min(this.canvas.height, this.canvas.width) * 0.5);
+  return Math.min(50, 0.4 * this.canvas.height / this.leftTriggers.length);
 };
 
 Editor.prototype.getMenuItemSize = function() {
-  return this.getTriggerRad() * 0.8;
+  return this.getTriggerRad();
 };
 
 Editor.prototype.updateHudLayout = function() {
   this.triggerRad = this.getTriggerRad();
   this.triggerSpacing = this.triggerRad /3;
-  var tipOffset = this.triggerRad * 1.4;
-  var tipScale = this.triggerRad * 0.15;
+  var tipOffsetX = this.triggerRad * 0.75;
+  var tipOffsetY = this.triggerRad * 0.7;
+  var tipScale = this.triggerRad * 0.12;
   var triggerNum;
   var self = this;
 
@@ -145,7 +155,7 @@ Editor.prototype.updateHudLayout = function() {
     this.bottomLeftTriggers[i]
         .setCanvasPositionXY(this.triggerRad, self.canvas.height - triggerY(triggerNum++))
         .setCanvasScaleXY(this.triggerRad, this.triggerRad)
-        .setKeyboardTipOffsetXY(tipOffset, 0)
+        .setKeyboardTipOffsetXY(tipOffsetX, tipOffsetY)
         .setKeyboardTipScaleXY(tipScale, -tipScale);
   }
   triggerNum = 0;
@@ -153,17 +163,15 @@ Editor.prototype.updateHudLayout = function() {
     this.topLeftTriggers[i]
         .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
         .setCanvasScaleXY(this.triggerRad, this.triggerRad)
-        .setKeyboardTipOffsetXY(tipOffset, 0)
+        .setKeyboardTipOffsetXY(tipOffsetX, tipOffsetY)
         .setKeyboardTipScaleXY(tipScale, -tipScale);
   }
   this.panTriggerWidget.setCanvasPositionXY(-1, -1).setCanvasScaleXY(0, 0);
 
-  // TODO make this righter
   var menuItemSize = this.getMenuItemSize();
-  var pauseHeight = 50;
   this.menu.setItemPositionMatrix(new Matrix44().toScaleOpXYZ(menuItemSize, menuItemSize, 1));
-  this.menu.setItemScale(new Vec2d(1, -1).scale(menuItemSize * 0.2));
-  this.menu.setPosition(new Vec2d(this.triggerRad * 3.5, Math.max(this.triggerRad, pauseHeight + menuItemSize * 0.2)));
+  this.menu.setItemScale(new Vec2d(1, -1).scale(menuItemSize * 0.3));
+  this.menu.setPosition(new Vec2d(this.triggerRad * 2 + menuItemSize, this.triggerSpacing + menuItemSize * 0.6));
 };
 
 Editor.prototype.getStamps = function() {
@@ -193,6 +201,17 @@ Editor.prototype.getStamps = function() {
                 new Matrix44().toScaleOpXYZ(0.15, 0.65, 1)))
             .addRigidModel(triggerBackgroundModel);
     this.addTriggerStamp = model.createModelStamp(this.renderer.gl);
+  }
+
+  if (!this.removeTriggerStamp) {
+    model =
+        RigidModel.createSquare()
+            .transformPositions(new Matrix44().toScaleOpXYZ(0.65, 0.15, 1))
+            .addRigidModel(RigidModel.createSquare().transformPositions(
+                new Matrix44().toScaleOpXYZ(0.15, 0.65, 1)))
+            .transformPositions(new Matrix44().toRotateZOp(Math.PI / 4))
+            .addRigidModel(triggerBackgroundModel);
+    this.removeTriggerStamp = model.createModelStamp(this.renderer.gl);
   }
 
   if (!this.gripTriggerStamp) {
@@ -258,10 +277,12 @@ Editor.prototype.getStamps = function() {
   }
 
   if (!this.addMenuIndicatorStamp) {
-    var thickness = 0.4;
-    var length = 0.6 + thickness;
     model = new RigidModel();
-    var size = 2.1;
+    var size = 1.5;
+    var brightness = 0.5;
+
+    var thickness = 0.3;
+    var length = 0.5 + thickness;
     for (var i = 0; i < 4; i++) {
       model
           .addRigidModel(RigidModel.createSquare().transformPositions(
@@ -277,15 +298,26 @@ Editor.prototype.getStamps = function() {
                   .multiply(new Matrix44().toRotateZOp(i * Math.PI/2))
                   .multiply(new Matrix44().toTranslateOpXYZ(-1 - thickness/2, -1 + length/2 - thickness, 0))
                   .multiply(new Matrix44().toScaleOpXYZ(thickness/2, length/2, 1))
-          ))
-      ;
+          ));
     }
-//      model
-//          .addRigidModel(RigidModel.createRingMesh(4, 0.8).transformPositions(
-//              new Matrix44()
-//                  .multiply(new Matrix44().toScaleOpXYZ(3.5, 3.5, 1))
-//          ))
-//      ;
+    model.setColorRGB(brightness, brightness, brightness);
+
+//    model
+//        .addRigidModel(
+//            RigidModel.createRingMesh(4, 0.9)
+//                .transformPositions(new Matrix44().multiply(new Matrix44().toScaleOpXYZ(size, size, 1)))
+//                .setColorRGB(brightness * 1.5, brightness * 1.5, brightness * 1.5))
+//        .addRigidModel(
+//            RigidModel.createCircleMesh(3)
+//                .transformPositions(new Matrix44().toScaleOpXYZ(size, size, 1))
+//                .setColorRGB(brightness, brightness, brightness));
+
+//    model
+//        .addRigidModel(RigidModel.createSquare().transformPositions(
+//            new Matrix44()
+//                .multiply(new Matrix44().toScaleOpXYZ(size, size, 1))
+//        ))
+//        .setColorRGB(brightness, brightness, brightness);
     this.addMenuIndicatorStamp = model.createModelStamp(this.renderer.gl);
   }
 
@@ -387,6 +419,10 @@ Editor.prototype.handleInput = function() {
   if (this.addTriggerWidget.getVal() && !this.oldAddTriggerVal) {
     this.host.addItem(this.menu.getSelectedName(), this.cursorPos);
   }
+  if (this.removeTriggerWidget.getVal() && this.indicatedBodyId) {
+    this.host.removeByBodyId(this.indicatedBodyId);
+    this.setIndicatedBodyId(null);
+  }
   this.oldAddTriggerVal = this.addTriggerWidget.getVal();
 
   oldCursorPos.free();
@@ -478,7 +514,8 @@ Editor.prototype.drawScene = function() {
   var gt = this.gripTriggerWidget.getVal();
   var dt = this.digTriggerWidget.getVal();
   var ft = this.fillTriggerWidget.getVal();
-  var any = ft || dt || gt;
+  var rt = this.removeTriggerWidget.getVal();
+  var any = ft || dt || gt || rt;
   var coef = any ? 1 : 0.8;
   this.renderer
       .setStamp(this.cursorStamp)
@@ -486,7 +523,7 @@ Editor.prototype.drawScene = function() {
           ft ? 0.5 : coef,
           dt ? 0.5 : coef,
           gt ? 0.5 : coef,
-          this.indicatedBodyId && gt && !(dt || ft) ? 0.3 : 0.8));
+          this.indicatedBodyId && gt && !(dt || ft || rt) ? 0.3 : 0.8));
   var outerCursorRad = this.cursorRad;
   var innerCursorRad = this.cursorRad * 0.9;
   this.modelMatrix.toIdentity()
@@ -506,10 +543,9 @@ Editor.prototype.drawScene = function() {
  * Draw stuff on screen coords, with 0,0 at the top left and canvas.width, canvas.height at the bottom right.
  */
 Editor.prototype.drawHud = function() {
-  this.addTriggerWidget.draw(this.renderer);
-  this.gripTriggerWidget.draw(this.renderer);
-  this.digTriggerWidget.draw(this.renderer);
-  this.fillTriggerWidget.draw(this.renderer);
+  for (var i = 0; i < this.leftTriggers.length; i++) {
+    this.leftTriggers[i].draw(this.renderer);
+  }
   this.menu.draw(this.renderer);
 };
 
