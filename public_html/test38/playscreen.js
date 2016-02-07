@@ -136,6 +136,10 @@ PlayScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
   this.editor.addMenuItem(0, 0, PlayScreen.MenuItem.ROCK, this.rockModel);
   this.editor.addMenuItem(1, 0, PlayScreen.MenuItem.RED_ANT, this.antModel);
+  for (var group = 0; group < 2; group++) {
+    this.editor.addMenuKeyboardShortcut(group, group + 1);
+  }
+
 };
 
 PlayScreen.prototype.updateHudLayout = function() {

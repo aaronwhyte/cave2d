@@ -117,9 +117,6 @@ function Editor(host, canvas, renderer, glyphs) {
   this.menu = new ModeMenuWidget(this.host.getHudEventTarget(), this.glyphs)
       .setIndicatorStamp(this.addMenuIndicatorStamp)
       .startListening();
-  for (var group = 0; group < 8; group++) {
-    this.menu.addKeyboardShortcut(group, group + 1);
-  }
 
   this.updateHudLayout();
 }
@@ -128,6 +125,10 @@ Editor.KEYBOARD_TIP_TIMEOUT_MS = 30 * 1000;
 
 Editor.prototype.addMenuItem = function(group, rank, name, model) {
   this.menu.setItem(group, rank, name, model);
+};
+
+Editor.prototype.addMenuKeyboardShortcut = function(groupNum, keyName) {
+  this.menu.addKeyboardShortcut(groupNum, keyName);
 };
 
 Editor.prototype.getTriggerRad = function() {
