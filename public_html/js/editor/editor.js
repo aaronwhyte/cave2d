@@ -131,11 +131,11 @@ Editor.prototype.addMenuItem = function(group, rank, name, model) {
 };
 
 Editor.prototype.getTriggerRad = function() {
-  return Math.min(50, 0.4 * this.canvas.height / this.leftTriggers.length);
+  return Math.min(50, 0.4 * Math.min(this.canvas.height, this.canvas.width) / this.leftTriggers.length);
 };
 
 Editor.prototype.getMenuItemSize = function() {
-  return this.getTriggerRad();
+  return Math.min(50, (this.canvas.width - this.getTriggerRad() * 2 - 50) / this.menu.groups.length);
 };
 
 Editor.prototype.updateHudLayout = function() {
