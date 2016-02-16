@@ -313,7 +313,7 @@ v forward
 v front left and right antenna
 v s27n
 Later...
-- draw keyboard tips for add menu?
+x draw keyboard tips for add menu? Meh
 
 Fix test37
 - don't show menu or add button if there's nothing to add? Make client explicitly request them?
@@ -332,6 +332,11 @@ Test XX: Possession
   - Gnome - move, lunge
   - Ninja - move, fire
 
+Orientation
+- Bodies have orientation, moment of inertia, and angular velocity.
+- create repeller turrets
+- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
+
 Test XX: Undo and Redo
 - retain last N JSON serializations in RAM or wherevs.
 - Create new ones using one-token-bucket throttle right before mutations, w 1/sec(realtime) restore rate.
@@ -339,10 +344,8 @@ Test XX: Undo and Redo
   Keep that as a separate kind of undo record, since it's so tiny and easy to restore.
 - Button for creating an undo record just because time went by. Snapshot?
 
-Orientation
-- Bodies have orientation, moment of inertia, and angular velocity.
-- create repeller turrets
-- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
+Test XX: Time control
+- Time speed slider, with display at the top?
 
 Very Optional: Always do something for editor triggers
 - "Grab"

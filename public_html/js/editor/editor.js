@@ -132,16 +132,18 @@ Editor.prototype.addMenuKeyboardShortcut = function(groupNum, keyName) {
 };
 
 Editor.prototype.getTriggerRad = function() {
-  return Math.min(50, 0.4 * Math.min(this.canvas.height, this.canvas.width) / this.leftTriggers.length);
+  return Math.min(50, 0.4 * Math.min(this.canvas.height, this.canvas.width*1.3) / this.leftTriggers.length);
 };
 
 Editor.prototype.getMenuItemSize = function() {
-  return Math.min(50, (this.canvas.width - this.getTriggerRad() * 2 - 50) / this.menu.groups.length);
+  return Math.min(
+          this.getTriggerRad() * 1.3,
+          (this.canvas.width - this.getTriggerRad() * 2 - 50) / (this.menu.groups.length + 0.5));
 };
 
 Editor.prototype.updateHudLayout = function() {
   this.triggerRad = this.getTriggerRad();
-  this.triggerSpacing = this.triggerRad /3;
+  this.triggerSpacing = this.triggerRad * 0.25;
   var tipOffsetX = this.triggerRad * 0.75;
   var tipOffsetY = this.triggerRad * 0.7;
   var tipScale = this.triggerRad * 0.12;
