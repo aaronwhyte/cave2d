@@ -14,7 +14,6 @@ function AntSpirit(playScreen) {
   // 0 is up, PI/2 is right
   this.dir = 0;//Math.random() * Math.PI * 2;
   this.angVel = 0;
-  this.stress = 0;
 
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
@@ -26,7 +25,7 @@ function AntSpirit(playScreen) {
 AntSpirit.prototype = new Spirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 0.5;
+AntSpirit.MEASURE_TIMEOUT = 0.6;
 
 AntSpirit.SCHEMA = {
   0: "type",
@@ -34,8 +33,7 @@ AntSpirit.SCHEMA = {
   2: "bodyId",
   3: "color",
   4: "dir",
-  5: "angVel",
-  6: "stress"
+  5: "angVel"
 };
 
 AntSpirit.getJsoner = function() {
@@ -72,7 +70,6 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 };
 
 AntSpirit.prototype.onTimeout = function(world, event) {
-  this.stress = this.stress || 0;
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
   var basicThrust = 0.03;
@@ -83,13 +80,9 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   var antennaRot = Math.PI / 3.5;
   var scanDist = body.rad * 5;
   var turn = 0;
-  var dist;
-  var seen = 0;
-  var scanRot;
-  scanRot = antennaRot * (Math.random() - 0.5);
-  dist = this.scan(pos, scanRot, scanDist, body.rad/2);
+  var scanRot = antennaRot * (Math.random() - 0.5);
+  var dist = this.scan(pos, scanRot, scanDist, body.rad/2);
   if (dist >= 0) {
-    seen++;
     if (scanRot > 0) {
       turn += maxTurn * (-antennaRot/2 - scanRot) * (1 - dist/2);
     } else {
@@ -97,15 +90,8 @@ AntSpirit.prototype.onTimeout = function(world, event) {
     }
     thrust -= basicThrust * (1 - dist);
   }
-  if (seen) {
-    this.stress += 0.01;
-  } else {
-    this.stress -= 0.1;
-  }
-  this.stress = Math.max(1, Math.max(0, this.stress));
-  //this.dir += 0.01 * (Math.random() - 0.5);
   this.angVel *= 0.90;
-  this.angVel += turn * (1 + 0*this.stress);
+  this.angVel += turn;
   if (this.angVel > Math.PI/2) this.angVel = Math.PI/2;
   if (this.angVel < -Math.PI/2) this.angVel = -Math.PI/2;
   this.dir += this.angVel;
