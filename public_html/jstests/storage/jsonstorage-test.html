@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>jsonstorage test</title>
+<script src="../../js/strings.js"></script>
+<script src="../../js/testing.js"></script>
+<script src="../../js/storage/storagelike.js"></script>
+<script src="../../js/storage/jsonstorage.js"></script>
+<script>
+
+function createStorage() {
+  return new JsonStorage({});
+}
+
+addTest(function emptyStorage() {
+  var s = createStorage();
+  assertJsonEquals([], s.keys());
+});
+
+addTest(function getSetRemove() {
+  var s = createStorage();
+
+  assertEquals(null, s.get('a'));
+  assertEquals(null, s.get('b'));
+
+  s.set('a', 'foo');
+  s.set('b', 'bar');
+  assertJsonEquals(['a', 'b'], s.keys().sort());
+  assertEquals('foo', s.get('a'));
+  assertEquals('bar', s.get('b'));
+
+  s.remove('a');
+  assertJsonEquals(['b'], s.keys().sort());
+  assertEquals(null, s.get('a'));
+  assertEquals('bar', s.get('b'));
+
+  s.set('b', 'baz');
+  assertEquals('baz', s.get('b'));
+});
+
+addTest(function clear() {
+  var s = createStorage();
+  s.set('a', 'foo');
+  s.clear();
+  assertEquals(null, s.get('a'));
+  assertJsonEquals([], s.keys());
+});
+
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>

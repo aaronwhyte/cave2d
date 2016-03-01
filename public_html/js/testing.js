@@ -36,7 +36,17 @@ function fail(message) {
 
 function assertEquals(expected, actual) {
   if (expected !== actual) {
-    var msg = 'expected: ' + expected + ', actual: ' + actual; 
+    var msg = 'expected: ' + expected + ', actual: ' + actual;
+    fail(msg);
+    throw msg;
+  }
+}
+
+function assertJsonEquals(expectedJson, actualJson) {
+  var expected = JSON.stringify(expectedJson);
+  var actual = JSON.stringify(actualJson);
+  if (expected !== actual) {
+    var msg = 'expected: ' + expected + ', actual: ' + actual;
     fail(msg);
     throw msg;
   }

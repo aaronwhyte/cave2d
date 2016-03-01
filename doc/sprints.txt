@@ -315,10 +315,103 @@ v s27n
 Later...
 x draw keyboard tips for add menu? Meh
 
-Fix test37
-- don't show menu or add button if there's nothing to add? Make client explicitly request them?
+Just using what we've got so far, make a game. Also, this will be the template for the next game,
+so keep the "game" root part generic.
+Storage idea: Since the key is a UTF-16-encoded string, use JSON.stringify(array of path elements) as the key string
+Nest for game includes
 
-Test XX: Possession
+v StorageLike implements Storage function interface. Thin wrapper for LocalStorage, another for JSON.
+  v keys()
+  v get(key)
+  v set(key, val)
+  v remove(key)
+  v clear()
+
+- FileTree builds on StorageLike
+  This is a file-tree-like interface to a key-value store, like a JSON object, or LocalStorage
+  - basics
+    - setFile(path, json) overwrites
+    - JSON getFile(path)
+    - tests
+  - queries
+    - bool isFile(path) // true if there is a file at that exact path
+    - bool isParent(path) // true if there are any files starting with that path, longer than that path
+    - Array.<String> listChildren(parentPath) // 'dir'. includes all files *and path fragments* one level below parentPath.
+    - Array.<String> listAllFiles(parentPath) // includes all files at any depth below parentPath, including children.
+    - tests
+  - file ops
+    - copyFile(fromPath, toPath) overwrites
+    - deleteFile(path)
+    - moveFile(fromPath, toPath) // what if fromPath == toPath?
+    - tests
+  - dir ops?
+    - copyTree(fromPath, toPath) overwrites? What if one is a prefix? need temp copy?
+    - deleteTree(path)
+    - moveTree(fromPath, toPath) // what if one is a prefix of the other? need temp copy?
+    - tests
+
+- AdventureStorage class
+  - constructor
+    - takes a backing store that implements the LocalStorage interface,
+    - plus the current directory, like ['game2']
+  - getNames() gets currentDir.concat
+  - create(name)
+  - archive(name)
+  - delete(name)
+  - rename(oldName, newName)
+  - copy(oldName, newName)
+
+- LevelStorage class - identical to AdventureStorage?
+  - constructor
+    - takes a backing store that implements the LocalStorage interface,
+    - plus the current directory, like ['game2', 'adventures', 'Neon Dungeon']
+  - getNames()
+  - create(name)
+  - archive(name)
+  - delete(name)
+  - rename(oldName, newName)
+  - copy(oldName, newName)
+
+- cave2d.com/<game path>/edit is the main editing UI, with level sets, containing levels and manifests, add rename and delete levels, etc.
+  - Front page of editor - list of adventures
+    - storage.getAdventureNames()
+    - look in storage for paths like [<game>, "adventures", <adventure name>, ...]
+    - show 'em in a list
+    - "create" button for the whole list
+    - for each row,
+      - copy
+      - rename
+      - trash
+      - hyperlink to enter levelset
+  - Single adventure page - list of levels
+    - storage.getLevelNames
+      - [<game>, "adventures", <adventure>, "levels", <level>, ...] for list of levels
+      - for each level row
+        - trash
+        - copy
+        - rename
+- /<game path>/export exports the editor data to text which can be copy/pasted into /game2/ file
+- /<game path> is for playing the exported game.
+
+
+
+
+
+
+
+
+
+Orientation
+- Bodies have orientation, moment of inertia, and angular velocity.
+- create repeller turrets
+- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
+- editor
+
+Attribute editing?
+- Spirits can expose a type+key: value form
+- Mode button opens form editor
+
+Test XX: Possession?
 - "enter" button in editor
 - standard interface for playable spirits to implement
   - trackballs and sticks
@@ -332,20 +425,12 @@ Test XX: Possession
   - Gnome - move, lunge
   - Ninja - move, fire
 
-Orientation
-- Bodies have orientation, moment of inertia, and angular velocity.
-- create repeller turrets
-- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
-
 Test XX: Undo and Redo
 - retain last N JSON serializations in RAM or wherevs.
 - Create new ones using one-token-bucket throttle right before mutations, w 1/sec(realtime) restore rate.
 - Always save the just-after mutation camera and cursor pos, to bring the area into focus before undoing.
   Keep that as a separate kind of undo record, since it's so tiny and easy to restore.
 - Button for creating an undo record just because time went by. Snapshot?
-
-Test XX: Time control
-- Time speed slider, with display at the top?
 
 Very Optional: Always do something for editor triggers
 - "Grab"
