@@ -206,7 +206,7 @@ ModeMenuWidget.prototype.draw = function(renderer) {
         .setModelMatrix(this.menuMatrix)
         .drawStamp();
   }
-  if (this.indicatorStamp) {
+  if (this.indicatorStamp && this.getSelectedName()) {
     renderer
         .setColorVector(this.indicatorColor)
         .setStamp(this.indicatorStamp)
@@ -224,7 +224,9 @@ ModeMenuWidget.prototype.draw = function(renderer) {
 };
 
 ModeMenuWidget.prototype.getSelectedName = function() {
-  return this.groups[this.selectedGroup][this.selectedRank].name;
+  var g = this.groups[this.selectedGroup];
+  var r = g && g[this.selectedRank];
+  return r && r.name;
 };
 
 /////////////
