@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>filetree test</title>
+<script src="../../js/strings.js"></script>
+<script src="../../js/testing.js"></script>
+<script src="../../js/poolify.js"></script>
+<script src="../../js/objset.js"></script>
+<script src="../../js/storage/storagelike.js"></script>
+<script src="../../js/storage/realstorage.js"></script>
+<script src="../../js/storage/filetree.js"></script>
+<script>
+
+function createFileTree() {
+  sessionStorage.clear();
+  return new FileTree(new RealStorage(sessionStorage));
+}
+
+addTest(function getSet() {
+  var s = createFileTree();
+  var path = ['one', 'two'];
+
+  assertEquals(null, s.getFile(path));
+  var json = {a:true, b:[1, 2, 3], c:'x y'};
+  s.setFile(path, json);
+  assertJsonEquals(json, s.getFile(path));
+});
+
+addTest(function isFile() {
+  var s = createFileTree();
+  var path = ['one', 'two'];
+  s.setFile(path, 0);
+  assertEquals(true, s.isFile(path));
+  assertEquals(false, s.isFile(['one']));
+  assertEquals(false, s.isFile(['one', 'two', 'three']));
+  assertEquals(false, s.isFile(['what?']));
+});
+
+addTest(function hasDescendants() {
+  var s = createFileTree();
+  s.setFile(['one', 'two'], 0);
+  assertEquals(true, s.hasDescendants([]));
+  assertEquals(true, s.hasDescendants(['one']));
+  assertEquals(false, s.hasDescendants(['one', 'two']));
+  assertEquals(false, s.hasDescendants(['one', 'two', 'three']));
+  assertEquals(false, s.hasDescendants(['one', 'twelve']));
+  assertEquals(false, s.hasDescendants(['what?']));
+});
+
+addTest(function listDescendants() {
+  var s = createFileTree();
+  s.setFile(['a', 'a'], 1);
+  s.setFile(['a', 'b'], 2);
+  s.setFile(['b', 'a'], 3);
+  assertJsonEquals([['a', 'a'], ['a', 'b'], ['b', 'a']], s.listDescendants([]));
+  assertJsonEquals([['a', 'a'], ['a', 'b']], s.listDescendants(['a']));
+  assertJsonEquals([['b', 'a']], s.listDescendants(['b']));
+  assertJsonEquals([], s.listDescendants(['c']));
+  assertJsonEquals([], s.listDescendants(['a', 'a']));
+  assertJsonEquals([], s.listDescendants(['a', 'a', 'a']));
+});
+
+addTest(function listChildren() {
+  var s = createFileTree();
+  s.setFile(['a', 'a'], 1);
+  s.setFile(['a', 'b'], 2);
+  s.setFile(['b', 'a'], 3);
+  assertJsonEquals(['a', 'b'], s.listChildren([]));
+  assertJsonEquals(['a', 'b'], s.listChildren(['a']));
+  assertJsonEquals(['a'], s.listChildren(['b']));
+  assertJsonEquals([], s.listChildren(['c']));
+  assertJsonEquals([], s.listChildren(['a', 'a']));
+  assertJsonEquals([], s.listChildren(['a', 'a', 'a']));
+});
+
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>

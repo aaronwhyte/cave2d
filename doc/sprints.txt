@@ -326,19 +326,20 @@ v StorageLike implements Storage function interface. Thin wrapper for LocalStora
   v set(key, val)
   v remove(key)
   v clear()
+  v tests
 
 - FileTree builds on StorageLike
   This is a file-tree-like interface to a key-value store, like a JSON object, or LocalStorage
-  - basics
-    - setFile(path, json) overwrites
-    - JSON getFile(path)
-    - tests
-  - queries
-    - bool isFile(path) // true if there is a file at that exact path
-    - bool isParent(path) // true if there are any files starting with that path, longer than that path
-    - Array.<String> listChildren(parentPath) // 'dir'. includes all files *and path fragments* one level below parentPath.
-    - Array.<String> listAllFiles(parentPath) // includes all files at any depth below parentPath, including children.
-    - tests
+  v basics
+    v setFile(path, json) overwrites
+    v JSON getFile(path)
+    v tests
+  v queries
+    v bool isFile(path) // true if there is a file at that exact path
+    v bool hasDescendants(path) // true if there are any files starting with that path, longer than that path
+    v Array.<String> listDescendants(parentPath) // includes all files at any depth below parentPath, including children.
+    v Array.<String> listChildren(parentPath) // 'dir'. includes all files *and path fragments* one level below parentPath.
+    v tests
   - file ops
     - copyFile(fromPath, toPath) overwrites
     - deleteFile(path)
