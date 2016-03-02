@@ -47,6 +47,13 @@ addTest(function clear() {
   assertJsonEquals([], s.keys());
 });
 
+addTest(function setGetJson() {
+  var s = createStorage();
+  var json = {a: true, b:[1, 2, 3], c:'x y'};
+  s.set('a', JSON.stringify(json));
+  assertJsonEquals(json, JSON.parse(s.get('a')));
+});
+
 </script>
 </head>
 <body onload="runTests()"></body>
