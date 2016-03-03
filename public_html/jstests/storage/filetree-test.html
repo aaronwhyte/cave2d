@@ -73,6 +73,77 @@ addTest(function listChildren() {
   assertJsonEquals([], s.listChildren(['a', 'a', 'a']));
 });
 
+addTest(function copyNonexistant() {
+  var s = createFileTree();
+  assertEquals(false, s.copyFile(['a'], ['b']));
+});
+
+addTest(function copyToSelf() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  assertEquals(true, s.copyFile(['a'], ['a']));
+  assertJsonEquals(1, s.getFile(['a']));
+});
+
+addTest(function copyOverwrites() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['b'], 2);
+  assertEquals(true, s.copyFile(['a'], ['b']));
+  assertJsonEquals(1, s.getFile(['a']));
+  assertJsonEquals(1, s.getFile(['b']));
+});
+
+addTest(function copyCreates() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  assertEquals(true, s.copyFile(['a'], ['b']));
+  assertJsonEquals(1, s.getFile(['a']));
+  assertJsonEquals(1, s.getFile(['b']));
+});
+
+addTest(function deleteNonexistant() {
+  var s = createFileTree();
+  assertEquals(false, s.deleteFile(['a']));
+});
+
+addTest(function deleteDeletes() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  assertEquals(true, s.deleteFile(['a']));
+  assertEquals(false, s.isFile(['a']));
+});
+
+addTest(function moveNonexistant() {
+  var s = createFileTree();
+  assertEquals(false, s.moveFile(['a'], ['b']));
+});
+
+addTest(function moveToSelf() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  assertEquals(true, s.moveFile(['a'], ['a']));
+  assertJsonEquals(1, s.getFile(['a']));
+});
+
+addTest(function moveOverwrites() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['b'], 2);
+  assertEquals(true, s.moveFile(['a'], ['b']));
+  assertEquals(false, s.isFile(['a']));
+  assertJsonEquals(1, s.getFile(['b']));
+});
+
+addTest(function moveCreates() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  assertEquals(true, s.moveFile(['a'], ['b']));
+  assertEquals(false, s.isFile(['a']));
+  assertJsonEquals(1, s.getFile(['b']));
+});
+
+
 </script>
 </head>
 <body onload="runTests()"></body>

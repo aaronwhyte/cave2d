@@ -340,11 +340,11 @@ v StorageLike implements Storage function interface. Thin wrapper for LocalStora
     v Array.<String> listDescendants(parentPath) // includes all files at any depth below parentPath, including children.
     v Array.<String> listChildren(parentPath) // 'dir'. includes all files *and path fragments* one level below parentPath.
     v tests
-  - file ops
-    - copyFile(fromPath, toPath) overwrites
-    - deleteFile(path)
-    - moveFile(fromPath, toPath) // what if fromPath == toPath?
-    - tests
+  v file ops
+    v copyFile(fromPath, toPath) overwrites. exists, read, write
+    v deleteFile(path)
+    v moveFile(fromPath, toPath) // what if fromPath == toPath?
+    v tests
   - dir ops?
     - copyTree(fromPath, toPath) overwrites? What if one is a prefix? need temp copy?
     - deleteTree(path)

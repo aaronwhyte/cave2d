@@ -55,6 +55,8 @@ FileTree.prototype.listDescendants = function(pathArray) {
 /**
  * Lists all paths directly below this path, including files and the fragments of the paths of deeper files.
  * It's like "ls" in Unix-like systems, or "dir" in Windows.
+ * @param {Array.<String>} pathArray
+ * @return {Array.<String>}
  */
 FileTree.prototype.listChildren = function(pathArray) {
   var retval = [];
@@ -72,9 +74,51 @@ FileTree.prototype.listChildren = function(pathArray) {
   return retval;
 };
 
-//- copyFile(fromPath, toPath) overwrites
-//- deleteFile(path)
-//- moveFile(fromPath, toPath) // what if fromPath == toPath?
+/**
+ * Copies one file.
+ * @param {Array.<String>} fromPath
+ * @param {Array.<String>} toPath
+ * @returns {boolean} true if fromPath is a file (and therefore the file was copied), false otherwise
+ */
+FileTree.prototype.copyFile = function(fromPath, toPath) {
+  if (this.isFile(fromPath)) {
+    var file = this.getFile(fromPath);
+    this.setFile(toPath, file);
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Deletes one file.
+ * @param {Array.<String>} path
+ * @returns {boolean} true if 'path' points to a file (and therefore the file was deleted), false otherwise
+ */
+FileTree.prototype.deleteFile = function(path) {
+  if (this.isFile(path)) {
+    this.s.remove(this.pathString(path));
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Moves one file.
+ * @param {Array.<String>} fromPath
+ * @param {Array.<String>} toPath
+ * @returns {boolean} true if fromPath is a file (and therefore the file was moved), false otherwise
+ */
+FileTree.prototype.moveFile = function(fromPath, toPath) {
+  if (this.isFile(fromPath)) {
+    var file = this.getFile(fromPath);
+    // Delete before setting, in the dumb case where the file is being moved to itself.
+    this.deleteFile(fromPath);
+    this.setFile(toPath, file);
+    return true;
+  }
+  return false;
+};
+
 //- tests
 //- dir ops?
 //    - copyTree(fromPath, toPath) overwrites? What if one is a prefix? need temp copy?
