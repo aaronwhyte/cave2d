@@ -1,0 +1,47 @@
+body {
+  font-family: verdana, arial, sans-serif;
+}
+
+h1 {
+  font-size:x-large;
+  margin:1.2em 0 0.5em;
+}
+
+h2 {
+  font-size:large;
+}
+
+h3 {
+  font-size:medium;
+}
+
+a {
+  font-weight:bold;
+  text-decoration:none;
+}
+
+button.createButton {
+  font-size:large;
+}
+
+.rightButtonCluster {
+  float:right;
+  padding:0;
+  border:0;
+  margin:0.2em;
+}
+
+button.rightButton {
+  margin-left:0.1em;
+  font-size:100%;
+}
+
+#rows {
+  margin:1em 0;
+}
+
+.row {
+  padding:0.5em 0 0 0;
+  border-top:1px solid #ddd;
+  clear:both;
+}
