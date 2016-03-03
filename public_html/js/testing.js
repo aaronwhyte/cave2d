@@ -42,16 +42,6 @@ function assertEquals(expected, actual) {
   }
 }
 
-function assertJsonEquals(expectedJson, actualJson) {
-  var expected = JSON.stringify(expectedJson);
-  var actual = JSON.stringify(actualJson);
-  if (expected !== actual) {
-    var msg = 'expected: ' + expected + ', actual: ' + actual;
-    fail(msg);
-    throw msg;
-  }
-}
-
 function assertTrue(val) {
   assertEquals(true, val);
 }

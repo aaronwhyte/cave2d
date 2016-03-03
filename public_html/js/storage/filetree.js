@@ -119,12 +119,69 @@ FileTree.prototype.moveFile = function(fromPath, toPath) {
   return false;
 };
 
-//- tests
-//- dir ops?
-//    - copyTree(fromPath, toPath) overwrites? What if one is a prefix? need temp copy?
-//    - deleteTree(path)
-//    - moveTree(fromPath, toPath) // what if one is a prefix of the other? need temp copy?
-//    - tests
+/**
+ * Copies all files with paths starting with fromPath, longer than fromPath
+ * @param {Array.<String>} fromPath
+ * @param {Array.<String>} toPath
+ * @returns {boolean} true if there was any file under fromPath, and therefore something was copied
+ */
+FileTree.prototype.copyDescendants = function(fromPath, toPath) {
+  var paths = this.listDescendants(fromPath);
+  if (!paths.length) return false;
+  // copy all vals (as strings) into memory first, in case any destination paths overlap source paths
+  var vals = [];
+  for (var i = 0; i < paths.length; i++) {
+    vals.push(this.s.get(this.pathString(paths[i])));
+  }
+  // write into the new locations
+  for (var i = 0; i < paths.length; i++) {
+    var newPath = toPath.concat(paths[i].slice(fromPath.length));
+    this.s.set(this.pathString(newPath), vals[i]);
+  }
+  return true;
+};
+
+/**
+ * Deletes all files with paths starting with fromPath, longer than fromPath
+ * @param {Array.<String>} path
+ * @returns {boolean} true if there was any file under path, and therefore something was deleted
+ */
+FileTree.prototype.deleteDescendants = function(path) {
+  var paths = this.listDescendants(path);
+  if (!paths.length) return false;
+  for (var i = 0; i < paths.length; i++) {
+    this.s.remove(this.pathString(paths[i]));
+  }
+  return true;
+};
+
+/**
+ * Moves all files with paths starting with fromPath, longer than fromPath
+ * @param {Array.<String>} fromPath
+ * @param {Array.<String>} toPath
+ * @returns {boolean} true if there was any file under fromPath, and therefore something was moved
+ */
+FileTree.prototype.moveDescendants = function(fromPath, toPath) {
+  var paths = this.listDescendants(fromPath);
+  if (!paths.length) return false;
+  // Copy all vals (as strings) into memory first, in case any destination paths overlap source paths.
+  var vals = [];
+  for (var i = 0; i < paths.length; i++) {
+    vals.push(this.s.get(this.pathString(paths[i])));
+  }
+  // delete from old locations
+  for (var i = 0; i < paths.length; i++) {
+    this.s.remove(this.pathString(paths[i]));
+  }
+  // write into the new locations
+  for (var i = 0; i < paths.length; i++) {
+    var newPath = toPath.concat(paths[i].slice(fromPath.length));
+    this.s.set(this.pathString(newPath), vals[i]);
+  }
+  return true;
+};
+
+
 
 FileTree.prototype.isAncestorOf = function(ancestorArray, checkPathArray) {
   if (checkPathArray.length <= ancestorArray.length) return false;

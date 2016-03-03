@@ -328,7 +328,7 @@ v StorageLike implements Storage function interface. Thin wrapper for LocalStora
   v clear()
   v tests
 
-- FileTree builds on StorageLike
+v FileTree builds on StorageLike
   This is a file-tree-like interface to a key-value store, like a JSON object, or LocalStorage
   v basics
     v setFile(path, json) overwrites
@@ -345,11 +345,11 @@ v StorageLike implements Storage function interface. Thin wrapper for LocalStora
     v deleteFile(path)
     v moveFile(fromPath, toPath) // what if fromPath == toPath?
     v tests
-  - dir ops?
-    - copyTree(fromPath, toPath) overwrites? What if one is a prefix? need temp copy?
-    - deleteTree(path)
-    - moveTree(fromPath, toPath) // what if one is a prefix of the other? need temp copy?
-    - tests
+  v dir ops?
+    v copyDescendants(fromPath, toPath) overwrites? What if one is a prefix? need temp copy?
+    v deleteDescendants(path)
+    v moveDescendants(fromPath, toPath) // what if one is a prefix of the other? need temp copy?
+    v tests
 
 - AdventureStorage class
   - constructor

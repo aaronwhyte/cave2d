@@ -23,7 +23,7 @@ addTest(function getSet() {
   assertEquals(null, s.getFile(path));
   var json = {a:true, b:[1, 2, 3], c:'x y'};
   s.setFile(path, json);
-  assertJsonEquals(json, s.getFile(path));
+  assertStringifyEquals(json, s.getFile(path));
 });
 
 addTest(function isFile() {
@@ -52,12 +52,12 @@ addTest(function listDescendants() {
   s.setFile(['a', 'a'], 1);
   s.setFile(['a', 'b'], 2);
   s.setFile(['b', 'a'], 3);
-  assertJsonEquals([['a', 'a'], ['a', 'b'], ['b', 'a']], s.listDescendants([]));
-  assertJsonEquals([['a', 'a'], ['a', 'b']], s.listDescendants(['a']));
-  assertJsonEquals([['b', 'a']], s.listDescendants(['b']));
-  assertJsonEquals([], s.listDescendants(['c']));
-  assertJsonEquals([], s.listDescendants(['a', 'a']));
-  assertJsonEquals([], s.listDescendants(['a', 'a', 'a']));
+  assertStringifyEquals([['a', 'a'], ['a', 'b'], ['b', 'a']], s.listDescendants([]));
+  assertStringifyEquals([['a', 'a'], ['a', 'b']], s.listDescendants(['a']));
+  assertStringifyEquals([['b', 'a']], s.listDescendants(['b']));
+  assertStringifyEquals([], s.listDescendants(['c']));
+  assertStringifyEquals([], s.listDescendants(['a', 'a']));
+  assertStringifyEquals([], s.listDescendants(['a', 'a', 'a']));
 });
 
 addTest(function listChildren() {
@@ -65,12 +65,12 @@ addTest(function listChildren() {
   s.setFile(['a', 'a'], 1);
   s.setFile(['a', 'b'], 2);
   s.setFile(['b', 'a'], 3);
-  assertJsonEquals(['a', 'b'], s.listChildren([]));
-  assertJsonEquals(['a', 'b'], s.listChildren(['a']));
-  assertJsonEquals(['a'], s.listChildren(['b']));
-  assertJsonEquals([], s.listChildren(['c']));
-  assertJsonEquals([], s.listChildren(['a', 'a']));
-  assertJsonEquals([], s.listChildren(['a', 'a', 'a']));
+  assertStringifyEquals(['a', 'b'], s.listChildren([]));
+  assertStringifyEquals(['a', 'b'], s.listChildren(['a']));
+  assertStringifyEquals(['a'], s.listChildren(['b']));
+  assertStringifyEquals([], s.listChildren(['c']));
+  assertStringifyEquals([], s.listChildren(['a', 'a']));
+  assertStringifyEquals([], s.listChildren(['a', 'a', 'a']));
 });
 
 addTest(function copyNonexistant() {
@@ -82,7 +82,7 @@ addTest(function copyToSelf() {
   var s = createFileTree();
   s.setFile(['a'], 1);
   assertEquals(true, s.copyFile(['a'], ['a']));
-  assertJsonEquals(1, s.getFile(['a']));
+  assertStringifyEquals(1, s.getFile(['a']));
 });
 
 addTest(function copyOverwrites() {
@@ -90,16 +90,16 @@ addTest(function copyOverwrites() {
   s.setFile(['a'], 1);
   s.setFile(['b'], 2);
   assertEquals(true, s.copyFile(['a'], ['b']));
-  assertJsonEquals(1, s.getFile(['a']));
-  assertJsonEquals(1, s.getFile(['b']));
+  assertStringifyEquals(1, s.getFile(['a']));
+  assertStringifyEquals(1, s.getFile(['b']));
 });
 
 addTest(function copyCreates() {
   var s = createFileTree();
   s.setFile(['a'], 1);
   assertEquals(true, s.copyFile(['a'], ['b']));
-  assertJsonEquals(1, s.getFile(['a']));
-  assertJsonEquals(1, s.getFile(['b']));
+  assertStringifyEquals(1, s.getFile(['a']));
+  assertStringifyEquals(1, s.getFile(['b']));
 });
 
 addTest(function deleteNonexistant() {
@@ -123,7 +123,7 @@ addTest(function moveToSelf() {
   var s = createFileTree();
   s.setFile(['a'], 1);
   assertEquals(true, s.moveFile(['a'], ['a']));
-  assertJsonEquals(1, s.getFile(['a']));
+  assertStringifyEquals(1, s.getFile(['a']));
 });
 
 addTest(function moveOverwrites() {
@@ -132,7 +132,7 @@ addTest(function moveOverwrites() {
   s.setFile(['b'], 2);
   assertEquals(true, s.moveFile(['a'], ['b']));
   assertEquals(false, s.isFile(['a']));
-  assertJsonEquals(1, s.getFile(['b']));
+  assertStringifyEquals(1, s.getFile(['b']));
 });
 
 addTest(function moveCreates() {
@@ -140,9 +140,110 @@ addTest(function moveCreates() {
   s.setFile(['a'], 1);
   assertEquals(true, s.moveFile(['a'], ['b']));
   assertEquals(false, s.isFile(['a']));
-  assertJsonEquals(1, s.getFile(['b']));
+  assertStringifyEquals(1, s.getFile(['b']));
 });
 
+
+addTest(function copyDescendantsNonexistant() {
+  var s = createFileTree();
+  assertEquals(false, s.copyDescendants(['a'], ['b']));
+});
+
+addTest(function copyDescendantsToSelf() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['a', 'b'], 2);
+  s.setFile(['a', 'c'], 3);
+  assertEquals(true, s.copyDescendants(['a'], ['a']));
+  assertStringifyEquals(1, s.getFile(['a']));
+  assertStringifyEquals(2, s.getFile(['a', 'b']));
+  assertStringifyEquals(3, s.getFile(['a', 'c']));
+});
+
+addTest(function copyDescendantsOverwritesOther() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['a', 'b'], 2);
+  s.setFile(['a', 'c'], 3);
+  assertEquals(true, s.copyDescendants(['a'], ['x', 'y']));
+  assertStringifyEquals(2, s.getFile(['x', 'y', 'b']));
+  assertStringifyEquals(3, s.getFile(['x', 'y', 'c']));
+  assertStringifyEquals([
+        ['a'],
+        ['a', 'b'],
+        ['a', 'c'],
+        ['x', 'y', 'b'],
+        ['x', 'y', 'c']
+      ].sort(),
+      s.listDescendants([]).sort());
+});
+
+addTest(function copyDescendantsOverwritesSelf() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['a', 'a'], 2);
+  s.setFile(['a', 'a', 'a'], 3);
+  assertEquals(true, s.copyDescendants(['a', 'a'], ['a']));
+  assertStringifyEquals(3, s.getFile(['a', 'a']));
+});
+
+addTest(function deleteDescendantsNonexistant() {
+  var s = createFileTree();
+  assertEquals(false, s.deleteDescendants(['a']));
+});
+
+addTest(function deleteDescendantsDeletes() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['a', 'b'], 2);
+  s.setFile(['a', 'b', 'c'], 3);
+  s.setFile(['x'], 10);
+  assertEquals(true, s.deleteDescendants(['a']));
+  // A file at the target path is *not* deleted.
+  assertStringifyEquals([['a'], ['x']].sort(), s.listDescendants([]).sort());
+});
+
+addTest(function moveDescendantsNonexistant() {
+  var s = createFileTree();
+  assertEquals(false, s.moveDescendants(['a'], ['b']));
+});
+
+addTest(function moveDescendantsToSelf() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['a', 'b'], 2);
+  s.setFile(['a', 'c'], 3);
+  assertEquals(true, s.moveDescendants(['a'], ['a']));
+  assertStringifyEquals(1, s.getFile(['a']));
+  assertStringifyEquals(2, s.getFile(['a', 'b']));
+  assertStringifyEquals(3, s.getFile(['a', 'c']));
+});
+
+addTest(function moveDescendantsOverwritesOther() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['a', 'b'], 2);
+  s.setFile(['a', 'c'], 3);
+  assertEquals(true, s.moveDescendants(['a'], ['x', 'y']));
+  assertStringifyEquals(2, s.getFile(['x', 'y', 'b']));
+  assertStringifyEquals(3, s.getFile(['x', 'y', 'c']));
+  assertStringifyEquals([
+        ['a'],
+        ['x', 'y', 'b'],
+        ['x', 'y', 'c']
+      ].sort(),
+      s.listDescendants([]).sort());
+});
+
+addTest(function moveDescendantsOverwritesSelf() {
+  var s = createFileTree();
+  s.setFile(['a'], 1);
+  s.setFile(['a', 'a'], 2);
+  s.setFile(['a', 'a', 'a'], 3);
+  assertEquals(true, s.moveDescendants(['a', 'a'], ['a']));
+  assertStringifyEquals(3, s.getFile(['a', 'a']));
+  assertEquals(false, s.isFile(['a', 'a', 'a']));
+});
 
 </script>
 </head>
