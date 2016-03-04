@@ -3,6 +3,8 @@
 <head>
 <title>game2/edit</title>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
 <link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
 <link rel="icon" href="../../favicon.ico" type="image/x-icon">
 
@@ -18,19 +20,18 @@
 
 <body onload="main()">
 
-<h1>Game2 Editor</h1>
-<h2>Adventures</h2>
+<h3>game2&nbsp;editor &rarr;&nbsp;all&nbsp;adventures</h3>
 <button class="createButton" onclick="onCreateClicked()">create</button>
 <div id="rows"></div>
 
 <div style="display:none">
   <div id="rowTemplate" class="row">
     <a href="javascript:void(0)">link</a>
-    <span class="rightButtonCluster">
+    <div class="rightButtonCluster">
       <button class="rightButton" id="copyButton">copy</button>
       <button class="rightButton" id="renameButton">rename</button>
       <button class="rightButton" id="deleteButton">delete</button>
-    </span>
+    </div>
   </div>
 </div>
 
