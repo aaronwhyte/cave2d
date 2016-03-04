@@ -1,14 +1,13 @@
 - cave2d.com/<game path>/edit is the main editing UI, with level sets, containing levels and manifests, add rename and delete levels, etc.
   - Front page of editor - list of adventures
-    - storage.getAdventureNames()
-    - look in storage for paths like [<game>, "adventures", <adventure name>, ...]
-    - show 'em in a list
-    - "create" button for the whole list
+    v look in storage for paths like [<game>, "adventures", <adventure name>, ...]
+    v show 'em in a list
+    v "create" button for the whole list
     - for each row,
-      - copy
-      - rename
-      - trash
-      - hyperlink to enter levelset
+      v copy
+      v rename
+      v delete
+      - hyperlink to enter adventure's levelList
   - Single adventure page - list of levels
     - storage.getLevelNames
       - [<game>, "adventures", <adventure>, "levels", <level>, ...] for list of levels
