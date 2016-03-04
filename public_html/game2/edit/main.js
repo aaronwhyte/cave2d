@@ -60,7 +60,8 @@ function createCopyFunction(name) {
 }
 
 function touch(name) {
-
+  var touchPath = BASE_PATH.concat([name, TOUCHDATE]);
+  fileTree.setFile(touchPath, Date.now());
 }
 
 function formatTimeString(date) {
