@@ -15,10 +15,10 @@ v classy AdventureListPage instead of globals
     v rename
     v delete
     - hyperlink to enter adventure's levelList. URL: game2/edit/#adventure=<name>
-- master navigation class
+- app class
   - hash fragment query parser
   - listen to hash fragment URL changes
-  - ref to page now showing, to call exitDoc on it
+  - ref to page now showing, to call exitDoc on it, then enter the new one
 - Level List: If adventure is found but no level, show that adventure's level list.
   - link back to adventure list
 - Level editor: If adventure and level are found, show that level's editor
