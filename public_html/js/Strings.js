@@ -77,3 +77,16 @@ Strings.repeat = function(str, count) {
   }
   return out.join('');
 };
+
+Strings.formatTimeString = function(date) {
+  function padDateNum(num) {
+    return Strings.padLeft(num, '0', 2);
+  }
+  return date.getFullYear() + '-' +
+      padDateNum(date.getMonth() + 1) + '-' +
+      padDateNum(date.getDate()) + ' ' +
+      padDateNum(date.getHours()) + ':' +
+      padDateNum(date.getMinutes()) + ':' +
+      padDateNum(date.getSeconds()) + '.' +
+      Strings.padLeft(date.getMilliseconds(), '0', 4);
+};

@@ -29,21 +29,7 @@ button.createButton {
   color:#fca;
 }
 
-.rightButtonCluster {
-  float:right;
-  padding:0;
-  border:0;
-  margin-bottom:0.5em;
-}
-
-button.rightButton {
-  margin:0.1em;
-  font-size:medium;
-  background:#033;
-  color:#0cc;
-}
-
-#rows {
+.rows {
   margin:1em 0;
 }
 
@@ -52,3 +38,18 @@ button.rightButton {
   border-top:1px solid #444;
   clear:both;
 }
+
+.rightButtonCluster {
+  float:right;
+  padding:0;
+  border:0;
+  margin-bottom:0.5em;
+}
+
+.rightButtonCluster button {
+  margin:0.1em;
+  font-size:medium;
+  background:#033;
+  color:#0cc;
+}
+

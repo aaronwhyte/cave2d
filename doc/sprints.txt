@@ -1,58 +1,31 @@
-- cave2d.com/<game path>/edit is the main editing UI, with level sets, containing levels and manifests, add rename and delete levels, etc.
-  - Front page of editor - list of adventures
-    v look in storage for paths like [<game>, "adventures", <adventure name>, ...]
-    v show 'em in a list
-    v "create" button for the whole list
-    - for each row,
-      v copy
-      v rename
-      v delete
-      - hyperlink to enter adventure's levelList
-  - Single adventure page - list of levels
-    - storage.getLevelNames
-      - [<game>, "adventures", <adventure>, "levels", <level>, ...] for list of levels
-      - for each level row
-        - trash
-        - copy
-        - rename
-- /<game path>/export exports the editor data to text which can be copy/pasted into /game2/ file
-- /<game path> is for playing the exported game.
+cave2d.com/<game path>/edit is the main editing UI, with adventures, levels, level editor, etc.
+* Like Vorp, this is a single-page app with a hash-fragment query string.
+  That means that the level editor's unzoomable meta tags need to be added/removed dynamically.
+v Page baseclass
+  v enterDoc
+  v exitDoc
+v classy AdventureListPage instead of globals
 
+- Adventure List: If no adventure is found, clear the query and show the adventure list.
+  v look in storage for paths like [<game>, "adventures", <adventure name>, ...]
+  v show 'em in a list
+  v "create" button for the whole list
+  - for each row,
+    v copy
+    v rename
+    v delete
+    - hyperlink to enter adventure's levelList. URL: game2/edit/#adventure=<name>
+- master navigation class
+  - hash fragment query parser
+  - listen to hash fragment URL changes
+  - ref to page now showing, to call exitDoc on it
+- Level List: If adventure is found but no level, show that adventure's level list.
+  - link back to adventure list
+- Level editor: If adventure and level are found, show that level's editor
+  - link back to level list
 
-// ARCHIVED
-// Maybe we don't need most of this now that the uniform FileTree class does the heavy lifting.
-- AdventureListStorage class
-  List of adventures (not levels)
-  - constructor
-    - takes a backing store that implements the LocalStorage interface,
-    - plus the current directory, like ['game2']
-  - getNames() gets currentDir.concat
-  - touch(name) writes a ['game2', 'adventures', 'Maze of Magic', 'touchdate'] file.
-  - create(name) is the same as touch() but it does an existence check first
-  - delete(name)
-  - rename(oldName, newName)
-  - copy(oldName, newName)
-- LevelListStorage class - identical to AdventureListStorage?
-  Represents a list of levels in a single adventure
-  - constructor
-    - takes a backing store that implements the LocalStorage interface,
-    - plus the current directory, like ['game2', 'adventures', 'Neon Dungeon']
-  - getNames()
-  - touch(name)
-  - create(name) creates whatever a bare level needs, including
-    ['game2', 'adventures', 'Peril!', 'levels', 'Welcome, Matt', 'touchdate'] file
-  - delete(name)
-  - rename(oldName, newName)
-  - copy(oldName, newName)
-  - mutations update adventure's touchdate
-
-
-
-
-
-
-
-
+/<game path>/export exports the editor data to text which can be copy/pasted into /game2/ file
+/<game path> is for playing the exported game.
 
 Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
