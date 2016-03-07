@@ -10,30 +10,18 @@
 
 <script src="../../js/poolify.js"></script>
 <script src="../../js/objset.js"></script>
+<script src="../../js/strings.js"></script>
 <script src="../../js/storage/storagelike.js"></script>
 <script src="../../js/storage/realstorage.js"></script>
 <script src="../../js/storage/filetree.js"></script>
+<script src="../../js/pages/page.js"></script>
+<script src="../../js/pages/adventurelistpage.js"></script>
 <script src="main.js"></script>
 
 <link rel="stylesheet" type="text/css" href="main.css">
 </head>
 
 <body onload="main()">
-
-<h3>game2&nbsp;editor &rarr;&nbsp;all&nbsp;adventures</h3>
-<button class="createButton" onclick="onCreateClicked()">create</button>
-<div id="rows"></div>
-
-<div style="display:none">
-  <div id="rowTemplate" class="row">
-    <a href="javascript:void(0)">link</a>
-    <div class="rightButtonCluster">
-      <button class="rightButton" id="copyButton">copy</button>
-      <button class="rightButton" id="renameButton">rename</button>
-      <button class="rightButton" id="deleteButton">delete</button>
-    </div>
-  </div>
-</div>
 
 <script>
 if (document.location.hostname.indexOf('cave2d.com') > -1) {
