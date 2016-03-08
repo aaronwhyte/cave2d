@@ -6,21 +6,21 @@ v Page baseclass
   v exitDoc
 v classy AdventureListPage instead of globals
 
-- Adventure List: If no adventure is found, clear the query and show the adventure list.
+v Adventure List: If no adventure is found, clear the query and show the adventure list.
   v look in storage for paths like [<game>, "adventures", <adventure name>, ...]
   v show 'em in a list
   v "create" button for the whole list
-  - for each row,
+  v for each row,
     v copy
     v rename
     v delete
-    - hyperlink to enter adventure's levelList. URL: game2/edit/#adventure=<name>
-- app class
-  - hash fragment query parser
-  - listen to hash fragment URL changes
-  - ref to page now showing, to call exitDoc on it, then enter the new one
-- Level List: If adventure is found but no level, show that adventure's level list.
-  - link back to adventure list
+    v hyperlink to enter adventure's levelList. URL: game2/edit/#adventure=<name>
+v App class
+  v hash fragment query parser
+  v listen to hash fragment URL changes
+  v ref to page now showing, to call exitDoc on it, then enter the new one
+v Level List: If adventure is found but no level, show that adventure's level list.
+  v link back to adventure list
 - Level editor: If adventure and level are found, show that level's editor
   - link back to level list
 
