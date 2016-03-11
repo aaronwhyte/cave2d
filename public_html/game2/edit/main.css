@@ -1,13 +1,23 @@
 body {
   font-family: verdana, arial, sans-serif;
-  background-color:black;
+  background-color:#000;
   color:#aaa;
   margin:0.5em 1em;
 }
 
-h1, h1 a {
+header, header a {
   font-size:x-large;
   color:#aaa;
+}
+
+header.columnHeader {
+  color:#eee;
+  display:inline-block;
+}
+
+span.separator {
+  color:#444;
+  font-weight:bold;
 }
 
 button {
@@ -36,7 +46,6 @@ button.createButton {
 }
 
 .row a {
-  xtext-decoration:none;
   display:inline-block;
   margin:0.2em 0;
   color:#fff;

@@ -38,8 +38,13 @@ AdventureListPage.prototype.exitDoc = function() {
 AdventureListPage.prototype.refreshList = function() {
   var df = document.createDocumentFragment();
   var e;
-  e = this.ce('h1', df);
+  e = this.ce('header', df);
   e.innerText = this.gameTitle;
+
+  this.ce('p', df);
+
+  e = this.ce('header', df, 'columnHeader');
+  e.innerText = 'Adventures';
 
   e = this.ce('button', df, 'createButton');
   e.onclick = this.createCreateFunction();

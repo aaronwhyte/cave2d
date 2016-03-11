@@ -31,10 +31,8 @@ EditorApp.prototype.getHashChangeFunction = function() {
   var self = this;
   return function(e) {
     var query = Url.decodeQuery(Url.getFragment());
-    console.log('hashChangeFunc query', query);
     var adventureName = query[EditorApp.PARAM_ADVENTURE_NAME];
     var levelName = query[EditorApp.PARAM_LEVEL_NAME];
-    console.log(adventureName, levelName);
     if (self.page) {
       self.page.exitDoc();
     }

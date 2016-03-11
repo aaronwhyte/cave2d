@@ -39,13 +39,21 @@ LevelListPage.prototype.exitDoc = function() {
 LevelListPage.prototype.refreshList = function() {
   var df = document.createDocumentFragment();
   var e;
-  e = this.ce('h1', df);
-  e = this.ce('a', e);
+
+  var title = this.ce('header', df);
+  e = this.ce('a', title);
   e.href = '#';
   e.innerText = this.gameTitle;
 
-  e = this.ce('h1', df);
+  this.ce('p', df);
+
+  var colHead = this.ce('header', df, 'columnHeader');
+  e = this.ce('span', colHead);
   e.innerText = this.adventureName;
+  e = this.ce('span', colHead, 'separator');
+  e.innerHTML = ' : ';
+  e = this.ce('span', colHead);
+  e.innerText = 'Levels';
 
   e = this.ce('button', df, 'createButton');
   e.onclick = this.createCreateFunction();
