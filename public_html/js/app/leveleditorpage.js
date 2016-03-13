@@ -75,10 +75,12 @@ LevelEditorPage.prototype.refreshOverlay = function() {
   e = this.ce('button', menu);
   e.id = 'resumeButton';
   e.innerText = 'resume';
+  this.ce('br', menu);
 
   e = this.ce('button', menu);
   e.id = 'fullScreenButton';
   e.innerText = 'full screen';
+  this.ce('br', menu);
 
   this.ce('hr', menu);
 
