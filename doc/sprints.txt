@@ -4,9 +4,7 @@ cave2d.com/<game path>/edit is the main editing UI, with adventures, levels, lev
 v Page baseclass
   v enterDoc
   v exitDoc
-v classy AdventureListPage instead of globals
-
-v Adventure List: If no adventure is found, clear the query and show the adventure list.
+v AdventureListPage: If no adventure is found, clear the query and show the adventure list.
   v look in storage for paths like [<game>, "adventures", <adventure name>, ...]
   v show 'em in a list
   v "create" button for the whole list
@@ -18,11 +16,25 @@ v Adventure List: If no adventure is found, clear the query and show the adventu
 v App class
   v hash fragment query parser
   v listen to hash fragment URL changes
-  v ref to page now showing, to call exitDoc on it, then enter the new one
-v Level List: If adventure is found but no level, show that adventure's level list.
+  v ref to page now showing, to call exitDoc on it, then enter the new one.
+v LevelListPage: If adventure is found but no level, show that adventure's level list.
   v link back to adventure list
-- Level editor: If adventure and level are found, show that level's editor
-  - link back to level list
+- LevelEditorPage: If adventure and level are found, show that level's editor.
+  * analagous to test38/main.js's starting point
+  v update HTML
+    v write canvas
+    v write pause menu div
+    v make Pages update body CSS
+    x make all Pages update the meta tags
+  - preload shader files
+    - make main.js pre-load shaders in a TextLoader
+    - copy RendererLoader code into LevelEditorPage
+  - update pause menu
+    - name of game, hyperlinked
+    - name of adventure, hyperlinked
+    - name of level
+- polish
+
 
 /<game path>/export exports the editor data to text which can be copy/pasted into /game2/ file
 /<game path> is for playing the exported game.

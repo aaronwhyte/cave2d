@@ -24,6 +24,7 @@ AdventureListPage.prototype.enterDoc = function() {
     throw Error('this.rootNode should be falsey, but it is ' + this.rootNode);
   }
   this.rootNode = this.ce('div', document.body);
+  document.body.classList.add('listPage');
   this.refreshList();
 };
 
@@ -32,6 +33,7 @@ AdventureListPage.prototype.exitDoc = function() {
     throw Error('this.rootNode should be truthy, but it is ' + this.rootNode);
   }
   document.body.removeChild(this.rootNode);
+  document.body.classList.remove('listPage');
   this.rootNode = null;
 };
 

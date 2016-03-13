@@ -43,7 +43,7 @@ EditorApp.prototype.getHashChangeFunction = function() {
       // show the adventure's list of levels
       self.page = new LevelListPage(self.gameTitle, self.basePath, self.fileTree, adventureName);
     } else {
-      // TODO level
+      self.page = new LevelEditorPage(self.gameTitle, self.basePath, self.fileTree, adventureName, levelName);
     }
     self.page.enterDoc();
   };
