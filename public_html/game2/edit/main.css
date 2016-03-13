@@ -33,7 +33,7 @@ span.separator {
   font-weight:bold;
 }
 
-button {
+.listPage button {
   border: none;
   border-radius:0.5em;
   padding: 0.2em 0.5em;
@@ -78,7 +78,7 @@ button.createButton {
   color:#0cc;
 }
 
-.levelEditorPage > canvas#canvas {
+.levelEditorPage canvas#canvas {
   border:0;
   padding:0;
   margin:0;
@@ -89,8 +89,18 @@ button.createButton {
   cursor:crosshair;
 }
 
+.levelEditorPage button {
+  margin:0.5em;
+  border:0;
+  border-radius: 0.5em;
+  padding:0.75em 1em;
+  background: #fff;
+  color:#000;
+  font-size:medium;
+}
+
 #pausedOverlay {
-  display:none;
+  xdisplay:none;
   position:absolute;
   text-align:right;
   top:40px;
@@ -118,7 +128,7 @@ button.createButton {
   border:0;
 }
 
-.levelEditorPage > button {
+.levelEditorPage button {
   margin:0.5em;
   border:0;
   border-radius: 0.5em;
@@ -133,7 +143,7 @@ button.createButton {
   padding:1em;
 }
 
-.levelEditorPage > input {
+.levelEditorPage input {
   margin:0.2em;
   border:1px solid #000;
   border-radius: 1em;
