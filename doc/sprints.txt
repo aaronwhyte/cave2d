@@ -25,15 +25,23 @@ v LevelListPage: If adventure is found but no level, show that adventure's level
     v write canvas
     v write pause menu div
     v make Pages update body CSS
-    x make all Pages update the meta tags
-  - preload shader files
-    - make main.js pre-load shaders in a TextLoader
-    - copy RendererLoader code into LevelEditorPage
-  - update pause menu
-    - name of game, hyperlinked
-    - name of adventure, hyperlinked
-    - name of level
-- polish
+    v update and restore head meta viewport content
+  v update pause menu
+    v name of game, hyperlinked
+    v name of adventure, hyperlinked
+    v name of level
+  v preload shader text files
+    v make main.js pre-load shaders in a TextLoader
+    v LEP either uses the shaders immediately or waits for a single callback.
+    v copy RendererLoader code into LEP to create WebGL context.
+  v create WebGL editor "screen"
+  - creation starts with blanker slate
+  - save & load
+    - load on documentEntered I think.
+    - save on exitDocument
+    - save on onBeforeUnload?
+    - save occasionally
+    - no sharable URL form now because that messes up the URL scheme?
 
 
 /<game path>/export exports the editor data to text which can be copy/pasted into /game2/ file

@@ -3,12 +3,16 @@
  * @param {String} gameTitle
  * @param {Array.<String>} basePath
  * @param {FileTree} fileTree
+ * @param {String} vertexShaderPath
+ * @param {String} fragmentShaderPath
  * @constructor
  */
-function EditorApp(gameTitle, basePath, fileTree) {
+function EditorApp(gameTitle, basePath, fileTree, vertexShaderPath, fragmentShaderPath) {
   this.gameTitle = gameTitle;
   this.basePath = basePath;
   this.fileTree = fileTree;
+  this.vertexShaderPath = vertexShaderPath;
+  this.fragmentShaderPath = fragmentShaderPath;
   this.page = null;
 }
 
@@ -22,9 +26,35 @@ EditorApp.PARAM_LEVEL_NAME = 'lev';
  * Starts listening to hash-fragment queries, to navigate to the right page.
  */
 EditorApp.prototype.start = function() {
+  this.shaderTextLoader = new TextLoader([this.vertexShaderPath, this.fragmentShaderPath]);
+  var self = this;
+  // pre-load, so the resources are ready ASAP.
+  this.shaderTextLoader.load(function() {
+    self.maybeForwardShaderTexts();
+  });
+
   this.hashChangeFunction = this.getHashChangeFunction();
   window.addEventListener('hashchange', this.hashChangeFunction, false);
   this.hashChangeFunction();
+};
+
+/**
+ * If the shader texts are loaded, forward them to the current page.
+ */
+EditorApp.prototype.maybeForwardShaderTexts = function() {
+  var vt = this.getVertexShaderText();
+  var ft = this.getFragmentShaderText();
+  if (vt && ft && this.page && this.page.onShaderTextChange) {
+    this.page.onShaderTextChange(vt, ft);
+  }
+};
+
+EditorApp.prototype.getVertexShaderText = function() {
+  return this.shaderTextLoader.getTextByPath(this.vertexShaderPath);
+};
+
+EditorApp.prototype.getFragmentShaderText = function() {
+  return this.shaderTextLoader.getTextByPath(this.fragmentShaderPath);
 };
 
 EditorApp.prototype.getHashChangeFunction = function() {
@@ -43,9 +73,12 @@ EditorApp.prototype.getHashChangeFunction = function() {
       // show the adventure's list of levels
       self.page = new LevelListPage(self.gameTitle, self.basePath, self.fileTree, adventureName);
     } else {
-      self.page = new LevelEditorPage(self.gameTitle, self.basePath, self.fileTree, adventureName, levelName);
+      self.page = new LevelEditorPage(
+          self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
+          self.shaderTextLoader);
     }
     self.page.enterDoc();
+    self.maybeForwardShaderTexts();
   };
 };
 
