@@ -53,9 +53,18 @@ LevelEditorPage.prototype.enterDoc = function() {
 
   // On-event sound unlocker for iOS.
   this.canvas.addEventListener('touchend', this.unlockIosSound.bind(this));
+  this.canvas.addEventListener('touchstart', LevelEditorPage.pd);
+  this.canvas.addEventListener('touchmove', LevelEditorPage.pd);
+  this.canvas.addEventListener('touchend', LevelEditorPage.pd);
+
+  window.addEventListener("scroll", LevelEditorPage.pd);
 
   // load level
   this.jsonObj = this.fileTree.getFile(this.levelDataPath);
+};
+
+LevelEditorPage.pd = function(event) {
+  event.preventDefault();
 };
 
 /**
@@ -71,6 +80,8 @@ LevelEditorPage.prototype.exitDoc = function() {
   if (!this.canvas || !this.overlayDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'overlayDiv:' + this.overlayDiv);
   }
+  window.removeEventListener("scroll", LevelEditorPage.pd);
+
   if (this.screen) {
     this.saveLevel();
     this.screen.setScreenListening(false);

@@ -43,6 +43,7 @@ v LevelListPage: If adventure is found but no level, show that adventure's level
     v save on onBeforeUnload?
     x save occasionally
     v no sharable URL form now because that messes up the URL scheme. Add Import and Export later.
+  v In mobile level editor, stop single-tap-button events from teleporting cursor!
   - exitDocument
     v stop listening
     - tear down WebGL, if it is set up, if nuking canvas doesn't do it already.
