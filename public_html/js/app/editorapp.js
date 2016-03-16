@@ -18,6 +18,7 @@ function EditorApp(gameTitle, basePath, fileTree, vertexShaderPath, fragmentShad
 
 EditorApp.PATH_ADVENTURES = 'adventures';
 EditorApp.PATH_LEVELS = 'levels';
+EditorApp.PATH_LEVEL_JSON = 'leveljson';
 
 EditorApp.PARAM_ADVENTURE_NAME = 'adv';
 EditorApp.PARAM_LEVEL_NAME = 'lev';
@@ -32,6 +33,9 @@ EditorApp.prototype.start = function() {
   this.shaderTextLoader.load(function() {
     self.maybeForwardShaderTexts();
   });
+
+  this.beforeUnloadFunction = this.getBeforeUnloadFunction();
+  window.addEventListener('beforeunload', this.beforeUnloadFunction, false);
 
   this.hashChangeFunction = this.getHashChangeFunction();
   window.addEventListener('hashchange', this.hashChangeFunction, false);
@@ -79,6 +83,16 @@ EditorApp.prototype.getHashChangeFunction = function() {
     }
     self.page.enterDoc();
     self.maybeForwardShaderTexts();
+  };
+};
+
+EditorApp.prototype.getBeforeUnloadFunction = function() {
+  var self = this;
+  return function(e) {
+    if (self.page) {
+      // If the page is the level editor, this will cause an auto-save.
+      self.page.exitDoc();
+    }
   };
 };
 

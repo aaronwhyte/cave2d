@@ -15,6 +15,8 @@ function LevelEditorPage(gameTitle, basePath, fileTree, adventureName, levelName
   this.fileTree = fileTree;
   this.adventureName = adventureName;
   this.levelName = levelName;
+  this.levelDataPath = EditorApp.path(this.basePath, this.adventureName, this.levelName)
+      .concat(EditorApp.PATH_LEVEL_JSON);
 
   this.canvas = null;
   this.overlayDiv = null;
@@ -51,6 +53,9 @@ LevelEditorPage.prototype.enterDoc = function() {
 
   // On-event sound unlocker for iOS.
   this.canvas.addEventListener('touchend', this.unlockIosSound.bind(this));
+
+  // load level
+  this.jsonObj = this.fileTree.getFile(this.levelDataPath);
 };
 
 /**
@@ -66,6 +71,10 @@ LevelEditorPage.prototype.exitDoc = function() {
   if (!this.canvas || !this.overlayDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'overlayDiv:' + this.overlayDiv);
   }
+  if (this.screen) {
+    this.saveLevel();
+    this.screen.setScreenListening(false);
+  }
   document.body.removeChild(this.canvas);
   document.body.removeChild(this.overlayDiv);
   document.body.classList.remove('levelEditorPage');
@@ -75,6 +84,15 @@ LevelEditorPage.prototype.exitDoc = function() {
   var metaViewport = document.head.querySelector('meta[name="viewport"]');
   metaViewport.content = this.oldMetaViewportContent;
   this.oldMetaViewportContent = null;
+};
+
+LevelEditorPage.prototype.saveLevel = function() {
+  if (!this.screen) {
+    console.warn('No screen, cannot get JSON to save level: ' + this.levelName);
+    return;
+  }
+  this.jsonObj = this.screen.toJSON();
+  this.fileTree.setFile(this.levelDataPath, this.jsonObj);
 };
 
 LevelEditorPage.prototype.refreshOverlay = function() {
@@ -122,6 +140,11 @@ LevelEditorPage.prototype.refreshOverlay = function() {
 };
 
 LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
+  if (!this.canvas) {
+    console.log('onShaderTextChange with no this.canvas');
+    return;
+  }
+
   var gl = getWebGlContext(this.canvas, {
     alpha: false,
     antialias: true
@@ -142,6 +165,11 @@ LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragme
   }
 
   this.screen = new PlayScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx);
+  if (this.jsonObj) {
+    this.screen.loadWorldFromJson(this.jsonObj);
+  } else {
+    this.screen.createDefaultWorld();
+  }
 
   this.animationRequested = false;
   this.requestAnimation();
@@ -155,9 +183,27 @@ LevelEditorPage.prototype.requestAnimation = function() {
 };
 
 LevelEditorPage.prototype.animateFrame = function() {
+  if (!this.canvas) {
+    console.log('animateFrame with no this.canvas');
+    return;
+  }
+
   this.animationRequested = false;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
   this.screen.drawScreen(1);
 };
 
+LevelEditorPage.prototype.requestFullScreen = function() {
+  var elem = document.body;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.msRequestFullscreen) {
+    elem.msRequestFullscreen();
+  } else if (elem.mozRequestFullScreen) {
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) {
+    elem.webkitRequestFullscreen();
+  }
+  this.requestAnimation();
+};

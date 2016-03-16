@@ -35,16 +35,21 @@ v LevelListPage: If adventure is found but no level, show that adventure's level
     v LEP either uses the shaders immediately or waits for a single callback.
     v copy RendererLoader code into LEP to create WebGL context.
   v create WebGL editor "screen"
-  - creation starts with blanker slate
-  - save & load
-    - load on documentEntered I think.
-    - save on exitDocument
-    - save on onBeforeUnload?
-    - save occasionally
-    - no sharable URL form now because that messes up the URL scheme?
+  v save & load v1
+    v load in enterDocument? Or when shaders are ready?
+      v inject starting JSON into PlayScreen
+      v if no JSON file, creation starts with mostly-empty default world
+    v save on exitDocument
+    v save on onBeforeUnload?
+    x save occasionally
+    v no sharable URL form now because that messes up the URL scheme. Add Import and Export later.
+  - exitDocument
+    v stop listening
+    - tear down WebGL, if it is set up, if nuking canvas doesn't do it already.
 
-
-/<game path>/export exports the editor data to text which can be copy/pasted into /game2/ file
+Import and Export
+- I still like the idea of sharing a level by URL, but I also like sharing an adventure by JSON
+/<game path>/export#, #adventure=xxx, and #adventure=xxx&level=YYY exports the relevant data to text which can be copy/pasted into /game2/ file
 /<game path> is for playing the exported game.
 
 Orientation
