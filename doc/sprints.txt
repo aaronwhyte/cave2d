@@ -53,7 +53,7 @@ I still like the idea of sharing a level by URL, but I also like sharing an adve
 /<game path>/export#, #adventure=xxx, and #adventure=xxx&level=YYY exports the relevant data to text which can be copy/pasted into /game2/ file
 /<game path> is for playing the exported game.
 v ExportPage
-- Export link on each adventure.
+v Export link on each adventure.
 
 Basic Parts
 - Player
