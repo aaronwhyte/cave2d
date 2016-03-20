@@ -91,6 +91,7 @@ LevelEditorPage.prototype.exitDoc = function() {
   document.body.classList.remove('levelEditorPage');
   this.canvas = null;
   this.overlayDiv = null;
+  this.animationId = 0;
 
   var metaViewport = document.head.querySelector('meta[name="viewport"]');
   metaViewport.content = this.oldMetaViewportContent;
@@ -182,24 +183,25 @@ LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragme
     this.screen.createDefaultWorld();
   }
 
-  this.animationRequested = false;
   this.requestAnimation();
 };
 
 LevelEditorPage.prototype.requestAnimation = function() {
-  if (!this.animationRequested) {
-    this.animationRequested = true;
-    requestAnimationFrame(this.animateFrameFn, this.canvas);
+  if (!this.animationId) {
+    this.animationId = requestAnimationFrame(this.animateFrameFn, this.canvas);
   }
 };
 
 LevelEditorPage.prototype.animateFrame = function() {
+  if (!this.animationId) {
+    return;
+  }
   if (!this.canvas) {
     console.log('animateFrame with no this.canvas');
     return;
   }
 
-  this.animationRequested = false;
+  this.animationId = 0;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
   this.screen.drawScreen(1);
