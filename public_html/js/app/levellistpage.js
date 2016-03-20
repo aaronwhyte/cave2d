@@ -97,19 +97,23 @@ LevelListPage.prototype.refreshList = function() {
 LevelListPage.prototype.createCreateFunction = function() {
   var self = this;
   return function() {
-    // TODO prompt for name
-    var now = new Date();
-    var newName = Strings.formatTimeString(now);
-    self.touch(newName);
-    self.refreshList();
+    var newName = prompt('New level name?');
+    if (newName) {
+      self.touch(newName);
+      self.refreshList();
+    }
   }
 };
 
 LevelListPage.prototype.createDeleteFunction = function(name) {
   var self = this;
   return function() {
-    self.fileTree.deleteDescendants(EditorApp.path(self.basePath, self.adventureName, name));
-    self.refreshList();
+    if (confirm('Delete level ' + name + '\nAre you sure?')) {
+      self.fileTree.moveDescendants(
+          EditorApp.path(self.basePath, self.adventureName, name),
+          EditorApp.trashPath(self.basePath, new Date(), self.adventureName, name));
+      self.refreshList();
+    }
   };
 };
 

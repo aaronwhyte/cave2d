@@ -74,6 +74,13 @@ AdventureListPage.prototype.refreshList = function() {
     e.innerText = 'rename';
     e.onclick = this.createRenameFunction(name);
 
+    e = this.ce('a', buttons);
+    e.innerText = 'export';query = {};
+    var query = {};
+    query[EditorApp.PARAM_ADVENTURE_NAME] = name;
+    query[EditorApp.PARAM_MODE] = EditorApp.MODE_EXPORT;
+    e.href = '#' + Url.encodeQuery(query);
+
     e = this.ce('button', buttons);
     e.innerText = 'delete';
     e.onclick = this.createDeleteFunction(name);
@@ -86,19 +93,23 @@ AdventureListPage.prototype.refreshList = function() {
 AdventureListPage.prototype.createCreateFunction = function() {
   var self = this;
   return function() {
-    // TODO prompt for name
-    var now = new Date();
-    var newName = Strings.formatTimeString(now);
-    self.touch(newName);
-    self.refreshList();
+    var newName = prompt('New adventure name?');
+    if (newName) {
+      self.touch(newName);
+      self.refreshList();
+    }
   }
 };
 
-AdventureListPage.prototype.createDeleteFunction = function (name) {
+AdventureListPage.prototype.createDeleteFunction = function(name) {
   var self = this;
   return function() {
-    self.fileTree.deleteDescendants(EditorApp.path(self.basePath, name));
-    self.refreshList();
+    if (confirm('Delete adventure ' + name + '\nAre you sure?')) {
+      self.fileTree.moveDescendants(
+          EditorApp.path(self.basePath, name),
+          EditorApp.trashPath(self.basePath, new Date(), name));
+      self.refreshList();
+    }
   };
 };
 

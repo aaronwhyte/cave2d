@@ -44,14 +44,29 @@ v LevelListPage: If adventure is found but no level, show that adventure's level
     x save occasionally
     v no sharable URL form now because that messes up the URL scheme. Add Import and Export later.
   v In mobile level editor, stop single-tap-button events from teleporting cursor!
-  - exitDocument
+  x exitDocument
     v stop listening
-    - tear down WebGL, if it is set up, if nuking canvas doesn't do it already.
+    x tear down WebGL, if it is set up, if nuking canvas doesn't do it already.
 
-Import and Export
-- I still like the idea of sharing a level by URL, but I also like sharing an adventure by JSON
+Export
+I still like the idea of sharing a level by URL, but I also like sharing an adventure by JSON
 /<game path>/export#, #adventure=xxx, and #adventure=xxx&level=YYY exports the relevant data to text which can be copy/pasted into /game2/ file
 /<game path> is for playing the exported game.
+v ExportPage
+- Export link on each adventure.
+
+Basic Parts
+- Player
+- Exit
+
+Level Play Progression
+- make and export a few levels
+- play uses big exported FileTree JSON file, read via XHR.
+- game2/ adventure list, from FileTree.
+- click on adventure to play levels in alpha order
+  - game2/#adv=foo&level=bar plays that level? Or keep it all in memory, no bookmarking?
+- in-game pause menu - resume, fullscreen, quit
+- victory page?
 
 Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
@@ -63,50 +78,12 @@ Attribute editing?
 - Spirits can expose a type+key: value form
 - Mode button opens form editor
 
-Test XX: Possession?
-- "enter" button in editor
-- standard interface for playable spirits to implement
-  - trackballs and sticks
-  - onscreen triggers
-  - callbacks
-  - maybe control passage of time
-- PlayScreen "play" mode separate from "edit" mode
-- "exit" trigger to return to edit mode, at current location
-- two playable spirits at least
-  - Gnome Generator - generate
-  - Gnome - move, lunge
-  - Ninja - move, fire
-
 Test XX: Undo and Redo
 - retain last N JSON serializations in RAM or wherevs.
 - Create new ones using one-token-bucket throttle right before mutations, w 1/sec(realtime) restore rate.
 - Always save the just-after mutation camera and cursor pos, to bring the area into focus before undoing.
   Keep that as a separate kind of undo record, since it's so tiny and easy to restore.
 - Button for creating an undo record just because time went by. Snapshot?
-
-Very Optional: Always do something for editor triggers
-- "Grab"
-  - Always grabs best candidate up to full-screen distance.
-    - Show rapidly-expanding scan-bubble?
-  - If there's nothing, say that.
-  - Show connection to grabbed thing
-  - Strength is proportional to dist up to some limit, then is inversely proportinal? Or levels off?
-- Terrain editors
-  - Nice sparks when they change something.
-  - Fizzle-sparks when they don't something.
-  - If you hold still, you get an expanding effect bubble (up to some limit) to make big chambers n stuff easy?
-
-YOU WIIINNN!
-NOW WRITE A GAME YOU NUT!
-
-Game1 Splashes II
-- muzzle flash
-  - player fire
-  - enemy fire
-- bounce
-  - need point of contact!
-- bullet destruct
-- boulder bounce?
 
 Zoomable?
 - two-touch pinch/unpinch

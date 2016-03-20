@@ -62,6 +62,9 @@ Strings.padLeft = function(strToPad, paddingChar, padToLength) {
   if (paddingChar.length != 1) {
     throw Error('Expected exactly one character, but got "' + paddingChar + '".');
   }
+  if (!(strToPad instanceof String)) {
+    strToPad = String(strToPad);
+  }
   var padSize = padToLength - strToPad.length;
   if (padSize <= 0) {
     return strToPad;

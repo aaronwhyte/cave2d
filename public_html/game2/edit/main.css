@@ -71,11 +71,16 @@ button.createButton {
   margin-bottom:0.5em;
 }
 
-.rightButtonCluster button {
-  margin:0.1em;
+.rightButtonCluster button, .rightButtonCluster a {
+  margin:0.1em 0.2em;
   font-size:medium;
   background:#033;
   color:#0cc;
+}
+.rightButtonCluster a {
+  border: none;
+  border-radius:0.5em;
+  padding: 0.2em 0.5em;
 }
 
 .levelEditorPage canvas#canvas {
@@ -153,4 +158,9 @@ button.createButton {
   font-size:small;
   width:20em;
   visibility:hidden;
+}
+
+.exportPage {
+  font-family:monospace;
+  word-wrap:break-word;
 }
