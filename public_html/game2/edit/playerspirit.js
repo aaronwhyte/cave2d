@@ -2,14 +2,14 @@
  * @constructor
  * @extends {Spirit}
  */
-function AntSpirit(playScreen) {
+function PlayerSpirit(playScreen) {
   Spirit.call(this);
   this.playScreen = playScreen;
   this.bodyId = -1;
   this.id = -1;
   this.modelStamp = null;
 
-  this.type = PlayScreen.SpiritType.ANT;
+  this.type = PlayScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   // 0 is up, PI/2 is right
   this.dir = 0;//Math.random() * Math.PI * 2;
@@ -22,12 +22,12 @@ function AntSpirit(playScreen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 }
-AntSpirit.prototype = new Spirit();
-AntSpirit.prototype.constructor = AntSpirit;
+PlayerSpirit.prototype = new Spirit();
+PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 0.6;
+PlayerSpirit.MEASURE_TIMEOUT = 0.6;
 
-AntSpirit.SCHEMA = {
+PlayerSpirit.SCHEMA = {
   0: "type",
   1: "id",
   2: "bodyId",
@@ -36,42 +36,34 @@ AntSpirit.SCHEMA = {
   5: "angVel"
 };
 
-AntSpirit.getJsoner = function() {
-  if (!AntSpirit.jsoner) {
-    AntSpirit.jsoner = new Jsoner(AntSpirit.SCHEMA);
+PlayerSpirit.getJsoner = function() {
+  if (!PlayerSpirit.jsoner) {
+    PlayerSpirit.jsoner = new Jsoner(PlayerSpirit.SCHEMA);
   }
-  return AntSpirit.jsoner;
+  return PlayerSpirit.jsoner;
 };
 
-AntSpirit.prototype.toJSON = function() {
-  return AntSpirit.getJsoner().toJSON(this);
+PlayerSpirit.prototype.toJSON = function() {
+  return PlayerSpirit.getJsoner().toJSON(this);
 };
 
-AntSpirit.prototype.setFromJSON = function(json) {
-  AntSpirit.getJsoner().setFromJSON(json, this);
+PlayerSpirit.prototype.setFromJSON = function(json) {
+  PlayerSpirit.getJsoner().setFromJSON(json, this);
 };
 
-AntSpirit.prototype.setModelStamp = function(modelStamp) {
+PlayerSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };
 
-AntSpirit.createModel = function() {
+PlayerSpirit.createModel = function() {
   return RigidModel.createCircleMesh(4)
-      .setColorRGB(0.5, 0, 0)
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.01))
-          .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)));
+      .setColorRGB(1, 0.3, 0.6);
 };
 
-AntSpirit.factory = function(playScreen, stamp, pos, dir) {
+PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
   var world = playScreen.world;
 
-  var spirit = new AntSpirit(playScreen);
+  var spirit = new PlayerSpirit(playScreen);
   spirit.setModelStamp(stamp);
   spirit.setColorRGB(1, 1, 1);
   var density = 1;
@@ -82,7 +74,7 @@ AntSpirit.factory = function(playScreen, stamp, pos, dir) {
   b.rad = PlayScreen.ANT_RAD;
   b.hitGroup = PlayScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 2;
+  b.pathDurationMax = PlayerSpirit.MEASURE_TIMEOUT * 2;
   spirit.bodyId = world.addBody(b);
 
   var spiritId = world.addSpirit(spirit);
@@ -91,11 +83,11 @@ AntSpirit.factory = function(playScreen, stamp, pos, dir) {
   return spiritId;
 };
 
-AntSpirit.prototype.setColorRGB = function(r, g, b) {
+PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
-AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
+PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
   return this.playScreen.scan(
       PlayScreen.Group.ROCK,
       pos,
@@ -105,7 +97,7 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       rad);
 };
 
-AntSpirit.prototype.onTimeout = function(world, event) {
+PlayerSpirit.prototype.onTimeout = function(world, event) {
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
   var basicThrust = 0.03;
@@ -135,10 +127,10 @@ AntSpirit.prototype.onTimeout = function(world, event) {
     .set(body.vel).scale(1 - friction)
     .addXY(Math.sin(this.dir) * thrust, Math.cos(this.dir) * thrust);
   body.setVelAtTime(newVel, world.now);
-  world.addTimeout(world.now + AntSpirit.MEASURE_TIMEOUT * (Math.random() + 0.5), this.id, -1);
+  world.addTimeout(world.now + PlayerSpirit.MEASURE_TIMEOUT * (Math.random() + 0.5), this.id, -1);
 };
 
-AntSpirit.prototype.onDraw = function(world, renderer) {
+PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody(world);
   body.getPosAtTime(world.now, this.tempBodyPos);
   renderer
@@ -152,6 +144,6 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
   renderer.drawStamp();
 };
 
-AntSpirit.prototype.getBody = function(world) {
+PlayerSpirit.prototype.getBody = function(world) {
   return world.bodies[this.bodyId];
 };

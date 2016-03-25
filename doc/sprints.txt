@@ -19,7 +19,7 @@ v App class
   v ref to page now showing, to call exitDoc on it, then enter the new one.
 v LevelListPage: If adventure is found but no level, show that adventure's level list.
   v link back to adventure list
-- LevelEditorPage: If adventure and level are found, show that level's editor.
+v LevelEditorPage: If adventure and level are found, show that level's editor.
   * analagous to test38/main.js's starting point
   v update HTML
     v write canvas
@@ -50,14 +50,68 @@ v LevelListPage: If adventure is found but no level, show that adventure's level
 
 Export
 I still like the idea of sharing a level by URL, but I also like sharing an adventure by JSON
-/<game path>/export#, #adventure=xxx, and #adventure=xxx&level=YYY exports the relevant data to text which can be copy/pasted into /game2/ file
+/<game path>/export#, #adventure=xxx, and #adventure=xxx&level=YYY exports the relevant data to text which can be
+copy/pasted into /game2/ file.
 /<game path> is for playing the exported game.
 v ExportPage
 v Export link on each adventure.
 
+
+Sprite configs...
+A single spirit class, plus body, may have variations that result in multiple... what? Characters? Parts? Items?
+* To distinguish them in the menu they should have different "icon" models, even if it's just color or size or minor
+  variation.
+* Serializing includes typeNum. Keep it in the spirit API.
+* When deserializing, there should be a straight lookup from spiritType to (uniform) Spirit ctor. But it's many-to-one!
+* Instances draw and make noise with Spirit code
+...
+* I guess a Spirit should be able to create a Model, using params.
+* And a Spirit should be able to create a Stamp too, using params.
+  * But cache 'em w PlayScreen "StampCache".
+  * Cache key is all params that went into creating 'em.
+* Menu configuration means...
+   * creating Spirits with params and getting icon Models from 'em. OK.
+   * having factory code for each menu item, to generate default values for spirit, body, etc
+     to insert into world at x, y, d
+
+SpiritConfig - one per spirit-type per game, concentrating the scattered Spirit stuff,
+to help make coding a new spirit easier.
+v Create a config that ties together the misc. sprite junk
+  v type number (for serialization and deserialization) and also primary key for this game
+  v stamp (just one? That'll change.) for rendering.
+  v optional menu stuff. Maybe a list of these?
+    v item name (why different from type number? Use type number?)
+    v group
+    v rank
+    v model, for generating menu stamp
+    v addFromMenuFactory
+      v sets up default body
+      v calls spirit constructor
+      v overrides constructor biz maybe.
+      v uses stamp
+  v whatevs is needed for playscreen's fromJson()
+    v deserializationFactory?
+      v deserializes body
+      v calls spirit constructor
+      deserializes spirit state
+      v uses stamp
+  v menu creation
+v Create one big map from spiritType to SpiritConfig
+v Read from the SpiritConfigMap in all the right places in PlayScreen
+v convert existing spirits
+  v AntSpirit
+  v PlayerSpirit
+
 Basic Parts
 - Player
+  v PlayerSpirit shell
+  v timeout cycle
+    v friction
+    - controls
+  - sensitive to mode - edit vs play. Don't use controls in edit mode.
+  - draw a little face on it
 - Exit
+  - square with the word "exit" written on or above it.
 
 Level Play Progression
 - make and export a few levels
@@ -73,6 +127,10 @@ Orientation
 - create repeller turrets
 - Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
 - editor
+
+Custom dialogs:
+- prompt
+- confirm
 
 Attribute editing?
 - Spirits can expose a type+key: value form

@@ -83,8 +83,13 @@ PlayScreen.ANT_RAD = 0.8;
 PlayScreen.ROCK_RAD = 1.4;
 
 PlayScreen.MenuItem = {
-  ROCK: 'rock',
-  RED_ANT: 'red_ant'
+  RED_ANT: 'red_ant',
+  PLAYER: 'player'
+};
+
+PlayScreen.SpiritType = {
+  ANT: 3,
+  PLAYER: 4
 };
 
 PlayScreen.EventLayer = {
@@ -106,40 +111,21 @@ PlayScreen.Terrain = {
   MIXED: 2
 };
 
-PlayScreen.SpiritType = {
-  BALL: 1,
-  SOUND: 2,
-  ANT: 3
-};
-
 PlayScreen.SplashType = {
   NOTE: 1
 };
 
 PlayScreen.prototype.initEditor = function() {
-  this.rockModel = RigidModel.createCircleMesh(5);
-  this.rockStamp = this.rockModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.rockStamp);
-
-  this.antModel = RigidModel.createCircleMesh(4)
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)));
-  this.antStamp = this.antModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.antStamp);
-
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
-  this.editor.addMenuItem(0, 0, PlayScreen.MenuItem.ROCK, this.rockModel);
-  this.editor.addMenuItem(1, 0, PlayScreen.MenuItem.RED_ANT, this.antModel);
+  for (var t in this.spiritConfigs) {
+    var c = this.spiritConfigs[t].menuItemConfig;
+    if (c) {
+      this.editor.addMenuItem(c.group, c.rank, c.itemName, c.model);
+    }
+  }
   for (var group = 0; group < 2; group++) {
     this.editor.addMenuKeyboardShortcut(group, group + 1);
   }
-
 };
 
 PlayScreen.prototype.updateHudLayout = function() {
@@ -193,12 +179,42 @@ PlayScreen.prototype.setScreenListening = function(listen) {
 
 PlayScreen.prototype.lazyInit = function() {
   if (!this.initialized) {
+    this.initSpiritConfigs();
     this.initEditor();
     this.updateHudLayout();
     this.initPermStamps();
     this.initWorld();
     this.initialized = true;
   }
+};
+
+PlayScreen.prototype.initSpiritConfigs = function() {
+  this.spiritConfigs = {};
+  var ctor, model;
+
+  ctor = AntSpirit;
+  model = AntSpirit.createModel();
+  this.spiritConfigs[PlayScreen.SpiritType.ANT] = new SpiritConfig(
+      PlayScreen.SpiritType.ANT,
+      ctor,
+      model.createModelStamp(this.renderer.gl),
+      new MenuItemConfig(
+          PlayScreen.MenuItem.RED_ANT,
+          0, 0,
+          model,
+          ctor.factory));
+
+  ctor = PlayerSpirit;
+  model = PlayerSpirit.createModel();
+  this.spiritConfigs[PlayScreen.SpiritType.PLAYER] = new SpiritConfig(
+      PlayScreen.SpiritType.PLAYER,
+      ctor,
+      model.createModelStamp(this.renderer.gl),
+      new MenuItemConfig(
+          PlayScreen.MenuItem.PLAYER,
+          1, 0,
+          model,
+          ctor.factory));
 };
 
 PlayScreen.prototype.initPermStamps = function() {
@@ -317,19 +333,10 @@ PlayScreen.prototype.loadWorldFromJson = function (json) {
   for (var i = 0; i < json.spirits.length; i++) {
     var spiritJson = json.spirits[i];
     var spiritType = spiritJson[0];
-    if (spiritType == PlayScreen.SpiritType.BALL) {
-      var spirit = new BallSpirit(this);
-      spirit.setModelStamp(this.rockStamp);
-      spirit.setFromJSON(spiritJson);
-      this.world.loadSpirit(spirit);
-    } else if (spiritType == PlayScreen.SpiritType.SOUND) {
-      var spirit = new SoundSpirit(this);
-      spirit.setModelStamp(this.rockStamp);
-      spirit.setFromJSON(spiritJson);
-      this.world.loadSpirit(spirit);
-    } else if (spiritType == PlayScreen.SpiritType.ANT) {
-      var spirit = new AntSpirit(this);
-      spirit.setModelStamp(this.antStamp);
+    var spiritConfig = this.spiritConfigs[spiritType];
+    if (spiritConfig) {
+      var spirit = new spiritConfig.ctor(this);
+      spirit.setModelStamp(spiritConfig.stamp);
       spirit.setFromJSON(spiritJson);
       this.world.loadSpirit(spirit);
     } else {
@@ -369,45 +376,6 @@ PlayScreen.prototype.createDefaultWorld = function() {
   this.lazyInit();
   this.bitGrid.drawPill(new Segment(new Vec2d(0, 0), new Vec2d(0, 0)), 9.8, 1);
   this.flushTerrainChanges();
-  this.initAntSpirit(new Vec2d(0, 0), PlayScreen.ANT_RAD);
-};
-
-PlayScreen.prototype.initAntSpirit = function(pos, rad) {
-  var density = 1;
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, this.world.now);
-  b.rad = rad;
-  b.hitGroup = PlayScreen.Group.ROCK;
-  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 2;
-  var spirit = new AntSpirit(this);
-  spirit.bodyId = this.world.addBody(b);
-  spirit.setModelStamp(this.antStamp);
-  var spiritId = this.world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(1, 0, 0);
-  this.world.addTimeout(this.world.now, spiritId, -1);
-  return spiritId;
-};
-
-PlayScreen.prototype.initRock = function(pos, rad) {
-  var density = 1;
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, this.world.now);
-  b.rad = rad;
-  b.hitGroup = PlayScreen.Group.ROCK;
-  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = BallSpirit.MEASURE_TIMEOUT;
-  var spirit = new BallSpirit();
-  spirit.bodyId = this.world.addBody(b);
-  spirit.setModelStamp(this.rockStamp);
-  var spiritId = this.world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  this.world.spirits[spiritId].setColorRGB(1, 0.2, 0.6);
-  this.world.addTimeout(this.world.now, spiritId, -1);
-  return spiritId;
 };
 
 PlayScreen.prototype.digTerrainAtPos = function(pos) {
@@ -728,14 +696,13 @@ PlayScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
   this.flushTerrainChanges();
 };
 
-PlayScreen.prototype.addItem = function(name, pos) {
-  switch (name) {
-    case PlayScreen.MenuItem.ROCK:
-      this.initRock(pos, PlayScreen.ROCK_RAD);
+PlayScreen.prototype.addItem = function(name, pos, dir) {
+  for (var t in this.spiritConfigs) {
+    var c = this.spiritConfigs[t];
+    if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
+      c.menuItemConfig.factory(this, c.stamp, pos, dir);
       break;
-    case PlayScreen.MenuItem.RED_ANT:
-      this.initAntSpirit(pos, PlayScreen.ANT_RAD);
-      break;
+    }
   }
 };
 
