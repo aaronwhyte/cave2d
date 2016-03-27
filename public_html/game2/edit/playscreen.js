@@ -190,31 +190,23 @@ PlayScreen.prototype.lazyInit = function() {
 
 PlayScreen.prototype.initSpiritConfigs = function() {
   this.spiritConfigs = {};
-  var ctor, model;
 
-  ctor = AntSpirit;
-  model = AntSpirit.createModel();
-  this.spiritConfigs[PlayScreen.SpiritType.ANT] = new SpiritConfig(
-      PlayScreen.SpiritType.ANT,
-      ctor,
-      model.createModelStamp(this.renderer.gl),
-      new MenuItemConfig(
-          PlayScreen.MenuItem.RED_ANT,
-          0, 0,
-          model,
-          ctor.factory));
+  var self = this;
+  function addConfig(type, ctor, itemName, group, rank, factory) {
+    var model = ctor.createModel();
+    var stamp = model.createModelStamp(self.renderer.gl);
+    var menuItemConfig = null;
+    if (itemName) {
+      menuItemConfig = new MenuItemConfig(itemName, group, rank, model, factory);
+    }
+    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, menuItemConfig);
+  }
 
-  ctor = PlayerSpirit;
-  model = PlayerSpirit.createModel();
-  this.spiritConfigs[PlayScreen.SpiritType.PLAYER] = new SpiritConfig(
-      PlayScreen.SpiritType.PLAYER,
-      ctor,
-      model.createModelStamp(this.renderer.gl),
-      new MenuItemConfig(
-          PlayScreen.MenuItem.PLAYER,
-          1, 0,
-          model,
-          ctor.factory));
+  addConfig(PlayScreen.SpiritType.ANT, AntSpirit,
+      PlayScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
+
+  addConfig(PlayScreen.SpiritType.PLAYER, PlayerSpirit,
+      PlayScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
 };
 
 PlayScreen.prototype.initPermStamps = function() {
