@@ -72,16 +72,6 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
 
   this.levelStamps = [];
   this.initialized = false;
-
-  this.trackball = new MultiTrackball()
-//      .addTrackball(new MouseTrackball(this.canvas))
-      .addTrackball(new TouchTrackball(this.canvas).setStartZoneFunction(function(x, y) {
-        return true;
-      }))
-      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
-          Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT)));
-  this.trackball.setFriction(0.02);
-  this.trackball.startListening();
 }
 EditScreen.prototype = new BaseScreen();
 EditScreen.prototype.constructor = EditScreen;
@@ -101,6 +91,17 @@ EditScreen.EventLayer = {
   POPUP: 0,
   HUD: 1,
   WORLD: 2
+};
+
+EditScreen.prototype.createTrackball = function() {
+  var trackball = new MultiTrackball()
+      .addTrackball(new TouchTrackball(this.canvas).setStartZoneFunction(function(x, y) {
+        return true;
+      }))
+      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
+          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT)));
+  trackball.setFriction(0.02);
+  return trackball;
 };
 
 EditScreen.prototype.initEditor = function() {
