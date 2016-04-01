@@ -9,7 +9,7 @@ function AntSpirit(playScreen) {
   this.id = -1;
   this.modelStamp = null;
 
-  this.type = PlayScreen.SpiritType.ANT;
+  this.type = BaseScreen.SpiritType.ANT;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   // 0 is up, PI/2 is right
   this.dir = 0;//Math.random() * Math.PI * 2;
@@ -79,8 +79,8 @@ AntSpirit.factory = function(playScreen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, world.now);
-  b.rad = PlayScreen.ANT_RAD;
-  b.hitGroup = PlayScreen.Group.ROCK;
+  b.rad = 0.8;
+  b.hitGroup = BaseScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 2;
   spirit.bodyId = world.addBody(b);
@@ -97,7 +97,7 @@ AntSpirit.prototype.setColorRGB = function(r, g, b) {
 
 AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
   return this.playScreen.scan(
-      PlayScreen.Group.ROCK,
+      BaseScreen.Group.ROCK,
       pos,
       this.scanVec.setXY(
           Math.sin(this.dir + rot) * dist,

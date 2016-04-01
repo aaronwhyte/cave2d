@@ -9,7 +9,7 @@ function PlayerSpirit(playScreen) {
   this.id = -1;
   this.modelStamp = null;
 
-  this.type = PlayScreen.SpiritType.PLAYER;
+  this.type = BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   // 0 is up, PI/2 is right
   this.dir = 0;//Math.random() * Math.PI * 2;
@@ -17,6 +17,7 @@ function PlayerSpirit(playScreen) {
 
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
+  this.trackballVal = new Vec2d();
   this.scanVec = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
@@ -55,6 +56,10 @@ PlayerSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };
 
+PlayerSpirit.prototype.setTrackball = function(trackball) {
+  this.trackball = trackball;
+};
+
 PlayerSpirit.createModel = function() {
   return RigidModel.createCircleMesh(4)
       .setColorRGB(1, 0.3, 0.6);
@@ -71,8 +76,8 @@ PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, world.now);
-  b.rad = PlayScreen.ANT_RAD;
-  b.hitGroup = PlayScreen.Group.ROCK;
+  b.rad = 0.8;
+  b.hitGroup = BaseScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = PlayerSpirit.MEASURE_TIMEOUT * 2;
   spirit.bodyId = world.addBody(b);
@@ -89,7 +94,7 @@ PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
 
 PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
   return this.playScreen.scan(
-      PlayScreen.Group.ROCK,
+      BaseScreen.Group.ROCK,
       pos,
       this.scanVec.setXY(
           Math.sin(this.dir + rot) * dist,
@@ -100,34 +105,22 @@ PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
 PlayerSpirit.prototype.onTimeout = function(world, event) {
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
-  var basicThrust = 0.03;
-  var maxTurn = 0.07;
-  var thrust = basicThrust;
   var friction = 0.08;
 
-  var antennaRot = Math.PI / 3.5;
-  var scanDist = body.rad * 5;
-  var turn = 0;
-  var scanRot = antennaRot * (Math.random() - 0.5);
-  var dist = this.scan(pos, scanRot, scanDist, body.rad/2);
-  if (dist >= 0) {
-    if (scanRot > 0) {
-      turn += maxTurn * (-antennaRot/2 - scanRot) * (1 - dist/2);
-    } else {
-      turn += maxTurn * (antennaRot/2 - scanRot) * (1 - dist/2);
-    }
-    thrust -= basicThrust * (1 - dist);
+  if (!this.trackball) {
+    // TODO yuck
+    this.trackball = this.playScreen.trackball;
   }
-  this.angVel *= 0.90;
-  this.angVel += turn;
-  if (this.angVel > Math.PI/2) this.angVel = Math.PI/2;
-  if (this.angVel < -Math.PI/2) this.angVel = -Math.PI/2;
-  this.dir += this.angVel;
-  var newVel = this.vec2d
-    .set(body.vel).scale(1 - friction)
-    .addXY(Math.sin(this.dir) * thrust, Math.cos(this.dir) * thrust);
+  var newVel = this.vec2d.set(body.vel).scale(1 - friction);
+  if (this.trackball) {
+    if (this.trackball.isTouched()) {
+      newVel.add(this.trackball.getVal(this.trackballVal));
+      console.log("trackballVal", this.trackballVal);
+    }
+    this.trackball.reset();
+  }
   body.setVelAtTime(newVel, world.now);
-  world.addTimeout(world.now + PlayerSpirit.MEASURE_TIMEOUT * (Math.random() + 0.5), this.id, -1);
+  world.addTimeout(world.now + PlayerSpirit.MEASURE_TIMEOUT, this.id, -1);
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {

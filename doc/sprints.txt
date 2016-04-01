@@ -102,16 +102,35 @@ v convert existing spirits
   v AntSpirit
   v PlayerSpirit
 
-Basic Parts
-- Player
-  v PlayerSpirit shell
-  v timeout cycle
-    v friction
-    - controls
-  - sensitive to mode - edit vs play. Don't use controls in edit mode.
-  - draw a little face on it
+Player
+v PlayerSpirit shell
+v timeout cycle
+  v friction
+  - controls
+    v trackball
+    - two buttons
+v remove ant behavior from player
+- draw a little face on it
+
+Modes - Edit, Test, Play
+v rename PlayScreen to EditScreen
+- Make TestScreen too
+- Spirits read mode from host screen
+- in edit mode,
+  - spirits don't move or create on their own.
+  - collision interactions are limited to bouncing. No collecting, exposions, unlocking, etc.
+  - Friction is applied uniformly by the editor.
+  - Spirits may render differently, to help the editor position and orient them.
+  - Leave the door open for spirits that help you make a level - diggers, sculptors, etc.
+- Add a button for testing a level. It's a new page, TestPage.
+- Add "test" button from level list
+- in test mode
+  - player controls work
+  - camera follows a player? Center of all players? Center for now, ok.
+  - no editor stuff except for links in the pause menu
 - Exit
   - square with the word "exit" written on or above it.
+  - in play mode it triggers transition and then next level, or victory.
 
 Level Play Progression
 - make and export a few levels

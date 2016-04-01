@@ -2,7 +2,7 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
+function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx);
 
   this.listeners = new ArraySet();
@@ -66,56 +66,44 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.tiles = null;
 
   this.bitSize = 0.5;
-  this.bitGridMetersPerCell = PlayScreen.BIT_SIZE * BitGrid.BITS;
+  this.bitGridMetersPerCell = EditScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 
   this.levelStamps = [];
   this.initialized = false;
+
+  this.trackball = new MultiTrackball()
+//      .addTrackball(new MouseTrackball(this.canvas))
+      .addTrackball(new TouchTrackball(this.canvas).setStartZoneFunction(function(x, y) {
+        return true;
+      }))
+      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
+          Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT)));
+  this.trackball.setFriction(0.02);
+  this.trackball.startListening();
 }
-PlayScreen.prototype = new BaseScreen();
-PlayScreen.prototype.constructor = PlayScreen;
+EditScreen.prototype = new BaseScreen();
+EditScreen.prototype.constructor = EditScreen;
 
-PlayScreen.BIT_SIZE = 0.5;
-PlayScreen.WORLD_CELL_SIZE = PlayScreen.BIT_SIZE * BitGrid.BITS;
+EditScreen.BIT_SIZE = 0.5;
+EditScreen.WORLD_CELL_SIZE = EditScreen.BIT_SIZE * BitGrid.BITS;
 
-PlayScreen.ANT_RAD = 0.8;
-PlayScreen.ROCK_RAD = 1.4;
+EditScreen.ANT_RAD = 0.8;
+EditScreen.ROCK_RAD = 1.4;
 
-PlayScreen.MenuItem = {
+EditScreen.MenuItem = {
   RED_ANT: 'red_ant',
   PLAYER: 'player'
 };
 
-PlayScreen.SpiritType = {
-  ANT: 3,
-  PLAYER: 4
-};
-
-PlayScreen.EventLayer = {
+EditScreen.EventLayer = {
   POPUP: 0,
   HUD: 1,
   WORLD: 2
 };
 
-PlayScreen.Group = {
-  EMPTY: 0,
-  WALL: 1,
-  ROCK: 2,
-  CURSOR: 3
-};
-
-PlayScreen.Terrain = {
-  WALL: 0,
-  FLOOR: 1,
-  MIXED: 2
-};
-
-PlayScreen.SplashType = {
-  NOTE: 1
-};
-
-PlayScreen.prototype.initEditor = function() {
+EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
@@ -128,13 +116,13 @@ PlayScreen.prototype.initEditor = function() {
   }
 };
 
-PlayScreen.prototype.updateHudLayout = function() {
+EditScreen.prototype.updateHudLayout = function() {
   this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - 20, 20);
   this.editor.updateHudLayout();
 };
 
 
-PlayScreen.prototype.updateSharableUrl = function() {
+EditScreen.prototype.updateSharableUrl = function() {
   var levelJson = this.toJSON();
   var squisher = new Squisher();
   var anchor = document.querySelector('#sharableUrl');
@@ -142,7 +130,7 @@ PlayScreen.prototype.updateSharableUrl = function() {
   anchor.href = window.location.href.split("#")[0] + "#" + hashString;
 };
 
-PlayScreen.prototype.setScreenListening = function(listen) {
+EditScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var fsb, rb, i;
   BaseScreen.prototype.setScreenListening.call(this, listen);
@@ -177,7 +165,7 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-PlayScreen.prototype.lazyInit = function() {
+EditScreen.prototype.lazyInit = function() {
   if (!this.initialized) {
     this.initSpiritConfigs();
     this.initEditor();
@@ -188,7 +176,7 @@ PlayScreen.prototype.lazyInit = function() {
   }
 };
 
-PlayScreen.prototype.initSpiritConfigs = function() {
+EditScreen.prototype.initSpiritConfigs = function() {
   this.spiritConfigs = {};
 
   var self = this;
@@ -202,14 +190,14 @@ PlayScreen.prototype.initSpiritConfigs = function() {
     self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, menuItemConfig);
   }
 
-  addConfig(PlayScreen.SpiritType.ANT, AntSpirit,
-      PlayScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
+  addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
+      EditScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
 
-  addConfig(PlayScreen.SpiritType.PLAYER, PlayerSpirit,
-      PlayScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
+  addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,
+      EditScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
 };
 
-PlayScreen.prototype.initPermStamps = function() {
+EditScreen.prototype.initPermStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
 
@@ -235,25 +223,25 @@ PlayScreen.prototype.initPermStamps = function() {
   }
 };
 
-PlayScreen.prototype.initWorld = function() {
+EditScreen.prototype.initWorld = function() {
   this.bitGrid = new BitGrid(this.bitSize);
   this.tiles = {};
 
   this.lastPathRefreshTime = -Infinity;
 
-  var groupCount = Object.keys(PlayScreen.Group).length;
-  this.world = new World(PlayScreen.WORLD_CELL_SIZE, groupCount, [
-    [PlayScreen.Group.EMPTY, PlayScreen.Group.EMPTY],
-    [PlayScreen.Group.ROCK, PlayScreen.Group.WALL],
-    [PlayScreen.Group.ROCK, PlayScreen.Group.ROCK],
-    [PlayScreen.Group.CURSOR, PlayScreen.Group.WALL],
-    [PlayScreen.Group.CURSOR, PlayScreen.Group.ROCK]
+  var groupCount = Object.keys(BaseScreen.Group).length;
+  this.world = new World(EditScreen.WORLD_CELL_SIZE, groupCount, [
+    [BaseScreen.Group.EMPTY, BaseScreen.Group.EMPTY],
+    [BaseScreen.Group.ROCK, BaseScreen.Group.WALL],
+    [BaseScreen.Group.ROCK, BaseScreen.Group.ROCK],
+    [BaseScreen.Group.CURSOR, BaseScreen.Group.WALL],
+    [BaseScreen.Group.CURSOR, BaseScreen.Group.ROCK]
   ]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.8;
 };
 
-PlayScreen.prototype.toJSON = function() {
+EditScreen.prototype.toJSON = function() {
   var json = {
     terrain: this.bitGrid.toJSON(),
     now: this.world.now,
@@ -267,7 +255,7 @@ PlayScreen.prototype.toJSON = function() {
   // bodies
   for (var bodyId in this.world.bodies) {
     var body = this.world.bodies[bodyId];
-    if (body.hitGroup != PlayScreen.Group.WALL) {
+    if (body.hitGroup != BaseScreen.Group.WALL) {
       json.bodies.push(body.toJSON());
     }
   }
@@ -293,7 +281,7 @@ PlayScreen.prototype.toJSON = function() {
   return json;
 };
 
-PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
+EditScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
   try {
     var squisher = new Squisher();
     var jsonStr = squisher.unsquish(frag);
@@ -311,7 +299,7 @@ PlayScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
 /**
  * @param {Object} json
  */
-PlayScreen.prototype.loadWorldFromJson = function (json) {
+EditScreen.prototype.loadWorldFromJson = function (json) {
   this.lazyInit();
   this.world.now = json.now;
   // bodies
@@ -346,7 +334,7 @@ PlayScreen.prototype.loadWorldFromJson = function (json) {
   for (var i = 0; i < json.splashes.length; i++) {
     var splashJson = json.splashes[i];
     var splashType = splashJson[0];
-    if (splashType == PlayScreen.SplashType.NOTE) {
+    if (splashType == EditScreen.SplashType.NOTE) {
       splash.setFromJSON(splashJson);
       splash.stamp = this.soundStamp;
       this.splasher.addCopy(splash);
@@ -364,18 +352,18 @@ PlayScreen.prototype.loadWorldFromJson = function (json) {
   this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
 };
 
-PlayScreen.prototype.createDefaultWorld = function() {
+EditScreen.prototype.createDefaultWorld = function() {
   this.lazyInit();
   this.bitGrid.drawPill(new Segment(new Vec2d(0, 0), new Vec2d(0, 0)), 9.8, 1);
   this.flushTerrainChanges();
 };
 
-PlayScreen.prototype.digTerrainAtPos = function(pos) {
+EditScreen.prototype.digTerrainAtPos = function(pos) {
   this.bitGrid.drawPill(new Segment(pos, pos), 15, 1);
   this.flushTerrainChanges();
 };
 
-PlayScreen.prototype.flushTerrainChanges = function() {
+EditScreen.prototype.flushTerrainChanges = function() {
   var changedCellIds = this.bitGrid.flushChangedCellIds();
   for (var i = 0; i < changedCellIds.length; i++) {
     this.changeTerrain(changedCellIds[i]);
@@ -387,7 +375,7 @@ PlayScreen.prototype.flushTerrainChanges = function() {
  * Make sure the four cardinal neighbors are also loaded.
  * @param cellId
  */
-PlayScreen.prototype.changeTerrain = function(cellId) {
+EditScreen.prototype.changeTerrain = function(cellId) {
   var center = Vec2d.alloc();
   this.bitGrid.cellIdToIndexVec(cellId, center);
   this.loadCellXY(center.x - 1, center.y);
@@ -399,7 +387,7 @@ PlayScreen.prototype.changeTerrain = function(cellId) {
   center.free();
 };
 
-PlayScreen.prototype.loadCellXY = function(cx, cy) {
+EditScreen.prototype.loadCellXY = function(cx, cy) {
   var cellId = this.bitGrid.getCellIdAtIndexXY(cx, cy);
   var tile = this.tiles[cellId];
   if (!tile) {
@@ -426,11 +414,11 @@ PlayScreen.prototype.loadCellXY = function(cx, cy) {
   }
 };
 
-PlayScreen.prototype.unloadCellXY = function(cx, cy) {
+EditScreen.prototype.unloadCellXY = function(cx, cy) {
   this.unloadCellId(this.bitGrid.getCellIdAtIndexXY(cx, cy));
 };
 
-PlayScreen.prototype.unloadCellId = function(cellId) {
+EditScreen.prototype.unloadCellId = function(cellId) {
   var tile = this.tiles[cellId];
   if (!tile) return;
   if (tile.stamp) {
@@ -449,18 +437,18 @@ PlayScreen.prototype.unloadCellId = function(cellId) {
 /**
  * Creates a body, but does not add it to the world.
  */
-PlayScreen.prototype.createWallBody = function(rect) {
+EditScreen.prototype.createWallBody = function(rect) {
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
   b.setPosAtTime(rect.pos, this.world.now);
   b.rectRad.set(rect.rad);
-  b.hitGroup = PlayScreen.Group.WALL;
+  b.hitGroup = BaseScreen.Group.WALL;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
   return b;
 };
 
-PlayScreen.prototype.createTileStamp = function(rects) {
+EditScreen.prototype.createTileStamp = function(rects) {
   var model = new RigidModel();
   for (var i = 0; i < rects.length; i++) {
     model.addRigidModel(this.createWallModel(rects[i]));
@@ -468,7 +456,7 @@ PlayScreen.prototype.createTileStamp = function(rects) {
   return model.createModelStamp(this.renderer.gl);
 };
 
-PlayScreen.prototype.createWallModel = function(rect) {
+EditScreen.prototype.createWallModel = function(rect) {
   var transformation, wallModel;
   transformation = new Matrix44()
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
@@ -479,10 +467,10 @@ PlayScreen.prototype.createWallModel = function(rect) {
   return wallModel;
 };
 
-PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
+EditScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   var fullRad = bodyRad * 2;// * (1+Math.random()/2);
   var s = this.splash;
-  s.reset(PlayScreen.SplashType.NOTE, this.soundStamp);
+  s.reset(EditScreen.SplashType.NOTE, this.soundStamp);
 
   s.startTime = this.world.now;
   s.duration = 10;
@@ -508,7 +496,7 @@ PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   this.splasher.addCopy(s);
 };
 
-PlayScreen.prototype.onHitEvent = function(e) {
+EditScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
   if (b0 && b1) {
@@ -516,13 +504,13 @@ PlayScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-PlayScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
+EditScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
   if (b0 && b0.hitGroup == group) return b0;
   if (b1 && b1.hitGroup == group) return b1;
   return null;
 };
 
-PlayScreen.prototype.updateViewMatrix = function() {
+EditScreen.prototype.updateViewMatrix = function() {
   // scale
   this.viewMatrix.toIdentity();
   var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
@@ -539,12 +527,12 @@ PlayScreen.prototype.updateViewMatrix = function() {
       0));
 };
 
-PlayScreen.prototype.handleInput = function () {
+EditScreen.prototype.handleInput = function () {
   if (!this.world) return;
   this.editor.handleInput();
 };
 
-PlayScreen.prototype.drawScene = function() {
+EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
   for (var id in this.world.spirits) {
@@ -594,7 +582,7 @@ PlayScreen.prototype.drawScene = function() {
   }
 };
 
-PlayScreen.prototype.drawHud = function() {
+EditScreen.prototype.drawHud = function() {
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
               2 / this.canvas.width,
@@ -610,7 +598,7 @@ PlayScreen.prototype.drawHud = function() {
   this.renderer.setBlendingEnabled(false);
 };
 
-PlayScreen.prototype.configMousePointer = function() {
+EditScreen.prototype.configMousePointer = function() {
   if (this.pauseTriggerWidget.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
@@ -620,12 +608,12 @@ PlayScreen.prototype.configMousePointer = function() {
   }
 };
 
-PlayScreen.prototype.getPauseTriggerColorVector = function() {
+EditScreen.prototype.getPauseTriggerColorVector = function() {
   this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
   return this.colorVector;
 };
 
-PlayScreen.prototype.unloadLevel = function() {
+EditScreen.prototype.unloadLevel = function() {
   if (this.tiles) {
     for (var cellId in this.tiles) {
       this.unloadCellId(cellId);
@@ -646,12 +634,12 @@ PlayScreen.prototype.unloadLevel = function() {
   this.camera.setXY(0, 0);
 };
 
-PlayScreen.prototype.showPausedOverlay = function() {
+EditScreen.prototype.showPausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'block';
   this.canvas.style.cursor = "auto";
 };
 
-PlayScreen.prototype.hidePausedOverlay = function() {
+EditScreen.prototype.hidePausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'none';
   this.canvas.style.cursor = "";
 };
@@ -660,35 +648,35 @@ PlayScreen.prototype.hidePausedOverlay = function() {
 // Editor API stuff
 /////////////////////
 
-PlayScreen.prototype.getBodyPos = function(body, outVec2d) {
+EditScreen.prototype.getBodyPos = function(body, outVec2d) {
   return body.getPosAtTime(this.world.now, outVec2d);
 };
 
-PlayScreen.prototype.getCanvas = function() {
+EditScreen.prototype.getCanvas = function() {
   return this.canvas;
 };
 
-PlayScreen.prototype.addListener = function(listener) {
+EditScreen.prototype.addListener = function(listener) {
   this.listeners.put(listener);
   if (this.listening) {
     listener.startListening();
   }
 };
 
-PlayScreen.prototype.getBodyOverlaps = function(body) {
+EditScreen.prototype.getBodyOverlaps = function(body) {
   return this.world.getOverlaps(body);
 };
 
-PlayScreen.prototype.getBodyById = function(id) {
+EditScreen.prototype.getBodyById = function(id) {
   return this.world.bodies[id];
 };
 
-PlayScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
+EditScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
   this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
   this.flushTerrainChanges();
 };
 
-PlayScreen.prototype.addItem = function(name, pos, dir) {
+EditScreen.prototype.addItem = function(name, pos, dir) {
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t];
     if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
@@ -698,7 +686,7 @@ PlayScreen.prototype.addItem = function(name, pos, dir) {
   }
 };
 
-PlayScreen.prototype.removeByBodyId = function(bodyId) {
+EditScreen.prototype.removeByBodyId = function(bodyId) {
   var body = this.world.getBody(bodyId);
   if (body) {
     if (body.spiritId) {
@@ -708,36 +696,36 @@ PlayScreen.prototype.removeByBodyId = function(bodyId) {
   }
 };
 
-PlayScreen.prototype.getCursorHitGroup = function() {
-  return PlayScreen.Group.CURSOR;
+EditScreen.prototype.getCursorHitGroup = function() {
+  return BaseScreen.Group.CURSOR;
 };
 
-PlayScreen.prototype.getWallHitGroup = function() {
-  return PlayScreen.Group.WALL;
+EditScreen.prototype.getWallHitGroup = function() {
+  return BaseScreen.Group.WALL;
 };
 
-PlayScreen.prototype.getWorldTime = function() {
+EditScreen.prototype.getWorldTime = function() {
   return this.world.now;
 };
 
-PlayScreen.prototype.getViewDist = function() {
+EditScreen.prototype.getViewDist = function() {
   return this.camera.getViewDist();
 };
 
-PlayScreen.prototype.getViewMatrix = function() {
+EditScreen.prototype.getViewMatrix = function() {
   return this.viewMatrix;
 };
 
-PlayScreen.prototype.getPopupEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(PlayScreen.EventLayer.POPUP);
+EditScreen.prototype.getPopupEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(EditScreen.EventLayer.POPUP);
 };
 
-PlayScreen.prototype.getHudEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(PlayScreen.EventLayer.HUD);
+EditScreen.prototype.getHudEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(EditScreen.EventLayer.HUD);
 };
 
-PlayScreen.prototype.getWorldEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(PlayScreen.EventLayer.WORLD);
+EditScreen.prototype.getWorldEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(EditScreen.EventLayer.WORLD);
 };
 
 /////////////////
@@ -751,7 +739,7 @@ PlayScreen.prototype.getWorldEventTarget = function() {
  * @param {number} rad
  * @returns {number} fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
  */
-PlayScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
+EditScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
   this.scanReq.hitGroup = hitGroup;
   // write the body's position into the req's position slot.
   this.scanReq.pos.set(pos);

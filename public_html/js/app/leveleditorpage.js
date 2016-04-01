@@ -176,8 +176,8 @@ LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragme
     stamps[key] = glyphStamps[key];
   }
 
-  // TODO: creating a PlayScreen here is nasty.
-  this.screen = new PlayScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx);
+  // TODO: creating a Screen here is nasty.
+  this.screen = new EditScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx);
   if (this.jsonObj) {
     this.screen.loadWorldFromJson(this.jsonObj);
   } else {

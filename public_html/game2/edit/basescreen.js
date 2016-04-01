@@ -33,6 +33,29 @@ BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
 BaseScreen.PATH_DURATION = 0xffff;
 
+BaseScreen.SpiritType = {
+  ANT: 3,
+  PLAYER: 4
+};
+
+BaseScreen.Group = {
+  EMPTY: 0,
+  WALL: 1,
+  ROCK: 2,
+  CURSOR: 3
+};
+
+BaseScreen.Terrain = {
+  WALL: 0,
+  FLOOR: 1,
+  MIXED: 2
+};
+
+BaseScreen.SplashType = {
+  NOTE: 1
+};
+
+
 BaseScreen.prototype.getResizeFn = function() {
   var self = this;
   return function() {
