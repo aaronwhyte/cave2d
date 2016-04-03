@@ -2,11 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx);
-
-  this.adventureName = adventureName;
-  this.levelName = levelName;
 
   this.listeners = new ArraySet();
   this.splasher = new Splasher();
@@ -28,31 +25,8 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
   this.addListener(this.eventDistributor);
 
-  this.mouseMoveListener = function() {
-    self.testTriggerWidget.setKeyboardTipTimeoutMs(Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS);
-  };
-
-  this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .listenToTouch()
-      .listenToMousePointer()
-      .addTriggerKeyByName('t')
-      .startListening();
-
-  this.testDownFn = function(e) {
-    e = e || window.event;
-    var query = {};
-    query[EditorApp.PARAM_ADVENTURE_NAME] = self.adventureName;
-    query[EditorApp.PARAM_LEVEL_NAME] = self.levelName;
-    query[EditorApp.PARAM_MODE] = EditorApp.MODE_TEST;
-    Url.setFragment(Url.encodeQuery(query));
-    e.preventDefault();
-  };
-
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
+      .setCanvasScaleXY(20, 20)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
@@ -91,36 +65,26 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.tiles = null;
 
   this.bitSize = 0.5;
-  this.bitGridMetersPerCell = EditScreen.BIT_SIZE * BitGrid.BITS;
+  this.bitGridMetersPerCell = TestScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 
   this.levelStamps = [];
   this.initialized = false;
 }
-EditScreen.prototype = new BaseScreen();
-EditScreen.prototype.constructor = EditScreen;
+TestScreen.prototype = new BaseScreen();
+TestScreen.prototype.constructor = TestScreen;
 
-EditScreen.BIT_SIZE = 0.5;
-EditScreen.WORLD_CELL_SIZE = EditScreen.BIT_SIZE * BitGrid.BITS;
+TestScreen.BIT_SIZE = 0.5;
+TestScreen.WORLD_CELL_SIZE = TestScreen.BIT_SIZE * BitGrid.BITS;
 
-EditScreen.WIDGET_RADIUS = 30;
-
-EditScreen.ANT_RAD = 0.8;
-EditScreen.ROCK_RAD = 1.4;
-
-EditScreen.MenuItem = {
-  RED_ANT: 'red_ant',
-  PLAYER: 'player'
-};
-
-EditScreen.EventLayer = {
+TestScreen.EventLayer = {
   POPUP: 0,
   HUD: 1,
   WORLD: 2
 };
 
-EditScreen.prototype.createTrackball = function() {
+TestScreen.prototype.createTrackball = function() {
   var trackball = new MultiTrackball()
       .addTrackball(new TouchTrackball(this.getWorldEventTarget())
           .setStartZoneFunction(function(x, y) { return true; }))
@@ -130,7 +94,7 @@ EditScreen.prototype.createTrackball = function() {
   return trackball;
 };
 
-EditScreen.prototype.createLeftTrigger = function() {
+TestScreen.prototype.createLeftTrigger = function() {
   var trigger = new TriggerWidget(this.getHudEventTarget())
       .setCanvasScaleXY(30, 30)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
@@ -142,27 +106,12 @@ EditScreen.prototype.createLeftTrigger = function() {
       .startListening();
 };
 
-EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t].menuItemConfig;
-    if (c) {
-      this.editor.addMenuItem(c.group, c.rank, c.itemName, c.model);
-    }
-  }
-  for (var group = 0; group < 2; group++) {
-    this.editor.addMenuKeyboardShortcut(group, group + 1);
-  }
-};
-
-EditScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS);
-  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS * 3);
-  this.editor.updateHudLayout();
+TestScreen.prototype.updateHudLayout = function() {
+  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - 20, 20);
 };
 
 
-EditScreen.prototype.setScreenListening = function(listen) {
+TestScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var fsb, rb, i;
   BaseScreen.prototype.setScreenListening.call(this, listen);
@@ -171,7 +120,6 @@ EditScreen.prototype.setScreenListening = function(listen) {
       this.listeners.vals[i].startListening();
     }
     this.pauseTriggerWidget.addTriggerDownListener(this.pauseDownFn);
-    this.testTriggerWidget.addTriggerDownListener(this.testDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
@@ -181,14 +129,11 @@ EditScreen.prototype.setScreenListening = function(listen) {
     rb.addEventListener('click', this.pauseDownFn);
     rb.addEventListener('touchend', this.pauseDownFn);
 
-    this.canvas.addEventListener('mousemove', this.mouseMoveListener);
-
   } else {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
     this.pauseTriggerWidget.removeTriggerDownListener(this.pauseDownFn);
-    this.testTriggerWidget.removeTriggerDownListener(this.testDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
@@ -197,16 +142,13 @@ EditScreen.prototype.setScreenListening = function(listen) {
     rb = document.querySelector('#resumeButton');
     rb.removeEventListener('click', this.pauseDownFn);
     rb.removeEventListener('touchend', this.pauseDownFn);
-
-    this.canvas.removeEventListener('mousemove', this.mouseMoveListener);
   }
   this.listening = listen;
 };
 
-EditScreen.prototype.lazyInit = function() {
+TestScreen.prototype.lazyInit = function() {
   if (!this.initialized) {
     this.initSpiritConfigs();
-    this.initEditor();
     this.updateHudLayout();
     this.initPermStamps();
     this.initWorld();
@@ -214,77 +156,50 @@ EditScreen.prototype.lazyInit = function() {
   }
 };
 
-EditScreen.prototype.initSpiritConfigs = function() {
+TestScreen.prototype.initSpiritConfigs = function() {
   this.spiritConfigs = {};
 
   var self = this;
-  function addConfig(type, ctor, itemName, group, rank, factory) {
+  function addConfig(type, ctor) {
     var model = ctor.createModel();
     var stamp = model.createModelStamp(self.renderer.gl);
-    var menuItemConfig = null;
-    if (itemName) {
-      menuItemConfig = new MenuItemConfig(itemName, group, rank, model, factory);
-    }
-    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, menuItemConfig);
+    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp);
   }
 
-  addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
-      EditScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
+  addConfig(BaseScreen.SpiritType.ANT, AntSpirit);
 
-  addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,
-      EditScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
+  addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit);
 };
 
-EditScreen.prototype.initPermStamps = function() {
+TestScreen.prototype.initPermStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
 
   var pauseModel = new RigidModel();
-  pauseModel.addRigidModel(RigidModel.createRingMesh(4, 0.5)
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.5, 0.5, 0.5)));
-  var teeth = 8;
-  for (var r = 0; r < teeth; r++) {
-    pauseModel.addRigidModel(
-        RigidModel.createSquare()
-            .transformPositions(new Matrix44().toScaleOpXYZ(0.09, 0.1, 1))
-            .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.6, 0))
-            .transformPositions(new Matrix44().toRotateZOp(2 * Math.PI * r / teeth)));
+  for (var x = -1; x <= 1; x+=2) {
+    pauseModel.addRigidModel(RigidModel.createSquare().transformPositions(
+        new Matrix44()
+            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.6, 1)
+            .multiply(new Matrix44().toTranslateOpXYZ(x*1.9, 0, 0)
+    ))));
   }
   this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.pauseStamp);
   this.pauseTriggerWidget.setStamp(this.pauseStamp);
 
-  var testModel = RigidModel.createTriangle()
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.45, 0.35, 1))
-      .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2));
-
-  this.testStamp = testModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.testStamp);
-  this.testTriggerWidget
-      .setStamp(this.testStamp)
-      .setKeyboardTipStamp(this.glyphs.stamps['T'])
-      .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(EditScreen.WIDGET_RADIUS * 0.5, EditScreen.WIDGET_RADIUS * 0.7);
-
-  // TODO real splashes for this game
   var model = RigidModel.createDoubleRing(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.soundStamp);
-
-  var editorStamps = this.editor.getStamps();
-  for (var i = 0; i < editorStamps.length; i++) {
-    this.levelStamps.push(editorStamps[i]);
-  }
 };
 
-EditScreen.prototype.initWorld = function() {
+TestScreen.prototype.initWorld = function() {
   this.bitGrid = new BitGrid(this.bitSize);
   this.tiles = {};
 
   this.lastPathRefreshTime = -Infinity;
 
   var groupCount = Object.keys(BaseScreen.Group).length;
-  this.world = new World(EditScreen.WORLD_CELL_SIZE, groupCount, [
+  this.world = new World(TestScreen.WORLD_CELL_SIZE, groupCount, [
     [BaseScreen.Group.EMPTY, BaseScreen.Group.EMPTY],
     [BaseScreen.Group.ROCK, BaseScreen.Group.WALL],
     [BaseScreen.Group.ROCK, BaseScreen.Group.ROCK],
@@ -295,65 +210,10 @@ EditScreen.prototype.initWorld = function() {
   this.resolver.defaultElasticity = 0.8;
 };
 
-EditScreen.prototype.toJSON = function() {
-  var json = {
-    terrain: this.bitGrid.toJSON(),
-    now: this.world.now,
-    bodies: [],
-    spirits: [],
-    timeouts: [],
-    splashes: [],
-    cursorPos: this.editor.cursorPos.toJSON(),
-    cameraPos: this.camera.cameraPos.toJSON()
-  };
-  // bodies
-  for (var bodyId in this.world.bodies) {
-    var body = this.world.bodies[bodyId];
-    if (body.hitGroup != BaseScreen.Group.WALL) {
-      json.bodies.push(body.toJSON());
-    }
-  }
-  // spirits
-  for (var spiritId in this.world.spirits) {
-    var spirit = this.world.spirits[spiritId];
-    json.spirits.push(spirit.toJSON());
-  }
-  // timeouts
-  for (var e = this.world.queue.getFirst(); e; e = e.next[0]) {
-    if (e.type === WorldEvent.TYPE_TIMEOUT) {
-      var spirit = this.world.spirits[e.spiritId];
-      if (spirit) {
-        json.timeouts.push(e.toJSON());
-      }
-    }
-  }
-  // splashes
-  var splashes = this.splasher.splashes;
-  for (var i = 0; i < splashes.length; i++) {
-    json.splashes.push(splashes[i].toJSON());
-  }
-  return json;
-};
-
-EditScreen.prototype.maybeLoadWorldFromFragment = function(frag) {
-  try {
-    var squisher = new Squisher();
-    var jsonStr = squisher.unsquish(frag);
-    var jsonObj = JSON.parse(jsonStr);
-  } catch (e) {
-    console.error("maybeLoadWorldFromFragment error", e);
-    return false;
-  }
-  if (jsonObj) {
-    this.loadWorldFromJson(jsonObj);
-  }
-  return true;
-};
-
 /**
  * @param {Object} json
  */
-EditScreen.prototype.loadWorldFromJson = function (json) {
+TestScreen.prototype.loadWorldFromJson = function (json) {
   this.lazyInit();
   this.world.now = json.now;
   // bodies
@@ -389,7 +249,7 @@ EditScreen.prototype.loadWorldFromJson = function (json) {
     var splashJson = json.splashes[i];
     var splashType = splashJson[0];
     // TODO: splashConfig plugin, like spiritConfig
-    if (splashType == EditScreen.SplashType.NOTE) {
+    if (splashType == TestScreen.SplashType.NOTE) {
       splash.setFromJSON(splashJson);
       splash.stamp = this.soundStamp;
       this.splasher.addCopy(splash);
@@ -403,22 +263,15 @@ EditScreen.prototype.loadWorldFromJson = function (json) {
   this.flushTerrainChanges();
 
   // cursor and camera
-  this.editor.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
   this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
 };
 
-EditScreen.prototype.createDefaultWorld = function() {
-  this.lazyInit();
-  this.bitGrid.drawPill(new Segment(new Vec2d(0, 0), new Vec2d(0, 0)), 9.8, 1);
-  this.flushTerrainChanges();
-};
-
-EditScreen.prototype.digTerrainAtPos = function(pos) {
+TestScreen.prototype.digTerrainAtPos = function(pos) {
   this.bitGrid.drawPill(new Segment(pos, pos), 15, 1);
   this.flushTerrainChanges();
 };
 
-EditScreen.prototype.flushTerrainChanges = function() {
+TestScreen.prototype.flushTerrainChanges = function() {
   var changedCellIds = this.bitGrid.flushChangedCellIds();
   for (var i = 0; i < changedCellIds.length; i++) {
     this.changeTerrain(changedCellIds[i]);
@@ -430,7 +283,7 @@ EditScreen.prototype.flushTerrainChanges = function() {
  * Make sure the four cardinal neighbors are also loaded.
  * @param cellId
  */
-EditScreen.prototype.changeTerrain = function(cellId) {
+TestScreen.prototype.changeTerrain = function(cellId) {
   var center = Vec2d.alloc();
   this.bitGrid.cellIdToIndexVec(cellId, center);
   this.loadCellXY(center.x - 1, center.y);
@@ -442,7 +295,7 @@ EditScreen.prototype.changeTerrain = function(cellId) {
   center.free();
 };
 
-EditScreen.prototype.loadCellXY = function(cx, cy) {
+TestScreen.prototype.loadCellXY = function(cx, cy) {
   var cellId = this.bitGrid.getCellIdAtIndexXY(cx, cy);
   var tile = this.tiles[cellId];
   if (!tile) {
@@ -469,11 +322,11 @@ EditScreen.prototype.loadCellXY = function(cx, cy) {
   }
 };
 
-EditScreen.prototype.unloadCellXY = function(cx, cy) {
+TestScreen.prototype.unloadCellXY = function(cx, cy) {
   this.unloadCellId(this.bitGrid.getCellIdAtIndexXY(cx, cy));
 };
 
-EditScreen.prototype.unloadCellId = function(cellId) {
+TestScreen.prototype.unloadCellId = function(cellId) {
   var tile = this.tiles[cellId];
   if (!tile) return;
   if (tile.stamp) {
@@ -492,7 +345,7 @@ EditScreen.prototype.unloadCellId = function(cellId) {
 /**
  * Creates a body, but does not add it to the world.
  */
-EditScreen.prototype.createWallBody = function(rect) {
+TestScreen.prototype.createWallBody = function(rect) {
   var b = Body.alloc();
   b.shape = Body.Shape.RECT;
   b.setPosAtTime(rect.pos, this.world.now);
@@ -503,7 +356,7 @@ EditScreen.prototype.createWallBody = function(rect) {
   return b;
 };
 
-EditScreen.prototype.createTileStamp = function(rects) {
+TestScreen.prototype.createTileStamp = function(rects) {
   var model = new RigidModel();
   for (var i = 0; i < rects.length; i++) {
     model.addRigidModel(this.createWallModel(rects[i]));
@@ -511,7 +364,7 @@ EditScreen.prototype.createTileStamp = function(rects) {
   return model.createModelStamp(this.renderer.gl);
 };
 
-EditScreen.prototype.createWallModel = function(rect) {
+TestScreen.prototype.createWallModel = function(rect) {
   var transformation, wallModel;
   transformation = new Matrix44()
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
@@ -522,10 +375,10 @@ EditScreen.prototype.createWallModel = function(rect) {
   return wallModel;
 };
 
-EditScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
+TestScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   var fullRad = bodyRad * 2;// * (1+Math.random()/2);
   var s = this.splash;
-  s.reset(EditScreen.SplashType.NOTE, this.soundStamp);
+  s.reset(TestScreen.SplashType.NOTE, this.soundStamp);
 
   s.startTime = this.world.now;
   s.duration = 10;
@@ -551,7 +404,7 @@ EditScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   this.splasher.addCopy(s);
 };
 
-EditScreen.prototype.onHitEvent = function(e) {
+TestScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
   if (b0 && b1) {
@@ -559,13 +412,13 @@ EditScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-EditScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
+TestScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
   if (b0 && b0.hitGroup == group) return b0;
   if (b1 && b1.hitGroup == group) return b1;
   return null;
 };
 
-EditScreen.prototype.updateViewMatrix = function() {
+TestScreen.prototype.updateViewMatrix = function() {
   // scale
   this.viewMatrix.toIdentity();
   var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
@@ -582,19 +435,18 @@ EditScreen.prototype.updateViewMatrix = function() {
       0));
 };
 
-EditScreen.prototype.handleInput = function () {
+TestScreen.prototype.handleInput = function () {
   if (!this.world) return;
-  this.editor.handleInput();
 };
 
-EditScreen.prototype.drawScene = function() {
+TestScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 
-  this.sfx.setListenerXYZ(this.editor.cursorPos.x, this.editor.cursorPos.y, 5);
+  this.sfx.setListenerXYZ(this.camera.getX(), this.camera.getY(), 5);
 
   if (this.tiles) {
     this.renderer
@@ -622,7 +474,6 @@ EditScreen.prototype.drawScene = function() {
     }
   }
   this.splasher.draw(this.renderer, this.world.now);
-  this.editor.drawScene();
   this.drawHud();
   this.configMousePointer();
 
@@ -637,7 +488,7 @@ EditScreen.prototype.drawScene = function() {
   }
 };
 
-EditScreen.prototype.drawHud = function() {
+TestScreen.prototype.drawHud = function() {
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
               2 / this.canvas.width,
@@ -649,12 +500,10 @@ EditScreen.prototype.drawHud = function() {
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
   this.pauseTriggerWidget.draw(this.renderer);
-  this.testTriggerWidget.draw(this.renderer);
-  this.editor.drawHud();
   this.renderer.setBlendingEnabled(false);
 };
 
-EditScreen.prototype.configMousePointer = function() {
+TestScreen.prototype.configMousePointer = function() {
   if (this.pauseTriggerWidget.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
@@ -664,12 +513,12 @@ EditScreen.prototype.configMousePointer = function() {
   }
 };
 
-EditScreen.prototype.getPauseTriggerColorVector = function() {
+TestScreen.prototype.getPauseTriggerColorVector = function() {
   this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
   return this.colorVector;
 };
 
-EditScreen.prototype.unloadLevel = function() {
+TestScreen.prototype.unloadLevel = function() {
   if (this.tiles) {
     for (var cellId in this.tiles) {
       this.unloadCellId(cellId);
@@ -685,17 +534,15 @@ EditScreen.prototype.unloadLevel = function() {
     }
     this.world = null;
   }
-  this.editor.cursorPos.reset();
-  this.editor.cursorVel.reset();
   this.camera.setXY(0, 0);
 };
 
-EditScreen.prototype.showPausedOverlay = function() {
+TestScreen.prototype.showPausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'block';
   this.canvas.style.cursor = "auto";
 };
 
-EditScreen.prototype.hidePausedOverlay = function() {
+TestScreen.prototype.hidePausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'none';
   this.canvas.style.cursor = "";
 };
@@ -704,35 +551,35 @@ EditScreen.prototype.hidePausedOverlay = function() {
 // Editor API stuff
 /////////////////////
 
-EditScreen.prototype.getBodyPos = function(body, outVec2d) {
+TestScreen.prototype.getBodyPos = function(body, outVec2d) {
   return body.getPosAtTime(this.world.now, outVec2d);
 };
 
-EditScreen.prototype.getCanvas = function() {
+TestScreen.prototype.getCanvas = function() {
   return this.canvas;
 };
 
-EditScreen.prototype.addListener = function(listener) {
+TestScreen.prototype.addListener = function(listener) {
   this.listeners.put(listener);
   if (this.listening) {
     listener.startListening();
   }
 };
 
-EditScreen.prototype.getBodyOverlaps = function(body) {
+TestScreen.prototype.getBodyOverlaps = function(body) {
   return this.world.getOverlaps(body);
 };
 
-EditScreen.prototype.getBodyById = function(id) {
+TestScreen.prototype.getBodyById = function(id) {
   return this.world.bodies[id];
 };
 
-EditScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
+TestScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
   this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
   this.flushTerrainChanges();
 };
 
-EditScreen.prototype.addItem = function(name, pos, dir) {
+TestScreen.prototype.addItem = function(name, pos, dir) {
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t];
     if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
@@ -742,7 +589,7 @@ EditScreen.prototype.addItem = function(name, pos, dir) {
   }
 };
 
-EditScreen.prototype.removeByBodyId = function(bodyId) {
+TestScreen.prototype.removeByBodyId = function(bodyId) {
   var body = this.world.getBody(bodyId);
   if (body) {
     if (body.spiritId) {
@@ -752,36 +599,36 @@ EditScreen.prototype.removeByBodyId = function(bodyId) {
   }
 };
 
-EditScreen.prototype.getCursorHitGroup = function() {
+TestScreen.prototype.getCursorHitGroup = function() {
   return BaseScreen.Group.CURSOR;
 };
 
-EditScreen.prototype.getWallHitGroup = function() {
+TestScreen.prototype.getWallHitGroup = function() {
   return BaseScreen.Group.WALL;
 };
 
-EditScreen.prototype.getWorldTime = function() {
+TestScreen.prototype.getWorldTime = function() {
   return this.world.now;
 };
 
-EditScreen.prototype.getViewDist = function() {
+TestScreen.prototype.getViewDist = function() {
   return this.camera.getViewDist();
 };
 
-EditScreen.prototype.getViewMatrix = function() {
+TestScreen.prototype.getViewMatrix = function() {
   return this.viewMatrix;
 };
 
-EditScreen.prototype.getPopupEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(EditScreen.EventLayer.POPUP);
+TestScreen.prototype.getPopupEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(TestScreen.EventLayer.POPUP);
 };
 
-EditScreen.prototype.getHudEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(EditScreen.EventLayer.HUD);
+TestScreen.prototype.getHudEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(TestScreen.EventLayer.HUD);
 };
 
-EditScreen.prototype.getWorldEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(EditScreen.EventLayer.WORLD);
+TestScreen.prototype.getWorldEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(TestScreen.EventLayer.WORLD);
 };
 
 /////////////////
@@ -795,7 +642,7 @@ EditScreen.prototype.getWorldEventTarget = function() {
  * @param {number} rad
  * @returns {number} fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
  */
-EditScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
+TestScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
   this.scanReq.hitGroup = hitGroup;
   // write the body's position into the req's position slot.
   this.scanReq.pos.set(pos);

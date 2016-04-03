@@ -8,7 +8,7 @@
  * @constructor
  * @extends (Page)
  */
-function LevelEditorPage(gameTitle, basePath, fileTree, adventureName, levelName) {
+function LevelTestPage(gameTitle, basePath, fileTree, adventureName, levelName) {
   Page.call(this);
   this.gameTitle = gameTitle;
   this.basePath = basePath;
@@ -25,10 +25,10 @@ function LevelEditorPage(gameTitle, basePath, fileTree, adventureName, levelName
 
   this.animateFrameFn = this.animateFrame.bind(this);
 }
-LevelEditorPage.prototype = new Page();
-LevelEditorPage.prototype.constructor = LevelEditorPage;
+LevelTestPage.prototype = new Page();
+LevelTestPage.prototype.constructor = LevelTestPage;
 
-LevelEditorPage.prototype.enterDoc = function() {
+LevelTestPage.prototype.enterDoc = function() {
   if (this.canvas || this.overlayDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'overlayDiv:' + this.overlayDiv);
   }
@@ -40,7 +40,7 @@ LevelEditorPage.prototype.enterDoc = function() {
   this.overlayDiv = this.ce('div', df);
   this.overlayDiv.id = 'pausedOverlay';
   document.body.appendChild(df);
-  document.body.classList.add('levelEditorPage');
+  document.body.classList.add('levelTestPage');
 
   var metaViewport = document.head.querySelector('meta[name="viewport"]');
   this.oldMetaViewportContent = metaViewport.content;
@@ -53,17 +53,17 @@ LevelEditorPage.prototype.enterDoc = function() {
 
   // On-event sound unlocker for iOS.
   this.canvas.addEventListener('touchend', this.unlockIosSound.bind(this));
-  this.canvas.addEventListener('touchstart', LevelEditorPage.pd);
-  this.canvas.addEventListener('touchmove', LevelEditorPage.pd);
-  this.canvas.addEventListener('touchend', LevelEditorPage.pd);
+  this.canvas.addEventListener('touchstart', LevelTestPage.pd);
+  this.canvas.addEventListener('touchmove', LevelTestPage.pd);
+  this.canvas.addEventListener('touchend', LevelTestPage.pd);
 
-  window.addEventListener("scroll", LevelEditorPage.pd);
+  window.addEventListener("scroll", LevelTestPage.pd);
 
   // load level
   this.jsonObj = this.fileTree.getFile(this.levelDataPath);
 };
 
-LevelEditorPage.pd = function(event) {
+LevelTestPage.pd = function(event) {
   event.preventDefault();
 };
 
@@ -71,24 +71,23 @@ LevelEditorPage.pd = function(event) {
  * It seems that a drag won't work. There has to be a clean tap.
  * For now, I'll unlock every time there's a touchend.
  */
-LevelEditorPage.prototype.unlockIosSound = function() {
+LevelTestPage.prototype.unlockIosSound = function() {
   this.sfx.sound(0, 0, 0, 0.001, 0, 0, 0.001, 1, 1, 'sine');
   this.iosSoundUnlocked++;
 };
 
-LevelEditorPage.prototype.exitDoc = function() {
+LevelTestPage.prototype.exitDoc = function() {
   if (!this.canvas || !this.overlayDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'overlayDiv:' + this.overlayDiv);
   }
-  window.removeEventListener("scroll", LevelEditorPage.pd);
+  window.removeEventListener("scroll", LevelTestPage.pd);
 
   if (this.screen) {
-    this.saveLevel();
     this.screen.setScreenListening(false);
   }
   document.body.removeChild(this.canvas);
   document.body.removeChild(this.overlayDiv);
-  document.body.classList.remove('levelEditorPage');
+  document.body.classList.remove('levelTestPage');
   this.canvas = null;
   this.overlayDiv = null;
   this.animationId = 0;
@@ -98,16 +97,7 @@ LevelEditorPage.prototype.exitDoc = function() {
   this.oldMetaViewportContent = null;
 };
 
-LevelEditorPage.prototype.saveLevel = function() {
-  if (!this.screen) {
-    console.warn('No screen, cannot get JSON to save level: ' + this.levelName);
-    return;
-  }
-  this.jsonObj = this.screen.toJSON();
-  this.fileTree.setFile(this.levelDataPath, this.jsonObj);
-};
-
-LevelEditorPage.prototype.refreshOverlay = function() {
+LevelTestPage.prototype.refreshOverlay = function() {
   var df = document.createDocumentFragment();
   var e;
   var menu = this.ce('div', df, 'pausedMenu');
@@ -138,7 +128,7 @@ LevelEditorPage.prototype.refreshOverlay = function() {
   this.overlayDiv.appendChild(df);
 };
 
-LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
+LevelTestPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
   if (!this.canvas) {
     console.log('onShaderTextChange with no this.canvas');
     return;
@@ -164,8 +154,7 @@ LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragme
   }
 
   // TODO: creating a Screen here is nasty.
-  this.screen = new EditScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx,
-      this.adventureName, this.levelName);
+  this.screen = new TestScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx);
   if (this.jsonObj) {
     this.screen.loadWorldFromJson(this.jsonObj);
   } else {
@@ -175,13 +164,13 @@ LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragme
   this.requestAnimation();
 };
 
-LevelEditorPage.prototype.requestAnimation = function() {
+LevelTestPage.prototype.requestAnimation = function() {
   if (!this.animationId) {
     this.animationId = requestAnimationFrame(this.animateFrameFn, this.canvas);
   }
 };
 
-LevelEditorPage.prototype.animateFrame = function() {
+LevelTestPage.prototype.animateFrame = function() {
   if (!this.animationId) {
     return;
   }
@@ -196,7 +185,7 @@ LevelEditorPage.prototype.animateFrame = function() {
   this.screen.drawScreen(1);
 };
 
-LevelEditorPage.prototype.requestFullScreen = function() {
+LevelTestPage.prototype.requestFullScreen = function() {
   var elem = document.body;
   if (elem.requestFullscreen) {
     elem.requestFullscreen();

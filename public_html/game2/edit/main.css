@@ -8,7 +8,7 @@ body.listPage {
   margin:0.5em 1em;
 }
 
-body.levelEditorPage {
+body.levelEditorPage, body.levelTestPage{
   padding:0;
   margin:0;
   border:0;
@@ -83,7 +83,7 @@ button.createButton {
   padding: 0.2em 0.5em;
 }
 
-.levelEditorPage canvas#canvas {
+.levelEditorPage canvas#canvas, .levelTestPage canvas#canvas {
   border:0;
   padding:0;
   margin:0;
@@ -94,7 +94,7 @@ button.createButton {
   cursor:crosshair;
 }
 
-.levelEditorPage button {
+.levelEditorPage button, .levelTestPage button  {
   margin:0.5em;
   border:0;
   border-radius: 0.5em;
@@ -109,7 +109,6 @@ button.createButton {
   position:absolute;
   text-align:right;
   top:40px;
-  left: 20px;
   width:100%;
   z-index:2;
 }
@@ -133,21 +132,6 @@ button.createButton {
   border:0;
 }
 
-.levelEditorPage button {
-  margin:0.5em;
-  border:0;
-  border-radius: 0.5em;
-  padding:0.75em 1em;
-  background: #fff;
-  color:#000;
-  font-size:medium;
-}
-
-#sharableUrl {
-  margin:0.5em;
-  padding:1em;
-}
-
 .levelEditorPage input {
   margin:0.2em;
   border:1px solid #000;
@@ -158,6 +142,17 @@ button.createButton {
   font-size:small;
   width:20em;
   visibility:hidden;
+}
+
+.levelEditorNav {
+}
+
+.levelEditorNav div {
+  margin: 0.7em 0;
+}
+
+.levelEditorLevelName {
+  font-weight: bold;
 }
 
 .exportPage {

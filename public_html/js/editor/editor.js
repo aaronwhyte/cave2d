@@ -1,5 +1,6 @@
 /**
- * Owns the cursor and edit-related triggers
+ * Owns the editor's cursor and edit-related triggers, cursor, and camera.
+ * Hosted by a Screen that owns the world
  * @constructor
  */
 function Editor(host, canvas, renderer, glyphs) {

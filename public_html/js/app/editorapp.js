@@ -28,6 +28,7 @@ EditorApp.PARAM_LEVEL_NAME = 'lev';
 
 EditorApp.MODE_EDIT = 'edit';
 EditorApp.MODE_EXPORT = 'export';
+EditorApp.MODE_TEST = 'test';
 
 /**
  * Starts listening to hash-fragment queries, to navigate to the right page.
@@ -88,9 +89,17 @@ EditorApp.prototype.getHashChangeFunction = function() {
         // show the adventure's list of levels
         self.page = new LevelListPage(self.gameTitle, self.basePath, self.fileTree, adventureName);
       } else {
-        self.page = new LevelEditorPage(
-            self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
-            self.shaderTextLoader);
+        // we have an adventure and a level
+        if (mode == EditorApp.MODE_TEST) {
+          self.page = new LevelTestPage(
+              self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
+              self.shaderTextLoader);
+        } else {
+          // MODE_EDIT is the default
+          self.page = new LevelEditorPage(
+              self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
+              self.shaderTextLoader);
+        }
       }
     }
     self.page.enterDoc();

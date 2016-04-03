@@ -102,19 +102,21 @@ v convert existing spirits
   v AntSpirit
   v PlayerSpirit
 
-Player
-v PlayerSpirit shell
-v timeout cycle
-  v friction
-  - controls
-    v trackball
-    - two buttons
-v remove ant behavior from player
-- draw a little face on it
-
 Modes - Edit, Test, Play
 v rename PlayScreen to EditScreen
+v change EditScreen "pause" button to "settings" or something
 - Make TestScreen too
+  v code nest
+  v Button to get to it from Edit screen
+  v css
+  - camera follows average player-spirit position.
+  - left-arrow button in TestScreen to go back to edit
+  - time controls, centered on top
+    - pause
+    - play 1/4 speed
+    - play regular speed
+    - play 4x speed? or faster?
+    - super speed
 - Spirits read mode from host screen
 - in edit mode,
   - spirits don't move or create on their own.
@@ -122,15 +124,23 @@ v rename PlayScreen to EditScreen
   - Friction is applied uniformly by the editor.
   - Spirits may render differently, to help the editor position and orient them.
   - Leave the door open for spirits that help you make a level - diggers, sculptors, etc.
-- Add a button for testing a level. It's a new page, TestPage.
-- Add "test" button from level list
-- in test mode
+- in test & play mode
   - player controls work
-  - camera follows a player? Center of all players? Center for now, ok.
-  - no editor stuff except for links in the pause menu
-- Exit
+  - self-driving ant
+
+Exit
   - square with the word "exit" written on or above it.
   - in play mode it triggers transition and then next level, or victory.
+
+super basic Player
+v PlayerSpirit shell
+v timeout cycle
+  v friction
+  - controls
+    v trackball on the world
+    - button on the HUD? Uh oh need modes first
+v remove ant behavior from player
+- draw a little face on it
 
 Level Play Progression
 - make and export a few levels
@@ -140,6 +150,9 @@ Level Play Progression
   - game2/#adv=foo&level=bar plays that level? Or keep it all in memory, no bookmarking?
 - in-game pause menu - resume, fullscreen, quit
 - victory page?
+
+SplashConfig
+* similar to SpiritConfig, except that there's no menu item for splashes
 
 Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
