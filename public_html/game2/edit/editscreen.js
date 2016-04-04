@@ -255,16 +255,15 @@ EditScreen.prototype.initPermStamps = function() {
   this.pauseTriggerWidget.setStamp(this.pauseStamp);
 
   var testModel = RigidModel.createTriangle()
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.45, 0.35, 1))
+      .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
       .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2));
-
   this.testStamp = testModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.testStamp);
   this.testTriggerWidget
       .setStamp(this.testStamp)
       .setKeyboardTipStamp(this.glyphs.stamps['T'])
       .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(EditScreen.WIDGET_RADIUS * 0.5, EditScreen.WIDGET_RADIUS * 0.7);
+      .setKeyboardTipOffsetXY(EditScreen.WIDGET_RADIUS * 0.6, EditScreen.WIDGET_RADIUS * 0.7);
 
   // TODO real splashes for this game
   var model = RigidModel.createDoubleRing(64);
@@ -655,7 +654,8 @@ EditScreen.prototype.drawHud = function() {
 };
 
 EditScreen.prototype.configMousePointer = function() {
-  if (this.pauseTriggerWidget.isMouseHovered()) {
+  if (this.pauseTriggerWidget.isMouseHovered() ||
+      this.testTriggerWidget.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
     this.canvas.style.cursor = "";

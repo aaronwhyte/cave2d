@@ -2,8 +2,11 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
+function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx);
+
+  this.adventureName = adventureName;
+  this.levelName = levelName;
 
   this.listeners = new ArraySet();
   this.splasher = new Splasher();
@@ -16,7 +19,7 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.scanReq = new ScanRequest();
   this.scanResp = new ScanResponse();
 
-  this.camera = new Camera(0.1, 0.3, 35);
+  this.camera = new Camera(0.1, 1, 35);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
@@ -25,8 +28,32 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
   this.addListener(this.eventDistributor);
 
+  this.mouseMoveListener = function() {
+    self.testTriggerWidget.setKeyboardTipTimeoutMs(Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS);
+  };
+
+  this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
+      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .listenToTouch()
+      .listenToMousePointer()
+      .addTriggerKeyByName('t')
+      .startListening();
+
+  this.testDownFn = function(e) {
+    e = e || window.event;
+    var query = {};
+    query[EditorApp.PARAM_ADVENTURE_NAME] = self.adventureName;
+    query[EditorApp.PARAM_LEVEL_NAME] = self.levelName;
+    query[EditorApp.PARAM_MODE] = EditorApp.MODE_EDIT;
+    Url.setFragment(Url.encodeQuery(query));
+    e.preventDefault();
+  };
+
+
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(20, 20)
+      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
@@ -109,7 +136,8 @@ TestScreen.prototype.createLeftTrigger = function() {
 };
 
 TestScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - 20, 20);
+  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS);
+  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS * 3);
 };
 
 
@@ -122,6 +150,7 @@ TestScreen.prototype.setScreenListening = function(listen) {
       this.listeners.vals[i].startListening();
     }
     this.pauseTriggerWidget.addTriggerDownListener(this.pauseDownFn);
+    this.testTriggerWidget.addTriggerDownListener(this.testDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
@@ -131,11 +160,14 @@ TestScreen.prototype.setScreenListening = function(listen) {
     rb.addEventListener('click', this.pauseDownFn);
     rb.addEventListener('touchend', this.pauseDownFn);
 
+    this.canvas.addEventListener('mousemove', this.mouseMoveListener);
+
   } else {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
     this.pauseTriggerWidget.removeTriggerDownListener(this.pauseDownFn);
+    this.testTriggerWidget.removeTriggerDownListener(this.testDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
@@ -144,6 +176,8 @@ TestScreen.prototype.setScreenListening = function(listen) {
     rb = document.querySelector('#resumeButton');
     rb.removeEventListener('click', this.pauseDownFn);
     rb.removeEventListener('touchend', this.pauseDownFn);
+
+    this.canvas.removeEventListener('mousemove', this.mouseMoveListener);
   }
   this.listening = listen;
 };
@@ -178,16 +212,30 @@ TestScreen.prototype.initPermStamps = function() {
   this.levelStamps.push(this.cubeStamp);
 
   var pauseModel = new RigidModel();
-  for (var x = -1; x <= 1; x+=2) {
-    pauseModel.addRigidModel(RigidModel.createSquare().transformPositions(
-        new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.6, 1)
-            .multiply(new Matrix44().toTranslateOpXYZ(x*1.9, 0, 0)
-    ))));
+  pauseModel.addRigidModel(RigidModel.createRingMesh(4, 0.5)
+      .transformPositions(new Matrix44().toScaleOpXYZ(0.5, 0.5, 0.5)));
+  var teeth = 8;
+  for (var r = 0; r < teeth; r++) {
+    pauseModel.addRigidModel(
+        RigidModel.createSquare()
+            .transformPositions(new Matrix44().toScaleOpXYZ(0.09, 0.1, 1))
+            .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.6, 0))
+            .transformPositions(new Matrix44().toRotateZOp(2 * Math.PI * r / teeth)));
   }
   this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.pauseStamp);
   this.pauseTriggerWidget.setStamp(this.pauseStamp);
+
+  var testModel = RigidModel.createTriangle()
+      .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
+      .transformPositions(new Matrix44().toRotateZOp(Math.PI/2));
+  this.testStamp = testModel.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.testStamp);
+  this.testTriggerWidget
+      .setStamp(this.testStamp)
+      .setKeyboardTipStamp(this.glyphs.stamps['T'])
+      .setKeyboardTipScaleXY(4, -4)
+      .setKeyboardTipOffsetXY(EditScreen.WIDGET_RADIUS * 0.6, EditScreen.WIDGET_RADIUS * 0.7);
 
   var model = RigidModel.createDoubleRing(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
@@ -209,7 +257,7 @@ TestScreen.prototype.initWorld = function() {
     [BaseScreen.Group.CURSOR, BaseScreen.Group.ROCK]
   ]);
   this.resolver = new HitResolver();
-  this.resolver.defaultElasticity = 0.8;
+  this.resolver.defaultElasticity = 0.5;
 };
 
 /**
@@ -517,11 +565,13 @@ TestScreen.prototype.drawHud = function() {
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
   this.pauseTriggerWidget.draw(this.renderer);
+  this.testTriggerWidget.draw(this.renderer);
   this.renderer.setBlendingEnabled(false);
 };
 
 TestScreen.prototype.configMousePointer = function() {
-  if (this.pauseTriggerWidget.isMouseHovered()) {
+  if (this.pauseTriggerWidget.isMouseHovered() ||
+      this.testTriggerWidget.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
     this.canvas.style.cursor = "";

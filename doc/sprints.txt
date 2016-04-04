@@ -110,27 +110,16 @@ v change EditScreen "pause" button to "settings" or something
   v Button to get to it from Edit screen
   v css
   v camera follows average player-spirit position.
-  - left-arrow button in TestScreen to navigate back to edit
-  - time controls, centered on top
-    - pause
-    - play 1/4 speed
-    - play regular speed
-    - play 4x speed? or faster?
-    - super speed
-- Spirits read mode from host screen
+  v left-arrow button in TestScreen to navigate back to edit
 - in edit mode,
   - spirits don't move or create on their own.
-  - collision interactions are limited to bouncing. No collecting, exposions, unlocking, etc.
-  - Friction is applied uniformly by the editor.
+  - collision interactions are limited to bouncing. No collecting, exposions, unlocking, exiting, etc.
+  - Friction is applied uniformly by the editor?
   - Spirits may render differently, to help the editor position and orient them.
   - Leave the door open for spirits that help you make a level - diggers, sculptors, etc.
 - in test & play mode
   - player controls work
   - self-driving ant
-
-Exit
-  - square with the word "exit" written on or above it.
-  - in play mode it triggers transition and then next level, or victory.
 
 super basic Player
 v PlayerSpirit shell
@@ -138,9 +127,16 @@ v timeout cycle
   v friction
   - controls
     v trackball on the world
-    - button on the HUD? Uh oh need modes first
+    - button on the HUD? Uh oh need modes first so button doesn't block editor controls.
 v remove ant behavior from player
 - draw a little face on it
+
+Exit
+  - square with the word "exit" written on or above it.
+  - in play mode it triggers transition and then next level, or victory.
+
+Screen refactor
+- Pull common Test/Edit/Play stuff up to BaseScreen.
 
 Level Play Progression
 - make and export a few levels
@@ -159,6 +155,21 @@ Orientation
 - create repeller turrets
 - Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
 - editor
+
+Enemies
+- gnome
+- gnome generator
+
+Collisions and Controls
+- Feed player collision force into trackball, to stop wall-pounding?
+
+TestScreen time controls
+* centered on top. These are totally unneeded but probaby would be awesome.
+- pause
+- play 1/4 speed
+- play regular speed
+- play 4x speed? or faster?
+- super speed
 
 Custom dialogs:
 - prompt
