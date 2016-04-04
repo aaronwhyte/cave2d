@@ -2,9 +2,9 @@
  * @constructor
  * @extends {Spirit}
  */
-function AntSpirit(playScreen) {
+function AntSpirit(screen) {
   Spirit.call(this);
-  this.playScreen = playScreen;
+  this.screen = screen;
   this.bodyId = -1;
   this.id = -1;
   this.modelStamp = null;
@@ -96,7 +96,7 @@ AntSpirit.prototype.setColorRGB = function(r, g, b) {
 };
 
 AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
-  return this.playScreen.scan(
+  return this.screen.scan(
       BaseScreen.Group.ROCK,
       pos,
       this.scanVec.setXY(
@@ -113,27 +113,28 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   var thrust = basicThrust;
   var friction = 0.08;
 
-  var antennaRot = Math.PI / 3.5;
-  var scanDist = body.rad * 5;
   var turn = 0;
-  var scanRot = antennaRot * (Math.random() - 0.5);
-  var dist = this.scan(pos, scanRot, scanDist, body.rad/2);
-  if (dist >= 0) {
-    if (scanRot > 0) {
-      turn += maxTurn * (-antennaRot/2 - scanRot) * (1 - dist/2);
-    } else {
-      turn += maxTurn * (antennaRot/2 - scanRot) * (1 - dist/2);
+  var newVel = this.vec2d.set(body.vel).scale(1 - friction);
+  if (this.screen.isPlaying()) {
+    var antennaRot = Math.PI / 3.5;
+    var scanDist = body.rad * 5;
+    var scanRot = antennaRot * (Math.random() - 0.5);
+    var dist = this.scan(pos, scanRot, scanDist, body.rad / 2);
+    if (dist >= 0) {
+      if (scanRot > 0) {
+        turn += maxTurn * (-antennaRot / 2 - scanRot) * (1 - dist / 2);
+      } else {
+        turn += maxTurn * (antennaRot / 2 - scanRot) * (1 - dist / 2);
+      }
+      thrust -= basicThrust * (1 - dist);
     }
-    thrust -= basicThrust * (1 - dist);
+    this.angVel *= 0.90;
+    this.angVel += turn;
+    if (this.angVel > Math.PI / 2) this.angVel = Math.PI / 2;
+    if (this.angVel < -Math.PI / 2) this.angVel = -Math.PI / 2;
+    this.dir += this.angVel;
+    newVel.addXY(Math.sin(this.dir) * thrust, Math.cos(this.dir) * thrust);
   }
-  this.angVel *= 0.90;
-  this.angVel += turn;
-  if (this.angVel > Math.PI/2) this.angVel = Math.PI/2;
-  if (this.angVel < -Math.PI/2) this.angVel = -Math.PI/2;
-  this.dir += this.angVel;
-  var newVel = this.vec2d
-    .set(body.vel).scale(1 - friction)
-    .addXY(Math.sin(this.dir) * thrust, Math.cos(this.dir) * thrust);
   body.setVelAtTime(newVel, world.now);
   world.addTimeout(world.now + AntSpirit.MEASURE_TIMEOUT * (Math.random() + 0.5), this.id, -1);
 };

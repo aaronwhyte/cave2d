@@ -714,3 +714,7 @@ TestScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
   }
   return retval;
 };
+
+TestScreen.prototype.isPlaying = function() {
+  return true;
+};

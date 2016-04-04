@@ -2,9 +2,9 @@
  * @constructor
  * @extends {Spirit}
  */
-function PlayerSpirit(playScreen) {
+function PlayerSpirit(screen) {
   Spirit.call(this);
-  this.playScreen = playScreen;
+  this.screen = screen;
   this.bodyId = -1;
   this.id = -1;
   this.modelStamp = null;
@@ -93,7 +93,7 @@ PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
 };
 
 PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
-  return this.playScreen.scan(
+  return this.screen.scan(
       BaseScreen.Group.ROCK,
       pos,
       this.scanVec.setXY(
@@ -108,7 +108,7 @@ PlayerSpirit.prototype.onTimeout = function(world, event) {
   var friction = 0.1;
 
   if (!this.trackball) {
-    this.trackball = this.playScreen.createTrackball();
+    this.trackball = this.screen.createTrackball();
   }
   var newVel = this.vec2d.set(body.vel).scale(1 - friction);
   if (this.trackball) {

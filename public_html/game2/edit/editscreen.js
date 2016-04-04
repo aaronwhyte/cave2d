@@ -803,3 +803,7 @@ EditScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
   }
   return retval;
 };
+
+EditScreen.prototype.isPlaying = function() {
+  return false;
+};
