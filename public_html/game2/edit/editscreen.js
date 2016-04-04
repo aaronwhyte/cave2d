@@ -121,13 +121,7 @@ EditScreen.EventLayer = {
 };
 
 EditScreen.prototype.createTrackball = function() {
-  var trackball = new MultiTrackball()
-      .addTrackball(new TouchTrackball(this.getWorldEventTarget())
-          .setStartZoneFunction(function(x, y) { return true; }))
-      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
-          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT)));
-  trackball.setFriction(0.02);
-  return trackball;
+  return null;
 };
 
 EditScreen.prototype.createLeftTrigger = function() {

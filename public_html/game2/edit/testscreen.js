@@ -120,6 +120,7 @@ TestScreen.prototype.createTrackball = function() {
       .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
           Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT)));
   trackball.setFriction(0.1);
+  trackball.startListening();
   return trackball;
 };
 

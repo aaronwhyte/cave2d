@@ -109,12 +109,11 @@ PlayerSpirit.prototype.onTimeout = function(world, event) {
 
   if (!this.trackball) {
     this.trackball = this.playScreen.createTrackball();
-    this.trackball.startListening();
   }
   var newVel = this.vec2d.set(body.vel).scale(1 - friction);
   if (this.trackball) {
     if (this.trackball.isTouched()) {
-      newVel.scale(0.2).add(this.trackball.getVal(this.trackballVal).scaleXY(1, -1).scale(0.4));
+      newVel.scale(0.2).add(this.trackball.getVal(this.trackballVal).scaleXY(1, -1).scale(0.6));
     }
     this.trackball.reset();
   }
