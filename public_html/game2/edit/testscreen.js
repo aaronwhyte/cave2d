@@ -16,7 +16,7 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.scanReq = new ScanRequest();
   this.scanResp = new ScanResponse();
 
-  this.camera = new Camera(0.2, 0.6, 35);
+  this.camera = new Camera(0.1, 0.3, 35);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
@@ -71,6 +71,8 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
 
   this.levelStamps = [];
   this.initialized = false;
+
+  this.playerAveragePos = new Vec2d();
 }
 TestScreen.prototype = new BaseScreen();
 TestScreen.prototype.constructor = TestScreen;
@@ -90,7 +92,7 @@ TestScreen.prototype.createTrackball = function() {
           .setStartZoneFunction(function(x, y) { return true; }))
       .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
           Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT)));
-  trackball.setFriction(0.02);
+  trackball.setFriction(0.1);
   return trackball;
 };
 
@@ -371,7 +373,6 @@ TestScreen.prototype.createWallModel = function(rect) {
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   wallModel = RigidModel.createSquare().transformPositions(transformation);
   wallModel.setColorRGB(0.2, 0.3, 0.6);
-//  wallModel.setColorRGB(Math.random()/2+0.3 , Math.random() * 0.5, Math.random()/2+0.5);
   return wallModel;
 };
 
@@ -442,8 +443,24 @@ TestScreen.prototype.handleInput = function () {
 TestScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
+
+  // Position the camera to be at the average of all player sprite body postions
+  this.playerAveragePos.reset();
+  var playerCount = 0;
   for (var id in this.world.spirits) {
-    this.world.spirits[id].onDraw(this.world, this.renderer);
+    var spirit = this.world.spirits[id];
+    spirit.onDraw(this.world, this.renderer);
+    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
+      var body = spirit.getBody(this.world);
+      if (body) {
+        this.playerAveragePos.add(this.getBodyPos(body, this.vec2d));
+        playerCount++;
+      }
+    }
+  }
+  if (playerCount != 0) {
+    this.playerAveragePos.scale(1 / playerCount);
+    this.camera.follow(this.playerAveragePos);
   }
 
   this.sfx.setListenerXYZ(this.camera.getX(), this.camera.getY(), 5);
@@ -577,16 +594,6 @@ TestScreen.prototype.getBodyById = function(id) {
 TestScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
   this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
   this.flushTerrainChanges();
-};
-
-TestScreen.prototype.addItem = function(name, pos, dir) {
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t];
-    if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
-      c.menuItemConfig.factory(this, c.stamp, pos, dir);
-      break;
-    }
-  }
 };
 
 TestScreen.prototype.removeByBodyId = function(bodyId) {

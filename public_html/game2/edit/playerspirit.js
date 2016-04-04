@@ -105,7 +105,7 @@ PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
 PlayerSpirit.prototype.onTimeout = function(world, event) {
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
-  var friction = 0.02;
+  var friction = 0.1;
 
   if (!this.trackball) {
     this.trackball = this.playScreen.createTrackball();
@@ -114,7 +114,7 @@ PlayerSpirit.prototype.onTimeout = function(world, event) {
   var newVel = this.vec2d.set(body.vel).scale(1 - friction);
   if (this.trackball) {
     if (this.trackball.isTouched()) {
-      newVel.scale(0.2).add(this.trackball.getVal(this.trackballVal).scaleXY(1, -1).scale(0.8));
+      newVel.scale(0.2).add(this.trackball.getVal(this.trackballVal).scaleXY(1, -1).scale(0.4));
     }
     this.trackball.reset();
   }

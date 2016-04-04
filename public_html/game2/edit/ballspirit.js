@@ -6,7 +6,7 @@ function BallSpirit(playScreen) {
   Spirit.call(this);
   this.playScreen = playScreen;
 
-  this.type = PlayScreen.SpiritType.BALL;
+  this.type = BaseScreen.SpiritType.BALL;
   this.id = -1;
   this.bodyId = -1;
   this.modelStamp = null;

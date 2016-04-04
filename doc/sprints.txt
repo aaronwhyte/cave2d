@@ -109,8 +109,8 @@ v change EditScreen "pause" button to "settings" or something
   v code nest
   v Button to get to it from Edit screen
   v css
-  - camera follows average player-spirit position.
-  - left-arrow button in TestScreen to go back to edit
+  v camera follows average player-spirit position.
+  - left-arrow button in TestScreen to navigate back to edit
   - time controls, centered on top
     - pause
     - play 1/4 speed
