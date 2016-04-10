@@ -1,5 +1,5 @@
 /**
- * An on-scren menu grid that supports touch, the mouse pointer, and keyboard keys.
+ * An on-screen menu grid that supports touch, the mouse pointer, and keyboard keys.
  * Items are organized into an ordered list of groups, and within each group they are ordered by rank.
  * @param {Element} elem  DOM element to listen to
  * @param {Glyphs} glyphs from which to draw keyboard shortcut models
