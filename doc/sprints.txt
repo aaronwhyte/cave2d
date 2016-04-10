@@ -122,23 +122,55 @@ v in test & play mode
   v self-driving ant
 
 super basic Player
+Do I need a real Player object? It would get...
+* some fraction of the screen for assigning a trackball and some buttons. 1/2, 1/4...
+Then the player would own controls, and the screen would own the player? I guess?
+And Player would have a collection of PlayerSpirits or whatevs to send control data to?
 v PlayerSpirit shell
 v timeout cycle
   v friction
-  - controls
-    v trackball on the world
-    - button on the HUD? Uh oh need modes first so button doesn't block editor controls.
-v remove ant behavior from player
-- draw a little face on it
+v "Player" class, corresponds to a human player and their gameplay state
+  v Controls passed in as state, mutable.
+  v handleInput() reads controllers, dumbs down for Spirit and passes along to spirits, resets controls.
+  v API for PlayerSpirit or other world entities added/removed by Screen, mutable state.
+- TestScreen manages list of Players, adds and removes, calls
+  * start by adding player one's spirits and controls. Worry about death, respawn, and player 2+ later.
+  - handleInput
+    - Player.handlInput
+    - PlayerSpirit.handleInput?
+    - call at beginning of each RAF, before drawing or physics
+      (BaseScreen already has handleInput() call, yay!
+  - controls & layout hardcoded by screen for each # of players
+    - one-player trackball
+      - owned by screen, but reference held by player
+        - on the world layer
+        - screen does listen and unlisten
+    - one-player buttons
+      - two per player
+      - on the HUD layer
+      - listen and unlisten
+      - Draw correctly for each player
+- Add and remove players
+  - Player menu inside "pause" popup
+    - row for existing players (room for all kinds of settings later)
+      - rename
+      - drop (except for the last player remaining)
+    - add new
+- Activate "pause" on touchscreen with doubletap in the center of the screen
+  (keeps it out of the way of the edge-based player controls)
+  - first tap shows auto-fading badge
+  - second activates it
 
-Exit
-  - square with the word "exit" written on or above it.
-  - in play mode it triggers transition and then next level, or victory.
+Make the player look cooler.
+- Draw a little face on the player body
+  - eyes follow trackball direction?
 
 Screen refactor
+* Before adding PlayScreen and stuff, eliminate some redundancy.
 - Pull common Test/Edit/Play stuff up to BaseScreen.
+- move BaseScreen up to main dir, out of "edit".
 
-Level Play Progression
+PlayScreen
 - make and export a few levels
 - play uses big exported FileTree JSON file, read via XHR.
 - game2/ adventure list, from FileTree.
@@ -147,21 +179,45 @@ Level Play Progression
 - in-game pause menu - resume, fullscreen, quit
 - victory page?
 
+Entrance?
+
+Exit
+- square with the word "exit" written on or above it.
+- in play mode, it triggers transition and then next level, or victory.
+
+Enemies
+- gnome x3
+- gnome generator x3
+
+Player power, death, powerups
+- three hearts? Or just two (healthy, hurt), plus overmax
+- If you're hurt, the other player can heal you with overmax?
+- extra pow meter when you go above max
+
+Bombs
+- explode when shot
+- can be hidden inside walls, chain reaction opens new paths
+- I guess every creature should be behind walls?
+
+Crazy extras
+- rest to zoom out
+- slow-mo
+- invincible fast-mo
+- friends
+- enemies
+- key & door
+
 SplashConfig
 * similar to SpiritConfig, except that there's no menu item for splashes
+
+Collisions and Controls
+- Feed player collision force into trackball, to stop wall-pounding?
 
 Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
 - create repeller turrets
 - Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
 - editor
-
-Enemies
-- gnome
-- gnome generator
-
-Collisions and Controls
-- Feed player collision force into trackball, to stop wall-pounding?
 
 TestScreen time controls
 * centered on top. These are totally unneeded but probaby would be awesome.
