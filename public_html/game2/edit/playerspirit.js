@@ -17,16 +17,23 @@ function PlayerSpirit(screen) {
 
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
-  this.trackballVal = new Vec2d();
+  this.accel = new Vec2d();
+  this.newVel = new Vec2d();
   this.scanVec = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+  this.lastFrictionTime = this.screen.now();
+  this.lastInputTime = this.screen.now();
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.MEASURE_TIMEOUT = 0.6;
+PlayerSpirit.TRACKBALL_ACCEL = 1.5;
+PlayerSpirit.TRACKBALL_TRACTION = 0.2;
+
+PlayerSpirit.FRICTION = 0.05;
+PlayerSpirit.FRICTION_TIMEOUT = 2;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -79,7 +86,7 @@ PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
   b.rad = 0.8;
   b.hitGroup = BaseScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = PlayerSpirit.MEASURE_TIMEOUT * 2;
+  b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
   spirit.bodyId = world.addBody(b);
 
   var spiritId = world.addSpirit(spirit);
@@ -102,26 +109,47 @@ PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
       rad);
 };
 
-PlayerSpirit.prototype.onTimeout = function(world, event) {
-  var body = this.getBody(world);
-  var pos = body.getPosAtTime(world.now, this.tempBodyPos);
-  var friction = 0.1;
+PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
+  var now = this.screen.now();
+  var time = now - this.lastInputTime;
+  this.lastInputTime = now;
 
-  if (!this.trackball) {
-    this.trackball = this.screen.createTrackball();
+  if (tt) {
+    var body = this.screen.getBodyById(this.bodyId);
+    this.newVel.set(body.vel);
+    this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
+    this.newVel.add(this.accel.scale(time));
+
+    this.accel.setXY(tx, -ty).scale(PlayerSpirit.TRACKBALL_ACCEL *  PlayerSpirit.TRACKBALL_TRACTION);
+    this.newVel.add(this.accel.scale(time));
+    body.setVelAtTime(this.newVel, now);
   }
-  var newVel = this.vec2d.set(body.vel).scale(1 - friction);
-  if (this.trackball) {
-    if (this.trackball.isTouched()) {
-      newVel.scale(0.2).add(this.trackball.getVal(this.trackballVal).scaleXY(1, -1).scale(0.6));
-    }
-    this.trackball.reset();
-  }
-  body.setVelAtTime(newVel, world.now);
-  world.addTimeout(world.now + PlayerSpirit.MEASURE_TIMEOUT, this.id, -1);
+  // TODO: buttons
+};
+
+PlayerSpirit.prototype.onTimeout = function(world, event) {
+  var now = this.screen.now();
+  var time = now - this.lastFrictionTime;
+  this.lastFrictionTime = now;
+
+  var body = this.screen.getBodyById(this.bodyId);
+
+  this.newVel.set(body.vel);
+  this.accel.set(this.newVel).scale(-PlayerSpirit.FRICTION);
+  this.newVel.add(this.accel.scale(time));
+
+  // Reset the body's pathDurationMax because it gets changed at compile-time,
+  // but it is serialized at level-save-time, so old saved values might not
+  // match the new compiled-in values. Hm.
+  body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
+  body.setVelAtTime(this.newVel, now);
+
+  // TODO: put addTimeout in screen, remove world access
+  world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, -1);
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
+  // TODO: replace world access with screen API?
   var body = this.getBody(world);
   body.getPosAtTime(world.now, this.tempBodyPos);
   renderer

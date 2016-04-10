@@ -28,8 +28,12 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
   this.addListener(this.eventDistributor);
 
-  this.mouseMoveListener = function() {
-    self.testTriggerWidget.setKeyboardTipTimeoutMs(Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS);
+  this.keyTipRevealer = function() {
+    var ms = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
+    self.testTriggerWidget.setKeyboardTipTimeoutMs(ms);
+    for (var i = 0; i < self.players.length; i++) {
+      self.players[i].setKeyboardTipTimeoutMs(ms);
+    }
   };
 
   this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
@@ -50,7 +54,6 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     Url.setFragment(Url.encodeQuery(query));
     e.preventDefault();
   };
-
 
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
@@ -100,6 +103,8 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.initialized = false;
 
   this.playerAveragePos = new Vec2d();
+
+  this.players = [];
 }
 TestScreen.prototype = new BaseScreen();
 TestScreen.prototype.constructor = TestScreen;
@@ -124,16 +129,24 @@ TestScreen.prototype.createTrackball = function() {
   return trackball;
 };
 
-TestScreen.prototype.createLeftTrigger = function() {
-  var trigger = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(30, 30)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .setStamp(this.glyphs.stamps['Z'])// TODO real stamp
-      .listenToTouch()
-      .addTriggerKeyByName('z')
-      .setKeyboardTipStamp(this.glyphs.stamps['Z'])
-      .startListening();
+TestScreen.prototype.createButtonWidgets = function() {
+  return [
+    new TriggerWidget(this.getHudEventTarget())
+        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
+        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
+        .setStamp(this.circleStamp)// TODO real stamp
+        .listenToTouch()
+        .addTriggerKeyByName('z')
+        .setKeyboardTipStamp(this.glyphs.stamps['Z'])
+        .startListening(),
+    new TriggerWidget(this.getHudEventTarget())
+        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
+        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
+        .setStamp(this.circleStamp)// TODO real stamp
+        .listenToTouch()
+        .addTriggerKeyByName('x')
+        .setKeyboardTipStamp(this.glyphs.stamps['X'])
+        .startListening()];
 };
 
 TestScreen.prototype.updateHudLayout = function() {
@@ -161,7 +174,8 @@ TestScreen.prototype.setScreenListening = function(listen) {
     rb.addEventListener('click', this.pauseDownFn);
     rb.addEventListener('touchend', this.pauseDownFn);
 
-    this.canvas.addEventListener('mousemove', this.mouseMoveListener);
+    this.canvas.addEventListener('mousemove', this.keyTipRevealer);
+    window.addEventListener('keydown', this.keyTipRevealer);
 
   } else {
     for (i = 0; i < this.listeners.vals.length; i++) {
@@ -178,7 +192,8 @@ TestScreen.prototype.setScreenListening = function(listen) {
     rb.removeEventListener('click', this.pauseDownFn);
     rb.removeEventListener('touchend', this.pauseDownFn);
 
-    this.canvas.removeEventListener('mousemove', this.mouseMoveListener);
+    this.canvas.removeEventListener('mousemove', this.keyTipRevealer);
+    window.removeEventListener('keydown', this.keyTipRevealer);
   }
   this.listening = listen;
 };
@@ -211,6 +226,9 @@ TestScreen.prototype.initSpiritConfigs = function() {
 TestScreen.prototype.initPermStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
+
+  this.circleStamp = RigidModel.createCircleMesh(5).createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.circleStamp);
 
   var pauseModel = new RigidModel();
   pauseModel.addRigidModel(RigidModel.createRingMesh(4, 0.5)
@@ -485,11 +503,30 @@ TestScreen.prototype.updateViewMatrix = function() {
       0));
 };
 
-TestScreen.prototype.handleInput = function () {
-  if (!this.world) return;
+TestScreen.prototype.handleInput = function() {
+  for (var i = 0; i < this.players.length; i++) {
+    this.players[i].handleInput();
+  }
+};
+
+TestScreen.prototype.addPlayer = function() {
+  var p = new Player();
+  var trackball = this.createTrackball();
+  var buttons = this.createButtonWidgets();
+  p.setControls(trackball, buttons[0], buttons[1]);
+  for (var id in this.world.spirits) {
+    var spirit = this.world.spirits[id];
+    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
+      p.addSpirit(spirit);
+    }
+  }
+  this.players.push(p);
 };
 
 TestScreen.prototype.drawScene = function() {
+  if (!this.players.length) {
+    this.addPlayer();
+  }
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
 
@@ -567,6 +604,9 @@ TestScreen.prototype.drawHud = function() {
   this.renderer.setBlendingEnabled(true);
   this.pauseTriggerWidget.draw(this.renderer);
   this.testTriggerWidget.draw(this.renderer);
+  for (var i = 0; i < this.players.length; i++) {
+    this.players[i].drawHud(this.renderer);
+  }
   this.renderer.setBlendingEnabled(false);
 };
 

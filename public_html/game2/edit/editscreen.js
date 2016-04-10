@@ -120,22 +120,6 @@ EditScreen.EventLayer = {
   WORLD: 2
 };
 
-EditScreen.prototype.createTrackball = function() {
-  return null;
-};
-
-EditScreen.prototype.createLeftTrigger = function() {
-  var trigger = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(30, 30)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .setStamp(this.glyphs.stamps['Z'])// TODO real stamp
-      .listenToTouch()
-      .addTriggerKeyByName('z')
-      .setKeyboardTipStamp(this.glyphs.stamps['Z'])
-      .startListening();
-};
-
 EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
   for (var t in this.spiritConfigs) {

@@ -133,24 +133,24 @@ v "Player" class, corresponds to a human player and their gameplay state
   v Controls passed in as state, mutable.
   v handleInput() reads controllers, dumbs down for Spirit and passes along to spirits, resets controls.
   v API for PlayerSpirit or other world entities added/removed by Screen, mutable state.
-- TestScreen manages list of Players, adds and removes, calls
+v TestScreen manages list of Players (just one for now), adds and removes, calls
   * start by adding player one's spirits and controls. Worry about death, respawn, and player 2+ later.
-  - handleInput
-    - Player.handlInput
-    - PlayerSpirit.handleInput?
-    - call at beginning of each RAF, before drawing or physics
+  v handleInput
+    v call Player.handlInput
+    v rewrite PlayerSpirit.handleInput a little
+    v call at beginning of each RAF, before drawing or physics
       (BaseScreen already has handleInput() call, yay!
-  - controls & layout hardcoded by screen for each # of players
-    - one-player trackball
-      - owned by screen, but reference held by player
-        - on the world layer
-        - screen does listen and unlisten
-    - one-player buttons
-      - two per player
-      - on the HUD layer
-      - listen and unlisten
-      - Draw correctly for each player
-- Add and remove players
+  v controls & layout hardcoded by screen for each # of players
+    v one-player trackball
+      v owned by screen, but reference held by player
+        v on the world layer
+        x screen does listen and unlisten
+    v one-player buttons
+      v two per player
+      v on the HUD layer
+      x listen and unlisten
+
+- Add and remove player 2
   - Player menu inside "pause" popup
     - row for existing players (room for all kinds of settings later)
       - rename

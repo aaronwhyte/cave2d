@@ -82,7 +82,7 @@ AntSpirit.factory = function(playScreen, stamp, pos, dir) {
   b.rad = 0.8;
   b.hitGroup = BaseScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 2;
+  b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 1.1;
   spirit.bodyId = world.addBody(b);
 
   var spiritId = world.addSpirit(spirit);
@@ -135,8 +135,12 @@ AntSpirit.prototype.onTimeout = function(world, event) {
     this.dir += this.angVel;
     newVel.addXY(Math.sin(this.dir) * thrust, Math.cos(this.dir) * thrust);
   }
+  // Reset the body's pathDurationMax because it gets changed at compile-time,
+  // but it is serialized at level-save-time, so old saved values might not
+  // match the new compiled-in values. Hm.
+  body.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 1.1;
   body.setVelAtTime(newVel, world.now);
-  world.addTimeout(world.now + AntSpirit.MEASURE_TIMEOUT * (Math.random() + 0.5), this.id, -1);
+  world.addTimeout(world.now + AntSpirit.MEASURE_TIMEOUT + (0.1 * (Math.random() - 0.5)), this.id, -1);
 };
 
 AntSpirit.prototype.onDraw = function(world, renderer) {

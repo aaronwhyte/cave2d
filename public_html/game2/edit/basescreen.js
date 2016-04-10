@@ -25,6 +25,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.resizeFn = this.getResizeFn();
 
   this.paused = false;
+
+  this.world = null;
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -127,3 +129,7 @@ BaseScreen.prototype.clock = function() {
 };
 
 BaseScreen.prototype.onHitEvent = function(e) {};
+
+BaseScreen.prototype.now = function() {
+  return this.world.now;
+};
