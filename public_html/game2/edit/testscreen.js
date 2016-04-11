@@ -123,8 +123,11 @@ TestScreen.prototype.createTrackball = function() {
       .addTrackball(new TouchTrackball(this.getWorldEventTarget())
           .setStartZoneFunction(function(x, y) { return true; }))
       .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
-          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT)));
-  trackball.setFriction(0.1);
+          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
+          .setAccel(1.0)
+          .setTraction(0.2)
+  );
+  trackball.setFriction(0.05);
   trackball.startListening();
   return trackball;
 };

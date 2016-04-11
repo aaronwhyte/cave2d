@@ -29,8 +29,9 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.TRACKBALL_ACCEL = 1.5;
-PlayerSpirit.TRACKBALL_TRACTION = 0.2;
+PlayerSpirit.TRACKBALL_ACCEL = 1;
+PlayerSpirit.TRACKBALL_TRACTION = 0.8;
+PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
 
 PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 2;
@@ -83,7 +84,7 @@ PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, world.now);
-  b.rad = 0.8;
+  b.rad = 1.1;
   b.hitGroup = BaseScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
@@ -120,7 +121,8 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
     this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
     this.newVel.add(this.accel.scale(time));
 
-    this.accel.setXY(tx, -ty).scale(PlayerSpirit.TRACKBALL_ACCEL *  PlayerSpirit.TRACKBALL_TRACTION);
+    this.accel.setXY(tx, -ty).scale(PlayerSpirit.TRACKBALL_ACCEL * PlayerSpirit.TRACKBALL_TRACTION)
+        .clipToMaxLength(PlayerSpirit.TRACKBALL_MAX_ACCEL);
     this.newVel.add(this.accel.scale(time));
     body.setVelAtTime(this.newVel, now);
   }

@@ -40,23 +40,27 @@ Player.prototype.setKeyboardTipTimeoutMs = function(ms) {
 };
 
 Player.prototype.drawHud = function(renderer) {
-  var diameter = Math.min(renderer.canvas.width / 4, (renderer.canvas.width / 6 + renderer.canvas.height / 6)/2, 150);
+  // The smaller of a quarter of the width (for portriat mode),
+  // or a sixth of the average of width and height (usually the smallest value, for consistency when rotated)
+  // or 150 (to keep the size reasonable on large screens)
+  var diameter = Math.min(renderer.canvas.width / 4, (renderer.canvas.width + renderer.canvas.height) / 12, 150);
   var r = diameter / 2;
   if (r != this.buttonRad ||
       renderer.canvas.width != this.canvasWidth ||
       renderer.canvas.height != this.canvasHeight) {
+    // Something changed so do a re-layout.
     this.buttonRad = r;
     this.canvasWidth = renderer.canvas.width;
     this.canvasHeight = renderer.canvas.height;
     if (this.b1) {
       this.b1
-          .setCanvasPositionXY(r*1.1, renderer.canvas.height - 2.5 * r)
+          .setCanvasPositionXY(r * 1.1, renderer.canvas.height - r * 2.5)
           .setCanvasScaleXY(r, -r)
           .setKeyboardTipScaleXY(r/4, -r/4);
     }
     if (this.b2) {
       this.b2
-          .setCanvasPositionXY(r * 3, renderer.canvas.height - r*1.1)
+          .setCanvasPositionXY(r * 3.2, renderer.canvas.height - r * 1.1)
           .setCanvasScaleXY(r, -r)
           .setKeyboardTipScaleXY(r/4, -r/4);
     }

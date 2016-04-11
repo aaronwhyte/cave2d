@@ -7,8 +7,10 @@ function KeyTrackball(keyStick) {
   Trackball.call(this);
   this.keyStick = keyStick;
   this.needsValChange = true;
-  this.accel = 0.3;
+  this.accel = 1;
   this.wasTouched = false;
+
+  this.traction = 0.2;
 }
 KeyTrackball.prototype = new Trackball();
 KeyTrackball.prototype.constructor = KeyTrackball;
@@ -16,6 +18,11 @@ KeyTrackball.prototype.constructor = KeyTrackball;
 
 KeyTrackball.prototype.setAccel = function(a) {
   this.accel = a;
+  return this;
+};
+
+KeyTrackball.prototype.setTraction = function(t) {
+  this.traction = t;
   return this;
 };
 
@@ -33,7 +40,7 @@ KeyTrackball.prototype.getVal = function(out) {
       // Opposite keys are touched. Slam the brakes.
       this.val.scale(0.5);
     } else {
-      this.val.scale(0.95).add(out.scale(this.accel));
+      this.val.scale(1 - this.traction).add(out.scale(this.accel * this.traction));
     }
   }
   this.wasTouched = this.isTouched();
