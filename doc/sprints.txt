@@ -150,25 +150,9 @@ v TestScreen manages list of Players (just one for now), adds and removes, calls
       v on the HUD layer
       x listen and unlisten
 
-- Activate "pause" on touchscreen with doubletap in the center of the screen
-  (keeps it out of the way of the edge-based player controls)
-  - first tap shows auto-fading badge
-  - second activates it
-
-- Add and remove player 2
-  - Player menu inside "pause" popup
-    - row for existing players (room for all kinds of settings later)
-      - rename
-      - drop (except for the last player remaining)
-    - add new
-
-Make the player look cooler.
-- Draw a little face on the player body
-  - eyes follow trackball direction?
-
 Screen refactor
 * Before adding PlayScreen and stuff, eliminate some redundancy.
-- Pull common Test/Edit/Play stuff up to BaseScreen.
+v Pull common Test/Edit/Play stuff up to BaseScreen.
 - move BaseScreen up to main dir, out of "edit".
 
 PlayScreen
@@ -195,18 +179,27 @@ Player power, death, powerups
 - If you're hurt, the other player can heal you with overmax?
 - extra pow meter when you go above max
 
+
 Bombs
 - explode when shot
 - can be hidden inside walls, chain reaction opens new paths
 - I guess every creature should be behind walls?
 
-Crazy extras
-- rest to zoom out
-- slow-mo
-- invincible fast-mo
-- friends
-- enemies
-- key & door
+- Activate "pause" on touchscreen with doubletap in the center of the screen
+  (keeps it out of the way of the edge-based player controls)
+  - first tap shows auto-fading badge
+  - second activates it
+
+- Add and remove player 2
+  - Player menu inside "pause" popup
+    - row for existing players (room for all kinds of settings later)
+      - rename
+      - drop (except for the last player remaining)
+    - add new
+
+Make the player look cooler.
+- Draw a little face on the player body
+  - eyes follow trackball direction?
 
 SplashConfig
 * similar to SpiritConfig, except that there's no menu item for splashes

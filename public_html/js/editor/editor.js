@@ -338,6 +338,12 @@ Editor.prototype.createCursorBody = function() {
   return b;
 };
 
+Editor.prototype.setKeyboardTipTimeoutMs = function(ms) {
+  for (var i = 0; i < this.leftTriggers.length; i++) {
+    this.leftTriggers[i].setKeyboardTipTimeoutMs(ms);
+  }
+};
+
 Editor.prototype.handleInput = function() {
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.host.getViewDist() * 0.02;
@@ -355,10 +361,10 @@ Editor.prototype.handleInput = function() {
   // mouse pointer movement
   this.mousePointer.setViewMatrix(this.host.getViewMatrix());
   if (!this.mousePointer.eventCoords.equals(this.oldMouseEventCoords) || this.panTriggerWidget.getVal()) {
-    var timeout = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
-    for (var i = 0; i < this.leftTriggers.length; i++) {
-      this.leftTriggers[i].setKeyboardTipTimeoutMs(timeout);
-    }
+
+    // TODO: don't do this here, but fix test37 and test38 to make the call themselves.
+    this.setKeyboardTipTimeoutMs(Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS);
+
     this.cursorVel.reset();
     if (this.panTriggerWidget.getVal() && this.oldPanTriggerVal) {
       // panning
@@ -483,12 +489,6 @@ Editor.prototype.setIndicatedBodyId = function(id) {
     this.indicatedBodyId = id;
     this.indicatorChangeTime = Date.now();
   }
-};
-
-Editor.prototype.bodyIfInGroup = function(group, b0, b1) {
-  if (b0 && b0.hitGroup == group) return b0;
-  if (b1 && b1.hitGroup == group) return b1;
-  return null;
 };
 
 Editor.prototype.drawScene = function() {

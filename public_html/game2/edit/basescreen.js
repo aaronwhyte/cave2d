@@ -2,8 +2,12 @@
  * @constructor
  * @extends {Screen}
  */
-function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
+function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventureName, levelName) {
   Screen.call(this);
+
+  this.adventureName = adventureName;
+  this.levelName = levelName;
+
   this.controller = controller;
   this.canvas = canvas;
   this.renderer = renderer;
@@ -21,12 +25,36 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound) {
   this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
   this.listening = false;
-
-  this.resizeFn = this.getResizeFn();
-
   this.paused = false;
 
+  this.splasher = new Splasher();
+  this.splash = new Splash();
+
+  this.modelMatrix = new Matrix44();
+  this.modelMatrix2 = new Matrix44();
+  this.hudViewMatrix = new Matrix44();
+
+  this.scanReq = new ScanRequest();
+  this.scanResp = new ScanResponse();
+
+  this.listeners = new ArraySet();
+  this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
+  this.addListener(this.eventDistributor);
+  this.resizeFn = this.getResizeFn();
+
   this.world = null;
+  this.tiles = null;
+
+  this.bitSize = 0.5;
+  this.bitGridMetersPerCell = BaseScreen.BIT_SIZE * BitGrid.BITS;
+  this.levelModelMatrix = new Matrix44();
+  this.levelColorVector = new Vec4(1, 1, 1);
+
+  this.levelStamps = [];
+
+  // for sound throttling
+  this.hitsThisFrame = 0;
+
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -55,6 +83,72 @@ BaseScreen.Terrain = {
 
 BaseScreen.SplashType = {
   NOTE: 1
+};
+
+BaseScreen.BIT_SIZE = 0.5;
+BaseScreen.WORLD_CELL_SIZE = BaseScreen.BIT_SIZE * BitGrid.BITS;
+
+BaseScreen.EventLayer = {
+  POPUP: 0,
+  HUD: 1,
+  WORLD: 2
+};
+
+/**
+ * @param {Object} json
+ */
+BaseScreen.prototype.loadWorldFromJson = function (json) {
+  this.lazyInit();
+  this.world.now = json.now;
+  // bodies
+  for (var i = 0; i < json.bodies.length; i++) {
+    var bodyJson = json.bodies[i];
+    var body = new Body();
+    body.setFromJSON(bodyJson);
+    this.world.loadBody(body);
+  }
+  // spirits
+  for (var i = 0; i < json.spirits.length; i++) {
+    var spiritJson = json.spirits[i];
+    var spiritType = spiritJson[0];
+    var spiritConfig = this.spiritConfigs[spiritType];
+    if (spiritConfig) {
+      var spirit = new spiritConfig.ctor(this);
+      spirit.setModelStamp(spiritConfig.stamp);
+      spirit.setFromJSON(spiritJson);
+      this.world.loadSpirit(spirit);
+    } else {
+      console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
+    }
+  }
+  // timeouts
+  var e = new WorldEvent();
+  for (var i = 0; i < json.timeouts.length; i++) {
+    e.setFromJSON(json.timeouts[i]);
+    this.world.loadTimeout(e);
+  }
+  // splashes
+  var splash = new Splash();
+  for (var i = 0; i < json.splashes.length; i++) {
+    var splashJson = json.splashes[i];
+    var splashType = splashJson[0];
+    // TODO: splashConfig plugin, like spiritConfig
+    if (splashType == EditScreen.SplashType.NOTE) {
+      splash.setFromJSON(splashJson);
+      splash.stamp = this.soundStamp;
+      this.splasher.addCopy(splash);
+    } else {
+      console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
+    }
+  }
+  // terrain
+  this.bitGrid = BitGrid.fromJSON(json.terrain);
+  this.tiles = {};
+  this.flushTerrainChanges();
+
+  // cursor and camera
+  if (this.editor) this.editor.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
+  this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
 };
 
 
@@ -130,6 +224,240 @@ BaseScreen.prototype.clock = function() {
 
 BaseScreen.prototype.onHitEvent = function(e) {};
 
+BaseScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
+  if (b0 && b0.hitGroup == group) return b0;
+  if (b1 && b1.hitGroup == group) return b1;
+  return null;
+};
+
+BaseScreen.prototype.updateViewMatrix = function() {
+  // scale
+  this.viewMatrix.toIdentity();
+  var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
+  this.viewMatrix
+      .multiply(this.mat44.toScaleOpXYZ(
+              pixelsPerMeter / this.canvas.width,
+              pixelsPerMeter / this.canvas.height,
+          0.2));
+
+  // center
+  this.viewMatrix.multiply(this.mat44.toTranslateOpXYZ(
+      -this.camera.getX(),
+      -this.camera.getY(),
+      0));
+};
+
+
+//////////////////////
+// Editor API stuff
+//////////////////////
+
+BaseScreen.prototype.getBodyPos = function(body, outVec2d) {
+  return body.getPosAtTime(this.world.now, outVec2d);
+};
+
+BaseScreen.prototype.getCanvas = function() {
+  return this.canvas;
+};
+
+BaseScreen.prototype.addListener = function(listener) {
+  this.listeners.put(listener);
+  if (this.listening) {
+    listener.startListening();
+  }
+};
+
+BaseScreen.prototype.getBodyOverlaps = function(body) {
+  return this.world.getOverlaps(body);
+};
+
+BaseScreen.prototype.getBodyById = function(id) {
+  return this.world.bodies[id];
+};
+
+BaseScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
+  this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
+  this.flushTerrainChanges();
+};
+
+BaseScreen.prototype.removeByBodyId = function(bodyId) {
+  var body = this.world.getBody(bodyId);
+  if (body) {
+    if (body.spiritId) {
+      this.world.removeSpiritId(body.spiritId);
+    }
+    this.world.removeBodyId(bodyId);
+  }
+};
+
+BaseScreen.prototype.getCursorHitGroup = function() {
+  return BaseScreen.Group.CURSOR;
+};
+
+BaseScreen.prototype.getWallHitGroup = function() {
+  return BaseScreen.Group.WALL;
+};
+
+BaseScreen.prototype.getWorldTime = function() {
+  return this.world.now;
+};
+
+BaseScreen.prototype.getViewDist = function() {
+  return this.camera.getViewDist();
+};
+
+BaseScreen.prototype.getViewMatrix = function() {
+  return this.viewMatrix;
+};
+
+BaseScreen.prototype.getPopupEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(BaseScreen.EventLayer.POPUP);
+};
+
+BaseScreen.prototype.getHudEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(BaseScreen.EventLayer.HUD);
+};
+
+BaseScreen.prototype.getWorldEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(BaseScreen.EventLayer.WORLD);
+};
+
+
+/////////////////
+// Spirit APIs //
+/////////////////
+
+/**
+ * @param {number} hitGroup
+ * @param {Vec2d} pos
+ * @param {Vec2d} vel
+ * @param {number} rad
+ * @returns {number} fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
+ */
+BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
+  this.scanReq.hitGroup = hitGroup;
+  // write the body's position into the req's position slot.
+  this.scanReq.pos.set(pos);
+  this.scanReq.vel.set(vel);
+  this.scanReq.shape = Body.Shape.CIRCLE;
+  this.scanReq.rad = rad;
+  var retval = -1;
+  var hit = this.world.rayscan(this.scanReq, this.scanResp);
+  if (hit) {
+    retval = this.scanResp.timeOffset;
+  }
+  return retval;
+};
+
 BaseScreen.prototype.now = function() {
   return this.world.now;
 };
+
+
+////////////////////////////
+// Wall manipulation stuff
+///////////////////////////
+
+BaseScreen.prototype.flushTerrainChanges = function() {
+  var changedCellIds = this.bitGrid.flushChangedCellIds();
+  for (var i = 0; i < changedCellIds.length; i++) {
+    this.changeTerrain(changedCellIds[i]);
+  }
+};
+
+/**
+ * The cell at the cellId definitely changes, so unload it and reload it.
+ * Make sure the four cardinal neighbors are also loaded.
+ * @param cellId
+ */
+BaseScreen.prototype.changeTerrain = function(cellId) {
+  var center = Vec2d.alloc();
+  this.bitGrid.cellIdToIndexVec(cellId, center);
+  this.loadCellXY(center.x - 1, center.y);
+  this.loadCellXY(center.x + 1, center.y);
+  this.loadCellXY(center.x, center.y - 1);
+  this.loadCellXY(center.x, center.y + 1);
+  this.unloadCellXY(center.x, center.y);
+  this.loadCellXY(center.x, center.y);
+  center.free();
+};
+
+BaseScreen.prototype.loadCellXY = function(cx, cy) {
+  var cellId = this.bitGrid.getCellIdAtIndexXY(cx, cy);
+  var tile = this.tiles[cellId];
+  if (!tile) {
+    this.tiles[cellId] = tile = {
+      cellId: cellId,
+      stamp: null,
+      bodyIds: null
+    };
+  }
+  if (!tile.bodyIds) {
+    tile.bodyIds = [];
+    // Create wall bodies and remember their IDs.
+    var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    for (var r = 0; r < rects.length; r++) {
+      var rect = rects[r];
+      var body = this.createWallBody(rect);
+      tile.bodyIds.push(this.world.addBody(body));
+    }
+  }
+  // TODO don't repeat stamp for solid walls
+  if (!tile.stamp) {
+    if (!rects) rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    tile.stamp = this.createTileStamp(rects);
+  }
+};
+
+BaseScreen.prototype.unloadCellXY = function(cx, cy) {
+  this.unloadCellId(this.bitGrid.getCellIdAtIndexXY(cx, cy));
+};
+
+BaseScreen.prototype.unloadCellId = function(cellId) {
+  var tile = this.tiles[cellId];
+  if (!tile) return;
+  if (tile.stamp) {
+    tile.stamp.dispose(this.renderer.gl);
+    tile.stamp = null;
+  }
+  if (tile.bodyIds) {
+    for (var i = 0; i < tile.bodyIds.length; i++) {
+      var id = tile.bodyIds[i];
+      this.world.removeBodyId(id);
+    }
+    tile.bodyIds = null;
+  }
+};
+
+/**
+ * Creates a body, but does not add it to the world.
+ */
+BaseScreen.prototype.createWallBody = function(rect) {
+  var b = Body.alloc();
+  b.shape = Body.Shape.RECT;
+  b.setPosAtTime(rect.pos, this.world.now);
+  b.rectRad.set(rect.rad);
+  b.hitGroup = BaseScreen.Group.WALL;
+  b.mass = Infinity;
+  b.pathDurationMax = Infinity;
+  return b;
+};
+
+BaseScreen.prototype.createTileStamp = function(rects) {
+  var model = new RigidModel();
+  for (var i = 0; i < rects.length; i++) {
+    model.addRigidModel(this.createWallModel(rects[i]));
+  }
+  return model.createModelStamp(this.renderer.gl);
+};
+
+BaseScreen.prototype.createWallModel = function(rect) {
+  var transformation, wallModel;
+  transformation = new Matrix44()
+      .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
+      .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
+  wallModel = RigidModel.createSquare().transformPositions(transformation);
+  wallModel.setColorRGB(0.2, 0.3, 0.6);
+  return wallModel;
+};
+
