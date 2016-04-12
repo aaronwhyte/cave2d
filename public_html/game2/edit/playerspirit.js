@@ -33,8 +33,8 @@ PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.8;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
 
-PlayerSpirit.FRICTION = 0.05;
-PlayerSpirit.FRICTION_TIMEOUT = 2;
+PlayerSpirit.FRICTION = 0.02;
+PlayerSpirit.FRICTION_TIMEOUT = 1;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -84,7 +84,7 @@ PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, world.now);
-  b.rad = 1.1;
+  b.rad = 0.9;
   b.hitGroup = BaseScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
