@@ -94,6 +94,28 @@ BaseScreen.EventLayer = {
   WORLD: 2
 };
 
+BaseScreen.prototype.initSpiritConfigs = function() {
+  this.spiritConfigs = {};
+
+  var self = this;
+  function addConfig(type, ctor, itemName, group, rank, factory) {
+    var model = ctor.createModel();
+    var stamp = model.createModelStamp(self.renderer.gl);
+    var menuItemConfig = null;
+    if (itemName) {
+      menuItemConfig = new MenuItemConfig(itemName, group, rank, model, factory);
+    }
+    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, menuItemConfig);
+  }
+
+  addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
+      EditScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
+
+  addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,
+      EditScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
+};
+
+
 /**
  * @param {Object} json
  */
@@ -151,6 +173,39 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
   this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
 };
 
+BaseScreen.prototype.createTrackball = function() {
+  var trackball = new MultiTrackball()
+      .addTrackball(new TouchTrackball(this.getWorldEventTarget())
+          .setStartZoneFunction(function(x, y) { return true; }))
+      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
+          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
+          .setAccel(1.0)
+          .setTraction(0.2)
+  );
+  trackball.setFriction(0.05);
+  trackball.startListening();
+  return trackball;
+};
+
+BaseScreen.prototype.createButtonWidgets = function() {
+  return [
+    new TriggerWidget(this.getHudEventTarget())
+        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
+        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
+        .setStamp(this.circleStamp)
+        .listenToTouch()
+        .addTriggerKeyByName('z')
+        .setKeyboardTipStamp(this.glyphs.stamps['Z'])
+        .startListening(),
+    new TriggerWidget(this.getHudEventTarget())
+        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
+        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
+        .setStamp(this.circleStamp)
+        .listenToTouch()
+        .addTriggerKeyByName('x')
+        .setKeyboardTipStamp(this.glyphs.stamps['X'])
+        .startListening()];
+};
 
 BaseScreen.prototype.getResizeFn = function() {
   var self = this;
@@ -461,3 +516,31 @@ BaseScreen.prototype.createWallModel = function(rect) {
   return wallModel;
 };
 
+BaseScreen.prototype.drawTiles = function() {
+  if (!this.tiles) {
+    return;
+  }
+  this.renderer
+      .setColorVector(this.levelColorVector)
+      .setModelMatrix(this.levelModelMatrix);
+  var cx = Math.round((this.camera.getX() - this.bitGrid.cellWorldSize / 2) / (this.bitGrid.cellWorldSize));
+  var cy = Math.round((this.camera.getY() - this.bitGrid.cellWorldSize / 2) / (this.bitGrid.cellWorldSize));
+  var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
+  var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
+  var cellsPerScreenX = this.canvas.width / pixelsPerCell;
+  var cellsPerScreenY = this.canvas.height / pixelsPerCell;
+  var rx = Math.ceil(cellsPerScreenX);
+  var ry = Math.ceil(cellsPerScreenY);
+  for (var dy = -ry; dy <= ry; dy++) {
+    for (var dx = -rx; dx <= rx; dx++) {
+      this.loadCellXY(cx + dx, cy + dy);
+      var cellId = this.bitGrid.getCellIdAtIndexXY(cx + dx, cy + dy);
+      var tile = this.tiles[cellId];
+      if (tile && tile.stamp) {
+        this.renderer
+            .setStamp(tile.stamp)
+            .drawStamp();
+      }
+    }
+  }
+};

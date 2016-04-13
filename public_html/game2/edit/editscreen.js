@@ -158,27 +158,6 @@ EditScreen.prototype.lazyInit = function() {
   }
 };
 
-EditScreen.prototype.initSpiritConfigs = function() {
-  this.spiritConfigs = {};
-
-  var self = this;
-  function addConfig(type, ctor, itemName, group, rank, factory) {
-    var model = ctor.createModel();
-    var stamp = model.createModelStamp(self.renderer.gl);
-    var menuItemConfig = null;
-    if (itemName) {
-      menuItemConfig = new MenuItemConfig(itemName, group, rank, model, factory);
-    }
-    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, menuItemConfig);
-  }
-
-  addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
-      EditScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
-
-  addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,
-      EditScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
-};
-
 EditScreen.prototype.initPermStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
@@ -335,31 +314,7 @@ EditScreen.prototype.drawScene = function() {
 
   this.sfx.setListenerXYZ(this.editor.cursorPos.x, this.editor.cursorPos.y, 5);
 
-  if (this.tiles) {
-    this.renderer
-        .setColorVector(this.levelColorVector)
-        .setModelMatrix(this.levelModelMatrix);
-    var cx = Math.round((this.camera.getX() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-    var cy = Math.round((this.camera.getY() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-    var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
-    var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
-    var cellsPerScreenX = this.canvas.width / pixelsPerCell;
-    var cellsPerScreenY = this.canvas.height / pixelsPerCell;
-    var rx = Math.ceil(cellsPerScreenX);
-    var ry = Math.ceil(cellsPerScreenY);
-    for (var dy = -ry; dy <= ry; dy++) {
-      for (var dx = -rx; dx <= rx; dx++) {
-        this.loadCellXY(cx + dx, cy + dy);
-        var cellId = this.bitGrid.getCellIdAtIndexXY(cx + dx, cy + dy);
-        var tile = this.tiles[cellId];
-        if (tile && tile.stamp) {
-          this.renderer
-              .setStamp(tile.stamp)
-              .drawStamp();
-        }
-      }
-    }
-  }
+  this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.editor.drawScene();
   this.drawHud();

@@ -77,45 +77,10 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
 TestScreen.prototype = new BaseScreen();
 TestScreen.prototype.constructor = TestScreen;
 
-TestScreen.prototype.createTrackball = function() {
-  var trackball = new MultiTrackball()
-      .addTrackball(new TouchTrackball(this.getWorldEventTarget())
-          .setStartZoneFunction(function(x, y) { return true; }))
-      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
-          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
-          .setAccel(1.0)
-          .setTraction(0.2)
-  );
-  trackball.setFriction(0.05);
-  trackball.startListening();
-  return trackball;
-};
-
-TestScreen.prototype.createButtonWidgets = function() {
-  return [
-    new TriggerWidget(this.getHudEventTarget())
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.circleStamp)// TODO real stamp
-        .listenToTouch()
-        .addTriggerKeyByName('z')
-        .setKeyboardTipStamp(this.glyphs.stamps['Z'])
-        .startListening(),
-    new TriggerWidget(this.getHudEventTarget())
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.circleStamp)// TODO real stamp
-        .listenToTouch()
-        .addTriggerKeyByName('x')
-        .setKeyboardTipStamp(this.glyphs.stamps['X'])
-        .startListening()];
-};
-
 TestScreen.prototype.updateHudLayout = function() {
   this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS);
   this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS * 3);
 };
-
 
 TestScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
@@ -168,21 +133,6 @@ TestScreen.prototype.lazyInit = function() {
     this.initWorld();
     this.initialized = true;
   }
-};
-
-TestScreen.prototype.initSpiritConfigs = function() {
-  this.spiritConfigs = {};
-
-  var self = this;
-  function addConfig(type, ctor) {
-    var model = ctor.createModel();
-    var stamp = model.createModelStamp(self.renderer.gl);
-    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp);
-  }
-
-  addConfig(BaseScreen.SpiritType.ANT, AntSpirit);
-
-  addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit);
 };
 
 TestScreen.prototype.initPermStamps = function() {
@@ -326,31 +276,7 @@ TestScreen.prototype.drawScene = function() {
 
   this.sfx.setListenerXYZ(this.camera.getX(), this.camera.getY(), 5);
 
-  if (this.tiles) {
-    this.renderer
-        .setColorVector(this.levelColorVector)
-        .setModelMatrix(this.levelModelMatrix);
-    var cx = Math.round((this.camera.getX() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-    var cy = Math.round((this.camera.getY() - this.bitGrid.cellWorldSize/2) / (this.bitGrid.cellWorldSize));
-    var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
-    var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
-    var cellsPerScreenX = this.canvas.width / pixelsPerCell;
-    var cellsPerScreenY = this.canvas.height / pixelsPerCell;
-    var rx = Math.ceil(cellsPerScreenX);
-    var ry = Math.ceil(cellsPerScreenY);
-    for (var dy = -ry; dy <= ry; dy++) {
-      for (var dx = -rx; dx <= rx; dx++) {
-        this.loadCellXY(cx + dx, cy + dy);
-        var cellId = this.bitGrid.getCellIdAtIndexXY(cx + dx, cy + dy);
-        var tile = this.tiles[cellId];
-        if (tile && tile.stamp) {
-          this.renderer
-              .setStamp(tile.stamp)
-              .drawStamp();
-        }
-      }
-    }
-  }
+  this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();
   this.configMousePointer();

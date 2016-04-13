@@ -153,7 +153,7 @@ v TestScreen manages list of Players (just one for now), adds and removes, calls
 Screen refactor
 * Before adding PlayScreen and stuff, eliminate some redundancy.
 v Pull common Test/Edit/Play stuff up to BaseScreen.
-- move BaseScreen up to main dir, out of "edit".
+v move BaseScreen up to main dir, out of "edit".
 
 PlayScreen
 - make and export a few levels
@@ -174,11 +174,18 @@ Enemies
 - gnome x3
 - gnome generator x3
 
-Player power, death, powerups
-- three hearts? Or just two (healthy, hurt), plus overmax
-- If you're hurt, the other player can heal you with overmax?
-- extra pow meter when you go above max
+Player fire
+- button triggers it
+- muzzle flash
+- fire noise
+- vanish when hitting stuff or maybe bounce at low hit angles - start to add impact damage sys?
+- poof when hitting wall, but don't damage wall
+- damages enemies
+- enemy explosions
 
+Victory
+
+Death
 
 Bombs
 - explode when shot
