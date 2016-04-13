@@ -115,6 +115,23 @@ BaseScreen.prototype.initSpiritConfigs = function() {
       EditScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
 };
 
+BaseScreen.prototype.initWorld = function() {
+  this.bitGrid = new BitGrid(this.bitSize);
+  this.tiles = {};
+
+  this.lastPathRefreshTime = -Infinity;
+
+  var groupCount = Object.keys(BaseScreen.Group).length;
+  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, [
+    [BaseScreen.Group.EMPTY, BaseScreen.Group.EMPTY],
+    [BaseScreen.Group.ROCK, BaseScreen.Group.WALL],
+    [BaseScreen.Group.ROCK, BaseScreen.Group.ROCK],
+    [BaseScreen.Group.CURSOR, BaseScreen.Group.WALL],
+    [BaseScreen.Group.CURSOR, BaseScreen.Group.ROCK]
+  ]);
+  this.resolver = new HitResolver();
+  this.resolver.defaultElasticity = 0.5;
+};
 
 /**
  * @param {Object} json
@@ -544,3 +561,28 @@ BaseScreen.prototype.drawTiles = function() {
     }
   }
 };
+
+BaseScreen.prototype.unloadLevel = function() {
+  // TODO: delete this or start using it.
+  if (this.tiles) {
+    for (var cellId in this.tiles) {
+      this.unloadCellId(cellId);
+    }
+    this.tiles = null;
+  }
+  if (this.world) {
+    for (var spiritId in this.world.spirits) {
+      var s = this.world.spirits[spiritId];
+      var b = this.world.bodies[s.bodyId];
+      this.world.removeBodyId(b.id);
+      this.world.removeSpiritId(spiritId);
+    }
+    this.world = null;
+  }
+  this.camera.setXY(0, 0);
+  if (this.editor) {
+    this.editor.cursorPos.reset();
+    this.editor.cursorVel.reset();
+  }
+};
+

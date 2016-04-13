@@ -199,24 +199,6 @@ EditScreen.prototype.initPermStamps = function() {
   }
 };
 
-EditScreen.prototype.initWorld = function() {
-  this.bitGrid = new BitGrid(this.bitSize);
-  this.tiles = {};
-
-  this.lastPathRefreshTime = -Infinity;
-
-  var groupCount = Object.keys(BaseScreen.Group).length;
-  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, [
-    [BaseScreen.Group.EMPTY, BaseScreen.Group.EMPTY],
-    [BaseScreen.Group.ROCK, BaseScreen.Group.WALL],
-    [BaseScreen.Group.ROCK, BaseScreen.Group.ROCK],
-    [BaseScreen.Group.CURSOR, BaseScreen.Group.WALL],
-    [BaseScreen.Group.CURSOR, BaseScreen.Group.ROCK]
-  ]);
-  this.resolver = new HitResolver();
-  this.resolver.defaultElasticity = 0.8;
-};
-
 EditScreen.prototype.toJSON = function() {
   var json = {
     terrain: this.bitGrid.toJSON(),
@@ -362,27 +344,6 @@ EditScreen.prototype.configMousePointer = function() {
 EditScreen.prototype.getPauseTriggerColorVector = function() {
   this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
   return this.colorVector;
-};
-
-EditScreen.prototype.unloadLevel = function() {
-  if (this.tiles) {
-    for (var cellId in this.tiles) {
-      this.unloadCellId(cellId);
-    }
-    this.tiles = null;
-  }
-  if (this.world) {
-    for (var spiritId in this.world.spirits) {
-      var s = this.world.spirits[spiritId];
-      var b = this.world.bodies[s.bodyId];
-      this.world.removeBodyId(b.id);
-      this.world.removeSpiritId(spiritId);
-    }
-    this.world = null;
-  }
-  this.editor.cursorPos.reset();
-  this.editor.cursorVel.reset();
-  this.camera.setXY(0, 0);
 };
 
 EditScreen.prototype.showPausedOverlay = function() {

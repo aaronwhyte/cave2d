@@ -173,24 +173,6 @@ TestScreen.prototype.initPermStamps = function() {
   this.levelStamps.push(this.soundStamp);
 };
 
-TestScreen.prototype.initWorld = function() {
-  this.bitGrid = new BitGrid(this.bitSize);
-  this.tiles = {};
-
-  this.lastPathRefreshTime = -Infinity;
-
-  var groupCount = Object.keys(BaseScreen.Group).length;
-  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, [
-    [BaseScreen.Group.EMPTY, BaseScreen.Group.EMPTY],
-    [BaseScreen.Group.ROCK, BaseScreen.Group.WALL],
-    [BaseScreen.Group.ROCK, BaseScreen.Group.ROCK],
-    [BaseScreen.Group.CURSOR, BaseScreen.Group.WALL],
-    [BaseScreen.Group.CURSOR, BaseScreen.Group.ROCK]
-  ]);
-  this.resolver = new HitResolver();
-  this.resolver.defaultElasticity = 0.5;
-};
-
 TestScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   var fullRad = bodyRad * 2;// * (1+Math.random()/2);
   var s = this.splash;
@@ -325,25 +307,6 @@ TestScreen.prototype.configMousePointer = function() {
 TestScreen.prototype.getPauseTriggerColorVector = function() {
   this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
   return this.colorVector;
-};
-
-TestScreen.prototype.unloadLevel = function() {
-  if (this.tiles) {
-    for (var cellId in this.tiles) {
-      this.unloadCellId(cellId);
-    }
-    this.tiles = null;
-  }
-  if (this.world) {
-    for (var spiritId in this.world.spirits) {
-      var s = this.world.spirits[spiritId];
-      var b = this.world.bodies[s.bodyId];
-      this.world.removeBodyId(b.id);
-      this.world.removeSpiritId(spiritId);
-    }
-    this.world = null;
-  }
-  this.camera.setXY(0, 0);
 };
 
 TestScreen.prototype.showPausedOverlay = function() {
