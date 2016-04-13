@@ -1,3 +1,9 @@
+/**
+ * @param minDistFraction
+ * @param maxDistFraction
+ * @param viewDist
+ * @constructor
+ */
 function Camera(minDistFraction, maxDistFraction, viewDist) {
   this.cameraPos = new Vec2d();
   this.minDistFraction = minDistFraction;
