@@ -156,7 +156,7 @@ v Pull common Test/Edit/Play stuff up to BaseScreen.
 v move BaseScreen up to main dir, out of "edit".
 
 PlayScreen
-- make and export a few levels
+v make and export a few levels
 - play uses big exported FileTree JSON file, read via XHR.
 - game2/ adventure list, from FileTree.
 - click on adventure to play levels in alpha order
