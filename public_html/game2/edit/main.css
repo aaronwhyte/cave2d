@@ -158,4 +158,5 @@ button.createButton {
 .exportPage {
   font-family:monospace;
   word-wrap:break-word;
+  white-space:pre;
 }

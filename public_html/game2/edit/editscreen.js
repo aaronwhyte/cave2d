@@ -75,6 +75,7 @@ EditScreen.prototype = new BaseScreen();
 EditScreen.prototype.constructor = EditScreen;
 
 EditScreen.WIDGET_RADIUS = 30;
+EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
 EditScreen.ANT_RAD = 0.8;
 EditScreen.ROCK_RAD = 1.4;
@@ -214,6 +215,9 @@ EditScreen.prototype.toJSON = function() {
   for (var bodyId in this.world.bodies) {
     var body = this.world.bodies[bodyId];
     if (body.hitGroup != BaseScreen.Group.WALL) {
+      // round velocity on save, to stop from saving tons of high-precision teeny tiny velocities
+      this.vec2d.set(body.vel).roundToGrid(EditScreen.ROUND_VELOCITY_TO_NEAREST);
+      body.setVelAtTime(this.vec2d, this.now());
       json.bodies.push(body.toJSON());
     }
   }

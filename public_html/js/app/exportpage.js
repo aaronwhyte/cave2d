@@ -49,14 +49,12 @@ ExportPage.prototype.showJson = function() {
   var e;
   e = this.ce('div', df);
   var path = EditorApp.path(this.basePath, this.adventureName, this.levelName);
-  console.log(path);
   var names = this.fileTree.listDescendants(path);
-  console.log(names);
   var json = {};
   for (var i = 0; i < names.length; i++) {
     json[JSON.stringify(names[i])] = this.fileTree.getFile(names[i]);
   }
-  e.innerText = JSON.stringify(json);
+  e.innerText = JSON.stringify(json, null, 1);
   this.rootNode.innerHTML = '';
   this.rootNode.appendChild(df);
 };
