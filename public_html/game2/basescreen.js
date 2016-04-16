@@ -85,6 +85,13 @@ BaseScreen.SplashType = {
   NOTE: 1
 };
 
+BaseScreen.MenuItem = {
+  RED_ANT: 'red_ant',
+  PLAYER: 'player'
+};
+
+
+
 BaseScreen.BIT_SIZE = 0.5;
 BaseScreen.WORLD_CELL_SIZE = BaseScreen.BIT_SIZE * BitGrid.BITS;
 
@@ -109,10 +116,10 @@ BaseScreen.prototype.initSpiritConfigs = function() {
   }
 
   addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
-      EditScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
+      BaseScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
 
   addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,
-      EditScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
+      BaseScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
 };
 
 BaseScreen.prototype.initWorld = function() {

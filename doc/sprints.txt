@@ -157,10 +157,12 @@ v move BaseScreen up to main dir, out of "edit".
 
 PlayScreen
 v make and export a few levels
-- play uses big exported FileTree JSON file, read via XHR.
-- game2/ adventure list, from FileTree.
-- click on adventure to play levels in alpha order
-  - game2/#adv=foo&level=bar plays that level? Or keep it all in memory, no bookmarking?
+v play uses big exported FileTree JSON file.
+  v PlayPage loads adventure data via XHR
+  v use as file tree
+  v expose as adventure data
+  v order the levels
+v initialize the first level.
 - in-game pause menu - resume, fullscreen, quit
 - victory page?
 
@@ -219,6 +221,8 @@ Orientation
 - create repeller turrets
 - Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
 - editor
+
+Auto-save game in progress to localhost
 
 TestScreen time controls
 * centered on top. These are totally unneeded but probaby would be awesome.

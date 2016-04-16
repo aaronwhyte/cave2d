@@ -24,7 +24,7 @@ JsonStorage.prototype.keys = function() {
  */
 JsonStorage.prototype.get = function(key) {
   var val = this.s[key];
-  return (typeof val == 'undefined') ? null : val;
+  return (typeof val == 'undefined') ? null : JSON.stringify(val);
 };
 
 /**

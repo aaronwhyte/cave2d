@@ -2,42 +2,27 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
-  this.camera = new Camera(0.2, 0.6, 35);
+  this.camera = new Camera(0.1, 1, 35);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
+
+  this.playerAveragePos = new Vec2d();
+  this.players = [];
 
   var self = this;
 
   this.keyTipRevealer = function() {
     var ms = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
-    self.testTriggerWidget.setKeyboardTipTimeoutMs(ms);
-    self.editor.setKeyboardTipTimeoutMs(ms);
-  };
-
-  this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .listenToTouch()
-      .listenToMousePointer()
-      .addTriggerKeyByName('t')
-      .startListening();
-
-  this.testDownFn = function(e) {
-    e = e || window.event;
-    var query = {};
-    query[EditorApp.PARAM_ADVENTURE_NAME] = self.adventureName;
-    query[EditorApp.PARAM_LEVEL_NAME] = self.levelName;
-    query[EditorApp.PARAM_MODE] = EditorApp.MODE_TEST;
-    Url.setFragment(Url.encodeQuery(query));
-    e.preventDefault();
+    for (var i = 0; i < self.players.length; i++) {
+      self.players[i].setKeyboardTipTimeoutMs(ms);
+    }
   };
 
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
+      .setCanvasScaleXY(PlayScreen.WIDGET_RADIUS, PlayScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
@@ -68,39 +53,15 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     self.controller.requestFullScreen();
     e.preventDefault();
   };
-
-  this.initialized = false;
 }
-EditScreen.prototype = new BaseScreen();
-EditScreen.prototype.constructor = EditScreen;
+PlayScreen.prototype = new BaseScreen();
+PlayScreen.prototype.constructor = PlayScreen;
 
-EditScreen.WIDGET_RADIUS = 30;
-EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
-
-EditScreen.ANT_RAD = 0.8;
-EditScreen.ROCK_RAD = 1.4;
-
-EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t].menuItemConfig;
-    if (c) {
-      this.editor.addMenuItem(c.group, c.rank, c.itemName, c.model);
-    }
-  }
-  for (var group = 0; group < 2; group++) {
-    this.editor.addMenuKeyboardShortcut(group, group + 1);
-  }
+PlayScreen.prototype.updateHudLayout = function() {
+  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - PlayScreen.WIDGET_RADIUS, PlayScreen.WIDGET_RADIUS);
 };
 
-EditScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS);
-  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS * 3);
-  this.editor.updateHudLayout();
-};
-
-
-EditScreen.prototype.setScreenListening = function(listen) {
+PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var fsb, rb, i;
   BaseScreen.prototype.setScreenListening.call(this, listen);
@@ -109,7 +70,6 @@ EditScreen.prototype.setScreenListening = function(listen) {
       this.listeners.vals[i].startListening();
     }
     this.pauseTriggerWidget.addTriggerDownListener(this.pauseDownFn);
-    this.testTriggerWidget.addTriggerDownListener(this.testDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
@@ -127,7 +87,6 @@ EditScreen.prototype.setScreenListening = function(listen) {
       this.listeners.vals[i].stopListening();
     }
     this.pauseTriggerWidget.removeTriggerDownListener(this.pauseDownFn);
-    this.testTriggerWidget.removeTriggerDownListener(this.testDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
@@ -143,10 +102,9 @@ EditScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-EditScreen.prototype.lazyInit = function() {
+PlayScreen.prototype.lazyInit = function() {
   if (!this.initialized) {
     this.initSpiritConfigs();
-    this.initEditor();
     this.updateHudLayout();
     this.initPermStamps();
     this.initWorld();
@@ -154,9 +112,12 @@ EditScreen.prototype.lazyInit = function() {
   }
 };
 
-EditScreen.prototype.initPermStamps = function() {
+PlayScreen.prototype.initPermStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
+
+  this.circleStamp = RigidModel.createCircleMesh(5).createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.circleStamp);
 
   var pauseModel = new RigidModel();
   pauseModel.addRigidModel(RigidModel.createRingMesh(4, 0.5)
@@ -173,81 +134,15 @@ EditScreen.prototype.initPermStamps = function() {
   this.levelStamps.push(this.pauseStamp);
   this.pauseTriggerWidget.setStamp(this.pauseStamp);
 
-  var testModel = RigidModel.createTriangle()
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
-      .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2));
-  this.testStamp = testModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.testStamp);
-  this.testTriggerWidget
-      .setStamp(this.testStamp)
-      .setKeyboardTipStamp(this.glyphs.stamps['T'])
-      .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(EditScreen.WIDGET_RADIUS * 0.6, EditScreen.WIDGET_RADIUS * 0.7);
-
-  // TODO real splashes for this game
   var model = RigidModel.createDoubleRing(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.soundStamp);
-
-  var editorStamps = this.editor.getStamps();
-  for (var i = 0; i < editorStamps.length; i++) {
-    this.levelStamps.push(editorStamps[i]);
-  }
 };
 
-EditScreen.prototype.toJSON = function() {
-  var json = {
-    terrain: this.bitGrid.toJSON(),
-    now: this.world.now,
-    bodies: [],
-    spirits: [],
-    timeouts: [],
-    splashes: [],
-    cursorPos: this.editor.cursorPos.toJSON(),
-    cameraPos: this.camera.cameraPos.toJSON()
-  };
-  // bodies
-  for (var bodyId in this.world.bodies) {
-    var body = this.world.bodies[bodyId];
-    if (body.hitGroup != BaseScreen.Group.WALL) {
-      // round velocity on save, to stop from saving tons of high-precision teeny tiny velocities
-      this.vec2d.set(body.vel).roundToGrid(EditScreen.ROUND_VELOCITY_TO_NEAREST);
-      body.setVelAtTime(this.vec2d, this.now());
-      json.bodies.push(body.toJSON());
-    }
-  }
-  // spirits
-  for (var spiritId in this.world.spirits) {
-    var spirit = this.world.spirits[spiritId];
-    json.spirits.push(spirit.toJSON());
-  }
-  // timeouts
-  for (var e = this.world.queue.getFirst(); e; e = e.next[0]) {
-    if (e.type === WorldEvent.TYPE_TIMEOUT) {
-      var spirit = this.world.spirits[e.spiritId];
-      if (spirit) {
-        json.timeouts.push(e.toJSON());
-      }
-    }
-  }
-  // splashes
-  var splashes = this.splasher.splashes;
-  for (var i = 0; i < splashes.length; i++) {
-    json.splashes.push(splashes[i].toJSON());
-  }
-  return json;
-};
-
-EditScreen.prototype.createDefaultWorld = function() {
-  this.lazyInit();
-  this.bitGrid.drawPill(new Segment(new Vec2d(0, 0), new Vec2d(0, 0)), 9.8, 1);
-  this.flushTerrainChanges();
-};
-
-EditScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
+PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   var fullRad = bodyRad * 2;// * (1+Math.random()/2);
   var s = this.splash;
-  s.reset(EditScreen.SplashType.NOTE, this.soundStamp);
+  s.reset(PlayScreen.SplashType.NOTE, this.soundStamp);
 
   s.startTime = this.world.now;
   s.duration = 10;
@@ -273,7 +168,7 @@ EditScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   this.splasher.addCopy(s);
 };
 
-EditScreen.prototype.onHitEvent = function(e) {
+PlayScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
   if (b0 && b1) {
@@ -281,23 +176,56 @@ EditScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-EditScreen.prototype.handleInput = function () {
-  if (!this.world) return;
-  this.editor.handleInput();
+PlayScreen.prototype.handleInput = function() {
+  for (var i = 0; i < this.players.length; i++) {
+    this.players[i].handleInput();
+  }
 };
 
-EditScreen.prototype.drawScene = function() {
+PlayScreen.prototype.addPlayer = function() {
+  var p = new Player();
+  var trackball = this.createTrackball();
+  var buttons = this.createButtonWidgets();
+  p.setControls(trackball, buttons[0], buttons[1]);
+  for (var id in this.world.spirits) {
+    var spirit = this.world.spirits[id];
+    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
+      p.addSpirit(spirit);
+    }
+  }
+  this.players.push(p);
+};
+
+PlayScreen.prototype.drawScene = function() {
+  if (!this.players.length) {
+    this.addPlayer();
+  }
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
+
+  // Position the camera to be at the average of all player sprite body postions
+  this.playerAveragePos.reset();
+  var playerCount = 0;
   for (var id in this.world.spirits) {
-    this.world.spirits[id].onDraw(this.world, this.renderer);
+    var spirit = this.world.spirits[id];
+    spirit.onDraw(this.world, this.renderer);
+    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
+      var body = spirit.getBody(this.world);
+      if (body) {
+        this.playerAveragePos.add(this.getBodyPos(body, this.vec2d));
+        playerCount++;
+      }
+    }
+  }
+  if (playerCount != 0) {
+    this.playerAveragePos.scale(1 / playerCount);
+    this.camera.follow(this.playerAveragePos);
   }
 
-  this.sfx.setListenerXYZ(this.editor.cursorPos.x, this.editor.cursorPos.y, 5);
+  this.sfx.setListenerXYZ(this.camera.getX(), this.camera.getY(), 5);
 
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
-  this.editor.drawScene();
   this.drawHud();
   this.configMousePointer();
 
@@ -312,7 +240,7 @@ EditScreen.prototype.drawScene = function() {
   }
 };
 
-EditScreen.prototype.drawHud = function() {
+PlayScreen.prototype.drawHud = function() {
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
               2 / this.canvas.width,
@@ -324,14 +252,14 @@ EditScreen.prototype.drawHud = function() {
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
   this.pauseTriggerWidget.draw(this.renderer);
-  this.testTriggerWidget.draw(this.renderer);
-  this.editor.drawHud();
+  for (var i = 0; i < this.players.length; i++) {
+    this.players[i].drawHud(this.renderer);
+  }
   this.renderer.setBlendingEnabled(false);
 };
 
-EditScreen.prototype.configMousePointer = function() {
-  if (this.pauseTriggerWidget.isMouseHovered() ||
-      this.testTriggerWidget.isMouseHovered()) {
+PlayScreen.prototype.configMousePointer = function() {
+  if (this.pauseTriggerWidget.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
     this.canvas.style.cursor = "";
@@ -340,39 +268,25 @@ EditScreen.prototype.configMousePointer = function() {
   }
 };
 
-EditScreen.prototype.getPauseTriggerColorVector = function() {
+PlayScreen.prototype.getPauseTriggerColorVector = function() {
   this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
   return this.colorVector;
 };
 
-EditScreen.prototype.showPausedOverlay = function() {
+PlayScreen.prototype.showPausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'block';
   this.canvas.style.cursor = "auto";
 };
 
-EditScreen.prototype.hidePausedOverlay = function() {
+PlayScreen.prototype.hidePausedOverlay = function() {
   document.querySelector('#pausedOverlay').style.display = 'none';
   this.canvas.style.cursor = "";
-};
-
-/////////////////////
-// Editor API stuff
-/////////////////////
-
-EditScreen.prototype.addItem = function(name, pos, dir) {
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t];
-    if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
-      c.menuItemConfig.factory(this, c.stamp, pos, dir);
-      break;
-    }
-  }
 };
 
 /////////////////
 // Spirit APIs //
 /////////////////
 
-EditScreen.prototype.isPlaying = function() {
-  return false;
+PlayScreen.prototype.isPlaying = function() {
+  return true;
 };

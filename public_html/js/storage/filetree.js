@@ -24,7 +24,8 @@ FileTree.prototype.setFile = function(pathArray, jsonVal) {
 };
 
 FileTree.prototype.getFile = function(pathArray) {
-  return JSON.parse(this.s.get(this.pathString(pathArray)));
+  var txt = this.s.get(this.pathString(pathArray));
+  return JSON.parse(txt);
 };
 
 FileTree.prototype.isFile = function(pathArray) {
