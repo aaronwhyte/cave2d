@@ -162,9 +162,15 @@ v play uses big exported FileTree JSON file.
   v use as file tree
   v expose as adventure data
   v order the levels
+v start with camera at avg of players, not wherever the editor left it.
 v initialize the first level.
-- in-game pause menu - resume, fullscreen, quit
-- victory page?
+- in-game pause menu
+  v start paused
+  v resume, fullscreen
+  v center
+  v branding
+  - clicking off of menu resumes
+  - change "resume" to "play"
 
 Entrance?
 

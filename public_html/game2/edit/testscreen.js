@@ -309,16 +309,6 @@ TestScreen.prototype.getPauseTriggerColorVector = function() {
   return this.colorVector;
 };
 
-TestScreen.prototype.showPausedOverlay = function() {
-  document.querySelector('#pausedOverlay').style.display = 'block';
-  this.canvas.style.cursor = "auto";
-};
-
-TestScreen.prototype.hidePausedOverlay = function() {
-  document.querySelector('#pausedOverlay').style.display = 'none';
-  this.canvas.style.cursor = "";
-};
-
 /////////////////
 // Spirit APIs //
 /////////////////

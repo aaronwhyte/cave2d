@@ -10,7 +10,6 @@
  */
 function LevelPlayPage(gameTitle, basePath, fileTree, adventureName, levelName) {
   Page.call(this);
-  console.log(gameTitle, basePath, fileTree, adventureName, levelName);
   this.gameTitle = gameTitle;
   this.basePath = basePath;
   this.fileTree = fileTree;
@@ -61,10 +60,7 @@ LevelPlayPage.prototype.enterDoc = function() {
   window.addEventListener("scroll", LevelPlayPage.pd);
 
   // load level
-  console.log("this.levelDataPath", this.levelDataPath);
-
   this.jsonObj = this.fileTree.getFile(this.levelDataPath);
-  console.log("this.jsonObj: ", this.jsonObj);
 };
 
 LevelPlayPage.pd = function(event) {
@@ -101,19 +97,38 @@ LevelPlayPage.prototype.exitDoc = function() {
   this.oldMetaViewportContent = null;
 };
 
+LevelPlayPage.prototype.setPaused = function(paused) {
+  this.paused = paused;
+  if (this.screen) this.screen.setPaused(this.paused);
+};
+
 LevelPlayPage.prototype.refreshOverlay = function() {
   var df = document.createDocumentFragment();
   var e;
-  var menu = this.ce('div', df, 'pausedMenu');
 
-  e = this.ce('button', menu);
-  e.id = 'resumeButton';
-  e.innerText = 'resume';
-  this.ce('br', menu);
+  var table = this.ce('table', df, 'centerWrapper');
+  table.style.height = '100%';
+  table.style.width = '100%';
+  var tr = this.ce('tr', table);
+  var td = this.ce('td', tr);
+  td.vAlign = 'middle';
+  td.style.textAlign = 'center';
+  var menu = this.ce('div', td, 'pausedMenu');
+//  var menu = this.ce('div', df, 'pausedMenu');
+
+  e = this.ce('div', menu, 'gameTitle');
+  e.innerHTML = this.gameTitle;
 
   e = this.ce('button', menu);
   e.id = 'fullScreenButton';
-  e.innerText = 'full screen';
+  e.innerHTML = Strings.textToHtml('full screen');
+
+  this.ce('br', menu);
+
+  e = this.ce('button', menu);
+  e.id = 'resumeButton';
+  e.innerHTML = Strings.textToHtml('play');
+
 
   this.overlayDiv.innerHTML = '';
   this.overlayDiv.appendChild(df);
@@ -168,6 +183,8 @@ LevelPlayPage.prototype.maybeCreateScreen = function() {
   this.screen = new PlayScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx,
       this.adventureName, this.levelName);
   this.screen.loadWorldFromJson(this.jsonObj);
+  this.screen.setPaused(this.paused);
+  this.screen.snapCameraToPlayers();
 
   this.requestAnimation();
 };

@@ -264,6 +264,18 @@ BaseScreen.prototype.destroyScreen = function() {
   // Unload button models? Need a nice utility for loading, remembering, and unloading models.
 };
 
+BaseScreen.prototype.showPausedOverlay = function() {
+  document.querySelector('#pausedOverlay').style.display = 'block';
+  this.canvas.style.cursor = "auto";
+};
+
+BaseScreen.prototype.hidePausedOverlay = function() {
+  document.querySelector('#pausedOverlay').style.display = 'none';
+  this.canvas.style.cursor = "";
+};
+
+
+
 BaseScreen.prototype.clock = function() {
   if (this.paused) return;
   var endTimeMs = Date.now() + BaseScreen.MS_PER_FRAME;

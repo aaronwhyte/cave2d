@@ -110,7 +110,15 @@ LevelEditorPage.prototype.saveLevel = function() {
 LevelEditorPage.prototype.refreshOverlay = function() {
   var df = document.createDocumentFragment();
   var e;
-  var menu = this.ce('div', df, 'pausedMenu');
+
+  var table = this.ce('table', df, 'centerWrapper');
+  table.style.height = '100%';
+  table.style.width = '100%';
+  var tr = this.ce('tr', table);
+  var td = this.ce('td', tr);
+  td.vAlign = 'middle';
+  td.style.textAlign = 'center';
+  var menu = this.ce('div', td, 'pausedMenu');
 
   var nav = this.ce('div', menu, 'levelEditorNav');
 
@@ -119,20 +127,20 @@ LevelEditorPage.prototype.refreshOverlay = function() {
   var query = {};
   query[EditorApp.PARAM_ADVENTURE_NAME] = this.adventureName;
   e.href = '#' + Url.encodeQuery(query);
-  e.innerText = this.adventureName;
+  e.innerHTML = Strings.textToHtml(this.adventureName);
 
   e = this.ce('div', nav, 'levelEditorLevelName');
-  e.innerText = this.levelName;
-
-
-  e = this.ce('button', menu);
-  e.id = 'resumeButton';
-  e.innerText = 'resume';
-  this.ce('br', menu);
+  e.innerHTML = Strings.textToHtml(this.levelName);
 
   e = this.ce('button', menu);
   e.id = 'fullScreenButton';
-  e.innerText = 'full screen';
+  e.innerHTML = Strings.textToHtml('full screen');
+
+  this.ce('br', menu);
+
+  e = this.ce('button', menu);
+  e.id = 'resumeButton';
+  e.innerHTML = Strings.textToHtml('resume');
 
   this.overlayDiv.innerHTML = '';
   this.overlayDiv.appendChild(df);

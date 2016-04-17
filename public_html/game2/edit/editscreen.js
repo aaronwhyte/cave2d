@@ -345,16 +345,6 @@ EditScreen.prototype.getPauseTriggerColorVector = function() {
   return this.colorVector;
 };
 
-EditScreen.prototype.showPausedOverlay = function() {
-  document.querySelector('#pausedOverlay').style.display = 'block';
-  this.canvas.style.cursor = "auto";
-};
-
-EditScreen.prototype.hidePausedOverlay = function() {
-  document.querySelector('#pausedOverlay').style.display = 'none';
-  this.canvas.style.cursor = "";
-};
-
 /////////////////////
 // Editor API stuff
 /////////////////////

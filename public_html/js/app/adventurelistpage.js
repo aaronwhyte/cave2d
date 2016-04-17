@@ -41,16 +41,16 @@ AdventureListPage.prototype.refreshList = function() {
   var df = document.createDocumentFragment();
   var e;
   e = this.ce('header', df);
-  e.innerText = this.gameTitle;
+  e.innerHTML = Strings.textToHtml(this.gameTitle);
 
   this.ce('p', df);
 
   e = this.ce('header', df, 'columnHeader');
-  e.innerText = 'Adventures';
+  e.innerHTML = Strings.textToHtml('Adventures');
 
   e = this.ce('button', df, 'createButton');
   e.onclick = this.createCreateFunction();
-  e.innerText = 'create';
+  e.innerHTML = Strings.textToHtml('create');
 
   var names = this.fileTree.listChildren(EditorApp.path(this.basePath).concat(EditorApp.PATH_ADVENTURES));
   var rows = this.ce('div', df, 'rows');
@@ -59,7 +59,7 @@ AdventureListPage.prototype.refreshList = function() {
     var row = this.ce('div', rows, 'row');
 
     e = this.ce('a', row);
-    e.innerText = name;
+    e.innerHTML = Strings.textToHtml(name);
     var query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = name;
     e.href = '#' + Url.encodeQuery(query);
@@ -67,22 +67,22 @@ AdventureListPage.prototype.refreshList = function() {
     var buttons = this.ce('div', row, 'rightButtonCluster');
 
     e = this.ce('button', buttons);
-    e.innerText = 'copy';
+    e.innerHTML = Strings.textToHtml('copy');
     e.onclick = this.createCopyFunction(name);
 
     e = this.ce('button', buttons);
-    e.innerText = 'rename';
+    e.innerHTML = Strings.textToHtml('rename');
     e.onclick = this.createRenameFunction(name);
 
     e = this.ce('a', buttons);
-    e.innerText = 'export';query = {};
+    e.innerHTML = Strings.textToHtml('export');
     var query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = name;
     query[EditorApp.PARAM_MODE] = EditorApp.MODE_EXPORT;
     e.href = '#' + Url.encodeQuery(query);
 
     e = this.ce('button', buttons);
-    e.innerText = 'delete';
+    e.innerHTML = Strings.textToHtml('delete');
     e.onclick = this.createDeleteFunction(name);
   }
 

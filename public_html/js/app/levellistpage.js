@@ -45,21 +45,21 @@ LevelListPage.prototype.refreshList = function() {
   var title = this.ce('header', df);
   e = this.ce('a', title);
   e.href = '#';
-  e.innerText = this.gameTitle;
+  e.innerHTML = Strings.textToHtml(this.gameTitle);
 
   this.ce('p', df);
 
   var colHead = this.ce('header', df, 'columnHeader');
   e = this.ce('span', colHead);
-  e.innerText = this.adventureName;
+  e.innerHTML = Strings.textToHtml(this.adventureName);
   e = this.ce('span', colHead, 'separator');
-  e.innerHTML = ' : ';
+  e.innerHTML = Strings.textToHtml(' : ');
   e = this.ce('span', colHead);
-  e.innerText = 'Levels';
+  e.innerHTML = Strings.textToHtml('Levels');
 
   e = this.ce('button', df, 'createButton');
   e.onclick = this.createCreateFunction();
-  e.innerText = 'create';
+  e.innerHTML = Strings.textToHtml('create');
 
   var names = this.fileTree.listChildren(
       EditorApp.path(this.basePath, this.adventureName).concat(EditorApp.PATH_LEVELS));
@@ -69,7 +69,7 @@ LevelListPage.prototype.refreshList = function() {
     var row = this.ce('div', rows, 'row');
 
     e = this.ce('a', row);
-    e.innerText = name;
+    e.innerHTML = Strings.textToHtml(name);
     var query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = this.adventureName;
     query[EditorApp.PARAM_LEVEL_NAME] = name;
@@ -78,15 +78,15 @@ LevelListPage.prototype.refreshList = function() {
     var buttons = this.ce('div', row, 'rightButtonCluster');
 
     e = this.ce('button', buttons);
-    e.innerText = 'copy';
+    e.innerHTML = Strings.textToHtml('copy');
     e.onclick = this.createCopyFunction(name);
 
     e = this.ce('button', buttons);
-    e.innerText = 'rename';
+    e.innerHTML = Strings.textToHtml('rename');
     e.onclick = this.createRenameFunction(name);
 
     e = this.ce('button', buttons);
-    e.innerText = 'delete';
+    e.innerHTML = Strings.textToHtml('delete');
     e.onclick = this.createDeleteFunction(name);
   }
 

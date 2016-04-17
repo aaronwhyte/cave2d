@@ -50,12 +50,14 @@ PlayApp.prototype.onDataFileLoaded = function() {
   var jsonObj = JSON.parse(jsonText);
   this.fileTree = new FileTree(new JsonStorage(jsonObj));
 
+  // Start on the first (only) adventure's first (zeroeth) level.
   var adventureNames = this.fileTree.listChildren(PlayApp.path(this.basePath).concat(PlayApp.PATH_ADVENTURES));
   this.adventureName = adventureNames[0];
   var levelNames = this.fileTree.listChildren(PlayApp.path(this.basePath, this.adventureName).concat(PlayApp.PATH_LEVELS));
   this.levelName = levelNames.sort()[0];
   this.page = new LevelPlayPage(this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
   this.page.enterDoc();
+  this.page.setPaused(true);
   this.maybeForwardShaderTexts();
 };
 

@@ -32,16 +32,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
 
   this.pauseDownFn = function(e) {
     e = e || window.event;
-    self.paused = !self.paused;
-    if (self.paused) {
-      // pause
-      self.showPausedOverlay();
-    } else {
-      // resume
-      self.hidePausedOverlay();
-      self.controller.requestAnimation();
-      // TODO: clear the pause button's val
-    }
+    self.setPaused(!self.paused);
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
     // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
@@ -100,6 +91,18 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     window.removeEventListener('keydown', this.keyTipRevealer);
   }
   this.listening = listen;
+};
+
+PlayScreen.prototype.setPaused = function(paused) {
+  this.paused = paused;
+  if (this.paused) {
+    // pause
+    this.showPausedOverlay();
+  } else {
+    // resume
+    this.hidePausedOverlay();
+    this.controller.requestAnimation();
+  }
 };
 
 PlayScreen.prototype.lazyInit = function() {
@@ -196,14 +199,7 @@ PlayScreen.prototype.addPlayer = function() {
   this.players.push(p);
 };
 
-PlayScreen.prototype.drawScene = function() {
-  if (!this.players.length) {
-    this.addPlayer();
-  }
-  this.renderer.setViewMatrix(this.viewMatrix);
-  this.hitsThisFrame = 0;
-
-  // Position the camera to be at the average of all player sprite body postions
+PlayScreen.prototype.getAveragePlayerPos = function() {
   this.playerAveragePos.reset();
   var playerCount = 0;
   for (var id in this.world.spirits) {
@@ -219,6 +215,28 @@ PlayScreen.prototype.drawScene = function() {
   }
   if (playerCount != 0) {
     this.playerAveragePos.scale(1 / playerCount);
+    return this.playerAveragePos;
+  } else {
+    return null;
+  }
+};
+
+PlayScreen.prototype.snapCameraToPlayers = function() {
+  var pos = this.getAveragePlayerPos();
+  if (pos) {
+    this.camera.set(pos);
+  }
+};
+
+PlayScreen.prototype.drawScene = function() {
+  if (!this.players.length) {
+    this.addPlayer();
+  }
+  this.renderer.setViewMatrix(this.viewMatrix);
+  this.hitsThisFrame = 0;
+
+  var averagePlayerPos = this.getAveragePlayerPos();
+  if (averagePlayerPos) {
     this.camera.follow(this.playerAveragePos);
   }
 
@@ -271,16 +289,6 @@ PlayScreen.prototype.configMousePointer = function() {
 PlayScreen.prototype.getPauseTriggerColorVector = function() {
   this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
   return this.colorVector;
-};
-
-PlayScreen.prototype.showPausedOverlay = function() {
-  document.querySelector('#pausedOverlay').style.display = 'block';
-  this.canvas.style.cursor = "auto";
-};
-
-PlayScreen.prototype.hidePausedOverlay = function() {
-  document.querySelector('#pausedOverlay').style.display = 'none';
-  this.canvas.style.cursor = "";
 };
 
 /////////////////
