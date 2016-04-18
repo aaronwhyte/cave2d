@@ -21,14 +21,21 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     }
   };
 
-  this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(PlayScreen.WIDGET_RADIUS, PlayScreen.WIDGET_RADIUS)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .listenToTouch()
-      .listenToMousePointer()
-      .addTriggerKeyByName(Key.Name.SPACE)
+  this.doubleTapWidget = new ClearDoubleTapWidget(this.getHudEventTarget())
+      .setColorVec4(new Vec4(1, 1, 1, 0.5))
       .startListening();
+
+  this.doubleTapFn = function() {
+    self.setPaused(true);
+  };
+
+  this.keys = new Keys();
+  this.spacebarFn = function(e) {
+    e = e || window.event;
+    if (e.keyCode == self.keys.getKeyCodeForName(Key.Name.SPACE)) {
+      self.pauseDownFn();
+    }
+  };
 
   this.pauseDownFn = function(e) {
     e = e || window.event;
@@ -48,8 +55,13 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
+PlayScreen.WIDGET_RADIUS = 60;
+
 PlayScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - PlayScreen.WIDGET_RADIUS, PlayScreen.WIDGET_RADIUS);
+  var rad = Math.min((this.canvas.width + this.canvas.height) / 20, PlayScreen.WIDGET_RADIUS);
+  this.doubleTapWidget
+      .setCanvasPositionXY(this.canvas.width / 2, this.canvas.height / 2)
+      .setCanvasScaleXY(rad, rad);
 };
 
 PlayScreen.prototype.setScreenListening = function(listen) {
@@ -60,7 +72,7 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
-    this.pauseTriggerWidget.addTriggerDownListener(this.pauseDownFn);
+    this.doubleTapWidget.addDoubleTapListener(this.doubleTapFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
@@ -72,12 +84,15 @@ PlayScreen.prototype.setScreenListening = function(listen) {
 
     this.canvas.addEventListener('mousemove', this.keyTipRevealer);
     window.addEventListener('keydown', this.keyTipRevealer);
+    window.addEventListener('keydown', this.spacebarFn);
 
   } else {
+    // TODO use ListenerTracker
+
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
-    this.pauseTriggerWidget.removeTriggerDownListener(this.pauseDownFn);
+    this.doubleTapWidget.removeDoubleTapListener(this.doubleTapFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
@@ -89,6 +104,7 @@ PlayScreen.prototype.setScreenListening = function(listen) {
 
     this.canvas.removeEventListener('mousemove', this.keyTipRevealer);
     window.removeEventListener('keydown', this.keyTipRevealer);
+    window.removeEventListener('keydown', this.spacebarFn);
   }
   this.listening = listen;
 };
@@ -102,6 +118,7 @@ PlayScreen.prototype.setPaused = function(paused) {
     // resume
     this.hidePausedOverlay();
     this.controller.requestAnimation();
+    this.doubleTapWidget.fade();
   }
 };
 
@@ -123,19 +140,16 @@ PlayScreen.prototype.initPermStamps = function() {
   this.levelStamps.push(this.circleStamp);
 
   var pauseModel = new RigidModel();
-  pauseModel.addRigidModel(RigidModel.createRingMesh(4, 0.5)
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.5, 0.5, 0.5)));
-  var teeth = 8;
-  for (var r = 0; r < teeth; r++) {
-    pauseModel.addRigidModel(
-        RigidModel.createSquare()
-            .transformPositions(new Matrix44().toScaleOpXYZ(0.09, 0.1, 1))
-            .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.6, 0))
-            .transformPositions(new Matrix44().toRotateZOp(2 * Math.PI * r / teeth)));
+  for (var x = -1; x <= 1; x+=2) {
+    pauseModel.addRigidModel(RigidModel.createSquare().transformPositions(
+        new Matrix44()
+            .multiply(new Matrix44().toScaleOpXYZ(0.4, 1, 1)
+                .multiply(new Matrix44().toTranslateOpXYZ(x*1.5, 0, 0)
+            ))));
   }
   this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.pauseStamp);
-  this.pauseTriggerWidget.setStamp(this.pauseStamp);
+  this.doubleTapWidget.setStamp(this.pauseStamp);
 
   var model = RigidModel.createDoubleRing(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
@@ -269,7 +283,7 @@ PlayScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-  this.pauseTriggerWidget.draw(this.renderer);
+  this.doubleTapWidget.draw(this.renderer);
   for (var i = 0; i < this.players.length; i++) {
     this.players[i].drawHud(this.renderer);
   }
@@ -277,18 +291,11 @@ PlayScreen.prototype.drawHud = function() {
 };
 
 PlayScreen.prototype.configMousePointer = function() {
-  if (this.pauseTriggerWidget.isMouseHovered()) {
-    this.canvas.style.cursor = "auto"
-  } else if (this.paused) {
+  if (this.paused) {
     this.canvas.style.cursor = "";
   } else {
     this.canvas.style.cursor = "crosshair";
   }
-};
-
-PlayScreen.prototype.getPauseTriggerColorVector = function() {
-  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
-  return this.colorVector;
 };
 
 /////////////////

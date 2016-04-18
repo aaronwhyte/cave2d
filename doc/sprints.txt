@@ -164,13 +164,21 @@ v play uses big exported FileTree JSON file.
   v order the levels
 v start with camera at avg of players, not wherever the editor left it.
 v initialize the first level.
-- in-game pause menu
+v in-game pause menu
   v start paused
   v resume, fullscreen
   v center
   v branding
-  - clicking off of menu resumes
-  - change "resume" to "play"
+  v change "resume" to "play"
+  x clicking off of menu resumes? meh.
+  v double-tap in the middle of the screen activates pause menu
+    v sense mouse/touch down near middle of screen, hud layer, but do not consume event
+    v onTap, when pauseTipEnd < now, pause is unexcited. Start excitement timer
+    v Show pause button grow and then shrink through excitement arc
+    v Tapping again during excitement
+      v causes excitement to end
+      v activate paused mode
+    v unpausing causes fading mid-screen
 
 Entrance?
 
