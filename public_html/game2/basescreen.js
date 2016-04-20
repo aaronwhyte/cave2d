@@ -265,12 +265,12 @@ BaseScreen.prototype.destroyScreen = function() {
 };
 
 BaseScreen.prototype.showPausedOverlay = function() {
-  document.querySelector('#pausedOverlay').style.display = 'block';
+  document.querySelector('#pauseMenu').style.display = 'inline-block';
   this.canvas.style.cursor = "auto";
 };
 
 BaseScreen.prototype.hidePausedOverlay = function() {
-  document.querySelector('#pausedOverlay').style.display = 'none';
+  document.querySelector('#pauseMenu').style.display = 'none';
   this.canvas.style.cursor = "";
 };
 

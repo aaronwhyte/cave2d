@@ -34,7 +34,7 @@ function ClearDoubleTapWidget(elem) {
   this.updateModelMatrix();
 }
 
-ClearDoubleTapWidget.TIMEOUT = 600;
+ClearDoubleTapWidget.TIMEOUT = 1000;
 
 ClearDoubleTapWidget.prototype.setStamp = function(stamp) {
   this.stamp = stamp;
@@ -91,7 +91,7 @@ ClearDoubleTapWidget.prototype.draw = function(renderer) {
 };
 
 ClearDoubleTapWidget.prototype.fade = function() {
-  this.tapTime = Date.now() - ClearDoubleTapWidget.TIMEOUT * 0.66;
+  this.tapTime = Date.now() - ClearDoubleTapWidget.TIMEOUT * 0.5;
 };
 
 ClearDoubleTapWidget.prototype.onMouseDown = function(e) {
@@ -122,7 +122,7 @@ ClearDoubleTapWidget.prototype.onDownXY = function(x, y) {
 
 ClearDoubleTapWidget.prototype.updateModelMatrix = function() {
   var fraction = (Date.now() - this.tapTime) / ClearDoubleTapWidget.TIMEOUT;
-  var size = Math.min(1.12 * Math.sin(fraction * Math.PI), 1);
+  var size = Math.sin(fraction * Math.PI);
   this.modelMatrix.toTranslateOpXYZ(this.canvasPos.x, this.canvasPos.y, -0.99)
       .multiply(this.mat44.toScaleOpXYZ(size * this.canvasScale.x, size * this.canvasScale.y, 1));
   return this;

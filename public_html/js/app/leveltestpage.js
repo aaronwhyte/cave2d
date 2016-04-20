@@ -19,7 +19,7 @@ function LevelTestPage(gameTitle, basePath, fileTree, adventureName, levelName) 
       .concat(EditorApp.PATH_LEVEL_JSON);
 
   this.canvas = null;
-  this.overlayDiv = null;
+  this.pauseMenuDiv = null;
 
   this.oldMetaViewportContent = null;
 
@@ -29,24 +29,25 @@ LevelTestPage.prototype = new Page();
 LevelTestPage.prototype.constructor = LevelTestPage;
 
 LevelTestPage.prototype.enterDoc = function() {
-  if (this.canvas || this.overlayDiv) {
-    throw Error('nodes should be falsey. canvas:' + this.canvas + 'overlayDiv:' + this.overlayDiv);
+  if (this.canvas || this.pauseMenuDiv) {
+    throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
   var df = document.createDocumentFragment();
 
   this.canvas = this.ce('canvas', df);
   this.canvas.id = 'canvas';
 
-  this.overlayDiv = this.ce('div', df);
-  this.overlayDiv.id = 'pausedOverlay';
+  this.pauseMenuDiv = this.ce('div', df);
+  this.pauseMenuDiv.id = 'pauseMenu';
   document.body.appendChild(df);
-  document.body.classList.add('levelTestPage');
+
+  document.body.classList.add('canvasPage');
 
   var metaViewport = document.head.querySelector('meta[name="viewport"]');
   this.oldMetaViewportContent = metaViewport.content;
   metaViewport.content = 'width=device-width, user-scalable=no';
 
-  this.refreshOverlay();
+  this.refreshPauseMenu();
 
   this.sfx = new SoundFx();
   this.sfx.setListenerXYZ(0, 0, 5);
@@ -77,8 +78,8 @@ LevelTestPage.prototype.unlockIosSound = function() {
 };
 
 LevelTestPage.prototype.exitDoc = function() {
-  if (!this.canvas || !this.overlayDiv) {
-    throw Error('nodes should be truthy. canvas:' + this.canvas + 'overlayDiv:' + this.overlayDiv);
+  if (!this.canvas || !this.pauseMenuDiv) {
+    throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
   window.removeEventListener("scroll", LevelTestPage.pd);
 
@@ -86,10 +87,10 @@ LevelTestPage.prototype.exitDoc = function() {
     this.screen.setScreenListening(false);
   }
   document.body.removeChild(this.canvas);
-  document.body.removeChild(this.overlayDiv);
-  document.body.classList.remove('levelTestPage');
+  document.body.removeChild(this.pauseMenuDiv);
+  document.body.classList.remove('canvasPage');
   this.canvas = null;
-  this.overlayDiv = null;
+  this.pauseMenuDiv = null;
   this.animationId = 0;
 
   var metaViewport = document.head.querySelector('meta[name="viewport"]');
@@ -97,19 +98,11 @@ LevelTestPage.prototype.exitDoc = function() {
   this.oldMetaViewportContent = null;
 };
 
-LevelTestPage.prototype.refreshOverlay = function() {
+LevelTestPage.prototype.refreshPauseMenu = function() {
   var df = document.createDocumentFragment();
   var e;
-  var table = this.ce('table', df, 'centerWrapper');
-  table.style.height = '100%';
-  table.style.width = '100%';
-  var tr = this.ce('tr', table);
-  var td = this.ce('td', tr);
-  td.vAlign = 'middle';
-  td.style.textAlign = 'center';
-  var menu = this.ce('div', td, 'pausedMenu');
 
-  var nav = this.ce('div', menu, 'levelEditorNav');
+  var nav = this.ce('div', df, 'levelEditorNav');
 
   e = this.ce('div', nav);
   e = this.ce('a', e);
@@ -121,18 +114,18 @@ LevelTestPage.prototype.refreshOverlay = function() {
   e = this.ce('div', nav, 'levelEditorLevelName');
   e.innerHTML = Strings.textToHtml(this.levelName);
 
-
-  e = this.ce('button', menu);
-  e.id = 'resumeButton';
-  e.innerHTML = Strings.textToHtml('resume');
-  this.ce('br', menu);
-
-  e = this.ce('button', menu);
+  e = this.ce('button', df);
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');
 
-  this.overlayDiv.innerHTML = '';
-  this.overlayDiv.appendChild(df);
+  this.ce('br', df);
+
+  e = this.ce('button', df);
+  e.id = 'resumeButton';
+  e.innerHTML = Strings.textToHtml('resume');
+
+  this.pauseMenuDiv.innerHTML = '';
+  this.pauseMenuDiv.appendChild(df);
 };
 
 LevelTestPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {

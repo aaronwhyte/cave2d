@@ -179,8 +179,14 @@ v in-game pause menu
       v causes excitement to end
       v activate paused mode
     v unpausing causes fading mid-screen
+  v user-test pause button. FAILED. even though it's hella fun. Oh well.
 
-Entrance?
+- pause button v3
+  - put button near other buttons, just a regular widget I guess.
+  - remove pause overlay. Position pause menu with JS I guess.
+
+
+Entrance? Instead of a player? Probably a good idea.
 
 Exit
 - square with the word "exit" written on or above it.

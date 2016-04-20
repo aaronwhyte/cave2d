@@ -19,7 +19,7 @@ function LevelPlayPage(gameTitle, basePath, fileTree, adventureName, levelName) 
       .concat(PlayApp.PATH_LEVEL_JSON);
 
   this.canvas = null;
-  this.overlayDiv = null;
+  this.pauseMenuDiv = null;
 
   this.oldMetaViewportContent = null;
 
@@ -29,18 +29,18 @@ LevelPlayPage.prototype = new Page();
 LevelPlayPage.prototype.constructor = LevelPlayPage;
 
 LevelPlayPage.prototype.enterDoc = function() {
-  if (this.canvas || this.overlayDiv) {
-    throw Error('nodes should be falsey. canvas:' + this.canvas + 'overlayDiv:' + this.overlayDiv);
+  if (this.canvas || this.pauseMenuDiv) {
+    throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
   var df = document.createDocumentFragment();
 
   this.canvas = this.ce('canvas', df);
   this.canvas.id = 'canvas';
 
-  this.overlayDiv = this.ce('div', df);
-  this.overlayDiv.id = 'pausedOverlay';
+  this.pauseMenuDiv = this.ce('div', df);
+  this.pauseMenuDiv.id = 'pauseMenu';
   document.body.appendChild(df);
-  document.body.classList.add('levelPlayPage');
+  document.body.classList.add('canvasPage');
 
   var metaViewport = document.head.querySelector('meta[name="viewport"]');
   this.oldMetaViewportContent = metaViewport.content;
@@ -77,8 +77,8 @@ LevelPlayPage.prototype.unlockIosSound = function() {
 };
 
 LevelPlayPage.prototype.exitDoc = function() {
-  if (!this.canvas || !this.overlayDiv) {
-    throw Error('nodes should be truthy. canvas:' + this.canvas + 'overlayDiv:' + this.overlayDiv);
+  if (!this.canvas || !this.pauseMenuDiv) {
+    throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
   window.removeEventListener("scroll", LevelPlayPage.pd);
 
@@ -86,10 +86,10 @@ LevelPlayPage.prototype.exitDoc = function() {
     this.screen.setScreenListening(false);
   }
   document.body.removeChild(this.canvas);
-  document.body.removeChild(this.overlayDiv);
-  document.body.classList.remove('LevelPlayPage');
+  document.body.removeChild(this.pauseMenuDiv);
+  document.body.classList.remove('canvasPage');
   this.canvas = null;
-  this.overlayDiv = null;
+  this.pauseMenuDiv = null;
   this.animationId = 0;
 
   var metaViewport = document.head.querySelector('meta[name="viewport"]');
@@ -106,32 +106,22 @@ LevelPlayPage.prototype.refreshOverlay = function() {
   var df = document.createDocumentFragment();
   var e;
 
-  var table = this.ce('table', df, 'centerWrapper');
-  table.style.height = '100%';
-  table.style.width = '100%';
-  var tr = this.ce('tr', table);
-  var td = this.ce('td', tr);
-  td.vAlign = 'middle';
-  td.style.textAlign = 'center';
-  var menu = this.ce('div', td, 'pausedMenu');
-//  var menu = this.ce('div', df, 'pausedMenu');
-
-  e = this.ce('div', menu, 'gameTitle');
+  e = this.ce('div', df, 'gameTitle');
   e.innerHTML = this.gameTitle;
 
-  e = this.ce('button', menu);
+  e = this.ce('button', df);
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');
 
-  this.ce('br', menu);
+  this.ce('br', df);
 
-  e = this.ce('button', menu);
+  e = this.ce('button', df);
   e.id = 'resumeButton';
   e.innerHTML = Strings.textToHtml('play');
 
 
-  this.overlayDiv.innerHTML = '';
-  this.overlayDiv.appendChild(df);
+  this.pauseMenuDiv.innerHTML = '';
+  this.pauseMenuDiv.appendChild(df);
 };
 
 LevelPlayPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
