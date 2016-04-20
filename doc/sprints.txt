@@ -179,24 +179,26 @@ v in-game pause menu
       v causes excitement to end
       v activate paused mode
     v unpausing causes fading mid-screen
-  v user-test pause button. FAILED. even though it's hella fun. Oh well.
+  v user-test pause button. FAILED. even though it's hella fun. Oh well?
 
-- pause button v3
-  - put button near other buttons, just a regular widget I guess.
-  - remove pause overlay. Position pause menu with JS I guess.
-
-
-Entrance? Instead of a player? Probably a good idea.
+Pause button v3
+v on play screen, put button near other buttons, just a regular widget I guess. :-/
+  (wow that seemed like a lot of work)
 
 Exit
 - square with the word "exit" written on or above it.
 - in play mode, it triggers transition and then next level, or victory.
+- in test mode, uh... don't?
+
+Entrance, instead of player
+- spawns a player in test/play mode
+- if there's more than one, a random one is chosen as the starting point
 
 Enemies
 - gnome x3
 - gnome generator x3
 
-Player fire
+Player fire 1
 - button triggers it
 - muzzle flash
 - fire noise

@@ -20,48 +20,11 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
       self.players[i].setKeyboardTipTimeoutMs(ms);
     }
   };
-
-  this.doubleTapWidget = new ClearDoubleTapWidget(this.getHudEventTarget())
-      .setColorVec4(new Vec4(1, 1, 1, 0.5))
-      .startListening();
-
-  this.doubleTapFn = function() {
-    self.setPaused(true);
-  };
-
-  this.keys = new Keys();
-  this.spacebarFn = function(e) {
-    e = e || window.event;
-    if (e.keyCode == self.keys.getKeyCodeForName(Key.Name.SPACE)) {
-      self.pauseDownFn();
-    }
-  };
-
-  this.pauseDownFn = function(e) {
-    e = e || window.event;
-    self.setPaused(!self.paused);
-    // Stop the flow of mouse-emulation events on touchscreens, so the
-    // mouse events don't cause weird cursors teleports.
-    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
-    e.preventDefault();
-  };
-
-  this.fullScreenFn = function(e) {
-    e = e || window.event;
-    self.controller.requestFullScreen();
-    e.preventDefault();
-  };
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
-PlayScreen.WIDGET_RADIUS = 60;
-
 PlayScreen.prototype.updateHudLayout = function() {
-  var rad = Math.min((this.canvas.width + this.canvas.height) / 20, PlayScreen.WIDGET_RADIUS);
-  this.doubleTapWidget
-      .setCanvasPositionXY(this.canvas.width / 2, this.canvas.height / 2)
-      .setCanvasScaleXY(rad, rad);
 };
 
 PlayScreen.prototype.setScreenListening = function(listen) {
@@ -72,7 +35,6 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
-    this.doubleTapWidget.addDoubleTapListener(this.doubleTapFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
@@ -92,7 +54,6 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
-    this.doubleTapWidget.removeDoubleTapListener(this.doubleTapFn);
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
@@ -107,19 +68,6 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     window.removeEventListener('keydown', this.spacebarFn);
   }
   this.listening = listen;
-};
-
-PlayScreen.prototype.setPaused = function(paused) {
-  this.paused = paused;
-  if (this.paused) {
-    // pause
-    this.showPausedOverlay();
-  } else {
-    // resume
-    this.hidePausedOverlay();
-    this.controller.requestAnimation();
-    this.doubleTapWidget.fade();
-  }
 };
 
 PlayScreen.prototype.lazyInit = function() {
@@ -139,17 +87,7 @@ PlayScreen.prototype.initPermStamps = function() {
   this.circleStamp = RigidModel.createCircleMesh(5).createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
-  var pauseModel = new RigidModel();
-  for (var x = -1; x <= 1; x+=2) {
-    pauseModel.addRigidModel(RigidModel.createSquare().transformPositions(
-        new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(0.4, 1, 1)
-                .multiply(new Matrix44().toTranslateOpXYZ(x*1.5, 0, 0)
-            ))));
-  }
-  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.pauseStamp);
-  this.doubleTapWidget.setStamp(this.pauseStamp);
+  this.initPauseStamp();
 
   var model = RigidModel.createDoubleRing(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
@@ -203,7 +141,7 @@ PlayScreen.prototype.addPlayer = function() {
   var p = new Player();
   var trackball = this.createTrackball();
   var buttons = this.createButtonWidgets();
-  p.setControls(trackball, buttons[0], buttons[1]);
+  p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
     if (spirit.type == BaseScreen.SpiritType.PLAYER) {
@@ -259,7 +197,6 @@ PlayScreen.prototype.drawScene = function() {
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();
-  this.configMousePointer();
 
   if (this.restarting) {
     this.controller.restart();
@@ -283,19 +220,10 @@ PlayScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-  this.doubleTapWidget.draw(this.renderer);
   for (var i = 0; i < this.players.length; i++) {
     this.players[i].drawHud(this.renderer);
   }
   this.renderer.setBlendingEnabled(false);
-};
-
-PlayScreen.prototype.configMousePointer = function() {
-  if (this.paused) {
-    this.canvas.style.cursor = "";
-  } else {
-    this.canvas.style.cursor = "crosshair";
-  }
 };
 
 /////////////////

@@ -55,9 +55,37 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventu
   // for sound throttling
   this.hitsThisFrame = 0;
 
+  var self = this;
+
+  this.pauseDownFn = function(e) {
+    e = e || window.event;
+    self.paused = !self.paused;
+    if (self.paused) {
+      // pause
+      self.showPauseMenu();
+    } else {
+      // resume
+      self.hidePauseMenu();
+      self.controller.requestAnimation();
+      // TODO: clear the pause button's val
+    }
+    // Stop the flow of mouse-emulation events on touchscreens, so the
+    // mouse events don't cause weird cursors teleports.
+    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
+    e.preventDefault();
+  };
+
+  this.fullScreenFn = function(e) {
+    e = e || window.event;
+    self.controller.requestFullScreen();
+    e.preventDefault();
+  };
+
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
+
+BaseScreen.WIDGET_RADIUS = 30;
 
 BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
@@ -90,8 +118,6 @@ BaseScreen.MenuItem = {
   PLAYER: 'player'
 };
 
-
-
 BaseScreen.BIT_SIZE = 0.5;
 BaseScreen.WORLD_CELL_SIZE = BaseScreen.BIT_SIZE * BitGrid.BITS;
 
@@ -100,6 +126,19 @@ BaseScreen.EventLayer = {
   HUD: 1,
   WORLD: 2
 };
+
+BaseScreen.prototype.setPaused = function(paused) {
+  this.paused = paused;
+  if (this.paused) {
+    // pause
+    this.showPauseMenu();
+  } else {
+    // resume
+    this.hidePauseMenu();
+    this.controller.requestAnimation();
+  }
+};
+
 
 BaseScreen.prototype.initSpiritConfigs = function() {
   this.spiritConfigs = {};
@@ -211,6 +250,35 @@ BaseScreen.prototype.createTrackball = function() {
   return trackball;
 };
 
+BaseScreen.prototype.initPauseStamp = function() {
+  var pauseModel = new RigidModel();
+  for (var x = -1; x <= 1; x += 2) {
+    var bar = RigidModel.createSquare().transformPositions(
+        new Matrix44()
+            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.5, 1)
+                .multiply(new Matrix44().toTranslateOpXYZ(x * 1.5, 0, 0.9)
+            )));
+    pauseModel.addRigidModel(bar);
+  }
+  pauseModel.addRigidModel(RigidModel.createCircleMesh(5));
+  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.pauseStamp);
+};
+
+BaseScreen.prototype.initPauseStampNoOutline = function() {
+  var pauseModel = new RigidModel();
+  for (var x = -1; x <= 1; x += 2) {
+    var bar = RigidModel.createSquare().transformPositions(
+        new Matrix44()
+            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.5, 1)
+                .multiply(new Matrix44().toTranslateOpXYZ(x * 1.5, 0, 0.9)
+            )));
+    pauseModel.addRigidModel(bar);
+  }
+  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(this.pauseStamp);
+};
+
 BaseScreen.prototype.createButtonWidgets = function() {
   return [
     new TriggerWidget(this.getHudEventTarget())
@@ -228,6 +296,15 @@ BaseScreen.prototype.createButtonWidgets = function() {
         .listenToTouch()
         .addTriggerKeyByName('x')
         .setKeyboardTipStamp(this.glyphs.stamps['X'])
+        .startListening(),
+    new TriggerWidget(this.getHudEventTarget())
+        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
+        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
+        .setStamp(this.pauseStamp)
+        .addTriggerDownListener(this.pauseDownFn)
+        .listenToTouch()
+        .listenToMousePointer()
+        .addTriggerKeyByName(Key.Name.SPACE)
         .startListening()];
 };
 
@@ -264,12 +341,12 @@ BaseScreen.prototype.destroyScreen = function() {
   // Unload button models? Need a nice utility for loading, remembering, and unloading models.
 };
 
-BaseScreen.prototype.showPausedOverlay = function() {
-  document.querySelector('#pauseMenu').style.display = 'inline-block';
+BaseScreen.prototype.showPauseMenu = function() {
+  document.querySelector('#pauseMenu').style.display = 'block';
   this.canvas.style.cursor = "auto";
 };
 
-BaseScreen.prototype.hidePausedOverlay = function() {
+BaseScreen.prototype.hidePauseMenu = function() {
   document.querySelector('#pauseMenu').style.display = 'none';
   this.canvas.style.cursor = "";
 };

@@ -12,10 +12,11 @@ function Player() {
   this.canvasHeight = -1;
 }
 
-Player.prototype.setControls = function(trackball, b1, b2) {
+Player.prototype.setControls = function(trackball, b1, b2, pauseBtn) {
   this.trackball = trackball;
   this.b1 = b1;
   this.b2 = b2;
+  this.pauseBtn = pauseBtn
 };
 
 Player.prototype.handleInput = function() {
@@ -37,13 +38,14 @@ Player.prototype.handleInput = function() {
 Player.prototype.setKeyboardTipTimeoutMs = function(ms) {
   if (this.b1) this.b1.setKeyboardTipTimeoutMs(ms);
   if (this.b2) this.b2.setKeyboardTipTimeoutMs(ms);
+  if (this.pauseBtn) this.pauseBtn.setKeyboardTipTimeoutMs(ms);
 };
 
 Player.prototype.drawHud = function(renderer) {
   // The smaller of a quarter of the width (for portriat mode),
   // or a sixth of the average of width and height (usually the smallest value, for consistency when rotated)
-  // or 150 (to keep the size reasonable on large screens)
-  var diameter = Math.min(renderer.canvas.width / 4, (renderer.canvas.width + renderer.canvas.height) / 12, 150);
+  // or 120 (to keep the size reasonable on large screens)
+  var diameter = Math.min(renderer.canvas.width / 4, (renderer.canvas.width + renderer.canvas.height) / 12, 120);
   var r = diameter / 2;
   if (r != this.buttonRad ||
       renderer.canvas.width != this.canvasWidth ||
@@ -54,15 +56,20 @@ Player.prototype.drawHud = function(renderer) {
     this.canvasHeight = renderer.canvas.height;
     if (this.b1) {
       this.b1
-          .setCanvasPositionXY(r * 1.1, renderer.canvas.height - r * 2.5)
+          .setCanvasPositionXY(r * 1.1, renderer.canvas.height - r * 2.1)
           .setCanvasScaleXY(r, -r)
           .setKeyboardTipScaleXY(r/4, -r/4);
     }
     if (this.b2) {
       this.b2
-          .setCanvasPositionXY(r * 3.2, renderer.canvas.height - r * 1.1)
+          .setCanvasPositionXY(r * 3.3, renderer.canvas.height - r * 1.1)
           .setCanvasScaleXY(r, -r)
           .setKeyboardTipScaleXY(r/4, -r/4);
+    }
+    if (this.pauseBtn) {
+      this.pauseBtn
+          .setCanvasPositionXY(r * 0.1 + r * 0.4, renderer.canvas.height - r * 3.9)
+          .setCanvasScaleXY(r * 0.4, -r * 0.4);
     }
   }
   if (this.b1) {
@@ -70,6 +77,9 @@ Player.prototype.drawHud = function(renderer) {
   }
   if (this.b2) {
     this.b2.draw(renderer);
+  }
+  if (this.pauseBtn) {
+    this.pauseBtn.draw(renderer);
   }
 };
 

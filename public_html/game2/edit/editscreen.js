@@ -18,7 +18,7 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   };
 
   this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
+      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
@@ -37,7 +37,7 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   };
 
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
+      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
@@ -45,36 +45,11 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
       .addTriggerKeyByName(Key.Name.SPACE)
       .startListening();
 
-  this.pauseDownFn = function(e) {
-    e = e || window.event;
-    self.paused = !self.paused;
-    if (self.paused) {
-      // pause
-      self.showPausedOverlay();
-    } else {
-      // resume
-      self.hidePausedOverlay();
-      self.controller.requestAnimation();
-      // TODO: clear the pause button's val
-    }
-    // Stop the flow of mouse-emulation events on touchscreens, so the
-    // mouse events don't cause weird cursors teleports.
-    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
-    e.preventDefault();
-  };
-
-  this.fullScreenFn = function(e) {
-    e = e || window.event;
-    self.controller.requestFullScreen();
-    e.preventDefault();
-  };
-
   this.initialized = false;
 }
 EditScreen.prototype = new BaseScreen();
 EditScreen.prototype.constructor = EditScreen;
 
-EditScreen.WIDGET_RADIUS = 30;
 EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
 EditScreen.ANT_RAD = 0.8;
@@ -94,8 +69,8 @@ EditScreen.prototype.initEditor = function() {
 };
 
 EditScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS);
-  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS * 3);
+  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS);
+  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3);
   this.editor.updateHudLayout();
 };
 
@@ -158,19 +133,7 @@ EditScreen.prototype.initPermStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
 
-  var pauseModel = new RigidModel();
-  pauseModel.addRigidModel(RigidModel.createRingMesh(4, 0.5)
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.5, 0.5, 0.5)));
-  var teeth = 8;
-  for (var r = 0; r < teeth; r++) {
-    pauseModel.addRigidModel(
-        RigidModel.createSquare()
-            .transformPositions(new Matrix44().toScaleOpXYZ(0.09, 0.1, 1))
-            .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.6, 0))
-            .transformPositions(new Matrix44().toRotateZOp(2 * Math.PI * r / teeth)));
-  }
-  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.pauseStamp);
+  this.initPauseStampNoOutline();
   this.pauseTriggerWidget.setStamp(this.pauseStamp);
 
   var testModel = RigidModel.createTriangle()
@@ -182,7 +145,7 @@ EditScreen.prototype.initPermStamps = function() {
       .setStamp(this.testStamp)
       .setKeyboardTipStamp(this.glyphs.stamps['T'])
       .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(EditScreen.WIDGET_RADIUS * 0.6, EditScreen.WIDGET_RADIUS * 0.7);
+      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7);
 
   // TODO real splashes for this game
   var model = RigidModel.createDoubleRing(64);

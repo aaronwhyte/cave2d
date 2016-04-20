@@ -23,7 +23,7 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   };
 
   this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
+      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
@@ -40,46 +40,12 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     Url.setFragment(Url.encodeQuery(query));
     e.preventDefault();
   };
-
-  this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .listenToTouch()
-      .listenToMousePointer()
-      .addTriggerKeyByName(Key.Name.SPACE)
-      .startListening();
-
-  this.pauseDownFn = function(e) {
-    e = e || window.event;
-    self.paused = !self.paused;
-    if (self.paused) {
-      // pause
-      self.showPausedOverlay();
-    } else {
-      // resume
-      self.hidePausedOverlay();
-      self.controller.requestAnimation();
-      // TODO: clear the pause button's val
-    }
-    // Stop the flow of mouse-emulation events on touchscreens, so the
-    // mouse events don't cause weird cursors teleports.
-    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
-    e.preventDefault();
-  };
-
-  this.fullScreenFn = function(e) {
-    e = e || window.event;
-    self.controller.requestFullScreen();
-    e.preventDefault();
-  };
 }
 TestScreen.prototype = new BaseScreen();
 TestScreen.prototype.constructor = TestScreen;
 
 TestScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS);
-  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - EditScreen.WIDGET_RADIUS, EditScreen.WIDGET_RADIUS * 3);
+  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3);
 };
 
 TestScreen.prototype.setScreenListening = function(listen) {
@@ -90,7 +56,6 @@ TestScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
-    this.pauseTriggerWidget.addTriggerDownListener(this.pauseDownFn);
     this.testTriggerWidget.addTriggerDownListener(this.testDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
@@ -108,7 +73,6 @@ TestScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
-    this.pauseTriggerWidget.removeTriggerDownListener(this.pauseDownFn);
     this.testTriggerWidget.removeTriggerDownListener(this.testDownFn);
 
     fsb = document.querySelector('#fullScreenButton');
@@ -142,20 +106,7 @@ TestScreen.prototype.initPermStamps = function() {
   this.circleStamp = RigidModel.createCircleMesh(5).createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
-  var pauseModel = new RigidModel();
-  pauseModel.addRigidModel(RigidModel.createRingMesh(4, 0.5)
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.5, 0.5, 0.5)));
-  var teeth = 8;
-  for (var r = 0; r < teeth; r++) {
-    pauseModel.addRigidModel(
-        RigidModel.createSquare()
-            .transformPositions(new Matrix44().toScaleOpXYZ(0.09, 0.1, 1))
-            .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.6, 0))
-            .transformPositions(new Matrix44().toRotateZOp(2 * Math.PI * r / teeth)));
-  }
-  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.pauseStamp);
-  this.pauseTriggerWidget.setStamp(this.pauseStamp);
+  this.initPauseStamp();
 
   var testModel = RigidModel.createTriangle()
       .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
@@ -166,7 +117,7 @@ TestScreen.prototype.initPermStamps = function() {
       .setStamp(this.testStamp)
       .setKeyboardTipStamp(this.glyphs.stamps['T'])
       .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(EditScreen.WIDGET_RADIUS * 0.6, EditScreen.WIDGET_RADIUS * 0.7);
+      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7);
 
   var model = RigidModel.createDoubleRing(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
@@ -220,7 +171,7 @@ TestScreen.prototype.addPlayer = function() {
   var p = new Player();
   var trackball = this.createTrackball();
   var buttons = this.createButtonWidgets();
-  p.setControls(trackball, buttons[0], buttons[1]);
+  p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
     if (spirit.type == BaseScreen.SpiritType.PLAYER) {
@@ -261,7 +212,6 @@ TestScreen.prototype.drawScene = function() {
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();
-  this.configMousePointer();
 
   if (this.restarting) {
     this.controller.restart();
@@ -285,23 +235,11 @@ TestScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-  this.pauseTriggerWidget.draw(this.renderer);
   this.testTriggerWidget.draw(this.renderer);
   for (var i = 0; i < this.players.length; i++) {
     this.players[i].drawHud(this.renderer);
   }
   this.renderer.setBlendingEnabled(false);
-};
-
-TestScreen.prototype.configMousePointer = function() {
-  if (this.pauseTriggerWidget.isMouseHovered() ||
-      this.testTriggerWidget.isMouseHovered()) {
-    this.canvas.style.cursor = "auto"
-  } else if (this.paused) {
-    this.canvas.style.cursor = "";
-  } else {
-    this.canvas.style.cursor = "crosshair";
-  }
 };
 
 TestScreen.prototype.getPauseTriggerColorVector = function() {

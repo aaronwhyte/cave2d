@@ -166,7 +166,7 @@ LevelTestPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
 };
 
 LevelTestPage.prototype.requestAnimation = function() {
-  if (!this.animationId) {
+  if (!this.animationId && this.canvas) {
     this.animationId = requestAnimationFrame(this.animateFrameFn, this.canvas);
   }
 };
