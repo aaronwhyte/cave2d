@@ -128,6 +128,10 @@ Editor.prototype.addMenuItem = function(group, rank, name, model) {
   this.menu.setItem(group, rank, name, model);
 };
 
+Editor.prototype.getMaxGroupNum = function() {
+  return this.menu.getMaxGroupNum();
+};
+
 Editor.prototype.addMenuKeyboardShortcut = function(groupNum, keyName) {
   this.menu.addKeyboardShortcut(groupNum, keyName);
 };

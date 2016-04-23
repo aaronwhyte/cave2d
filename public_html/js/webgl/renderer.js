@@ -33,6 +33,8 @@ Renderer.prototype.createUniform = function(name) {
   this[name] = this.gl.getUniformLocation(this.program, name);
 };
 
+Renderer.COLOR_WHITE = new Vec4(1, 1, 1, 1);
+
 /**
  * @return {Renderer}
  */

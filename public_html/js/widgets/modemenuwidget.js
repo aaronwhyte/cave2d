@@ -229,6 +229,11 @@ ModeMenuWidget.prototype.getSelectedName = function() {
   return r && r.name;
 };
 
+ModeMenuWidget.prototype.getMaxGroupNum = function() {
+  return this.groups.length;
+};
+
+
 /////////////
 // Private //
 /////////////

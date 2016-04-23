@@ -186,9 +186,16 @@ v on play screen, put button near other buttons, just a regular widget I guess. 
   (wow that seemed like a lot of work)
 
 Exit
-- square with the word "exit" written on or above it.
+v ExitSpirit
+  v stamp looks like a square
+    * yes that's lame and yes I feel bad
+v SpiritConfig
+v add to menu
+v add to levels
+v export levels
 - in play mode, it triggers transition and then next level, or victory.
 - in test mode, uh... don't?
+
 
 Entrance, instead of player
 - spawns a player in test/play mode

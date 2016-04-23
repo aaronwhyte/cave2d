@@ -63,7 +63,7 @@ EditScreen.prototype.initEditor = function() {
       this.editor.addMenuItem(c.group, c.rank, c.itemName, c.model);
     }
   }
-  for (var group = 0; group < 2; group++) {
+  for (var group = 0; group < this.editor.getMaxGroupNum(); group++) {
     this.editor.addMenuKeyboardShortcut(group, group + 1);
   }
 };

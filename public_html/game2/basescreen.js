@@ -93,7 +93,14 @@ BaseScreen.PATH_DURATION = 0xffff;
 
 BaseScreen.SpiritType = {
   ANT: 3,
-  PLAYER: 4
+  PLAYER: 4,
+  EXIT: 5
+};
+
+BaseScreen.MenuItem = {
+  RED_ANT: 'red_ant',
+  PLAYER: 'player',
+  EXIT: 'exit'
 };
 
 BaseScreen.Group = {
@@ -111,11 +118,6 @@ BaseScreen.Terrain = {
 
 BaseScreen.SplashType = {
   NOTE: 1
-};
-
-BaseScreen.MenuItem = {
-  RED_ANT: 'red_ant',
-  PLAYER: 'player'
 };
 
 BaseScreen.BIT_SIZE = 0.5;
@@ -159,6 +161,9 @@ BaseScreen.prototype.initSpiritConfigs = function() {
 
   addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,
       BaseScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
+
+  addConfig(BaseScreen.SpiritType.EXIT, ExitSpirit,
+      BaseScreen.MenuItem.EXIT, 2, 0, ExitSpirit.factory);
 };
 
 BaseScreen.prototype.initWorld = function() {
