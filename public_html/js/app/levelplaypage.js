@@ -1,5 +1,6 @@
 /**
  * WebGL play page for a single level
+ * @param {PlayApp} app
  * @param {String} gameTitle
  * @param {Array.<String>} basePath of the game
  * @param {FileTree} fileTree
@@ -8,8 +9,9 @@
  * @constructor
  * @extends (Page)
  */
-function LevelPlayPage(gameTitle, basePath, fileTree, adventureName, levelName) {
+function LevelPlayPage(app, gameTitle, basePath, fileTree, adventureName, levelName) {
   Page.call(this);
+  this.app = app;
   this.gameTitle = gameTitle;
   this.basePath = basePath;
   this.fileTree = fileTree;
@@ -212,4 +214,8 @@ LevelPlayPage.prototype.requestFullScreen = function() {
     elem.webkitRequestFullscreen();
   }
   this.requestAnimation();
+};
+
+LevelPlayPage.prototype.exitLevel = function() {
+  this.app.exitLevel(this.adventureName, this.levelName);
 };

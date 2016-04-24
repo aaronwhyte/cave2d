@@ -395,13 +395,58 @@ BaseScreen.prototype.clock = function() {
   }
 };
 
-BaseScreen.prototype.onHitEvent = function(e) {};
-
 BaseScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
   if (b0 && b0.hitGroup == group) return b0;
   if (b1 && b1.hitGroup == group) return b1;
   return null;
 };
+
+BaseScreen.prototype.otherBody = function(thisBody, b0, b1) {
+  if (thisBody != b0) return b0;
+  if (thisBody != b1) return b1;
+  return null;
+};
+
+BaseScreen.prototype.getSpiritForBody = function(b) {
+  return this.world.spirits[b.spiritId];
+};
+
+BaseScreen.prototype.bodyIfSpiritType = function(type, b0, b1) {
+  var s0 = this.getSpiritForBody(b0);
+  if (s0 && s0.type == type) return b0;
+  var s1 = this.getSpiritForBody(b1);
+  if (s1 && s1.type == type) return b1;
+  return null;
+};
+
+BaseScreen.prototype.onHitEvent = function(e) {
+  if (!this.isPlaying()) return;
+
+  var b0 = this.world.getBodyByPathId(e.pathId0);
+  var b1 = this.world.getBodyByPathId(e.pathId1);
+
+  if (b0 && b1) {
+    this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
+    var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
+    var mag = strikeVec.magnitude();
+    this.hitsThisFrame++;
+    if (this.hitsThisFrame < 4) {
+//      this.bonk(b0, mag);
+//      this.bonk(b1, mag);
+    }
+    strikeVec.free();
+
+    var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
+    if (playerBody) {
+      var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
+      if (exitBody) {
+        this.exitLevel();
+      }
+    }
+  }
+};
+
+BaseScreen.prototype.exitLevel = function() {};
 
 BaseScreen.prototype.updateViewMatrix = function() {
   // scale

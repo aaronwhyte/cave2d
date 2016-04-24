@@ -193,17 +193,41 @@ v SpiritConfig
 v add to menu
 v add to levels
 v export levels
-- in play mode, it triggers transition and then next level, or victory.
-- in test mode, uh... don't?
+- in play mode, player hitting exit triggers...
+  x transition screen? Some kinda pause feels right. But maybe later.
+  v start next level
+  - victory if there's no next level. Gonna need a victory screen I guesssssss
+v in test mode, uh... don't?
+- friction in edit mode (maybe for everyone?)
+  - add an onPulse like onTimeout, but free for everyone? Good time for friction, scans, etc.
+- zero vel in play mode
+-
+
+Gnome
+- spirit
+  - model
+  - behavior
+    - wander
+    - chase
+    - continue to last seen player position, like ye olde fracas 2
+- config(s)
+  - three strengths, three ranks
+
+Gnome Generator
+- spirit
+  - model
+  - behavior
+    - wander
+    - chase
+    - continue to last seen player position, like ye olde fracas 2
+- config(s)
+  - three strengths, three ranks
 
 
 Entrance, instead of player
 - spawns a player in test/play mode
 - if there's more than one, a random one is chosen as the starting point
 
-Enemies
-- gnome x3
-- gnome generator x3
 
 Player fire 1
 - button triggers it

@@ -55,9 +55,25 @@ PlayApp.prototype.onDataFileLoaded = function() {
   this.adventureName = adventureNames[0];
   var levelNames = this.fileTree.listChildren(PlayApp.path(this.basePath, this.adventureName).concat(PlayApp.PATH_LEVELS));
   this.levelName = levelNames.sort()[0];
-  this.page = new LevelPlayPage(this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+  this.page = new LevelPlayPage(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
   this.page.enterDoc();
   this.page.setPaused(true);
+  this.maybeForwardShaderTexts();
+};
+
+PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName) {
+  var levelNames = this.fileTree.listChildren(PlayApp.path(this.basePath, fromAdventureName).concat(PlayApp.PATH_LEVELS));
+  levelNames.sort();
+  for (var i = 0; i < levelNames.length; i++) {
+    if (levelNames[i] == fromLevelName) {
+      break;
+    }
+  }
+  this.levelName = levelNames[i + 1];
+  this.page.exitDoc();
+  this.page = new LevelPlayPage(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+  this.page.enterDoc();
+//  this.page.setPaused(true);
   this.maybeForwardShaderTexts();
 };
 
