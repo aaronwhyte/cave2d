@@ -69,12 +69,16 @@ PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName) {
       break;
     }
   }
-  this.levelName = levelNames[i + 1];
   this.page.exitDoc();
-  this.page = new LevelPlayPage(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
-  this.page.enterDoc();
-//  this.page.setPaused(true);
-  this.maybeForwardShaderTexts();
+  if (i == levelNames.length - 1) {
+    this.page = new VictoryPage(this);
+    this.page.enterDoc();
+  } else {
+    this.levelName = levelNames[i + 1];
+    this.page = new LevelPlayPage(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+    this.page.enterDoc();
+    this.maybeForwardShaderTexts();
+  }
 };
 
 PlayApp.prototype.getVertexShaderText = function() {
