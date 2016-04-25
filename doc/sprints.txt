@@ -213,6 +213,13 @@ Gnome
 - config(s)
   - three strengths, three ranks
 
+Stunning
+- spirit behavioral module?
+- players and gnomes can be stunned by accel (not force!) of collisions, even microcollisions
+- stun level accumulates and decays.
+- stun level decreases voluntary control, may prevent actions when above a certain level.
+- spirit has a knockout threshold, and a max stun value? Or a stun coef to alter fragility?
+
 Gnome Generator
 - spirit
   - model
