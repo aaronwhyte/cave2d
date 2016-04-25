@@ -196,12 +196,12 @@ v export levels
 - in play mode, player hitting exit triggers...
   x transition screen? Some kinda pause feels right. But maybe later.
   v start next level
-  - victory if there's no next level. Gonna need a victory screen I guesssssss
+  - victory if there's no next level.
+    - Gonna need a victory screen I guesssssss
 v in test mode, uh... don't?
-- friction in edit mode (maybe for everyone?)
-  - add an onPulse like onTimeout, but free for everyone? Good time for friction, scans, etc.
-- zero vel in play mode
--
+v friction in edit mode
+  x add an onPulse like onTimeout, but free for everyone? Good time for friction, scans, etc.
+v zero vel in play mode
 
 Gnome
 - spirit

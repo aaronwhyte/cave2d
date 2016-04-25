@@ -20,6 +20,8 @@ function ExitSpirit(playScreen) {
 ExitSpirit.prototype = new Spirit();
 ExitSpirit.prototype.constructor = ExitSpirit;
 
+ExitSpirit.TIMEOUT = 2;
+
 ExitSpirit.SCHEMA = {
   0: "type",
   1: "id",
@@ -48,9 +50,23 @@ ExitSpirit.factory = function(screen, stamp, pos) {
 
   var spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
+  world.addTimeout(world.now, spiritId, -1);
   return spiritId;
 };
 
+ExitSpirit.prototype.onTimeout = function(world, event) {
+  var body = this.getBody(world);
+  body.pathDurationMax = Infinity;
+  if (!body.vel.isZero()) {
+    var friction = 0.5;
+    var newVel = this.vec2d.set(body.vel).scale(1 - friction);
+    if (newVel.magnitudeSquared < 0.1) {
+      newVel.reset();
+    }
+    body.setVelAtTime(newVel, world.now);
+  }
+  world.addTimeout(world.now + ExitSpirit.TIMEOUT, this.id, -1);
+};
 
 ExitSpirit.getJsoner = function() {
   if (!ExitSpirit.jsoner) {
