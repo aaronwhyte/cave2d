@@ -25,12 +25,16 @@ function PlayerSpirit(screen) {
   this.modelMatrix = new Matrix44();
   this.lastFrictionTime = this.screen.now();
   this.lastInputTime = this.screen.now();
+  this.bang = new BangVal(PlayerSpirit.BANG_DECAY, PlayerSpirit.MAX_BANG);
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
+PlayerSpirit.BANG_DECAY = 0.05;
+PlayerSpirit.MAX_BANG = 1.2;
+
 PlayerSpirit.TRACKBALL_ACCEL = 1;
-PlayerSpirit.TRACKBALL_TRACTION = 0.8;
+PlayerSpirit.TRACKBALL_TRACTION = 0.6;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
 
 PlayerSpirit.FRICTION = 0.02;
@@ -96,6 +100,10 @@ PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
   return spiritId;
 };
 
+PlayerSpirit.prototype.onBang = function(accel, now) {
+  this.bang.addValAtTime(accel, now);
+};
+
 PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
@@ -115,7 +123,9 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
   var time = now - this.lastInputTime;
   this.lastInputTime = now;
 
-  if (tt) {
+  // If stun is one or higher, ignore input!
+  var stun = this.bang.getValAtTime(now);
+  if (tt && stun < 1) {
     var body = this.screen.getBodyById(this.bodyId);
     this.newVel.set(body.vel);
     this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
@@ -123,6 +133,9 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
 
     this.accel.setXY(tx, -ty).scale(PlayerSpirit.TRACKBALL_ACCEL * PlayerSpirit.TRACKBALL_TRACTION)
         .clipToMaxLength(PlayerSpirit.TRACKBALL_MAX_ACCEL);
+    // stun decreases control responsiveness
+    this.accel.scale(1 - stun);
+
     this.newVel.add(this.accel.scale(time));
     body.setVelAtTime(this.newVel, now);
   }
@@ -154,9 +167,10 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   // TODO: replace world access with screen API?
   var body = this.getBody(world);
   body.getPosAtTime(world.now, this.tempBodyPos);
+  var alertness = 1 - 0.7 * (this.bang.getValAtTime(this.screen.now()) / PlayerSpirit.MAX_BANG);
   renderer
       .setStamp(this.modelStamp)
-      .setColorVector(this.vec4.set(this.color));
+      .setColorVector(this.vec4.set(this.color).scale1(alertness));
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.tempBodyPos.x, this.tempBodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))

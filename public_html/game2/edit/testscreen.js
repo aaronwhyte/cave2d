@@ -153,12 +153,8 @@ TestScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
   this.splasher.addCopy(s);
 };
 
-TestScreen.prototype.onHitEvent = function(e) {
-  var b0 = this.world.getBodyByPathId(e.pathId0);
-  var b1 = this.world.getBodyByPathId(e.pathId1);
-  if (b0 && b1) {
-    this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-  }
+TestScreen.prototype.exitLevel = function() {
+  // ignore in test screen
 };
 
 TestScreen.prototype.handleInput = function() {

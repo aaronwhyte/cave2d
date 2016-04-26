@@ -181,7 +181,7 @@ BaseScreen.prototype.initWorld = function() {
     [BaseScreen.Group.CURSOR, BaseScreen.Group.ROCK]
   ]);
   this.resolver = new HitResolver();
-  this.resolver.defaultElasticity = 0.5;
+  this.resolver.defaultElasticity = 0.95;
 };
 
 /**
@@ -438,6 +438,8 @@ BaseScreen.prototype.onHitEvent = function(e) {
 
     var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
     if (playerBody) {
+      var playerSpirit = this.getSpiritForBody(playerBody);
+      playerSpirit.onBang(mag / playerBody.mass, this.now()); // TODO hm not sure that's right
       var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody) {
         this.exitLevel();

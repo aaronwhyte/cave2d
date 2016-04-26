@@ -203,6 +203,19 @@ v friction in edit mode
   x add an onPulse like onTimeout, but free for everyone? Good time for friction, scans, etc.
 v zero vel in play mode
 
+Simply Stunning
+players and gnomes can be stunned by accel (not force!) of collisions, even microcollisions
+- track collision accel, "bang", over time
+  - if we know the val at a time, then w a linear decay we can get at new time and mutate. Like paths.
+    - setBangAtTime(t, v)
+    - getBangAtTime(t)
+    - floor is zero
+    - any ceiling? Don't want perma-banged spirits just laying around, do we?
+    - decay rate depends on spirit
+    - make additional bang be the *square* of the collision accel? Will miro-collisions add up?
+- stun is a function of bang
+- stun level decreases voluntary control, may prevent actions when above a certain level.
+
 Gnome
 - spirit
   - model
@@ -212,13 +225,6 @@ Gnome
     - continue to last seen player position, like ye olde fracas 2
 - config(s)
   - three strengths, three ranks
-
-Stunning
-- spirit behavioral module?
-- players and gnomes can be stunned by accel (not force!) of collisions, even microcollisions
-- stun level accumulates and decays.
-- stun level decreases voluntary control, may prevent actions when above a certain level.
-- spirit has a knockout threshold, and a max stun value? Or a stun coef to alter fragility?
 
 Gnome Generator
 - spirit
