@@ -205,16 +205,16 @@ v zero vel in play mode
 
 Simply Stunning
 players and gnomes can be stunned by accel (not force!) of collisions, even microcollisions
-- track collision accel, "bang", over time
-  - if we know the val at a time, then w a linear decay we can get at new time and mutate. Like paths.
-    - setBangAtTime(t, v)
-    - getBangAtTime(t)
-    - floor is zero
-    - any ceiling? Don't want perma-banged spirits just laying around, do we?
-    - decay rate depends on spirit
-    - make additional bang be the *square* of the collision accel? Will miro-collisions add up?
-- stun is a function of bang
-- stun level decreases voluntary control, may prevent actions when above a certain level.
+v track collision accel, "bang", over time
+  v if we know the val at a time, then w a linear decay we can get at new time and mutate. Like paths.
+    v setBangAtTime(v, t)
+    v getBangAtTime(t)
+    v floor is zero
+    v any ceiling? Don't want perma-banged spirits just laying around, do we?
+    v decay rate depends on spirit
+    x make additional bang be the *square* of the collision accel? Will miro-collisions add up?
+v stun is a function of bang
+v stun level decreases voluntary control, may prevent actions when above a certain level.
 
 Gnome
 - spirit
