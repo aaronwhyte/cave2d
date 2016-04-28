@@ -13,7 +13,7 @@ Jsoner.prototype.toJSON = function(that) {
     var fieldName = this.schema[fieldNum];
     var thatVal = that[fieldName];
     var jsonVal;
-    if (thatVal.toJSON) {
+    if (thatVal && thatVal.toJSON) {
       jsonVal = thatVal.toJSON();
     } else if (thatVal == Infinity) {
       // JSON spec doesn't include Infinity :-(
