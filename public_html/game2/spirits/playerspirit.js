@@ -30,14 +30,14 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.BANG_DECAY = 0.05;
+PlayerSpirit.BANG_DECAY = 0.1;
 PlayerSpirit.MAX_BANG = 1.2;
 
 PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.6;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
 
-PlayerSpirit.FRICTION = 0.02;
+PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 
 PlayerSpirit.SCHEMA = {
