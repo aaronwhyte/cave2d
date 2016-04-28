@@ -216,6 +216,10 @@ v track collision accel, "bang", over time
 v stun is a function of bang
 v stun level decreases voluntary control, may prevent actions when above a certain level.
 
+polish for no reason
+- zoom map in much more?
+- tune stunning way the hell down
+
 Gnome
 - spirit
   - model

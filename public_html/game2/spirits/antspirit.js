@@ -21,11 +21,16 @@ function AntSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+  this.accel = new Vec2d();
+  this.stress = 0;
+
+  this.lastControlTime = this.screen.now();
+
 }
 AntSpirit.prototype = new Spirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 0.6;
+AntSpirit.MEASURE_TIMEOUT = 1.2;
 
 AntSpirit.SCHEMA = {
   0: "type",
@@ -33,7 +38,8 @@ AntSpirit.SCHEMA = {
   2: "bodyId",
   3: "color",
   4: "dir",
-  5: "angVel"
+  5: "angVel",
+  6: "stress"
 };
 
 AntSpirit.getJsoner = function() {
@@ -108,32 +114,50 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 AntSpirit.prototype.onTimeout = function(world, event) {
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
-  var basicThrust = 0.03;
-  var maxTurn = 0.07;
-  var thrust = basicThrust;
-  var friction = 0.08;
+  this.stress = this.stress || 0;
 
-  var turn = 0;
-  var newVel = this.vec2d.set(body.vel).scale(1 - friction);
+  var antennaRotMag = Math.max(Math.PI * 0.1, Math.PI * this.stress);
+  var scanDist = body.rad * 4;
+  var basicThrust = 0.5;
+  var friction = 0.05;
+  var traction = 0.5;
+
+  var now = this.screen.now();
+  var time = now - this.lastControlTime;
+  this.lastControlTime = now;
+
+  var newVel = this.vec2d.set(body.vel);
+
+  // friction
+  this.accel.set(newVel).scale(-friction * time);
+  newVel.add(this.accel);
+
   if (this.screen.isPlaying()) {
-    var antennaRot = Math.PI / 3.5;
-    var scanDist = body.rad * 5;
-    var scanRot = antennaRot * (Math.random() - 0.5);
-    var dist = this.scan(pos, scanRot, scanDist, body.rad / 2);
+    this.accel.set(body.vel).scale(-traction * time);
+    newVel.add(this.accel);
+
+    var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
+    var dist = this.scan(pos, scanRot, scanDist, body.rad);
+    var turn, thrust;
     if (dist >= 0) {
-      if (scanRot > 0) {
-        turn += maxTurn * (-antennaRot / 2 - scanRot) * (1 - dist / 2);
-      } else {
-        turn += maxTurn * (antennaRot / 2 - scanRot) * (1 - dist / 2);
-      }
-      thrust -= basicThrust * (1 - dist);
+      turn = 0;
+      this.angVel = 0;
+      this.stress += (1 - dist) * 0.15;
+      this.dir -= Math.sign(scanRot) * 0.2;
+      thrust = basicThrust * (1 - dist);
+    } else {
+      turn = 0;
+      this.angVel = 0;
+      this.dir += scanRot * this.stress;
+      this.stress = 0;
+      thrust = basicThrust;
     }
-    this.angVel *= 0.90;
-    this.angVel += turn;
-    if (this.angVel > Math.PI / 2) this.angVel = Math.PI / 2;
-    if (this.angVel < -Math.PI / 2) this.angVel = -Math.PI / 2;
-    this.dir += this.angVel;
-    newVel.addXY(Math.sin(this.dir) * thrust, Math.cos(this.dir) * thrust);
+    this.stress -= 0.01;
+    this.stress = Math.min(1, Math.max(0, this.stress));
+
+    this.accel.setXY(Math.sin(this.dir), Math.cos(this.dir))
+        .scale(thrust * traction * time);
+    newVel.add(this.accel);
   }
   // Reset the body's pathDurationMax because it gets changed at compile-time,
   // but it is serialized at level-save-time, so old saved values might not

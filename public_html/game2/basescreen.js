@@ -86,6 +86,7 @@ BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
 
 BaseScreen.WIDGET_RADIUS = 30;
+BaseScreen.CAMERA_VIEW_DIST = 25;
 
 BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
@@ -117,7 +118,8 @@ BaseScreen.Terrain = {
 };
 
 BaseScreen.SplashType = {
-  NOTE: 1
+  NOTE: 1,
+  SCAN: 2
 };
 
 BaseScreen.BIT_SIZE = 0.5;
@@ -247,8 +249,8 @@ BaseScreen.prototype.createTrackball = function() {
           .setStartZoneFunction(function(x, y) { return true; }))
       .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
           Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
-          .setAccel(1.0)
-          .setTraction(0.2)
+          .setAccel(1.5)
+          .setTraction(0.07)
   );
   trackball.setFriction(0.05);
   trackball.startListening();
@@ -566,7 +568,46 @@ BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
   if (hit) {
     retval = this.scanResp.timeOffset;
   }
+  this.addScanSplash(pos, vel, rad, retval);
   return retval;
+};
+
+BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
+  var s = this.splash;
+  s.reset(BaseScreen.SplashType.SCAN, this.soundStamp);
+
+  s.startTime = this.world.now;
+  s.duration = 20;
+
+  var x = pos.x;
+  var y = pos.y;
+  var hit = dist >= 0;
+  var d = hit ? dist : 1;
+  var dx = vel.x * d;
+  var dy = vel.y * d;
+
+  s.startPose.pos.setXYZ(x, y, 0);
+  s.endPose.pos.setXYZ(x, y, 1);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad, rad, 1);
+
+  s.startPose2.pos.setXYZ(x + dx, y + dy, 0);
+  s.endPose2.pos.setXYZ(x + dx, y + dy, 1);
+  s.startPose2.scale.setXYZ(rad, rad, 1);
+  s.endPose2.scale.setXYZ(rad, rad, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  if (dist < 0) {
+    s.startColor.setXYZ(0, 1, 0.5);
+    s.endColor.setXYZ(0, 0.1, 0.05);
+  } else {
+    s.startColor.setXYZ(1, 0.25, 0.25);
+    s.endColor.setXYZ(0.1, 0.025, 0.025);
+  }
+
+  this.splasher.addCopy(s);
 };
 
 BaseScreen.prototype.now = function() {

@@ -5,7 +5,7 @@
 function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
-  this.camera = new Camera(0.2, 0.6, 35);
+  this.camera = new Camera(0.2, 0.6, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
