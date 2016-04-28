@@ -117,7 +117,7 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   this.stress = this.stress || 0;
 
   var antennaRotMag = Math.max(Math.PI * 0.1, Math.PI * this.stress);
-  var scanDist = body.rad * 4;
+  var scanDist = body.rad * (2 + 2 * (1 - this.stress));
   var basicThrust = 0.5;
   var friction = 0.05;
   var traction = 0.5;
@@ -127,6 +127,7 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   this.lastControlTime = now;
 
   var newVel = this.vec2d.set(body.vel);
+
 
   // friction
   this.accel.set(newVel).scale(-friction * time);
@@ -138,22 +139,21 @@ AntSpirit.prototype.onTimeout = function(world, event) {
 
     var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
     var dist = this.scan(pos, scanRot, scanDist, body.rad);
-    var turn, thrust;
+    var angAccel, thrust;
     if (dist >= 0) {
-      turn = 0;
-      this.angVel = 0;
-      this.stress += (1 - dist) * 0.15;
-      this.dir -= Math.sign(scanRot) * 0.2;
-      thrust = basicThrust * (1 - dist);
+      angAccel = -scanRot * (this.stress * 0.8 + 0.2);
+      this.stress += 0.05;
+      thrust = basicThrust * (dist - 0.2 * this.stress);
     } else {
-      turn = 0;
-      this.angVel = 0;
-      this.dir += scanRot * this.stress;
+      angAccel = scanRot * (this.stress * 0.8 + 0.2);
       this.stress = 0;
       thrust = basicThrust;
     }
-    this.stress -= 0.01;
     this.stress = Math.min(1, Math.max(0, this.stress));
+
+    this.angVel *= 0.5;
+    this.angVel += angAccel;
+    this.dir += this.angVel;
 
     this.accel.setXY(Math.sin(this.dir), Math.cos(this.dir))
         .scale(thrust * traction * time);
