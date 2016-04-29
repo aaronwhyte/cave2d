@@ -114,6 +114,18 @@ LevelTestPage.prototype.refreshPauseMenu = function() {
   e = this.ce('div', nav, 'levelEditorLevelName');
   e.innerHTML = Strings.textToHtml(this.levelName);
 
+  var debug = this.ce('div', df, 'levelEditorDebugOptions');
+  var label = this.ce('label', debug);
+  e = this.ce('input', label);
+  e.type = 'checkbox';
+  e.defaultChecked = false;
+  var self = this;
+  e.addEventListener('change', function(element) {
+    self.screen.drawScans = element.target.checked;
+  });
+  e = this.ce('span', label);
+  e.innerHTML = Strings.textToHtml(' draw rayscans');
+
   e = this.ce('button', df);
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');

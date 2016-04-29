@@ -81,6 +81,7 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventu
     e.preventDefault();
   };
 
+  this.drawScans = false;
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -568,7 +569,9 @@ BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
   if (hit) {
     retval = this.scanResp.timeOffset;
   }
-  this.addScanSplash(pos, vel, rad, retval);
+  if (this.drawScans) {
+    this.addScanSplash(pos, vel, rad, retval);
+  }
   return retval;
 };
 

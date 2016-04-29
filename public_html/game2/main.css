@@ -139,18 +139,6 @@ canvas#canvas {
   border:0;
 }
 
-.levelEditorPage input {
-  margin:0.2em;
-  border:1px solid #000;
-  border-radius: 1em;
-  padding:0.2em;
-  background: #fff;
-  color: #000;
-  font-size:small;
-  width:20em;
-  visibility:hidden;
-}
-
 .levelEditorNav {
   font-size:150%;
 }
@@ -161,6 +149,22 @@ canvas#canvas {
 
 .levelEditorLevelName {
   font-weight: bold;
+}
+
+.levelEditorDebugOptions {
+  background:#fc4;
+  border-radius:1em;
+  padding:0.5em 1em;
+  font-size:large;
+}
+
+.levelEditorDebugOptions label {
+  font-size:large;
+}
+
+.levelEditorDebugOptions input {
+  font-size:large;
+  vertical-align: middle;
 }
 
 .exportPage {
