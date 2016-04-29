@@ -63,10 +63,10 @@ AntSpirit.prototype.setModelStamp = function(modelStamp) {
 
 AntSpirit.createModel = function() {
   return RigidModel.createCircleMesh(4)
-      .setColorRGB(0.5, 0, 0)
+      .setColorRGB(0.7, 0, 0)
       .addRigidModel(RigidModel.createSquare()
           .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.01))
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
           .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
       .addRigidModel(RigidModel.createSquare()
           .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
@@ -116,9 +116,9 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
   this.stress = this.stress || 0;
 
-  var antennaRotMag = Math.max(Math.PI * 0.1, Math.PI * this.stress);
-  var scanDist = body.rad * (2 + 2 * (1 - this.stress));
-  var basicThrust = 0.5;
+  var antennaRotMag = Math.max(Math.PI * 0.13, Math.PI * this.stress);
+  var scanDist = body.rad * (3 + (1 - this.stress));
+  var basicThrust = 0.3;
   var friction = 0.05;
   var traction = 0.5;
 
@@ -141,11 +141,20 @@ AntSpirit.prototype.onTimeout = function(world, event) {
     var dist = this.scan(pos, scanRot, scanDist, body.rad);
     var angAccel, thrust;
     if (dist >= 0) {
+      // rayscan hit
       angAccel = -scanRot * (this.stress * 0.8 + 0.2);
-      this.stress += 0.05;
-      thrust = basicThrust * (dist - 0.2 * this.stress);
+      this.stress += 0.03;
+      thrust = basicThrust * (dist - 0.05 * this.stress);
     } else {
-      angAccel = scanRot * (this.stress * 0.8 + 0.2);
+      // clear path
+      if (this.stress > 0.5) {
+        // escape!
+        angAccel = 0;
+        this.angVel = 0;
+        this.dir += scanRot;
+      } else {
+        angAccel = scanRot * (this.stress * 0.8 + 0.2);
+      }
       this.stress = 0;
       thrust = basicThrust;
     }
