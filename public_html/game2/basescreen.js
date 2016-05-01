@@ -334,6 +334,7 @@ BaseScreen.prototype.setScreenListening = function(listen) {
 };
 
 BaseScreen.prototype.drawScreen = function(visibility) {
+//  var startMs = Date.now();
   this.visibility = visibility;
   this.lazyInit();
   this.updateViewMatrix();
@@ -341,6 +342,8 @@ BaseScreen.prototype.drawScreen = function(visibility) {
   if (this.visibility == 1) {
     this.clock();
   }
+//  var totalMs = Date.now() - startMs;
+//  console.log(totalMs);
 };
 
 BaseScreen.prototype.drawScene = function() {};
@@ -453,10 +456,13 @@ BaseScreen.prototype.onHitEvent = function(e) {
 
 BaseScreen.prototype.exitLevel = function() {};
 
+BaseScreen.prototype.getPixelsPerMeter = function() {
+  return 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
+};
 BaseScreen.prototype.updateViewMatrix = function() {
   // scale
   this.viewMatrix.toIdentity();
-  var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
+  var pixelsPerMeter = this.getPixelsPerMeter();
   this.viewMatrix
       .multiply(this.mat44.toScaleOpXYZ(
               pixelsPerMeter / this.canvas.width,
@@ -732,9 +738,9 @@ BaseScreen.prototype.drawTiles = function() {
   this.renderer
       .setColorVector(this.levelColorVector)
       .setModelMatrix(this.levelModelMatrix);
-  var cx = Math.round((this.camera.getX() - this.bitGrid.cellWorldSize / 2) / (this.bitGrid.cellWorldSize));
-  var cy = Math.round((this.camera.getY() - this.bitGrid.cellWorldSize / 2) / (this.bitGrid.cellWorldSize));
-  var pixelsPerMeter = 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
+  var cx = Math.round((this.camera.getX() - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
+  var cy = Math.round((this.camera.getY() - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
+  var pixelsPerMeter = this.getPixelsPerMeter();
   var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
   var cellsPerScreenX = this.canvas.width / pixelsPerCell;
   var cellsPerScreenY = this.canvas.height / pixelsPerCell;
@@ -752,6 +758,13 @@ BaseScreen.prototype.drawTiles = function() {
       }
     }
   }
+};
+
+BaseScreen.prototype.approxViewportsFromCamera = function(v) {
+  var ppm = this.getPixelsPerMeter();
+  return Math.max(
+      Math.abs(this.camera.getX() - v.x) * ppm / this.canvas.width,
+      Math.abs(this.camera.getY() - v.y) * ppm / this.canvas.height);
 };
 
 BaseScreen.prototype.unloadLevel = function() {

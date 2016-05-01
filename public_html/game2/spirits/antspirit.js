@@ -25,12 +25,16 @@ function AntSpirit(screen) {
   this.stress = 0;
 
   this.lastControlTime = this.screen.now();
-
+  this.viewportsFromCamera = 0;
 }
 AntSpirit.prototype = new Spirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.MEASURE_TIMEOUT = 1.2;
+AntSpirit.MAX_TIMEOUT = 10;
+AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
+AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
+AntSpirit.OPTIMIZE = true;
 
 AntSpirit.SCHEMA = {
   0: "type",
@@ -116,78 +120,92 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
   this.stress = this.stress || 0;
 
-  var antennaRotMag = Math.max(Math.PI * 0.13, Math.PI * this.stress);
-  var scanDist = body.rad * (3 + (1 - this.stress));
   var basicThrust = 0.3;
   var friction = 0.05;
   var traction = 0.5;
 
   var now = this.screen.now();
-  var time = now - this.lastControlTime;
+  var time = Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime);
   this.lastControlTime = now;
 
   var newVel = this.vec2d.set(body.vel);
 
-
   // friction
   this.accel.set(newVel).scale(-friction * time);
   newVel.add(this.accel);
+  if (AntSpirit.OPTIMIZE && newVel.magnitudeSquared() < AntSpirit.STOPPING_SPEED_SQUARED) {
+    newVel.reset();
+  }
 
   if (this.screen.isPlaying()) {
-    this.accel.set(body.vel).scale(-traction * time);
-    newVel.add(this.accel);
-
-    var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
-    var dist = this.scan(pos, scanRot, scanDist, body.rad);
-    var angAccel, thrust;
-    if (dist >= 0) {
-      // rayscan hit
-      angAccel = -scanRot * (this.stress * 0.8 + 0.2);
-      this.stress += 0.03;
-      thrust = basicThrust * (dist - 0.05 * this.stress);
-    } else {
-      // clear path
-      if (this.stress > 0.5) {
-        // escape!
-        angAccel = 0;
-        this.angVel = 0;
-        this.dir += scanRot;
+    if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
+      this.accel.set(body.vel).scale(-traction * time);
+      newVel.add(this.accel);
+      var antennaRotMag = Math.max(Math.PI * 0.13, Math.PI * this.stress);
+      var scanDist = body.rad * (3 + (1 - this.stress));
+      var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
+      var dist = this.scan(pos, scanRot, scanDist, body.rad);
+      var angAccel, thrust;
+      if (dist >= 0) {
+        // rayscan hit
+        angAccel = -scanRot * (this.stress * 0.8 + 0.2);
+        this.stress += 0.03;
+        thrust = basicThrust * (dist - 0.05 * this.stress);
       } else {
-        angAccel = scanRot * (this.stress * 0.8 + 0.2);
+        // clear path
+        if (this.stress > 0.5) {
+          // escape!
+          angAccel = 0;
+          this.angVel = 0;
+          this.dir += scanRot;
+        } else {
+          angAccel = scanRot * (this.stress * 0.8 + 0.2);
+        }
+        this.stress = 0;
+        thrust = basicThrust;
       }
-      this.stress = 0;
-      thrust = basicThrust;
+      this.stress = Math.min(1, Math.max(0, this.stress));
+
+      this.angVel *= 0.5;
+      this.angVel += angAccel;
+      this.dir += this.angVel;
+
+      this.accel.setXY(Math.sin(this.dir), Math.cos(this.dir))
+          .scale(thrust * traction * time);
+      newVel.add(this.accel);
     }
-    this.stress = Math.min(1, Math.max(0, this.stress));
-
-    this.angVel *= 0.5;
-    this.angVel += angAccel;
-    this.dir += this.angVel;
-
-    this.accel.setXY(Math.sin(this.dir), Math.cos(this.dir))
-        .scale(thrust * traction * time);
-    newVel.add(this.accel);
   }
   // Reset the body's pathDurationMax because it gets changed at compile-time,
   // but it is serialized at level-save-time, so old saved values might not
   // match the new compiled-in values. Hm.
-  body.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 1.1;
+  var timeoutDuration;
+  if (AntSpirit.OPTIMIZE) {
+    timeoutDuration = Math.min(
+        AntSpirit.MAX_TIMEOUT,
+            AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
+  } else {
+    timeoutDuration = AntSpirit.MEASURE_TIMEOUT * (1 - Math.random() * 0.05);
+  }
+  body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, world.now);
-  world.addTimeout(world.now + AntSpirit.MEASURE_TIMEOUT + (0.1 * (Math.random() - 0.5)), this.id, -1);
+  world.addTimeout(world.now + timeoutDuration, this.id, -1);
 };
 
 AntSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody(world);
   body.getPosAtTime(world.now, this.tempBodyPos);
-  renderer
-      .setStamp(this.modelStamp)
-      .setColorVector(this.vec4.set(this.color));
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.tempBodyPos.x, this.tempBodyPos.y, 0))
-      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-      .multiply(this.mat44.toRotateZOp(-this.dir));
-  renderer.setModelMatrix(this.modelMatrix);
-  renderer.drawStamp();
+  this.viewportsFromCamera = this.screen.approxViewportsFromCamera(this.tempBodyPos);
+  if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
+    renderer
+        .setStamp(this.modelStamp)
+        .setColorVector(this.vec4.set(this.color));
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(this.tempBodyPos.x, this.tempBodyPos.y, 0))
+        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+        .multiply(this.mat44.toRotateZOp(-this.dir));
+    renderer.setModelMatrix(this.modelMatrix);
+    renderer.drawStamp();
+  }
 };
 
 AntSpirit.prototype.getBody = function(world) {

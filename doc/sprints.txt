@@ -217,8 +217,15 @@ v stun is a function of bang
 v stun level decreases voluntary control, may prevent actions when above a certain level.
 
 polish for no reason
-- zoom map in much more?
-- tune stunning way the hell down
+v zoom map in much more?
+v tune stunning way the hell down
+
+Scale ant-count by decreasing cost of off-screen ants
+v don't draw them
+v give them less frequent timeouts the further from the screen they are
+  v with some max limit so they never look dead.
+v bring them to a halt if their vel is very low
+v if they're past a certain dist, just glide to a halt w/o rayscans.
 
 Gnome
 - spirit
