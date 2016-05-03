@@ -15,6 +15,10 @@ function PlayerSpirit(screen) {
   this.dir = 0;//Math.random() * Math.PI * 2;
   this.angVel = 0;
 
+  this.fireReady = true;
+  this.firing = false;
+  this.fireVec = new Vec2d();
+
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
   this.accel = new Vec2d();
@@ -30,7 +34,7 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.BANG_DECAY = 0.1;
+PlayerSpirit.BANG_DECAY = 0.2;
 PlayerSpirit.MAX_BANG = 1.2;
 
 PlayerSpirit.TRACKBALL_ACCEL = 1;
@@ -39,6 +43,10 @@ PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
 
 PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
+PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
+
+PlayerSpirit.FIRE_TIMEOUT = 7;
+PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -96,7 +104,7 @@ PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
 
   var spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(world.now, spiritId, -1);
+  world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
 };
 
@@ -125,7 +133,8 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
 
   // If stun is one or higher, ignore input!
   var stun = this.bang.getValAtTime(now);
-  if (tt && stun < 1) {
+  var stunned = stun >= 1;
+  if (tt && !stunned) {
     var body = this.screen.getBodyById(this.bodyId);
     this.newVel.set(body.vel);
     this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
@@ -139,28 +148,59 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
     this.newVel.add(this.accel.scale(time));
     body.setVelAtTime(this.newVel, now);
   }
-  // TODO: buttons
+
+  // firing logic
+  if (!stunned && b2) {
+    // not stunned and the button is down
+    if (!this.firing) {
+      // either start firing or wait for timeout
+      this.firing = true;
+      if (this.fireReady) {
+        this.fire();
+      }
+    }
+  } else {
+    this.firing = false;
+  }
+  if (!this.firing && tt && (tx || ty)) {
+    this.fireVec.setXY(tx, -ty);
+  }
 };
 
-PlayerSpirit.prototype.onTimeout = function(world, event) {
+PlayerSpirit.prototype.fire = function() {
+  if (!this.fireReady) return;
+  console.log("pew!");
+  this.fireReady = false;
+  this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
+      this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
+};
+
+PlayerSpirit.prototype.onTimeout = function(world, spiritId, eventId) {
   var now = this.screen.now();
-  var time = now - this.lastFrictionTime;
-  this.lastFrictionTime = now;
+  if (eventId == PlayerSpirit.FRICTION_TIMEOUT_ID || eventId == -1) {
+    var time = now - this.lastFrictionTime;
+    this.lastFrictionTime = now;
 
-  var body = this.screen.getBodyById(this.bodyId);
+    var body = this.screen.getBodyById(this.bodyId);
 
-  this.newVel.set(body.vel);
-  this.accel.set(this.newVel).scale(-PlayerSpirit.FRICTION);
-  this.newVel.add(this.accel.scale(time));
+    this.newVel.set(body.vel);
+    this.accel.set(this.newVel).scale(-PlayerSpirit.FRICTION);
+    this.newVel.add(this.accel.scale(time));
 
-  // Reset the body's pathDurationMax because it gets changed at compile-time,
-  // but it is serialized at level-save-time, so old saved values might not
-  // match the new compiled-in values. Hm.
-  body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
-  body.setVelAtTime(this.newVel, now);
+    // Reset the body's pathDurationMax because it gets changed at compile-time,
+    // but it is serialized at level-save-time, so old saved values might not
+    // match the new compiled-in values. Hm.
+    body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
+    body.setVelAtTime(this.newVel, now);
 
-  // TODO: put addTimeout in screen, remove world access
-  world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, -1);
+    // TODO: put addTimeout in screen, remove world access
+    world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
+  } else if (eventId == PlayerSpirit.FIRE_TIMEOUT_ID) {
+    this.fireReady = true;
+    if (this.firing) {
+      this.fire();
+    }
+  }
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {

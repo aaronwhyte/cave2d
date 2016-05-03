@@ -485,7 +485,7 @@ World.prototype.processNextEvent = function() {
   } else if (e.type === WorldEvent.TYPE_TIMEOUT) {
     var spirit = this.spirits[e.spiritId];
     if (spirit) {
-      spirit.onTimeout(this, e);
+      spirit.onTimeout(this, e.spiritId, e.timeoutVal);
     }
   }
   e.free();

@@ -227,6 +227,28 @@ v give them less frequent timeouts the further from the screen they are
 v bring them to a halt if their vel is very low
 v if they're past a certain dist, just glide to a halt w/o rayscans.
 
+v Victory v1
+
+Player fire 1
+v X button triggers it
+  v throttle down to some limited frequency, w timeouts
+- muzzle flash splash
+- bullet spirit
+  - model
+  - drawing
+  - splash trail?
+- vanish when hitting stuff or maybe bounce at low hit angles - start to add impact damage sys?
+- poof when hitting wall, but don't damage wall
+- fire noise
+- damages enemies
+- enemy explosions
+
+Player Death
+- explosions and stuff
+- temp slowdown?
+- delay
+- respawn
+
 Gnome
 - spirit
   - model
@@ -252,20 +274,6 @@ Entrance, instead of player
 - spawns a player in test/play mode
 - if there's more than one, a random one is chosen as the starting point
 
-
-Player fire 1
-- button triggers it
-- muzzle flash
-- fire noise
-- vanish when hitting stuff or maybe bounce at low hit angles - start to add impact damage sys?
-- poof when hitting wall, but don't damage wall
-- damages enemies
-- enemy explosions
-
-Victory
-
-Death
-
 Bombs
 - explode when shot
 - can be hidden inside walls, chain reaction opens new paths
@@ -289,9 +297,6 @@ Make the player look cooler.
 
 SplashConfig
 * similar to SpiritConfig, except that there's no menu item for splashes
-
-Collisions and Controls
-- Feed player collision force into trackball, to stop wall-pounding?
 
 Orientation
 - Bodies have orientation, moment of inertia, and angular velocity.
