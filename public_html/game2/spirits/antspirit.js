@@ -31,6 +31,7 @@ AntSpirit.prototype = new Spirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.MEASURE_TIMEOUT = 1.2;
+AntSpirit.THRUST = 0.3;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -120,7 +121,6 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
   this.stress = this.stress || 0;
 
-  var basicThrust = 0.3;
   var friction = 0.05;
   var traction = 0.5;
 
@@ -150,7 +150,7 @@ AntSpirit.prototype.onTimeout = function(world, event) {
         // rayscan hit
         angAccel = -scanRot * (this.stress * 0.8 + 0.2);
         this.stress += 0.03;
-        thrust = basicThrust * (dist - 0.05 * this.stress);
+        thrust = AntSpirit.THRUST * (dist - 0.05 * this.stress);
       } else {
         // clear path
         if (this.stress > 0.5) {
@@ -162,7 +162,7 @@ AntSpirit.prototype.onTimeout = function(world, event) {
           angAccel = scanRot * (this.stress * 0.8 + 0.2);
         }
         this.stress = 0;
-        thrust = basicThrust;
+        thrust = AntSpirit.THRUST;
       }
       this.stress = Math.min(1, Math.max(0, this.stress));
 
