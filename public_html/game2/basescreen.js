@@ -333,8 +333,9 @@ BaseScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
+var msPerFrame = 0;
 BaseScreen.prototype.drawScreen = function(visibility) {
-//  var startMs = Date.now();
+  var startMs = performance.now();
   this.visibility = visibility;
   this.lazyInit();
   this.updateViewMatrix();
@@ -342,8 +343,8 @@ BaseScreen.prototype.drawScreen = function(visibility) {
   if (this.visibility == 1) {
     this.clock();
   }
-//  var totalMs = Date.now() - startMs;
-//  console.log(totalMs);
+  var totalMs = performance.now() - startMs;
+  msPerFrame = 0.95 * msPerFrame + 0.05 * totalMs;
 };
 
 BaseScreen.prototype.drawScene = function() {};
