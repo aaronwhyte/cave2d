@@ -230,18 +230,21 @@ v if they're past a certain dist, just glide to a halt w/o rayscans.
 v Victory v1
 
 Player fire 1
-v X button triggers it
+v "X" button triggers it
   v throttle down to some limited frequency, w timeouts
-- muzzle flash splash
-- bullet spirit
-  - model
-  - drawing
-  - splash trail?
-- vanish when hitting stuff or maybe bounce at low hit angles - start to add impact damage sys?
-- poof when hitting wall, but don't damage wall
-- fire noise
-- damages enemies
-- enemy explosions
+- screen fire()
+  v muzzle flash splash
+  v create bullet
+    v bullet spirit
+      v temp model
+      v drawing
+      - splash trail?
+    - "pew" noise
+- bullet behavior
+  - vanish when hitting stuff or maybe bounce at low hit angles - start to add impact damage sys?
+  - poof when hitting wall, but don't damage wall
+  - damages enemies
+    - enemy explosions
 
 Player Death
 - explosions and stuff

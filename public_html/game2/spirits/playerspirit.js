@@ -17,7 +17,7 @@ function PlayerSpirit(screen) {
 
   this.fireReady = true;
   this.firing = false;
-  this.fireVec = new Vec2d();
+  this.fireVec = new Vec2d(0, 1);
 
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
@@ -45,7 +45,7 @@ PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 7;
+PlayerSpirit.FIRE_TIMEOUT = 5;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 
 PlayerSpirit.SCHEMA = {
@@ -169,7 +169,13 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
 
 PlayerSpirit.prototype.fire = function() {
   if (!this.fireReady) return;
-  console.log("pew!");
+  var body = this.screen.getBodyById(this.bodyId);
+  body.getPosAtTime(this.screen.now(), this.tempBodyPos);
+  this.screen.playerFire(
+      this.tempBodyPos,
+      this.fireVec.scaleToLength(3),
+      body.rad * 0.7,
+      10);
   this.fireReady = false;
   this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
       this.id, PlayerSpirit.FIRE_TIMEOUT_ID);

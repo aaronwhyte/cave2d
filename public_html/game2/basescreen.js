@@ -96,7 +96,8 @@ BaseScreen.PATH_DURATION = 0xffff;
 BaseScreen.SpiritType = {
   ANT: 3,
   PLAYER: 4,
-  EXIT: 5
+  EXIT: 5,
+  BULLET: 6
 };
 
 BaseScreen.MenuItem = {
@@ -120,7 +121,8 @@ BaseScreen.Terrain = {
 
 BaseScreen.SplashType = {
   NOTE: 1,
-  SCAN: 2
+  SCAN: 2,
+  MUZZLE_FLASH: 3
 };
 
 BaseScreen.BIT_SIZE = 0.5;
@@ -167,6 +169,9 @@ BaseScreen.prototype.initSpiritConfigs = function() {
 
   addConfig(BaseScreen.SpiritType.EXIT, ExitSpirit,
       BaseScreen.MenuItem.EXIT, 2, 0, ExitSpirit.factory);
+
+  addConfig(BaseScreen.SpiritType.BULLET, BulletSpirit,
+      null, -1, -1, BulletSpirit.factory);
 };
 
 BaseScreen.prototype.initWorld = function() {
@@ -622,6 +627,60 @@ BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
 
 BaseScreen.prototype.now = function() {
   return this.world.now;
+};
+
+BaseScreen.prototype.playerFire = function(pos, vel, rad, duration) {
+  this.addBullet(pos, vel, rad, duration);
+  this.muzzleFlash(pos.add(vel.scaleToLength(rad * 2)), rad);
+};
+
+BaseScreen.prototype.addBullet = function(pos, vel, rad, duration) {
+  var now = this.now();
+  var spirit = new BulletSpirit(this);
+  spirit.setModelStamp(this.circleStamp); // TODO
+  spirit.setColorRGB(1, 1, 1);
+  var density = 2;
+
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, now);
+  b.setVelAtTime(vel, now);
+  b.rad = rad;
+  b.hitGroup = BaseScreen.Group.ROCK;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = duration;
+  spirit.bodyId = this.world.addBody(b);
+
+  var spiritId = this.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  this.world.addTimeout(now + duration, spiritId, 0);
+  return spiritId;
+};
+
+BaseScreen.prototype.muzzleFlash = function(pos, rad) {
+  var s = this.splash;
+  s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.soundStamp);
+
+  s.startTime = this.world.now;
+  s.duration = 2;
+
+  s.startPose.pos.setXYZ(pos.x, pos.y, -0.5);
+  s.endPose.pos.setXYZ(pos.x, pos.y, -0.5);
+  s.startPose.scale.setXYZ(rad*2, rad*2, 1);
+  s.endPose.scale.setXYZ(rad, rad, 1);
+
+  s.startPose2.pos.set(s.startPose.pos);
+  s.endPose2.pos.set(s.endPose.pos);
+  s.startPose2.scale.setXYZ(0, 0, 1);
+  s.endPose2.scale.setXYZ(0, 0, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  s.startColor.setXYZ(1, 1, 1);
+  s.endColor.setXYZ(Math.random(), Math.random(), Math.random());
+
+  this.splasher.addCopy(s);
 };
 
 
