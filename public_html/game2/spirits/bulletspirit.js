@@ -76,42 +76,45 @@ BulletSpirit.prototype.drawTrail = function() {
   s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp); // TODO??
 
   s.startTime = this.screen.now();
-  s.duration = 2;
+  s.duration = 6;
 
   var p1 = Vec2d.alloc();
   var p2 = Vec2d.alloc();
+  var p3 = Vec2d.alloc();
 
   p1.set(bodyPos);
   p2.set(this.trailStarted ? this.lastTrailPos : bodyPos);
+  p3.set(p1).add(p2).scale(0.5);
   this.trailStarted = true;
   this.lastTrailPos.set(bodyPos);
 
   var thickness = body.rad;
 
   s.startPose.pos.setXYZ(p1.x, p1.y, 0);
-  s.endPose.pos.setXYZ(p1.x, p1.y, 0.5);
+  s.endPose.pos.setXYZ(p3.x, p3.y, 0.5);
   s.startPose.scale.setXYZ(thickness, thickness, 1);
-  s.endPose.scale.setXYZ(thickness, thickness, 1);
+  s.endPose.scale.setXYZ(0, 0, 1);
 
   s.startPose2.pos.setXYZ(p2.x, p2.y, 0);
-  s.endPose2.pos.setXYZ(p2.x, p2.y, 0.5);
+  s.endPose2.pos.setXYZ(p3.x, p3.y, 0.5);
   s.startPose2.scale.setXYZ(thickness, thickness, 1);
-  s.endPose2.scale.setXYZ(thickness, thickness, 1);
+  s.endPose2.scale.setXYZ(0, 0, 1);
 
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
 
-  s.startColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
-  s.endColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
+  s.startColor.setXYZ(1, 0.3, 0.6);
+  s.endColor.setXYZ(1, 0.3, 0.6);
 
   this.screen.splasher.addCopy(s);
 
   p1.free();
   p2.free();
-
+  p3.free();
 };
 
 BulletSpirit.prototype.onTimeout = function(world, timeout) {
+  this.drawTrail();
   world.removeBodyId(this.bodyId);
   world.removeSpiritId(this.id);
 };

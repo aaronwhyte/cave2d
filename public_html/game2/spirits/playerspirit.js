@@ -173,9 +173,9 @@ PlayerSpirit.prototype.fire = function() {
   body.getPosAtTime(this.screen.now(), this.tempBodyPos);
   this.addBullet(
       this.tempBodyPos,
-      this.fireVec.scaleToLength(3),
+      this.fireVec.scaleToLength(7),
       0.5,
-      10);
+      5);
   this.fireReady = false;
   this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
       this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
@@ -286,6 +286,7 @@ PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   var spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   this.screen.world.addTimeout(now + duration, spiritId, 0);
+  spirit.drawTrail();
   return spiritId;
 };
 

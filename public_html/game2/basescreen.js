@@ -457,6 +457,12 @@ BaseScreen.prototype.onHitEvent = function(e) {
         this.exitLevel();
       }
     }
+    var bulletBody = this.bodyIfSpiritType(BaseScreen.SpiritType.BULLET, b0, b1);
+    if (bulletBody) {
+      var bulletSpirit = this.getSpiritForBody(bulletBody);
+      bulletSpirit.drawTrail();
+    }
+
   }
 };
 
