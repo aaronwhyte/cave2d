@@ -2,9 +2,9 @@
  * @constructor
  * @extends {Spirit}
  */
-function BulletSpirit(playScreen) {
+function BulletSpirit(screen) {
   Spirit.call(this);
-  this.playScreen = playScreen;
+  this.screen = screen;
 
   this.type = BaseScreen.SpiritType.BULLET;
   this.id = -1;
@@ -17,6 +17,9 @@ function BulletSpirit(playScreen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+
+  this.lastTrailPos = new Vec2d();
+  this.trailStarted = false;
 }
 BulletSpirit.prototype = new Spirit();
 BulletSpirit.prototype.constructor = BulletSpirit;
@@ -62,6 +65,50 @@ BulletSpirit.prototype.onDraw = function(world, renderer) {
 
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
+
+  this.drawTrail();
+};
+
+BulletSpirit.prototype.drawTrail = function() {
+  var body = this.getBody(this.screen.world);
+  var bodyPos = body.getPosAtTime(this.screen.now(), this.vec2d);
+  var s = this.screen.splash;
+  s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp); // TODO??
+
+  s.startTime = this.screen.now();
+  s.duration = 2;
+
+  var p1 = Vec2d.alloc();
+  var p2 = Vec2d.alloc();
+
+  p1.set(bodyPos);
+  p2.set(this.trailStarted ? this.lastTrailPos : bodyPos);
+  this.trailStarted = true;
+  this.lastTrailPos.set(bodyPos);
+
+  var thickness = body.rad;
+
+  s.startPose.pos.setXYZ(p1.x, p1.y, 0);
+  s.endPose.pos.setXYZ(p1.x, p1.y, 0.5);
+  s.startPose.scale.setXYZ(thickness, thickness, 1);
+  s.endPose.scale.setXYZ(thickness, thickness, 1);
+
+  s.startPose2.pos.setXYZ(p2.x, p2.y, 0);
+  s.endPose2.pos.setXYZ(p2.x, p2.y, 0.5);
+  s.startPose2.scale.setXYZ(thickness, thickness, 1);
+  s.endPose2.scale.setXYZ(thickness, thickness, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  s.startColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
+  s.endColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
+
+  this.screen.splasher.addCopy(s);
+
+  p1.free();
+  p2.free();
+
 };
 
 BulletSpirit.prototype.onTimeout = function(world, timeout) {

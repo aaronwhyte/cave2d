@@ -35,17 +35,17 @@ PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.BANG_DECAY = 0.2;
-PlayerSpirit.MAX_BANG = 1.2;
+PlayerSpirit.MAX_BANG = 1.5;
 
 PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.6;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
 
-PlayerSpirit.FRICTION = 0.05;
+PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 5;
+PlayerSpirit.FIRE_TIMEOUT = 8;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 
 PlayerSpirit.SCHEMA = {
@@ -162,7 +162,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
   } else {
     this.firing = false;
   }
-  if (!this.firing && tt && (tx || ty)) {
+  if (!b2 && tt && (tx || ty)) {
     this.fireVec.setXY(tx, -ty);
   }
 };
@@ -171,10 +171,10 @@ PlayerSpirit.prototype.fire = function() {
   if (!this.fireReady) return;
   var body = this.screen.getBodyById(this.bodyId);
   body.getPosAtTime(this.screen.now(), this.tempBodyPos);
-  this.playerFire(
+  this.addBullet(
       this.tempBodyPos,
       this.fireVec.scaleToLength(3),
-      body.rad * 0.7,
+      0.5,
       10);
   this.fireReady = false;
   this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
@@ -212,18 +212,53 @@ PlayerSpirit.prototype.onTimeout = function(world, spiritId, eventId) {
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
   // TODO: replace world access with screen API?
   var body = this.getBody(world);
-  body.getPosAtTime(world.now, this.tempBodyPos);
+  var bodyPos = body.getPosAtTime(world.now, this.tempBodyPos);
   var alertness = 1 - 0.7 * (this.bang.getValAtTime(this.screen.now()) / PlayerSpirit.MAX_BANG);
   renderer
       .setStamp(this.modelStamp)
       .setColorVector(this.vec4.set(this.color).scale1(alertness));
   this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.tempBodyPos.x, this.tempBodyPos.y, 0))
+      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
       .multiply(this.mat44.toRotateZOp(-this.dir));
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
 
+  // draw aim guide
+  var s = this.screen.splash;
+  s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp); // TODO??
+
+  s.startTime = this.screen.now();
+  s.duration = 2.5;
+
+  var p1 = Vec2d.alloc();
+  var p2 = Vec2d.alloc();
+
+  p1.set(this.fireVec).scaleToLength(body.rad * 2).add(bodyPos);
+  p2.set(this.fireVec).scaleToLength(body.rad * 4).add(bodyPos);
+
+  var thickness = this.firing ? 0.5 : 0.2;
+
+  s.startPose.pos.setXYZ(p1.x, p1.y, -0.2);
+  s.endPose.pos.setXYZ(p1.x, p1.y, -0.2);
+  s.startPose.scale.setXYZ(thickness, thickness, 1);
+  s.endPose.scale.setXYZ(0, 0, 1);
+
+  s.startPose2.pos.setXYZ(p2.x, p2.y, 0.5);
+  s.endPose2.pos.setXYZ(p2.x, p2.y, 0.5);
+  s.startPose2.scale.setXYZ(thickness, thickness, 1);
+  s.endPose2.scale.setXYZ(0, 0, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  s.startColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
+  s.endColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
+
+  this.screen.splasher.addCopy(s);
+
+  p1.free();
+  p2.free();
 
 };
 
@@ -231,16 +266,11 @@ PlayerSpirit.prototype.getBody = function(world) {
   return world.bodies[this.bodyId];
 };
 
-PlayerSpirit.prototype.playerFire = function(pos, vel, rad, duration) {
-  this.addBullet(pos, vel, rad, duration);
-  this.muzzleFlash(pos.add(vel.scaleToLength(rad * 2)), rad);
-};
-
 PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   var now = this.screen.now();
-  var spirit = new BulletSpirit(this);
+  var spirit = new BulletSpirit(this.screen);
   spirit.setModelStamp(this.screen.circleStamp); // TODO
-  spirit.setColorRGB(1, 1, 1);
+  spirit.setColorRGB(1, 0.3, 0.6);
   var density = 2;
 
   var b = Body.alloc();
@@ -257,31 +287,5 @@ PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   this.screen.world.addTimeout(now + duration, spiritId, 0);
   return spiritId;
-};
-
-PlayerSpirit.prototype.muzzleFlash = function(pos, rad) {
-  var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp);
-
-  s.startTime = this.screen.now();
-  s.duration = 2;
-
-  s.startPose.pos.setXYZ(pos.x, pos.y, -0.5);
-  s.endPose.pos.setXYZ(pos.x, pos.y, -0.5);
-  s.startPose.scale.setXYZ(rad*2, rad*2, 1);
-  s.endPose.scale.setXYZ(rad, rad, 1);
-
-  s.startPose2.pos.set(s.startPose.pos);
-  s.endPose2.pos.set(s.endPose.pos);
-  s.startPose2.scale.setXYZ(0, 0, 1);
-  s.endPose2.scale.setXYZ(0, 0, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-
-  s.startColor.setXYZ(1, 1, 1);
-  s.endColor.setXYZ(Math.random(), Math.random(), Math.random());
-
-  this.screen.splasher.addCopy(s);
 };
 
