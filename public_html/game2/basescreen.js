@@ -231,13 +231,13 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
     var splashJson = json.splashes[i];
     var splashType = splashJson[0];
     // TODO: splashConfig plugin, like spiritConfig
-    if (splashType == EditScreen.SplashType.NOTE) {
-      splash.setFromJSON(splashJson);
-      splash.stamp = this.soundStamp;
-      this.splasher.addCopy(splash);
-    } else {
-      console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
-    }
+//    if (splashType == BaseScreen.SplashType.NOTE) {
+//      splash.setFromJSON(splashJson);
+//      splash.stamp = this.soundStamp;
+//      this.splasher.addCopy(splash);
+//    } else {
+//      console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
+//    }
   }
   // terrain
   this.bitGrid = BitGrid.fromJSON(json.terrain);
