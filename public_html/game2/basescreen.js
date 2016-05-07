@@ -423,11 +423,13 @@ BaseScreen.prototype.getSpiritForBody = function(b) {
   return this.world.spirits[b.spiritId];
 };
 
-BaseScreen.prototype.bodyIfSpiritType = function(type, b0, b1) {
+BaseScreen.prototype.bodyIfSpiritType = function(type, b0, opt_b1) {
   var s0 = this.getSpiritForBody(b0);
   if (s0 && s0.type == type) return b0;
-  var s1 = this.getSpiritForBody(b1);
-  if (s1 && s1.type == type) return b1;
+  if (opt_b1) {
+    var s1 = this.getSpiritForBody(opt_b1);
+    if (s1 && s1.type == type) return opt_b1;
+  }
   return null;
 };
 
@@ -457,14 +459,19 @@ BaseScreen.prototype.onHitEvent = function(e) {
         this.exitLevel();
       }
     }
-    var bulletBody = this.bodyIfSpiritType(BaseScreen.SpiritType.BULLET, b0, b1);
-    if (bulletBody) {
-      var bulletSpirit = this.getSpiritForBody(bulletBody);
-      bulletSpirit.drawTrail();
-    }
-
+    this.maybeBulletHit(b0, mag);
+    this.maybeBulletHit(b1, mag);
   }
 };
+
+BaseScreen.prototype.maybeBulletHit = function(body, mag) {
+  var spirit = this.getSpiritForBody(body);
+  if (spirit && spirit.type == BaseScreen.SpiritType.BULLET) {
+    spirit.addTrailSegment();
+    spirit.onBang(mag / body.mass, this.now());
+  }
+};
+
 
 BaseScreen.prototype.exitLevel = function() {};
 

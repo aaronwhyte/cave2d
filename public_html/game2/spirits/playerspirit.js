@@ -45,7 +45,7 @@ PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 8;
+PlayerSpirit.FIRE_TIMEOUT = 2.07;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 
 PlayerSpirit.SCHEMA = {
@@ -163,7 +163,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
     this.firing = false;
   }
   if (!b2 && tt && (tx || ty)) {
-    this.fireVec.setXY(tx, -ty);
+    this.fireVec.scaleToLength(0.2).addXY(tx, -ty);
   }
 };
 
@@ -173,9 +173,9 @@ PlayerSpirit.prototype.fire = function() {
   body.getPosAtTime(this.screen.now(), this.tempBodyPos);
   this.addBullet(
       this.tempBodyPos,
-      this.fireVec.scaleToLength(7),
-      0.5,
-      5);
+      this.vec2d.set(this.fireVec).scaleToLength(4).rot(Math.random() * 0.1 - 0.05),
+      0.2,
+      10);
   this.fireReady = false;
   this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
       this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
@@ -229,7 +229,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp); // TODO??
 
   s.startTime = this.screen.now();
-  s.duration = 2.5;
+  s.duration = 0.2;
 
   var p1 = Vec2d.alloc();
   var p2 = Vec2d.alloc();
@@ -271,7 +271,7 @@ PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   var spirit = new BulletSpirit(this.screen);
   spirit.setModelStamp(this.screen.circleStamp); // TODO
   spirit.setColorRGB(1, 0.3, 0.6);
-  var density = 2;
+  var density = 20;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -286,7 +286,7 @@ PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   var spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   this.screen.world.addTimeout(now + duration, spiritId, 0);
-  spirit.drawTrail();
+  spirit.addTrailSegment();
   return spiritId;
 };
 

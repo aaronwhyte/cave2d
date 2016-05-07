@@ -18,8 +18,11 @@ function BulletSpirit(screen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 
-  this.lastTrailPos = new Vec2d();
-  this.trailStarted = false;
+  this.trail = new Trail(16);
+  this.segStartVec = new Vec2d();
+  this.segEndVec = new Vec2d();
+
+  this.health = 1;
 }
 BulletSpirit.prototype = new Spirit();
 BulletSpirit.prototype.constructor = BulletSpirit;
@@ -51,78 +54,101 @@ BulletSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
+BulletSpirit.prototype.onBang = function(mag, now) {
+  this.health -= mag/5;
+  if (this.health <= 0) {
+    this.destroyBody();
+  }
+};
+
 BulletSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody(world);
-  var bodyPos = body.getPosAtTime(world.now, this.vec2d);
-  renderer
-      .setStamp(this.modelStamp)
-      .setColorVector(this.color);
-  // Render the smaller ones in front.
-  // TODO: standardize Z
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
-      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
+  var body = this.getBody();
+  if (body) {
+    var bodyPos = body.getPosAtTime(world.now, this.vec2d);
+    renderer
+        .setStamp(this.modelStamp)
+        .setColorVector(this.color);
+    // Render the smaller ones in front.
+    // TODO: standardize Z
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
 
-  renderer.setModelMatrix(this.modelMatrix);
-  renderer.drawStamp();
-
+    renderer.setModelMatrix(this.modelMatrix);
+    renderer.drawStamp();
+  }
   this.drawTrail();
+};
+
+BulletSpirit.prototype.addTrailSegment = function() {
+  var now = this.screen.now();
+  var body = this.getBody();
+  this.rad = body.rad;
+  var bodyPos = body.getPosAtTime(this.screen.now(), this.vec2d);
+  this.trail.append(now, bodyPos, body.vel);
 };
 
 BulletSpirit.prototype.drawTrail = function() {
-  var body = this.getBody(this.screen.world);
-  var bodyPos = body.getPosAtTime(this.screen.now(), this.vec2d);
-  var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp); // TODO??
+  var maxTime = this.now();
+  var duration = 4;
+  var minTime = maxTime - duration;
+  var trailWarm = false;
+  for (var i = 0; i < this.trail.size(); i++) {
+    var segStartTime = this.trail.getSegmentStartTime(i);
+    var segEndTime = this.trail.getSegmentEndTime(i);
+    var drawStartTime = Math.max(segStartTime, minTime);
+    var drawEndTime = Math.min(segEndTime, maxTime);
+    if (drawStartTime <= drawEndTime) {
+      trailWarm = true;
+      // something to draw
+      this.trail.getSegmentPosAtTime(i, drawStartTime, this.segStartVec);
+      this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
 
-  s.startTime = this.screen.now();
-  s.duration = 6;
+      this.screen.renderer
+          .setStamp(this.screen.soundStamp) // TODO cylinderStamp
+          .setColorVector(this.color);
 
-  var p1 = Vec2d.alloc();
-  var p2 = Vec2d.alloc();
-  var p3 = Vec2d.alloc();
+      var startRad = this.rad * (drawStartTime - minTime) / (maxTime - minTime);
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0))
+          .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
+      this.screen.renderer.setModelMatrix(this.modelMatrix);
 
-  p1.set(bodyPos);
-  p2.set(this.trailStarted ? this.lastTrailPos : bodyPos);
-  p3.set(p1).add(p2).scale(0.5);
-  this.trailStarted = true;
-  this.lastTrailPos.set(bodyPos);
-
-  var thickness = body.rad;
-
-  s.startPose.pos.setXYZ(p1.x, p1.y, 0);
-  s.endPose.pos.setXYZ(p3.x, p3.y, 0.5);
-  s.startPose.scale.setXYZ(thickness, thickness, 1);
-  s.endPose.scale.setXYZ(0, 0, 1);
-
-  s.startPose2.pos.setXYZ(p2.x, p2.y, 0);
-  s.endPose2.pos.setXYZ(p3.x, p3.y, 0.5);
-  s.startPose2.scale.setXYZ(thickness, thickness, 1);
-  s.endPose2.scale.setXYZ(0, 0, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-
-  s.startColor.setXYZ(1, 0.3, 0.6);
-  s.endColor.setXYZ(1, 0.3, 0.6);
-
-  this.screen.splasher.addCopy(s);
-
-  p1.free();
-  p2.free();
-  p3.free();
+      var endRad = this.rad * (drawEndTime - minTime) / (maxTime - minTime);
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0))
+          .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
+      this.screen.renderer.setModelMatrix2(this.modelMatrix);
+      this.screen.renderer.drawStamp();
+    }
+  }
+  if (!trailWarm) {
+    // The trail has ended and the last spark has faded.
+    this.screen.world.removeSpiritId(this.id);
+    if (this.bodyId) console.error("The trail is cold but the body is unburied!");
+    this.trail.clear();
+  }
 };
 
 BulletSpirit.prototype.onTimeout = function(world, timeout) {
-  this.drawTrail();
-  world.removeBodyId(this.bodyId);
-  world.removeSpiritId(this.id);
+  this.destroyBody();
 };
 
-BulletSpirit.prototype.getBody = function(world) {
-  return world.bodies[this.bodyId];
+BulletSpirit.prototype.destroyBody = function() {
+  if (this.bodyId) {
+    this.trail.endTime = this.now();
+    this.screen.world.removeBodyId(this.bodyId);
+    this.bodyId = null;
+  }
 };
 
+BulletSpirit.prototype.getBody = function() {
+  return this.screen.getBodyById(this.bodyId);
+};
+
+BulletSpirit.prototype.now = function() {
+  return this.screen.now();
+};
 
 BulletSpirit.prototype.toJSON = function() {
   return BulletSpirit.getJsoner().toJSON(this);

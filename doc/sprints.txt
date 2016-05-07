@@ -238,11 +238,21 @@ v "X" button triggers it
     v bullet spirit
       v temp model
       v drawing
-      - splash trail?
+      v splash trail?
+        v prototype spark one using onDraw
+        v better smarter Trail class
+          v circ-buff of TrailSegment
+          v TrailSegment with startTime startPos, vel
+          v Trail itself has endTime that is often Infinity
+        v use Trail in BulletSpirit
+          v update Trail when trajectory changes
+          v end Trail when bullet dies
+          v don't delete BulletSpirit until it is done drawing the fading trail!
     - "pew" noise
 - bullet behavior
-  - vanish when hitting stuff or maybe bounce at low hit angles - start to add impact damage sys?
-  - poof when hitting wall, but don't damage wall
+  v vanish when hitting stuff or maybe bounce at low hit angles - start to add impact damage sys?
+  - poof when hitting wall
+  - wall damage?
   - damages enemies
     - enemy explosions
 
@@ -306,6 +316,8 @@ Orientation
 - create repeller turrets
 - Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
 - editor
+
+Measure actual framerate; don't assume it's 60fps.
 
 Auto-save game in progress to localhost
 
