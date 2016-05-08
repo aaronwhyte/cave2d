@@ -88,6 +88,7 @@ TouchTrackball.prototype.onTouchMove = function(e) {
           .scale(this.pixelMultiplier);
       this.val.add(velocity);
       this.oldPagePos.setXY(touch.pageX, touch.pageY);
+      velocity.free();
       break;
     }
   }
