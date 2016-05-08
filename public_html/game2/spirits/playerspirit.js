@@ -162,8 +162,11 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
   } else {
     this.firing = false;
   }
+  if (this.fireVec.magnitudeSquared() > 0.1) {
+    this.fireVec.scale(0.9);
+  }
   if (!b2 && tt && (tx || ty)) {
-    this.fireVec.scaleToLength(0.2).addXY(tx, -ty);
+    this.fireVec.clipToMaxLength(1.2).addXY(tx, -ty);
   }
 };
 
@@ -239,13 +242,13 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 
   var thickness = this.firing ? 0.5 : 0.2;
 
-  s.startPose.pos.setXYZ(p1.x, p1.y, -0.2);
-  s.endPose.pos.setXYZ(p1.x, p1.y, -0.2);
+  s.startPose.pos.setXYZ(p1.x, p1.y, Math.random() - 0.3);
+  s.endPose.pos.setXYZ(p1.x, p1.y, 0);
   s.startPose.scale.setXYZ(thickness, thickness, 1);
   s.endPose.scale.setXYZ(0, 0, 1);
 
-  s.startPose2.pos.setXYZ(p2.x, p2.y, 0.5);
-  s.endPose2.pos.setXYZ(p2.x, p2.y, 0.5);
+  s.startPose2.pos.setXYZ(p2.x, p2.y, Math.random() - 0.1);
+  s.endPose2.pos.setXYZ(p2.x, p2.y, 0);
   s.startPose2.scale.setXYZ(thickness, thickness, 1);
   s.endPose2.scale.setXYZ(0, 0, 1);
 
