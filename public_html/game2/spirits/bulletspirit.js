@@ -55,9 +55,21 @@ BulletSpirit.prototype.setColorRGB = function(r, g, b) {
 };
 
 BulletSpirit.prototype.onBang = function(mag, now) {
-  this.health -= mag/5;
-  if (this.health <= 0) {
-    this.destroyBody();
+  if (0.1 * mag * this.health > 0.1 + Math.random()) {
+    // dig
+    var body = this.getBody();
+    if (body) {
+      body.getPosAtTime(this.screen.now(), this.vec2d);
+      this.screen.drawTerrainPill(this.vec2d, this.vec2d, 0.6, 1);
+      this.destroyBody();
+    }
+  } else {
+    // bounce or vanish?
+    this.health -= mag / 5;
+    if (this.health <= 0) {
+      // vanish
+      this.destroyBody();
+    }
   }
 };
 
