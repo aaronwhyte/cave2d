@@ -45,7 +45,7 @@ PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 2.07;
+PlayerSpirit.FIRE_TIMEOUT = 4.07;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 
 PlayerSpirit.SCHEMA = {
@@ -178,7 +178,7 @@ PlayerSpirit.prototype.fire = function() {
       this.tempBodyPos,
       this.vec2d.set(this.fireVec).scaleToLength(4).rot(Math.random() * 0.1 - 0.05),
       0.2,
-      10);
+      7);
   this.fireReady = false;
   this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
       this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
@@ -290,6 +290,9 @@ PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   this.screen.world.addTimeout(now + duration, spiritId, 0);
   spirit.addTrailSegment();
+
+  this.screen.soundPew(pos);
+
   return spiritId;
 };
 

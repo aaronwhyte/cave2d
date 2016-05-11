@@ -232,7 +232,7 @@ v Victory v1
 Player fire 1
 v "X" button triggers it
   v throttle down to some limited frequency, w timeouts
-- screen fire()
+v screen fire()
   v muzzle flash splash
   v create bullet
     v bullet spirit
@@ -248,17 +248,21 @@ v "X" button triggers it
           v update Trail when trajectory changes
           v end Trail when bullet dies
           v don't delete BulletSpirit until it is done drawing the fading trail!
-    - "pew" noise
-- bullet behavior
+    v "pew" noise - do noises soon but later
+v bullet behavior
   v vanish when hitting stuff or maybe bounce at low hit angles - start to add impact damage sys?
-  - poof when hitting wall
-  - wall damage?
-  - damages enemies
-    - enemy explosions
+    v wall damage
+      v erase some wall
+      v noise
+      v splash
+    v poof when bouncing wall, based on mag?
+  v damages/destroys enemies
+    v enemy explosions (splash)
 
 Player Death
+- die when hit by enemy
 - explosions and stuff
-- temp slowdown?
+- temp world slowdown?
 - delay
 - respawn
 

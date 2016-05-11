@@ -211,3 +211,12 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
 AntSpirit.prototype.getBody = function(world) {
   return world.bodies[this.bodyId];
 };
+
+AntSpirit.prototype.explode = function() {
+  var body = this.getBody(this.screen.world);
+  body.getPosAtTime(this.screen.now(), this.tempBodyPos);
+  this.screen.soundKaboom(this.tempBodyPos);
+  this.screen.world.removeBodyId(this.bodyId);
+  this.screen.world.removeSpiritId(this.id);
+};
+

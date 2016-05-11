@@ -54,22 +54,55 @@ BulletSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
-BulletSpirit.prototype.onBang = function(mag, now) {
+BulletSpirit.prototype.onHitWall = function(mag) {
+  var body = this.getBody();
+  if (!body) return;
+  mag = mag / body.mass;
+  body.getPosAtTime(this.screen.now(), this.vec2d);
+  this.screen.soundWallThump(this.vec2d, mag);
   if (0.1 * mag * this.health > 0.1 + Math.random()) {
     // dig
-    var body = this.getBody();
-    if (body) {
-      body.getPosAtTime(this.screen.now(), this.vec2d);
-      this.screen.drawTerrainPill(this.vec2d, this.vec2d, 0.6, 1);
-      this.destroyBody();
-    }
+    var pillRad = 0.6;
+    this.screen.drawTerrainPill(this.vec2d, this.vec2d, pillRad, 1);
+    this.wallDamageSplash(this.vec2d, pillRad * 1.3);
+    this.screen.soundBing(this.vec2d);
+    this.destroyBody();
   } else {
     // bounce or vanish?
     this.health -= mag / 5;
     if (this.health <= 0) {
       // vanish
       this.destroyBody();
+      this.wallDamageSplash(this.vec2d, body.rad * 1.5);
+    } else {
+      // bounce
+      this.addTrailSegment();
     }
+  }
+};
+
+BulletSpirit.prototype.onHitEnemy = function(mag) {
+  var body = this.getBody();
+  if (!body) return;
+  body.getPosAtTime(this.screen.now(), this.vec2d);
+  this.screen.soundWallThump(this.vec2d, mag);
+  this.wallDamageSplash(this.vec2d, 3);
+  this.destroyBody();
+};
+
+BulletSpirit.prototype.onHitOther = function(mag) {
+  var body = this.getBody();
+  if (!body) return;
+  body.getPosAtTime(this.screen.now(), this.vec2d);
+  // bounce or vanish?
+  this.health -= mag / 5;
+  if (this.health <= 0) {
+    // vanish
+    this.destroyBody();
+  } else {
+    // bounce
+    this.addTrailSegment();
+    this.wallDamageSplash(this.vec2d, body.rad);
   }
 };
 
@@ -141,6 +174,38 @@ BulletSpirit.prototype.drawTrail = function() {
     this.trail.clear();
   }
 };
+
+BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
+  var s = this.screen.splash;
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
+
+  s.startTime = this.now();
+  s.duration = 10;
+
+  var x = pos.x;
+  var y = pos.y;
+
+  var endRad = rad * 2;
+
+  s.startPose.pos.setXYZ(x, y, -0.5);
+  s.endPose.pos.setXYZ(x, y, 1);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose2.pos.setXYZ(x, y, -0.5);
+  s.endPose2.pos.setXYZ(x, y, 1);
+  s.startPose2.scale.setXYZ(-rad, -rad, 1);
+  s.endPose2.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+  s.startColor.setXYZ(1, 1, 1);
+  s.endColor.setXYZ(0, 0, 0.5);
+
+  this.screen.splasher.addCopy(s);
+};
+
+
 
 BulletSpirit.prototype.onTimeout = function(world, timeout) {
   this.destroyBody();

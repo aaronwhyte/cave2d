@@ -122,7 +122,8 @@ BaseScreen.Terrain = {
 BaseScreen.SplashType = {
   NOTE: 1,
   SCAN: 2,
-  MUZZLE_FLASH: 3
+  MUZZLE_FLASH: 3,
+  WALL_DAMAGE: 4
 };
 
 BaseScreen.BIT_SIZE = 0.5;
@@ -225,20 +226,7 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
     e.setFromJSON(json.timeouts[i]);
     this.world.loadTimeout(e);
   }
-  // splashes
-  var splash = new Splash();
-  for (var i = 0; i < json.splashes.length; i++) {
-    var splashJson = json.splashes[i];
-    var splashType = splashJson[0];
-    // TODO: splashConfig plugin, like spiritConfig
-//    if (splashType == BaseScreen.SplashType.NOTE) {
-//      splash.setFromJSON(splashJson);
-//      splash.stamp = this.soundStamp;
-//      this.splasher.addCopy(splash);
-//    } else {
-//      console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
-//    }
-  }
+
   // terrain
   this.bitGrid = BitGrid.fromJSON(json.terrain);
   this.tiles = {};
@@ -247,6 +235,22 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
   // cursor and camera
   if (this.editor) this.editor.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
   this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
+
+//  // splashes
+//  var splash = new Splash();
+//  for (var i = 0; i < json.splashes.length; i++) {
+//    var splashJson = json.splashes[i];
+//    var splashType = splashJson[0];
+//    // TODO: splashConfig plugin, like spiritConfig
+//    if (splashType == BaseScreen.SplashType.NOTE) {
+//      splash.setFromJSON(splashJson);
+//      splash.stamp = this.soundStamp;
+//      this.splasher.addCopy(splash);
+//    } else {
+//      console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
+//    }
+//  }
+
 };
 
 BaseScreen.prototype.createTrackball = function() {
@@ -459,19 +463,27 @@ BaseScreen.prototype.onHitEvent = function(e) {
         this.exitLevel();
       }
     }
-    this.maybeBulletHit(b0, mag);
-    this.maybeBulletHit(b1, mag);
+
+    var bulletBody = this.bodyIfSpiritType(BaseScreen.SpiritType.BULLET, b0, b1);
+    if (bulletBody) {
+      var bulletSpirit = this.getSpiritForBody(bulletBody);
+      var otherBody = this.otherBody(bulletBody, b0, b1);
+      var otherSpirit = this.getSpiritForBody(otherBody);
+      if (!otherSpirit) {
+        // wall?
+        bulletSpirit.onHitWall(mag);
+      } else if (otherSpirit.type == BaseScreen.SpiritType.ANT) {
+        bulletSpirit.onHitEnemy(mag);
+        otherSpirit.explode()
+      } else if (otherSpirit.type == BaseScreen.SpiritType.BULLET) {
+        bulletSpirit.onHitOther(mag);
+        otherSpirit.onHitOther(mag);
+      } else {
+        bulletSpirit.onHitOther(mag);
+      }
+    }
   }
 };
-
-BaseScreen.prototype.maybeBulletHit = function(body, mag) {
-  var spirit = this.getSpiritForBody(body);
-  if (spirit && spirit.type == BaseScreen.SpiritType.BULLET) {
-    spirit.addTrailSegment();
-    spirit.onBang(mag / body.mass, this.now());
-  }
-};
-
 
 BaseScreen.prototype.exitLevel = function() {};
 
@@ -641,6 +653,85 @@ BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
 BaseScreen.prototype.now = function() {
   return this.world.now;
 };
+
+BaseScreen.prototype.soundPew = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var freq = 100 + 200 * Math.random();
+  var attack = 1/60;
+  var sustain = (2 + Math.random()) / 60;
+  var decay = (2 + Math.random()) / 60;
+  this.sfx.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq * Math.random()*0.1 + 1, 'square');
+};
+
+BaseScreen.prototype.soundWallThump = function(worldPos, mag) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var vol = Math.min(1, mag/40);
+  if (vol > 0.01) {
+    var dur = Math.min(0.1, 0.01 * mag*mag);
+    var freq = mag + 200 + 5 * Math.random();
+    var freq2 = 1;
+    this.sfx.sound(x, y, 0, vol, 0, 0, dur, freq, freq2, 'square');
+  }
+};
+
+BaseScreen.prototype.soundBing = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+  var voices = 3;
+  var sustain = 0.02 * (Math.random() + 0.5);
+  var baseFreq = 2000 + 10 * (Math.random() + 0.5);
+  for (var i = 0; i < voices; i++) {
+    var decay = 0;
+    var attack = sustain * 2;
+    var freq1 = baseFreq * (1 + i/3);
+    var freq2 = 100 + i;
+    this.sfx.sound(x, y, 0, 2/voices * 0.2, attack, sustain, decay, freq1, freq2, 'square');
+  }
+};
+
+BaseScreen.prototype.soundKaboom = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var voices = 8;
+  for (var i = 0; i < voices; i++) {
+    var delay = (i % 2 ? 0 : 0.1) * (1 + 0.1 * Math.random());
+    var attack = 0.002;
+    var sustain = 0.1 * (Math.random() + 0.01);
+    var decay = (Math.random() + 1) * 0.5;
+    var freq1 = Math.random() * 30 + 30;
+    var freq2 = Math.random() * 10 + 10;
+    this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay, freq1, freq2, 'square', delay);
+  }
+};
+
+
+//BaseScreen.prototype.soundBing = function(pos) {
+//  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+//  var x = this.vec4.v[0];
+//  var y = this.vec4.v[1];
+//  var voices = 3;
+//  var maxLength = 0;
+//  var sustain = 0.05 * (Math.random() + 0.5);
+//  var baseFreq = (Math.random() + 0.5) * 3000;
+//  for (var i = 0; i < voices; i++) {
+//    var attack = 0;
+//    var decay = sustain * 4;
+//    maxLength = Math.max(maxLength, attack + decay);
+//    var freq1 = baseFreq * (1 + i/3);
+//    var freq2 = 1 + i;
+//    this.sfx.sound(x, y, 0, 2/voices * 0.2, attack, sustain, decay, freq1, freq2, 'sine');
+//  }
+//};
+
 
 ////////////////////////////
 // Wall manipulation stuff
