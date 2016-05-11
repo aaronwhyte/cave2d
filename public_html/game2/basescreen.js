@@ -659,7 +659,7 @@ BaseScreen.prototype.soundPew = function(pos) {
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
-  var freq = 100 + 200 * Math.random();
+  var freq = 800 + 200 * Math.random();
   var attack = 1/60;
   var sustain = (2 + Math.random()) / 60;
   var decay = (2 + Math.random()) / 60;
