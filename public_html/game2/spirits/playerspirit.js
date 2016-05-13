@@ -16,8 +16,7 @@ function PlayerSpirit(screen) {
   this.angVel = 0;
 
   this.fireReady = true;
-  this.firing = false;
-  this.fireVec = new Vec2d(0, 1);
+  this.aimVec = new Vec2d(0, 1);
 
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
@@ -30,6 +29,7 @@ function PlayerSpirit(screen) {
   this.lastFrictionTime = this.screen.now();
   this.lastInputTime = this.screen.now();
   this.bang = new BangVal(PlayerSpirit.BANG_DECAY, PlayerSpirit.MAX_BANG);
+  this.fireBurstEndTime = 0;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -45,8 +45,9 @@ PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 4.07;
+PlayerSpirit.FIRE_TIMEOUT = 2.51;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
+PlayerSpirit.FIRE_BURST_DURATION = 6;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -152,21 +153,16 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
   // firing logic
   if (!stunned && b2) {
     // not stunned and the button is down
-    if (!this.firing) {
-      // either start firing or wait for timeout
-      this.firing = true;
-      if (this.fireReady) {
-        this.fire();
-      }
+    // extend burst time
+    this.fireBurstEndTime = now + PlayerSpirit.FIRE_BURST_DURATION;
+    // either start firing or wait for existing timeout
+    if (this.fireReady) {
+      this.fire();
     }
-  } else {
-    this.firing = false;
   }
-  if (this.fireVec.magnitudeSquared() > 0.1) {
-    this.fireVec.scale(0.9);
-  }
-  if (!b2 && tt && (tx || ty)) {
-    this.fireVec.clipToMaxLength(1.2).addXY(tx, -ty);
+  if (!b2) {
+    this.vec2d.setXY(tx, -ty).scale(this.vec2d.magnitude());
+    this.aimVec.add(this.vec2d).scaleToLength(0.8);
   }
 };
 
@@ -176,7 +172,7 @@ PlayerSpirit.prototype.fire = function() {
   body.getPosAtTime(this.screen.now(), this.tempBodyPos);
   this.addBullet(
       this.tempBodyPos,
-      this.vec2d.set(this.fireVec).scaleToLength(4).rot(Math.random() * 0.1 - 0.05),
+      this.vec2d.set(this.aimVec).scaleToLength(3.5 + Math.random()).rot(Math.random() * 0.1 - 0.05),
       0.2,
       7);
   this.fireReady = false;
@@ -206,10 +202,14 @@ PlayerSpirit.prototype.onTimeout = function(world, spiritId, eventId) {
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
   } else if (eventId == PlayerSpirit.FIRE_TIMEOUT_ID) {
     this.fireReady = true;
-    if (this.firing) {
+    if (this.firing()) {
       this.fire();
     }
   }
+};
+
+PlayerSpirit.prototype.firing = function() {
+  return this.screen.now() <= this.fireBurstEndTime;
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
@@ -237,10 +237,10 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var p1 = Vec2d.alloc();
   var p2 = Vec2d.alloc();
 
-  p1.set(this.fireVec).scaleToLength(body.rad * 2).add(bodyPos);
-  p2.set(this.fireVec).scaleToLength(body.rad * 4).add(bodyPos);
+  p1.set(this.aimVec).scaleToLength(body.rad * 2).add(bodyPos);
+  p2.set(this.aimVec).scaleToLength(body.rad * 4).add(bodyPos);
 
-  var thickness = this.firing ? 0.5 : 0.2;
+  var thickness = this.firing() ? 0.5 : 0.2;
 
   s.startPose.pos.setXYZ(p1.x, p1.y, Math.random() - 0.3);
   s.endPose.pos.setXYZ(p1.x, p1.y, 0);
@@ -262,7 +262,6 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 
   p1.free();
   p2.free();
-
 };
 
 PlayerSpirit.prototype.getBody = function(world) {
