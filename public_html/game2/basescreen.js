@@ -663,7 +663,7 @@ BaseScreen.prototype.soundPew = function(pos) {
   var attack = 1/60;
   var sustain = (2 + Math.random()) / 60;
   var decay = (2 + Math.random()) / 60;
-  this.sfx.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq * Math.random()*0.1 + 1, 'square');
+  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq * Math.random()*0.1 + 1, 'square');
 };
 
 BaseScreen.prototype.soundWallThump = function(worldPos, mag) {
@@ -671,7 +671,7 @@ BaseScreen.prototype.soundWallThump = function(worldPos, mag) {
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
-  var vol = Math.min(1, mag/40);
+  var vol = Math.min(1, mag * 0.05);
   if (vol > 0.01) {
     var dur = Math.min(0.1, 0.01 * mag*mag);
     var freq = mag + 200 + 5 * Math.random();
@@ -692,7 +692,7 @@ BaseScreen.prototype.soundBing = function(pos) {
     var attack = sustain * 2;
     var freq1 = baseFreq * (1 + i/3);
     var freq2 = 100 + i;
-    this.sfx.sound(x, y, 0, 2/voices * 0.2, attack, sustain, decay, freq1, freq2, 'square');
+    this.sfx.sound(x, y, 0, 2/voices * 0.4, attack, sustain, decay, freq1, freq2, 'square');
   }
 };
 
@@ -709,7 +709,7 @@ BaseScreen.prototype.soundKaboom = function(pos) {
     var decay = (Math.random() + 1) * 0.5;
     var freq1 = Math.random() * 30 + 30;
     var freq2 = Math.random() * 10 + 10;
-    this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay, freq1, freq2, 'square', delay);
+    this.sfx.sound(x, y, 0, 0.8, attack, sustain, decay, freq1, freq2, 'square', delay);
   }
 };
 
