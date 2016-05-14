@@ -40,6 +40,7 @@ PlayerSpirit.MAX_BANG = 1.5;
 PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.6;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
+PlayerSpirit.AIM_HYSTERESIS = 0.4;
 
 PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -162,7 +163,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
   }
   if (!b2) {
     this.vec2d.setXY(tx, -ty).scale(this.vec2d.magnitude());
-    this.aimVec.add(this.vec2d).scaleToLength(0.8);
+    this.aimVec.add(this.vec2d).scaleToLength(PlayerSpirit.AIM_HYSTERESIS);
   }
 };
 
