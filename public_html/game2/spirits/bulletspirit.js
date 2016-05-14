@@ -18,7 +18,7 @@ function BulletSpirit(screen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 
-  this.trail = new Trail(16);
+  this.trail = new Trail(4);
   this.segStartVec = new Vec2d();
   this.segEndVec = new Vec2d();
 
@@ -62,7 +62,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
   this.screen.soundWallThump(this.vec2d, mag);
   if (0.1 * mag * this.health > 0.1 + Math.random()) {
     // dig
-    var pillRad = 0.6;
+    var pillRad = 0.65;
     this.screen.drawTerrainPill(this.vec2d, this.vec2d, pillRad, 1);
     this.wallDamageSplash(this.vec2d, pillRad * 1.3);
     this.screen.soundBing(this.vec2d);
@@ -135,7 +135,7 @@ BulletSpirit.prototype.addTrailSegment = function() {
 
 BulletSpirit.prototype.drawTrail = function() {
   var maxTime = this.now();
-  var duration = 4;
+  var duration = 2;
   var minTime = maxTime - duration;
   var trailWarm = false;
   for (var i = 0; i < this.trail.size(); i++) {
