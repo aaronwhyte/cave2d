@@ -256,8 +256,6 @@ EditScreen.prototype.drawScene = function() {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 
-  this.sfx.setListenerXYZ(this.editor.cursorPos.x, this.editor.cursorPos.y, 5);
-
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.editor.drawScene();

@@ -203,8 +203,6 @@ TestScreen.prototype.drawScene = function() {
     this.camera.follow(this.playerAveragePos);
   }
 
-  this.sfx.setListenerXYZ(this.camera.getX(), this.camera.getY(), 5);
-
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();

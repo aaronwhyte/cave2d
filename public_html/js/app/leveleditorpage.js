@@ -49,10 +49,16 @@ LevelEditorPage.prototype.enterDoc = function() {
   this.refreshPauseMenu();
 
   this.sfx = new SoundFx();
-  this.sfx.setListenerXYZ(0, 0, 5);
+  this.sfx.setListenerXYZ(0, 0, 4);
 
   // On-event sound unlocker for iOS.
-  this.canvas.addEventListener('touchend', this.unlockIosSound.bind(this));
+  var resumeButton = document.querySelector('#resumeButton');
+  var boundUnlock = this.unlockIosSound.bind(this);
+  resumeButton.addEventListener('touchend', boundUnlock);
+  resumeButton.addEventListener('touchstart', boundUnlock);
+  this.canvas.addEventListener('touchend', boundUnlock);
+  this.canvas.addEventListener('touchstart', boundUnlock);
+
   this.canvas.addEventListener('touchstart', LevelEditorPage.pd);
   this.canvas.addEventListener('touchmove', LevelEditorPage.pd);
   this.canvas.addEventListener('touchend', LevelEditorPage.pd);

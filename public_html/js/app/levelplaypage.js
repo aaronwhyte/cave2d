@@ -51,15 +51,21 @@ LevelPlayPage.prototype.enterDoc = function() {
   this.refreshOverlay();
 
   this.sfx = new SoundFx();
-  this.sfx.setListenerXYZ(0, 0, 5);
+  this.sfx.setListenerXYZ(0, 0, 4);
 
   // On-event sound unlocker for iOS.
-  this.canvas.addEventListener('touchend', this.unlockIosSound.bind(this));
+  var resumeButton = document.querySelector('#resumeButton');
+  var boundUnlock = this.unlockIosSound.bind(this);
+  resumeButton.addEventListener('touchend', boundUnlock);
+  resumeButton.addEventListener('touchstart', boundUnlock);
+  this.canvas.addEventListener('touchend', boundUnlock);
+  this.canvas.addEventListener('touchstart', boundUnlock);
+
+  // prevent default on a lot of pinch and scroll events on mobile
   this.canvas.addEventListener('touchstart', LevelPlayPage.pd);
   this.canvas.addEventListener('touchmove', LevelPlayPage.pd);
   this.canvas.addEventListener('touchend', LevelPlayPage.pd);
-
-  window.addEventListener("scroll", LevelPlayPage.pd);
+  window.addEventListener('scroll', LevelPlayPage.pd);
 
   // load level
   this.jsonObj = this.fileTree.getFile(this.levelDataPath);
