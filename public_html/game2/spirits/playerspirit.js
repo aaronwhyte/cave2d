@@ -30,9 +30,14 @@ function PlayerSpirit(screen) {
   this.lastInputTime = this.screen.now();
   this.bang = new BangVal(PlayerSpirit.BANG_DECAY, PlayerSpirit.MAX_BANG);
   this.fireBurstEndTime = 0;
+
+  this.maxHealth = PlayerSpirit.STARTING_HEALTH;
+  this.health = this.maxHealth;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
+
+PlayerSpirit.STARTING_HEALTH = 1;
 
 PlayerSpirit.BANG_DECAY = 0.2;
 PlayerSpirit.MAX_BANG = 1.5;
@@ -50,13 +55,18 @@ PlayerSpirit.FIRE_TIMEOUT = 2.51;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 PlayerSpirit.FIRE_BURST_DURATION = 6;
 
+PlayerSpirit.RESPAWN_TIMEOUT = 50;
+PlayerSpirit.RESPAWN_TIMEOUT_ID = 30;
+
 PlayerSpirit.SCHEMA = {
   0: "type",
   1: "id",
   2: "bodyId",
   3: "color",
   4: "dir",
-  5: "angVel"
+  5: "angVel",
+  6: "maxHealth",
+  7: "health"
 };
 
 PlayerSpirit.getJsoner = function() {
@@ -93,21 +103,26 @@ PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
   var spirit = new PlayerSpirit(playScreen);
   spirit.setModelStamp(stamp);
   spirit.setColorRGB(1, 1, 1);
-  var density = 1;
 
+  var spiritId = world.addSpirit(spirit);
+  var b = spirit.createBody(pos, dir);
+  spirit.bodyId = world.addBody(b);
+
+  world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
+  return spiritId;
+};
+
+PlayerSpirit.prototype.createBody = function(pos, dir) {
+  var density = 1;
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, world.now);
+  b.setPosAtTime(pos, this.screen.now());
   b.rad = 0.9;
   b.hitGroup = BaseScreen.Group.ROCK;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
-  spirit.bodyId = world.addBody(b);
-
-  var spiritId = world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
-  return spiritId;
+  b.spiritId = this.id;
+  return b;
 };
 
 PlayerSpirit.prototype.onBang = function(accel, now) {
@@ -138,17 +153,19 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
   var stunned = stun >= 1;
   if (tt && !stunned) {
     var body = this.screen.getBodyById(this.bodyId);
-    this.newVel.set(body.vel);
-    this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
-    this.newVel.add(this.accel.scale(time));
+    if (body) {
+      this.newVel.set(body.vel);
+      this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
+      this.newVel.add(this.accel.scale(time));
 
-    this.accel.setXY(tx, -ty).scale(PlayerSpirit.TRACKBALL_ACCEL * PlayerSpirit.TRACKBALL_TRACTION)
-        .clipToMaxLength(PlayerSpirit.TRACKBALL_MAX_ACCEL);
-    // stun decreases control responsiveness
-    this.accel.scale(1 - stun);
+      this.accel.setXY(tx, -ty).scale(PlayerSpirit.TRACKBALL_ACCEL * PlayerSpirit.TRACKBALL_TRACTION)
+          .clipToMaxLength(PlayerSpirit.TRACKBALL_MAX_ACCEL);
+      // stun decreases control responsiveness
+      this.accel.scale(1 - stun);
 
-    this.newVel.add(this.accel.scale(time));
-    body.setVelAtTime(this.newVel, now);
+      this.newVel.add(this.accel.scale(time));
+      body.setVelAtTime(this.newVel, now);
+    }
   }
 
   // firing logic
@@ -170,15 +187,17 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
 PlayerSpirit.prototype.fire = function() {
   if (!this.fireReady) return;
   var body = this.screen.getBodyById(this.bodyId);
-  body.getPosAtTime(this.screen.now(), this.tempBodyPos);
-  this.addBullet(
-      this.tempBodyPos,
-      this.vec2d.set(this.aimVec).scaleToLength(3.5 + Math.random()).rot(Math.random() * 0.1 - 0.05),
-      0.2,
-      7);
-  this.fireReady = false;
-  this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
+  if (body) {
+    body.getPosAtTime(this.screen.now(), this.tempBodyPos);
+    this.addBullet(
+        this.tempBodyPos,
+        this.vec2d.set(this.aimVec).scaleToLength(3.5 + Math.random()).rot(Math.random() * 0.1 - 0.05),
+        0.2,
+        7);
+    this.fireReady = false;
+    this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
       this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
+  }
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, spiritId, eventId) {
@@ -188,17 +207,17 @@ PlayerSpirit.prototype.onTimeout = function(world, spiritId, eventId) {
     this.lastFrictionTime = now;
 
     var body = this.screen.getBodyById(this.bodyId);
+    if (body) {
+      this.newVel.set(body.vel);
+      this.accel.set(this.newVel).scale(-PlayerSpirit.FRICTION);
+      this.newVel.add(this.accel.scale(time));
 
-    this.newVel.set(body.vel);
-    this.accel.set(this.newVel).scale(-PlayerSpirit.FRICTION);
-    this.newVel.add(this.accel.scale(time));
-
-    // Reset the body's pathDurationMax because it gets changed at compile-time,
-    // but it is serialized at level-save-time, so old saved values might not
-    // match the new compiled-in values. Hm.
-    body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
-    body.setVelAtTime(this.newVel, now);
-
+      // Reset the body's pathDurationMax because it gets changed at compile-time,
+      // but it is serialized at level-save-time, so old saved values might not
+      // match the new compiled-in values. Hm.
+      body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
+      body.setVelAtTime(this.newVel, now);
+    }
     // TODO: put addTimeout in screen, remove world access
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
   } else if (eventId == PlayerSpirit.FIRE_TIMEOUT_ID) {
@@ -206,6 +225,8 @@ PlayerSpirit.prototype.onTimeout = function(world, spiritId, eventId) {
     if (this.firing()) {
       this.fire();
     }
+  } else if (eventId == PlayerSpirit.RESPAWN_TIMEOUT_ID) {
+    this.respawn();
   }
 };
 
@@ -216,53 +237,57 @@ PlayerSpirit.prototype.firing = function() {
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
   // TODO: replace world access with screen API?
   var body = this.getBody(world);
-  var bodyPos = body.getPosAtTime(world.now, this.tempBodyPos);
-  var alertness = 1 - 0.7 * (this.bang.getValAtTime(this.screen.now()) / PlayerSpirit.MAX_BANG);
-  renderer
-      .setStamp(this.modelStamp)
-      .setColorVector(this.vec4.set(this.color).scale1(alertness));
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
-      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-      .multiply(this.mat44.toRotateZOp(-this.dir));
-  renderer.setModelMatrix(this.modelMatrix);
-  renderer.drawStamp();
+  if (body) {
+    var bodyPos = body.getPosAtTime(world.now, this.tempBodyPos);
+    var alertness = 1 - 0.7 * (this.bang.getValAtTime(this.screen.now()) / PlayerSpirit.MAX_BANG);
+    renderer
+        .setStamp(this.modelStamp)
+        .setColorVector(this.vec4.set(this.color).scale1(alertness));
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+        .multiply(this.mat44.toRotateZOp(-this.dir));
+    renderer.setModelMatrix(this.modelMatrix);
+    renderer.drawStamp();
 
-  // draw aim guide
-  var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp); // TODO??
+    // draw aim guide
+    // TODO: Don't use a splash for this, just draw it.
+    var s = this.screen.splash;
+    // TODO rename soundStamp to tubeStamp
+    s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp);
 
-  s.startTime = this.screen.now();
-  s.duration = 0.2;
+    s.startTime = this.screen.now();
+    s.duration = 0.2;
 
-  var p1 = Vec2d.alloc();
-  var p2 = Vec2d.alloc();
+    var p1 = Vec2d.alloc();
+    var p2 = Vec2d.alloc();
 
-  p1.set(this.aimVec).scaleToLength(body.rad * 2).add(bodyPos);
-  p2.set(this.aimVec).scaleToLength(body.rad * 4).add(bodyPos);
+    p1.set(this.aimVec).scaleToLength(body.rad * 2).add(bodyPos);
+    p2.set(this.aimVec).scaleToLength(body.rad * 4).add(bodyPos);
 
-  var thickness = this.firing() ? 0.5 : 0.2;
+    var thickness = this.firing() ? 0.5 : 0.2;
 
-  s.startPose.pos.setXYZ(p1.x, p1.y, Math.random() - 0.3);
-  s.endPose.pos.setXYZ(p1.x, p1.y, 0);
-  s.startPose.scale.setXYZ(thickness, thickness, 1);
-  s.endPose.scale.setXYZ(0, 0, 1);
+    s.startPose.pos.setXYZ(p1.x, p1.y, Math.random() - 0.3);
+    s.endPose.pos.setXYZ(p1.x, p1.y, 0);
+    s.startPose.scale.setXYZ(thickness, thickness, 1);
+    s.endPose.scale.setXYZ(0, 0, 1);
 
-  s.startPose2.pos.setXYZ(p2.x, p2.y, Math.random() - 0.1);
-  s.endPose2.pos.setXYZ(p2.x, p2.y, 0);
-  s.startPose2.scale.setXYZ(thickness, thickness, 1);
-  s.endPose2.scale.setXYZ(0, 0, 1);
+    s.startPose2.pos.setXYZ(p2.x, p2.y, Math.random() - 0.1);
+    s.endPose2.pos.setXYZ(p2.x, p2.y, 0);
+    s.startPose2.scale.setXYZ(thickness, thickness, 1);
+    s.endPose2.scale.setXYZ(0, 0, 1);
 
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
+    s.startPose.rotZ = 0;
+    s.endPose.rotZ = 0;
 
-  s.startColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
-  s.endColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
+    s.startColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
+    s.endColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
 
-  this.screen.splasher.addCopy(s);
+    this.screen.splasher.addCopy(s);
 
-  p1.free();
-  p2.free();
+    p1.free();
+    p2.free();
+  }
 };
 
 PlayerSpirit.prototype.getBody = function(world) {
@@ -296,3 +321,143 @@ PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   return spiritId;
 };
 
+PlayerSpirit.prototype.addHealth = function(h) {
+  this.health += h;
+  if (this.health <= 0) {
+    this.die();
+  }
+};
+
+PlayerSpirit.prototype.die = function() {
+  var body = this.getBody(this.screen.world);
+  if (body) {
+    var now = this.screen.now();
+    var pos = body.getPosAtTime(now, this.tempBodyPos);
+    var x = pos.x;
+    var y = pos.y;
+
+    // giant tube explosion
+
+    var s = this.screen.splash;
+    s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
+
+    s.startTime = now;
+    s.duration = 20;
+    var rad = 30;
+
+    var endRad = rad * 2;
+
+    s.startPose.pos.setXYZ(x, y, -0.5);
+    s.endPose.pos.setXYZ(x, y, 0);
+    s.startPose.scale.setXYZ(rad, rad, 1);
+    s.endPose.scale.setXYZ(endRad, endRad, 1);
+
+    s.startPose2.pos.setXYZ(x, y, 1);
+    s.endPose2.pos.setXYZ(x, y, 1);
+    s.startPose2.scale.setXYZ(-rad, -rad, 1);
+    s.endPose2.scale.setXYZ(endRad, endRad, 1);
+
+    s.startPose.rotZ = 0;
+    s.endPose.rotZ = 0;
+    s.startColor.setXYZ(1, 0.3, 0.6);
+    s.endColor.setXYZ(0, 0, 0);
+
+    this.screen.splasher.addCopy(s);
+
+    // cloud particles
+
+    var self = this;
+    var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+
+    function addSplash(x, y, dx, dy, duration, sizeFactor) {
+      s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.screen.circleStamp);
+      s.startTime = now;
+      s.duration = duration;
+
+      s.startPose.pos.setXYZ(x, y, -Math.random());
+      s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+      var startRad = sizeFactor * body.rad;
+      s.startPose.scale.setXYZ(startRad, startRad, 1);
+      s.endPose.scale.setXYZ(0, 0, 1);
+
+      s.startColor.setXYZ(1, 1, 1);
+      s.endColor.setXYZ(1, 1, 1);
+      self.screen.splasher.addCopy(s);
+    }
+
+    // fast outer particles
+    particles = Math.ceil(15 * (1 + 0.5 * Math.random()));
+    explosionRad = 20;
+    dirOffset = 2 * Math.PI * Math.random();
+    for (i = 0; i < particles; i++) {
+      duration = 15 * (1 + Math.random());
+      dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
+      dx = Math.sin(dir) * explosionRad / duration;
+      dy = Math.cos(dir) * explosionRad / duration;
+      addSplash(x, y, dx, dy, duration, 1);
+    }
+
+    // slow inner smoke ring
+    particles = Math.ceil(20 * (1 + 0.5 * Math.random()));
+    explosionRad = 8;
+    dirOffset = 2 * Math.PI * Math.random();
+    for (i = 0; i < particles; i++) {
+      duration = 40 * (1 + Math.random()*0.2);
+      dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
+      dx = Math.sin(dir) * explosionRad / duration;
+      dy = Math.cos(dir) * explosionRad / duration;
+      addSplash(x, y, dx, dy, duration, 2);
+    }
+
+    // delete body
+    this.screen.world.removeBodyId(this.bodyId);
+    this.bodyId = null;
+
+    // sound
+    this.screen.soundPlayerExplode(pos);
+
+    // prep to respawn
+    this.screen.world.addTimeout(now + PlayerSpirit.RESPAWN_TIMEOUT,
+        this.id, PlayerSpirit.RESPAWN_TIMEOUT_ID);
+  }
+};
+
+PlayerSpirit.prototype.respawn = function() {
+  var body = this.createBody(this.tempBodyPos, this.dir);
+  var now = this.screen.now();
+  this.health = this.maxHealth;
+  this.bodyId = this.screen.world.addBody(body);
+  var pos = this.tempBodyPos;
+
+  this.screen.soundPlayerSpawn(pos);
+
+  // splash
+  var x = pos.x;
+  var y = pos.y;
+
+  var s = this.screen.splash;
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
+
+  s.startTime = now;
+  s.duration = 10;
+  var startRad = body.rad * 2;
+  var endRad = body.rad * 8;
+
+  s.startPose.pos.setXYZ(x, y, 1);
+  s.endPose.pos.setXYZ(x, y, 1);
+  s.startPose.scale.setXYZ(0, 0, 1);
+  s.endPose.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose2.pos.setXYZ(x, y, 1);
+  s.endPose2.pos.setXYZ(x, y, 1);
+  s.startPose2.scale.setXYZ(startRad, startRad, 1);
+  s.endPose2.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+  s.startColor.setXYZ(1, 1, 0);
+  s.endColor.setXYZ(0, 0, 0);
+
+  this.screen.splasher.addCopy(s);
+
+};

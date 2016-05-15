@@ -200,7 +200,7 @@ BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
   s.startColor.setXYZ(1, 1, 1);
-  s.endColor.setXYZ(0, 0, 0.5);
+  s.endColor.setXYZ(0.5, 0.5, 0.5);
 
   this.screen.splasher.addCopy(s);
 };

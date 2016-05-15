@@ -259,49 +259,60 @@ v bullet behavior
   v damages/destroys enemies
     v enemy explosions (splash)
 
-Player Death
-- die when hit by enemy
-- explosions and stuff
-- temp world slowdown?
-- delay
-- respawn
+iOS sound fix
+v start playing sounds on "Play"
 
-Gnome
+Player Health and Death
+v player has health value
+v lose health when hit by enemy
+v die when health hits 0
+  v explosion
+  v delay
+  v respawn (where you were?)
+  v sound
+
+spawn powerup
+v dead player respawns
+- temp invincibility, blinking or something?
+
+Enemy 1: grunt
 - spirit
   - model
   - behavior
-    - wander
-    - chase
+    - wander like Ant
+    - but tend towards player
+    - chase player when in line of sight
     - continue to last seen player position, like ye olde fracas 2
+  - health
+  - stun?
 - config(s)
-  - three strengths, three ranks
+  - three strengths, three ranks, for editor
 
-Gnome Generator
-- spirit
-  - model
-  - behavior
-    - wander
-    - chase
-    - continue to last seen player position, like ye olde fracas 2
-- config(s)
-  - three strengths, three ranks
-
-
-Entrance, instead of player
+Entrance, instead of player.
 - spawns a player in test/play mode
-- if there's more than one, a random one is chosen as the starting point
+- cool swirly warp-in?
+- if there's more than one, a random one is chosen as the starting point?
 
 Bombs
 - explode when shot
 - can be hidden inside walls, chain reaction opens new paths
-- I guess every creature should be behind walls?
+- can be collected!
+  - player inventory
+- player can throw them
 
-- Activate "pause" on touchscreen with doubletap in the center of the screen
-  (keeps it out of the way of the edge-based player controls)
-  - first tap shows auto-fading badge
-  - second activates it
+Health
+- player health bar
+- health items increase health to max
+- eating health when you're at max health gives you a small perma-boost to health!
 
-- Add and remove player 2
+Orientation
+- Bodies have orientation, moment of inertia, and angular velocity.
+- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
+- editor
+
+Repeller turrets
+
+- Add and remove player 2?? Or bail on that?
   - Player menu inside "pause" popup
     - row for existing players (room for all kinds of settings later)
       - rename
@@ -315,15 +326,9 @@ Make the player look cooler.
 SplashConfig
 * similar to SpiritConfig, except that there's no menu item for splashes
 
-Orientation
-- Bodies have orientation, moment of inertia, and angular velocity.
-- create repeller turrets
-- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
-- editor
-
 Measure actual framerate; don't assume it's 60fps.
 
-Auto-save game in progress to localhost
+Auto-save game in progress to localhost?
 
 TestScreen time controls
 * centered on top. These are totally unneeded but probaby would be awesome.

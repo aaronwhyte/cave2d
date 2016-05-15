@@ -448,10 +448,10 @@ BaseScreen.prototype.onHitEvent = function(e) {
     var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
     var mag = strikeVec.magnitude();
     this.hitsThisFrame++;
-    if (this.hitsThisFrame < 4) {
+//    if (this.hitsThisFrame < 4) {
 //      this.bonk(b0, mag);
 //      this.bonk(b1, mag);
-    }
+//    }
     strikeVec.free();
 
     var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
@@ -461,6 +461,10 @@ BaseScreen.prototype.onHitEvent = function(e) {
       var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody) {
         this.exitLevel();
+      }
+      var antBody = this.bodyIfSpiritType(BaseScreen.SpiritType.ANT, b0, b1);
+      if (antBody) {
+        playerSpirit.addHealth(-1);
       }
     }
 
@@ -709,29 +713,44 @@ BaseScreen.prototype.soundKaboom = function(pos) {
     var decay = (Math.random() + 1) * 0.5;
     var freq1 = Math.random() * 30 + 30;
     var freq2 = Math.random() * 10 + 10;
-    this.sfx.sound(x, y, 0, 0.8, attack, sustain, decay, freq1, freq2, 'square', delay);
+    this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, 'square', delay);
   }
 };
 
+BaseScreen.prototype.soundPlayerExplode = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
 
-//BaseScreen.prototype.soundBing = function(pos) {
-//  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-//  var x = this.vec4.v[0];
-//  var y = this.vec4.v[1];
-//  var voices = 3;
-//  var maxLength = 0;
-//  var sustain = 0.05 * (Math.random() + 0.5);
-//  var baseFreq = (Math.random() + 0.5) * 3000;
-//  for (var i = 0; i < voices; i++) {
-//    var attack = 0;
-//    var decay = sustain * 4;
-//    maxLength = Math.max(maxLength, attack + decay);
-//    var freq1 = baseFreq * (1 + i/3);
-//    var freq2 = 1 + i;
-//    this.sfx.sound(x, y, 0, 2/voices * 0.2, attack, sustain, decay, freq1, freq2, 'sine');
-//  }
-//};
+  var voices = 5;
+  var attack = 0.1;
+  var sustain = 0.2 * (Math.random() + 0.01);
+  var decay = (Math.random()*0.2 + 1) * 1.5;
+  for (var i = 0; i < voices; i++) {
+    var delay = Math.random() * 0.02 + i * 0.02;
+    var freq1 = Math.random() * 30 + 30;
+    var freq2 = Math.random() * 10 + 10;
+    this.sfx.sound(x, y, 0, 0.8, attack, 0, decay*0.3, freq1*3, 1, 'square', delay);
+    this.sfx.sound(x, y, 0, 0.8, 0, sustain, decay, freq1, freq2, 'sine', delay);
+    this.sfx.sound(x, y, 0, 0.8, 0, sustain, decay, freq1, freq2, 'triangle', delay);
+  }
+  this.sfx.sound(x, y, 0, 0.5, decay/6, 0, decay/4, 61, 60, 'square');
+  this.sfx.sound(x, y, 0, 0.5, decay/6, 0, decay/4, 34, 30, 'square');
+};
 
+BaseScreen.prototype.soundPlayerSpawn = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var freq = 100;
+  for (var i = 0; i < 5; i++) {
+    freq *= 2;
+    this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.05);
+    this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.05);
+  }
+
+};
 
 ////////////////////////////
 // Wall manipulation stuff
