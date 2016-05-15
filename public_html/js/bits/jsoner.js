@@ -30,6 +30,10 @@ Jsoner.prototype.toJSON = function(that) {
 
 Jsoner.prototype.setFromJSON = function(json, that) {
   for (var fieldNum in this.schema) {
+    if (!(fieldNum in json)) {
+      // keep defaults from constructor
+      continue;
+    }
     var fieldName = this.schema[fieldNum];
     var jsonVal = json[fieldNum];
     if (that[fieldName] && that[fieldName].setFromJSON) {
