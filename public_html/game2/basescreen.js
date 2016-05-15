@@ -259,8 +259,8 @@ BaseScreen.prototype.createTrackball = function() {
           .setStartZoneFunction(function(x, y) { return true; }))
       .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
           Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
-          .setAccel(1.5)
-          .setTraction(0.07)
+          .setAccel(0.8)
+          .setTraction(0.8)
   );
   trackball.setFriction(0.05);
   trackball.startListening();
