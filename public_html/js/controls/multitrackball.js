@@ -44,6 +44,14 @@ MultiTrackball.prototype.getVal = function(out) {
   return out.set(this.val);
 };
 
+MultiTrackball.prototype.getContrib = function() {
+  var val = 0;
+  for (var i = 0; i < this.trackballs.length; i++) {
+    val |= this.trackballs[i].getContrib();
+  }
+  return val;
+};
+
 MultiTrackball.prototype.reset = function() {
   for (var i = 0; i < this.trackballs.length; i++) {
     this.trackballs[i].reset();

@@ -119,3 +119,7 @@ TouchTrackball.prototype.reset = function() {
   }
   this.dirtyVal = true;
 };
+
+TouchTrackball.prototype.getContrib = function() {
+  return this.touched ? Trackball.CONTRIB_TOUCH : 0;
+};

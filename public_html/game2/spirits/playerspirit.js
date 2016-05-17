@@ -16,7 +16,8 @@ function PlayerSpirit(screen) {
   this.angVel = 0;
 
   this.fireReady = true;
-  this.aimVec = new Vec2d(0, 1);
+  this.currAimVec = new Vec2d(0, 1);
+  this.destAimVec = new Vec2d(0, 1);
 
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
@@ -45,7 +46,7 @@ PlayerSpirit.MAX_BANG = 1.5;
 PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.6;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
-PlayerSpirit.AIM_HYSTERESIS = 0.4;
+PlayerSpirit.AIM_HYSTERESIS = 0.6;
 
 PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -143,7 +144,7 @@ PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
       rad);
 };
 
-PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
+PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
   var now = this.screen.now();
   var time = now - this.lastInputTime;
   this.lastInputTime = now;
@@ -179,9 +180,30 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, b1, b2) {
     }
   }
   if (!b2) {
-    this.vec2d.setXY(tx, -ty).scale(this.vec2d.magnitude());
-    this.aimVec.add(this.vec2d).scaleToLength(PlayerSpirit.AIM_HYSTERESIS);
+    if (tx || ty) {
+      this.vec2d.setXY(tx, -ty);
+      if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
+        // It's touch or mouse, which get very quantized at low speed. Square contribution and smooth it.
+        this.vec2d.scale(this.vec2d.magnitude());
+        this.destAimVec.add(this.vec2d).scaleToLength(PlayerSpirit.AIM_HYSTERESIS);
+      } else if (tContrib & Trackball.CONTRIB_KEY) {
+        // It's keyboard.
+        this.destAimVec.setXY(tx, -ty).scaleToLength(PlayerSpirit.AIM_HYSTERESIS);
+        // did the player reverse the direction of aim?
+        if (this.vec2d.set(this.currAimVec).add(this.destAimVec).magnitudeSquared() < 0.1) {
+          // reverse aim direction with zero delay.
+          this.currAimVec.set(this.destAimVec);
+        }
+      } else if (tContrib) {
+        console.log("unexpected trackball contribution: " + tContrib);
+      }
+    }
   }
+  // move currAimVec towards destAimVec
+  var aimChange = this.vec2d.set(this.destAimVec).subtract(this.currAimVec)
+      .clipToMaxLength(PlayerSpirit.AIM_HYSTERESIS / 6);
+  this.currAimVec.add(aimChange);
+
 };
 
 PlayerSpirit.prototype.fire = function() {
@@ -191,7 +213,7 @@ PlayerSpirit.prototype.fire = function() {
     body.getPosAtTime(this.screen.now(), this.tempBodyPos);
     this.addBullet(
         this.tempBodyPos,
-        this.vec2d.set(this.aimVec).scaleToLength(3.5 + Math.random()).rot(Math.random() * 0.1 - 0.05),
+        this.vec2d.set(this.currAimVec).scaleToLength(3.5 + Math.random()).rot(Math.random() * 0.1 - 0.05),
         0.2,
         7);
     this.fireReady = false;
@@ -262,10 +284,10 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     var p1 = Vec2d.alloc();
     var p2 = Vec2d.alloc();
 
-    p1.set(this.aimVec).scaleToLength(body.rad * 2).add(bodyPos);
-    p2.set(this.aimVec).scaleToLength(body.rad * 4).add(bodyPos);
+    p1.set(this.currAimVec).scaleToLength(body.rad * 2).add(bodyPos);
+    p2.set(this.currAimVec).scaleToLength(body.rad * 4).add(bodyPos);
 
-    var thickness = this.firing() ? 0.5 : 0.2;
+    var thickness = this.firing() ? 0.2 : 0.2;
 
     s.startPose.pos.setXYZ(p1.x, p1.y, Math.random() - 0.3);
     s.endPose.pos.setXYZ(p1.x, p1.y, 0);

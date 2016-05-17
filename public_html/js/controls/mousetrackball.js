@@ -46,6 +46,10 @@ MouseTrackball.prototype.reset = function() {
   this.touched = false;
 };
 
+MouseTrackball.prototype.getContrib = function() {
+  return this.touched ? Trackball.CONTRIB_MOUSE : 0;
+};
+
 MouseTrackball.prototype.onMouseMove = function(e) {
   var dx = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
   var dy = e.movementY || e.mozMovementY || e.webkitMovementY || 0;

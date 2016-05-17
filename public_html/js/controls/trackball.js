@@ -8,6 +8,10 @@ function Trackball() {
   this.touched = false;
 }
 
+Trackball.CONTRIB_KEY = 1;
+Trackball.CONTRIB_TOUCH = 2;
+Trackball.CONTRIB_MOUSE = 4;
+
 Trackball.prototype.setFriction = function(f) {
   this.friction = f;
   return this;
@@ -19,6 +23,14 @@ Trackball.prototype.setFriction = function(f) {
  */
 Trackball.prototype.getVal = function(out) {
   return out.set(this.val);
+};
+
+/**
+ * Returns a bitfield of trackballs that have been interacted with since
+ * @returns {number}
+ */
+Trackball.prototype.getContrib = function() {
+  return 0;
 };
 
 /**

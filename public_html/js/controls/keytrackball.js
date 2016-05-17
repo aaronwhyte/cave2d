@@ -11,6 +11,7 @@ function KeyTrackball(keyStick) {
   this.wasTouched = false;
 
   this.traction = 0.2;
+  this.contributing = false;
 }
 KeyTrackball.prototype = new Trackball();
 KeyTrackball.prototype.constructor = KeyTrackball;
@@ -47,6 +48,10 @@ KeyTrackball.prototype.getVal = function(out) {
   return out.set(this.val);
 };
 
+KeyTrackball.prototype.getContrib = function() {
+  return this.keyStick.isAnyKeyPressed() ? Trackball.CONTRIB_KEY : 0;
+};
+
 KeyTrackball.prototype.reset = function() {
   if (!this.isTouched()) {
     this.val.scale(1 - this.friction);
@@ -54,6 +59,9 @@ KeyTrackball.prototype.reset = function() {
   this.needsValChange = true;
 };
 
+/**
+ * @returns {boolean}
+ */
 KeyTrackball.prototype.isTouched = function() {
   var touched = this.keyStick.isAnyKeyPressed();
   if (!touched) this.wasTouched = false;
