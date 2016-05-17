@@ -271,10 +271,6 @@ v die when health hits 0
   v respawn (where you were?)
   v sound
 
-spawn powerup
-v dead player respawns
-- temp invincibility, blinking or something?
-
 Enemy 1: grunt
 - spirit
   - model
@@ -288,10 +284,16 @@ Enemy 1: grunt
 - config(s)
   - three strengths, three ranks, for editor
 
-Entrance, instead of player.
+spawn powerup
+v dead player respawns
+- temp invincibility, blinking or something?
+
+Entrance, instead of player?
 - spawns a player in test/play mode
 - cool swirly warp-in?
 - if there's more than one, a random one is chosen as the starting point?
+
+Exit effects
 
 Bombs
 - explode when shot
