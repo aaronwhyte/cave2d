@@ -122,11 +122,9 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 
 AntSpirit.prototype.turnToPlayer = function() {
   var toPlayer = this.vecToPlayer.set(this.screen.playerAveragePos).subtract(this.tempBodyPos);
-  // TODO
   var right = this.vec2d2.setXY(1, 0).rot(this.dir);
   var dot = right.dot(toPlayer);
   this.angVel = 0.1 * Math.sign(dot);
-//  debugger;
 };
 
 AntSpirit.prototype.onTimeout = function(world, event) {
