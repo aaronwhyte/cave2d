@@ -16,8 +16,11 @@ function AntSpirit(screen) {
   this.angVel = 0;
 
   this.tempBodyPos = new Vec2d();
+  this.vecToPlayer = new Vec2d();
   this.vec2d = new Vec2d();
+  this.vec2d2 = new Vec2d();
   this.scanVec = new Vec2d();
+  this.scanResp = new ScanResponse();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
@@ -113,7 +116,17 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       this.scanVec.setXY(
           Math.sin(this.dir + rot) * dist,
           Math.cos(this.dir + rot) * dist),
-      rad);
+      rad,
+      this.scanResp);
+};
+
+AntSpirit.prototype.turnToPlayer = function() {
+  var toPlayer = this.vecToPlayer.set(this.screen.playerAveragePos).subtract(this.tempBodyPos);
+  // TODO
+  var right = this.vec2d2.setXY(1, 0).rot(this.dir);
+  var dot = right.dot(toPlayer);
+  this.angVel = 0.1 * Math.sign(dot);
+//  debugger;
 };
 
 AntSpirit.prototype.onTimeout = function(world, event) {
@@ -148,9 +161,20 @@ AntSpirit.prototype.onTimeout = function(world, event) {
       var angAccel, thrust;
       if (dist >= 0) {
         // rayscan hit
-        angAccel = -scanRot * (this.stress * 0.8 + 0.2);
-        this.stress += 0.03;
-        thrust = AntSpirit.THRUST * (dist - 0.05 * this.stress);
+        var otherSpirit = this.getScanHitSpirit();
+        if (otherSpirit && otherSpirit.type == BaseScreen.SpiritType.PLAYER) {
+          // attack player!
+          this.stress = 0;
+          angAccel = 0;
+          this.angVel = 0;
+          this.dir += scanRot;
+          thrust = AntSpirit.THRUST * 2;
+        } else {
+          // avoid obstruction
+          angAccel = -scanRot * (this.stress * 0.8 + 0.2);
+          this.stress += 0.03;
+          thrust = AntSpirit.THRUST * (dist - 0.05 * this.stress);
+        }
       } else {
         // clear path
         if (this.stress > 0.5) {
@@ -160,6 +184,7 @@ AntSpirit.prototype.onTimeout = function(world, event) {
           this.dir += scanRot;
         } else {
           angAccel = scanRot * (this.stress * 0.8 + 0.2);
+          this.turnToPlayer();
         }
         this.stress = 0;
         thrust = AntSpirit.THRUST;
@@ -189,6 +214,11 @@ AntSpirit.prototype.onTimeout = function(world, event) {
   body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, world.now);
   world.addTimeout(world.now + timeoutDuration, this.id, -1);
+};
+
+AntSpirit.prototype.getScanHitSpirit = function() {
+  var body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
+  return this.screen.getSpiritForBody(body);
 };
 
 AntSpirit.prototype.onDraw = function(world, renderer) {

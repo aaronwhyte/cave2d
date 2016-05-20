@@ -45,6 +45,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventu
   this.world = null;
   this.tiles = null;
 
+  this.playerAveragePos = new Vec2d();
+
   this.bitSize = 0.5;
   this.bitGridMetersPerCell = BaseScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
@@ -431,7 +433,7 @@ BaseScreen.prototype.otherBody = function(thisBody, b0, b1) {
 };
 
 BaseScreen.prototype.getSpiritForBody = function(b) {
-  return this.world.spirits[b.spiritId];
+  return b ? this.world.spirits[b.spiritId] : null;
 };
 
 BaseScreen.prototype.bodyIfSpiritType = function(type, b0, opt_b1) {
@@ -603,9 +605,11 @@ BaseScreen.prototype.getWorldEventTarget = function() {
  * @param {Vec2d} pos
  * @param {Vec2d} vel
  * @param {number} rad
+ * @param {=ScanResponse} opt_resp
  * @returns {number} fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
  */
-BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
+BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
+  var resp = opt_resp || this.scanResp;
   this.scanReq.hitGroup = hitGroup;
   // write the body's position into the req's position slot.
   this.scanReq.pos.set(pos);
@@ -613,9 +617,9 @@ BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad) {
   this.scanReq.shape = Body.Shape.CIRCLE;
   this.scanReq.rad = rad;
   var retval = -1;
-  var hit = this.world.rayscan(this.scanReq, this.scanResp);
+  var hit = this.world.rayscan(this.scanReq, resp);
   if (hit) {
-    retval = this.scanResp.timeOffset;
+    retval = resp.timeOffset;
   }
   if (this.drawScans) {
     this.addScanSplash(pos, vel, rad, retval);
@@ -664,6 +668,30 @@ BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
 BaseScreen.prototype.now = function() {
   return this.world.now;
 };
+
+BaseScreen.prototype.getAveragePlayerPos = function() {
+  this.playerAveragePos.reset();
+  var playerCount = 0;
+  for (var id in this.world.spirits) {
+    var spirit = this.world.spirits[id];
+    spirit.onDraw(this.world, this.renderer);
+    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
+      var body = spirit.getBody(this.world);
+      if (body) {
+        this.playerAveragePos.add(this.getBodyPos(body, this.vec2d));
+        playerCount++;
+      }
+    }
+  }
+  if (playerCount != 0) {
+    this.playerAveragePos.scale(1 / playerCount);
+    return this.playerAveragePos;
+  } else {
+    return null;
+  }
+};
+
+
 
 BaseScreen.prototype.soundPew = function(pos) {
   this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
