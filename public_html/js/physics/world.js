@@ -485,7 +485,7 @@ World.prototype.processNextEvent = function() {
   } else if (e.type === WorldEvent.TYPE_TIMEOUT) {
     var spirit = this.spirits[e.spiritId];
     if (spirit) {
-      spirit.onTimeout(this, e.spiritId, e.timeoutVal);
+      spirit.onTimeout(this, e.timeoutVal);
     }
   }
   e.free();
@@ -506,8 +506,6 @@ World.prototype.addTimeout = function(time, spiritId, val) {
 World.prototype.loadTimeout = function(e) {
   this.addTimeout(e.time, e.spiritId, e.timeoutVal);
 };
-
-// TODO World.prototype.removeTimeout
 
 /**
  * Performs an immediate rayscan. If there's a hit, this will return true,

@@ -31,7 +31,7 @@ EnemySpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
-EnemySpirit.prototype.onTimeout = function(world) {
+EnemySpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody(world);
   var friction = Vec2d.alloc().set(body.vel).scale(-0.04);
   // turn, but gradually correct to straight-ahead

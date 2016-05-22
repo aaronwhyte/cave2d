@@ -14,7 +14,7 @@ TestSpirit.TIMEOUT = 0.5;
 TestSpirit.prototype = new Spirit();
 TestSpirit.prototype.constructor = TestSpirit;
 
-TestSpirit.prototype.onTimeout = function(world, timeout) {
+TestSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var b = world.bodies[this.bodyId];
   this.vec.set(b.vel).rot(0.6 * (Math.random() - 0.5));
   this.vec.scale(Math.random() + 0.44);

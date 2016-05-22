@@ -69,7 +69,7 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       rad);
 };
 
-AntSpirit.prototype.onTimeout = function(world, event) {
+AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
   var basicThrust = 0.03;

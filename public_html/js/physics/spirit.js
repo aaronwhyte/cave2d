@@ -17,10 +17,10 @@ Spirit.prototype.onStart = function(world) {
 
 /**
  * Called when the Clock advances to the time of the Timeout.
- * @param {World} world
- * @param {Timeout} timeout  the timeout that the spirit sent to the world.
+ * @param {World} world obj with "now" set to the time of the timeout.
+ * @param {*} timeoutVal  The data payload of the timeout
  */
-Spirit.prototype.onTimeout = function(world, timeout) {
+Spirit.prototype.onTimeout = function(world, timeoutVal) {
 };
 
 /**

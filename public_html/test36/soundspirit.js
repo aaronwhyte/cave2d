@@ -73,11 +73,11 @@ SoundSpirit.prototype.setSounds = function(sounds) {
   this.sounds = sounds;
 };
 
-SoundSpirit.prototype.onTimeout = function(world, event) {
+SoundSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody(world);
 
   // Play a sound?
-  var measureTime = event.timeoutVal;
+  var measureTime = timeoutVal;
   var bodyPos = body.getPosAtTime(world.now, this.vec2d);
   var makesSound = false;
   for (var i = 0; i < this.sounds.length; i++) {
@@ -109,7 +109,7 @@ SoundSpirit.prototype.onTimeout = function(world, event) {
 
   // TODO: be less dumb
   var addedTimes = {};
-  if (event.timeoutVal === -1) {
+  if (timeoutVal === -1) {
     // This is the start of a measure. Plan the next measure of sounds.
     world.addTimeout(world.now + SoundSpirit.MEASURE_TIMEOUT, this.id, -1);
     addedTimes[0] = true;

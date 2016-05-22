@@ -143,7 +143,9 @@ function clockAndDraw() {
     }
   }
   var maxClock = world.now + MAX_CLOCKS_PER_ANIMATION;
+  console.log(maxClock, endTimeMs);
   var e = world.getNextEvent();
+  console.log("event: ", e);
   while (e && e.time <= maxClock && Date.now() <= endTimeMs) {
     world.processNextEvent();
     if (DRAW_GRID_EVENTS) {
@@ -168,6 +170,7 @@ function clockAndDraw() {
       }
     }
     e = world.getNextEvent();
+    console.log("event: ", e);
   }
   if (!e || e.time > maxClock) {
     world.now = maxClock;

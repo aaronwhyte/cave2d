@@ -23,7 +23,7 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.TIMEOUT = 0.25;
 
-PlayerSpirit.prototype.onTimeout = function(world, timeout) {
+PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var b = world.bodies[this.bodyId];
 
   if (b) {

@@ -26,7 +26,7 @@ RaySpirit.RAY_LENGTH = 100;
 RaySpirit.RAY_RADUIS = 2;
 RaySpirit.ATTACK_ACCEL = 1.5;
 
-RaySpirit.prototype.onTimeout = function(world, timeout) {
+RaySpirit.prototype.onTimeout = function(world, timeoutVal) {
   var pos;
   while(pos = this.hitPos.pop()) {
     pos.free();
@@ -104,7 +104,7 @@ RaySpirit.prototype.onTimeout = function(world, timeout) {
     b.setVelAtTime(this.vec, world.now);
   }
 
-  world.addTimeout(timeout.time + RaySpirit.TIMEOUT, this.id, null);
+  world.addTimeout(world.now + RaySpirit.TIMEOUT, this.id, null);
 };
 
 RaySpirit.prototype.onHit = function(world, thisBody, thatBody, hit) {

@@ -54,7 +54,7 @@ ExitSpirit.factory = function(screen, stamp, pos) {
   return spiritId;
 };
 
-ExitSpirit.prototype.onTimeout = function(world, event) {
+ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody(world);
   body.pathDurationMax = Infinity;
   if (!body.vel.isZero()) {

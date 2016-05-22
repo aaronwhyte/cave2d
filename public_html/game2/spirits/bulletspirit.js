@@ -207,7 +207,7 @@ BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
 
 
 
-BulletSpirit.prototype.onTimeout = function(world, timeout) {
+BulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
   this.destroyBody();
 };
 

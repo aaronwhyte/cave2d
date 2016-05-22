@@ -18,7 +18,7 @@ BulletSpirit.prototype.reset = function() {
   this.id = -1;
 };
 
-BulletSpirit.prototype.onTimeout = function(world, timeout) {
+BulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
   this.destroyBullet();
 };
 

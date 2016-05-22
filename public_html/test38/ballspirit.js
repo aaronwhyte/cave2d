@@ -61,7 +61,7 @@ BallSpirit.prototype.onDraw = function(world, renderer) {
   renderer.drawStamp();
 };
 
-BallSpirit.prototype.onTimeout = function(world, timeout) {
+BallSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody(world);
   if (body) {
     body.moveToTime(world.now);

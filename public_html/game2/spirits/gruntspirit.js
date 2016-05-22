@@ -118,7 +118,7 @@ GruntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       this.scanResp);
 };
 
-GruntSpirit.prototype.onTimeout = function(world, event) {
+GruntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
   this.stress = this.stress || 0;

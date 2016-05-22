@@ -222,9 +222,9 @@ PlayerSpirit.prototype.fire = function() {
   }
 };
 
-PlayerSpirit.prototype.onTimeout = function(world, spiritId, eventId) {
+PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var now = this.screen.now();
-  if (eventId == PlayerSpirit.FRICTION_TIMEOUT_ID || eventId == -1) {
+  if (timeoutVal == PlayerSpirit.FRICTION_TIMEOUT_ID || timeoutVal == -1) {
     var time = now - this.lastFrictionTime;
     this.lastFrictionTime = now;
 
@@ -242,12 +242,12 @@ PlayerSpirit.prototype.onTimeout = function(world, spiritId, eventId) {
     }
     // TODO: put addTimeout in screen, remove world access
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
-  } else if (eventId == PlayerSpirit.FIRE_TIMEOUT_ID) {
+  } else if (timeoutVal == PlayerSpirit.FIRE_TIMEOUT_ID) {
     this.fireReady = true;
     if (this.firing()) {
       this.fire();
     }
-  } else if (eventId == PlayerSpirit.RESPAWN_TIMEOUT_ID) {
+  } else if (timeoutVal == PlayerSpirit.RESPAWN_TIMEOUT_ID) {
     this.respawn();
   }
 };

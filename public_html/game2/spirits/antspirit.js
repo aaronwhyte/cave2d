@@ -127,7 +127,7 @@ AntSpirit.prototype.turnToPlayer = function() {
   this.angVel = 0.1 * Math.sign(dot);
 };
 
-AntSpirit.prototype.onTimeout = function(world, event) {
+AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody(world);
   var pos = body.getPosAtTime(world.now, this.tempBodyPos);
   this.stress = this.stress || 0;
