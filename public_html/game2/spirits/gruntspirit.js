@@ -18,6 +18,7 @@ function GruntSpirit(screen) {
   this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
   this.scanVec = new Vec2d();
+  this.scanResp = new ScanResponse();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
@@ -30,8 +31,8 @@ function GruntSpirit(screen) {
 GruntSpirit.prototype = new Spirit();
 GruntSpirit.prototype.constructor = GruntSpirit;
 
-GruntSpirit.MEASURE_TIMEOUT = 1.2;
-GruntSpirit.THRUST = 0.3;
+GruntSpirit.MEASURE_TIMEOUT = 0.1;
+GruntSpirit.THRUST = 2;
 GruntSpirit.MAX_TIMEOUT = 10;
 GruntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 GruntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -113,7 +114,8 @@ GruntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       this.scanVec.setXY(
           Math.sin(this.dir + rot) * dist,
           Math.cos(this.dir + rot) * dist),
-      rad);
+      rad,
+      this.scanResp);
 };
 
 GruntSpirit.prototype.onTimeout = function(world, event) {
@@ -144,13 +146,24 @@ GruntSpirit.prototype.onTimeout = function(world, event) {
       var antennaRotMag = Math.max(Math.PI * 0.13, Math.PI * this.stress);
       var scanDist = body.rad * (3 + (1 - this.stress));
       var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
-      var dist = this.scan(pos, scanRot, scanDist, body.rad);
+      var dist = this.scan(pos, scanRot, scanDist, body.rad, this.scanResp);
       var angAccel, thrust;
       if (dist >= 0) {
         // rayscan hit
-        angAccel = -scanRot * (this.stress * 0.8 + 0.2);
-        this.stress += 0.03;
-        thrust = GruntSpirit.THRUST * (dist - 0.05 * this.stress);
+        var otherSpirit = this.getScanHitSpirit();
+        if (otherSpirit && otherSpirit.type == BaseScreen.SpiritType.PLAYER) {
+          // attack player!
+          this.stress = 0;
+          angAccel = 0;
+          this.angVel = 0;
+          this.dir += scanRot;
+          thrust = GruntSpirit.THRUST * 10;
+        } else {
+          // avoid obstruction
+          angAccel = -scanRot * (this.stress * 0.8 + 0.2);
+          this.stress += 0.03;
+          thrust = GruntSpirit.THRUST * (dist - 0.05 * this.stress);
+        }
       } else {
         // clear path
         if (this.stress > 0.5) {
@@ -190,6 +203,13 @@ GruntSpirit.prototype.onTimeout = function(world, event) {
   body.setVelAtTime(newVel, world.now);
   world.addTimeout(world.now + timeoutDuration, this.id, -1);
 };
+
+GruntSpirit.prototype.getScanHitSpirit = function() {
+  var body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
+  return this.screen.getSpiritForBody(body);
+};
+
+
 
 GruntSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody(world);
