@@ -52,7 +52,7 @@ PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 2.51;
+PlayerSpirit.FIRE_TIMEOUT = 3.51;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 PlayerSpirit.FIRE_BURST_DURATION = 6;
 
@@ -216,6 +216,13 @@ PlayerSpirit.prototype.fire = function() {
         this.vec2d.set(this.currAimVec).scaleToLength(3.5 + Math.random()).rot(Math.random() * 0.1 - 0.05),
         0.2,
         7);
+    if (!body.vel.isZero()) {
+      this.addBullet(
+          this.tempBodyPos,
+          this.vec2d.set(body.vel).scaleToLength(1 + Math.random()).rot(Math.random() * 0.1 - 0.05),
+          0.2,
+          20);
+    }
     this.fireReady = false;
     this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
       this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
