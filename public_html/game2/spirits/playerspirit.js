@@ -30,7 +30,7 @@ function PlayerSpirit(screen) {
   this.lastFrictionTime = this.screen.now();
   this.lastInputTime = this.screen.now();
   this.bang = new BangVal(PlayerSpirit.BANG_DECAY, PlayerSpirit.MAX_BANG);
-  this.fireBurstEndTime = 0;
+  this.shots = PlayerSpirit.MAX_SHOTS;
 
   this.maxHealth = PlayerSpirit.STARTING_HEALTH;
   this.health = this.maxHealth;
@@ -52,9 +52,11 @@ PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 3.51;
+PlayerSpirit.FIRE_TIMEOUT = 3.01;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
-PlayerSpirit.FIRE_BURST_DURATION = 6;
+PlayerSpirit.FIRE_BURST_DURATION = PlayerSpirit.FIRE_TIMEOUT / 2;
+
+PlayerSpirit.MAX_SHOTS = 5;
 
 PlayerSpirit.RESPAWN_TIMEOUT = 50;
 PlayerSpirit.RESPAWN_TIMEOUT_ID = 30;
@@ -170,6 +172,9 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
   }
 
   // firing logic
+  if (!b2 && !this.firing()) {
+    this.shots = PlayerSpirit.MAX_SHOTS;
+  }
   if (!stunned && b2) {
     // not stunned and the button is down
     // extend burst time
@@ -207,25 +212,24 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
 };
 
 PlayerSpirit.prototype.fire = function() {
-  if (!this.fireReady) return;
   var body = this.screen.getBodyById(this.bodyId);
   if (body) {
     body.getPosAtTime(this.screen.now(), this.tempBodyPos);
-    this.addBullet(
-        this.tempBodyPos,
-        this.vec2d.set(this.currAimVec).scaleToLength(3.5 + Math.random()).rot(Math.random() * 0.1 - 0.05),
-        0.2,
-        7);
-    if (!body.vel.isZero()) {
+    for (var i = 0; i < this.shots; i++) {
+      var angle = 0.33 * Math.PI * (i - (this.shots - 1) / 2) / PlayerSpirit.MAX_SHOTS;
       this.addBullet(
           this.tempBodyPos,
-          this.vec2d.set(body.vel).scaleToLength(1 + Math.random()).rot(Math.random() * 0.1 - 0.05),
-          0.2,
-          20);
+          this.vec2d
+              .set(this.currAimVec)
+              .scaleToLength(5 - 2.5 * (this.shots-1) / PlayerSpirit.MAX_SHOTS)
+              .rot(angle + 0.05 * (Math.random()-0.5)),
+          0.3,
+          7);
     }
     this.fireReady = false;
-    this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT,
-      this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
+    this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT * (1 + (this.shots-1)*0.7),
+        this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
+    this.shots = Math.max(1, this.shots - 1);
   }
 };
 

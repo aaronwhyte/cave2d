@@ -57,12 +57,13 @@ BulletSpirit.prototype.setColorRGB = function(r, g, b) {
 BulletSpirit.prototype.onHitWall = function(mag) {
   var body = this.getBody();
   if (!body) return;
-  mag = mag / body.mass;
+  mag = mag * body.mass;
   body.getPosAtTime(this.screen.now(), this.vec2d);
   this.screen.soundWallThump(this.vec2d, mag);
-  if (0.1 * mag * this.health > 0.1 + Math.random()) {
+  if (0.05 * mag * this.health > 0.1 + Math.random()) {
+    console.log("dig");
     // dig
-    var pillRad = 0.65;
+    var pillRad = body.rad * 2.5;
     this.screen.drawTerrainPill(this.vec2d, this.vec2d, pillRad, 1);
     this.wallDamageSplash(this.vec2d, pillRad * 1.3);
     this.screen.soundBing(this.vec2d);
@@ -180,7 +181,7 @@ BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
 
   s.startTime = this.now();
-  s.duration = 10;
+  s.duration = 4 * rad;
 
   var x = pos.x;
   var y = pos.y;
@@ -189,18 +190,27 @@ BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
 
   s.startPose.pos.setXYZ(x, y, -0.5);
   s.endPose.pos.setXYZ(x, y, 1);
-  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.startPose.scale.setXYZ(rad/2, rad/2, 1);
   s.endPose.scale.setXYZ(endRad, endRad, 1);
 
   s.startPose2.pos.setXYZ(x, y, -0.5);
   s.endPose2.pos.setXYZ(x, y, 1);
-  s.startPose2.scale.setXYZ(-rad, -rad, 1);
+  s.startPose2.scale.setXYZ(0, 0, 1);
   s.endPose2.scale.setXYZ(endRad, endRad, 1);
 
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
   s.startColor.setXYZ(1, 1, 1);
   s.endColor.setXYZ(0.5, 0.5, 0.5);
+
+  this.screen.splasher.addCopy(s);
+
+  s.duration = 7 * rad;
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(0, 0, 1);
+
+  s.startPose2.scale.setXYZ(0, 0, 1);
+  s.endPose2.scale.setXYZ(0, 0, 1);
 
   this.screen.splasher.addCopy(s);
 };
