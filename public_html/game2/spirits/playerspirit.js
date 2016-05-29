@@ -34,6 +34,8 @@ function PlayerSpirit(screen) {
 
   this.maxHealth = PlayerSpirit.STARTING_HEALTH;
   this.health = this.maxHealth;
+
+  this.lastWarp = -Infinity;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -44,7 +46,7 @@ PlayerSpirit.BANG_DECAY = 0.2;
 PlayerSpirit.MAX_BANG = 1.5;
 
 PlayerSpirit.TRACKBALL_ACCEL = 1;
-PlayerSpirit.TRACKBALL_TRACTION = 0.6;
+PlayerSpirit.TRACKBALL_TRACTION = 0.3;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
 PlayerSpirit.AIM_HYSTERESIS = 0.6;
 
@@ -52,11 +54,13 @@ PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 3.01;
+PlayerSpirit.FIRE_TIMEOUT = 2.51;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 PlayerSpirit.FIRE_BURST_DURATION = PlayerSpirit.FIRE_TIMEOUT / 2;
 
-PlayerSpirit.MAX_SHOTS = 5;
+PlayerSpirit.WARP_TIMEOUT = 60;
+
+PlayerSpirit.MAX_SHOTS = 3;
 
 PlayerSpirit.RESPAWN_TIMEOUT = 50;
 PlayerSpirit.RESPAWN_TIMEOUT_ID = 30;
@@ -159,20 +163,20 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     if (body) {
       this.newVel.set(body.vel);
       this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
-      this.newVel.add(this.accel.scale(time));
+      this.newVel.add(this.accel.scale(time / this.screen.timeMultiplier));
 
       this.accel.setXY(tx, -ty).scale(PlayerSpirit.TRACKBALL_ACCEL * PlayerSpirit.TRACKBALL_TRACTION)
           .clipToMaxLength(PlayerSpirit.TRACKBALL_MAX_ACCEL);
       // stun decreases control responsiveness
       this.accel.scale(1 - stun);
 
-      this.newVel.add(this.accel.scale(time));
+      this.newVel.add(this.accel.scale(time / this.screen.timeMultiplier));
       body.setVelAtTime(this.newVel, now);
     }
   }
 
   // firing logic
-  if (!b2 && !this.firing()) {
+  if (!b2) {
     this.shots = PlayerSpirit.MAX_SHOTS;
   }
   if (!stunned && b2) {
@@ -183,6 +187,9 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     if (this.fireReady) {
       this.fire();
     }
+  }
+  if (!stunned && b1 && this.lastWarp + PlayerSpirit.WARP_TIMEOUT <= now) {
+    this.warp()
   }
   if (!b2) {
     if (tx || ty) {
@@ -227,7 +234,7 @@ PlayerSpirit.prototype.fire = function() {
           7);
     }
     this.fireReady = false;
-    this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT * (1 + (this.shots-1)*0.7),
+    this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT * (1 + (this.shots-1)*0.3),
         this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
     this.shots = Math.max(1, this.shots - 1);
   }
@@ -313,8 +320,8 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     s.startPose.rotZ = 0;
     s.endPose.rotZ = 0;
 
-    s.startColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
-    s.endColor.setXYZ(1, 0.3, 0.6).scale1(0.5);
+    s.startColor.setXYZ(1, 0.3, 0.6).scale1(0.7);
+    s.endColor.setXYZ(1, 0.3, 0.6).scale1(0.3);
 
     this.screen.splasher.addCopy(s);
 
@@ -492,5 +499,14 @@ PlayerSpirit.prototype.respawn = function() {
   s.endColor.setXYZ(0, 0, 0);
 
   this.screen.splasher.addCopy(s);
+};
 
+PlayerSpirit.prototype.warp = function() {
+  var body = this.screen.getBodyById(this.bodyId);
+  if (body) {
+    body.getPosAtTime(this.screen.now(), this.tempBodyPos);
+    this.screen.setTimeWarp(0.05);
+    this.lastWarp = this.screen.now();
+    this.screen.soundPlayerWarp(this.tempBodyPos);
+  }
 };

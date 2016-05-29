@@ -57,6 +57,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventu
   // for sound throttling
   this.hitsThisFrame = 0;
 
+  this.timeMultiplier = 1;
+
   var self = this;
 
   this.pauseDownFn = function(e) {
@@ -386,7 +388,8 @@ BaseScreen.prototype.hidePauseMenu = function() {
 BaseScreen.prototype.clock = function() {
   if (this.paused) return;
   var endTimeMs = Date.now() + BaseScreen.MS_PER_FRAME;
-  var endClock = this.world.now + BaseScreen.CLOCKS_PER_FRAME;
+  var startClock = this.world.now;
+  var endClock = this.world.now + BaseScreen.CLOCKS_PER_FRAME * this.timeMultiplier;
 
   if (this.handleInput) {
     this.handleInput();
@@ -418,6 +421,14 @@ BaseScreen.prototype.clock = function() {
   if (!e || e.time > endClock) {
     this.world.now = endClock;
   }
+  var unwarp = 0.15 * (endClock - startClock) / BaseScreen.CLOCKS_PER_FRAME;
+  var timeWarp = Math.log(this.timeMultiplier);
+  if (Math.abs(timeWarp) < unwarp) {
+    timeWarp = 0;
+  } else {
+    timeWarp -= Math.sign(timeWarp) * unwarp;
+  }
+  this.timeMultiplier = Math.exp(timeWarp);
 };
 
 BaseScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
@@ -487,7 +498,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
         bulletSpirit.onHitWall(mag);
       } else if (otherSpirit.type == BaseScreen.SpiritType.ANT) {
         bulletSpirit.onHitEnemy(mag);
-        otherSpirit.explode()
+        otherSpirit.onPlayerBulletHit()
       } else if (otherSpirit.type == BaseScreen.SpiritType.BULLET) {
         bulletSpirit.onHitOther(mag);
         otherSpirit.onHitOther(mag);
@@ -625,6 +636,10 @@ BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
     this.addScanSplash(pos, vel, rad, retval);
   }
   return retval;
+};
+
+BaseScreen.prototype.setTimeWarp = function(multiplier) {
+  this.timeMultiplier = multiplier;
 };
 
 BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
@@ -784,7 +799,19 @@ BaseScreen.prototype.soundPlayerSpawn = function(pos) {
     this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.05);
     this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.05);
   }
+};
 
+BaseScreen.prototype.soundPlayerWarp = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var freq = 2000;
+  for (var i = 0; i < 20; i++) {
+    freq *= 0.5;
+    this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.1);
+    this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.1);
+  }
 };
 
 ////////////////////////////
