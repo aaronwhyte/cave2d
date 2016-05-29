@@ -58,7 +58,7 @@ PlayerSpirit.FIRE_TIMEOUT = 2.51;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 PlayerSpirit.FIRE_BURST_DURATION = PlayerSpirit.FIRE_TIMEOUT / 2;
 
-PlayerSpirit.WARP_TIMEOUT = 60;
+PlayerSpirit.WARP_TIMEOUT = 40;
 
 PlayerSpirit.MAX_SHOTS = 3;
 
