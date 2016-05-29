@@ -29,6 +29,7 @@ function AntSpirit(screen) {
 
   this.lastControlTime = this.screen.now();
   this.viewportsFromCamera = 0;
+  this.health = AntSpirit.MAX_HEALTH;
 }
 AntSpirit.prototype = new Spirit();
 AntSpirit.prototype.constructor = AntSpirit;
@@ -38,6 +39,7 @@ AntSpirit.THRUST = 0.3;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
+AntSpirit.MAX_HEALTH = 2;
 AntSpirit.OPTIMIZE = true;
 
 AntSpirit.SCHEMA = {
@@ -47,7 +49,8 @@ AntSpirit.SCHEMA = {
   3: "color",
   4: "dir",
   5: "angVel",
-  6: "stress"
+  6: "stress",
+  7: "health"
 };
 
 AntSpirit.getJsoner = function() {
@@ -124,7 +127,7 @@ AntSpirit.prototype.turnToPlayer = function() {
   var toPlayer = this.vecToPlayer.set(this.screen.playerAveragePos).subtract(this.tempBodyPos);
   var right = this.vec2d2.setXY(1, 0).rot(this.dir);
   var dot = right.dot(toPlayer);
-  this.angVel = 0.1 * Math.sign(dot);
+  this.angVel += 0.1 * dot / toPlayer.magnitude();
 };
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -156,22 +159,22 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       var scanDist = body.rad * (3 + (1 - this.stress));
       var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
       var dist = this.scan(pos, scanRot, scanDist, body.rad);
-      var angAccel, thrust;
+      var angAccel = 0;
+      var thrust = AntSpirit.THRUST * (AntSpirit.MAX_HEALTH / this.health);
       if (dist >= 0) {
         // rayscan hit
         var otherSpirit = this.getScanHitSpirit();
         if (otherSpirit && otherSpirit.type == BaseScreen.SpiritType.PLAYER) {
           // attack player!
           this.stress = 0;
-          angAccel = 0;
-          this.angVel = 0;
-          this.dir += scanRot;
-          thrust = AntSpirit.THRUST * 2;
+          angAccel = scanRot * 0.2;
+          this.turnToPlayer();
+          thrust *= 1.2;
         } else {
           // avoid obstruction
           angAccel = -scanRot * (this.stress * 0.8 + 0.2);
           this.stress += 0.03;
-          thrust = AntSpirit.THRUST * (dist - 0.05 * this.stress);
+          thrust *= (dist - 0.05 * this.stress);
         }
       } else {
         // clear path
@@ -185,7 +188,6 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
           this.turnToPlayer();
         }
         this.stress = 0;
-        thrust = AntSpirit.THRUST;
       }
       this.stress = Math.min(1, Math.max(0, this.stress));
 
@@ -205,7 +207,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (AntSpirit.OPTIMIZE) {
     timeoutDuration = Math.min(
         AntSpirit.MAX_TIMEOUT,
-            AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
+            (this.health/AntSpirit.MAX_HEALTH) * AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
   } else {
     timeoutDuration = AntSpirit.MEASURE_TIMEOUT * (1 - Math.random() * 0.05);
   }
@@ -240,11 +242,62 @@ AntSpirit.prototype.getBody = function(world) {
   return world.bodies[this.bodyId];
 };
 
+AntSpirit.prototype.onPlayerBulletHit = function() {
+  this.health--;
+  if (this.health <= 0) {
+    this.explode();
+  }
+};
+
 AntSpirit.prototype.explode = function() {
   var body = this.getBody(this.screen.world);
   body.getPosAtTime(this.screen.now(), this.tempBodyPos);
+  this.explosionSplash(this.tempBodyPos, body.rad * (3 + Math.random()));
   this.screen.soundKaboom(this.tempBodyPos);
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
+};
+
+AntSpirit.prototype.explosionSplash = function(pos, rad) {
+  var s = this.screen.splash;
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
+
+  s.startTime = this.now();
+  s.duration = 5 * (1 + rad);
+
+  var x = pos.x;
+  var y = pos.y;
+
+  var endRad = rad * 3;
+
+  s.startPose.pos.setXYZ(x, y, -0.5);
+  s.endPose.pos.setXYZ(x, y, 1);
+  s.startPose.scale.setXYZ(rad/2, rad/2, 1);
+  s.endPose.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose2.pos.setXYZ(x, y, -0.5);
+  s.endPose2.pos.setXYZ(x, y, 1);
+  s.startPose2.scale.setXYZ(0, 0, 1);
+  s.endPose2.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+  s.startColor.setXYZ(1, 1, 1);
+  s.endColor.setXYZ(0.2, 0.2, 0.2);
+
+  this.screen.splasher.addCopy(s);
+
+  s.duration *= 2;
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(0, 0, 1);
+
+  s.startPose2.scale.setXYZ(0, 0, 1);
+  s.endPose2.scale.setXYZ(0, 0, 1);
+
+  this.screen.splasher.addCopy(s);
+};
+
+AntSpirit.prototype.now = function() {
+  return this.screen.now();
 };
 
