@@ -86,7 +86,7 @@ BulletSpirit.prototype.onHitEnemy = function(mag) {
   if (!body) return;
   body.getPosAtTime(this.screen.now(), this.vec2d);
   this.screen.soundWallThump(this.vec2d, mag);
-  this.wallDamageSplash(this.vec2d, 2);
+  this.wallDamageSplash(this.vec2d, Math.random());
   this.destroyBody();
 };
 
