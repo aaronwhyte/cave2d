@@ -49,7 +49,7 @@ PlayerSpirit.MAX_BANG = 1.5;
 PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.3;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
-PlayerSpirit.AIM_HYSTERESIS = 0.6;
+PlayerSpirit.AIM_TOUCH_HYSTERESIS = 0.3;
 
 PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -189,16 +189,17 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
   if (!stunned && b1 && this.lastWarp + PlayerSpirit.WARP_TIMEOUT <= now) {
     this.warp()
   }
+  // TODO this will fork on weapon type later.
   if (true || !b2) {
     if (tx || ty) {
       this.vec2d.setXY(tx, -ty);
       if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
         // It's touch or mouse, which get very quantized at low speed. Square contribution and smooth it.
         this.vec2d.scale(this.vec2d.magnitude());
-        this.destAimVec.add(this.vec2d).scaleToLength(PlayerSpirit.AIM_HYSTERESIS);
+        this.destAimVec.add(this.vec2d).scaleToLength(PlayerSpirit.AIM_TOUCH_HYSTERESIS);
       } else if (tContrib & Trackball.CONTRIB_KEY) {
         // It's keyboard.
-        this.destAimVec.setXY(tx, -ty).scaleToLength(PlayerSpirit.AIM_HYSTERESIS);
+        this.destAimVec.setXY(tx, -ty);
         // did the player reverse the direction of aim?
         if (this.vec2d.set(this.currAimVec).add(this.destAimVec).magnitudeSquared() < 0.1) {
           // reverse aim direction with zero delay.
@@ -210,8 +211,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     }
   }
   // move currAimVec towards destAimVec
-  var aimChange = this.vec2d.set(this.destAimVec).subtract(this.currAimVec)
-      .clipToMaxLength(PlayerSpirit.AIM_HYSTERESIS / 6);
+  var aimChange = this.vec2d.set(this.destAimVec).subtract(this.currAimVec);
   this.currAimVec.add(aimChange);
 
 };
@@ -289,39 +289,23 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.drawStamp();
 
     // draw aim guide
-    // TODO: Don't use a splash for this, just draw it.
-    var s = this.screen.splash;
-    s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.cylinderStamp);
-
-    s.startTime = this.screen.now();
-    s.duration = 0.2;
-
+    this.screen.renderer
+        .setStamp(this.screen.cylinderStamp)
+        .setColorVector(this.vec4.setXYZ(1, 0.3, 0.6).scale1(Math.random() * 0.2 + 0.5));
+    var rad = 0.2;
     var p1 = Vec2d.alloc();
     var p2 = Vec2d.alloc();
-
     p1.set(this.currAimVec).scaleToLength(body.rad * 2).add(bodyPos);
     p2.set(this.currAimVec).scaleToLength(body.rad * 4).add(bodyPos);
-
-    var thickness = this.firing() ? 0.2 : 0.2;
-
-    s.startPose.pos.setXYZ(p1.x, p1.y, Math.random() - 0.3);
-    s.endPose.pos.setXYZ(p1.x, p1.y, 0);
-    s.startPose.scale.setXYZ(thickness, thickness, 1);
-    s.endPose.scale.setXYZ(0, 0, 1);
-
-    s.startPose2.pos.setXYZ(p2.x, p2.y, Math.random() - 0.1);
-    s.endPose2.pos.setXYZ(p2.x, p2.y, 0);
-    s.startPose2.scale.setXYZ(thickness, thickness, 1);
-    s.endPose2.scale.setXYZ(0, 0, 1);
-
-    s.startPose.rotZ = 0;
-    s.endPose.rotZ = 0;
-
-    s.startColor.setXYZ(1, 0.3, 0.6).scale1(0.7);
-    s.endColor.setXYZ(1, 0.3, 0.6).scale1(0.3);
-
-    this.screen.splasher.addCopy(s);
-
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 0.5));
+    this.screen.renderer.setModelMatrix(this.modelMatrix);
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, -0.5));
+    this.screen.renderer.setModelMatrix2(this.modelMatrix);
+    this.screen.renderer.drawStamp();
     p1.free();
     p2.free();
   }
@@ -334,7 +318,7 @@ PlayerSpirit.prototype.getBody = function(world) {
 PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   var now = this.screen.now();
   var spirit = new BulletSpirit(this.screen);
-  spirit.setModelStamp(this.screen.circleStamp); // TODO
+  spirit.setModelStamp(this.screen.circleStamp);
   spirit.setColorRGB(1, 0.3, 0.6);
   var density = 20;
 

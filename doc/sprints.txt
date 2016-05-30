@@ -273,13 +273,16 @@ v die when health hits 0
 
 cleanup
 v delete grunt
-- Model cleanup
+v Model cleanup
   v pull common models out of screens, into "model.js"
   v Tube and Cylinder
     v Separate tube and cylinder models
     v tube for some explosions
     v cylinder for bullets, aim
-- Draw aim, don't splash it
+v Draw aim, don't splash it
+v Make aim more responsive
+  v no keyboard hysteresis
+  v less touch hysteresis
 - clean up hit groups
   - wall
   - neutral
