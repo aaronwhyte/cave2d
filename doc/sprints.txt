@@ -271,48 +271,82 @@ v die when health hits 0
   v respawn (where you were?)
   v sound
 
-Enemy 1: grunt
-- spirit
-  - model
-  - behavior
-    - wander like Ant
-    - but tend towards player
-    - chase player when in line of sight
-    - continue to last seen player position, like ye olde fracas 2
-  - health
-  - stun?
-- config(s)
-  - three strengths, three ranks, for editor
+cleanup
+- delete grunt
+- Separate ring and tube models, use appropriately
+  - tube for bullets, aim
+- Draw aim, don't splash it
+- clean up hit groups
+  - wall
+  - neutral
+  - player
+  - player fire
+  - enemy
+  - enemy fire
+  - explodey_bits - only hit immovable, just for looks
+- Make a Game2Spirit base class and pull common code, like getBodyPos() and now() and die(). Trail stuff too?
+- rename "bullet" to be "playerBullet"
+- Remove stun logic from player
 
-spawn powerup
-v dead player respawns
-- temp invincibility, blinking or something?
+Add to play screen pause menu
+- restart level
+- restart game
+- link to cave2d.com main page
 
-Entrance, instead of player?
-- spawns a player in test/play mode
-- cool swirly warp-in?
-- if there's more than one, a random one is chosen as the starting point?
+Sound 2.0
+- give each sound effect a static generator object, inject into basescreen. Each effect has a max pool count.
 
-Exit effects
+Player tweaks
+- face!
+- shift to increase accel for keyboard players
+- add concept of weapons?
+  - first weapon is shotgun - instant, short range, a little bounce, 5x fire, periodic, continuous re-aim
+  - second weapon is laser - long range, no bounce, 5x speed, hella fast, aim is locked. takes a sec to warm up?
+- second *button* switches weapons.
 
-Bombs
-- explode when shot
-- can be hidden inside walls, chain reaction opens new paths
-- can be collected!
-  - player inventory
-- player can throw them
+Props
+- starting base
+- middle base
+- exit, naturally
+- bomb
+- springball
+- block_square
+- block_round
 
-Health
-- player health bar
-- health items increase health to max
-- eating health when you're at max health gives you a small perma-boost to health!
+Enemies
+bugs
+- bug_small
+- bug_med
+- bug_large
+- make them lunge again, and only dangerous when they do.
+gunners
+- monogunner (pop pop) maintains dist
+  - bullet, long range, slow
+- shotgunner (blammo) gets close, shoots, runs away, repeat
+  - bullet, short range? Different bullet?
+- chaingunner (ratatatatatatatatatat) aim sweeps towards player
+  - fast long-range bullet and lots of them
+- missiler (fwoosh!)
+  - missile
+turrets
+- laser turret
+- missile turret
+- chaingun turret
+weirdos
+- exploders
+- drillers
+- mines
+- asteroids
 
-Orientation
-- Bodies have orientation, moment of inertia, and angular velocity.
-- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
-- editor
-
-Repeller turrets
+Powerups
+- double fire rate
+- double fire damage
+- invincibility & ramming
+- timewarp
+- missiles
+- one-hit shield
+- Can be hidden in walls
+- If touching an enemy, then the enemy holds it? That would be nice, but maybe no.
 
 - Add and remove player 2?? Or bail on that?
   - Player menu inside "pause" popup
@@ -324,6 +358,11 @@ Repeller turrets
 Make the player look cooler.
 - Draw a little face on the player body
   - eyes follow trackball direction?
+
+Orientation
+- Bodies have orientation, moment of inertia, and angular velocity.
+- Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
+- editor
 
 SplashConfig
 * similar to SpiritConfig, except that there's no menu item for splashes
