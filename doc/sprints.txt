@@ -275,9 +275,10 @@ cleanup
 v delete grunt
 - Model cleanup
   v pull common models out of screens, into "model.js"
-  - Separate ring and tube models, use appropriately
-    - tube for bullets, aim
-    - ring for some explosions
+  v Tube and Cylinder
+    v Separate tube and cylinder models
+    v tube for some explosions
+    v cylinder for bullets, aim
 - Draw aim, don't splash it
 - clean up hit groups
   - wall
@@ -290,6 +291,8 @@ v delete grunt
 - Make a Game2Spirit base class and pull common code, like getBodyPos() and now() and die(). Trail stuff too?
 - rename "bullet" to be "playerBullet"
 - Remove stun logic from player
+
+Review all the code. I bet there's more to clean.
 
 Add to play screen pause menu
 - restart level

@@ -73,7 +73,7 @@ AntSpirit.prototype.setModelStamp = function(modelStamp) {
 };
 
 AntSpirit.createModel = function() {
-  return RigidModel.createCircleMesh(4)
+  return RigidModel.createCircle(6)
       .setColorRGB(0.7, 0, 0)
       .addRigidModel(RigidModel.createSquare()
           .transformPositions(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1))
@@ -260,7 +260,7 @@ AntSpirit.prototype.explode = function() {
 
 AntSpirit.prototype.explosionSplash = function(pos, rad) {
   var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
 
   s.startTime = this.now();
   s.duration = 5 * (1 + rad);

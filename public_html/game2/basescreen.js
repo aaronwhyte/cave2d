@@ -147,10 +147,11 @@ BaseScreen.prototype.addLevelStampFromModel = function(model) {
 };
 
 BaseScreen.prototype.initPermStamps = function() {
-  this.circleStamp = this.addLevelStampFromModel(RigidModel.createCircle(24));
+  this.circleStamp = this.addLevelStampFromModel(RigidModel.createCircle(32));
   this.testStamp = this.addLevelStampFromModel(this.models.getTest());
   this.untestStamp = this.addLevelStampFromModel(this.models.getUntest());
-  this.soundStamp = this.addLevelStampFromModel(RigidModel.createTube(64));
+  this.tubeStamp = this.addLevelStampFromModel(RigidModel.createTube(32));
+  this.cylinderStamp = this.addLevelStampFromModel(RigidModel.createCylinder(32));
 };
 
 BaseScreen.prototype.setPaused = function(paused) {
@@ -269,7 +270,6 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
 //      console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
 //    }
 //  }
-
 };
 
 BaseScreen.prototype.createTrackball = function() {
@@ -621,7 +621,7 @@ BaseScreen.prototype.setTimeWarp = function(multiplier) {
 
 BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
   var s = this.splash;
-  s.reset(BaseScreen.SplashType.SCAN, this.soundStamp);
+  s.reset(BaseScreen.SplashType.SCAN, this.cylinderStamp);
 
   s.startTime = this.world.now;
   s.duration = 20;

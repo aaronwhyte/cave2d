@@ -46,7 +46,7 @@ BulletSpirit.prototype.setModelStamp = function(modelStamp) {
 };
 
 BulletSpirit.createModel = function() {
-  return RigidModel.createCircleMesh(3)
+  return RigidModel.createCircle(24)
       .setColorRGB(1, 1, 1);
 };
 
@@ -150,7 +150,7 @@ BulletSpirit.prototype.drawTrail = function() {
       this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
 
       this.screen.renderer
-          .setStamp(this.screen.soundStamp) // TODO cylinderStamp
+          .setStamp(this.screen.cylinderStamp)
           .setColorVector(this.color);
 
       var startRad = this.rad * (drawStartTime - minTime) / (maxTime - minTime);
@@ -177,7 +177,7 @@ BulletSpirit.prototype.drawTrail = function() {
 
 BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
 
   s.startTime = this.now();
   s.duration = 5 * (1 + rad);

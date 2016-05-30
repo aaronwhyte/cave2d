@@ -36,6 +36,7 @@ function PlayerSpirit(screen) {
   this.health = this.maxHealth;
 
   this.lastWarp = -Infinity;
+  this.lastFireTime =-Infinity;
 }
 PlayerSpirit.prototype = new Spirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -56,7 +57,6 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
 PlayerSpirit.FIRE_TIMEOUT = 2.51;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
-PlayerSpirit.FIRE_BURST_DURATION = PlayerSpirit.FIRE_TIMEOUT / 2;
 
 PlayerSpirit.WARP_TIMEOUT = 40;
 
@@ -100,7 +100,7 @@ PlayerSpirit.prototype.setTrackball = function(trackball) {
 };
 
 PlayerSpirit.createModel = function() {
-  return RigidModel.createCircleMesh(4)
+  return RigidModel.createCircle(24)
       .setColorRGB(1, 0.3, 0.6);
 };
 
@@ -181,9 +181,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
   }
   if (!stunned && b2) {
     // not stunned and the button is down
-    // extend burst time
-    this.fireBurstEndTime = now + PlayerSpirit.FIRE_BURST_DURATION;
-    // either start firing or wait for existing timeout
+    this.lastFireTime = now;
     if (this.fireReady) {
       this.fire();
     }
@@ -191,7 +189,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
   if (!stunned && b1 && this.lastWarp + PlayerSpirit.WARP_TIMEOUT <= now) {
     this.warp()
   }
-  if (!b2) {
+  if (true || !b2) {
     if (tx || ty) {
       this.vec2d.setXY(tx, -ty);
       if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
@@ -223,7 +221,7 @@ PlayerSpirit.prototype.fire = function() {
   if (body) {
     body.getPosAtTime(this.screen.now(), this.tempBodyPos);
     for (var i = 0; i < this.shots; i++) {
-      var angle = 0.33 * Math.PI * (i - (this.shots - 1) / 2) / PlayerSpirit.MAX_SHOTS;
+      var angle = 0.25 * Math.PI * (i - (this.shots - 1) / 2) / PlayerSpirit.MAX_SHOTS;
       this.addBullet(
           this.tempBodyPos,
           this.vec2d
@@ -236,7 +234,7 @@ PlayerSpirit.prototype.fire = function() {
     this.fireReady = false;
     this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT * (1 + (this.shots-1)*0.3),
         this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
-    this.shots = Math.max(1, this.shots - 1);
+//    this.shots = Math.max(1, this.shots - 1);
   }
 };
 
@@ -271,7 +269,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 };
 
 PlayerSpirit.prototype.firing = function() {
-  return this.screen.now() <= this.fireBurstEndTime;
+  return this.screen.now() <= this.lastFireTime;
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
@@ -293,8 +291,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     // draw aim guide
     // TODO: Don't use a splash for this, just draw it.
     var s = this.screen.splash;
-    // TODO rename soundStamp to tubeStamp
-    s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.soundStamp);
+    s.reset(BaseScreen.SplashType.MUZZLE_FLASH, this.screen.cylinderStamp);
 
     s.startTime = this.screen.now();
     s.duration = 0.2;
@@ -379,7 +376,7 @@ PlayerSpirit.prototype.die = function() {
     // giant tube explosion
 
     var s = this.screen.splash;
-    s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
+    s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
 
     s.startTime = now;
     s.duration = 20;
@@ -476,7 +473,7 @@ PlayerSpirit.prototype.respawn = function() {
   var y = pos.y;
 
   var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.soundStamp);
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
 
   s.startTime = now;
   s.duration = 10;

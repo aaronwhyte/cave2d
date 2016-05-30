@@ -84,35 +84,6 @@ PlayScreen.prototype.initPermStamps = function() {
   this.pauseStamp = this.addLevelStampFromModel(this.models.getPauseWithOutline());
 };
 
-PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
-  var fullRad = bodyRad * 2;// * (1+Math.random()/2);
-  var s = this.splash;
-  s.reset(PlayScreen.SplashType.NOTE, this.soundStamp);
-
-  s.startTime = this.world.now;
-  s.duration = 10;
-
-  s.startPose.pos.setXYZ(x, y, 0);
-  s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
-  s.startPose.scale.setXYZ(fullRad, fullRad, 1);
-  s.endPose.scale.setXYZ(fullRad*2, fullRad*2, 1);
-
-  s.startPose2.pos.setXYZ(x, y, 0);
-  s.endPose2.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
-  s.startPose2.scale.setXYZ(fullRad*0.5, fullRad*0.5, 1);
-  s.endPose2.scale.setXYZ(fullRad*1.9, fullRad*1.9, 1);
-
-  s.startPose.rotZ = s.startPose2.rotZ = Math.PI * 2 * Math.random();
-  s.endPose.rotZ = s.endPose2.rotZ = s.startPose.rotZ + 0.3 * Math.PI * (Math.random() - 0.5);
-
-  s.startColor.setXYZ(r, g, b);
-  s.endColor.setXYZ(r, g, b);
-
-  s.duration = 8;
-  s.endPose.rotZ = s.endPose2.rotZ =s.startPose2.rotZ;
-  this.splasher.addCopy(s);
-};
-
 PlayScreen.prototype.exitLevel = function() {
   this.controller.exitLevel();
 };
