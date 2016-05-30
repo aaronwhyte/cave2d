@@ -111,13 +111,6 @@ BaseScreen.MenuItem = {
   EXIT: 'exit'
 };
 
-BaseScreen.Group = {
-  EMPTY: 0,
-  WALL: 1,
-  ROCK: 2,
-  CURSOR: 3
-};
-
 BaseScreen.Terrain = {
   WALL: 0,
   FLOOR: 1,
@@ -127,8 +120,7 @@ BaseScreen.Terrain = {
 BaseScreen.SplashType = {
   NOTE: 1,
   SCAN: 2,
-  MUZZLE_FLASH: 3,
-  WALL_DAMAGE: 4
+  WALL_DAMAGE: 3
 };
 
 BaseScreen.BIT_SIZE = 0.5;
@@ -195,6 +187,19 @@ BaseScreen.prototype.initSpiritConfigs = function() {
       null, -1, -1, BulletSpirit.factory);
 };
 
+BaseScreen.Group = {
+  EMPTY: 0,
+  WALL: 1,
+  NEUTRAL: 2,
+  CURSOR: 3,
+  PLAYER: 4,
+  PLAYER_FIRE: 5,
+  ENEMY: 6,
+  ENEMY_FIRE: 7,
+  ENEMY_SCAN: 8,
+  EXPLODEY_BITS: 9
+};
+
 BaseScreen.prototype.initWorld = function() {
   this.bitGrid = new BitGrid(this.bitSize);
   this.tiles = {};
@@ -202,12 +207,40 @@ BaseScreen.prototype.initWorld = function() {
   this.lastPathRefreshTime = -Infinity;
 
   var groupCount = Object.keys(BaseScreen.Group).length;
+  var g = BaseScreen.Group;
   this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, [
-    [BaseScreen.Group.EMPTY, BaseScreen.Group.EMPTY],
-    [BaseScreen.Group.ROCK, BaseScreen.Group.WALL],
-    [BaseScreen.Group.ROCK, BaseScreen.Group.ROCK],
-    [BaseScreen.Group.CURSOR, BaseScreen.Group.WALL],
-    [BaseScreen.Group.CURSOR, BaseScreen.Group.ROCK]
+    [g.EMPTY, g.EMPTY],
+
+    [g.NEUTRAL, g.WALL],
+    [g.NEUTRAL, g.NEUTRAL],
+
+    [g.CURSOR, g.WALL],
+    [g.CURSOR, g.NEUTRAL],
+
+    [g.PLAYER, g.CURSOR],
+    [g.PLAYER, g.NEUTRAL],
+    [g.PLAYER, g.WALL],
+    [g.PLAYER, g.PLAYER],
+
+    [g.PLAYER_FIRE, g.NEUTRAL],
+    [g.PLAYER_FIRE, g.WALL],
+
+    [g.ENEMY, g.WALL],
+    [g.ENEMY, g.CURSOR],
+    [g.ENEMY, g.PLAYER],
+    [g.ENEMY, g.PLAYER_FIRE],
+    [g.ENEMY, g.ENEMY],
+
+    [g.ENEMY_FIRE, g.WALL],
+    [g.ENEMY_FIRE, g.NEUTRAL],
+    [g.ENEMY_FIRE, g.PLAYER],
+
+    [g.ENEMY_SCAN, g.WALL],
+    [g.ENEMY_SCAN, g.NEUTRAL],
+    [g.ENEMY_SCAN, g.PLAYER],
+    [g.ENEMY_SCAN, g.ENEMY],
+
+    [g.EXPLODEY_BITS, g.WALL]
   ]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.95;

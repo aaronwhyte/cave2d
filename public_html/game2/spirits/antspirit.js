@@ -97,7 +97,7 @@ AntSpirit.factory = function(playScreen, stamp, pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, world.now);
   b.rad = 0.8;
-  b.hitGroup = BaseScreen.Group.ROCK;
+  b.hitGroup = BaseScreen.Group.ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 1.1;
   spirit.bodyId = world.addBody(b);
@@ -114,7 +114,7 @@ AntSpirit.prototype.setColorRGB = function(r, g, b) {
 
 AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
   return this.screen.scan(
-      BaseScreen.Group.ROCK,
+      BaseScreen.Group.ENEMY_SCAN,
       pos,
       this.scanVec.setXY(
           Math.sin(this.dir + rot) * dist,

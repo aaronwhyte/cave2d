@@ -108,20 +108,20 @@ BulletSpirit.prototype.onHitOther = function(mag) {
 
 BulletSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
-  if (body) {
-    var bodyPos = body.getPosAtTime(world.now, this.vec2d);
-    renderer
-        .setStamp(this.modelStamp)
-        .setColorVector(this.color);
-    // Render the smaller ones in front.
-    // TODO: standardize Z
-    this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
-
-    renderer.setModelMatrix(this.modelMatrix);
-    renderer.drawStamp();
-  }
+//  if (body) {
+//    var bodyPos = body.getPosAtTime(world.now, this.vec2d);
+//    renderer
+//        .setStamp(this.modelStamp)
+//        .setColorVector(this.color);
+//    // Render the smaller ones in front.
+//    // TODO: standardize Z
+//    this.modelMatrix.toIdentity()
+//        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+//        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
+//
+//    renderer.setModelMatrix(this.modelMatrix);
+//    renderer.drawStamp();
+//  }
   this.drawTrail();
 };
 
@@ -138,6 +138,9 @@ BulletSpirit.prototype.drawTrail = function() {
   var duration = 2;
   var minTime = maxTime - duration;
   var trailWarm = false;
+  this.screen.renderer
+      .setStamp(this.screen.cylinderStamp)
+      .setColorVector(this.color);
   for (var i = 0; i < this.trail.size(); i++) {
     var segStartTime = this.trail.getSegmentStartTime(i);
     var segEndTime = this.trail.getSegmentEndTime(i);
@@ -148,10 +151,6 @@ BulletSpirit.prototype.drawTrail = function() {
       // something to draw
       this.trail.getSegmentPosAtTime(i, drawStartTime, this.segStartVec);
       this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
-
-      this.screen.renderer
-          .setStamp(this.screen.cylinderStamp)
-          .setColorVector(this.color);
 
       var startRad = this.rad * (drawStartTime - minTime) / (maxTime - minTime);
       this.modelMatrix.toIdentity()

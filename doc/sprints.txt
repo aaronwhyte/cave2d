@@ -283,17 +283,17 @@ v Draw aim, don't splash it
 v Make aim more responsive
   v no keyboard hysteresis
   v less touch hysteresis
-- clean up hit groups
-  - wall
-  - neutral
-  - player
-  - player fire
-  - enemy
-  - enemy fire
-  - explodey_bits - only hit immovable, just for looks
+v clean up hit groups
+  v wall
+  v neutral
+  v player
+  v player fire
+  v enemy
+  v enemy fire
+  v explodey_bits - only hit immovable, just for looks
 - Make a Game2Spirit base class and pull common code, like getBodyPos() and now() and die(). Trail stuff too?
 - rename "bullet" to be "playerBullet"
-- Remove stun logic from player
+- Remove stun logic from player?
 
 Review all the code. I bet there's more to clean.
 
