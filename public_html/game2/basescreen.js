@@ -102,12 +102,10 @@ BaseScreen.SpiritType = {
   PLAYER: 4,
   EXIT: 5,
   BULLET: 6,
-  GRUNT: 7
 };
 
 BaseScreen.MenuItem = {
   RED_ANT: 'red_ant',
-  GRUNT: 'grunt',
   PLAYER: 'player',
   EXIT: 'exit'
 };
@@ -171,9 +169,6 @@ BaseScreen.prototype.initSpiritConfigs = function() {
   // first column
   addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
       BaseScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
-
-  addConfig(BaseScreen.SpiritType.GRUNT, GruntSpirit,
-      BaseScreen.MenuItem.GRUNT, 0, 1, GruntSpirit.factory);
 
   // second column
   addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,

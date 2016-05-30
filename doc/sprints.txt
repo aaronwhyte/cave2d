@@ -272,7 +272,7 @@ v die when health hits 0
   v sound
 
 cleanup
-- delete grunt
+v delete grunt
 - Separate ring and tube models, use appropriately
   - tube for bullets, aim
 - Draw aim, don't splash it
