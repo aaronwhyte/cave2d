@@ -71,26 +71,17 @@ PlayScreen.prototype.setScreenListening = function(listen) {
 
 PlayScreen.prototype.lazyInit = function() {
   if (!this.initialized) {
+    this.initPermStamps();
     this.initSpiritConfigs();
     this.updateHudLayout();
-    this.initPermStamps();
     this.initWorld();
     this.initialized = true;
   }
 };
 
 PlayScreen.prototype.initPermStamps = function() {
-  this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.cubeStamp);
-
-  this.circleStamp = RigidModel.createCircleMesh(5).createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.circleStamp);
-
-  this.initPauseStamp();
-
-  var model = RigidModel.createDoubleRing(64);
-  this.soundStamp = model.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.soundStamp);
+  BaseScreen.prototype.initPermStamps.call(this);
+  this.pauseStamp = this.addLevelStampFromModel(this.models.getPauseWithOutline());
 };
 
 PlayScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {

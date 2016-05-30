@@ -273,8 +273,11 @@ v die when health hits 0
 
 cleanup
 v delete grunt
-- Separate ring and tube models, use appropriately
-  - tube for bullets, aim
+- Model cleanup
+  v pull common models out of screens, into "model.js"
+  - Separate ring and tube models, use appropriately
+    - tube for bullets, aim
+    - ring for some explosions
 - Draw aim, don't splash it
 - clean up hit groups
   - wall

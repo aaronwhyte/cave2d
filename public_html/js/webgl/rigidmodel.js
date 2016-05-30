@@ -324,12 +324,30 @@ RigidModel.createRingMesh = function(depth, innerRadius) {
 };
 
 /**
- * Creates a model for a white unit circle on the XY plane, where there are two vertexes at each position,
- * one in group 0 and one in group 1. Group 0 and Group 1 are opposite ends of this dimensionless tube.
+ * Creates a model for a closed unit circle on the XY plane.
  * @param corners
  * @returns {RigidModel}
  */
-RigidModel.createDoubleRing = function(corners) {
+RigidModel.createCircle = function(corners) {
+  var m = new RigidModel(), v = [];
+  for (var i = 0; i < corners; i++) {
+    var a = 2 * Math.PI * i / corners;
+    v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(0)));
+  }
+  var centerIndex = m.addVertex(new Vertex().setPositionXYZ(0, 0, 0).setColorRGB(1, 1, 1));
+  for (var i = 0; i < corners; i++) {
+    m.addTriangle(v[i], v[(i + 1) % corners], centerIndex);
+  }
+  return m;
+};
+
+/**
+ * Creates a model for an open unit circle on the XY plane, where there are two vertexes at each position,
+ * one in group 0 and one in group 1. Group 0 and Group 1 are opposite ends of this open dimensionless tube.
+ * @param corners
+ * @returns {RigidModel}
+ */
+RigidModel.createTube = function(corners) {
   var m = new RigidModel(), v = [], i;
   for (i = 0; i < corners; i++) {
     var a = 2 * Math.PI * i / corners;
@@ -345,7 +363,40 @@ RigidModel.createDoubleRing = function(corners) {
     // 1 3
     face(i, (i + 2) % v.length, i + 1, (i + 3) % v.length);
   }
+  return m;
+};
 
+/**
+ * Creates a model for a closed unit circle on the XY plane, where there are two vertexes at each position,
+ * one in group 0 and one in group 1. Group 0 and Group 1 are opposite ends of this closed dimensionless tube.
+ * @param corners
+ * @returns {RigidModel}
+ */
+RigidModel.createCylinder = function(corners) {
+  var m = new RigidModel(), v = [], i;
+  for (i = 0; i < corners; i++) {
+    var a = 2 * Math.PI * i / corners;
+    v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(0)));
+    v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(1)));
+  }
+  function face(nw, ne, sw, se) {
+    m.addTriangle(v[nw], v[sw], v[ne]);
+    m.addTriangle(v[se], v[ne], v[sw]);
+  }
+  var edgeVertexCount = v.length;
+  for (i = 0; i < edgeVertexCount; i += 2) {
+    // 0 2
+    // 1 3
+    face(i, (i + 2) % edgeVertexCount, i + 1, (i + 3) % edgeVertexCount);
+  }
+
+  // cap each end
+  for (var group = 0; group < 2; group++) {
+    var centerIndex = m.addVertex(new Vertex().setPositionXYZ(0, 0, 0).setColorRGB(1, 1, 1).setGroup(group));
+    for (var i = 0; i < edgeVertexCount; i += 2) {
+      m.addTriangle(v[(i + group) % edgeVertexCount], v[(i + group + 2) % edgeVertexCount], centerIndex);
+    }
+  }
   return m;
 };
 

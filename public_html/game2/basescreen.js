@@ -52,6 +52,7 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventu
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
 
+  this.models = new Models();
   this.levelStamps = [];
 
   // for sound throttling
@@ -101,7 +102,7 @@ BaseScreen.SpiritType = {
   ANT: 3,
   PLAYER: 4,
   EXIT: 5,
-  BULLET: 6,
+  BULLET: 6
 };
 
 BaseScreen.MenuItem = {
@@ -139,6 +140,19 @@ BaseScreen.EventLayer = {
   WORLD: 2
 };
 
+BaseScreen.prototype.addLevelStampFromModel = function(model) {
+  var stamp = model.createModelStamp(this.renderer.gl);
+  this.levelStamps.push(stamp);
+  return stamp;
+};
+
+BaseScreen.prototype.initPermStamps = function() {
+  this.circleStamp = this.addLevelStampFromModel(RigidModel.createCircle(24));
+  this.testStamp = this.addLevelStampFromModel(this.models.getTest());
+  this.untestStamp = this.addLevelStampFromModel(this.models.getUntest());
+  this.soundStamp = this.addLevelStampFromModel(RigidModel.createTube(64));
+};
+
 BaseScreen.prototype.setPaused = function(paused) {
   this.paused = paused;
   if (this.paused) {
@@ -150,7 +164,6 @@ BaseScreen.prototype.setPaused = function(paused) {
     this.controller.requestAnimation();
   }
 };
-
 
 BaseScreen.prototype.initSpiritConfigs = function() {
   this.spiritConfigs = {};
@@ -273,35 +286,6 @@ BaseScreen.prototype.createTrackball = function() {
   return trackball;
 };
 
-BaseScreen.prototype.initPauseStamp = function() {
-  var pauseModel = new RigidModel();
-  for (var x = -1; x <= 1; x += 2) {
-    var bar = RigidModel.createSquare().transformPositions(
-        new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.5, 1)
-                .multiply(new Matrix44().toTranslateOpXYZ(x * 1.5, 0, 0.9)
-            )));
-    pauseModel.addRigidModel(bar);
-  }
-  pauseModel.addRigidModel(RigidModel.createCircleMesh(5));
-  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.pauseStamp);
-};
-
-BaseScreen.prototype.initPauseStampNoOutline = function() {
-  var pauseModel = new RigidModel();
-  for (var x = -1; x <= 1; x += 2) {
-    var bar = RigidModel.createSquare().transformPositions(
-        new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.5, 1)
-                .multiply(new Matrix44().toTranslateOpXYZ(x * 1.5, 0, 0.9)
-            )));
-    pauseModel.addRigidModel(bar);
-  }
-  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.pauseStamp);
-};
-
 BaseScreen.prototype.createButtonWidgets = function() {
   return [
     new TriggerWidget(this.getHudEventTarget())
@@ -377,8 +361,6 @@ BaseScreen.prototype.hidePauseMenu = function() {
   document.querySelector('#pauseMenu').style.display = 'none';
   this.canvas.style.cursor = "";
 };
-
-
 
 BaseScreen.prototype.clock = function() {
   if (this.paused) return;

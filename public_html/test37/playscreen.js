@@ -185,7 +185,7 @@ PlayScreen.prototype.initPermStamps = function() {
   this.levelStamps.push(this.pauseStamp);
   this.pauseTriggerWidget.setStamp(this.pauseStamp);
 
-  model = RigidModel.createDoubleRing(3);
+  model = RigidModel.createTube(3);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.soundStamp);
 

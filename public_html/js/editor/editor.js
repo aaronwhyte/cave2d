@@ -185,11 +185,11 @@ Editor.prototype.updateHudLayout = function() {
 Editor.prototype.getStamps = function() {
   var model;
   if (!this.cursorStamp) {
-    model = RigidModel.createDoubleRing(32).transformPositions(new Matrix44().toScaleOpXYZ(0.9, 0.9, 1));
+    model = RigidModel.createTube(32).transformPositions(new Matrix44().toScaleOpXYZ(0.9, 0.9, 1));
     this.cursorStamp = model.createModelStamp(this.renderer.gl);
   }
   if (!this.indicatorStamp) {
-    model = RigidModel.createDoubleRing(64);
+    model = RigidModel.createTube(64);
     this.indicatorStamp = model.createModelStamp(this.renderer.gl);
   }
   if (!this.circleStamp) {

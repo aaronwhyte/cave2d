@@ -21,25 +21,6 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
       self.players[i].setKeyboardTipTimeoutMs(ms);
     }
   };
-
-  this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .listenToTouch()
-      .listenToMousePointer()
-      .addTriggerKeyByName('t')
-      .startListening();
-
-  this.testDownFn = function(e) {
-    e = e || window.event;
-    var query = {};
-    query[EditorApp.PARAM_ADVENTURE_NAME] = self.adventureName;
-    query[EditorApp.PARAM_LEVEL_NAME] = self.levelName;
-    query[EditorApp.PARAM_MODE] = EditorApp.MODE_EDIT;
-    Url.setFragment(Url.encodeQuery(query));
-    e.preventDefault();
-  };
 }
 TestScreen.prototype = new BaseScreen();
 TestScreen.prototype.constructor = TestScreen;
@@ -56,7 +37,7 @@ TestScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
-    this.testTriggerWidget.addTriggerDownListener(this.testDownFn);
+    this.testTriggerWidget.startListening();
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
@@ -73,7 +54,7 @@ TestScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
-    this.testTriggerWidget.removeTriggerDownListener(this.testDownFn);
+    this.testTriggerWidget.stopListening();
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
@@ -91,66 +72,44 @@ TestScreen.prototype.setScreenListening = function(listen) {
 
 TestScreen.prototype.lazyInit = function() {
   if (!this.initialized) {
+    this.initPermStamps();
+    this.initWidgets();
     this.initSpiritConfigs();
     this.updateHudLayout();
-    this.initPermStamps();
     this.initWorld();
     this.initialized = true;
   }
 };
 
 TestScreen.prototype.initPermStamps = function() {
-  this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.cubeStamp);
-
-  this.circleStamp = RigidModel.createCircleMesh(5).createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.circleStamp);
-
-  this.initPauseStamp();
-
-  var testModel = RigidModel.createTriangle()
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
-      .transformPositions(new Matrix44().toRotateZOp(Math.PI/2));
-  this.testStamp = testModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.testStamp);
-  this.testTriggerWidget
-      .setStamp(this.testStamp)
-      .setKeyboardTipStamp(this.glyphs.stamps['T'])
-      .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7);
-
-  var model = RigidModel.createDoubleRing(64);
-  this.soundStamp = model.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.soundStamp);
+  BaseScreen.prototype.initPermStamps.call(this);
+  this.pauseStamp = this.addLevelStampFromModel(this.models.getPauseWithOutline());
 };
 
-TestScreen.prototype.addNoteSplash = function(x, y, dx, dy, r, g, b, bodyRad) {
-  var fullRad = bodyRad * 2;// * (1+Math.random()/2);
-  var s = this.splash;
-  s.reset(TestScreen.SplashType.NOTE, this.soundStamp);
+TestScreen.prototype.initWidgets = function() {
+  var self = this;
+  this.testDownFn = function(e) {
+    e = e || window.event;
+    var query = {};
+    query[EditorApp.PARAM_ADVENTURE_NAME] = self.adventureName;
+    query[EditorApp.PARAM_LEVEL_NAME] = self.levelName;
+    query[EditorApp.PARAM_MODE] = EditorApp.MODE_EDIT;
+    Url.setFragment(Url.encodeQuery(query));
+    e.preventDefault();
+  };
 
-  s.startTime = this.world.now;
-  s.duration = 10;
-
-  s.startPose.pos.setXYZ(x, y, 0);
-  s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
-  s.startPose.scale.setXYZ(fullRad, fullRad, 1);
-  s.endPose.scale.setXYZ(fullRad*2, fullRad*2, 1);
-
-  s.startPose2.pos.setXYZ(x, y, 0);
-  s.endPose2.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
-  s.startPose2.scale.setXYZ(fullRad*0.5, fullRad*0.5, 1);
-  s.endPose2.scale.setXYZ(fullRad*1.9, fullRad*1.9, 1);
-
-  s.startPose.rotZ = s.startPose2.rotZ = Math.PI * 2 * Math.random();
-  s.endPose.rotZ = s.endPose2.rotZ = s.startPose.rotZ + 0.3 * Math.PI * (Math.random() - 0.5);
-
-  s.startColor.setXYZ(r, g, b);
-  s.endColor.setXYZ(r, g, b);
-
-  s.duration = 8;
-  s.endPose.rotZ = s.endPose2.rotZ =s.startPose2.rotZ;
-  this.splasher.addCopy(s);
+  this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
+      .addTriggerDownListener(this.testDownFn)
+      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .listenToTouch()
+      .listenToMousePointer()
+      .addTriggerKeyByName('t')
+      .setStamp(this.untestStamp)
+      .setKeyboardTipStamp(this.glyphs.stamps['T'])
+      .setKeyboardTipScaleXY(4, -4)
+      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7)
 };
 
 TestScreen.prototype.exitLevel = function() {
@@ -234,11 +193,6 @@ TestScreen.prototype.drawHud = function() {
     this.players[i].drawHud(this.renderer);
   }
   this.renderer.setBlendingEnabled(false);
-};
-
-TestScreen.prototype.getPauseTriggerColorVector = function() {
-  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
-  return this.colorVector;
 };
 
 /////////////////

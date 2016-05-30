@@ -154,11 +154,11 @@ PlayScreen.prototype.initPermStamps = function() {
   this.circleStamp = circleModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.circleStamp);
 
-  var model = RigidModel.createDoubleRing(32);
+  var model = RigidModel.createTube(32);
   this.cursorStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cursorStamp);
 
-  model = RigidModel.createDoubleRing(64);
+  model = RigidModel.createTube(64);
   this.indicatorStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.indicatorStamp);
 };
