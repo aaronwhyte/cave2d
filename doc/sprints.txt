@@ -291,19 +291,13 @@ v clean up hit groups
   v enemy
   v enemy fire
   v explodey_bits - only hit immovable, just for looks
-- Make a Game2Spirit base class and pull common code, like getBodyPos() and now() and die(). Trail stuff too?
-- rename "bullet" to be "playerBullet"
-- Remove stun logic from player?
-
-Review all the code. I bet there's more to clean.
+x rename "bullet" to be "playerBullet"
+v Make a Game2Spirit base class and pull common code, like getBodyPos() and now().
 
 Add to play screen pause menu
 - restart level
 - restart game
 - link to cave2d.com main page
-
-Sound 2.0
-- give each sound effect a static generator object, inject into basescreen. Each effect has a max pool count.
 
 Player tweaks
 - face!
@@ -312,6 +306,11 @@ Player tweaks
   - first weapon is shotgun - instant, short range, a little bounce, 5x fire, periodic, continuous re-aim
   - second weapon is laser - long range, no bounce, 5x speed, hella fast, aim is locked. takes a sec to warm up?
 - second *button* switches weapons.
+- Remove stun logic from player?
+
+Sound 2.0
+Give each sound effect a static generator object, injected into basescreen.
+-
 
 Props
 - starting base
@@ -324,10 +323,11 @@ Props
 
 Enemies
 bugs
+- rename "ant" to "bug"
 - bug_small
 - bug_med
 - bug_large
-- make them lunge again, and only dangerous when they do.
+- make them lunge again, and *only* dangerous when they do, so sidestepping is effective defends.
 gunners
 - monogunner (pop pop) maintains dist
   - bullet, long range, slow
@@ -350,26 +350,23 @@ weirdos
 Powerups
 - double fire rate
 - double fire damage
+- driller
 - invincibility & ramming
 - timewarp
 - missiles
 - one-hit shield
-- Can be hidden in walls
+- Pows can be hidden in walls
 - If touching an enemy, then the enemy holds it? That would be nice, but maybe no.
 
-- Add and remove player 2?? Or bail on that?
+- Add and remove player 2?? Or bail on that? I DO want two players...
   - Player menu inside "pause" popup
     - row for existing players (room for all kinds of settings later)
       - rename
       - drop (except for the last player remaining)
     - add new
 
-Make the player look cooler.
-- Draw a little face on the player body
-  - eyes follow trackball direction?
-
 Orientation
-- Bodies have orientation, moment of inertia, and angular velocity.
+- Bodies have orientation
 - Cursor force can rotate bodies? Or cursor motion changes body orientation anyhow.
 - editor
 

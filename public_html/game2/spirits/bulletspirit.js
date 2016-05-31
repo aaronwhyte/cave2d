@@ -1,20 +1,14 @@
 /**
  * @constructor
- * @extends {Spirit}
+ * @extends {BaseSpirit}
  */
 function BulletSpirit(screen) {
-  Spirit.call(this);
-  this.screen = screen;
-
+  BaseSpirit.call(this, screen);
   this.type = BaseScreen.SpiritType.BULLET;
-  this.id = -1;
-  this.bodyId = -1;
-  this.modelStamp = null;
+
   this.color = new Vec4();
 
   // temps
-  this.vec2d = new Vec2d();
-  this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 
@@ -24,7 +18,7 @@ function BulletSpirit(screen) {
 
   this.health = 1;
 }
-BulletSpirit.prototype = new Spirit();
+BulletSpirit.prototype = new BaseSpirit();
 BulletSpirit.prototype.constructor = BulletSpirit;
 
 BulletSpirit.SCHEMA = {
@@ -58,14 +52,14 @@ BulletSpirit.prototype.onHitWall = function(mag) {
   var body = this.getBody();
   if (!body) return;
   mag = mag * body.mass;
-  body.getPosAtTime(this.screen.now(), this.vec2d);
-  this.screen.soundWallThump(this.vec2d, mag);
+  var pos = this.getBodyPos();
+  this.screen.soundWallThump(pos, mag);
   if (0.05 * mag * this.health > 0.1 + Math.random()) {
     // dig
     var pillRad = body.rad * 2.5;
-    this.screen.drawTerrainPill(this.vec2d, this.vec2d, pillRad, 1);
-    this.wallDamageSplash(this.vec2d, pillRad * 1.3);
-    this.screen.soundBing(this.vec2d);
+    this.screen.drawTerrainPill(pos, pos, pillRad, 1);
+    this.wallDamageSplash(pos, pillRad * 1.3);
+    this.screen.soundBing(pos);
     this.destroyBody();
   } else {
     // bounce or vanish?
@@ -73,7 +67,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
     if (this.health <= 0) {
       // vanish
       this.destroyBody();
-      this.wallDamageSplash(this.vec2d, body.rad);
+      this.wallDamageSplash(pos, body.rad);
     } else {
       // bounce
       this.addTrailSegment();
@@ -84,16 +78,15 @@ BulletSpirit.prototype.onHitWall = function(mag) {
 BulletSpirit.prototype.onHitEnemy = function(mag) {
   var body = this.getBody();
   if (!body) return;
-  body.getPosAtTime(this.screen.now(), this.vec2d);
-  this.screen.soundWallThump(this.vec2d, mag);
-  this.wallDamageSplash(this.vec2d, Math.random());
+  var pos = this.getBodyPos();
+  this.screen.soundWallThump(pos, mag);
+  this.wallDamageSplash(pos, Math.random());
   this.destroyBody();
 };
 
 BulletSpirit.prototype.onHitOther = function(mag) {
   var body = this.getBody();
   if (!body) return;
-  body.getPosAtTime(this.screen.now(), this.vec2d);
   // bounce or vanish?
   this.health -= mag / 5;
   if (this.health <= 0) {
@@ -102,26 +95,11 @@ BulletSpirit.prototype.onHitOther = function(mag) {
   } else {
     // bounce
     this.addTrailSegment();
-    this.wallDamageSplash(this.vec2d, body.rad);
+    this.wallDamageSplash(this.getBodyPos(), body.rad);
   }
 };
 
 BulletSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody();
-//  if (body) {
-//    var bodyPos = body.getPosAtTime(world.now, this.vec2d);
-//    renderer
-//        .setStamp(this.modelStamp)
-//        .setColorVector(this.color);
-//    // Render the smaller ones in front.
-//    // TODO: standardize Z
-//    this.modelMatrix.toIdentity()
-//        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
-//        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
-//
-//    renderer.setModelMatrix(this.modelMatrix);
-//    renderer.drawStamp();
-//  }
   this.drawTrail();
 };
 
@@ -129,8 +107,7 @@ BulletSpirit.prototype.addTrailSegment = function() {
   var now = this.screen.now();
   var body = this.getBody();
   this.rad = body.rad;
-  var bodyPos = body.getPosAtTime(this.screen.now(), this.vec2d);
-  this.trail.append(now, bodyPos, body.vel);
+  this.trail.append(now, this.getBodyPos(), body.vel);
 };
 
 BulletSpirit.prototype.drawTrail = function() {
@@ -213,8 +190,6 @@ BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   this.screen.splasher.addCopy(s);
 };
 
-
-
 BulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
   this.destroyBody();
 };
@@ -225,14 +200,6 @@ BulletSpirit.prototype.destroyBody = function() {
     this.screen.world.removeBodyId(this.bodyId);
     this.bodyId = null;
   }
-};
-
-BulletSpirit.prototype.getBody = function() {
-  return this.screen.getBodyById(this.bodyId);
-};
-
-BulletSpirit.prototype.now = function() {
-  return this.screen.now();
 };
 
 BulletSpirit.prototype.toJSON = function() {

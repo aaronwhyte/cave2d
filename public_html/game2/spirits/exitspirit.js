@@ -1,15 +1,11 @@
 /**
  * @constructor
- * @extends {Spirit}
+ * @extends {BaseSpirit}
  */
-function ExitSpirit(playScreen) {
-  Spirit.call(this);
-  this.playScreen = playScreen;
+function ExitSpirit(screen) {
+  BaseSpirit.call(this, screen);
 
   this.type = BaseScreen.SpiritType.EXIT;
-  this.id = -1;
-  this.bodyId = -1;
-  this.modelStamp = null;
 
   // temps
   this.vec2d = new Vec2d();
@@ -17,7 +13,7 @@ function ExitSpirit(playScreen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 }
-ExitSpirit.prototype = new Spirit();
+ExitSpirit.prototype = new BaseSpirit();
 ExitSpirit.prototype.constructor = ExitSpirit;
 
 ExitSpirit.TIMEOUT = 2;
@@ -55,8 +51,9 @@ ExitSpirit.factory = function(screen, stamp, pos) {
 };
 
 ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  var body = this.getBody(world);
+  var body = this.getBody();
   body.pathDurationMax = Infinity;
+  // If the body is being moved (because it's in the editor), slow it to a stop.
   if (!body.vel.isZero()) {
     var friction = 0.5;
     var newVel = this.vec2d.set(body.vel).scale(1 - friction);
@@ -80,8 +77,8 @@ ExitSpirit.prototype.setModelStamp = function(modelStamp) {
 };
 
 ExitSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody(world);
-  var bodyPos = body.getPosAtTime(world.now, this.vec2d);
+  var body = this.getBody();
+  var bodyPos = this.getBodyPos();
   renderer
       .setStamp(this.modelStamp)
       .setColorVector(Renderer.COLOR_WHITE);
@@ -93,11 +90,6 @@ ExitSpirit.prototype.onDraw = function(world, renderer) {
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
 };
-
-ExitSpirit.prototype.getBody = function(world) {
-  return world.bodies[this.bodyId];
-};
-
 
 ExitSpirit.prototype.toJSON = function() {
   return ExitSpirit.getJsoner().toJSON(this);

@@ -1,13 +1,9 @@
 /**
  * @constructor
- * @extends {Spirit}
+ * @extends {BaseSpirit}
  */
 function PlayerSpirit(screen) {
-  Spirit.call(this);
-  this.screen = screen;
-  this.bodyId = -1;
-  this.id = -1;
-  this.modelStamp = null;
+  BaseSpirit.call(this, screen);
 
   this.type = BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
@@ -19,7 +15,6 @@ function PlayerSpirit(screen) {
   this.currAimVec = new Vec2d(0, 1);
   this.destAimVec = new Vec2d(0, 1);
 
-  this.tempBodyPos = new Vec2d();
   this.vec2d = new Vec2d();
   this.accel = new Vec2d();
   this.newVel = new Vec2d();
@@ -27,10 +22,9 @@ function PlayerSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
-  this.lastFrictionTime = this.screen.now();
-  this.lastInputTime = this.screen.now();
+  this.lastFrictionTime = this.now();
+  this.lastInputTime = this.now();
   this.bang = new BangVal(PlayerSpirit.BANG_DECAY, PlayerSpirit.MAX_BANG);
-  this.shots = PlayerSpirit.MAX_SHOTS;
 
   this.maxHealth = PlayerSpirit.STARTING_HEALTH;
   this.health = this.maxHealth;
@@ -38,7 +32,7 @@ function PlayerSpirit(screen) {
   this.lastWarp = -Infinity;
   this.lastFireTime =-Infinity;
 }
-PlayerSpirit.prototype = new Spirit();
+PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.STARTING_HEALTH = 1;
@@ -123,7 +117,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   var density = 1;
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, this.screen.now());
+  b.setPosAtTime(pos, this.now());
   b.rad = 0.9;
   b.hitGroup = BaseScreen.Group.PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
@@ -151,7 +145,7 @@ PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
 };
 
 PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
-  var now = this.screen.now();
+  var now = this.now();
   var time = now - this.lastInputTime;
   this.lastInputTime = now;
 
@@ -159,7 +153,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
   var stun = this.bang.getValAtTime(now);
   var stunned = stun >= 1;
   if (tt && !stunned) {
-    var body = this.screen.getBodyById(this.bodyId);
+    var body = this.getBody();
     if (body) {
       this.newVel.set(body.vel);
       this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
@@ -217,34 +211,31 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
 };
 
 PlayerSpirit.prototype.fire = function() {
-  var body = this.screen.getBodyById(this.bodyId);
-  if (body) {
-    body.getPosAtTime(this.screen.now(), this.tempBodyPos);
+  var pos = this.getBodyPos();
+  if (pos) {
     for (var i = 0; i < this.shots; i++) {
       var angle = 0.25 * Math.PI * (i - (this.shots - 1) / 2) / PlayerSpirit.MAX_SHOTS;
       this.addBullet(
-          this.tempBodyPos,
-          this.vec2d
-              .set(this.currAimVec)
+          pos,
+          this.vec2d.set(this.currAimVec)
               .scaleToLength(5 - 2.5 * (this.shots-1) / PlayerSpirit.MAX_SHOTS)
               .rot(angle + 0.05 * (Math.random()-0.5)),
           0.3,
           7);
     }
     this.fireReady = false;
-    this.screen.world.addTimeout(this.screen.now() + PlayerSpirit.FIRE_TIMEOUT * (1 + (this.shots-1)*0.3),
+    this.screen.world.addTimeout(this.now() + PlayerSpirit.FIRE_TIMEOUT * (1 + (this.shots-1)*0.3),
         this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
-//    this.shots = Math.max(1, this.shots - 1);
   }
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  var now = this.screen.now();
+  var now = this.now();
   if (timeoutVal == PlayerSpirit.FRICTION_TIMEOUT_ID || timeoutVal == -1) {
     var time = now - this.lastFrictionTime;
     this.lastFrictionTime = now;
 
-    var body = this.screen.getBodyById(this.bodyId);
+    var body = this.getBody();
     if (body) {
       this.newVel.set(body.vel);
       this.accel.set(this.newVel).scale(-PlayerSpirit.FRICTION);
@@ -269,15 +260,15 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 };
 
 PlayerSpirit.prototype.firing = function() {
-  return this.screen.now() <= this.lastFireTime;
+  return this.now() <= this.lastFireTime;
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
   // TODO: replace world access with screen API?
-  var body = this.getBody(world);
+  var body = this.getBody();
   if (body) {
-    var bodyPos = body.getPosAtTime(world.now, this.tempBodyPos);
-    var alertness = 1 - 0.7 * (this.bang.getValAtTime(this.screen.now()) / PlayerSpirit.MAX_BANG);
+    var bodyPos = this.getBodyPos();
+    var alertness = 1 - 0.7 * (this.bang.getValAtTime(this.now()) / PlayerSpirit.MAX_BANG);
     renderer
         .setStamp(this.modelStamp)
         .setColorVector(this.vec4.set(this.color).scale1(alertness));
@@ -311,12 +302,8 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   }
 };
 
-PlayerSpirit.prototype.getBody = function(world) {
-  return world.bodies[this.bodyId];
-};
-
 PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
-  var now = this.screen.now();
+  var now = this.now();
   var spirit = new BulletSpirit(this.screen);
   spirit.setModelStamp(this.screen.circleStamp);
   spirit.setColorRGB(1, 0.3, 0.6);
@@ -350,15 +337,14 @@ PlayerSpirit.prototype.addHealth = function(h) {
 };
 
 PlayerSpirit.prototype.die = function() {
-  var body = this.getBody(this.screen.world);
+  var body = this.getBody();
   if (body) {
-    var now = this.screen.now();
-    var pos = body.getPosAtTime(now, this.tempBodyPos);
+    var now = this.now();
+    var pos = this.getBodyPos();
     var x = pos.x;
     var y = pos.y;
 
     // giant tube explosion
-
     var s = this.screen.splash;
     s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
 
@@ -445,7 +431,7 @@ PlayerSpirit.prototype.die = function() {
 
 PlayerSpirit.prototype.respawn = function() {
   var body = this.createBody(this.tempBodyPos, this.dir);
-  var now = this.screen.now();
+  var now = this.now();
   this.health = this.maxHealth;
   this.bodyId = this.screen.world.addBody(body);
   var pos = this.tempBodyPos;
@@ -483,11 +469,10 @@ PlayerSpirit.prototype.respawn = function() {
 };
 
 PlayerSpirit.prototype.warp = function() {
-  var body = this.screen.getBodyById(this.bodyId);
-  if (body) {
-    body.getPosAtTime(this.screen.now(), this.tempBodyPos);
+  var pos = this.getBodyPos();
+  if (pos) {
     this.screen.setTimeWarp(0.05);
-    this.lastWarp = this.screen.now();
-    this.screen.soundPlayerWarp(this.tempBodyPos);
+    this.lastWarp = this.now();
+    this.screen.soundPlayerWarp(pos);
   }
 };
