@@ -95,7 +95,19 @@ PlayerSpirit.prototype.setTrackball = function(trackball) {
 
 PlayerSpirit.createModel = function() {
   return RigidModel.createCircle(24)
-      .setColorRGB(1, 0.3, 0.6);
+      .setColorRGB(1, 0.3, 0.6)
+      .addRigidModel(RigidModel.createCircle(12)
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
+          .transformPositions(new Matrix44().toTranslateOpXYZ(-0.32, 0.23, -0.25))
+          .setColorRGB(0, 0, 0))
+      .addRigidModel(RigidModel.createCircle(12)
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0.32, 0.23, -0.25))
+          .setColorRGB(0, 0, 0))
+      .addRigidModel(RigidModel.createSquare()
+          .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.07, 1))
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.37, -0.25))
+          .setColorRGB(0, 0, 0));
 };
 
 PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
@@ -272,10 +284,12 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer
         .setStamp(this.modelStamp)
         .setColorVector(this.vec4.set(this.color).scale1(alertness));
+    this.vec2d.set(this.currAimVec).scaleToLength(-1.2 * Math.max(0.5, Math.min(1, body.vel.magnitude())));
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-        .multiply(this.mat44.toRotateZOp(-this.dir));
+        .multiply(this.mat44.toSheerZOpXY(this.vec2d.x, this.vec2d.y))
+        .multiply(this.mat44.toRotateZOp(-body.vel.x * 0.2));
     renderer.setModelMatrix(this.modelMatrix);
     renderer.drawStamp();
 
