@@ -79,6 +79,13 @@ Matrix44.prototype.toScaleOpXYZ = function(x, y, z) {
   return this;
 };
 
+Matrix44.prototype.toSheerZOpXY = function(x, y) {
+  this.toIdentity();
+  this.m[2] = x;
+  this.m[6] = y;
+  return this;
+};
+
 /**
  * Right-handed rotation clockwise as you look from the origin to positive-X.
  * @param {number} angle

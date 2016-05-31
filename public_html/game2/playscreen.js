@@ -19,6 +19,12 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
       self.players[i].setKeyboardTipTimeoutMs(ms);
     }
   };
+
+  this.restartFn = function() {
+    self.controller.restartLevel();
+  };
+
+
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -28,20 +34,24 @@ PlayScreen.prototype.updateHudLayout = function() {
 
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
-  var fsb, rb, i;
+  var fullScreenButton, restartButton, resumeButton, i;
   BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
 
-    fsb = document.querySelector('#fullScreenButton');
-    fsb.addEventListener('click', this.fullScreenFn);
-    fsb.addEventListener('touchend', this.fullScreenFn);
+    fullScreenButton = document.querySelector('#fullScreenButton');
+    fullScreenButton.addEventListener('click', this.fullScreenFn);
+    fullScreenButton.addEventListener('touchend', this.fullScreenFn);
 
-    rb = document.querySelector('#resumeButton');
-    rb.addEventListener('click', this.pauseDownFn);
-    rb.addEventListener('touchend', this.pauseDownFn);
+    restartButton = document.querySelector('#restartButton');
+    restartButton.addEventListener('click', this.restartFn);
+    restartButton.addEventListener('touchend', this.restartFn);
+
+    resumeButton = document.querySelector('#resumeButton');
+    resumeButton.addEventListener('click', this.pauseDownFn);
+    resumeButton.addEventListener('touchend', this.pauseDownFn);
 
     this.canvas.addEventListener('mousemove', this.keyTipRevealer);
     window.addEventListener('keydown', this.keyTipRevealer);
@@ -54,13 +64,17 @@ PlayScreen.prototype.setScreenListening = function(listen) {
       this.listeners.vals[i].stopListening();
     }
 
-    fsb = document.querySelector('#fullScreenButton');
-    fsb.removeEventListener('click', this.fullScreenFn);
-    fsb.removeEventListener('touchend', this.fullScreenFn);
+    fullScreenButton = document.querySelector('#fullScreenButton');
+    fullScreenButton.removeEventListener('click', this.fullScreenFn);
+    fullScreenButton.removeEventListener('touchend', this.fullScreenFn);
 
-    rb = document.querySelector('#resumeButton');
-    rb.removeEventListener('click', this.pauseDownFn);
-    rb.removeEventListener('touchend', this.pauseDownFn);
+    restartButton = document.querySelector('#restartButton');
+    restartButton.removeEventListener('click', this.pauseDownFn);
+    restartButton.removeEventListener('touchend', this.pauseDownFn);
+
+    resumeButton = document.querySelector('#resumeButton');
+    resumeButton.removeEventListener('click', this.pauseDownFn);
+    resumeButton.removeEventListener('touchend', this.pauseDownFn);
 
     this.canvas.removeEventListener('mousemove', this.keyTipRevealer);
     window.removeEventListener('keydown', this.keyTipRevealer);

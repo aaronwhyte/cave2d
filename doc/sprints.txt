@@ -295,12 +295,13 @@ x rename "bullet" to be "playerBullet"
 v Make a Game2Spirit base class and pull common code, like getBodyPos() and now().
 
 Add to play screen pause menu
-- restart level
-- restart game
-- link to cave2d.com main page
+v restart level
+x restart game
+x link to cave2d.com main page
 
 Player tweaks
 - face!
+  - move to face aim
 - shift to increase accel for keyboard players
 - add concept of weapons?
   - first weapon is shotgun - instant, short range, a little bounce, 5x fire, periodic, continuous re-aim

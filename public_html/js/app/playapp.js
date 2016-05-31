@@ -81,6 +81,13 @@ PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName) {
   }
 };
 
+PlayApp.prototype.restartLevel = function() {
+  this.page.exitDoc();
+  this.page = new LevelPlayPage(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+  this.page.enterDoc();
+  this.maybeForwardShaderTexts();
+};
+
 PlayApp.prototype.getVertexShaderText = function() {
   return this.shaderTextLoader.getTextByPath(this.vertexShaderPath);
 };
