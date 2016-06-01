@@ -302,7 +302,7 @@ x link to cave2d.com main page
 Player tweaks
 v face!
   v move to face aim
-- shift to increase accel for keyboard players
+v shift to increase accel for keyboard players
 - add concept of weapons?
   - first weapon is shotgun - instant, short range, a little bounce, 5x fire, periodic, continuous re-aim
   - second weapon is laser - long range, no bounce, 5x speed, hella fast, aim is locked. takes a sec to warm up?

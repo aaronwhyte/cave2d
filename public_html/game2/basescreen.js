@@ -348,6 +348,10 @@ BaseScreen.prototype.createButtonWidgets = function() {
         .startListening()];
 };
 
+BaseScreen.prototype.createShiftTrigger = function() {
+  return new KeyTrigger().addTriggerKeyByName(Key.Name.SHIFT).startListening();
+};
+
 BaseScreen.prototype.getResizeFn = function() {
   var self = this;
   return function() {
@@ -520,6 +524,28 @@ BaseScreen.prototype.onHitEvent = function(e) {
 };
 
 BaseScreen.prototype.exitLevel = function() {};
+
+BaseScreen.prototype.handleInput = function() {
+  for (var i = 0; i < this.players.length; i++) {
+    this.players[i].handleInput();
+  }
+};
+
+BaseScreen.prototype.addPlayer = function() {
+  var p = new Player();
+  var trackball = this.createTrackball();
+  var buttons = this.createButtonWidgets();
+  var shiftTrigger = this.createShiftTrigger();
+  p.setControls(trackball, buttons[0], buttons[1], buttons[2], shiftTrigger);
+  for (var id in this.world.spirits) {
+    var spirit = this.world.spirits[id];
+    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
+      p.addSpirit(spirit);
+    }
+  }
+  this.players.push(p);
+};
+
 
 BaseScreen.prototype.getPixelsPerMeter = function() {
   return 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();

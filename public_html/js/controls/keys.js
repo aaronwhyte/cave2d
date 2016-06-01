@@ -59,6 +59,7 @@ Keys.prototype.initKeys = function() {
   addKey(Key.Name.BACKSLASH, 220);
 
   addKey(Key.Name.ESC, 27);
+  addKey(Key.Name.SHIFT, 16);
 
   this.initialized = true;
 };

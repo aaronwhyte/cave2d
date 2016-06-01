@@ -20,11 +20,11 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     }
   };
 
-  this.restartFn = function() {
+  this.restartFn = function(e) {
+    e = e || window.event;
     self.controller.restartLevel();
+    e.preventDefault();
   };
-
-
 }
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
@@ -100,26 +100,6 @@ PlayScreen.prototype.initPermStamps = function() {
 
 PlayScreen.prototype.exitLevel = function() {
   this.controller.exitLevel();
-};
-
-PlayScreen.prototype.handleInput = function() {
-  for (var i = 0; i < this.players.length; i++) {
-    this.players[i].handleInput();
-  }
-};
-
-PlayScreen.prototype.addPlayer = function() {
-  var p = new Player();
-  var trackball = this.createTrackball();
-  var buttons = this.createButtonWidgets();
-  p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
-      p.addSpirit(spirit);
-    }
-  }
-  this.players.push(p);
 };
 
 PlayScreen.prototype.snapCameraToPlayers = function() {

@@ -12,11 +12,12 @@ function Player() {
   this.canvasHeight = -1;
 }
 
-Player.prototype.setControls = function(trackball, b1, b2, pauseBtn) {
+Player.prototype.setControls = function(trackball, b1, b2, pauseBtn, shiftTrigger) {
   this.trackball = trackball;
   this.b1 = b1;
   this.b2 = b2;
-  this.pauseBtn = pauseBtn
+  this.pauseBtn = pauseBtn;
+  this.shiftTrigger = shiftTrigger;
 };
 
 Player.prototype.handleInput = function() {
@@ -31,8 +32,9 @@ Player.prototype.handleInput = function() {
   var b1 = this.b1 ? this.b1.getVal() : false;
   var b2 = this.b2 ? this.b2.getVal() : false;
   var tContrib = this.trackball.getContrib();
+  var shift = this.shiftTrigger ? this.shiftTrigger.getVal() : false;
   for (var id in this.spirits) {
-    this.spirits[id].handleInput(tx, ty, tTouched, tContrib, b1, b2);
+    this.spirits[id].handleInput(tx, ty, tTouched, tContrib, b1, b2, shift);
   }
 };
 

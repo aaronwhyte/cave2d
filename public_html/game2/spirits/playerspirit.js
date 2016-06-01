@@ -156,7 +156,7 @@ PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
       rad);
 };
 
-PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
+PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2, shift) {
   var now = this.now();
   var time = now - this.lastInputTime;
   this.lastInputTime = now;
@@ -175,6 +175,10 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
           .clipToMaxLength(PlayerSpirit.TRACKBALL_MAX_ACCEL);
       // stun decreases control responsiveness
       this.accel.scale(1 - stun);
+      if (shift && (tContrib & Trackball.CONTRIB_KEY)) {
+        // triple speed!
+        this.accel.scale(3);
+      }
 
       this.newVel.add(this.accel.scale(time / this.screen.timeMultiplier));
       body.setVelAtTime(this.newVel, now);

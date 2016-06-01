@@ -116,26 +116,6 @@ TestScreen.prototype.exitLevel = function() {
   // ignore in test screen
 };
 
-TestScreen.prototype.handleInput = function() {
-  for (var i = 0; i < this.players.length; i++) {
-    this.players[i].handleInput();
-  }
-};
-
-TestScreen.prototype.addPlayer = function() {
-  var p = new Player();
-  var trackball = this.createTrackball();
-  var buttons = this.createButtonWidgets();
-  p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
-      p.addSpirit(spirit);
-    }
-  }
-  this.players.push(p);
-};
-
 TestScreen.prototype.drawScene = function() {
   if (!this.players.length) {
     this.addPlayer();

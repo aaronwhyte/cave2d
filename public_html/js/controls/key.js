@@ -23,5 +23,6 @@ Key.Name = {
   SPACE: 'space',
   SEMICOLON: ';',
   BACKSLASH: '\\',
-  ESC: 'esc'
+  ESC: 'esc',
+  SHIFT: 'shift'
 };

@@ -1,5 +1,6 @@
 /**
  * A control trackball using up/down/left/right keys.
+ * @param {KeyStick} keyStick
  * @constructor
  * @extends {Trackball}
  */
