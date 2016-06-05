@@ -55,6 +55,7 @@ PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 PlayerSpirit.WARP_TIMEOUT = 40;
 
 PlayerSpirit.MAX_SHOTS = 3;
+PlayerSpirit.SHIFT_SPEED_MULTIPLIER = 2.5;
 
 PlayerSpirit.RESPAWN_TIMEOUT = 50;
 PlayerSpirit.RESPAWN_TIMEOUT_ID = 30;
@@ -156,6 +157,16 @@ PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
       rad);
 };
 
+/**
+ *
+ * @param {number} tx trackball x movement since last time
+ * @param {number} ty trackball y movement since last time
+ * @param {boolean} tt whether the trackball is touched (works good for touchscreens, otherwise meh
+ * @param {number} tContrib bitflags indicating whether key, touch, or mouse were contributors to the trackball
+ * @param {boolean} b1 button one down?
+ * @param {boolean} b2 button two down?
+ * @param {boolean} shift shift key down? Turbo button for keyboard users TODO: move up to keyboard trackball.
+ */
 PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2, shift) {
   var now = this.now();
   var time = now - this.lastInputTime;
@@ -176,8 +187,8 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2, shif
       // stun decreases control responsiveness
       this.accel.scale(1 - stun);
       if (shift && (tContrib & Trackball.CONTRIB_KEY)) {
-        // triple speed!
-        this.accel.scale(3);
+        // turbo boost!
+        this.accel.scale(PlayerSpirit.SHIFT_SPEED_MULTIPLIER);
       }
 
       this.newVel.add(this.accel.scale(time / this.screen.timeMultiplier));
@@ -424,11 +435,12 @@ PlayerSpirit.prototype.die = function() {
 
     // slow inner smoke ring
     particles = Math.ceil(20 * (1 + 0.5 * Math.random()));
-    explosionRad = 8;
+    explosionRad = 4;
     dirOffset = 2 * Math.PI * Math.random();
     for (i = 0; i < particles; i++) {
-      duration = 40 * (1 + Math.random()*0.2);
+      duration = 40 * (0.5 + Math.random());
       dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
+      var thisRad = explosionRad + (0.5 + Math.random());
       dx = Math.sin(dir) * explosionRad / duration;
       dy = Math.cos(dir) * explosionRad / duration;
       addSplash(x, y, dx, dy, duration, 2);
