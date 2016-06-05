@@ -1,12 +1,15 @@
 /**
  * A control trackball using up/down/left/right keys.
  * @param {KeyStick} keyStick
+ * @param {KeyTrigger=} opt_turboTrigger
  * @constructor
  * @extends {Trackball}
  */
-function KeyTrackball(keyStick) {
+function KeyTrackball(keyStick, opt_turboTrigger) {
   Trackball.call(this);
   this.keyStick = keyStick;
+  this.turboTrigger = opt_turboTrigger || null;
+  this.turboMultiplier = 2.5;
   this.needsValChange = true;
   this.accel = 1;
   this.wasTouched = false;
@@ -42,7 +45,8 @@ KeyTrackball.prototype.getVal = function(out) {
       // Opposite keys are touched. Slam the brakes.
       this.val.scale(0.5);
     } else {
-      this.val.scale(1 - this.traction).add(out.scale(this.accel * this.traction));
+      var turboFactor = this.getTurboTriggerVal() ? this.turboMultiplier : 1;
+      this.val.scale(1 - this.traction).add(out.scale(this.accel * this.traction * turboFactor));
     }
   }
   this.wasTouched = this.isTouched();
@@ -50,7 +54,14 @@ KeyTrackball.prototype.getVal = function(out) {
 };
 
 KeyTrackball.prototype.getContrib = function() {
-  return this.keyStick.isAnyKeyPressed() ? Trackball.CONTRIB_KEY : 0;
+  return (this.keyStick.isAnyKeyPressed() || this.getTurboTriggerVal()) ? Trackball.CONTRIB_KEY : 0;
+};
+
+/**
+ * @returns {boolean}
+ */
+KeyTrackball.prototype.getTurboTriggerVal = function() {
+  return this.turboTrigger ? this.turboTrigger.getVal() : false;
 };
 
 KeyTrackball.prototype.reset = function() {
@@ -64,15 +75,17 @@ KeyTrackball.prototype.reset = function() {
  * @returns {boolean}
  */
 KeyTrackball.prototype.isTouched = function() {
-  var touched = this.keyStick.isAnyKeyPressed();
+  var touched = this.keyStick.isAnyKeyPressed() || this.getTurboTriggerVal();
   if (!touched) this.wasTouched = false;
   return touched;
 };
 
 KeyTrackball.prototype.startListening = function() {
   this.keyStick.startListening();
+  if (this.turboTrigger) this.turboTrigger.startListening();
 };
 
 KeyTrackball.prototype.stopListening = function() {
   this.keyStick.stopListening();
+  if (this.turboTrigger) this.turboTrigger.stopListening();
 };

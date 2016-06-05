@@ -309,8 +309,10 @@ BaseScreen.prototype.createTrackball = function() {
   var trackball = new MultiTrackball()
       .addTrackball(new TouchTrackball(this.getWorldEventTarget())
           .setStartZoneFunction(function(x, y) { return true; }))
-      .addTrackball(new KeyTrackball(new KeyStick().setUpRightDownLeftByName(
-          Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT))
+      .addTrackball(
+          new KeyTrackball(
+              new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT),
+              new KeyTrigger().addTriggerKeyByName(Key.Name.SHIFT))
           .setAccel(0.8)
           .setTraction(0.8)
   );
@@ -346,10 +348,6 @@ BaseScreen.prototype.createButtonWidgets = function() {
         .listenToMousePointer()
         .addTriggerKeyByName(Key.Name.SPACE)
         .startListening()];
-};
-
-BaseScreen.prototype.createShiftTrigger = function() {
-  return new KeyTrigger().addTriggerKeyByName(Key.Name.SHIFT).startListening();
 };
 
 BaseScreen.prototype.getResizeFn = function() {
@@ -535,8 +533,7 @@ BaseScreen.prototype.addPlayer = function() {
   var p = new Player();
   var trackball = this.createTrackball();
   var buttons = this.createButtonWidgets();
-  var shiftTrigger = this.createShiftTrigger();
-  p.setControls(trackball, buttons[0], buttons[1], buttons[2], shiftTrigger);
+  p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
     if (spirit.type == BaseScreen.SpiritType.PLAYER) {

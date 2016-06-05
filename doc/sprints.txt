@@ -303,6 +303,7 @@ Player tweaks
 v face!
   v move to face aim
 v shift to increase accel for keyboard players
+  v move it up to KeyTrackball
 - add concept of weapons
   - weapons are classes reusable by player and enemies? kinda rogue-like in a way. I like the modularity.
     It also hints at an ability to play other critters, given a uniform control interface for their abilities

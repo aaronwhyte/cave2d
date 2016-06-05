@@ -55,7 +55,6 @@ PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 PlayerSpirit.WARP_TIMEOUT = 40;
 
 PlayerSpirit.MAX_SHOTS = 3;
-PlayerSpirit.SHIFT_SPEED_MULTIPLIER = 2.5;
 
 PlayerSpirit.RESPAWN_TIMEOUT = 50;
 PlayerSpirit.RESPAWN_TIMEOUT_ID = 30;
@@ -165,9 +164,8 @@ PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
  * @param {number} tContrib bitflags indicating whether key, touch, or mouse were contributors to the trackball
  * @param {boolean} b1 button one down?
  * @param {boolean} b2 button two down?
- * @param {boolean} shift shift key down? Turbo button for keyboard users TODO: move up to keyboard trackball.
  */
-PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2, shift) {
+PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
   var now = this.now();
   var time = now - this.lastInputTime;
   this.lastInputTime = now;
@@ -186,11 +184,6 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2, shif
           .clipToMaxLength(PlayerSpirit.TRACKBALL_MAX_ACCEL);
       // stun decreases control responsiveness
       this.accel.scale(1 - stun);
-      if (shift && (tContrib & Trackball.CONTRIB_KEY)) {
-        // turbo boost!
-        this.accel.scale(PlayerSpirit.SHIFT_SPEED_MULTIPLIER);
-      }
-
       this.newVel.add(this.accel.scale(time / this.screen.timeMultiplier));
       body.setVelAtTime(this.newVel, now);
     }
