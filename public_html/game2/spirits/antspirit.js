@@ -89,7 +89,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, this.now());
+  b.setPosAtTime(pos, screen.now());
   b.rad = 0.8;
   b.hitGroup = BaseScreen.Group.ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
@@ -98,7 +98,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
 
   var spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(this.now(), spiritId, -1);
+  world.addTimeout(screen.now(), spiritId, -1);
   return spiritId;
 };
 

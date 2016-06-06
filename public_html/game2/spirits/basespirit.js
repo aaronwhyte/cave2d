@@ -46,6 +46,7 @@ BaseSpirit.prototype.getBodyPos = function() {
   if (!body) return null;
   return body.getPosAtTime(this.now(), this.tempBodyPos);
 };
+
 BaseSpirit.prototype.now = function() {
   return this.screen.now();
 };

@@ -11,7 +11,7 @@ function PlayerSpirit(screen) {
   this.dir = 0;//Math.random() * Math.PI * 2;
   this.angVel = 0;
 
-  this.fireReady = true;
+  this.isFireReady = true;
   this.currAimVec = new Vec2d(0, 1);
   this.destAimVec = new Vec2d(0, 1);
 
@@ -31,6 +31,8 @@ function PlayerSpirit(screen) {
 
   this.lastWarp = -Infinity;
   this.lastFireTime =-Infinity;
+
+  this.weapon = new ShotgunWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.FIRE_TIMEOUT_ID);
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -49,12 +51,9 @@ PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT = 2.51;
 PlayerSpirit.FIRE_TIMEOUT_ID = 20;
 
 PlayerSpirit.WARP_TIMEOUT = 40;
-
-PlayerSpirit.MAX_SHOTS = 3;
 
 PlayerSpirit.RESPAWN_TIMEOUT = 50;
 PlayerSpirit.RESPAWN_TIMEOUT_ID = 30;
@@ -146,16 +145,6 @@ PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
-PlayerSpirit.prototype.scan = function(pos, rot, dist, rad) {
-  return this.screen.scan(
-      BaseScreen.Group.ROCK,
-      pos,
-      this.scanVec.setXY(
-          Math.sin(this.dir + rot) * dist,
-          Math.cos(this.dir + rot) * dist),
-      rad);
-};
-
 /**
  *
  * @param {number} tx trackball x movement since last time
@@ -189,64 +178,22 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     }
   }
 
-  // firing logic
-  if (!b2) {
-    this.shots = PlayerSpirit.MAX_SHOTS;
-  }
-  if (!stunned && b2) {
-    // not stunned and the button is down
-    this.lastFireTime = now;
-    if (this.fireReady) {
-      this.fire();
+  // Weapon stuff
+  if (tx || ty) {
+    this.vec2d.setXY(tx, -ty);
+    if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
+      // It's touch or mouse, which get very quantized at low speed. Square contribution and smooth it.
+      // TODO replace HYSTERESIS with SENSITIVITY, scale dest aim to 1.
+      this.vec2d.scale(this.vec2d.magnitude());
+      this.destAimVec.add(this.vec2d).scaleToLength(PlayerSpirit.AIM_TOUCH_HYSTERESIS);
+    } else if (tContrib & Trackball.CONTRIB_KEY) {
+      // It's keyboard.
+      this.destAimVec.setXY(tx, -ty);
+    } else if (tContrib) {
+      console.warn("unexpected trackball contribution: " + tContrib);
     }
   }
-  if (!stunned && b1 && this.lastWarp + PlayerSpirit.WARP_TIMEOUT <= now) {
-    this.warp()
-  }
-  // TODO this will fork on weapon type later.
-  if (true || !b2) {
-    if (tx || ty) {
-      this.vec2d.setXY(tx, -ty);
-      if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
-        // It's touch or mouse, which get very quantized at low speed. Square contribution and smooth it.
-        this.vec2d.scale(this.vec2d.magnitude());
-        this.destAimVec.add(this.vec2d).scaleToLength(PlayerSpirit.AIM_TOUCH_HYSTERESIS);
-      } else if (tContrib & Trackball.CONTRIB_KEY) {
-        // It's keyboard.
-        this.destAimVec.setXY(tx, -ty);
-        // did the player reverse the direction of aim?
-        if (this.vec2d.set(this.currAimVec).add(this.destAimVec).magnitudeSquared() < 0.1) {
-          // reverse aim direction with zero delay.
-          this.currAimVec.set(this.destAimVec);
-        }
-      } else if (tContrib) {
-        console.log("unexpected trackball contribution: " + tContrib);
-      }
-    }
-  }
-  // move currAimVec towards destAimVec
-  var aimChange = this.vec2d.set(this.destAimVec).subtract(this.currAimVec);
-  this.currAimVec.add(aimChange);
-
-};
-
-PlayerSpirit.prototype.fire = function() {
-  var pos = this.getBodyPos();
-  if (pos) {
-    for (var i = 0; i < this.shots; i++) {
-      var angle = 0.25 * Math.PI * (i - (this.shots - 1) / 2) / PlayerSpirit.MAX_SHOTS;
-      this.addBullet(
-          pos,
-          this.vec2d.set(this.currAimVec)
-              .scaleToLength(5 - 2.5 * (this.shots-1) / PlayerSpirit.MAX_SHOTS)
-              .rot(angle + 0.05 * (Math.random()-0.5)),
-          0.3,
-          7);
-    }
-    this.fireReady = false;
-    this.screen.world.addTimeout(this.now() + PlayerSpirit.FIRE_TIMEOUT * (1 + (this.shots-1)*0.3),
-        this.id, PlayerSpirit.FIRE_TIMEOUT_ID);
-  }
+  this.weapon.handleInput(this.destAimVec.x, this.destAimVec.y, b2);
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -270,17 +217,10 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     // TODO: put addTimeout in screen, remove world access
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
   } else if (timeoutVal == PlayerSpirit.FIRE_TIMEOUT_ID) {
-    this.fireReady = true;
-    if (this.firing()) {
-      this.fire();
-    }
+    this.weapon.fire();
   } else if (timeoutVal == PlayerSpirit.RESPAWN_TIMEOUT_ID) {
     this.respawn();
   }
-};
-
-PlayerSpirit.prototype.firing = function() {
-  return this.now() <= this.lastFireTime;
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
@@ -292,7 +232,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer
         .setStamp(this.modelStamp)
         .setColorVector(this.vec4.set(this.color).scale1(alertness));
-    this.vec2d.set(this.currAimVec).scaleToLength(-1.2 * Math.max(0.5, Math.min(1, body.vel.magnitude())));
+    this.vec2d.set(this.weapon.currAimVec).scaleToLength(-1.2 * Math.max(0.5, Math.min(1, body.vel.magnitude())));
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
@@ -308,8 +248,8 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     var rad = 0.2;
     var p1 = Vec2d.alloc();
     var p2 = Vec2d.alloc();
-    p1.set(this.currAimVec).scaleToLength(body.rad * 2).add(bodyPos);
-    p2.set(this.currAimVec).scaleToLength(body.rad * 4).add(bodyPos);
+    p1.set(this.weapon.currAimVec).scaleToLength(body.rad * 2).add(bodyPos);
+    p2.set(this.weapon.currAimVec).scaleToLength(body.rad * 4).add(bodyPos);
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 0.5));
@@ -322,33 +262,6 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     p1.free();
     p2.free();
   }
-};
-
-PlayerSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
-  var now = this.now();
-  var spirit = new BulletSpirit(this.screen);
-  spirit.setModelStamp(this.screen.circleStamp);
-  spirit.setColorRGB(1, 0.3, 0.6);
-  var density = 20;
-
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, now);
-  b.setVelAtTime(vel, now);
-  b.rad = rad;
-  b.hitGroup = BaseScreen.Group.PLAYER_FIRE;
-  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = duration;
-  spirit.bodyId = this.screen.world.addBody(b);
-
-  var spiritId = this.screen.world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  this.screen.world.addTimeout(now + duration, spiritId, 0);
-  spirit.addTrailSegment();
-
-  this.screen.soundPew(pos);
-
-  return spiritId;
 };
 
 PlayerSpirit.prototype.addHealth = function(h) {
