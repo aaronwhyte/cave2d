@@ -32,7 +32,10 @@ function PlayerSpirit(screen) {
   this.lastWarp = -Infinity;
   this.lastFireTime =-Infinity;
 
-  this.weapon = new ShotgunWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.FIRE_TIMEOUT_ID);
+  this.shotgun = new ShotgunWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.FIRE_TIMEOUT_ID);
+  this.laser = new LaserWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.FIRE_TIMEOUT_ID);
+  this.weapon = this.shotgun;
+  this.oldb1 = false;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -179,7 +182,16 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
   }
 
   // Weapon stuff
-  if (tx || ty) {
+  if (b1 && !this.oldb1) {
+    if (this.weapon == this.shotgun) {
+      this.weapon = this.laser;
+    } else {
+      this.weapon = this.shotgun;
+    }
+  }
+  this.oldb1 = b1;
+  var laserAimLock = this.weapon == this.laser && b2;
+  if ((tx || ty) && !laserAimLock) {
     this.vec2d.setXY(tx, -ty);
     if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
       // It's touch or mouse, which get very quantized at low speed. Square contribution and smooth it.
@@ -243,21 +255,26 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.drawStamp();
 
     // draw aim guide
-    this.screen.renderer
-        .setStamp(this.screen.cylinderStamp)
-        .setColorVector(this.vec4.setXYZ(1, 0.3, 0.6).scale1(Math.random() * 0.2 + 0.5));
-    var rad = 0.2;
+    this.screen.renderer.setStamp(this.screen.cylinderStamp);
+    var shotgun = this.weapon == this.shotgun;
+    if (shotgun) {
+      this.screen.renderer.setColorVector(this.vec4.setXYZ(1, 1, 0.5).scale1(Math.random() * 0.2 + 0.5));
+    } else {
+      this.screen.renderer.setColorVector(this.vec4.setXYZ(0.5, 1, 1).scale1(Math.random() * 0.2 + 0.5));
+    }
     var p1 = Vec2d.alloc();
     var p2 = Vec2d.alloc();
+    var aimLen = body.rad * (shotgun ? 1.5 : 2.5);
+    var rad = shotgun ? 0.32 : 0.18;
     p1.set(this.weapon.currAimVec).scaleToLength(body.rad * 2).add(bodyPos);
-    p2.set(this.weapon.currAimVec).scaleToLength(body.rad * 4).add(bodyPos);
+    p2.set(this.weapon.currAimVec).scaleToLength(body.rad * (2 + aimLen)).add(bodyPos);
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0))
-        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 0.5));
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
     this.screen.renderer.setModelMatrix(this.modelMatrix);
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0))
-        .multiply(this.mat44.toScaleOpXYZ(rad, rad, -0.5));
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
     this.screen.renderer.setModelMatrix2(this.modelMatrix);
     this.screen.renderer.drawStamp();
     p1.free();

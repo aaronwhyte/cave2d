@@ -2,16 +2,15 @@
  * @constructor
  * @extends {BaseWeapon}
  */
-function ShotgunWeapon(screen, spiritId, fireHitGroup, fireTimeoutId) {
+function LaserWeapon(screen, spiritId, fireHitGroup, fireTimeoutId) {
   BaseWeapon.call(this, screen, spiritId, fireHitGroup, fireTimeoutId);
   this.lastFireTime = 0;
-  this.firePeriod = 20;
-  this.shots = 12;
+  this.firePeriod = 1.41;
 }
-ShotgunWeapon.prototype = new BaseWeapon();
-ShotgunWeapon.prototype.constructor = ShotgunWeapon;
+LaserWeapon.prototype = new BaseWeapon();
+LaserWeapon.prototype.constructor = LaserWeapon;
 
-ShotgunWeapon.prototype.handleInput = function(destAimX, destAimY, buttonDown) {
+LaserWeapon.prototype.handleInput = function(destAimX, destAimY, buttonDown) {
   BaseWeapon.prototype.handleInput.call(this, destAimX, destAimY, buttonDown);
   this.currAimVec.set(this.destAimVec);
   if (buttonDown && this.isFireReady()) {
@@ -19,24 +18,19 @@ ShotgunWeapon.prototype.handleInput = function(destAimX, destAimY, buttonDown) {
   }
 };
 
-ShotgunWeapon.prototype.isFireReady = function() {
+LaserWeapon.prototype.isFireReady = function() {
   return this.lastFireTime + this.firePeriod <= this.now();
 };
 
-ShotgunWeapon.prototype.fire = function() {
+LaserWeapon.prototype.fire = function() {
   if (!this.buttonDown) return;
   var pos = this.getBodyPos();
   if (!pos) return;
-  for (var i = 0; i < this.shots; i++) {
-    var angle = Math.PI * (i + 0.5 - this.shots/2) / (this.shots - 1) / 4;
-    this.addBullet(
-        pos,
-        this.vec2d.set(this.currAimVec)
-            .scaleToLength(2.3 + 0.5*Math.random())
-            .rot(angle + 0.05 * (Math.random()-0.5)),
-        0.33,
-        8 + Math.random());
-  }
+  this.addBullet(
+      pos,
+      this.vec2d.set(this.currAimVec).scaleToLength(13),
+      0.18 + 0.05 * Math.random(),
+      3 + 0.2 * Math.random());
   var now = this.now();
   this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);
   this.lastFireTime = now;
@@ -44,12 +38,12 @@ ShotgunWeapon.prototype.fire = function() {
   this.screen.soundPew(pos);
 };
 
-ShotgunWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
+LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   var now = this.now();
   var spirit = new BulletSpirit(this.screen);
   spirit.setModelStamp(this.screen.circleStamp);
-  spirit.setColorRGB(1, 1, 0.5);
-  var density = 20;
+  spirit.setColorRGB(0.5, 1, 1);
+  var density = 0.1;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -64,7 +58,7 @@ ShotgunWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   var spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 2;
+  spirit.health = 0;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, 0);

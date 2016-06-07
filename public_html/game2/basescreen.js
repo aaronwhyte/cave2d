@@ -239,6 +239,7 @@ BaseScreen.prototype.initWorld = function() {
     [g.ENEMY_SCAN, g.WALL],
     [g.ENEMY_SCAN, g.NEUTRAL],
     [g.ENEMY_SCAN, g.PLAYER],
+    [g.ENEMY_SCAN, g.PLAYER_FIRE],
     [g.ENEMY_SCAN, g.ENEMY],
 
     [g.EXPLODEY_BITS, g.WALL]
