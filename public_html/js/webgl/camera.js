@@ -9,6 +9,7 @@ function Camera(minDistFraction, maxDistFraction, viewDist) {
   this.minDistFraction = minDistFraction;
   this.maxDistFraction = maxDistFraction;
   this.viewDist = viewDist;
+  this.followFraction = 0.12;
 }
 
 Camera.prototype.follow = function(followPos) {
@@ -21,7 +22,7 @@ Camera.prototype.follow = function(followPos) {
     var temp = Vec2d.alloc();
     temp.set(followPos)
         .subtract(this.cameraPos)
-        .scaleToLength((cameraDist-minCameraDist) * 0.1)
+        .scaleToLength((cameraDist-minCameraDist) * this.followFraction)
         .add(this.cameraPos);
     this.cameraPos.set(temp);
     cameraDist = followPos.distance(this.cameraPos);
