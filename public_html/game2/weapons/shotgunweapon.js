@@ -28,14 +28,14 @@ ShotgunWeapon.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   for (var i = 0; i < this.shots; i++) {
-    var angle = 0.25 * Math.PI * (i - (this.shots - 1) / 2) / this.shots;
+    var angle = Math.PI * (i + 0.5 - this.shots/2) / (this.shots - 1) / 4;
     this.addBullet(
         pos,
         this.vec2d.set(this.currAimVec)
             .scaleToLength(2.3 + 0.5*Math.random())
             .rot(angle + 0.05 * (Math.random()-0.5)),
-        0.3,
-        7 +2*Math.random());
+        0.35,
+        7 + 2*Math.random());
   }
   var now = this.now();
   this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);

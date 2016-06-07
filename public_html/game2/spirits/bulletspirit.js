@@ -58,7 +58,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
     // dig
     var pillRad = body.rad * 2.5;
     this.screen.drawTerrainPill(pos, pos, pillRad, 1);
-    this.wallDamageSplash(pos, pillRad * 1.3);
+    this.wallDamageSplash(pos, pillRad);
     this.screen.soundBing(pos);
     this.destroyBody();
   } else {
