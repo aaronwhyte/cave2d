@@ -154,7 +154,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
       var dist = this.scan(pos, scanRot, scanDist, body.rad);
       var angAccel = 0;
-      var thrust = AntSpirit.THRUST * (AntSpirit.MAX_HEALTH / this.health);
+      var thrust = AntSpirit.THRUST * (this.health == AntSpirit.MAX_HEALTH ? 1 : 1.7);
       if (dist >= 0) {
         // rayscan hit
         var otherSpirit = this.getScanHitSpirit();
@@ -242,7 +242,7 @@ AntSpirit.prototype.onPlayerBulletHit = function() {
 AntSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  this.explosionSplash(pos, body.rad * (3 + Math.random()));
+  this.explosionSplash(pos, body.rad * (2.5 + 0.5 * Math.random()));
   this.screen.soundKaboom(pos);
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
