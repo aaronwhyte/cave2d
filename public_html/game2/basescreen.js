@@ -359,7 +359,7 @@ BaseScreen.prototype.createTrackball = function() {
               new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT),
               new KeyTrigger().addTriggerKeyByName(Key.Name.SHIFT))
           .setAccel(0.8)
-          .setTraction(0.8)
+          .setTraction(0.25)
   );
   trackball.setFriction(0.05);
   trackball.startListening();

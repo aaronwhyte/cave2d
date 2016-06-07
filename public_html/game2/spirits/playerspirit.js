@@ -45,7 +45,7 @@ PlayerSpirit.MAX_BANG = 1.5;
 PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.3;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
-PlayerSpirit.AIM_TOUCH_HYSTERESIS = 0.3;
+PlayerSpirit.AIM_SENSITIVITY = 0.9;
 
 PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -183,15 +183,16 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     this.vec2d.setXY(tx, -ty);
     if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
       // It's touch or mouse, which get very quantized at low speed. Square contribution and smooth it.
-      // TODO replace HYSTERESIS with SENSITIVITY, scale dest aim to 1.
-      this.vec2d.scale(this.vec2d.magnitude());
-      this.destAimVec.add(this.vec2d).scaleToLength(PlayerSpirit.AIM_TOUCH_HYSTERESIS);
+      this.vec2d.scale(this.vec2d.magnitude() * PlayerSpirit.AIM_SENSITIVITY);
+      this.destAimVec.add(this.vec2d);
     } else if (tContrib & Trackball.CONTRIB_KEY) {
       // It's keyboard.
       this.destAimVec.setXY(tx, -ty);
     } else if (tContrib) {
       console.warn("unexpected trackball contribution: " + tContrib);
     }
+    // Player aim is always a unit vector.
+    this.destAimVec.scaleToLength(1);
   }
   this.weapon.handleInput(this.destAimVec.x, this.destAimVec.y, b2);
 };
