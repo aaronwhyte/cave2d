@@ -120,7 +120,8 @@ BaseScreen.Terrain = {
 BaseScreen.SplashType = {
   NOTE: 1,
   SCAN: 2,
-  WALL_DAMAGE: 3
+  WALL_DAMAGE: 3,
+  ERROR: 4
 };
 
 BaseScreen.BIT_SIZE = 0.5;
@@ -253,11 +254,13 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
   this.lazyInit();
   this.world.now = json.now;
   // bodies
+  var lostSpiritIdToBodyId = {};
   for (var i = 0; i < json.bodies.length; i++) {
     var bodyJson = json.bodies[i];
     var body = new Body();
     body.setFromJSON(bodyJson);
     this.world.loadBody(body);
+    lostSpiritIdToBodyId[body.spiritId] = body.id;
   }
   // spirits
   for (var i = 0; i < json.spirits.length; i++) {
@@ -272,7 +275,9 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
     } else {
       console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
     }
+    delete lostSpiritIdToBodyId[spirit.id];
   }
+
   // timeouts
   var e = new WorldEvent();
   for (var i = 0; i < json.timeouts.length; i++) {
@@ -303,7 +308,47 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
 //      console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
 //    }
 //  }
+
+  // Stop spiritless bodies from haunting the world.
+  // This can happen if I add spirits to a level, then remove the definition.
+  // TODO: something better
+  for (var spiritId in lostSpiritIdToBodyId) {
+    var bodyId = lostSpiritIdToBodyId[spiritId];
+//    var body = this.getBodyById(bodyId);
+//    this.getBodyPos(body, this.vec2d);
+//    this.debugSplash(this.vec2d, 2, 1, 0, 0);
+    this.world.removeBodyId(bodyId);
+  }
 };
+
+BaseScreen.prototype.debugSplash = function(pos, rad, r, g, b) {
+  var s = this.splash;
+  s.reset(BaseScreen.SplashType.ERROR, this.tubeStamp);
+
+  s.startTime = this.now();
+  s.duration = Infinity;
+
+  var x = pos.x;
+  var y = pos.y;
+
+  s.startPose.pos.setXYZ(x, y, -1);
+  s.endPose.pos.setXYZ(x, y, -1);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad, rad, 1);
+
+  s.startPose2.pos.setXYZ(x, y, 1);
+  s.endPose2.pos.setXYZ(x, y, 1);
+  s.startPose2.scale.setXYZ(rad * 0.8, rad * 0.8, 1);
+  s.endPose2.scale.setXYZ(rad * 0.8, rad * 0.8, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+  s.startColor.setXYZ(r, g, b);
+  s.endColor.setXYZ(r, g, b);
+
+  this.splasher.addCopy(s);
+};
+
 
 BaseScreen.prototype.createTrackball = function() {
   var trackball = new MultiTrackball()
@@ -738,8 +783,6 @@ BaseScreen.prototype.getAveragePlayerPos = function() {
     return null;
   }
 };
-
-
 
 BaseScreen.prototype.soundPew = function(pos) {
   this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
