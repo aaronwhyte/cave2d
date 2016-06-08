@@ -4,7 +4,6 @@
  */
 function LaserWeapon(screen, spiritId, fireHitGroup, fireTimeoutId) {
   BaseWeapon.call(this, screen, spiritId, fireHitGroup, fireTimeoutId);
-  this.lastFireTime = 0;
   this.firePeriod = 1.41;
 }
 LaserWeapon.prototype = new BaseWeapon();
@@ -13,27 +12,23 @@ LaserWeapon.prototype.constructor = LaserWeapon;
 LaserWeapon.prototype.handleInput = function(destAimX, destAimY, buttonDown) {
   BaseWeapon.prototype.handleInput.call(this, destAimX, destAimY, buttonDown);
   this.currAimVec.set(this.destAimVec);
-  if (buttonDown && this.isFireReady()) {
+  if (buttonDown && !this.timeoutRunning) {
     this.fire();
   }
 };
 
-LaserWeapon.prototype.isFireReady = function() {
-  return this.lastFireTime + this.firePeriod <= this.now();
-};
-
 LaserWeapon.prototype.fire = function() {
-  if (!this.buttonDown) return;
+  if (!this.buttonDown || this.timeoutRunning) return;
   var pos = this.getBodyPos();
   if (!pos) return;
   this.addBullet(
       pos,
-      this.vec2d.set(this.currAimVec).scaleToLength(13),
-      0.18 + 0.05 * Math.random(),
-      3 + 0.2 * Math.random());
+      this.vec2d.set(this.currAimVec).scaleToLength(4),
+      0.2 + 0.1 * Math.random(),
+      7 + 2 * Math.random());
   var now = this.now();
   this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);
-  this.lastFireTime = now;
+  this.timeoutRunning = true;
   // TODO more distinctive weapon sounds
   this.screen.soundPew(pos);
 };
@@ -43,7 +38,7 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   var spirit = new BulletSpirit(this.screen);
   spirit.setModelStamp(this.screen.circleStamp);
   spirit.setColorRGB(0.5, 1, 1);
-  var density = 0.1;
+  var density = 1;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -58,7 +53,9 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   var spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 0;
+  spirit.health = 1;
+  spirit.digChance = 0.05;
+  spirit.bounceChance = 0;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, 0);

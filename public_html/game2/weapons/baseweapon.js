@@ -15,13 +15,19 @@ function BaseWeapon(screen, spirit, fireHitGroup, fireTimeoutId) {
   this.destAimVec = new Vec2d(0, 1);
   this.vec2d = new Vec2d();
   this.buttonDown = false;
+  this.timeoutRunning = false;
 }
 
 BaseWeapon.prototype.handleInput = function(destAimX, destAimY, buttonDown) {
+  this.stowed = false;
   if (destAimX || destAimY) {
     this.destAimVec.setXY(destAimX, destAimY);
   }
   this.buttonDown = buttonDown;
+};
+
+BaseWeapon.prototype.onTimeout = function() {
+  this.timeoutRunning = false;
 };
 
 BaseWeapon.prototype.now = function() {

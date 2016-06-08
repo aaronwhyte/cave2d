@@ -239,7 +239,6 @@ BaseScreen.prototype.initWorld = function() {
     [g.ENEMY_SCAN, g.WALL],
     [g.ENEMY_SCAN, g.NEUTRAL],
     [g.ENEMY_SCAN, g.PLAYER],
-    [g.ENEMY_SCAN, g.PLAYER_FIRE],
     [g.ENEMY_SCAN, g.ENEMY],
 
     [g.EXPLODEY_BITS, g.WALL]
@@ -535,7 +534,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
     var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
     if (playerBody) {
       var playerSpirit = this.getSpiritForBody(playerBody);
-      playerSpirit.onBang(mag / playerBody.mass, this.now()); // TODO hm not sure that's right
+      //playerSpirit.onBang(mag / playerBody.mass, this.now()); // TODO hm not sure that's right
       var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody) {
         this.exitLevel();
@@ -790,11 +789,11 @@ BaseScreen.prototype.soundPew = function(pos) {
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
-  var freq = 800 + 200 * Math.random();
-  var attack = 1/60;
-  var sustain = (2 + Math.random()) / 60;
-  var decay = (2 + Math.random()) / 60;
-  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq * Math.random()*0.1 + 1, 'square');
+  var freq = 600 + 100 * Math.random();
+  var attack = 2/60;
+  var sustain = 0;
+  var decay = 5/ 60;
+  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq * 0.1 + 1, 'square');
 };
 
 BaseScreen.prototype.soundWallThump = function(worldPos, mag) {
@@ -832,14 +831,31 @@ BaseScreen.prototype.soundKaboom = function(pos) {
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
-  var voices = 8;
+  var voices = 5;
   for (var i = 0; i < voices; i++) {
-    var delay = (i % 2 ? 0 : 0.1) * (1 + 0.1 * Math.random());
+    var delay = (i % 2 ? 0 : 0.05) * (1 + 0.1 * Math.random());
+    var attack = 0;
+    var sustain = 0.3;
+    var decay = (Math.random() + 1) * 0.03 * i;
+    var freq1 = Math.random() * 30 + 200;
+    var freq2 = 3;
+    this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, (i % 2 ? 'square' : 'sine'), delay);
+  }
+};
+
+BaseScreen.prototype.soundShotgun = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var voices = 4;
+  for (var i = 0; i < voices; i++) {
+    var delay = 0;
     var attack = 0.002;
-    var sustain = 0.1 * (Math.random() + 0.01);
-    var decay = (Math.random() + 1) * 0.5;
-    var freq1 = Math.random() * 30 + 30;
-    var freq2 = Math.random() * 10 + 10;
+    var sustain = 0.05 * (Math.random() + 0.01);
+    var decay = (Math.random() + 1) * 0.3;
+    var freq1 = Math.random() * 10 + 50;
+    var freq2 = Math.random() * 10 + 1;
     this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, 'square', delay);
   }
 };

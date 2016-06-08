@@ -32,8 +32,8 @@ function PlayerSpirit(screen) {
   this.lastWarp = -Infinity;
   this.lastFireTime =-Infinity;
 
-  this.shotgun = new ShotgunWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.FIRE_TIMEOUT_ID);
-  this.laser = new LaserWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.FIRE_TIMEOUT_ID);
+  this.shotgun = new ShotgunWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.SHOTGUN_TIMEOUT_ID);
+  this.laser = new LaserWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.LASER_TIMEOUT_ID);
   this.weapon = this.shotgun;
   this.oldb1 = false;
 }
@@ -54,7 +54,8 @@ PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
-PlayerSpirit.FIRE_TIMEOUT_ID = 20;
+PlayerSpirit.SHOTGUN_TIMEOUT_ID = 20;
+PlayerSpirit.LASER_TIMEOUT_ID = 21;
 
 PlayerSpirit.WARP_TIMEOUT = 40;
 
@@ -183,6 +184,8 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
 
   // Weapon stuff
   if (b1 && !this.oldb1) {
+    // switch weapons
+    this.weapon.buttonDown = false;
     if (this.weapon == this.shotgun) {
       this.weapon = this.laser;
     } else {
@@ -229,8 +232,16 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     }
     // TODO: put addTimeout in screen, remove world access
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
-  } else if (timeoutVal == PlayerSpirit.FIRE_TIMEOUT_ID) {
-    this.weapon.fire();
+  } else if (timeoutVal == PlayerSpirit.SHOTGUN_TIMEOUT_ID) {
+    this.shotgun.onTimeout();
+    if (this.shotgun == this.weapon) {
+      this.shotgun.fire();
+    }
+  } else if (timeoutVal == PlayerSpirit.LASER_TIMEOUT_ID) {
+    this.laser.onTimeout();
+    if (this.laser == this.weapon) {
+      this.laser.fire();
+    }
   } else if (timeoutVal == PlayerSpirit.RESPAWN_TIMEOUT_ID) {
     this.respawn();
   }

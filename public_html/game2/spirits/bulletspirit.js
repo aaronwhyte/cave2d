@@ -17,6 +17,8 @@ function BulletSpirit(screen) {
   this.segEndVec = new Vec2d();
 
   this.health = 1;
+  this.digChance = 0.1;
+  this.bounceChance = 0.1;
 }
 BulletSpirit.prototype = new BaseSpirit();
 BulletSpirit.prototype.constructor = BulletSpirit;
@@ -51,27 +53,25 @@ BulletSpirit.prototype.setColorRGB = function(r, g, b) {
 BulletSpirit.prototype.onHitWall = function(mag) {
   var body = this.getBody();
   if (!body) return;
-  mag = mag * body.mass;
   var pos = this.getBodyPos();
-  this.screen.soundWallThump(pos, mag);
-  if (0.05 * mag * this.health > 0.1 + Math.random()) {
-    // dig
-    var pillRad = body.rad * 2.5;
+  if (this.digChance * mag > Math.random()) {
+    var pillRad = body.rad + 0.5;
     this.screen.drawTerrainPill(pos, pos, pillRad, 1);
     this.wallDamageSplash(pos, pillRad);
     this.screen.soundBing(pos);
     this.destroyBody();
   } else {
     // bounce or vanish?
-    this.health -= mag / 5;
-    if (this.health <= 0) {
+    this.health -= mag;
+    if (this.bounceChance - mag > Math.random()) {
+      // bounce
+      this.addTrailSegment();
+    } else {
       // vanish
       this.destroyBody();
       this.wallDamageSplash(pos, body.rad);
-    } else {
-      // bounce
-      this.addTrailSegment();
     }
+    this.screen.soundWallThump(pos, mag * body.mass);
   }
 };
 
@@ -156,7 +156,7 @@ BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
 
   s.startTime = this.now();
-  s.duration = 5 * (1 + rad);
+  s.duration = 4 + (2 * rad);
 
   var x = pos.x;
   var y = pos.y;

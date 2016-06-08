@@ -4,9 +4,8 @@
  */
 function ShotgunWeapon(screen, spiritId, fireHitGroup, fireTimeoutId) {
   BaseWeapon.call(this, screen, spiritId, fireHitGroup, fireTimeoutId);
-  this.lastFireTime = 0;
   this.firePeriod = 20;
-  this.shots = 12;
+  this.shots = 8;
 }
 ShotgunWeapon.prototype = new BaseWeapon();
 ShotgunWeapon.prototype.constructor = ShotgunWeapon;
@@ -14,34 +13,29 @@ ShotgunWeapon.prototype.constructor = ShotgunWeapon;
 ShotgunWeapon.prototype.handleInput = function(destAimX, destAimY, buttonDown) {
   BaseWeapon.prototype.handleInput.call(this, destAimX, destAimY, buttonDown);
   this.currAimVec.set(this.destAimVec);
-  if (buttonDown && this.isFireReady()) {
+  if (buttonDown && !this.timeoutRunning) {
     this.fire();
   }
 };
 
-ShotgunWeapon.prototype.isFireReady = function() {
-  return this.lastFireTime + this.firePeriod <= this.now();
-};
-
 ShotgunWeapon.prototype.fire = function() {
-  if (!this.buttonDown) return;
+  if (!this.buttonDown || this.timeoutRunning) return;
   var pos = this.getBodyPos();
   if (!pos) return;
   for (var i = 0; i < this.shots; i++) {
-    var angle = Math.PI * (i + 0.5 - this.shots/2) / (this.shots - 1) / 4;
+    var angle = Math.PI * (i + 0.5 - this.shots/2) / (this.shots - 1) / 6;
     this.addBullet(
         pos,
         this.vec2d.set(this.currAimVec)
-            .scaleToLength(2.3 + 0.5*Math.random())
+            .scaleToLength(2 + 0.5*Math.random())
             .rot(angle + 0.05 * (Math.random()-0.5)),
         0.33,
-        8 + Math.random());
+        7 + Math.random());
   }
   var now = this.now();
   this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);
-  this.lastFireTime = now;
-  // TODO more distinctive weapon sounds
-  this.screen.soundPew(pos);
+  this.timeoutRunning = true;
+  this.screen.soundShotgun(pos);
 };
 
 ShotgunWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
@@ -65,6 +59,8 @@ ShotgunWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 2;
+  spirit.digChance = 0.2;
+  spirit.bounceChance = 3;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, 0);
