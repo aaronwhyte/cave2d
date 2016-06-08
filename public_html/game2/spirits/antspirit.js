@@ -242,47 +242,58 @@ AntSpirit.prototype.onPlayerBulletHit = function() {
 AntSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  this.explosionSplash(pos, body.rad * (2.5 + 0.5 * Math.random()));
+  this.explosionSplash(pos, body.rad * (2 + 0.5 * Math.random()));
   this.screen.soundKaboom(pos);
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
 };
 
 AntSpirit.prototype.explosionSplash = function(pos, rad) {
+  var now = this.now();
+  // cloud particles
   var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
-
-  s.startTime = this.now();
-  s.duration = 5 * (1 + rad);
-
   var x = pos.x;
   var y = pos.y;
+  var self = this;
+  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
-  var endRad = rad * 3;
+  function addSplash(x, y, dx, dy, duration, sizeFactor) {
+    s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.screen.circleStamp);
+    s.startTime = now;
+    s.duration = duration;
 
-  s.startPose.pos.setXYZ(x, y, -0.5);
-  s.endPose.pos.setXYZ(x, y, 1);
-  s.startPose.scale.setXYZ(rad/2, rad/2, 1);
-  s.endPose.scale.setXYZ(endRad, endRad, 1);
+    s.startPose.pos.setXYZ(x, y, -Math.random());
+    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+    var startRad = sizeFactor * rad;
+    s.startPose.scale.setXYZ(startRad, startRad, 1);
+    s.endPose.scale.setXYZ(0, 0, 1);
 
-  s.startPose2.pos.setXYZ(x, y, -0.5);
-  s.endPose2.pos.setXYZ(x, y, 1);
-  s.startPose2.scale.setXYZ(0, 0, 1);
-  s.endPose2.scale.setXYZ(endRad, endRad, 1);
+    s.startColor.setXYZ(1, 1, 1);
+    s.endColor.setXYZ(1, 1, 1);
+    self.screen.splasher.addCopy(s);
+  }
 
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-  s.startColor.setXYZ(1, 1, 1);
-  s.endColor.setXYZ(0.2, 0.2, 0.2);
+  // fast outer particles
+  particles = Math.ceil(8 * (1 + 0.5 * Math.random()));
+  explosionRad = 5;
+  dirOffset = 2 * Math.PI * Math.random();
+  for (i = 0; i < particles; i++) {
+    duration = 5 * (1 + Math.random());
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
+    dx = Math.sin(dir) * explosionRad / duration;
+    dy = Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 0.3);
+  }
 
-  this.screen.splasher.addCopy(s);
-
-  s.duration *= 2;
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(0, 0, 1);
-
-  s.startPose2.scale.setXYZ(0, 0, 1);
-  s.endPose2.scale.setXYZ(0, 0, 1);
-
-  this.screen.splasher.addCopy(s);
+  // slow inner smoke ring
+  particles = Math.ceil(4 * (1 + 0.5 * Math.random()));
+  explosionRad = 2;
+  dirOffset = 2 * Math.PI * Math.random();
+  for (i = 0; i < particles; i++) {
+    duration = 12 * (0.5 + Math.random());
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
+    dx = Math.sin(dir) * explosionRad / duration;
+    dy = Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 1);
+  }
 };
