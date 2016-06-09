@@ -23,7 +23,10 @@ function AntSpirit(screen) {
 
   this.lastControlTime = this.screen.now();
   this.viewportsFromCamera = 0;
-  this.health = AntSpirit.MAX_HEALTH;
+
+  // So I don't need to delete and re-add ants whenever I change their max health,
+  // normalize health to be a fraction, between 0 and 1.
+  this.health = 1;
 }
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
@@ -33,7 +36,7 @@ AntSpirit.THRUST = 0.3;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
-AntSpirit.MAX_HEALTH = 2;
+AntSpirit.MAX_HEALTH = 5;
 AntSpirit.OPTIMIZE = true;
 
 AntSpirit.SCHEMA = {
@@ -154,7 +157,8 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
       var dist = this.scan(pos, scanRot, scanDist, body.rad);
       var angAccel = 0;
-      var thrust = AntSpirit.THRUST * (this.health == AntSpirit.MAX_HEALTH ? 1 : 1.7);
+      // they get faster as they get hurt
+      var thrust = AntSpirit.THRUST * (1 + (1 - this.health)* 0.5);
       if (dist >= 0) {
         // rayscan hit
         var otherSpirit = this.getScanHitSpirit();
@@ -201,7 +205,8 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (AntSpirit.OPTIMIZE) {
     timeoutDuration = Math.min(
         AntSpirit.MAX_TIMEOUT,
-            (this.health/AntSpirit.MAX_HEALTH) * AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
+        Math.max(this.health, 0.3) *
+            AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
   } else {
     timeoutDuration = AntSpirit.MEASURE_TIMEOUT * (1 - Math.random() * 0.05);
   }
@@ -233,7 +238,7 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
 };
 
 AntSpirit.prototype.onPlayerBulletHit = function() {
-  this.health--;
+  this.health -= 1 / AntSpirit.MAX_HEALTH;
   if (this.health <= 0) {
     this.explode();
   }

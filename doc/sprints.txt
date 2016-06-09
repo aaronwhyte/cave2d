@@ -304,7 +304,7 @@ v face!
   v move to face aim
 v shift to increase accel for keyboard players
   v move it up to KeyTrackball
-- add concept of weapons
+v add concept of weapons
   * weapons are classes reusable by player and enemies? kinda rogue-like in a way. I like the modularity.
     It also hints at an ability to play other critters, given a uniform control interface for their abilities
     Aaanyhoo...
@@ -312,19 +312,20 @@ v shift to increase accel for keyboard players
     v handleInput(aimVec, triggerDown)
     x isReady?
   v player starting weapon is shotgun - instant, short range, a little bounce, 5x fire, periodic, continuous re-aim
-  - player other weapon is laser - long range, no bounce, 5x speed, hella fast, aim is locked. takes a sec to warm up?
-  - missle launcher is a bonus weapon
-- second *button* switches weapons.
-- Remove stun logic from player? Tweak it? Something's wrong because stunning is easy in warp only...
+  v player other weapon is laser - long range, no bounce, 5x speed, hella fast, aim is locked. takes a sec to warm up?
+v second *button* switches weapons.
+x Remove stun logic from player? Tweak it? Something's wrong because stunning is easy in warp only...
 
-Better placeholder levels
-- Level 1 - Name of the game, basic movement play, super easy combat
-- Level 2 - Digging, basic combat
-- Level 3 - More arena combat, some halls
-- Level 4 - hallway combat, but mostly one-way
-- level 5 - multi-way hall/grid combat
-- level 6 - combat donut, multi-layer digging/fighting to get to exit
+Better levels
+v Level 1 - Name of the game, basic movement play, super easy combat
+v Level 2 - Digging, basic combat
+v Level 3 - More arena combat, some halls
+v Level 4 - hallway combat, but mostly one-way
+v level 5 - multi-way hall/grid combat
+v level 6 - combat donut, multi-layer digging/fighting to get to exit
 
+- Poolize bulletSpirit!
+- Lives.
 
 more cleaning
 - fix editor pause menu CSS
