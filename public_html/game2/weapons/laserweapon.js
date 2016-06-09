@@ -21,6 +21,8 @@ LaserWeapon.prototype.fire = function() {
   if (!this.buttonDown || this.timeoutRunning) return;
   var pos = this.getBodyPos();
   if (!pos) return;
+  this.vec2d.set(this.currAimVec).rot90Right().scale(0.5*Math.random() - 0.25);
+  pos.add(this.vec2d);
   this.addBullet(
       pos,
       this.vec2d.set(this.currAimVec).scaleToLength(4),

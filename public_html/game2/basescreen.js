@@ -789,11 +789,31 @@ BaseScreen.prototype.soundPew = function(pos) {
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
-  var freq = 600 + 100 * Math.random();
+  var freq = 230
+      - Math.abs((this.now() % 8) - 4) * 20
+      - Math.abs((this.now() % 200) - 100) * 0.2;
   var attack = 2/60;
-  var sustain = 0;
-  var decay = 5/ 60;
-  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq * 0.1 + 1, 'square');
+  var sustain = 2/60;
+  var decay = 0;//5/ 60;
+  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, 10 * freq, 'triangle');
+  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq/4, 10 * freq/4, 'triangle');
+};
+
+BaseScreen.prototype.soundShotgun = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var voices = 8;
+  for (var i = 0; i < voices; i++) {
+    var delay = 0;
+    var attack = 0;
+    var sustain = 0.05 * (Math.random() + 0.01);
+    var decay = (Math.random() + 1) * 0.3;
+    var freq1 = Math.random() * 10 + 50;
+    var freq2 = Math.random() * 10 + 1;
+    this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, 'square', delay);
+  }
 };
 
 BaseScreen.prototype.soundWallThump = function(worldPos, mag) {
@@ -840,23 +860,6 @@ BaseScreen.prototype.soundKaboom = function(pos) {
     var freq1 = Math.random() * 30 + 200;
     var freq2 = 3;
     this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, (i % 2 ? 'square' : 'sine'), delay);
-  }
-};
-
-BaseScreen.prototype.soundShotgun = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-
-  var voices = 4;
-  for (var i = 0; i < voices; i++) {
-    var delay = 0;
-    var attack = 0.002;
-    var sustain = 0.05 * (Math.random() + 0.01);
-    var decay = (Math.random() + 1) * 0.3;
-    var freq1 = Math.random() * 10 + 50;
-    var freq2 = Math.random() * 10 + 1;
-    this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, 'square', delay);
   }
 };
 
