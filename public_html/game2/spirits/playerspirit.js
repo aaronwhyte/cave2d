@@ -48,7 +48,7 @@ PlayerSpirit.MAX_BANG = 1.5;
 PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.3;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
-PlayerSpirit.AIM_SENSITIVITY = 0.9;
+PlayerSpirit.AIM_SENSITIVITY = 2;
 
 PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -193,8 +193,8 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     }
   }
   this.oldb1 = b1;
-  var laserAimLock = this.weapon == this.laser && b2;
-  if ((tx || ty) && !laserAimLock) {
+  var aimLock = this.weapon == this.laser && b2;
+  if ((tx || ty) && !aimLock) {
     this.vec2d.setXY(tx, -ty);
     if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
       // It's touch or mouse, which get very quantized at low speed. Square contribution and smooth it.
