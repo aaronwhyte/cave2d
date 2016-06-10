@@ -15,7 +15,7 @@ VictoryPage.prototype.enterDoc = function() {
   var df = document.createDocumentFragment();
 
   this.div = this.ce('div', df);
-  this.div.innerHTML = 'Victory! Yay!';
+  this.div.innerHTML = '<h1>The game is over! You win!</h1><a href="../" style="color:silver">back to <b>cave2d.com</b></a>';
   document.body.appendChild(df);
   document.body.classList.add('victoryPage');
 
