@@ -193,7 +193,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     }
   }
   this.oldb1 = b1;
-  var aimLock = this.weapon == this.laser && b2;
+  var aimLock = b2;//this.weapon == this.laser && b2;
   if ((tx || ty) && !aimLock) {
     this.vec2d.setXY(tx, -ty);
     if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
