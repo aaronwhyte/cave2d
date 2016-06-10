@@ -23,14 +23,14 @@ ShotgunWeapon.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   for (var i = 0; i < this.shots; i++) {
-    var angle = Math.PI * (i + 0.5 - this.shots/2) / (this.shots - 1) / 5;
+    var angle = 0.33 * Math.PI * (i + 0.5 - this.shots/2) / this.shots;
     this.addBullet(
         pos,
         this.vec2d.set(this.currAimVec)
             .scaleToLength(2 + 0.3*Math.random())
             .rot(angle + 0.05 * (Math.random()-0.5)),
         0.33,
-        8 + Math.random());
+        6 + Math.random());
   }
   var now = this.now();
   this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);
@@ -43,7 +43,7 @@ ShotgunWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   var spirit = new BulletSpirit(this.screen);
   spirit.setModelStamp(this.screen.circleStamp);
   spirit.setColorRGB(1, 1, 0.5);
-  var density = 15;
+  var density = 5;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
