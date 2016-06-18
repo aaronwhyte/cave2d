@@ -121,6 +121,7 @@ PlayScreen.prototype.drawScene = function() {
     this.camera.follow(this.playerAveragePos);
   }
 
+  this.drawSpirits();
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();

@@ -762,12 +762,18 @@ BaseScreen.prototype.now = function() {
   return this.world.now;
 };
 
+BaseScreen.prototype.drawSpirits = function() {
+  for (var id in this.world.spirits) {
+    var spirit = this.world.spirits[id];
+    spirit.onDraw(this.world, this.renderer);
+  }
+};
+
 BaseScreen.prototype.getAveragePlayerPos = function() {
   this.playerAveragePos.reset();
   var playerCount = 0;
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
-    spirit.onDraw(this.world, this.renderer);
     if (spirit.type == BaseScreen.SpiritType.PLAYER) {
       var body = spirit.getBody(this.world);
       if (body) {

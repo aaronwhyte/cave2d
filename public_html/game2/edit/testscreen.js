@@ -123,25 +123,12 @@ TestScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
   this.hitsThisFrame = 0;
 
-  // Position the camera to be at the average of all player sprite body postions
-  this.playerAveragePos.reset();
-  var playerCount = 0;
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    spirit.onDraw(this.world, this.renderer);
-    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
-      var body = spirit.getBody(this.world);
-      if (body) {
-        this.playerAveragePos.add(this.getBodyPos(body, this.vec2d));
-        playerCount++;
-      }
-    }
-  }
-  if (playerCount != 0) {
-    this.playerAveragePos.scale(1 / playerCount);
+  var averagePlayerPos = this.getAveragePlayerPos();
+  if (averagePlayerPos) {
     this.camera.follow(this.playerAveragePos);
   }
 
+  this.drawSpirits();
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();
