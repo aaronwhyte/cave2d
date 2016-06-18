@@ -362,28 +362,26 @@ BaseScreen.prototype.createTrackball = function() {
           .setTraction(0.25)
   );
   trackball.setFriction(0.05);
-  trackball.startListening();
+  this.addListener(trackball);
   return trackball;
 };
 
 BaseScreen.prototype.createButtonWidgets = function() {
-  return [
+  var widgets = [
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
         .setStamp(this.circleStamp)
         .listenToTouch()
         .addTriggerKeyByName('z')
-        .setKeyboardTipStamp(this.glyphs.stamps['Z'])
-        .startListening(),
+        .setKeyboardTipStamp(this.glyphs.stamps['Z']),
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
         .setStamp(this.circleStamp)
         .listenToTouch()
         .addTriggerKeyByName('x')
-        .setKeyboardTipStamp(this.glyphs.stamps['X'])
-        .startListening(),
+        .setKeyboardTipStamp(this.glyphs.stamps['X']),
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
@@ -391,8 +389,11 @@ BaseScreen.prototype.createButtonWidgets = function() {
         .addTriggerDownListener(this.pauseDownFn)
         .listenToTouch()
         .listenToMousePointer()
-        .addTriggerKeyByName(Key.Name.SPACE)
-        .startListening()];
+        .addTriggerKeyByName(Key.Name.SPACE)];
+  for (var i = 0; i < widgets.length; i++) {
+    this.addListener(widgets[i]);
+  }
+  return widgets;
 };
 
 BaseScreen.prototype.getResizeFn = function() {
@@ -414,6 +415,10 @@ BaseScreen.prototype.setScreenListening = function(listen) {
 
 var msPerFrame = 0;
 BaseScreen.prototype.drawScreen = function(visibility) {
+  if (this.destroyed) {
+    console.warn('drawing destroyed screen - ignoring');
+    return;
+  }
   var startMs = performance.now();
   this.visibility = visibility;
   this.lazyInit();
@@ -429,7 +434,9 @@ BaseScreen.prototype.drawScreen = function(visibility) {
 BaseScreen.prototype.drawScene = function() {};
 
 BaseScreen.prototype.destroyScreen = function() {
-  // Unload button models? Need a nice utility for loading, remembering, and unloading models.
+  this.setScreenListening(false);
+  this.unloadLevel();
+  this.destroyed = true;
 };
 
 BaseScreen.prototype.showPauseMenu = function() {
@@ -473,6 +480,8 @@ BaseScreen.prototype.clock = function() {
     if (e.type == WorldEvent.TYPE_HIT) {
       this.onHitEvent(e);
     }
+    // Some events can destroy the screen.
+    if (this.destroyed) return;
     e = this.world.getNextEvent();
   }
   if (!e || e.time > endClock) {
@@ -538,6 +547,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
       var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody) {
         this.exitLevel();
+        return;
       }
       var antBody = this.bodyIfSpiritType(BaseScreen.SpiritType.ANT, b0, b1);
       if (antBody) {
@@ -1071,7 +1081,9 @@ BaseScreen.prototype.unloadLevel = function() {
     for (var spiritId in this.world.spirits) {
       var s = this.world.spirits[spiritId];
       var b = this.world.bodies[s.bodyId];
-      this.world.removeBodyId(b.id);
+      if (b) {
+        this.world.removeBodyId(b.id);
+      }
       this.world.removeSpiritId(spiritId);
     }
     this.world = null;

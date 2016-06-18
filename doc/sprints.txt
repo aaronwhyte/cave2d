@@ -326,8 +326,11 @@ v level 6 - combat donut, multi-layer digging/fighting to get to exit
 
 Final Enhancements
 v Poolize BulletSpirit! That's got to be killing performance right now.
+v fix level-end and level-restart memory leaks
 - respawn shield/ram/whatevs
 - exit effects
+
+Sharing?
 - play adventure from arbitrary URL
   * this could be a whole screen with loading stats, level menu, and error diagnostics
 

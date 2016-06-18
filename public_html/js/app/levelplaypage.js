@@ -229,9 +229,13 @@ LevelPlayPage.prototype.requestFullScreen = function() {
 };
 
 LevelPlayPage.prototype.exitLevel = function() {
+  this.screen.destroyScreen();
+  this.screen = null;
   this.app.exitLevel(this.adventureName, this.levelName);
 };
 
 LevelPlayPage.prototype.restartLevel = function() {
+  this.screen.destroyScreen();
+  this.screen = null;
   this.app.restartLevel();
 };
