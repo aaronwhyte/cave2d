@@ -56,7 +56,7 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 1;
-  spirit.digChance = 0.05;
+  spirit.digChance = 0.06;
   spirit.bounceChance = 0;
 
   // bullet self-destruct timeout
