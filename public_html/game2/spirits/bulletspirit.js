@@ -12,16 +12,50 @@ function BulletSpirit(screen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 
+  // trail stuff
   this.trail = new Trail(4);
   this.segStartVec = new Vec2d();
   this.segEndVec = new Vec2d();
 
-  this.health = 1;
-  this.digChance = 0.1;
-  this.bounceChance = 0.1;
+  this.reset(screen);
 }
 BulletSpirit.prototype = new BaseSpirit();
 BulletSpirit.prototype.constructor = BulletSpirit;
+
+
+BulletSpirit.prototype.reset = function(screen) {
+  BaseSpirit.prototype.reset.call(this, screen);
+
+  this.color.reset();
+
+  // temps
+  this.mat44.reset();
+  this.modelMatrix.reset();
+
+  // trail stuff
+  this.trail.reset();
+  this.segStartVec.reset();
+  this.segEndVec.reset();
+
+  this.health = 1;
+  this.digChance = 0.1;
+  this.bounceChance = 0.1;
+
+  return this;
+};
+
+BulletSpirit.pool = [];
+
+BulletSpirit.alloc = function(screen) {
+  if (BulletSpirit.pool.length) {
+    return BulletSpirit.pool.pop().reset(screen);
+  }
+  return new BulletSpirit(screen);
+};
+
+BulletSpirit.prototype.free = function() {
+  BulletSpirit.pool.push(this);
+};
 
 BulletSpirit.SCHEMA = {
   0: "type",
@@ -145,13 +179,20 @@ BulletSpirit.prototype.drawTrail = function() {
   }
   if (!trailWarm) {
     // The trail has ended and the last spark has faded.
-    this.screen.world.removeSpiritId(this.id);
-    if (this.bodyId) console.error("The trail is cold but the body is unburied!");
-    this.trail.clear();
+    this.destroy();
   }
 };
 
-BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
+BulletSpirit.prototype.destroy = function() {
+  // removeSpiritId also frees any spirit that can be freed,
+  // so don't double-free or terrible things happen!
+  this.screen.world.removeSpiritId(this.id);
+  if (this.bodyId) {
+    console.error("The trail is cold but the body is unburied. bodyId: " + this.bodyId);
+  }
+};
+
+  BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   var s = this.screen.splash;
   s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
 

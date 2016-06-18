@@ -324,13 +324,20 @@ v Level 4 - hallway combat, but mostly one-way
 v level 5 - multi-way hall/grid combat
 v level 6 - combat donut, multi-layer digging/fighting to get to exit
 
-- Poolize bulletSpirit!
-- Lives.
+Final Enhancements
+v Poolize BulletSpirit! That's got to be killing performance right now.
+- respawn shield/ram/whatevs
+- exit effects
+- play adventure from arbitrary URL
+  * this could be a whole screen with loading stats, level menu, and error diagnostics
+
+STOP HERE BECAUSE IT IS TIME TO MOVE ON
+
 
 more cleaning
 - fix editor pause menu CSS
 
-Sound 2.0
+Sound 2.0?
 Give each sound effect a static generator object, injected into basescreen.
 -
 

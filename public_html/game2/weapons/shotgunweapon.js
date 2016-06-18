@@ -40,7 +40,7 @@ ShotgunWeapon.prototype.fire = function() {
 
 ShotgunWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   var now = this.now();
-  var spirit = new BulletSpirit(this.screen);
+  var spirit = BulletSpirit.alloc(this.screen);
   spirit.setModelStamp(this.screen.circleStamp);
   spirit.setColorRGB(1, 1, 0.5);
   var density = 5;

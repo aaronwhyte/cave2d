@@ -4,14 +4,20 @@
  */
 function BaseSpirit(screen) {
   Spirit.call(this);
+
+  this.tempBodyPos = new Vec2d();
+  BaseSpirit.prototype.reset.call(this, screen);
+}
+BaseSpirit.prototype = new Spirit();
+BaseSpirit.prototype.constructor = BaseSpirit;
+
+BaseSpirit.prototype.reset = function(screen) {
   this.screen = screen;
   this.bodyId = -1;
   this.id = -1;
   this.modelStamp = null;
-  this.tempBodyPos = new Vec2d();
-}
-BaseSpirit.prototype = new Spirit();
-BaseSpirit.prototype.constructor = BaseSpirit;
+  this.tempBodyPos.reset();
+};
 
 BaseSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;

@@ -37,7 +37,7 @@ LaserWeapon.prototype.fire = function() {
 
 LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   var now = this.now();
-  var spirit = new BulletSpirit(this.screen);
+  var spirit = BulletSpirit.alloc(this.screen);
   spirit.setModelStamp(this.screen.circleStamp);
   spirit.setColorRGB(0.5, 1, 1);
   var density = 1;

@@ -29,6 +29,11 @@ Trail.prototype.getSegmentPosAtTime = function(i, time, out) {
   return this.queue.getFromHead(i).getPosAtTime(time, out);
 };
 
+Trail.prototype.reset = function() {
+  this.clear();
+  this.endTime = Infinity;
+};
+
 Trail.prototype.clear = function() {
   while (!this.queue.isEmpty()) {
     this.queue.dequeue().free();
