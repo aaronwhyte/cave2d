@@ -133,6 +133,10 @@ World.prototype.loadSpirit = function(spirit) {
   this.nextId = Math.max(this.nextId, spirit.id + 1);
 };
 
+/**
+ * If the spirit is found it is removed, and if it has a free() method, it is freed too.
+ * @param id
+ */
 World.prototype.removeSpiritId = function(id) {
   var spirit = this.spirits[id];
   if (spirit) {
