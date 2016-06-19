@@ -536,16 +536,11 @@ BaseScreen.prototype.onHitEvent = function(e) {
     var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
     var mag = strikeVec.magnitude();
     this.hitsThisFrame++;
-//    if (this.hitsThisFrame < 4) {
-//      this.bonk(b0, mag);
-//      this.bonk(b1, mag);
-//    }
     strikeVec.free();
 
     var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
     if (playerBody) {
       var playerSpirit = this.getSpiritForBody(playerBody);
-      //playerSpirit.onBang(mag / playerBody.mass, this.now()); // TODO hm not sure that's right
       var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody) {
         this.exitLevel();
@@ -553,7 +548,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
       }
       var antBody = this.bodyIfSpiritType(BaseScreen.SpiritType.ANT, b0, b1);
       if (antBody) {
-        playerSpirit.addHealth(-1);
+        playerSpirit.hitAnt(mag);
       }
     }
 
@@ -845,6 +840,21 @@ BaseScreen.prototype.soundWallThump = function(worldPos, mag) {
     var freq = mag + 200 + 5 * Math.random();
     var freq2 = 1;
     this.sfx.sound(x, y, 0, vol, 0, 0, dur, freq, freq2, 'square');
+  }
+};
+
+BaseScreen.prototype.soundShieldThump = function(worldPos, mag) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var vol = Math.min(1, mag * 2);
+  if (vol > 0.01) {
+    var dur = 0.07;
+    var freq  = 10 * mag + 500;
+    var freq2 = freq + (Math.random() - 0.5) * 10 * mag;
+    this.sfx.sound(x, y, 0, vol, 0, dur, 0, freq, freq2, 'sawtooth');
+    this.sfx.sound(x, y, 0, vol, 0, dur, 0, freq/8, freq2/8, 'square');
   }
 };
 

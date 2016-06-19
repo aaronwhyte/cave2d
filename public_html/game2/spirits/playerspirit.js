@@ -36,6 +36,8 @@ function PlayerSpirit(screen) {
   this.laser = new LaserWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.LASER_TIMEOUT_ID);
   this.weapon = this.shotgun;
   this.oldb1 = false;
+
+  this.shieldEndTime = 0;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -57,10 +59,10 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.SHOTGUN_TIMEOUT_ID = 20;
 PlayerSpirit.LASER_TIMEOUT_ID = 21;
 
-PlayerSpirit.WARP_TIMEOUT = 40;
-
-PlayerSpirit.RESPAWN_TIMEOUT = 50;
+PlayerSpirit.RESPAWN_TIMEOUT = 70;
 PlayerSpirit.RESPAWN_TIMEOUT_ID = 30;
+
+PlayerSpirit.SHIELD_TIMEOUT = 50;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -193,7 +195,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     }
   }
   this.oldb1 = b1;
-  var aimLock = b2;//this.weapon == this.laser && b2;
+  var aimLock = b2;
   if ((tx || ty) && !aimLock) {
     this.vec2d.setXY(tx, -ty);
     if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
@@ -290,6 +292,27 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     this.screen.renderer.drawStamp();
     p1.free();
     p2.free();
+
+    if (this.isShielded()) {
+      var howShielded = (this.shieldEndTime - this.now()) / PlayerSpirit.SHIELD_TIMEOUT;
+      renderer
+          .setStamp(this.screen.circleStamp)
+          .setColorVector(this.vec4.setXYZ(1, 1, 0));
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.01))
+          .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+          .multiply(this.mat44.toScaleOpXYZ(1.05 + 0.1 * howShielded, 1.05 + 0.1 * howShielded, 1));
+      renderer.setModelMatrix(this.modelMatrix);
+      renderer.drawStamp();
+    }
+  }
+};
+
+PlayerSpirit.prototype.hitAnt = function(mag) {
+  if (this.isShielded()) {
+    this.screen.soundShieldThump(this.getBodyPos(), mag);
+  } else {
+    this.addHealth(-1);
   }
 };
 
@@ -301,7 +324,7 @@ PlayerSpirit.prototype.addHealth = function(h) {
 };
 
 PlayerSpirit.prototype.die = function() {
-  this.screen.playerChasePolarity = -1;
+  this.screen.playerChasePolarity = -0.1;
   var body = this.getBody();
   if (body) {
     var now = this.now();
@@ -433,6 +456,16 @@ PlayerSpirit.prototype.respawn = function() {
   s.endColor.setXYZ(0, 0, 0);
 
   this.screen.splasher.addCopy(s);
+
+  this.shieldsUp();
+};
+
+PlayerSpirit.prototype.shieldsUp = function() {
+  this.shieldEndTime = this.now() + PlayerSpirit.SHIELD_TIMEOUT;
+};
+
+PlayerSpirit.prototype.isShielded = function() {
+  return this.now() < this.shieldEndTime;
 };
 
 PlayerSpirit.prototype.warp = function() {
