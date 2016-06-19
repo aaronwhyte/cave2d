@@ -301,6 +301,7 @@ PlayerSpirit.prototype.addHealth = function(h) {
 };
 
 PlayerSpirit.prototype.die = function() {
+  this.screen.playerChasePolarity = -1;
   var body = this.getBody();
   if (body) {
     var now = this.now();
@@ -395,6 +396,7 @@ PlayerSpirit.prototype.die = function() {
 };
 
 PlayerSpirit.prototype.respawn = function() {
+  this.screen.playerChasePolarity = 1;
   var body = this.createBody(this.tempBodyPos, this.dir);
   var now = this.now();
   this.health = this.maxHealth;

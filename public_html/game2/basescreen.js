@@ -87,6 +87,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventu
   };
 
   this.drawScans = false;
+
+  this.playerChasePolarity = 1;
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -780,13 +782,15 @@ BaseScreen.prototype.drawSpirits = function() {
 };
 
 BaseScreen.prototype.getAveragePlayerPos = function() {
-  this.playerAveragePos.reset();
   var playerCount = 0;
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
     if (spirit.type == BaseScreen.SpiritType.PLAYER) {
       var body = spirit.getBody(this.world);
       if (body) {
+        if (playerCount == 0) {
+          this.playerAveragePos.reset();
+        }
         this.playerAveragePos.add(this.getBodyPos(body, this.vec2d));
         playerCount++;
       }
@@ -794,10 +798,8 @@ BaseScreen.prototype.getAveragePlayerPos = function() {
   }
   if (playerCount != 0) {
     this.playerAveragePos.scale(1 / playerCount);
-    return this.playerAveragePos;
-  } else {
-    return null;
   }
+  return this.playerAveragePos;
 };
 
 BaseScreen.prototype.soundPew = function(pos) {

@@ -124,7 +124,7 @@ AntSpirit.prototype.turnToPlayer = function() {
   var toPlayer = this.vecToPlayer.set(this.screen.playerAveragePos).subtract(this.getBodyPos());
   var right = this.vec2d2.setXY(1, 0).rot(this.dir);
   var dot = right.dot(toPlayer);
-  this.angVel += 0.1 * dot / toPlayer.magnitude();
+  this.angVel += 0.1 * dot / toPlayer.magnitude() * this.screen.playerChasePolarity;
 };
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
