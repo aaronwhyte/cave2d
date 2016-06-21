@@ -29,6 +29,9 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
 PlayScreen.prototype = new BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
+PlayScreen.EXIT_DURATION = 3;
+PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
+
 PlayScreen.prototype.updateHudLayout = function() {
 };
 
@@ -96,6 +99,37 @@ PlayScreen.prototype.lazyInit = function() {
 PlayScreen.prototype.initPermStamps = function() {
   BaseScreen.prototype.initPermStamps.call(this);
   this.pauseStamp = this.addLevelStampFromModel(this.models.getPauseWithOutline());
+};
+
+PlayScreen.prototype.startExit = function(x, y) {
+  this.exitStartTime = this.now();
+  this.exitEndTime = this.exitStartTime + PlayScreen.EXIT_DURATION;
+  this.setTimeWarp(PlayScreen.EXIT_WARP_MULTIPLIER);
+
+  // giant tube implosion
+  var s = this.splash;
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.tubeStamp);
+
+  s.startTime = this.exitStartTime;
+  s.duration = PlayScreen.EXIT_DURATION;
+  var rad = 80;
+
+  s.startPose.pos.setXYZ(x, y, -0.9999);
+  s.endPose.pos.setXYZ(x, y, -0.9999);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad, rad, 1);
+
+  s.startPose2.pos.setXYZ(x, y, -0.9999);
+  s.endPose2.pos.setXYZ(x, y, -0.9999);
+  s.startPose2.scale.setXYZ(rad/2, rad/2, 1);
+  s.endPose2.scale.setXYZ(-rad/6, -rad/6, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+  s.startColor.setXYZ(0, 0, 0);
+  s.endColor.setXYZ(0, 0, 0);
+
+  this.splasher.addCopy(s);
 };
 
 PlayScreen.prototype.exitLevel = function() {

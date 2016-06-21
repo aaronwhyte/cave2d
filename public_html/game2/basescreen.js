@@ -8,6 +8,9 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventu
   this.adventureName = adventureName;
   this.levelName = levelName;
 
+  this.exitStartTime = 0;
+  this.exitEndTime = 0;
+
   this.controller = controller;
   this.canvas = canvas;
   this.renderer = renderer;
@@ -485,18 +488,24 @@ BaseScreen.prototype.clock = function() {
     // Some events can destroy the screen.
     if (this.destroyed) return;
     e = this.world.getNextEvent();
+
+    // recompute endClock in case an event changed the timeMultiplier
+    endClock = Math.max(this.world.now, startClock + BaseScreen.CLOCKS_PER_FRAME * this.timeMultiplier);
   }
   if (!e || e.time > endClock) {
     this.world.now = endClock;
   }
-  var unwarp = 0.15 * (endClock - startClock) / BaseScreen.CLOCKS_PER_FRAME;
-  var timeWarp = Math.log(this.timeMultiplier);
-  if (Math.abs(timeWarp) < unwarp) {
-    timeWarp = 0;
-  } else {
-    timeWarp -= Math.sign(timeWarp) * unwarp;
+//  var unwarp = 0.05 * (endClock - startClock) / BaseScreen.CLOCKS_PER_FRAME;
+//  var timeWarp = Math.log(this.timeMultiplier);
+//  if (Math.abs(timeWarp) < unwarp) {
+//    timeWarp = 0;
+//  } else {
+//    timeWarp -= Math.sign(timeWarp) * unwarp;
+//  }
+//  this.timeMultiplier = Math.exp(timeWarp);
+  if (this.exitEndTime && this.world.now >= this.exitEndTime) {
+    this.exitLevel();
   }
-  this.timeMultiplier = Math.exp(timeWarp);
 };
 
 BaseScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
@@ -542,13 +551,16 @@ BaseScreen.prototype.onHitEvent = function(e) {
     if (playerBody) {
       var playerSpirit = this.getSpiritForBody(playerBody);
       var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
-      if (exitBody) {
-        this.exitLevel();
-        return;
+      if (exitBody && !this.exitStartTime) {
+        this.soundExit(this.getAveragePlayerPos());
+        this.startExit(exitBody.pathStartPos.x, exitBody.pathStartPos.y);
       }
       var antBody = this.bodyIfSpiritType(BaseScreen.SpiritType.ANT, b0, b1);
       if (antBody) {
         playerSpirit.hitAnt(mag);
+      }
+      if (!exitBody && !antBody) {
+        this.soundWallThump(this.getAveragePlayerPos(), mag * 10);
       }
     }
 
@@ -573,6 +585,8 @@ BaseScreen.prototype.onHitEvent = function(e) {
   }
 };
 
+BaseScreen.prototype.startExit = function() {};
+
 BaseScreen.prototype.exitLevel = function() {};
 
 BaseScreen.prototype.handleInput = function() {
@@ -595,10 +609,10 @@ BaseScreen.prototype.addPlayer = function() {
   this.players.push(p);
 };
 
-
 BaseScreen.prototype.getPixelsPerMeter = function() {
   return 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
 };
+
 BaseScreen.prototype.updateViewMatrix = function() {
   // scale
   this.viewMatrix.toIdentity();
@@ -826,6 +840,25 @@ BaseScreen.prototype.soundShotgun = function(pos) {
     var freq1 = Math.random() * 10 + 50;
     var freq2 = Math.random() * 10 + 1;
     this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, 'square', delay);
+  }
+};
+
+BaseScreen.prototype.soundExit = function(pos) {
+  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
+  var x = this.vec4.v[0];
+  var y = this.vec4.v[1];
+
+  var voices = 20;
+  var freq1 = 30;
+  for (var i = 0; i < voices; i++) {
+    var delay = 0.05 * i;
+    var attack = 0;
+    var sustain = 0.04;
+    var decay = 0.1 * i * i / voices;
+    freq1 *= Math.pow(2, 1/3);
+    var freq2 = freq1 + (Math.random() - 0.5) * 10;
+    this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq2, freq1, 'square', delay);
+    this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq1*2 + Math.random(), freq2*2 + Math.random(), 'triangle', delay);
   }
 };
 

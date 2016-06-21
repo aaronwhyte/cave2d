@@ -112,7 +112,7 @@ TestScreen.prototype.initWidgets = function() {
       .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7)
 };
 
-TestScreen.prototype.exitLevel = function() {
+TestScreen.prototype.startExit = function() {
   // ignore in test screen
 };
 
