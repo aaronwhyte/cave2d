@@ -36,7 +36,7 @@ AntSpirit.THRUST = 0.33;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
-AntSpirit.MAX_HEALTH = 5;
+AntSpirit.MAX_HEALTH = 3;
 AntSpirit.OPTIMIZE = true;
 
 AntSpirit.SCHEMA = {
@@ -247,7 +247,10 @@ AntSpirit.prototype.onPlayerBulletHit = function() {
 AntSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  this.explosionSplash(pos, body.rad * (2 + 0.5 * Math.random()));
+  var craterRad = body.rad * (4 + 2 * Math.random());
+  this.explosionSplash(pos, craterRad);
+  this.screen.drawTerrainPill(pos, pos, craterRad, 1);
+  this.screen.drawTerrainPill(pos, pos, body.rad, 0);
   this.screen.soundKaboom(pos);
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
@@ -272,33 +275,33 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
     var startRad = sizeFactor * rad;
     s.startPose.scale.setXYZ(startRad, startRad, 1);
     s.endPose.scale.setXYZ(0, 0, 1);
-
-    s.startColor.setXYZ(1, 1, 1);
-    s.endColor.setXYZ(1, 1, 1);
+    var c = 0.5;//0.7 + Math.random() * 0.3;
+    s.startColor.setXYZ(c, 1, c);
+    s.endColor.setXYZ(c, c, c);
     self.screen.splasher.addCopy(s);
   }
 
   // fast outer particles
   particles = Math.ceil(8 * (1 + 0.5 * Math.random()));
-  explosionRad = 5;
+  explosionRad = rad * 1.5;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    duration = 5 * (1 + Math.random());
+    duration = 7 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
     dx = Math.sin(dir) * explosionRad / duration;
     dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.3);
+    addSplash(x, y, dx, dy, duration, 0.4);
   }
 
-  // slow inner smoke ring
-  particles = Math.ceil(4 * (1 + 0.5 * Math.random()));
-  explosionRad = 2;
+  // inner smoke ring
+  particles = Math.ceil(6 * (1 + 0.5 * Math.random()));
+  explosionRad = rad * 2/3;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    duration = 12 * (0.5 + Math.random());
+    duration = 4 * (0.5 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
     dx = Math.sin(dir) * explosionRad / duration;
     dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 1);
+    addSplash(x, y, dx, dy, duration, rad/3);
   }
 };

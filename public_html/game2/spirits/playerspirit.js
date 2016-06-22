@@ -332,6 +332,8 @@ PlayerSpirit.prototype.die = function() {
     var x = pos.x;
     var y = pos.y;
 
+    this.screen.drawTerrainPill(pos, pos, body.rad * 5, 1);
+
     // giant tube explosion
     var s = this.screen.splash;
     s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);

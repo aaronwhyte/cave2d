@@ -918,7 +918,7 @@ BaseScreen.prototype.soundKaboom = function(pos) {
     var attack = 0;
     var sustain = 0.3;
     var decay = (Math.random() + 1) * 0.03 * i;
-    var freq1 = Math.random() * 30 + 200;
+    var freq1 = Math.random() * 30 * i + 200;
     var freq2 = 3;
     this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, (i % 2 ? 'square' : 'sine'), delay);
   }
