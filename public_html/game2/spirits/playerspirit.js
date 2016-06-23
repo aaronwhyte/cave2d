@@ -297,7 +297,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       var howShielded = (this.shieldEndTime - this.now()) / PlayerSpirit.SHIELD_TIMEOUT;
       renderer
           .setStamp(this.screen.circleStamp)
-          .setColorVector(this.vec4.setXYZ(1, 1, 0));
+          .setColorVector(this.vec4.setXYZ(0, 1, 1));
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.01))
           .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
@@ -454,7 +454,7 @@ PlayerSpirit.prototype.respawn = function() {
 
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
-  s.startColor.setXYZ(1, 1, 0);
+  s.startColor.setXYZ(0, 1, 1);
   s.endColor.setXYZ(0, 0, 0);
 
   this.screen.splasher.addCopy(s);
