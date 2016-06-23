@@ -573,8 +573,8 @@ BaseScreen.prototype.onHitEvent = function(e) {
         // wall?
         bulletSpirit.onHitWall(mag);
       } else if (otherSpirit.type == BaseScreen.SpiritType.ANT) {
+        otherSpirit.onPlayerBulletHit(bulletSpirit.damage)
         bulletSpirit.onHitEnemy(mag);
-        otherSpirit.onPlayerBulletHit()
       } else if (otherSpirit.type == BaseScreen.SpiritType.BULLET) {
         bulletSpirit.onHitOther(mag);
         otherSpirit.onHitOther(mag);

@@ -40,6 +40,7 @@ BulletSpirit.prototype.reset = function(screen) {
   this.health = 1;
   this.digChance = 0.1;
   this.bounceChance = 0.1;
+  this.damage = 1;
 
   return this;
 };

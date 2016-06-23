@@ -237,8 +237,8 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
   }
 };
 
-AntSpirit.prototype.onPlayerBulletHit = function() {
-  this.health -= 1 / AntSpirit.MAX_HEALTH;
+AntSpirit.prototype.onPlayerBulletHit = function(damage) {
+  this.health -= damage / AntSpirit.MAX_HEALTH;
   if (this.health <= 0) {
     this.explode();
   }
@@ -247,14 +247,65 @@ AntSpirit.prototype.onPlayerBulletHit = function() {
 AntSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  var craterRad = body.rad * (4 + 2 * Math.random());
-  this.explosionSplash(pos, craterRad);
-  this.screen.drawTerrainPill(pos, pos, craterRad, 1);
-  this.screen.drawTerrainPill(pos, pos, body.rad, 0);
+  var craterRad = body.rad * (6 + 2 * Math.random());
+  this.explosionSplash(pos, body.rad * 1.2);
+  this.screen.drawTerrainPill(pos, pos, craterRad/2, 1);
+  this.bulletBurst(pos, body.rad + 1, craterRad);
   this.screen.soundKaboom(pos);
+  this.screen.drawTerrainPill(pos, pos, body.rad, 0);
+
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
 };
+
+AntSpirit.prototype.bulletBurst = function(pos, startRad, endRad) {
+  var p = Vec2d.alloc();
+  var v = Vec2d.alloc();
+  var bulletCount = Math.floor(20 + 4 * Math.random());
+  var a = Math.random() * Math.PI;
+  for (var i = 0; i < bulletCount; i++) {
+    var duration = 6 + Math.random();
+    var speed = (endRad - startRad) / duration;
+    a += 2 * Math.PI / bulletCount;
+    v.setXY(0, 1).rot(a);
+    p.set(v).scale(startRad).add(pos);
+    v.scale(speed);
+    this.addBullet(p, v, Math.random() * 0.6 + 0.5, duration);
+  }
+  v.free();
+  p.free();
+};
+
+AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
+  var now = this.now();
+  var spirit = BulletSpirit.alloc(this.screen);
+  spirit.setModelStamp(this.screen.circleStamp);
+  spirit.setColorRGB(0, 0.5, 0);
+  var density = 1;
+
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, now);
+  b.setVelAtTime(vel, now);
+  b.rad = rad;
+  b.hitGroup = BaseScreen.Group.ENEMY_FIRE;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = duration;
+  spirit.bodyId = this.screen.world.addBody(b);
+
+  var spiritId = this.screen.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  spirit.addTrailSegment();
+  spirit.digChance = 999;
+  spirit.bounceChance = 0;
+  spirit.damage = 0;
+
+  // bullet self-destruct timeout
+  this.screen.world.addTimeout(now + duration, spiritId, 0);
+
+  return spiritId;
+};
+
 
 AntSpirit.prototype.explosionSplash = function(pos, rad) {
   var now = this.now();
@@ -270,38 +321,48 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
     s.startTime = now;
     s.duration = duration;
 
-    s.startPose.pos.setXYZ(x, y, -Math.random());
-    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+    s.startPose.pos.setXYZ(x, y, -0.9);
+    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0);
     var startRad = sizeFactor * rad;
     s.startPose.scale.setXYZ(startRad, startRad, 1);
     s.endPose.scale.setXYZ(0, 0, 1);
-    var c = 0.5;//0.7 + Math.random() * 0.3;
-    s.startColor.setXYZ(c, 1, c);
-    s.endColor.setXYZ(c, c, c);
+    s.startColor.setXYZ(0, 1, 0); // ant color
+    s.endColor.setXYZ(0.2, 0.3, 0.6); // wall color
     self.screen.splasher.addCopy(s);
   }
 
-  // fast outer particles
-  particles = Math.ceil(8 * (1 + 0.5 * Math.random()));
-  explosionRad = rad * 1.5;
-  dirOffset = 2 * Math.PI * Math.random();
-  for (i = 0; i < particles; i++) {
-    duration = 7 * (1 + Math.random());
-    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
-    dx = Math.sin(dir) * explosionRad / duration;
-    dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.4);
-  }
+//  // fast outer particles
+//  particles = Math.ceil(8 * (1 + 0.5 * Math.random()));
+//  explosionRad = rad * 1.5;
+//  dirOffset = 2 * Math.PI * Math.random();
+//  for (i = 0; i < particles; i++) {
+//    duration = 7 * (1 + Math.random());
+//    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
+//    dx = Math.sin(dir) * explosionRad / duration;
+//    dy = Math.cos(dir) * explosionRad / duration;
+//    addSplash(x, y, dx, dy, duration, 0.4);
+//  }
+//
+//  // inner smoke ring
+//  particles = Math.ceil(6 * (1 + 0.5 * Math.random()));
+//  explosionRad = rad * 2/3;
+//  dirOffset = 2 * Math.PI * Math.random();
+//  for (i = 0; i < particles; i++) {
+//    duration = 4 * (0.5 + Math.random());
+//    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
+//    dx = Math.sin(dir) * explosionRad / duration;
+//    dy = Math.cos(dir) * explosionRad / duration;
+//    addSplash(x, y, dx, dy, duration, rad/3);
+//  }
 
-  // inner smoke ring
-  particles = Math.ceil(6 * (1 + 0.5 * Math.random()));
-  explosionRad = rad * 2/3;
+  particles = Math.ceil(3 * (1 + 0.5 * Math.random()));
+  explosionRad = rad;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    duration = 4 * (0.5 + Math.random());
+    duration = 20 * (0.5 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
     dx = Math.sin(dir) * explosionRad / duration;
     dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, rad/3);
+    addSplash(x + dx, y + dy, dx, dy, duration, rad);
   }
 };

@@ -31,7 +31,6 @@ LaserWeapon.prototype.fire = function() {
   var now = this.now();
   this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);
   this.timeoutRunning = true;
-  // TODO more distinctive weapon sounds
   this.screen.soundPew(pos);
 };
 
