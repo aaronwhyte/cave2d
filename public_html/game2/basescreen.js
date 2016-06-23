@@ -231,6 +231,7 @@ BaseScreen.prototype.initWorld = function() {
     [g.PLAYER_FIRE, g.NEUTRAL],
     [g.PLAYER_FIRE, g.WALL],
 
+    [g.ENEMY, g.NEUTRAL],
     [g.ENEMY, g.WALL],
     [g.ENEMY, g.CURSOR],
     [g.ENEMY, g.PLAYER],
