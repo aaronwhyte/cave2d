@@ -261,13 +261,13 @@ AntSpirit.prototype.explode = function() {
 AntSpirit.prototype.bulletBurst = function(pos, startRad, endRad) {
   var p = Vec2d.alloc();
   var v = Vec2d.alloc();
-  var bulletCount = Math.floor(20 + 4 * Math.random());
+  var bulletCount = Math.floor(14 + 5 * Math.random());
   var a = Math.random() * Math.PI;
   for (var i = 0; i < bulletCount; i++) {
     var duration = 6 + Math.random();
     var speed = (endRad - startRad) / duration;
     a += 2 * Math.PI / bulletCount;
-    v.setXY(0, 1).rot(a);
+    v.setXY(0, 1).rot(a + Math.random() * 0.1);
     p.set(v).scale(startRad).add(pos);
     v.scale(speed);
     this.addBullet(p, v, Math.random() * 0.6 + 0.5, duration);
