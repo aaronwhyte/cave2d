@@ -324,7 +324,7 @@ PlayerSpirit.prototype.addHealth = function(h) {
 };
 
 PlayerSpirit.prototype.die = function() {
-  this.screen.playerChasePolarity = -0.1;
+  this.screen.playerChasePolarity = -0.03;
   var body = this.getBody();
   if (body) {
     var now = this.now();
@@ -332,7 +332,7 @@ PlayerSpirit.prototype.die = function() {
     var x = pos.x;
     var y = pos.y;
 
-    this.screen.drawTerrainPill(pos, pos, body.rad * 5, 1);
+    this.screen.drawTerrainPill(pos, pos, body.rad * 4, 1);
 
     // giant tube explosion
     var s = this.screen.splash;
@@ -377,35 +377,38 @@ PlayerSpirit.prototype.die = function() {
       s.startPose.scale.setXYZ(startRad, startRad, 1);
       s.endPose.scale.setXYZ(0, 0, 1);
 
-      s.startColor.setXYZ(1, 1, 1);
-      s.endColor.setXYZ(1, 1, 1);
+      s.startColor.setXYZ(1, 0.3, 0.6);
+      s.endColor.setXYZ(1/2, 0.3/2, 0.6/2);
       self.screen.splasher.addCopy(s);
     }
 
-    // fast outer particles
-    particles = Math.ceil(15 * (1 + 0.5 * Math.random()));
-    explosionRad = 20;
-    dirOffset = 2 * Math.PI * Math.random();
-    for (i = 0; i < particles; i++) {
-      duration = 15 * (1 + Math.random());
-      dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
-      dx = Math.sin(dir) * explosionRad / duration;
-      dy = Math.cos(dir) * explosionRad / duration;
-      addSplash(x, y, dx, dy, duration, 1);
-    }
+//    // fast outer particles
+//    particles = Math.ceil(15 * (1 + 0.5 * Math.random()));
+//    explosionRad = 20;
+//    dirOffset = 2 * Math.PI * Math.random();
+//    for (i = 0; i < particles; i++) {
+//      duration = 15 * (1 + Math.random());
+//      dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
+//      dx = Math.sin(dir) * explosionRad / duration;
+//      dy = Math.cos(dir) * explosionRad / duration;
+//      addSplash(x, y, dx, dy, duration, 1);
+//    }
 
-    // slow inner smoke ring
+    // inner smoke ring
     particles = Math.ceil(20 * (1 + 0.5 * Math.random()));
     explosionRad = 4;
     dirOffset = 2 * Math.PI * Math.random();
     for (i = 0; i < particles; i++) {
-      duration = 40 * (0.5 + Math.random());
+      duration = 20 * (0.5 + Math.random());
       dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
       var thisRad = explosionRad + (0.5 + Math.random());
       dx = Math.sin(dir) * explosionRad / duration;
       dy = Math.cos(dir) * explosionRad / duration;
       addSplash(x, y, dx, dy, duration, 2);
     }
+
+    var craterRad = body.rad * 10;
+    this.bulletBurst(pos, body.rad * 0.5, 0, craterRad);
 
     // delete body
     this.screen.world.removeBodyId(this.bodyId);
@@ -418,6 +421,55 @@ PlayerSpirit.prototype.die = function() {
     this.screen.world.addTimeout(now + PlayerSpirit.RESPAWN_TIMEOUT,
         this.id, PlayerSpirit.RESPAWN_TIMEOUT_ID);
   }
+};
+
+PlayerSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
+  var p = Vec2d.alloc();
+  var v = Vec2d.alloc();
+  var bulletCount = Math.floor(16 + 4 * Math.random());
+  var a = Math.random() * Math.PI;
+  for (var i = 0; i < bulletCount; i++) {
+    var duration = 10 + 5 * Math.random();
+    var speed = (endRad - startRad) / duration;
+    a += 2 * Math.PI / bulletCount;
+    v.setXY(0, 1).rot(a + Math.random() * 0.1);
+    p.set(v).scale(startRad).add(pos);
+    v.scale(speed);
+    this.addExplosionBullet(p, v, bulletRad, duration);
+  }
+  v.free();
+  p.free();
+};
+
+PlayerSpirit.prototype.addExplosionBullet = function(pos, vel, rad, duration) {
+  var now = this.now();
+  var spirit = BulletSpirit.alloc(this.screen);
+  spirit.setModelStamp(this.screen.circleStamp);
+  spirit.setColorRGB(1, 0.3, 0.6);
+  var density = 1;
+
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, now);
+  b.setVelAtTime(vel, now);
+  b.rad = rad;
+  b.hitGroup = BaseScreen.Group.PLAYER_FIRE;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = duration;
+  spirit.bodyId = this.screen.world.addBody(b);
+
+  var spiritId = this.screen.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  spirit.addTrailSegment();
+  spirit.digChance = 999;
+  spirit.bounceChance = 0;
+  spirit.damage = 0;
+  spirit.wallDamageMultiplier = 1.6;
+
+  // bullet self-destruct timeout
+  this.screen.world.addTimeout(now + duration, spiritId, 0);
+
+  return spiritId;
 };
 
 PlayerSpirit.prototype.respawn = function() {
