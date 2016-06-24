@@ -855,7 +855,7 @@ BaseScreen.prototype.soundExit = function(pos) {
     var delay = 0.05 * i;
     var attack = 0;
     var sustain = 0.04;
-    var decay = 0.1 * i * i / voices;
+    var decay = 0.1 * i / voices;
     freq1 *= Math.pow(2, 1/3);
     var freq2 = freq1 + (Math.random() - 0.5) * 10;
     this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq2, freq1, 'square', delay);
