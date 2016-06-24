@@ -245,12 +245,13 @@ AntSpirit.prototype.onPlayerBulletHit = function(damage) {
 };
 
 AntSpirit.prototype.explode = function() {
+//  this.screen.setTimeWarp(0.1);
   var body = this.getBody();
   var pos = this.getBodyPos();
-  var craterRad = body.rad * (6 + 2 * Math.random());
-  this.explosionSplash(pos, body.rad * 1.2);
-  this.screen.drawTerrainPill(pos, pos, craterRad/2, 1);
-  this.bulletBurst(pos, body.rad + 1, craterRad);
+  var craterRad = body.rad * (7 + 2 * Math.random());
+  this.explosionSplash(pos, craterRad * 0.6);
+//  this.screen.drawTerrainPill(pos, pos, craterRad * 0.75, 1);
+  this.bulletBurst(pos, body.rad * 0.75, body.rad * 2, craterRad);
   this.screen.soundKaboom(pos);
   this.screen.drawTerrainPill(pos, pos, body.rad, 0);
 
@@ -258,19 +259,19 @@ AntSpirit.prototype.explode = function() {
   this.screen.world.removeSpiritId(this.id);
 };
 
-AntSpirit.prototype.bulletBurst = function(pos, startRad, endRad) {
+AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
   var p = Vec2d.alloc();
   var v = Vec2d.alloc();
-  var bulletCount = Math.floor(14 + 5 * Math.random());
+  var bulletCount = Math.floor(16 + 4 * Math.random());
   var a = Math.random() * Math.PI;
   for (var i = 0; i < bulletCount; i++) {
-    var duration = 6 + Math.random();
+    var duration = 6 + 2 * Math.random();
     var speed = (endRad - startRad) / duration;
     a += 2 * Math.PI / bulletCount;
     v.setXY(0, 1).rot(a + Math.random() * 0.1);
     p.set(v).scale(startRad).add(pos);
     v.scale(speed);
-    this.addBullet(p, v, Math.random() * 0.6 + 0.5, duration);
+    this.addBullet(p, v, bulletRad, duration);
   }
   v.free();
   p.free();
@@ -299,6 +300,7 @@ AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.digChance = 999;
   spirit.bounceChance = 0;
   spirit.damage = 0;
+  spirit.wallDamageMultiplier = 1.6;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, 0);
@@ -331,38 +333,14 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
     self.screen.splasher.addCopy(s);
   }
 
-//  // fast outer particles
-//  particles = Math.ceil(8 * (1 + 0.5 * Math.random()));
-//  explosionRad = rad * 1.5;
-//  dirOffset = 2 * Math.PI * Math.random();
-//  for (i = 0; i < particles; i++) {
-//    duration = 7 * (1 + Math.random());
-//    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
-//    dx = Math.sin(dir) * explosionRad / duration;
-//    dy = Math.cos(dir) * explosionRad / duration;
-//    addSplash(x, y, dx, dy, duration, 0.4);
-//  }
-//
-//  // inner smoke ring
-//  particles = Math.ceil(6 * (1 + 0.5 * Math.random()));
-//  explosionRad = rad * 2/3;
-//  dirOffset = 2 * Math.PI * Math.random();
-//  for (i = 0; i < particles; i++) {
-//    duration = 4 * (0.5 + Math.random());
-//    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-//    dx = Math.sin(dir) * explosionRad / duration;
-//    dy = Math.cos(dir) * explosionRad / duration;
-//    addSplash(x, y, dx, dy, duration, rad/3);
-//  }
-
-  particles = Math.ceil(3 * (1 + 0.5 * Math.random()));
-  explosionRad = rad;
+  particles = Math.ceil(5 * (1 + 0.5 * Math.random()));
+  explosionRad = rad/2;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    duration = 20 * (0.5 + Math.random());
+    duration = 10 * (0.5 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = Math.sin(dir) * explosionRad / duration;
-    dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x + dx, y + dy, dx, dy, duration, rad);
+    dx = 0.5 * Math.sin(dir) * explosionRad / duration;
+    dy = 0.5 * Math.cos(dir) * explosionRad / duration;
+    addSplash(x + dx, y + dy, dx, dy, duration, explosionRad/2);
   }
 };
