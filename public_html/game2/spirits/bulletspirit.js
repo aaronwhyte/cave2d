@@ -41,6 +41,7 @@ BulletSpirit.prototype.reset = function(screen) {
   this.digChance = 0.1;
   this.bounceChance = 0.1;
   this.damage = 1;
+  this.wallDamageMultiplier = 1;
 
   return this;
 };
@@ -90,7 +91,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
   if (!body) return;
   var pos = this.getBodyPos();
   if (this.digChance * mag > Math.random()) {
-    var pillRad = body.rad + 0.5;
+    var pillRad = this.wallDamageMultiplier * body.rad + 0.5;
     this.screen.drawTerrainPill(pos, pos, pillRad, 1);
     this.wallDamageSplash(pos, pillRad);
     this.screen.soundBing(pos);
