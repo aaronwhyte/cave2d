@@ -262,13 +262,13 @@ AntSpirit.prototype.explode = function() {
 AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
   var p = Vec2d.alloc();
   var v = Vec2d.alloc();
-  var bulletCount = Math.floor(16 + 4 * Math.random());
+  var bulletCount = Math.floor(8 + 2 * Math.random());
   var a = Math.random() * Math.PI;
   for (var i = 0; i < bulletCount; i++) {
     var duration = 6 + 2 * Math.random();
     var speed = (endRad - startRad) / duration;
     a += 2 * Math.PI / bulletCount;
-    v.setXY(0, 1).rot(a + Math.random() * 0.1);
+    v.setXY(0, 1).rot(a + Math.random() * Math.PI * 0.15);
     p.set(v).scale(startRad).add(pos);
     v.scale(speed);
     this.addBullet(p, v, bulletRad, duration);
@@ -300,7 +300,7 @@ AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.digChance = 999;
   spirit.bounceChance = 0;
   spirit.damage = 0;
-  spirit.wallDamageMultiplier = 1.6;
+  spirit.wallDamageMultiplier = 1.7;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, 0);
