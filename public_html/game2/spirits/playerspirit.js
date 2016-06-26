@@ -521,12 +521,3 @@ PlayerSpirit.prototype.shieldsUp = function() {
 PlayerSpirit.prototype.isShielded = function() {
   return this.now() < this.shieldEndTime;
 };
-
-PlayerSpirit.prototype.warp = function() {
-  var pos = this.getBodyPos();
-  if (pos) {
-    this.screen.setTimeWarp(0.05);
-    this.lastWarp = this.now();
-    this.screen.soundPlayerWarp(pos);
-  }
-};

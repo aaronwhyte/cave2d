@@ -94,7 +94,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
     var pillRad = this.wallDamageMultiplier * body.rad + 0.5;
     this.screen.drawTerrainPill(pos, pos, pillRad, 1);
     this.wallDamageSplash(pos, pillRad);
-    this.screen.soundBing(pos);
+    this.screen.soundWallDamage(pos);
     this.destroyBody();
   } else {
     // bounce or vanish?

@@ -882,7 +882,7 @@ BaseScreen.prototype.soundShieldThump = function(worldPos, mag) {
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
-  var vol = Math.min(1, mag * 2);
+  var vol = Math.min(1, mag * 1.6);
   if (vol > 0.01) {
     var dur = 0.07;
     var freq  = 10 * mag + 500;
@@ -892,37 +892,31 @@ BaseScreen.prototype.soundShieldThump = function(worldPos, mag) {
   }
 };
 
-BaseScreen.prototype.soundBing = function(pos) {
+BaseScreen.prototype.soundWallDamage = function(pos) {
   this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
-  var voices = 3;
   var sustain = 0.02 * (Math.random() + 0.5);
-  var baseFreq = 2000 + 10 * (Math.random() + 0.5);
-  for (var i = 0; i < voices; i++) {
-    var decay = 0;
-    var attack = sustain * 2;
-    var freq1 = baseFreq * (1 + i/3);
-    var freq2 = 100 + i;
-    this.sfx.sound(x, y, 0, 2/voices * 0.4, attack, sustain, decay, freq1, freq2, 'square');
-  }
+  var decay = 0;
+  var attack = sustain * 2;
+  var freq1 = 2000 + 10 * (Math.random() + 0.5);
+  var freq2 = 100;
+  this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay, freq1, freq2, 'square');
 };
 
-BaseScreen.prototype.soundKaboom = function(pos) {
+BaseScreen.prototype.soundAntExplode = function(pos) {
   this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
-  var voices = 5;
-  for (var i = 0; i < voices; i++) {
-    var delay = (i % 2 ? 0 : 0.05) * (1 + 0.1 * Math.random());
-    var attack = 0;
-    var sustain = 0.3;
-    var decay = (Math.random() + 1) * 0.03 * i;
-    var freq1 = Math.random() * 30 * i + 200;
-    var freq2 = 3;
-    this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, (i % 2 ? 'square' : 'sine'), delay);
-  }
+  this.sfx.sound(x, y, 0, 1,
+      0, 0.2, (Math.random() + 1) * 0.1,
+          Math.random() * 30 + 200, 3,
+      'square');
+  this.sfx.sound(x, y, 0, 1,
+      0, 0.2, (Math.random() + 1) * 0.1,
+          Math.random() * 30 + 230, 3,
+      'square');
 };
 
 BaseScreen.prototype.soundPlayerExplode = function(pos) {
@@ -930,20 +924,19 @@ BaseScreen.prototype.soundPlayerExplode = function(pos) {
   var x = this.vec4.v[0];
   var y = this.vec4.v[1];
 
-  var voices = 5;
-  var attack = 0.1;
-  var sustain = 0.2 * (Math.random() + 0.01);
-  var decay = (Math.random()*0.2 + 1) * 1.5;
+  // quick rise
+  this.sfx.sound(x, y, 0, 2, 0, 0.1, 0, 20, 250, 'square');
+
+  // fading crackle
+  var voices = 2;
+  var attack = 0;
+  var sustain = 0.2 * (Math.random() + 1);
+  var decay = (Math.random()*0.2 + 1) * 0.6;
   for (var i = 0; i < voices; i++) {
-    var delay = Math.random() * 0.02 + i * 0.02;
-    var freq1 = Math.random() * 30 + 30;
-    var freq2 = Math.random() * 10 + 10;
-    this.sfx.sound(x, y, 0, 0.8, attack, 0, decay*0.3, freq1*3, 1, 'square', delay);
-    this.sfx.sound(x, y, 0, 0.8, 0, sustain, decay, freq1, freq2, 'sine', delay);
-    this.sfx.sound(x, y, 0, 0.8, 0, sustain, decay, freq1, freq2, 'triangle', delay);
+    var freq1 = (Math.random() + i) * 10 + 40;
+    var freq2 = Math.random() + 1 + i * 4;
+    this.sfx.sound(x, y, 0, 1.7, attack, sustain, decay, freq1, freq2, 'square');
   }
-  this.sfx.sound(x, y, 0, 0.5, decay/6, 0, decay/4, 61, 60, 'square');
-  this.sfx.sound(x, y, 0, 0.5, decay/6, 0, decay/4, 34, 30, 'square');
 };
 
 BaseScreen.prototype.soundPlayerSpawn = function(pos) {
@@ -956,19 +949,6 @@ BaseScreen.prototype.soundPlayerSpawn = function(pos) {
     freq *= 2;
     this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.05);
     this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.05);
-  }
-};
-
-BaseScreen.prototype.soundPlayerWarp = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-
-  var freq = 2000;
-  for (var i = 0; i < 20; i++) {
-    freq *= 0.5;
-    this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.1);
-    this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.1);
   }
 };
 
