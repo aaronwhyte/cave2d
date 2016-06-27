@@ -173,7 +173,7 @@ World.prototype.loadBody = function(body) {
 };
 
 /**
- * Removes the body and frees the body from the class pool.
+ * Removes the body from the world, and frees the body instance back into the class pool.
  * @param bodyId
  */
 World.prototype.removeBodyId = function(bodyId) {
