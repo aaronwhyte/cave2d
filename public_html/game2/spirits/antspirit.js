@@ -251,7 +251,8 @@ AntSpirit.prototype.explode = function() {
   var craterRad = body.rad * (7 + 2 * Math.random());
   this.explosionSplash(pos, craterRad * 0.6);
 //  this.screen.drawTerrainPill(pos, pos, craterRad * 0.75, 1);
-  this.bulletBurst(pos, body.rad * 0.75, body.rad * 2, craterRad);
+  var bulletRad = body.rad * 0.75;
+  this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad);
   this.screen.soundAntExplode(pos);
   this.screen.drawTerrainPill(pos, pos, body.rad, 0);
 
@@ -265,7 +266,7 @@ AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
   var bulletCount = Math.floor(8 + 2 * Math.random());
   var a = Math.random() * Math.PI;
   for (var i = 0; i < bulletCount; i++) {
-    var duration = 6 + 2 * Math.random();
+    var duration = 7 + 2 * Math.random();
     var speed = (endRad - startRad) / duration;
     a += 2 * Math.PI / bulletCount;
     v.setXY(0, 1).rot(a + Math.random() * Math.PI * 0.15);
@@ -297,8 +298,8 @@ AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   var spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.digChance = 999;
-  spirit.bounceChance = 0;
+  spirit.digChance = 9;
+  spirit.bounceChance = 9;
   spirit.damage = 0;
   spirit.wallDamageMultiplier = 1.7;
 
