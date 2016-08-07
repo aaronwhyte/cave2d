@@ -1,4 +1,5 @@
 Test 39: Orientation & off-center force
+- test nest based on previous editor tests
 - phy
   - bodies
     - moi
@@ -10,10 +11,10 @@ Test 39: Orientation & off-center force
     - setAngAtTime()
     - setAngVelAtTime()
 - editor
-  - give cursor a direction based on movement
-  - add objects with initial orientation based on cursor direction
   - grab objects at a point, and apply force to that point when dragging
     - point defined by dist & direction from center of mass.
+  - give cursor a direction based on movement
+  - add objects with initial orientation based on cursor direction
 - s27n
 
 
