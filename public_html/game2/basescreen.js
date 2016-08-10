@@ -2,7 +2,7 @@
  * @constructor
  * @extends {Screen}
  */
-function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventureName, levelName) {
+function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
   Screen.call(this);
 
   this.adventureName = adventureName;
@@ -16,7 +16,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sound, adventu
   this.renderer = renderer;
   this.glyphs = glyphs;
   this.stamps = stamps;
-  this.sfx = sound;
+  // TODO inject the Sounds instance instead
+  this.sounds = new Sounds(sfx);
 
   this.viewMatrix = new Matrix44();
   this.vec2d = new Vec2d();
@@ -320,41 +321,9 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
   // TODO: something better
   for (var spiritId in lostSpiritIdToBodyId) {
     var bodyId = lostSpiritIdToBodyId[spiritId];
-//    var body = this.getBodyById(bodyId);
-//    this.getBodyPos(body, this.vec2d);
-//    this.debugSplash(this.vec2d, 2, 1, 0, 0);
     this.world.removeBodyId(bodyId);
   }
 };
-
-BaseScreen.prototype.debugSplash = function(pos, rad, r, g, b) {
-  var s = this.splash;
-  s.reset(BaseScreen.SplashType.ERROR, this.tubeStamp);
-
-  s.startTime = this.now();
-  s.duration = Infinity;
-
-  var x = pos.x;
-  var y = pos.y;
-
-  s.startPose.pos.setXYZ(x, y, -1);
-  s.endPose.pos.setXYZ(x, y, -1);
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad, rad, 1);
-
-  s.startPose2.pos.setXYZ(x, y, 1);
-  s.endPose2.pos.setXYZ(x, y, 1);
-  s.startPose2.scale.setXYZ(rad * 0.8, rad * 0.8, 1);
-  s.endPose2.scale.setXYZ(rad * 0.8, rad * 0.8, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-  s.startColor.setXYZ(r, g, b);
-  s.endColor.setXYZ(r, g, b);
-
-  this.splasher.addCopy(s);
-};
-
 
 BaseScreen.prototype.createTrackball = function() {
   var trackball = new MultiTrackball()
@@ -659,11 +628,6 @@ BaseScreen.prototype.getBodyById = function(id) {
   return this.world.bodies[id];
 };
 
-BaseScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
-  this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
-  this.flushTerrainChanges();
-};
-
 BaseScreen.prototype.removeByBodyId = function(bodyId) {
   var body = this.world.getBody(bodyId);
   if (body) {
@@ -812,149 +776,60 @@ BaseScreen.prototype.getAveragePlayerPos = function() {
   return this.playerAveragePos;
 };
 
-BaseScreen.prototype.soundPew = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
 
-  var freq = 230
-      - Math.abs((this.now() % 8) - 4) * 20
-      - Math.abs((this.now() % 200) - 100) * 0.2;
-  var attack = 2/60;
-  var sustain = 2/60;
-  var decay = 0;//5/ 60;
-  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, 10 * freq, 'triangle');
-  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq/4, 10 * freq/4, 'triangle');
+//////////////////
+// Sound effects
+//////////////////
+
+BaseScreen.prototype.getScreenPosForWorldPos = function(worldPos) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
+  return this.vec2d.setXY(this.vec4.v[0], this.vec4.v[1]);
 };
 
-BaseScreen.prototype.soundShotgun = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-
-  var voices = 8;
-  for (var i = 0; i < voices; i++) {
-    var delay = 0;
-    var attack = 0;
-    var sustain = 0.05 * (Math.random() + 0.01);
-    var decay = (Math.random() + 1) * 0.3;
-    var freq1 = Math.random() * 10 + 50;
-    var freq2 = Math.random() * 10 + 1;
-    this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq1, freq2, 'square', delay);
-  }
+BaseScreen.prototype.soundPew = function(worldPos) {
+  this.sounds.pew(this.getScreenPosForWorldPos(worldPos), this.now());
 };
 
-BaseScreen.prototype.soundExit = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
+BaseScreen.prototype.soundShotgun = function(worldPos) {
+  this.sounds.shotgun(this.getScreenPosForWorldPos(worldPos));
+};
 
-  var voices = 20;
-  var freq1 = 30;
-  for (var i = 0; i < voices; i++) {
-    var delay = 0.05 * i;
-    var attack = 0;
-    var sustain = 0.04;
-    var decay = 0.1 * i / voices;
-    freq1 *= Math.pow(2, 1/3);
-    var freq2 = freq1 + (Math.random() - 0.5) * 10;
-    this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq2, freq1, 'square', delay);
-    this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq1*2 + Math.random(), freq2*2 + Math.random(), 'triangle', delay);
-  }
+BaseScreen.prototype.soundExit = function(worldPos) {
+  this.sounds.exit(this.getScreenPosForWorldPos(worldPos));
 };
 
 BaseScreen.prototype.soundWallThump = function(worldPos, mag) {
-  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-
-  var vol = Math.min(1, mag * 0.05);
-  if (vol > 0.01) {
-    var dur = Math.min(0.1, 0.01 * mag*mag);
-    var freq = mag + 200 + 5 * Math.random();
-    var freq2 = 1;
-    this.sfx.sound(x, y, 0, vol, 0, 0, dur, freq, freq2, 'square');
-  }
+  this.sounds.wallThump(this.getScreenPosForWorldPos(worldPos), mag);
 };
 
 BaseScreen.prototype.soundShieldThump = function(worldPos, mag) {
-  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-
-  var vol = Math.min(1, mag * 1.6);
-  if (vol > 0.01) {
-    var dur = 0.07;
-    var freq  = 10 * mag + 500;
-    var freq2 = freq + (Math.random() - 0.5) * 10 * mag;
-    this.sfx.sound(x, y, 0, vol, 0, dur, 0, freq, freq2, 'sawtooth');
-    this.sfx.sound(x, y, 0, vol, 0, dur, 0, freq/8, freq2/8, 'square');
-  }
+  this.sounds.shieldThump(this.getScreenPosForWorldPos(worldPos), mag);
 };
 
-BaseScreen.prototype.soundWallDamage = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-  var sustain = 0.02 * (Math.random() + 0.5);
-  var decay = 0;
-  var attack = sustain * 2;
-  var freq1 = 2000 + 10 * (Math.random() + 0.5);
-  var freq2 = 100;
-  this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay, freq1, freq2, 'square');
+BaseScreen.prototype.soundWallDamage = function(worldPos) {
+  this.sounds.wallDamage(this.getScreenPosForWorldPos(worldPos));
 };
 
-BaseScreen.prototype.soundAntExplode = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-
-  this.sfx.sound(x, y, 0, 1,
-      0, 0.2, (Math.random() + 1) * 0.1,
-          Math.random() * 30 + 200, 3,
-      'square');
-  this.sfx.sound(x, y, 0, 1,
-      0, 0.2, (Math.random() + 1) * 0.1,
-          Math.random() * 30 + 230, 3,
-      'square');
+BaseScreen.prototype.soundAntExplode = function(worldPos) {
+  this.sounds.antExplode(this.getScreenPosForWorldPos(worldPos));
 };
 
-BaseScreen.prototype.soundPlayerExplode = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-
-  // quick rise
-  this.sfx.sound(x, y, 0, 2, 0, 0.1, 0, 20, 250, 'square');
-
-  // fading crackle
-  var voices = 2;
-  var attack = 0;
-  var sustain = 0.2 * (Math.random() + 1);
-  var decay = (Math.random()*0.2 + 1) * 0.6;
-  for (var i = 0; i < voices; i++) {
-    var freq1 = (Math.random() + i) * 10 + 40;
-    var freq2 = Math.random() + 1 + i * 4;
-    this.sfx.sound(x, y, 0, 1.7, attack, sustain, decay, freq1, freq2, 'square');
-  }
+BaseScreen.prototype.soundPlayerExplode = function(worldPos) {
+  this.sounds.playerExplode(this.getScreenPosForWorldPos(worldPos));
 };
 
-BaseScreen.prototype.soundPlayerSpawn = function(pos) {
-  this.vec4.setXYZ(pos.x, pos.y, 0).transform(this.viewMatrix);
-  var x = this.vec4.v[0];
-  var y = this.vec4.v[1];
-
-  var freq = 100;
-  for (var i = 0; i < 5; i++) {
-    freq *= 2;
-    this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.05);
-    this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.05);
-  }
+BaseScreen.prototype.soundPlayerSpawn = function(worldPos) {
+  this.sounds.playerSpawn(this.getScreenPosForWorldPos(worldPos));
 };
 
-////////////////////////////
+///////////////////////////
 // Wall manipulation stuff
 ///////////////////////////
+
+BaseScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
+  this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
+  this.flushTerrainChanges();
+};
 
 BaseScreen.prototype.flushTerrainChanges = function() {
   var changedCellIds = this.bitGrid.flushChangedCellIds();

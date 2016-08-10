@@ -1,5 +1,26 @@
+Game2 refactoring
+v pull up menuitemconfig
+v pull up spiritconfig
+- break up basescreen
+  - sound gen
+    v put sound effect code in it's own file
+    - give it access to screen's time and view matrix (just give it whole screen for now)
+    - pass the sound instance to places that call it, like spirits.
+  - splash gen
+  - wall code
+  - controls setup
+  - gl model setup
+  - dom event handling (listen, unlisten, distributor setup)
+  - phy stuff
+    - groups setup
+    - collision handling
+    - scan util
+  - deserislization
+- pull up basespirit... to spirit?
+
 Test 39: Orientation & off-center force
-- test nest based on previous editor tests
+v test nest based on previous editor tests
+- absorb lessons and libs from game2 code
 - phy
   - bodies
     - moi
