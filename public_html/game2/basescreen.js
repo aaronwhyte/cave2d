@@ -16,8 +16,6 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.renderer = renderer;
   this.glyphs = glyphs;
   this.stamps = stamps;
-  // TODO inject the Sounds instance instead
-  this.sounds = new Sounds(sfx);
 
   this.viewMatrix = new Matrix44();
   this.vec2d = new Vec2d();
@@ -25,6 +23,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.mat44 = new Matrix44();
   this.nextButtonNum = 0;
   this.worldBoundingRect = new Rect();
+
+  this.sounds = new Sounds(sfx, this.viewMatrix);
 
   this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
@@ -522,7 +522,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
       var playerSpirit = this.getSpiritForBody(playerBody);
       var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody && !this.exitStartTime) {
-        this.soundExit(this.getAveragePlayerPos());
+        this.sounds.exit(this.getAveragePlayerPos());
         this.startExit(exitBody.pathStartPos.x, exitBody.pathStartPos.y);
       }
       var antBody = this.bodyIfSpiritType(BaseScreen.SpiritType.ANT, b0, b1);
@@ -530,7 +530,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
         playerSpirit.hitAnt(mag);
       }
       if (!exitBody && !antBody) {
-        this.soundWallThump(this.getAveragePlayerPos(), mag * 10);
+        this.sounds.wallThump(this.getAveragePlayerPos(), mag * 10);
       }
     }
 
@@ -774,52 +774,6 @@ BaseScreen.prototype.getAveragePlayerPos = function() {
     this.playerAveragePos.scale(1 / playerCount);
   }
   return this.playerAveragePos;
-};
-
-
-//////////////////
-// Sound effects
-//////////////////
-
-BaseScreen.prototype.getScreenPosForWorldPos = function(worldPos) {
-  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
-  return this.vec2d.setXY(this.vec4.v[0], this.vec4.v[1]);
-};
-
-BaseScreen.prototype.soundPew = function(worldPos) {
-  this.sounds.pew(this.getScreenPosForWorldPos(worldPos), this.now());
-};
-
-BaseScreen.prototype.soundShotgun = function(worldPos) {
-  this.sounds.shotgun(this.getScreenPosForWorldPos(worldPos));
-};
-
-BaseScreen.prototype.soundExit = function(worldPos) {
-  this.sounds.exit(this.getScreenPosForWorldPos(worldPos));
-};
-
-BaseScreen.prototype.soundWallThump = function(worldPos, mag) {
-  this.sounds.wallThump(this.getScreenPosForWorldPos(worldPos), mag);
-};
-
-BaseScreen.prototype.soundShieldThump = function(worldPos, mag) {
-  this.sounds.shieldThump(this.getScreenPosForWorldPos(worldPos), mag);
-};
-
-BaseScreen.prototype.soundWallDamage = function(worldPos) {
-  this.sounds.wallDamage(this.getScreenPosForWorldPos(worldPos));
-};
-
-BaseScreen.prototype.soundAntExplode = function(worldPos) {
-  this.sounds.antExplode(this.getScreenPosForWorldPos(worldPos));
-};
-
-BaseScreen.prototype.soundPlayerExplode = function(worldPos) {
-  this.sounds.playerExplode(this.getScreenPosForWorldPos(worldPos));
-};
-
-BaseScreen.prototype.soundPlayerSpawn = function(worldPos) {
-  this.sounds.playerSpawn(this.getScreenPosForWorldPos(worldPos));
 };
 
 ///////////////////////////

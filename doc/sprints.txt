@@ -2,11 +2,14 @@ Game2 refactoring
 v pull up menuitemconfig
 v pull up spiritconfig
 - break up basescreen
-  - sound gen
+  v sounds
     v put sound effect code in it's own file
-    - give it access to screen's time and view matrix (just give it whole screen for now)
-    - pass the sound instance to places that call it, like spirits.
-  - splash gen
+    v call screen.sounds.foo() - remove screen sound methods
+      yea yea Law of Demeter... Adding a param to every Spirit is a PITA. Not gonna do it.
+  - splashes
+    - own file
+    - call screen.splashes.foo(), rm screen methods
+  - stamps
   - wall code
   - controls setup
   - gl model setup

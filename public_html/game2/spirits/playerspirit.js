@@ -310,7 +310,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 
 PlayerSpirit.prototype.hitAnt = function(mag) {
   if (this.isShielded()) {
-    this.screen.soundShieldThump(this.getBodyPos(), mag);
+    this.screen.sounds.shieldThump(this.getBodyPos(), mag);
   } else {
     this.addHealth(-1);
   }
@@ -414,8 +414,7 @@ PlayerSpirit.prototype.die = function() {
     this.screen.world.removeBodyId(this.bodyId);
     this.bodyId = null;
 
-    // sound
-    this.screen.soundPlayerExplode(pos);
+    this.screen.sounds.playerExplode(pos);
 
     // prep to respawn
     this.screen.world.addTimeout(now + PlayerSpirit.RESPAWN_TIMEOUT,
@@ -480,7 +479,7 @@ PlayerSpirit.prototype.respawn = function() {
   this.bodyId = this.screen.world.addBody(body);
   var pos = this.tempBodyPos;
 
-  this.screen.soundPlayerSpawn(pos);
+  this.screen.sounds.playerSpawn(pos);
 
   // splash
   var x = pos.x;

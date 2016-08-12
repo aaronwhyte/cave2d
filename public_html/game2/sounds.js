@@ -1,12 +1,24 @@
 /**
  * @param sfx
+ * @param viewMatrix
  * @constructor
  */
-function Sounds(sfx) {
+function Sounds(sfx, viewMatrix) {
   this.sfx = sfx;
+  this.viewMatrix = viewMatrix;
+
+  this.vec4 = new Vec4();
+  this.vec2d = new Vec2d();
 }
 
-Sounds.prototype.pew = function(screenPos, now) {
+Sounds.prototype.getScreenPosForWorldPos = function(worldPos) {
+  this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
+  return this.vec2d.setXY(this.vec4.v[0], this.vec4.v[1]);
+};
+
+
+Sounds.prototype.pew = function(worldPos, now) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   var freq = 230
@@ -19,7 +31,8 @@ Sounds.prototype.pew = function(screenPos, now) {
   this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq/4, 10 * freq/4, 'triangle');
 };
 
-Sounds.prototype.shotgun = function(screenPos) {
+Sounds.prototype.shotgun = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   var voices = 8;
@@ -34,7 +47,8 @@ Sounds.prototype.shotgun = function(screenPos) {
   }
 };
 
-Sounds.prototype.exit = function(screenPos) {
+Sounds.prototype.exit = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   var voices = 20;
@@ -51,7 +65,8 @@ Sounds.prototype.exit = function(screenPos) {
   }
 };
 
-Sounds.prototype.wallThump = function(screenPos, mag) {
+Sounds.prototype.wallThump = function(worldPos, mag) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   var vol = Math.min(1, mag * 0.05);
@@ -63,7 +78,8 @@ Sounds.prototype.wallThump = function(screenPos, mag) {
   }
 };
 
-Sounds.prototype.shieldThump = function(screenPos, mag) {
+Sounds.prototype.shieldThump = function(worldPos, mag) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   var vol = Math.min(1, mag * 1.6);
@@ -76,7 +92,8 @@ Sounds.prototype.shieldThump = function(screenPos, mag) {
   }
 };
 
-Sounds.prototype.wallDamage = function(screenPos) {
+Sounds.prototype.wallDamage = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   var sustain = 0.02 * (Math.random() + 0.5);
@@ -87,7 +104,8 @@ Sounds.prototype.wallDamage = function(screenPos) {
   this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay, freq1, freq2, 'square');
 };
 
-Sounds.prototype.antExplode = function(screenPos) {
+Sounds.prototype.antExplode = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   this.sfx.sound(x, y, 0, 1,
@@ -100,7 +118,8 @@ Sounds.prototype.antExplode = function(screenPos) {
       'square');
 };
 
-Sounds.prototype.playerExplode = function(screenPos) {
+Sounds.prototype.playerExplode = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   // quick rise
@@ -118,7 +137,8 @@ Sounds.prototype.playerExplode = function(screenPos) {
   }
 };
 
-Sounds.prototype.playerSpawn = function(screenPos) {
+Sounds.prototype.playerSpawn = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
   var freq = 100;

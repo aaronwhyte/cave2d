@@ -94,7 +94,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
     var pillRad = this.wallDamageMultiplier * body.rad + 0.5;
     this.screen.drawTerrainPill(pos, pos, pillRad, 1);
     this.wallDamageSplash(pos, pillRad);
-    this.screen.soundWallDamage(pos);
+    this.screen.sounds.wallDamage(pos);
     this.destroyBody();
   } else {
     // bounce or vanish?
@@ -107,7 +107,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
       this.destroyBody();
       this.wallDamageSplash(pos, body.rad);
     }
-    this.screen.soundWallThump(pos, mag * body.mass);
+    this.screen.sounds.wallThump(pos, mag * body.mass);
   }
 };
 
@@ -115,7 +115,7 @@ BulletSpirit.prototype.onHitEnemy = function(mag) {
   var body = this.getBody();
   if (!body) return;
   var pos = this.getBodyPos();
-  this.screen.soundWallThump(pos, mag);
+  this.screen.sounds.wallThump(pos, mag);
   this.wallDamageSplash(pos, Math.random());
   this.destroyBody();
 };

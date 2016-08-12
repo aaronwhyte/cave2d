@@ -253,7 +253,7 @@ AntSpirit.prototype.explode = function() {
 //  this.screen.drawTerrainPill(pos, pos, craterRad * 0.75, 1);
   var bulletRad = body.rad * 0.75;
   this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad);
-  this.screen.soundAntExplode(pos);
+  this.screen.sounds.antExplode(pos);
   this.screen.drawTerrainPill(pos, pos, body.rad, 0);
 
   this.screen.world.removeBodyId(this.bodyId);

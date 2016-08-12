@@ -35,7 +35,7 @@ ShotgunWeapon.prototype.fire = function() {
   var now = this.now();
   this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);
   this.timeoutRunning = true;
-  this.screen.soundShotgun(pos);
+  this.screen.sounds.shotgun(pos);
 };
 
 ShotgunWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
