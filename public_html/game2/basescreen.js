@@ -59,9 +59,6 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.models = new Models();
   this.levelStamps = [];
 
-  // for sound throttling
-  this.hitsThisFrame = 0;
-
   this.timeMultiplier = 1;
 
   var self = this;
@@ -514,7 +511,6 @@ BaseScreen.prototype.onHitEvent = function(e) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
     var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
     var mag = strikeVec.magnitude();
-    this.hitsThisFrame++;
     strikeVec.free();
 
     var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);

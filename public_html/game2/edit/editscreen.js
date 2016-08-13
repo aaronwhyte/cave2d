@@ -211,7 +211,6 @@ EditScreen.prototype.handleInput = function () {
 
 EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
-  this.hitsThisFrame = 0;
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }

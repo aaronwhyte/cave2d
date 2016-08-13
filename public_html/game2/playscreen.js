@@ -148,7 +148,6 @@ PlayScreen.prototype.drawScene = function() {
     this.addPlayer();
   }
   this.renderer.setViewMatrix(this.viewMatrix);
-  this.hitsThisFrame = 0;
 
   var averagePlayerPos = this.getAveragePlayerPos();
   if (averagePlayerPos) {
