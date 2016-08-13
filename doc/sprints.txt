@@ -21,6 +21,10 @@ v pull up spiritconfig
   - deserislization
 - pull up basespirit... to spirit?
 
+Screen initialization sequence is gross!
+Today:
+* page creates screen
+
 Test 39: Orientation & off-center force
 v test nest based on previous editor tests
 - absorb lessons and libs from game2 code

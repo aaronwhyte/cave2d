@@ -174,6 +174,7 @@ LevelTestPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   // TODO: creating a Screen here is nasty.
   this.screen = new TestScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx,
       this.adventureName, this.levelName);
+  this.screen.lazyInit();
   if (this.jsonObj) {
     this.screen.loadWorldFromJson(this.jsonObj);
   } else {

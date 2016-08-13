@@ -255,7 +255,6 @@ BaseScreen.prototype.initWorld = function() {
  * @param {Object} json
  */
 BaseScreen.prototype.loadWorldFromJson = function (json) {
-  this.lazyInit();
   this.world.now = json.now;
   // bodies
   var lostSpiritIdToBodyId = {};

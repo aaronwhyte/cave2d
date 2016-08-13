@@ -186,6 +186,7 @@ LevelPlayPage.prototype.maybeCreateScreen = function() {
   }
   this.screen = new PlayScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx,
       this.adventureName, this.levelName);
+  this.screen.lazyInit();
   this.screen.loadWorldFromJson(this.jsonObj);
   this.screen.setPaused(this.paused);
   this.screen.snapCameraToPlayers();

@@ -191,7 +191,6 @@ EditScreen.prototype.toJSON = function() {
 };
 
 EditScreen.prototype.createDefaultWorld = function() {
-  this.lazyInit();
   this.bitGrid.drawPill(new Segment(new Vec2d(0, 0), new Vec2d(0, 0)), 9.8, 1);
   this.flushTerrainChanges();
 };
