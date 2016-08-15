@@ -1,13 +1,17 @@
+/**
+ * Common models for this game, besides the ones the Spirit classes own.
+ * @constructor
+ */
 function Models() {
 }
 
-Models.prototype.getPauseWithOutline = function() {
-  var m = this.getPauseNoOutline();
+Models.prototype.getPlayerPause = function() {
+  var m = this.getEditorPause();
   m.addRigidModel(RigidModel.createCircle(24));
   return m;
 };
 
-Models.prototype.getPauseNoOutline = function() {
+Models.prototype.getEditorPause = function() {
   var m = new RigidModel();
   for (var x = -1; x <= 1; x += 2) {
     var bar = RigidModel.createSquare().transformPositions(

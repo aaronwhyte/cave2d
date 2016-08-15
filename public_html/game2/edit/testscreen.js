@@ -2,8 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function TestScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(0.05, 1, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -70,22 +70,6 @@ TestScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-TestScreen.prototype.lazyInit = function() {
-  if (!this.initialized) {
-    this.initPermStamps();
-    this.initWidgets();
-    this.initSpiritConfigs();
-    this.updateHudLayout();
-    this.initWorld();
-    this.initialized = true;
-  }
-};
-
-TestScreen.prototype.initPermStamps = function() {
-  BaseScreen.prototype.initPermStamps.call(this);
-  this.pauseStamp = this.addLevelStampFromModel(this.models.getPauseWithOutline());
-};
-
 TestScreen.prototype.initWidgets = function() {
   var self = this;
   this.testDownFn = function(e) {
@@ -106,8 +90,8 @@ TestScreen.prototype.initWidgets = function() {
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName('t')
-      .setStamp(this.untestStamp)
-      .setKeyboardTipStamp(this.glyphs.stamps['T'])
+      .setStamp(this.stamps.untestStamp)
+      .setKeyboardTipStamp(this.stamps['T'])
       .setKeyboardTipScaleXY(4, -4)
       .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7)
 };

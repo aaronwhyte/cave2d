@@ -268,7 +268,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.drawStamp();
 
     // draw aim guide
-    this.screen.renderer.setStamp(this.screen.cylinderStamp);
+    this.screen.renderer.setStamp(this.stamps.cylinderStamp);
     var shotgun = this.weapon == this.shotgun;
     if (shotgun) {
       this.screen.renderer.setColorVector(this.vec4.setXYZ(1, 1, 0.5).scale1(Math.random() * 0.2 + 0.5));
@@ -296,7 +296,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     if (this.isShielded()) {
       var howShielded = (this.shieldEndTime - this.now()) / PlayerSpirit.SHIELD_TIMEOUT;
       renderer
-          .setStamp(this.screen.circleStamp)
+          .setStamp(this.stamps.circleStamp)
           .setColorVector(this.vec4.setXYZ(0, 1, 1));
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.01))
@@ -310,7 +310,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 
 PlayerSpirit.prototype.hitAnt = function(mag) {
   if (this.isShielded()) {
-    this.screen.sounds.shieldThump(this.getBodyPos(), mag);
+    this.sounds.shieldThump(this.getBodyPos(), mag);
   } else {
     this.addHealth(-1);
   }
@@ -336,7 +336,7 @@ PlayerSpirit.prototype.die = function() {
 
     // giant tube explosion
     var s = this.screen.splash;
-    s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
+    s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
     s.startTime = now;
     s.duration = 20;
@@ -367,7 +367,7 @@ PlayerSpirit.prototype.die = function() {
     var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
     function addSplash(x, y, dx, dy, duration, sizeFactor) {
-      s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.screen.circleStamp);
+      s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
       s.startTime = now;
       s.duration = duration;
 
@@ -414,7 +414,7 @@ PlayerSpirit.prototype.die = function() {
     this.screen.world.removeBodyId(this.bodyId);
     this.bodyId = null;
 
-    this.screen.sounds.playerExplode(pos);
+    this.sounds.playerExplode(pos);
 
     // prep to respawn
     this.screen.world.addTimeout(now + PlayerSpirit.RESPAWN_TIMEOUT,
@@ -443,7 +443,7 @@ PlayerSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) 
 PlayerSpirit.prototype.addExplosionBullet = function(pos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
-  spirit.setModelStamp(this.screen.circleStamp);
+  spirit.setModelStamp(this.stamps.circleStamp);
   spirit.setColorRGB(1, 0.3, 0.6);
   var density = 1;
 
@@ -479,14 +479,14 @@ PlayerSpirit.prototype.respawn = function() {
   this.bodyId = this.screen.world.addBody(body);
   var pos = this.tempBodyPos;
 
-  this.screen.sounds.playerSpawn(pos);
+  this.sounds.playerSpawn(pos);
 
   // splash
   var x = pos.x;
   var y = pos.y;
 
   var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
   s.startTime = now;
   s.duration = 10;

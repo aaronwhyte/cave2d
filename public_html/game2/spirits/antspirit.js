@@ -281,7 +281,7 @@ AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
 AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
-  spirit.setModelStamp(this.screen.circleStamp);
+  spirit.setModelStamp(this.stamps.circleStamp);
   spirit.setColorRGB(0, 0.5, 0);
   var density = 1;
 
@@ -320,7 +320,7 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
   var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
   function addSplash(x, y, dx, dy, duration, sizeFactor) {
-    s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.screen.circleStamp);
+    s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
     s.startTime = now;
     s.duration = duration;
 

@@ -2,8 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function EditScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(0.2, 0.6, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -16,8 +16,6 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     self.testTriggerWidget.setKeyboardTipTimeoutMs(ms);
     self.editor.setKeyboardTipTimeoutMs(ms);
   };
-
-  this.initialized = false;
 }
 EditScreen.prototype = new BaseScreen();
 EditScreen.prototype.constructor = EditScreen;
@@ -28,7 +26,7 @@ EditScreen.ANT_RAD = 0.8;
 EditScreen.ROCK_RAD = 1.4;
 
 EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
+  this.editor = new Editor(this, this.canvas, this.renderer, this.stamps);
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
     if (c) {
@@ -38,6 +36,7 @@ EditScreen.prototype.initEditor = function() {
   for (var group = 0; group < this.editor.getMaxGroupNum(); group++) {
     this.editor.addMenuKeyboardShortcut(group, group + 1);
   }
+  this.editor.getStamps();
 };
 
 EditScreen.prototype.updateHudLayout = function() {
@@ -89,28 +88,6 @@ EditScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-EditScreen.prototype.lazyInit = function() {
-  if (!this.initialized) {
-    this.initPermStamps();
-    this.initWidgets();
-    this.initSpiritConfigs();
-    this.initEditor();
-    var editorStamps = this.editor.getStamps();
-    for (var i = 0; i < editorStamps.length; i++) {
-      this.levelStamps.push(editorStamps[i]);
-    }
-
-    this.updateHudLayout();
-    this.initWorld();
-    this.initialized = true;
-  }
-};
-
-EditScreen.prototype.initPermStamps = function() {
-  BaseScreen.prototype.initPermStamps.call(this);
-  this.pauseStamp = this.addLevelStampFromModel(this.models.getPauseNoOutline());
-};
-
 EditScreen.prototype.initWidgets = function() {
   var self = this;
   this.testDownFn = function(e) {
@@ -131,10 +108,10 @@ EditScreen.prototype.initWidgets = function() {
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName('t')
-      .setStamp(this.testStamp)
-      .setKeyboardTipStamp(this.glyphs.stamps['T'])
+      .setStamp(this.stamps.testStamp)
+      .setKeyboardTipStamp(this.stamps['T'])
       .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7)
+      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7);
 
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.pauseDownFn)
@@ -144,7 +121,7 @@ EditScreen.prototype.initWidgets = function() {
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName(Key.Name.SPACE)
-      .setStamp(this.pauseStamp);
+      .setStamp(this.stamps.editorPauseStamp);
 };
 
 EditScreen.prototype.toJSON = function() {

@@ -94,7 +94,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
     var pillRad = this.wallDamageMultiplier * body.rad + 0.5;
     this.screen.drawTerrainPill(pos, pos, pillRad, 1);
     this.wallDamageSplash(pos, pillRad);
-    this.screen.sounds.wallDamage(pos);
+    this.sounds.wallDamage(pos);
     this.destroyBody();
   } else {
     // bounce or vanish?
@@ -107,7 +107,7 @@ BulletSpirit.prototype.onHitWall = function(mag) {
       this.destroyBody();
       this.wallDamageSplash(pos, body.rad);
     }
-    this.screen.sounds.wallThump(pos, mag * body.mass);
+    this.sounds.wallThump(pos, mag * body.mass);
   }
 };
 
@@ -115,7 +115,7 @@ BulletSpirit.prototype.onHitEnemy = function(mag) {
   var body = this.getBody();
   if (!body) return;
   var pos = this.getBodyPos();
-  this.screen.sounds.wallThump(pos, mag);
+  this.sounds.wallThump(pos, mag);
   this.wallDamageSplash(pos, Math.random());
   this.destroyBody();
 };
@@ -152,7 +152,7 @@ BulletSpirit.prototype.drawTrail = function() {
   var minTime = maxTime - duration;
   var trailWarm = false;
   this.screen.renderer
-      .setStamp(this.screen.cylinderStamp)
+      .setStamp(this.stamps.cylinderStamp)
       .setColorVector(this.color);
   for (var i = 0; i < this.trail.size(); i++) {
     var segStartTime = this.trail.getSegmentStartTime(i);
@@ -196,7 +196,7 @@ BulletSpirit.prototype.destroy = function() {
 
   BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.screen.tubeStamp);
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
   s.startTime = this.now();
   s.duration = 4 + (2 * rad);

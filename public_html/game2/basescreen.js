@@ -2,7 +2,7 @@
  * @constructor
  * @extends {Screen}
  */
-function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
   Screen.call(this);
 
   this.adventureName = adventureName;
@@ -14,7 +14,6 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.controller = controller;
   this.canvas = canvas;
   this.renderer = renderer;
-  this.glyphs = glyphs;
   this.stamps = stamps;
 
   this.viewMatrix = new Matrix44();
@@ -55,9 +54,6 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.bitGridMetersPerCell = BaseScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(1, 1, 1);
-
-  this.models = new Models();
-  this.levelStamps = [];
 
   this.timeMultiplier = 1;
 
@@ -134,20 +130,6 @@ BaseScreen.EventLayer = {
   POPUP: 0,
   HUD: 1,
   WORLD: 2
-};
-
-BaseScreen.prototype.addLevelStampFromModel = function(model) {
-  var stamp = model.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(stamp);
-  return stamp;
-};
-
-BaseScreen.prototype.initPermStamps = function() {
-  this.circleStamp = this.addLevelStampFromModel(RigidModel.createCircle(32));
-  this.testStamp = this.addLevelStampFromModel(this.models.getTest());
-  this.untestStamp = this.addLevelStampFromModel(this.models.getUntest());
-  this.tubeStamp = this.addLevelStampFromModel(RigidModel.createTube(32));
-  this.cylinderStamp = this.addLevelStampFromModel(RigidModel.createCylinder(32));
 };
 
 BaseScreen.prototype.setPaused = function(paused) {
@@ -342,21 +324,21 @@ BaseScreen.prototype.createButtonWidgets = function() {
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.circleStamp)
+        .setStamp(this.stamps.circleStamp)
         .listenToTouch()
         .addTriggerKeyByName('z')
-        .setKeyboardTipStamp(this.glyphs.stamps['Z']),
+        .setKeyboardTipStamp(this.stamps['Z']),
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.circleStamp)
+        .setStamp(this.stamps.circleStamp)
         .listenToTouch()
         .addTriggerKeyByName('x')
-        .setKeyboardTipStamp(this.glyphs.stamps['X']),
+        .setKeyboardTipStamp(this.stamps['X']),
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.pauseStamp)
+        .setStamp(this.stamps.playerPauseStamp)
         .addTriggerDownListener(this.pauseDownFn)
         .listenToTouch()
         .listenToMousePointer()
@@ -392,7 +374,6 @@ BaseScreen.prototype.drawScreen = function(visibility) {
   }
   var startMs = performance.now();
   this.visibility = visibility;
-  this.lazyInit();
   this.updateViewMatrix();
   this.drawScene();
   if (this.visibility == 1) {
@@ -703,7 +684,7 @@ BaseScreen.prototype.setTimeWarp = function(multiplier) {
 
 BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
   var s = this.splash;
-  s.reset(BaseScreen.SplashType.SCAN, this.cylinderStamp);
+  s.reset(BaseScreen.SplashType.SCAN, this.stamps.cylinderStamp);
 
   s.startTime = this.world.now;
   s.duration = 20;

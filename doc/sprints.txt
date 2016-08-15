@@ -1,32 +1,57 @@
 Game2 refactoring
-v pull up menuitemconfig
-v pull up spiritconfig
-- break up basescreen
-  v sounds
+v pull up menuitemconfig to cave2d lib
+v pull up spiritconfig to cave2d lib
+- break up basescreen to allow code re-use, and neaten up.
+  * baseScreen won't be re-used, but it will be copied
+  * some useful code can be extracted from it for true re-use
+  * it can be made smaller and more template-y.
+  v sounds as plugin
     v put sound effect code in it's own file
     v call screen.sounds.foo() - remove screen sound methods
-      yea yea Law of Demeter... Adding a param to every Spirit is a PITA. Not gonna do it.
-  - splashes
+      yeah yeah Law of Demeter... Adding a param to every Spirit is a PITA. Not gonna do it.
+  v stamps as plugin
+    v glyphs
+    v generic shapes like "tube"
+    x spirit config stamps?
+    v replace uses, violate Law of Demeter, but mainly in reset() methods, where fields are extracted from screen obj
+  - replace screenXXX.lazyInit
+    v make it deliberate, not lazy
+    v unpack calls into the pages that build screens
+      v play
+      v edit
+      v test
+  - splashes as plugin
     - own file
-    - call screen.splashes.foo(), rm screen methods
-  - stamps
-  - wall code
-  - controls setup
-  - gl model setup
-  - dom event handling (listen, unlisten, distributor setup)
+    - everyone calls screen.splashes.foo(); rm screen splash methods
+    * splashes depend on stamps, so collect stamps in an object
+  - generalize wall code
+  - generalize controls setup?
+  - generalize dom event handling (listen, unlisten, distributor setup)
   - phy stuff
     - groups setup
     - collision handling
     - scan util
   - deserislization
-- pull up basespirit... to spirit?
+- pull up game2/basespirit... to spirit? Or nah?
+-
 
 Screen initialization sequence is gross!
 Today:
-* page creates screen
+* page
+  * creates screen
+  * calls screen.lazyInit (no longer lazy - used to be worse)
+    * init stamps
+    * init spiritConfigs
+    * init widgets (edit & test only)
+    * init editor (edit only)
+    * init editor stamps (editor only)
+    * updateHud
+    * initWorld
+  * calls some loadLevel thing, either JSON or default
 
 Test 39: Orientation & off-center force
 v test nest based on previous editor tests
+- NO. nest based on game2 edit page?
 - absorb lessons and libs from game2 code
 - phy
   - bodies
@@ -53,6 +78,12 @@ Simple distance between two body positions - no offset from center, because rota
 - Editor cursor can rotate bodies, either because of where they were grabbed (tricky) or the direction they are moved.
 - A non-grabbing cursor has orientation, and new objects will be added with that orientation.
 - Save/load orientation
+
+
+
+
+
+
 
 Test XX: Undo and Redo
 - retain last N JSON serializations in RAM or wherevs.

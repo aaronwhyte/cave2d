@@ -3,11 +3,13 @@
  * Hosted by a Screen that owns the world
  * @constructor
  */
-function Editor(host, canvas, renderer, glyphs) {
+function Editor(host, canvas, renderer, stamps) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
-  this.glyphs = glyphs;
+  // 'stamps' is jus for glyph stamps, for the button tool-tips
+
+  // This is for all the special editor-only icons
   this.getStamps();
 
   this.releasedColorVec4 = new Vec4(1, 1, 1, 0.5);
@@ -19,7 +21,7 @@ function Editor(host, canvas, renderer, glyphs) {
       .setStamp(this.addTriggerStamp)
       .listenToTouch()
       .addTriggerKeyByName('e')
-      .setKeyboardTipStamp(glyphs.stamps['E'])
+      .setKeyboardTipStamp(stamps['E'])
       .startListening();
 
   this.removeTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -28,7 +30,7 @@ function Editor(host, canvas, renderer, glyphs) {
       .setStamp(this.removeTriggerStamp)
       .listenToTouch()
       .addTriggerKeyByName('q')
-      .setKeyboardTipStamp(glyphs.stamps['Q'])
+      .setKeyboardTipStamp(stamps['Q'])
       .startListening();
 
   this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -37,7 +39,7 @@ function Editor(host, canvas, renderer, glyphs) {
       .setStamp(this.gripTriggerStamp)
       .listenToTouch()
       .addTriggerKeyByName('d')
-      .setKeyboardTipStamp(glyphs.stamps['D'])
+      .setKeyboardTipStamp(stamps['D'])
       .startListening();
 
   this.digTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -46,7 +48,7 @@ function Editor(host, canvas, renderer, glyphs) {
       .setStamp(this.digTriggerStamp)
       .listenToTouch()
       .addTriggerKeyByName('s')
-      .setKeyboardTipStamp(glyphs.stamps['S'])
+      .setKeyboardTipStamp(stamps['S'])
       .startListening();
 
   this.fillTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
@@ -55,7 +57,7 @@ function Editor(host, canvas, renderer, glyphs) {
       .setStamp(this.fillTriggerStamp)
       .listenToTouch()
       .addTriggerKeyByName('a')
-      .setKeyboardTipStamp(glyphs.stamps['A'])
+      .setKeyboardTipStamp(stamps['A'])
       .startListening();
 
   this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
@@ -115,7 +117,7 @@ function Editor(host, canvas, renderer, glyphs) {
 
   this.oldMouseEventCoords = new Vec2d();
 
-  this.menu = new ModeMenuWidget(this.host.getHudEventTarget(), this.glyphs)
+  this.menu = new ModeMenuWidget(this.host.getHudEventTarget())
       .setIndicatorStamp(this.addMenuIndicatorStamp)
       .startListening();
 
@@ -187,6 +189,7 @@ Editor.prototype.getStamps = function() {
   if (!this.cursorStamp) {
     model = RigidModel.createTube(32).transformPositions(new Matrix44().toScaleOpXYZ(0.9, 0.9, 1));
     this.cursorStamp = model.createModelStamp(this.renderer.gl);
+    console.log("this.cursorStamp", this.cursorStamp);
   }
   if (!this.indicatorStamp) {
     model = RigidModel.createTube(64);

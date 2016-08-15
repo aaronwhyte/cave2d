@@ -177,16 +177,12 @@ LevelPlayPage.prototype.maybeCreateScreen = function() {
     return;
   }
 
-  var glyphMaker = new GlyphMaker(0.4, 1.2);
-  var glyphs = new Glyphs(glyphMaker);
-  var glyphStamps = glyphs.initStamps(this.renderer.gl);
-  var stamps = {};
-  for (var key in glyphStamps) {
-    stamps[key] = glyphStamps[key];
-  }
-  this.screen = new PlayScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx,
+  this.screen = new PlayScreen(
+      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx,
       this.adventureName, this.levelName);
-  this.screen.lazyInit();
+  this.screen.initSpiritConfigs();
+  this.screen.updateHudLayout();
+  this.screen.initWorld();
   this.screen.loadWorldFromJson(this.jsonObj);
   this.screen.setPaused(this.paused);
   this.screen.snapCameraToPlayers();

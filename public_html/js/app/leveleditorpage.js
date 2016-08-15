@@ -160,18 +160,14 @@ LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragme
   gl.useProgram(program);
   this.renderer = new Renderer(this.canvas, gl, program);
 
-  var glyphMaker = new GlyphMaker(0.4, 1.2);
-  var glyphs = new Glyphs(glyphMaker);
-  var glyphStamps = glyphs.initStamps(this.renderer.gl);
-  var stamps = {};
-  for (var key in glyphStamps) {
-    stamps[key] = glyphStamps[key];
-  }
-
-  // TODO: creating a Screen here is nasty.
-  this.screen = new EditScreen(this, this.canvas, this.renderer, glyphs, stamps, this.sfx,
+  this.screen = new EditScreen(
+      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx,
       this.adventureName, this.levelName);
-  this.screen.lazyInit();
+  this.screen.initWidgets();
+  this.screen.initSpiritConfigs();
+  this.screen.initEditor();
+  this.screen.updateHudLayout();
+  this.screen.initWorld();
   if (this.jsonObj) {
     this.screen.loadWorldFromJson(this.jsonObj);
   } else {

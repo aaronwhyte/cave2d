@@ -2,8 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function PlayScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(0.05, 0.17, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -86,21 +86,6 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-PlayScreen.prototype.lazyInit = function() {
-  if (!this.initialized) {
-    this.initPermStamps();
-    this.initSpiritConfigs();
-    this.updateHudLayout();
-    this.initWorld();
-    this.initialized = true;
-  }
-};
-
-PlayScreen.prototype.initPermStamps = function() {
-  BaseScreen.prototype.initPermStamps.call(this);
-  this.pauseStamp = this.addLevelStampFromModel(this.models.getPauseWithOutline());
-};
-
 PlayScreen.prototype.startExit = function(x, y) {
   this.exitStartTime = this.now();
   this.exitEndTime = this.exitStartTime + PlayScreen.EXIT_DURATION;
@@ -108,7 +93,7 @@ PlayScreen.prototype.startExit = function(x, y) {
 
   // giant tube implosion
   var s = this.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.tubeStamp);
+  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
   s.startTime = this.exitStartTime;
   s.duration = PlayScreen.EXIT_DURATION;

@@ -2,12 +2,10 @@
  * An on-screen menu grid that supports touch, the mouse pointer, and keyboard keys.
  * Items are organized into an ordered list of groups, and within each group they are ordered by rank.
  * @param {Element} elem  DOM element to listen to
- * @param {Glyphs} glyphs from which to draw keyboard shortcut models
  * @constructor
  */
-function ModeMenuWidget(elem, glyphs) {
+function ModeMenuWidget(elem) {
   this.elem = elem;
-  this.glyphs = glyphs;
 
   // Array of rank-arrays of items.
   this.groups = [];
