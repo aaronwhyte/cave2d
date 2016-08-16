@@ -144,14 +144,9 @@ PlayScreen.prototype.drawScene = function() {
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();
 
-  if (this.restarting) {
-    this.controller.restart();
-    this.restarting = false;
-  } else {
-    // Animate whenever this thing draws.
-    if (!this.paused) {
-      this.controller.requestAnimation();
-    }
+  // Animate whenever this thing draws.
+  if (!this.paused) {
+    this.controller.requestAnimation();
   }
 };
 

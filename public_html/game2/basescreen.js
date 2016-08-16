@@ -901,7 +901,6 @@ BaseScreen.prototype.approxViewportsFromCamera = function(v) {
 };
 
 BaseScreen.prototype.unloadLevel = function() {
-  // TODO: delete this or start using it.
   if (this.tiles) {
     for (var cellId in this.tiles) {
       this.unloadCellId(cellId);
@@ -925,4 +924,3 @@ BaseScreen.prototype.unloadLevel = function() {
     this.editor.cursorVel.reset();
   }
 };
-

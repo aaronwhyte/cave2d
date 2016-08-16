@@ -197,14 +197,9 @@ EditScreen.prototype.drawScene = function() {
   this.drawHud();
   this.configMousePointer();
 
-  if (this.restarting) {
-    this.controller.restart();
-    this.restarting = false;
-  } else {
-    // Animate whenever this thing draws.
-    if (!this.paused) {
-      this.controller.requestAnimation();
-    }
+  // Animate whenever this thing draws.
+  if (!this.paused) {
+    this.controller.requestAnimation();
   }
 };
 
