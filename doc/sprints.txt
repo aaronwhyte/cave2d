@@ -1,7 +1,7 @@
-Game2 refactoring
+Game2 refactoring I
 v pull up menuitemconfig to cave2d lib
 v pull up spiritconfig to cave2d lib
-- break up basescreen to allow code re-use, and neaten up.
+v break up game2/basescreen a bit.
   * baseScreen won't be re-used, but it will be copied
   * some useful code can be extracted from it for true re-use
   * it can be made smaller and more template-y.
@@ -14,44 +14,52 @@ v pull up spiritconfig to cave2d lib
     v generic shapes like "tube"
     x spirit config stamps?
     v replace uses, violate Law of Demeter, but mainly in reset() methods, where fields are extracted from screen obj
-  - replace screenXXX.lazyInit
+  v replace screenXXX.lazyInit
     v make it deliberate, not lazy
     v unpack calls into the pages that build screens
       v play
       v edit
       v test
-  - splashes as plugin
-    - own file
-    - everyone calls screen.splashes.foo(); rm screen splash methods
-    * splashes depend on stamps, so collect stamps in an object
-  - generalize wall code
-  - generalize controls setup?
-  - generalize dom event handling (listen, unlisten, distributor setup)
-  - phy stuff
-    - groups setup
-    - collision handling
-    - scan util
-  - deserislization
-- pull up game2/basespirit... to spirit? Or nah?
--
 
-Screen initialization sequence is gross!
-Today:
-* page
-  * creates screen
-  * calls screen.lazyInit (no longer lazy - used to be worse)
-    * init stamps
-    * init spiritConfigs
-    * init widgets (edit & test only)
-    * init editor (edit only)
-    * init editor stamps (editor only)
-    * updateHud
-    * initWorld
-  * calls some loadLevel thing, either JSON or default
+Stop generic pages from depending on game2 screens!
+What is the API between screens and pages today?
+* base:
+  * screen calls page: requestFullScreen, requestAnimation
+* play:
+  * screen calls page: restartLevel, exitLevel, requestAnimation
+  * page calls screen: setScreenListening, setPaused, drawScreen, destroyScreen, tons of initialization
+* edit:
+  * screen calls page: requestAnimation
+  * page calls screen: toJSON, loadWorldFromJson, createDefaultWorld, drawScreen, setScreenListening, initialization
+* test:
+  * screen calls page: requestAnimation
+  * page calls screen: typical plus screen.drawScans=x
+In summary,
+- In each Page with a Screen, inject a ScreenBuilder that takes...
+  page, canvas, renderer, stamps, sfx, adventureName, levelName
+- filling with content - document!
+  - loadWorldFromJson(json)
+  - createDefaultWorld(?) This isn't very procgen friendly. Maybe another thingy can make procgen JSON?
+- toJSON() - for export or save-game or localstorage or sharing. Document.
+- runtime stuff to document nicelt
+  - setScreenListening(bool)
+  - setPaused(bool)
+  - drawScreen(0-1)
+  - destroyScreen()
+
+Game2 BaseScreen refactoring II
+- generalize wall tile code?
+- level JSON deserislization logic, using SpiritConfigs?
+- generalize controls setup?
+- generalize dom event handling (listen, unlisten, distributor setup)
+- phy stuff
+  - groups setup
+  - collision handling
+  - scan util
 
 Test 39: Orientation & off-center force
 v test nest based on previous editor tests
-- NO. nest based on game2 edit page?
+- Start over? nest based on game2 edit page?
 - absorb lessons and libs from game2 code
 - phy
   - bodies
@@ -70,19 +78,11 @@ v test nest based on previous editor tests
   - add objects with initial orientation based on cursor direction
 - s27n
 
+Game3 something dumb
 
 chain constraints
 Simple distance between two body positions - no offset from center, because rotation would make that harder.
 - phy map from bodyId to chain constraint
-
-- Editor cursor can rotate bodies, either because of where they were grabbed (tricky) or the direction they are moved.
-- A non-grabbing cursor has orientation, and new objects will be added with that orientation.
-- Save/load orientation
-
-
-
-
-
 
 
 Test XX: Undo and Redo
@@ -91,6 +91,8 @@ Test XX: Undo and Redo
 - Always save the just-after mutation camera and cursor pos, to bring the area into focus before undoing.
   Keep that as a separate kind of undo record, since it's so tiny and easy to restore.
 - Button for creating an undo record just because time went by. Snapshot?
+- Keyboard support
+- Touch support
 
 Zoomable Editor
 - two-touch pinch/unpinch
