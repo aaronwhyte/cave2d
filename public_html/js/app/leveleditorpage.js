@@ -199,15 +199,6 @@ LevelEditorPage.prototype.animateFrame = function() {
 };
 
 LevelEditorPage.prototype.requestFullScreen = function() {
-  var elem = document.body;
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.msRequestFullscreen) {
-    elem.msRequestFullscreen();
-  } else if (elem.mozRequestFullScreen) {
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) {
-    elem.webkitRequestFullscreen();
-  }
+  Dom.requestFullScreen();
   this.requestAnimation();
 };
