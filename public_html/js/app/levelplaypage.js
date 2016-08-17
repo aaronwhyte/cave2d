@@ -36,10 +36,10 @@ LevelPlayPage.prototype.enterDoc = function() {
   }
   var df = document.createDocumentFragment();
 
-  this.canvas = this.ce('canvas', df);
+  this.canvas = Dom.ce('canvas', df);
   this.canvas.id = 'canvas';
 
-  this.pauseMenuDiv = this.ce('div', df);
+  this.pauseMenuDiv = Dom.ce('div', df);
   this.pauseMenuDiv.id = 'pauseMenu';
   document.body.appendChild(df);
   document.body.classList.add('canvasPage');
@@ -114,22 +114,22 @@ LevelPlayPage.prototype.refreshOverlay = function() {
   var df = document.createDocumentFragment();
   var e;
 
-  e = this.ce('div', df, 'gameTitle');
+  e = Dom.ce('div', df, 'gameTitle');
   e.innerHTML = this.gameTitle;
 
-  e = this.ce('button', df, 'smallButton');
+  e = Dom.ce('button', df, 'smallButton');
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');
 
-  this.ce('br', df);
+  Dom.ce('br', df);
 
-  e = this.ce('button', df, 'smallButton');
+  e = Dom.ce('button', df, 'smallButton');
   e.id = 'restartButton';
   e.innerHTML = Strings.textToHtml('restart level');
 
-  this.ce('br', df);
+  Dom.ce('br', df);
 
-  e = this.ce('button', df, 'mainButton');
+  e = Dom.ce('button', df, 'mainButton');
   e.id = 'resumeButton';
   e.innerHTML = Strings.textToHtml('play');
 

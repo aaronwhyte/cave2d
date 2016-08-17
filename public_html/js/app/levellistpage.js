@@ -24,7 +24,7 @@ LevelListPage.prototype.enterDoc = function() {
   if (this.rootNode) {
     throw Error('this.rootNode should be falsey, but it is ' + this.rootNode);
   }
-  this.rootNode = this.ce('div', document.body);
+  this.rootNode = Dom.ce('div', document.body);
   document.body.classList.add('listPage');
   this.refreshList();
 };
@@ -42,50 +42,50 @@ LevelListPage.prototype.refreshList = function() {
   var df = document.createDocumentFragment();
   var e;
 
-  var title = this.ce('header', df);
-  e = this.ce('a', title);
+  var title = Dom.ce('header', df);
+  e = Dom.ce('a', title);
   e.href = '#';
   e.innerHTML = Strings.textToHtml(this.gameTitle);
 
-  this.ce('p', df);
+  Dom.ce('p', df);
 
-  var colHead = this.ce('header', df, 'columnHeader');
-  e = this.ce('span', colHead);
+  var colHead = Dom.ce('header', df, 'columnHeader');
+  e = Dom.ce('span', colHead);
   e.innerHTML = Strings.textToHtml(this.adventureName);
-  e = this.ce('span', colHead, 'separator');
+  e = Dom.ce('span', colHead, 'separator');
   e.innerHTML = Strings.textToHtml(' : ');
-  e = this.ce('span', colHead);
+  e = Dom.ce('span', colHead);
   e.innerHTML = Strings.textToHtml('Levels');
 
-  e = this.ce('button', df, 'createButton');
+  e = Dom.ce('button', df, 'createButton');
   e.onclick = this.createCreateFunction();
   e.innerHTML = Strings.textToHtml('create');
 
   var names = this.fileTree.listChildren(
       EditorApp.path(this.basePath, this.adventureName).concat(EditorApp.PATH_LEVELS));
-  var rows = this.ce('div', df, 'rows');
+  var rows = Dom.ce('div', df, 'rows');
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
-    var row = this.ce('div', rows, 'row');
+    var row = Dom.ce('div', rows, 'row');
 
-    e = this.ce('a', row);
+    e = Dom.ce('a', row);
     e.innerHTML = Strings.textToHtml(name);
     var query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = this.adventureName;
     query[EditorApp.PARAM_LEVEL_NAME] = name;
     e.href = '#' + Url.encodeQuery(query);
 
-    var buttons = this.ce('div', row, 'rightButtonCluster');
+    var buttons = Dom.ce('div', row, 'rightButtonCluster');
 
-    e = this.ce('button', buttons);
+    e = Dom.ce('button', buttons);
     e.innerHTML = Strings.textToHtml('copy');
     e.onclick = this.createCopyFunction(name);
 
-    e = this.ce('button', buttons);
+    e = Dom.ce('button', buttons);
     e.innerHTML = Strings.textToHtml('rename');
     e.onclick = this.createRenameFunction(name);
 
-    e = this.ce('button', buttons);
+    e = Dom.ce('button', buttons);
     e.innerHTML = Strings.textToHtml('delete');
     e.onclick = this.createDeleteFunction(name);
   }

@@ -23,7 +23,7 @@ AdventureListPage.prototype.enterDoc = function() {
   if (this.rootNode) {
     throw Error('this.rootNode should be falsey, but it is ' + this.rootNode);
   }
-  this.rootNode = this.ce('div', document.body);
+  this.rootNode = Dom.ce('div', document.body);
   document.body.classList.add('listPage');
   this.refreshList();
 };
@@ -40,48 +40,48 @@ AdventureListPage.prototype.exitDoc = function() {
 AdventureListPage.prototype.refreshList = function() {
   var df = document.createDocumentFragment();
   var e;
-  e = this.ce('header', df);
+  e = Dom.ce('header', df);
   e.innerHTML = Strings.textToHtml(this.gameTitle);
 
-  this.ce('p', df);
+  Dom.ce('p', df);
 
-  e = this.ce('header', df, 'columnHeader');
+  e = Dom.ce('header', df, 'columnHeader');
   e.innerHTML = Strings.textToHtml('Adventures');
 
-  e = this.ce('button', df, 'createButton');
+  e = Dom.ce('button', df, 'createButton');
   e.onclick = this.createCreateFunction();
   e.innerHTML = Strings.textToHtml('create');
 
   var names = this.fileTree.listChildren(EditorApp.path(this.basePath).concat(EditorApp.PATH_ADVENTURES));
-  var rows = this.ce('div', df, 'rows');
+  var rows = Dom.ce('div', df, 'rows');
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
-    var row = this.ce('div', rows, 'row');
+    var row = Dom.ce('div', rows, 'row');
 
-    e = this.ce('a', row);
+    e = Dom.ce('a', row);
     e.innerHTML = Strings.textToHtml(name);
     var query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = name;
     e.href = '#' + Url.encodeQuery(query);
 
-    var buttons = this.ce('div', row, 'rightButtonCluster');
+    var buttons = Dom.ce('div', row, 'rightButtonCluster');
 
-    e = this.ce('button', buttons);
+    e = Dom.ce('button', buttons);
     e.innerHTML = Strings.textToHtml('copy');
     e.onclick = this.createCopyFunction(name);
 
-    e = this.ce('button', buttons);
+    e = Dom.ce('button', buttons);
     e.innerHTML = Strings.textToHtml('rename');
     e.onclick = this.createRenameFunction(name);
 
-    e = this.ce('a', buttons);
+    e = Dom.ce('a', buttons);
     e.innerHTML = Strings.textToHtml('export');
     var query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = name;
     query[EditorApp.PARAM_MODE] = EditorApp.MODE_EXPORT;
     e.href = '#' + Url.encodeQuery(query);
 
-    e = this.ce('button', buttons);
+    e = Dom.ce('button', buttons);
     e.innerHTML = Strings.textToHtml('delete');
     e.onclick = this.createDeleteFunction(name);
   }

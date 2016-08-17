@@ -34,10 +34,10 @@ LevelEditorPage.prototype.enterDoc = function() {
   }
   var df = document.createDocumentFragment();
 
-  this.canvas = this.ce('canvas', df);
+  this.canvas = Dom.ce('canvas', df);
   this.canvas.id = 'canvas';
 
-  this.pauseMenuDiv = this.ce('div', df);
+  this.pauseMenuDiv = Dom.ce('div', df);
   this.pauseMenuDiv.id = 'pauseMenu';
   document.body.appendChild(df);
   document.body.classList.add('canvasPage');
@@ -117,25 +117,25 @@ LevelEditorPage.prototype.refreshPauseMenu = function() {
   var df = document.createDocumentFragment();
   var e;
 
-  var nav = this.ce('div', df, 'levelEditorNav');
+  var nav = Dom.ce('div', df, 'levelEditorNav');
 
-  e = this.ce('div', nav);
-  e = this.ce('a', e);
+  e = Dom.ce('div', nav);
+  e = Dom.ce('a', e);
   var query = {};
   query[EditorApp.PARAM_ADVENTURE_NAME] = this.adventureName;
   e.href = '#' + Url.encodeQuery(query);
   e.innerHTML = Strings.textToHtml(this.adventureName);
 
-  e = this.ce('div', nav, 'levelEditorLevelName');
+  e = Dom.ce('div', nav, 'levelEditorLevelName');
   e.innerHTML = Strings.textToHtml(this.levelName);
 
-  e = this.ce('button', df);
+  e = Dom.ce('button', df);
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');
 
-  this.ce('br', df);
+  Dom.ce('br', df);
 
-  e = this.ce('button', df);
+  e = Dom.ce('button', df);
   e.id = 'resumeButton';
   e.innerHTML = Strings.textToHtml('resume');
 

@@ -29,7 +29,7 @@ ExportPage.prototype.enterDoc = function() {
   this.oldTitle = document.title;
   document.title = this.levelName || this.adventureName || this.gameTitle;
 
-  this.rootNode = this.ce('div', document.body);
+  this.rootNode = Dom.ce('div', document.body);
   document.body.classList.add('exportPage');
   this.showJson();
 };
@@ -47,7 +47,7 @@ ExportPage.prototype.exitDoc = function() {
 ExportPage.prototype.showJson = function() {
   var df = document.createDocumentFragment();
   var e;
-  e = this.ce('div', df);
+  e = Dom.ce('div', df);
   var path = EditorApp.path(this.basePath, this.adventureName, this.levelName);
   var names = this.fileTree.listDescendants(path);
   var json = {};
