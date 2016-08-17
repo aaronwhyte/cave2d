@@ -27,3 +27,11 @@ Dom.requestFullScreen = function() {
   }
 };
 
+/**
+ * prevent-default function
+ * @param event
+ */
+Dom.pd = function(event) {
+  event.preventDefault();
+};
+

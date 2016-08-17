@@ -62,17 +62,13 @@ LevelPlayPage.prototype.enterDoc = function() {
   this.canvas.addEventListener('touchstart', boundUnlock);
 
   // prevent default on a lot of pinch and scroll events on mobile
-  this.canvas.addEventListener('touchstart', LevelPlayPage.pd);
-  this.canvas.addEventListener('touchmove', LevelPlayPage.pd);
-  this.canvas.addEventListener('touchend', LevelPlayPage.pd);
-  window.addEventListener('scroll', LevelPlayPage.pd);
+  this.canvas.addEventListener('touchstart', Dom.pd);
+  this.canvas.addEventListener('touchmove', Dom.pd);
+  this.canvas.addEventListener('touchend', Dom.pd);
+  window.addEventListener('scroll', Dom.pd);
 
   // load level
   this.jsonObj = this.fileTree.getFile(this.levelDataPath);
-};
-
-LevelPlayPage.pd = function(event) {
-  event.preventDefault();
 };
 
 /**
@@ -88,7 +84,7 @@ LevelPlayPage.prototype.exitDoc = function() {
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
-  window.removeEventListener("scroll", LevelPlayPage.pd);
+  window.removeEventListener("scroll", Dom.pd);
 
   if (this.screen) {
     this.screen.setScreenListening(false);

@@ -59,18 +59,14 @@ LevelEditorPage.prototype.enterDoc = function() {
   this.canvas.addEventListener('touchend', boundUnlock);
   this.canvas.addEventListener('touchstart', boundUnlock);
 
-  this.canvas.addEventListener('touchstart', LevelEditorPage.pd);
-  this.canvas.addEventListener('touchmove', LevelEditorPage.pd);
-  this.canvas.addEventListener('touchend', LevelEditorPage.pd);
+  this.canvas.addEventListener('touchstart', Dom.pd);
+  this.canvas.addEventListener('touchmove', Dom.pd);
+  this.canvas.addEventListener('touchend', Dom.pd);
 
-  window.addEventListener("scroll", LevelEditorPage.pd);
+  window.addEventListener("scroll", Dom.pd);
 
   // load level
   this.jsonObj = this.fileTree.getFile(this.levelDataPath);
-};
-
-LevelEditorPage.pd = function(event) {
-  event.preventDefault();
 };
 
 /**
@@ -86,7 +82,7 @@ LevelEditorPage.prototype.exitDoc = function() {
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
-  window.removeEventListener("scroll", LevelEditorPage.pd);
+  window.removeEventListener("scroll", Dom.pd);
 
   if (this.screen) {
     this.saveLevel();
