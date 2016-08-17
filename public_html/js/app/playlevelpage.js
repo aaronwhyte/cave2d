@@ -1,5 +1,6 @@
 /**
- * WebGL editor for a single level
+ * WebGL play page for a single level
+ * @param {PlayApp} app
  * @param {String} gameTitle
  * @param {Array.<String>} basePath of the game
  * @param {FileTree} fileTree
@@ -8,15 +9,16 @@
  * @constructor
  * @extends (Page)
  */
-function LevelTestPage(gameTitle, basePath, fileTree, adventureName, levelName) {
+function PlayLevelPage(app, gameTitle, basePath, fileTree, adventureName, levelName) {
   Page.call(this);
+  this.app = app;
   this.gameTitle = gameTitle;
   this.basePath = basePath;
   this.fileTree = fileTree;
   this.adventureName = adventureName;
   this.levelName = levelName;
-  this.levelDataPath = EditorApp.path(this.basePath, this.adventureName, this.levelName)
-      .concat(EditorApp.PATH_LEVEL_JSON);
+  this.levelDataPath = PlayApp.path(this.basePath, this.adventureName, this.levelName)
+      .concat(PlayApp.PATH_LEVEL_JSON);
 
   this.canvas = null;
   this.pauseMenuDiv = null;
@@ -25,10 +27,10 @@ function LevelTestPage(gameTitle, basePath, fileTree, adventureName, levelName) 
 
   this.animateFrameFn = this.animateFrame.bind(this);
 }
-LevelTestPage.prototype = new Page();
-LevelTestPage.prototype.constructor = LevelTestPage;
+PlayLevelPage.prototype = new Page();
+PlayLevelPage.prototype.constructor = PlayLevelPage;
 
-LevelTestPage.prototype.enterDoc = function() {
+PlayLevelPage.prototype.enterDoc = function() {
   if (this.canvas || this.pauseMenuDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -40,14 +42,13 @@ LevelTestPage.prototype.enterDoc = function() {
   this.pauseMenuDiv = Dom.ce('div', df);
   this.pauseMenuDiv.id = 'pauseMenu';
   document.body.appendChild(df);
-
   document.body.classList.add('canvasPage');
 
   var metaViewport = document.head.querySelector('meta[name="viewport"]');
   this.oldMetaViewportContent = metaViewport.content;
   metaViewport.content = 'width=device-width, user-scalable=no';
 
-  this.refreshPauseMenu();
+  this.refreshOverlay();
 
   this.sfx = new SoundFx();
   this.sfx.setListenerXYZ(0, 0, 4);
@@ -60,11 +61,11 @@ LevelTestPage.prototype.enterDoc = function() {
   this.canvas.addEventListener('touchend', boundUnlock);
   this.canvas.addEventListener('touchstart', boundUnlock);
 
+  // prevent default on a lot of pinch and scroll events on mobile
   this.canvas.addEventListener('touchstart', Dom.pd);
   this.canvas.addEventListener('touchmove', Dom.pd);
   this.canvas.addEventListener('touchend', Dom.pd);
-
-  window.addEventListener("scroll", Dom.pd);
+  window.addEventListener('scroll', Dom.pd);
 
   // load level
   this.jsonObj = this.fileTree.getFile(this.levelDataPath);
@@ -74,12 +75,12 @@ LevelTestPage.prototype.enterDoc = function() {
  * It seems that a drag won't work. There has to be a clean tap.
  * For now, I'll unlock every time there's a touchend.
  */
-LevelTestPage.prototype.unlockIosSound = function() {
+PlayLevelPage.prototype.unlockIosSound = function() {
   this.sfx.sound(0, 0, 0, 0.001, 0, 0, 0.001, 1, 1, 'sine');
   this.iosSoundUnlocked++;
 };
 
-LevelTestPage.prototype.exitDoc = function() {
+PlayLevelPage.prototype.exitDoc = function() {
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -100,51 +101,47 @@ LevelTestPage.prototype.exitDoc = function() {
   this.oldMetaViewportContent = null;
 };
 
-LevelTestPage.prototype.refreshPauseMenu = function() {
+PlayLevelPage.prototype.setPaused = function(paused) {
+  this.paused = paused;
+  if (this.screen) this.screen.setPaused(this.paused);
+};
+
+PlayLevelPage.prototype.refreshOverlay = function() {
   var df = document.createDocumentFragment();
   var e;
 
-  var nav = Dom.ce('div', df, 'levelEditorNav');
+  e = Dom.ce('div', df, 'gameTitle');
+  e.innerHTML = this.gameTitle;
 
-  e = Dom.ce('div', nav);
-  e = Dom.ce('a', e);
-  var query = {};
-  query[EditorApp.PARAM_ADVENTURE_NAME] = this.adventureName;
-  e.href = '#' + Url.encodeQuery(query);
-  e.innerHTML = Strings.textToHtml(this.adventureName);
-
-  e = Dom.ce('div', nav, 'levelEditorLevelName');
-  e.innerHTML = Strings.textToHtml(this.levelName);
-
-  var debug = Dom.ce('div', df, 'levelEditorDebugOptions');
-  var label = Dom.ce('label', debug);
-  e = Dom.ce('input', label);
-  e.type = 'checkbox';
-  e.defaultChecked = false;
-  var self = this;
-  e.addEventListener('change', function(element) {
-    self.screen.drawScans = element.target.checked;
-  });
-  e = Dom.ce('span', label);
-  e.innerHTML = Strings.textToHtml(' draw rayscans');
-
-  e = Dom.ce('button', df);
+  e = Dom.ce('button', df, 'smallButton');
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');
 
   Dom.ce('br', df);
 
-  e = Dom.ce('button', df);
+  e = Dom.ce('button', df, 'smallButton');
+  e.id = 'restartButton';
+  e.innerHTML = Strings.textToHtml('restart level');
+
+  Dom.ce('br', df);
+
+  e = Dom.ce('button', df, 'mainButton');
   e.id = 'resumeButton';
-  e.innerHTML = Strings.textToHtml('resume');
+  e.innerHTML = Strings.textToHtml('play');
+
 
   this.pauseMenuDiv.innerHTML = '';
   this.pauseMenuDiv.appendChild(df);
 };
 
-LevelTestPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
+PlayLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
   if (!this.canvas) {
     console.log('onShaderTextChange with no this.canvas');
+    return;
+  }
+  if (this.renderer) {
+    // already did this
+    console.log('renderer already exists');
     return;
   }
 
@@ -159,38 +156,43 @@ LevelTestPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   gl.useProgram(program);
   this.renderer = new Renderer(this.canvas, gl, program);
 
-  var glyphMaker = new GlyphMaker(0.4, 1.2);
-  var glyphs = new Glyphs(glyphMaker);
-  var glyphStamps = glyphs.initStamps(this.renderer.gl);
-  var stamps = {};
-  for (var key in glyphStamps) {
-    stamps[key] = glyphStamps[key];
+  this.maybeCreateScreen();
+};
+
+PlayLevelPage.prototype.maybeCreateScreen = function() {
+  if (this.screen) {
+    console.log('screen already exists');
+    return;
+  }
+  if (!this.renderer) {
+    console.log('no renderer');
+    return;
+  }
+  if (!this.jsonObj) {
+    console.log('no jsonObj');
+    return;
   }
 
-  // TODO: creating a Screen here is nasty.
-  this.screen = new TestScreen(
+  this.screen = new PlayScreen(
       this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx,
       this.adventureName, this.levelName);
-  this.screen.initWidgets();
   this.screen.initSpiritConfigs();
   this.screen.updateHudLayout();
   this.screen.initWorld();
-  if (this.jsonObj) {
-    this.screen.loadWorldFromJson(this.jsonObj);
-  } else {
-    this.screen.createDefaultWorld();
-  }
+  this.screen.loadWorldFromJson(this.jsonObj);
+  this.screen.setPaused(this.paused);
+  this.screen.snapCameraToPlayers();
 
   this.requestAnimation();
 };
 
-LevelTestPage.prototype.requestAnimation = function() {
-  if (!this.animationId && this.canvas) {
+PlayLevelPage.prototype.requestAnimation = function() {
+  if (!this.animationId) {
     this.animationId = requestAnimationFrame(this.animateFrameFn, this.canvas);
   }
 };
 
-LevelTestPage.prototype.animateFrame = function() {
+PlayLevelPage.prototype.animateFrame = function() {
   if (!this.animationId) {
     return;
   }
@@ -205,7 +207,19 @@ LevelTestPage.prototype.animateFrame = function() {
   this.screen.drawScreen(1);
 };
 
-LevelTestPage.prototype.requestFullScreen = function() {
+PlayLevelPage.prototype.requestFullScreen = function() {
   Dom.requestFullScreen();
   this.requestAnimation();
+};
+
+PlayLevelPage.prototype.exitLevel = function() {
+  this.screen.destroyScreen();
+  this.screen = null;
+  this.app.exitLevel(this.adventureName, this.levelName);
+};
+
+PlayLevelPage.prototype.restartLevel = function() {
+  this.screen.destroyScreen();
+  this.screen = null;
+  this.app.restartLevel();
 };

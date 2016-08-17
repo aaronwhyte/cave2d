@@ -21,31 +21,20 @@ v break up game2/basescreen a bit.
       v edit
       v test
 
-Stop generic pages from depending on game2 screens!
-What is the API between screens and pages today?
-* base:
-  * screen calls page: requestFullScreen, requestAnimation
-* play:
-  * screen calls page: restartLevel, exitLevel, requestAnimation
-  * page calls screen: setScreenListening, setPaused, drawScreen, destroyScreen, tons of initialization
-* edit:
-  * screen calls page: requestAnimation
-  * page calls screen: toJSON, loadWorldFromJson, createDefaultWorld, drawScreen, setScreenListening, initialization
-* test:
-  * screen calls page: requestAnimation
-  * page calls screen: typical plus screen.drawScans=x
-In summary,
-- In each Page with a Screen, inject a ScreenBuilder that takes...
-  page, canvas, renderer, stamps, sfx, adventureName, levelName
-- filling with content - document!
-  - loadWorldFromJson(json)
-  - createDefaultWorld(?) This isn't very procgen friendly. Maybe another thingy can make procgen JSON?
-- toJSON() - for export or save-game or localstorage or sharing. Document.
-- runtime stuff to document nicelt
-  - setScreenListening(bool)
-  - setPaused(bool)
-  - drawScreen(0-1)
-  - destroyScreen()
+Make basic app page-creation configurable.
+v rename
+  v LevelEditorPage to EditLevelPage
+  v LevelTestPage to TestLevelPage
+  v LevelPlayPage to PlayLevelPage
+- EditorApp
+  - inject EditLevelPageFactory with create(...) method
+  - inject TestLevelPageFactory
+- PlayApp
+  - inject PlayLevelPageFactory
+- Move to game2
+  - EditLevelPage
+  - TestLevelPage
+  - PlayLevelPage
 
 Game2 BaseScreen refactoring II
 - generalize wall tile code?

@@ -91,12 +91,12 @@ EditorApp.prototype.getHashChangeFunction = function() {
       } else {
         // we have an adventure and a level
         if (mode == EditorApp.MODE_TEST) {
-          self.page = new LevelTestPage(
+          self.page = new TestLevelPage(
               self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
               self.shaderTextLoader);
         } else {
           // MODE_EDIT is the default
-          self.page = new LevelEditorPage(
+          self.page = new EditLevelPage(
               self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
               self.shaderTextLoader);
         }

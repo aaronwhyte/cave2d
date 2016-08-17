@@ -8,7 +8,7 @@
  * @constructor
  * @extends (Page)
  */
-function LevelEditorPage(gameTitle, basePath, fileTree, adventureName, levelName) {
+function EditLevelPage(gameTitle, basePath, fileTree, adventureName, levelName) {
   Page.call(this);
   this.gameTitle = gameTitle;
   this.basePath = basePath;
@@ -25,10 +25,10 @@ function LevelEditorPage(gameTitle, basePath, fileTree, adventureName, levelName
 
   this.animateFrameFn = this.animateFrame.bind(this);
 }
-LevelEditorPage.prototype = new Page();
-LevelEditorPage.prototype.constructor = LevelEditorPage;
+EditLevelPage.prototype = new Page();
+EditLevelPage.prototype.constructor = EditLevelPage;
 
-LevelEditorPage.prototype.enterDoc = function() {
+EditLevelPage.prototype.enterDoc = function() {
   if (this.canvas || this.pauseMenuDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -73,12 +73,12 @@ LevelEditorPage.prototype.enterDoc = function() {
  * It seems that a drag won't work. There has to be a clean tap.
  * For now, I'll unlock every time there's a touchend.
  */
-LevelEditorPage.prototype.unlockIosSound = function() {
+EditLevelPage.prototype.unlockIosSound = function() {
   this.sfx.sound(0, 0, 0, 0.001, 0, 0, 0.001, 1, 1, 'sine');
   this.iosSoundUnlocked++;
 };
 
-LevelEditorPage.prototype.exitDoc = function() {
+EditLevelPage.prototype.exitDoc = function() {
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -100,7 +100,7 @@ LevelEditorPage.prototype.exitDoc = function() {
   this.oldMetaViewportContent = null;
 };
 
-LevelEditorPage.prototype.saveLevel = function() {
+EditLevelPage.prototype.saveLevel = function() {
   if (!this.screen) {
     console.warn('No screen, cannot get JSON to save level: ' + this.levelName);
     return;
@@ -109,7 +109,7 @@ LevelEditorPage.prototype.saveLevel = function() {
   this.fileTree.setFile(this.levelDataPath, this.jsonObj);
 };
 
-LevelEditorPage.prototype.refreshPauseMenu = function() {
+EditLevelPage.prototype.refreshPauseMenu = function() {
   var df = document.createDocumentFragment();
   var e;
 
@@ -139,7 +139,7 @@ LevelEditorPage.prototype.refreshPauseMenu = function() {
   this.pauseMenuDiv.appendChild(df);
 };
 
-LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
+EditLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
   if (!this.canvas) {
     console.log('onShaderTextChange with no this.canvas');
     return;
@@ -173,13 +173,13 @@ LevelEditorPage.prototype.onShaderTextChange = function(vertexShaderText, fragme
   this.requestAnimation();
 };
 
-LevelEditorPage.prototype.requestAnimation = function() {
+EditLevelPage.prototype.requestAnimation = function() {
   if (!this.animationId) {
     this.animationId = requestAnimationFrame(this.animateFrameFn, this.canvas);
   }
 };
 
-LevelEditorPage.prototype.animateFrame = function() {
+EditLevelPage.prototype.animateFrame = function() {
   if (!this.animationId) {
     return;
   }
@@ -194,7 +194,7 @@ LevelEditorPage.prototype.animateFrame = function() {
   this.screen.drawScreen(1);
 };
 
-LevelEditorPage.prototype.requestFullScreen = function() {
+EditLevelPage.prototype.requestFullScreen = function() {
   Dom.requestFullScreen();
   this.requestAnimation();
 };
