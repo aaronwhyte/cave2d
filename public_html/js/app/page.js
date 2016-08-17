@@ -18,11 +18,3 @@ Page.prototype.enterDoc = function() {
  */
 Page.prototype.exitDoc = function() {
 };
-
-/**
- * Optional function for WebGL pages that care about shader program text loading.
- * This is a function with two string params: vertexShaderText, fragmentShaderText.
- * It'll be called after enterDoc, either synchronously or asynchronously.
- * @type {function}
- */
-Page.prototype.onShaderTextChange = null;
