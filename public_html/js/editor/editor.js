@@ -189,7 +189,6 @@ Editor.prototype.getStamps = function() {
   if (!this.cursorStamp) {
     model = RigidModel.createTube(32).transformPositions(new Matrix44().toScaleOpXYZ(0.9, 0.9, 1));
     this.cursorStamp = model.createModelStamp(this.renderer.gl);
-    console.log("this.cursorStamp", this.cursorStamp);
   }
   if (!this.indicatorStamp) {
     model = RigidModel.createTube(64);
