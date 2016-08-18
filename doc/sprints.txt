@@ -30,11 +30,11 @@ v Move to game2
   v EditLevelPage
   v TestLevelPage
   v PlayLevelPage
-- EditorApp
-  - inject EditLevelPageFactory with create(...) method
-  - inject TestLevelPageFactory
-- PlayApp
-  - inject PlayLevelPageFactory
+v EditorApp
+  v inject EditLevelPage ctor
+  v inject TestLevelPage ctor
+v PlayApp
+  v inject PlayLevelPage ctor
 
 Game2 BaseScreen refactoring II
 - generalize wall tile code?

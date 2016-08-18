@@ -5,14 +5,19 @@
  * @param {FileTree} fileTree
  * @param {String} vertexShaderPath
  * @param {String} fragmentShaderPath
+ * @param {function} editLevelPageCtor
+ * @param {function} testLevelPageCtor
  * @constructor
  */
-function EditorApp(gameTitle, basePath, fileTree, vertexShaderPath, fragmentShaderPath) {
+function EditorApp(gameTitle, basePath, fileTree, vertexShaderPath, fragmentShaderPath,
+    editLevelPageCtor, testLevelPageCtor) {
   this.gameTitle = gameTitle;
   this.basePath = basePath;
   this.fileTree = fileTree;
   this.vertexShaderPath = vertexShaderPath;
   this.fragmentShaderPath = fragmentShaderPath;
+  this.editLevelPageCtor = editLevelPageCtor;
+  this.testLevelPageCtor = testLevelPageCtor;
   this.page = null;
 }
 
@@ -91,12 +96,12 @@ EditorApp.prototype.getHashChangeFunction = function() {
       } else {
         // we have an adventure and a level
         if (mode == EditorApp.MODE_TEST) {
-          self.page = new TestLevelPage(
+          self.page = new self.testLevelPageCtor(
               self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
               self.shaderTextLoader);
         } else {
           // MODE_EDIT is the default
-          self.page = new EditLevelPage(
+          self.page = new self.editLevelPageCtor(
               self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
               self.shaderTextLoader);
         }

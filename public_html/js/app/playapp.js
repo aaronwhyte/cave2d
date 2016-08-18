@@ -7,12 +7,14 @@
  * @param {String} fragmentShaderPath
  * @constructor
  */
-function PlayApp(gameTitle, basePath, dataFilePath, vertexShaderPath, fragmentShaderPath) {
+function PlayApp(gameTitle, basePath, dataFilePath, vertexShaderPath, fragmentShaderPath,
+    playLevelPageCtor) {
   this.gameTitle = gameTitle;
   this.basePath = basePath;
   this.dataFilePath = dataFilePath;
   this.vertexShaderPath = vertexShaderPath;
   this.fragmentShaderPath = fragmentShaderPath;
+  this.playLevelPageCtor = playLevelPageCtor;
   this.page = null;
 }
 
@@ -45,6 +47,10 @@ PlayApp.prototype.maybeForwardShaderTexts = function() {
   }
 };
 
+PlayApp.prototype.createPlayLevelPage = function() {
+  return new this.playLevelPageCtor(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+};
+
 PlayApp.prototype.onDataFileLoaded = function() {
   var jsonText = this.dataFileLoader.getTextByPath(this.dataFilePath);
   var jsonObj = JSON.parse(jsonText);
@@ -55,7 +61,7 @@ PlayApp.prototype.onDataFileLoaded = function() {
   this.adventureName = adventureNames[0];
   var levelNames = this.fileTree.listChildren(PlayApp.path(this.basePath, this.adventureName).concat(PlayApp.PATH_LEVELS));
   this.levelName = levelNames.sort()[0];
-  this.page = new PlayLevelPage(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+  this.page = this.createPlayLevelPage();
   this.page.enterDoc();
   this.page.setPaused(true);
   this.maybeForwardShaderTexts();
@@ -75,7 +81,7 @@ PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName) {
     this.page.enterDoc();
   } else {
     this.levelName = levelNames[i + 1];
-    this.page = new PlayLevelPage(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+    this.page = this.createPlayLevelPage();
     this.page.enterDoc();
     this.maybeForwardShaderTexts();
   }
@@ -83,7 +89,7 @@ PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName) {
 
 PlayApp.prototype.restartLevel = function() {
   this.page.exitDoc();
-  this.page = new PlayLevelPage(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+  this.page = this.createPlayLevelPage();
   this.page.enterDoc();
   this.maybeForwardShaderTexts();
 };
