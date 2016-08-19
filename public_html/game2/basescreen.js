@@ -53,7 +53,7 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, le
   this.bitSize = 0.5;
   this.bitGridMetersPerCell = BaseScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
-  this.levelColorVector = new Vec4(1, 1, 1);
+  this.levelColorVector = new Vec4(0.2, 0.3, 0.6);
 
   this.timeMultiplier = 1;
 
@@ -188,7 +188,6 @@ BaseScreen.Group = {
 
 BaseScreen.prototype.initWorld = function() {
   this.bitGrid = new BitGrid(this.bitSize);
-  this.tiles = {};
 
   this.lastPathRefreshTime = -Infinity;
 
@@ -231,6 +230,8 @@ BaseScreen.prototype.initWorld = function() {
   ]);
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.95;
+
+  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
 };
 
 /**
@@ -271,9 +272,10 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
   }
 
   // terrain
+  // TODO: tileGrid.setFromJSON(json.terrain); and that's it.
   this.bitGrid = BitGrid.fromJSON(json.terrain);
-  this.tiles = {};
-  this.flushTerrainChanges();
+  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
+  this.tileGrid.flushTerrainChanges();
 
   // cursor and camera
   if (this.editor) this.editor.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
@@ -285,13 +287,6 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
 //    var splashJson = json.splashes[i];
 //    var splashType = splashJson[0];
 //    // TODO: splashConfig plugin, like spiritConfig
-//    if (splashType == BaseScreen.SplashType.NOTE) {
-//      splash.setFromJSON(splashJson);
-//      splash.stamp = this.soundStamp;
-//      this.splasher.addCopy(splash);
-//    } else {
-//      console.error("Unknown splashType " + splashType + " in spirit JSON: " + splashJson);
-//    }
 //  }
 
   // Stop spiritless bodies from haunting the world.
@@ -366,21 +361,17 @@ BaseScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-var msPerFrame = 0;
 BaseScreen.prototype.drawScreen = function(visibility) {
   if (this.destroyed) {
     console.warn('drawing destroyed screen - ignoring');
     return;
   }
-  var startMs = performance.now();
   this.visibility = visibility;
   this.updateViewMatrix();
   this.drawScene();
   if (this.visibility == 1) {
     this.clock();
   }
-  var totalMs = performance.now() - startMs;
-  msPerFrame = 0.95 * msPerFrame + 0.05 * totalMs;
 };
 
 BaseScreen.prototype.drawScene = function() {};
@@ -442,14 +433,6 @@ BaseScreen.prototype.clock = function() {
   if (!e || e.time > endClock) {
     this.world.now = endClock;
   }
-//  var unwarp = 0.05 * (endClock - startClock) / BaseScreen.CLOCKS_PER_FRAME;
-//  var timeWarp = Math.log(this.timeMultiplier);
-//  if (Math.abs(timeWarp) < unwarp) {
-//    timeWarp = 0;
-//  } else {
-//    timeWarp -= Math.sign(timeWarp) * unwarp;
-//  }
-//  this.timeMultiplier = Math.exp(timeWarp);
   if (this.exitEndTime && this.world.now >= this.exitEndTime) {
     this.exitLevel();
   }
@@ -757,115 +740,15 @@ BaseScreen.prototype.getAveragePlayerPos = function() {
 ///////////////////////////
 
 BaseScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
-  this.bitGrid.drawPill(new Segment(pos0, pos1), rad, color);
-  this.flushTerrainChanges();
+  this.tileGrid.drawTerrainPill(pos0, pos1, rad, color);
 };
 
 BaseScreen.prototype.flushTerrainChanges = function() {
-  var changedCellIds = this.bitGrid.flushChangedCellIds();
-  for (var i = 0; i < changedCellIds.length; i++) {
-    this.changeTerrain(changedCellIds[i]);
-  }
-};
-
-/**
- * The cell at the cellId definitely changes, so unload it and reload it.
- * Make sure the four cardinal neighbors are also loaded.
- * @param cellId
- */
-BaseScreen.prototype.changeTerrain = function(cellId) {
-  var center = Vec2d.alloc();
-  this.bitGrid.cellIdToIndexVec(cellId, center);
-  this.loadCellXY(center.x - 1, center.y);
-  this.loadCellXY(center.x + 1, center.y);
-  this.loadCellXY(center.x, center.y - 1);
-  this.loadCellXY(center.x, center.y + 1);
-  this.unloadCellXY(center.x, center.y);
-  this.loadCellXY(center.x, center.y);
-  center.free();
-};
-
-BaseScreen.prototype.loadCellXY = function(cx, cy) {
-  var cellId = this.bitGrid.getCellIdAtIndexXY(cx, cy);
-  var tile = this.tiles[cellId];
-  if (!tile) {
-    this.tiles[cellId] = tile = {
-      cellId: cellId,
-      stamp: null,
-      bodyIds: null
-    };
-  }
-  if (!tile.bodyIds) {
-    tile.bodyIds = [];
-    // Create wall bodies and remember their IDs.
-    var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
-    for (var r = 0; r < rects.length; r++) {
-      var rect = rects[r];
-      var body = this.createWallBody(rect);
-      tile.bodyIds.push(this.world.addBody(body));
-    }
-  }
-  // TODO don't repeat stamp for solid walls
-  if (!tile.stamp) {
-    if (!rects) rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
-    tile.stamp = this.createTileStamp(rects);
-  }
-};
-
-BaseScreen.prototype.unloadCellXY = function(cx, cy) {
-  this.unloadCellId(this.bitGrid.getCellIdAtIndexXY(cx, cy));
-};
-
-BaseScreen.prototype.unloadCellId = function(cellId) {
-  var tile = this.tiles[cellId];
-  if (!tile) return;
-  if (tile.stamp) {
-    tile.stamp.dispose(this.renderer.gl);
-    tile.stamp = null;
-  }
-  if (tile.bodyIds) {
-    for (var i = 0; i < tile.bodyIds.length; i++) {
-      var id = tile.bodyIds[i];
-      this.world.removeBodyId(id);
-    }
-    tile.bodyIds = null;
-  }
-};
-
-/**
- * Creates a body, but does not add it to the world.
- */
-BaseScreen.prototype.createWallBody = function(rect) {
-  var b = Body.alloc();
-  b.shape = Body.Shape.RECT;
-  b.setPosAtTime(rect.pos, this.world.now);
-  b.rectRad.set(rect.rad);
-  b.hitGroup = BaseScreen.Group.WALL;
-  b.mass = Infinity;
-  b.pathDurationMax = Infinity;
-  return b;
-};
-
-BaseScreen.prototype.createTileStamp = function(rects) {
-  var model = new RigidModel();
-  for (var i = 0; i < rects.length; i++) {
-    model.addRigidModel(this.createWallModel(rects[i]));
-  }
-  return model.createModelStamp(this.renderer.gl);
-};
-
-BaseScreen.prototype.createWallModel = function(rect) {
-  var transformation, wallModel;
-  transformation = new Matrix44()
-      .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
-      .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
-  wallModel = RigidModel.createSquare().transformPositions(transformation);
-  wallModel.setColorRGB(0.2, 0.3, 0.6);
-  return wallModel;
+  this.tileGrid.flushTerrainChanges();
 };
 
 BaseScreen.prototype.drawTiles = function() {
-  if (!this.tiles) {
+  if (!this.tileGrid) {
     return;
   }
   this.renderer
@@ -881,12 +764,10 @@ BaseScreen.prototype.drawTiles = function() {
   var ry = Math.ceil(cellsPerScreenY);
   for (var dy = -ry; dy <= ry; dy++) {
     for (var dx = -rx; dx <= rx; dx++) {
-      this.loadCellXY(cx + dx, cy + dy);
-      var cellId = this.bitGrid.getCellIdAtIndexXY(cx + dx, cy + dy);
-      var tile = this.tiles[cellId];
-      if (tile && tile.stamp) {
+      var stamp = this.tileGrid.getStampAtCellXY(cx + dx, cy + dy);
+      if (stamp) {
         this.renderer
-            .setStamp(tile.stamp)
+            .setStamp(stamp)
             .drawStamp();
       }
     }
@@ -901,12 +782,8 @@ BaseScreen.prototype.approxViewportsFromCamera = function(v) {
 };
 
 BaseScreen.prototype.unloadLevel = function() {
-  if (this.tiles) {
-    for (var cellId in this.tiles) {
-      this.unloadCellId(cellId);
-    }
-    this.tiles = null;
-  }
+  this.tileGrid.unloadAllCells();
+  this.tileGrid = null;
   if (this.world) {
     for (var spiritId in this.world.spirits) {
       var s = this.world.spirits[spiritId];

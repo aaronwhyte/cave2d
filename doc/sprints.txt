@@ -37,8 +37,8 @@ v PlayApp
   v inject PlayLevelPage ctor
 
 Game2 BaseScreen refactoring II
-- generalize wall tile code?
-- level JSON deserislization logic, using SpiritConfigs?
+v generalize wall tile code: TileGrid yay!
+- generalize level JSON deserislization logic
 - generalize controls setup?
 - generalize dom event handling (listen, unlisten, distributor setup)
 - phy stuff
@@ -48,8 +48,7 @@ Game2 BaseScreen refactoring II
 
 Test 39: Orientation & off-center force
 v test nest based on previous editor tests
-- Start over? nest based on game2 edit page?
-- absorb lessons and libs from game2 code
+- Start over? nest based on game2 edit app?
 - phy
   - bodies
     - moi
