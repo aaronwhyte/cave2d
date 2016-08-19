@@ -46,7 +46,6 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, le
   this.resizeFn = this.getResizeFn();
 
   this.world = null;
-  this.tiles = null;
 
   this.playerAveragePos = new Vec2d();
 
