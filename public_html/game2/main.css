@@ -127,18 +127,18 @@ canvas#canvas {
 
 .smallButton {
   border:0;
-  font-size:150%;
+  font-size:125%;
 }
 
 .mainButton {
-  font-size:175%;
+  font-size:150%;
   border: 0;
   font-weight: bolder;
 }
 
 .gameTitle {
   white-space: nowrap;
-  font-size:250%;
+  font-size:200%;
 }
 
 #pauseMenu h1 {

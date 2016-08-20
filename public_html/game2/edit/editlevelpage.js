@@ -125,13 +125,13 @@ EditLevelPage.prototype.refreshPauseMenu = function() {
   e = Dom.ce('div', nav, 'levelEditorLevelName');
   e.innerHTML = Strings.textToHtml(this.levelName);
 
-  e = Dom.ce('button', df);
+  e = Dom.ce('button', df, 'smallButton');
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');
 
   Dom.ce('br', df);
 
-  e = Dom.ce('button', df);
+  e = Dom.ce('button', df, 'mainButton');
   e.id = 'resumeButton';
   e.innerHTML = Strings.textToHtml('resume');
 
