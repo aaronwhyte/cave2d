@@ -186,13 +186,11 @@ BaseScreen.Group = {
 };
 
 BaseScreen.prototype.initWorld = function() {
-  this.bitGrid = new BitGrid(this.bitSize);
-
   this.lastPathRefreshTime = -Infinity;
 
   var groupCount = Object.keys(BaseScreen.Group).length;
   var g = BaseScreen.Group;
-  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, [
+  var hitPairs = [
     [g.EMPTY, g.EMPTY],
 
     [g.NEUTRAL, g.WALL],
@@ -226,10 +224,14 @@ BaseScreen.prototype.initWorld = function() {
     [g.ENEMY_SCAN, g.ENEMY],
 
     [g.EXPLODEY_BITS, g.WALL]
-  ]);
+  ];
+
+  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs);
+
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.95;
 
+  this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
 };
 
@@ -238,6 +240,7 @@ BaseScreen.prototype.initWorld = function() {
  */
 BaseScreen.prototype.loadWorldFromJson = function (json) {
   this.world.now = json.now;
+
   // bodies
   var lostSpiritIdToBodyId = {};
   for (var i = 0; i < json.bodies.length; i++) {
@@ -247,6 +250,7 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
     this.world.loadBody(body);
     lostSpiritIdToBodyId[body.spiritId] = body.id;
   }
+
   // spirits
   for (var i = 0; i < json.spirits.length; i++) {
     var spiritJson = json.spirits[i];
@@ -692,11 +696,11 @@ BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
   s.endPose.rotZ = 0;
 
   if (dist < 0) {
-    s.startColor.setXYZ(0, 1, 0.5);
-    s.endColor.setXYZ(0, 0.1, 0.05);
+    s.startColor.setXYZ(0.2, 0.5, 0.2);
+    s.endColor.setXYZ(0.02, 0.05, 0.02);
   } else {
-    s.startColor.setXYZ(1, 0.25, 0.25);
-    s.endColor.setXYZ(0.1, 0.025, 0.025);
+    s.startColor.setXYZ(0.8, 0.2, 0.2);
+    s.endColor.setXYZ(0.08, 0.02, 0.02);
   }
 
   this.splasher.addCopy(s);
