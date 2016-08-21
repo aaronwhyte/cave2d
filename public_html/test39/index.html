@@ -1,13 +1,17 @@
 <!doctype html>
 <html>
 <head>
-<title>Test 39 - Orientation</title>
+<title>test 39</title>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, user-scalable=no">
+<meta name="viewport" content="width=device-width">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+
+<script src="../js/dom.js"></script>
 <script src="../js/math.js"></script>
 <script src="../js/poolify.js"></script>
 <script src="../js/vec2d.js"></script>
@@ -27,6 +31,7 @@
 <script src="../js/url.js"></script>
 <script src="../js/segment.js"></script>
 <script src="../js/events.js"></script>
+<script src="../js/trail.js"></script>
 
 <script src="../js/bits/base64.js"></script>
 <script src="../js/bits/bitqueue.js"></script>
@@ -35,6 +40,7 @@
 <script src="../js/bits/jsoner.js"></script>
 
 <script src="../js/terrain/bitgrid.js"></script>
+<script src="../js/terrain/tilegrid.js"></script>
 
 <script src="../js/webgl/webglutil.js"></script>
 <script src="../js/webgl/vertex.js"></script>
@@ -88,42 +94,50 @@
 <script src="../js/widgets/modemenuwidget.js"></script>
 
 <script src="../js/editor/editor.js"></script>
+<script src="player.js"></script>
 
-<script src="antspirit.js"></script>
-<script src="ballspirit.js"></script>
+<script src="../js/storage/storagelike.js"></script>
+<script src="../js/storage/realstorage.js"></script>
+<script src="../js/storage/filetree.js"></script>
+
+<script src="../js/app/page.js"></script>
+<script src="../js/app/adventurelistpage.js"></script>
+<script src="../js/app/exportpage.js"></script>
+<script src="../js/app/levellistpage.js"></script>
+<script src="editlevelpage.js"></script>
+<script src="testlevelpage.js"></script>
+<script src="../js/app/editorapp.js"></script>
+
+<script src="models.js"></script>
+<script src="sounds.js"></script>
+<script src="stamps.js"></script>
+
 <script src="basescreen.js"></script>
-<script src="playscreen.js"></script>
+<script src="editscreen.js"></script>
+<script src="testscreen.js"></script>
+
+<script src="weapons/baseweapon.js"></script>
+<script src="weapons/shotgunweapon.js"></script>
+<script src="weapons/laserweapon.js"></script>
+
+<script src="bangval.js"></script>
+<script src="spirits/basespirit.js"></script>
+<script src="spirits/antspirit.js"></script>
+<script src="spirits/bulletspirit.js"></script>
+<script src="spirits/exitspirit.js"></script>
+<script src="spirits/playerspirit.js"></script>
+
+<script src="../js/editor/spiritconfig.js"></script>
+<script src="../js/editor/menuitemconfig.js"></script>
+
+
 <script src="main.js"></script>
 
 <link rel="stylesheet" type="text/css" href="main.css">
 </head>
 
-<body>
-<canvas id="canvas"></canvas>
+<body onload="main()">
 
-<div id="pausedOverlay">
-  <div class="pausedMenu">
-    <h1>paused</h1>
-    <button id="resumeButton">resume</button><br>
-    <button id="fullScreenButton">full screen</button><br>
-    <hr>
-    <a id="sharableUrl" href="#">sharable URL</a>
-  </div>
-</div>
-<script>
-function pd(event) {
-  event.preventDefault();
-}
-(function() {
-  window.addEventListener("load", main);
-
-  window.addEventListener("scroll", pd);
-  var canvas = document.getElementById("canvas");
-  canvas.addEventListener("touchstart", pd);
-  canvas.addEventListener("touchmove", pd);
-  canvas.addEventListener("touchend", pd);
-})();
-</script>
 <script>
 if (document.location.hostname.indexOf('cave2d.com') > -1) {
   (function (i, s, o, g, r, a, m) {
