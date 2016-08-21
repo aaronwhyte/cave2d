@@ -14,8 +14,7 @@ function TileGrid(bitGrid, renderer, world, hitGroup) {
 }
 
 TileGrid.prototype.drawTerrainPill = function(p1, p2, rad, color) {
-  this.segment.p1.set(p1);
-  this.segment.p2.set(p2);
+  this.segment.setP1P2(p1, p2);
   this.bitGrid.drawPill(this.segment, rad, color);
   this.flushTerrainChanges();
 };

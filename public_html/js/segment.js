@@ -7,11 +7,19 @@
 function Segment(p1, p2) {
   this.p1 = p1;
   this.p2 = p2;
-  this.lengthSquared = p1.distanceSquared(p2);
+  this.lengthSquared = -1;
 }
 
+Segment.prototype.setP1P2 = function(p1, p2) {
+  this.p1.set(p1);
+  this.p2.set(p2);
+  this.lengthSquared = -1;
+  return this;
+};
+
 Segment.prototype.distanceToPointSquared = function(p3) {
-  if (this.lengthSquared == 0) return this.p1.distanceSquared(p3);
+  var lsq = this.getLengthSquared();
+  if (lsq == 0) return this.p1.distanceSquared(p3);
   var x1 = this.p1.x;
   var y1 = this.p1.y;
   var x2 = this.p2.x;
@@ -19,7 +27,7 @@ Segment.prototype.distanceToPointSquared = function(p3) {
 
   // u is 0 at p1 and 1 at p2.
   // Find the value of u where p3 is closest to the segment
-  var u = ((p3.x - x1)*(x2 - x1) + (p3.y - y1)*(y2 - y1)) / this.lengthSquared;
+  var u = ((p3.x - x1)*(x2 - x1) + (p3.y - y1)*(y2 - y1)) / lsq;
   var retval;
   if (u < 0) {
     retval = p3.distanceSquared(this.p1);
@@ -44,4 +52,11 @@ Segment.prototype.distanceToPointSquaredXY = function(x, y) {
 Segment.prototype.getBoundingRect = function(rectOut) {
   if (!rectOut) rectOut = new Rect();
   return rectOut.setToCorners(this.p1, this.p2);
+};
+
+Segment.prototype.getLengthSquared = function() {
+  if (this.lengthSquared < 0) {
+    this.lengthSquared = this.p1.distanceSquared(this.p2);
+  }
+  return this.lengthSquared;
 };

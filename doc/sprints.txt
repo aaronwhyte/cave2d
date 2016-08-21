@@ -48,7 +48,7 @@ x phy stuff
 
 Test 39: Orientation & off-center force
 v test nest based on previous editor tests
-- Start over? nest based on game2 edit app?
+v Start over? nest based on game2 edit app?
 - phy
   - bodies
     - moi

@@ -742,8 +742,8 @@ BaseScreen.prototype.getAveragePlayerPos = function() {
 // Wall manipulation stuff
 ///////////////////////////
 
-BaseScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
-  this.tileGrid.drawTerrainPill(pos0, pos1, rad, color);
+BaseScreen.prototype.drawTerrainPill = function(p1, p2, rad, color) {
+  this.tileGrid.drawTerrainPill(p1, p2, rad, color);
 };
 
 BaseScreen.prototype.flushTerrainChanges = function() {
