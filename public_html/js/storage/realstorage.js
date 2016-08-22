@@ -1,5 +1,5 @@
 /**
- * @parap {Storage} storage like LocalStorag1e or SessionStorage
+ * @param {Storage} storage like LocalStorage or SessionStorage
  * @constructor
  * @extends StorageLike
  */
