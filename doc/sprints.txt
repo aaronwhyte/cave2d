@@ -49,6 +49,14 @@ x phy stuff
 Test 39: Orientation & off-center force
 v test nest based on previous editor tests
 v Start over? nest based on game2 edit app?
+v prepare nest
+  v remove the multi-adventure multi-level bits. Just one level and adventure.
+  v remove test switch
+  v edit and play at the same time
+- change spirits
+  - remove exit
+  - remove player
+  - add turret
 - phy
   - bodies
     - moi
@@ -66,12 +74,17 @@ v Start over? nest based on game2 edit app?
   - add objects with initial orientation based on cursor direction
 - s27n
 
-Game3 something dumb
+Multiplayer
+* up to four touch players
+* Up to three keyboard players: wasd, ijkl, arrows
+* Gamepad controls if possible
+Player modes: Absent, Wispy, Embodied
 
 chain constraints
 Simple distance between two body positions - no offset from center, because rotation would make that harder.
 - phy map from bodyId to chain constraint
 
+Game 3?!
 
 Test XX: Undo and Redo
 - retain last N JSON serializations in RAM or wherevs.

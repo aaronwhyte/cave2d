@@ -1,22 +1,16 @@
 /**
  * WebGL editor for a single level
  * @param {String} gameTitle
- * @param {Array.<String>} basePath of the game
+ * @param {Array.<String>} path of the game data
  * @param {FileTree} fileTree
- * @param {String} adventureName
- * @param {String} levelName
  * @constructor
  * @extends (Page)
  */
-function EditLevelPage(gameTitle, basePath, fileTree, adventureName, levelName) {
+function Test39Page(gameTitle, path, fileTree) {
   Page.call(this);
   this.gameTitle = gameTitle;
-  this.basePath = basePath;
+  this.path = path;
   this.fileTree = fileTree;
-  this.adventureName = adventureName;
-  this.levelName = levelName;
-  this.levelDataPath = EditorApp.path(this.basePath, this.adventureName, this.levelName)
-      .concat(EditorApp.PATH_LEVEL_JSON);
 
   this.canvas = null;
   this.pauseMenuDiv = null;
@@ -25,10 +19,10 @@ function EditLevelPage(gameTitle, basePath, fileTree, adventureName, levelName) 
 
   this.animateFrameFn = this.animateFrame.bind(this);
 }
-EditLevelPage.prototype = new Page();
-EditLevelPage.prototype.constructor = EditLevelPage;
+Test39Page.prototype = new Page();
+Test39Page.prototype.constructor = Test39Page;
 
-EditLevelPage.prototype.enterDoc = function() {
+Test39Page.prototype.enterDoc = function() {
   if (this.canvas || this.pauseMenuDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -66,19 +60,19 @@ EditLevelPage.prototype.enterDoc = function() {
   window.addEventListener("scroll", Dom.pd);
 
   // load level
-  this.jsonObj = this.fileTree.getFile(this.levelDataPath);
+  this.jsonObj = this.fileTree.getFile(this.path);
 };
 
 /**
  * It seems that a drag won't work. There has to be a clean tap.
  * For now, I'll unlock every time there's a touchend.
  */
-EditLevelPage.prototype.unlockIosSound = function() {
+Test39Page.prototype.unlockIosSound = function() {
   this.sfx.sound(0, 0, 0, 0.001, 0, 0, 0.001, 1, 1, 'sine');
   this.iosSoundUnlocked++;
 };
 
-EditLevelPage.prototype.exitDoc = function() {
+Test39Page.prototype.exitDoc = function() {
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -100,30 +94,21 @@ EditLevelPage.prototype.exitDoc = function() {
   this.oldMetaViewportContent = null;
 };
 
-EditLevelPage.prototype.saveLevel = function() {
+Test39Page.prototype.saveLevel = function() {
   if (!this.screen) {
-    console.warn('No screen, cannot get JSON to save level: ' + this.levelName);
+    console.warn('No screen, cannot get JSON to save level');
     return;
   }
   this.jsonObj = this.screen.toJSON();
-  this.fileTree.setFile(this.levelDataPath, this.jsonObj);
+  this.fileTree.setFile(this.path, this.jsonObj);
 };
 
-EditLevelPage.prototype.refreshPauseMenu = function() {
+Test39Page.prototype.refreshPauseMenu = function() {
   var df = document.createDocumentFragment();
   var e;
 
-  var nav = Dom.ce('div', df, 'levelEditorNav');
-
-  e = Dom.ce('div', nav);
-  e = Dom.ce('a', e);
-  var query = {};
-  query[EditorApp.PARAM_ADVENTURE_NAME] = this.adventureName;
-  e.href = '#' + Url.encodeQuery(query);
-  e.innerHTML = Strings.textToHtml(this.adventureName);
-
-  e = Dom.ce('div', nav, 'levelEditorLevelName');
-  e.innerHTML = Strings.textToHtml(this.levelName);
+  e = Dom.ce('div', df, 'gameTitle');
+  e.innerHTML = Strings.textToHtml('test 39');
 
   e = Dom.ce('button', df, 'smallButton');
   e.id = 'fullScreenButton';
@@ -139,7 +124,7 @@ EditLevelPage.prototype.refreshPauseMenu = function() {
   this.pauseMenuDiv.appendChild(df);
 };
 
-EditLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
+Test39Page.prototype.onShaderTextChange = function(vertexShaderText, fragmentShaderText) {
   if (!this.canvas) {
     console.log('onShaderTextChange with no this.canvas');
     return;
@@ -156,9 +141,7 @@ EditLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   gl.useProgram(program);
   this.renderer = new Renderer(this.canvas, gl, program);
 
-  this.screen = new EditScreen(
-      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx,
-      this.adventureName, this.levelName);
+  this.screen = new EditScreen(this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx);
   this.screen.initWidgets();
   this.screen.initSpiritConfigs();
   this.screen.initEditor();
@@ -173,13 +156,13 @@ EditLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   this.requestAnimation();
 };
 
-EditLevelPage.prototype.requestAnimation = function() {
+Test39Page.prototype.requestAnimation = function() {
   if (!this.animationId) {
     this.animationId = requestAnimationFrame(this.animateFrameFn, this.canvas);
   }
 };
 
-EditLevelPage.prototype.animateFrame = function() {
+Test39Page.prototype.animateFrame = function() {
   if (!this.animationId) {
     return;
   }
@@ -194,7 +177,7 @@ EditLevelPage.prototype.animateFrame = function() {
   this.screen.drawScreen(1);
 };
 
-EditLevelPage.prototype.requestFullScreen = function() {
+Test39Page.prototype.requestFullScreen = function() {
   Dom.requestFullScreen();
   this.requestAnimation();
 };

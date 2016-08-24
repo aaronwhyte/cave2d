@@ -3,8 +3,8 @@ Dom = {};
 /**
  * create element
  * @param {string} type like "DIV"
- * @param {HTMLElement} parent
- * @param {string} className
+ * @param {=Node} parent
+ * @param {=string} className
  * @returns {HTMLElement}
  */
 Dom.ce = function(type, parent, className) {

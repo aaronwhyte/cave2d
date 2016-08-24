@@ -2,11 +2,8 @@
  * @constructor
  * @extends {Screen}
  */
-function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+function BaseScreen(controller, canvas, renderer, stamps, sfx) {
   Screen.call(this);
-
-  this.adventureName = adventureName;
-  this.levelName = levelName;
 
   this.exitStartTime = 0;
   this.exitEndTime = 0;
