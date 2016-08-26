@@ -53,10 +53,10 @@ v prepare nest
   v remove the multi-adventure multi-level bits. Just one level and adventure.
   v remove test switch
   v edit and play at the same time
-- change spirits
-  - remove exit
-  - remove player
-  - add turret
+v change spirits
+  v remove exit
+  v remove player
+  v remove bullet
 - phy
   - bodies
     - moi
@@ -67,6 +67,7 @@ v prepare nest
     - getAngleAtTime()
     - setAngAtTime()
     - setAngVelAtTime()
+- make AntSpirit use new rotation system
 - editor
   - grab objects at a point, and apply force to that point when dragging
     - point defined by dist & direction from center of mass.

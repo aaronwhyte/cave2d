@@ -44,8 +44,6 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.world = null;
 
-  this.playerAveragePos = new Vec2d();
-
   this.bitSize = 0.5;
   this.bitGridMetersPerCell = BaseScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
@@ -78,10 +76,6 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
     self.controller.requestFullScreen();
     e.preventDefault();
   };
-
-  this.drawScans = false;
-
-  this.playerChasePolarity = 1;
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -94,16 +88,11 @@ BaseScreen.CLOCKS_PER_FRAME = 0.5;
 BaseScreen.PATH_DURATION = 0xffff;
 
 BaseScreen.SpiritType = {
-  ANT: 3,
-  PLAYER: 4,
-  EXIT: 5,
-  BULLET: 6
+  ANT: 3
 };
 
 BaseScreen.MenuItem = {
-  RED_ANT: 'red_ant',
-  PLAYER: 'player',
-  EXIT: 'exit'
+  ANT: 'ant'
 };
 
 BaseScreen.Terrain = {
@@ -156,17 +145,7 @@ BaseScreen.prototype.initSpiritConfigs = function() {
 
   // first column
   addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
-      BaseScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
-
-  // second column
-  addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,
-      BaseScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
-
-  addConfig(BaseScreen.SpiritType.EXIT, ExitSpirit,
-      BaseScreen.MenuItem.EXIT, 1, 1, ExitSpirit.factory);
-
-  addConfig(BaseScreen.SpiritType.BULLET, BulletSpirit,
-      null, -1, -1, BulletSpirit.factory);
+      BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
 };
 
 BaseScreen.Group = {
@@ -174,12 +153,8 @@ BaseScreen.Group = {
   WALL: 1,
   NEUTRAL: 2,
   CURSOR: 3,
-  PLAYER: 4,
-  PLAYER_FIRE: 5,
-  ENEMY: 6,
-  ENEMY_FIRE: 7,
-  ENEMY_SCAN: 8,
-  EXPLODEY_BITS: 9
+  ENEMY: 4,
+  ENEMY_SCAN: 5
 };
 
 BaseScreen.prototype.initWorld = function() {
@@ -196,31 +171,14 @@ BaseScreen.prototype.initWorld = function() {
     [g.CURSOR, g.WALL],
     [g.CURSOR, g.NEUTRAL],
 
-    [g.PLAYER, g.CURSOR],
-    [g.PLAYER, g.NEUTRAL],
-    [g.PLAYER, g.WALL],
-    [g.PLAYER, g.PLAYER],
-
-    [g.PLAYER_FIRE, g.NEUTRAL],
-    [g.PLAYER_FIRE, g.WALL],
-
     [g.ENEMY, g.NEUTRAL],
     [g.ENEMY, g.WALL],
     [g.ENEMY, g.CURSOR],
-    [g.ENEMY, g.PLAYER],
-    [g.ENEMY, g.PLAYER_FIRE],
     [g.ENEMY, g.ENEMY],
-
-    [g.ENEMY_FIRE, g.WALL],
-    [g.ENEMY_FIRE, g.NEUTRAL],
-    [g.ENEMY_FIRE, g.PLAYER],
 
     [g.ENEMY_SCAN, g.WALL],
     [g.ENEMY_SCAN, g.NEUTRAL],
-    [g.ENEMY_SCAN, g.PLAYER],
     [g.ENEMY_SCAN, g.ENEMY],
-
-    [g.EXPLODEY_BITS, g.WALL]
   ];
 
   this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs);
@@ -312,36 +270,6 @@ BaseScreen.prototype.createTrackball = function() {
   trackball.setFriction(0.05);
   this.addListener(trackball);
   return trackball;
-};
-
-BaseScreen.prototype.createButtonWidgets = function() {
-  var widgets = [
-    new TriggerWidget(this.getHudEventTarget())
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.stamps.circleStamp)
-        .listenToTouch()
-        .addTriggerKeyByName('z')
-        .setKeyboardTipStamp(this.stamps['Z']),
-    new TriggerWidget(this.getHudEventTarget())
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.stamps.circleStamp)
-        .listenToTouch()
-        .addTriggerKeyByName('x')
-        .setKeyboardTipStamp(this.stamps['X']),
-    new TriggerWidget(this.getHudEventTarget())
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.stamps.playerPauseStamp)
-        .addTriggerDownListener(this.pauseDownFn)
-        .listenToTouch()
-        .listenToMousePointer()
-        .addTriggerKeyByName(Key.Name.SPACE)];
-  for (var i = 0; i < widgets.length; i++) {
-    this.addListener(widgets[i]);
-  }
-  return widgets;
 };
 
 BaseScreen.prototype.getResizeFn = function() {
@@ -472,45 +400,6 @@ BaseScreen.prototype.onHitEvent = function(e) {
 
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-    var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
-    var mag = strikeVec.magnitude();
-    strikeVec.free();
-
-    var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
-    if (playerBody) {
-      var playerSpirit = this.getSpiritForBody(playerBody);
-      var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
-      if (exitBody && !this.exitStartTime) {
-        this.sounds.exit(this.getAveragePlayerPos());
-        this.startExit(exitBody.pathStartPos.x, exitBody.pathStartPos.y);
-      }
-      var antBody = this.bodyIfSpiritType(BaseScreen.SpiritType.ANT, b0, b1);
-      if (antBody) {
-        playerSpirit.hitAnt(mag);
-      }
-      if (!exitBody && !antBody) {
-        this.sounds.wallThump(this.getAveragePlayerPos(), mag * 10);
-      }
-    }
-
-    var bulletBody = this.bodyIfSpiritType(BaseScreen.SpiritType.BULLET, b0, b1);
-    if (bulletBody) {
-      var bulletSpirit = this.getSpiritForBody(bulletBody);
-      var otherBody = this.otherBody(bulletBody, b0, b1);
-      var otherSpirit = this.getSpiritForBody(otherBody);
-      if (!otherSpirit) {
-        // wall?
-        bulletSpirit.onHitWall(mag);
-      } else if (otherSpirit.type == BaseScreen.SpiritType.ANT) {
-        otherSpirit.onPlayerBulletHit(bulletSpirit.damage)
-        bulletSpirit.onHitEnemy(mag);
-      } else if (otherSpirit.type == BaseScreen.SpiritType.BULLET) {
-        bulletSpirit.onHitOther(mag);
-        otherSpirit.onHitOther(mag);
-      } else {
-        bulletSpirit.onHitOther(mag);
-      }
-    }
   }
 };
 
@@ -519,23 +408,6 @@ BaseScreen.prototype.startExit = function() {};
 BaseScreen.prototype.exitLevel = function() {};
 
 BaseScreen.prototype.handleInput = function() {
-  for (var i = 0; i < this.players.length; i++) {
-    this.players[i].handleInput();
-  }
-};
-
-BaseScreen.prototype.addPlayer = function() {
-  var p = new Player();
-  var trackball = this.createTrackball();
-  var buttons = this.createButtonWidgets();
-  p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
-      p.addSpirit(spirit);
-    }
-  }
-  this.players.push(p);
 };
 
 BaseScreen.prototype.getPixelsPerMeter = function() {
@@ -712,27 +584,6 @@ BaseScreen.prototype.drawSpirits = function() {
     var spirit = this.world.spirits[id];
     spirit.onDraw(this.world, this.renderer);
   }
-};
-
-BaseScreen.prototype.getAveragePlayerPos = function() {
-  var playerCount = 0;
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
-      var body = spirit.getBody(this.world);
-      if (body) {
-        if (playerCount == 0) {
-          this.playerAveragePos.reset();
-        }
-        this.playerAveragePos.add(this.getBodyPos(body, this.vec2d));
-        playerCount++;
-      }
-    }
-  }
-  if (playerCount != 0) {
-    this.playerAveragePos.scale(1 / playerCount);
-  }
-  return this.playerAveragePos;
 };
 
 ///////////////////////////

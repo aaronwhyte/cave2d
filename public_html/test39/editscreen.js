@@ -22,7 +22,6 @@ EditScreen.prototype.constructor = EditScreen;
 EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
 EditScreen.ANT_RAD = 0.8;
-EditScreen.ROCK_RAD = 1.4;
 
 EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.stamps);

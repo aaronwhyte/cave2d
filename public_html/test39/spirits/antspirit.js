@@ -10,7 +10,6 @@ function AntSpirit(screen) {
   this.dir = 0;//Math.random() * Math.PI * 2;
   this.angVel = 0;
 
-  this.vecToPlayer = new Vec2d();
   this.vec2d = new Vec2d();
   this.vec2d2 = new Vec2d();
   this.scanVec = new Vec2d();
@@ -120,13 +119,6 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       this.scanResp);
 };
 
-AntSpirit.prototype.turnToPlayer = function() {
-  var toPlayer = this.vecToPlayer.set(this.screen.playerAveragePos).subtract(this.getBodyPos());
-  var right = this.vec2d2.setXY(1, 0).rot(this.dir);
-  var dot = right.dot(toPlayer);
-  this.angVel += 0.1 * dot / toPlayer.magnitude() * this.screen.playerChasePolarity;
-};
-
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody();
   var pos = this.getBodyPos();
@@ -160,20 +152,10 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       // they get faster as they get hurt
       var thrust = AntSpirit.THRUST * (1 + (1 - this.health)* 0.5);
       if (dist >= 0) {
-        // rayscan hit
-        var otherSpirit = this.getScanHitSpirit();
-        if (otherSpirit && otherSpirit.type == BaseScreen.SpiritType.PLAYER) {
-          // attack player!
-          this.stress = 0;
-          angAccel = scanRot * 0.2;
-          this.turnToPlayer();
-          thrust *= 1.2;
-        } else {
-          // avoid obstruction
-          angAccel = -scanRot * (this.stress * 0.8 + 0.2);
-          this.stress += 0.03;
-          thrust *= (dist - 0.05 * this.stress);
-        }
+        // avoid obstruction
+        angAccel = -scanRot * (this.stress * 0.8 + 0.2);
+        this.stress += 0.03;
+        thrust *= (dist - 0.05 * this.stress);
       } else {
         // clear path
         if (this.stress > 0.5) {
@@ -183,7 +165,6 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
           this.dir += scanRot;
         } else {
           angAccel = scanRot * (this.stress * 0.8 + 0.2);
-          this.turnToPlayer();
         }
         this.stress = 0;
       }
@@ -234,114 +215,5 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
         .multiply(this.mat44.toRotateZOp(-this.dir));
     renderer.setModelMatrix(this.modelMatrix);
     renderer.drawStamp();
-  }
-};
-
-AntSpirit.prototype.onPlayerBulletHit = function(damage) {
-  this.health -= damage / AntSpirit.MAX_HEALTH;
-  if (this.health <= 0) {
-    this.explode();
-  }
-};
-
-AntSpirit.prototype.explode = function() {
-//  this.screen.setTimeWarp(0.1);
-  var body = this.getBody();
-  var pos = this.getBodyPos();
-  var craterRad = body.rad * (7 + 2 * Math.random());
-  this.explosionSplash(pos, craterRad * 0.6);
-//  this.screen.drawTerrainPill(pos, pos, craterRad * 0.75, 1);
-  var bulletRad = body.rad * 0.75;
-  this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad);
-  this.screen.sounds.antExplode(pos);
-  this.screen.drawTerrainPill(pos, pos, body.rad, 0);
-
-  this.screen.world.removeBodyId(this.bodyId);
-  this.screen.world.removeSpiritId(this.id);
-};
-
-AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
-  var p = Vec2d.alloc();
-  var v = Vec2d.alloc();
-  var bulletCount = Math.floor(8 + 2 * Math.random());
-  var a = Math.random() * Math.PI;
-  for (var i = 0; i < bulletCount; i++) {
-    var duration = 7 + 2 * Math.random();
-    var speed = (endRad - startRad) / duration;
-    a += 2 * Math.PI / bulletCount;
-    v.setXY(0, 1).rot(a + Math.random() * Math.PI * 0.15);
-    p.set(v).scale(startRad).add(pos);
-    v.scale(speed);
-    this.addBullet(p, v, bulletRad, duration);
-  }
-  v.free();
-  p.free();
-};
-
-AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
-  var now = this.now();
-  var spirit = BulletSpirit.alloc(this.screen);
-  spirit.setModelStamp(this.stamps.circleStamp);
-  spirit.setColorRGB(0, 0.5, 0);
-  var density = 1;
-
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, now);
-  b.setVelAtTime(vel, now);
-  b.rad = rad;
-  b.hitGroup = BaseScreen.Group.ENEMY_FIRE;
-  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = duration;
-  spirit.bodyId = this.screen.world.addBody(b);
-
-  var spiritId = this.screen.world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  spirit.addTrailSegment();
-  spirit.digChance = 9;
-  spirit.bounceChance = 9;
-  spirit.damage = 0;
-  spirit.wallDamageMultiplier = 1.7;
-
-  // bullet self-destruct timeout
-  this.screen.world.addTimeout(now + duration, spiritId, 0);
-
-  return spiritId;
-};
-
-
-AntSpirit.prototype.explosionSplash = function(pos, rad) {
-  var now = this.now();
-  // cloud particles
-  var s = this.screen.splash;
-  var x = pos.x;
-  var y = pos.y;
-  var self = this;
-  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
-
-  function addSplash(x, y, dx, dy, duration, sizeFactor) {
-    s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
-    s.startTime = now;
-    s.duration = duration;
-
-    s.startPose.pos.setXYZ(x, y, -0.9);
-    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0);
-    var startRad = sizeFactor * rad;
-    s.startPose.scale.setXYZ(startRad, startRad, 1);
-    s.endPose.scale.setXYZ(0, 0, 1);
-    s.startColor.setXYZ(0, 1, 0); // ant color
-    s.endColor.setXYZ(0.2, 0.3, 0.6); // wall color
-    self.screen.splasher.addCopy(s);
-  }
-
-  particles = Math.ceil(5 * (1 + 0.5 * Math.random()));
-  explosionRad = rad/2;
-  dirOffset = 2 * Math.PI * Math.random();
-  for (i = 0; i < particles; i++) {
-    duration = 10 * (0.5 + Math.random());
-    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = 0.5 * Math.sin(dir) * explosionRad / duration;
-    dy = 0.5 * Math.cos(dir) * explosionRad / duration;
-    addSplash(x + dx, y + dy, dx, dy, duration, explosionRad/2);
   }
 };

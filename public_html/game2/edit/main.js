@@ -4,7 +4,7 @@ function main() {
   var fileTree = new FileTree(new RealStorage(localStorage));
   app = new EditorApp('Game 2', basePath, fileTree,
       '../vertex-shader.txt', '../fragment-shader.txt',
-      Test39Page, TestLevelPage);
+      EditLevelPage, TestLevelPage);
   app.start();
 }
 
