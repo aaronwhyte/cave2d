@@ -1,5 +1,6 @@
 /**
- * The kind of thing you need to map from model-space and world-space.
+ * The kind of thing you need to map from model-space to world-space,
+ * for objects on the x/y plane that only rotate about the Z axis.
  * 4D is kind of overkill but lets not be stingy.
  * @constructor
  */

@@ -1,4 +1,5 @@
 /**
+ * A predeclared particle effect, expressed as a function of time.
  * @constructor
  */
 function Splash(type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration) {

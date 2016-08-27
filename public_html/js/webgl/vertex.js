@@ -1,4 +1,5 @@
 /**
+ * A WebGL-ish vertex, used to define models.
  * @constructor
  */
 function Vertex() {
@@ -27,6 +28,13 @@ Vertex.prototype.setColorArray = function(rgb) {
   return this;
 };
 
+/**
+ * My vertex shaders can apply one of two transformation models to a stamp's vertex,
+ * depending on its "group" number. See Renderer.prototype.setModelMatrix2().
+ * The legal values are basically "0" (default) and anything non-zero, which uses setModelMatrix2.
+ * @param {number} g
+ * @returns {Vertex}
+ */
 Vertex.prototype.setGroup = function(g) {
   this.group = g;
   return this;
