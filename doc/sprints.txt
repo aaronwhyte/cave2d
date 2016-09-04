@@ -57,16 +57,15 @@ v change spirits
   v remove exit
   v remove player
   v remove bullet
-- phy
-  - bodies
-    - moi
-    - "turnable" boolean? - default undefined means no?
-    - angStart
-    - angTime
-    - angVel
-    - getAngleAtTime()
-    - setAngAtTime()
-    - setAngVelAtTime()
+v body values
+  v moi
+  v "turnable" boolean? - default undefined means no?
+  v angStart
+  v angTime
+  v angVel
+  v getAngPosAtTime()
+  v setAngPosAtTime()
+  v setAngVelAtTime()
 - make AntSpirit use new rotation system
 - editor
   - grab objects at a point, and apply force to that point when dragging
@@ -84,6 +83,12 @@ Player modes: Absent, Wispy, Embodied
 chain constraints
 Simple distance between two body positions - no offset from center, because rotation would make that harder.
 - phy map from bodyId to chain constraint
+
+process-ish level creation tools
+- structured digging
+- erosion
+- accretion
+- structured building
 
 Game 3?!
 

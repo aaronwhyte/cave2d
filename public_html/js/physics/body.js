@@ -8,7 +8,7 @@ function Body() {
   this.pathStartPos = new Vec2d();
   this.vel = new Vec2d();
 
-  // The pathStartTime is guaranteed to get updated in this amount of time,
+  // The client guarantees that the pathStartTime will be updated within this amount of time,
   // so do not add events for this path beyond pathStartTime + pathDurationMax.
   // Most spirits will accelerate their bodies at a fixed frequency, so this value
   // will not usually change during a body's lifetime unless its spirit changes.
@@ -68,6 +68,13 @@ Body.prototype.reset = function() {
   this.mass = 1;
   this.elasticity = 1;
 
+  // rotation stuff
+  this.turnable = false;
+  this.moi = 1;
+  this.angVel = 0;
+  this.angStartTime = 0;
+  this.angStartPos = 0;
+
   // cache for rayscan freeze-unfreeze
   this.freezePathStartPos.reset();
   this.freezeVel.reset();
@@ -89,7 +96,12 @@ Body.SCHEMA = {
   8: 'rectRad',
   9: 'hitGroup',
   10: 'mass',
-  11: 'elasticity'
+  11: 'elasticity',
+  12: 'turnable',
+  13: 'moi',
+  14: 'angVel',
+  15: 'angStartTime',
+  16: 'angStartPos'
 };
 
 Body.getJsoner = function() {
@@ -105,15 +117,6 @@ Body.prototype.toJSON = function() {
 
 Body.prototype.setFromJSON = function(json) {
   Body.getJsoner().setFromJSON(json, this);
-};
-
-/**
- * @param {number} t
- * @param {Vec2d} out
- * @returns {Vec2d}
- */
-Body.prototype.getPosAtTime = function(t, out) {
-  return out.set(this.vel).scale(t - this.pathStartTime).add(this.pathStartPos);
 };
 
 /**
@@ -150,10 +153,19 @@ Body.prototype.invalidatePath = function() {
 };
 
 /**
+ * @param {number} t
+ * @param {Vec2d} out
+ * @returns {Vec2d}
+ */
+Body.prototype.getPosAtTime = function(t, out) {
+  return out.set(this.vel).scale(t - this.pathStartTime).add(this.pathStartPos);
+};
+
+/**
  * Shifts the path so it intersects the new position at the new time,
  * without changing the velocity. Teleportation, basically.
- * @param pos
- * @param t
+ * @param {Vec2d} pos
+ * @param {number} t
  */
 Body.prototype.setPosAtTime = function(pos, t) {
   this.invalidatePath();
@@ -164,9 +176,9 @@ Body.prototype.setPosAtTime = function(pos, t) {
 /**
  * Shifts the path so it intersects the new position at the new time,
  * without changing the velocity. Teleportation, basically.
- * @param x
- * @param y
- * @param t
+ * @param {number} x
+ * @param {number} y
+ * @param {number} t
  */
 Body.prototype.setPosXYAtTime = function(x, y, t) {
   this.invalidatePath();
@@ -177,8 +189,8 @@ Body.prototype.setPosXYAtTime = function(x, y, t) {
 /**
  * Shifts the path so that it intersects the same position at time t that it used to,
  * but it arrives with a new velocity (and therefore is coming from and going to new places.)
- * @param vel
- * @param t
+ * @param {Vec2d} vel
+ * @param {number} t
  */
 Body.prototype.setVelAtTime = function(vel, t) {
   this.invalidatePath();
@@ -189,14 +201,50 @@ Body.prototype.setVelAtTime = function(vel, t) {
 /**
  * Shifts the path so that it intersects the same position at time t that it used to,
  * but it arrives with a new velocity (and therefore is coming from and going to new places.)
- * @param x
- * @param y
- * @param t
+ * @param {number} x
+ * @param {number} y
+ * @param {number} t
  */
 Body.prototype.setVelXYAtTime = function(x, y, t) {
   this.invalidatePath();
   this.moveToTime(t);
   this.vel.setXY(x, y);
+};
+
+/**
+ * @return {number}
+ */
+Body.prototype.getPathEndTime = function() {
+  return this.pathStartTime + this.pathDurationMax;
+};
+
+/**
+ * Gets the angular position at a given time.
+ * @param {number} t
+ * @returns {number}
+ */
+Body.prototype.getAngPosAtTime = function(t) {
+  return this.angStartPos + (t - this.angStartTime) * this.angVel;
+};
+
+/**
+ * Sets the angular position at a given time.
+ * @param {number} ap
+ * @param {number} t
+ */
+Body.prototype.setAngPosAtTime = function(ap, t) {
+  this.angStartTime = t;
+  this.angStartPos = ap;
+};
+
+/**
+ * Sets the angular velocity at a given time, by rotating the body to the right position at the old velocity first.
+ * @param {number} av
+ * @param {number} t
+ */
+Body.prototype.setAngVelAtTime = function(av, t) {
+  this.moveToTime(t);
+  this.angVel = av;
 };
 
 /**
@@ -209,10 +257,9 @@ Body.prototype.moveToTime = function(t) {
   this.pathStartPos.set(temp);
   this.pathStartTime = t;
   temp.free();
-};
 
-Body.prototype.getPathEndTime = function() {
-  return this.pathStartTime + this.pathDurationMax;
+  this.angStartPos = this.getAngPosAtTime(t);
+  this.angStartTime = t;
 };
 
 /**
