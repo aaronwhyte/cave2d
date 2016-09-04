@@ -66,7 +66,7 @@ v body values
   v getAngPosAtTime()
   v setAngPosAtTime()
   v setAngVelAtTime()
-- make AntSpirit use new rotation system
+v make AntSpirit use new rotation system
 - editor
   - grab objects at a point, and apply force to that point when dragging
     - point defined by dist & direction from center of mass.

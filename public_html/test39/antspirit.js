@@ -6,9 +6,6 @@ function AntSpirit(screen) {
   BaseSpirit.call(this, screen);
   this.type = BaseScreen.SpiritType.ANT;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
-  // 0 is up, PI/2 is right
-  this.dir = 0;//Math.random() * Math.PI * 2;
-  this.angVel = 0;
 
   this.vec2d = new Vec2d();
   this.vec2d2 = new Vec2d();
@@ -43,10 +40,8 @@ AntSpirit.SCHEMA = {
   1: "id",
   2: "bodyId",
   3: "color",
-  4: "dir",
-  5: "angVel",
-  6: "stress",
-  7: "health"
+  4: "stress",
+  5: "health"
 };
 
 AntSpirit.getJsoner = function() {
@@ -91,6 +86,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
+  b.turnable = true;
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.8;
   b.hitGroup = BaseScreen.Group.ENEMY;
@@ -109,12 +105,13 @@ AntSpirit.prototype.setColorRGB = function(r, g, b) {
 };
 
 AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
+  var dir = this.getBodyAngPos();
   return this.screen.scan(
       BaseScreen.Group.ENEMY_SCAN,
       pos,
       this.scanVec.setXY(
-          Math.sin(this.dir + rot) * dist,
-          Math.cos(this.dir + rot) * dist),
+          Math.sin(dir + rot) * dist,
+          Math.cos(dir + rot) * dist),
       rad,
       this.scanResp);
 };
@@ -122,6 +119,9 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody();
   var pos = this.getBodyPos();
+  var dir = this.getBodyAngPos();
+  var angVel = this.getBodyAngVel();
+
   this.stress = this.stress || 0;
 
   var friction = 0.05;
@@ -153,7 +153,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       var thrust = AntSpirit.THRUST * (1 + (1 - this.health)* 0.5);
       if (dist >= 0) {
         // avoid obstruction
-        angAccel = -scanRot * (this.stress * 0.8 + 0.2);
+        angAccel = -scanRot * (this.stress * 0.8 + 0.2) * 0.6;
         this.stress += 0.03;
         thrust *= (dist - 0.05 * this.stress);
       } else {
@@ -161,8 +161,9 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
         if (this.stress > 0.5) {
           // escape!
           angAccel = 0;
-          this.angVel = 0;
-          this.dir += scanRot;
+          angVel = 0;
+          dir += scanRot;
+          this.setBodyAngPos(dir);
         } else {
           angAccel = scanRot * (this.stress * 0.8 + 0.2);
         }
@@ -170,11 +171,12 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       }
       this.stress = Math.min(1, Math.max(0, this.stress));
 
-      this.angVel *= 0.5;
-      this.angVel += angAccel;
-      this.dir += this.angVel;
+      angVel *= 0.5;
+      angVel += angAccel;
+      dir += angVel;
+      this.setBodyAngVel(angVel);
 
-      this.accel.setXY(Math.sin(this.dir), Math.cos(this.dir))
+      this.accel.setXY(Math.sin(dir), Math.cos(dir))
           .scale(thrust * traction * time);
       newVel.add(this.accel);
     }
@@ -192,7 +194,8 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
     timeoutDuration = AntSpirit.MEASURE_TIMEOUT * (1 - Math.random() * 0.05);
   }
   body.pathDurationMax = timeoutDuration * 1.1;
-  body.setVelAtTime(newVel, now);
+  this.setBodyVel(newVel);
+
   world.addTimeout(now + timeoutDuration, this.id, -1);
 };
 
@@ -212,7 +215,7 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-        .multiply(this.mat44.toRotateZOp(-this.dir));
+        .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
     renderer.setModelMatrix(this.modelMatrix);
     renderer.drawStamp();
   }

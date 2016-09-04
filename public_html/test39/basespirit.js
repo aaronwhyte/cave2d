@@ -56,8 +56,36 @@ BaseSpirit.prototype.getBody = function() {
 
 BaseSpirit.prototype.getBodyPos = function() {
   var body = this.getBody();
-  if (!body) return null;
-  return body.getPosAtTime(this.now(), this.tempBodyPos);
+  return body ? body.getPosAtTime(this.now(), this.tempBodyPos) : null;
+};
+
+BaseSpirit.prototype.setBodyVel = function(v) {
+  var body = this.getBody();
+  return body ? body.setVelAtTime(v, this.now()) : null;
+};
+
+BaseSpirit.prototype.getBodyAngPos = function() {
+  var body = this.getBody();
+  return body ? body.getAngPosAtTime(this.now()) : null;
+};
+
+BaseSpirit.prototype.setBodyAngPos = function(ap) {
+  var body = this.getBody();
+  if (body) {
+    body.setAngPosAtTime(ap, this.now());
+  }
+};
+
+BaseSpirit.prototype.getBodyAngVel = function() {
+  var body = this.getBody();
+  return body ? body.angVel : null;
+};
+
+BaseSpirit.prototype.setBodyAngVel = function(av) {
+  var body = this.getBody();
+  if (body) {
+    return body.setAngVelAtTime(av, this.now());
+  }
 };
 
 BaseSpirit.prototype.now = function() {

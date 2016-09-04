@@ -252,14 +252,16 @@ Body.prototype.setAngVelAtTime = function(av, t) {
  * @param {number} t
  */
 Body.prototype.moveToTime = function(t) {
-  if (this.pathStartTime === t) return;
-  var temp = this.getPosAtTime(t, Vec2d.alloc());
-  this.pathStartPos.set(temp);
-  this.pathStartTime = t;
-  temp.free();
-
-  this.angStartPos = this.getAngPosAtTime(t);
-  this.angStartTime = t;
+  if (this.pathStartTime !== t) {
+    var temp = this.getPosAtTime(t, Vec2d.alloc());
+    this.pathStartPos.set(temp);
+    this.pathStartTime = t;
+    temp.free();
+  }
+  if (this.angStartTime !== t) {
+    this.angStartPos = this.getAngPosAtTime(t);
+    this.angStartTime = t;
+  }
 };
 
 /**
