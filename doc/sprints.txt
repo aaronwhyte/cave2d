@@ -67,9 +67,9 @@ v body values
   v setAngPosAtTime()
   v setAngVelAtTime()
 v make AntSpirit use new rotation system
-- editor
-  - grab objects at a point, and apply force to that point when dragging
-    - point defined by dist & direction from center of mass.
+v editor
+  v grab objects at a point, and apply force to that point when dragging
+    v point defined by dist & direction from center of mass.
   - give cursor a direction based on movement
   - add objects with initial orientation based on cursor direction
 - s27n

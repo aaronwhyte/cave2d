@@ -140,7 +140,8 @@ EditScreen.prototype.toJSON = function() {
 };
 
 EditScreen.prototype.createDefaultWorld = function() {
-  this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 9.8, 1);
+  this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
+  this.addItem(BaseScreen.MenuItem.ANT, Vec2d.ZERO, Math.random() * 2 * Math.PI);
 };
 
 EditScreen.prototype.onHitEvent = function(e) {
@@ -214,7 +215,7 @@ EditScreen.prototype.addItem = function(name, pos, dir) {
     var c = this.spiritConfigs[t];
     if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
       c.menuItemConfig.factory(this, c.stamp, pos, dir);
-      break;
+      return;
     }
   }
 };

@@ -28,7 +28,8 @@ AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.MEASURE_TIMEOUT = 1.2;
-AntSpirit.THRUST = 0.33;
+AntSpirit.THRUST = 0.2;
+AntSpirit.TWIST = 0.1;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -88,9 +89,10 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.setPosAtTime(pos, screen.now());
-  b.rad = 0.8;
+  b.rad = 2;
   b.hitGroup = BaseScreen.Group.ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.moi = b.mass * b.rad * b.rad / 2;
   b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 1.1;
   spirit.bodyId = world.addBody(b);
 
@@ -136,11 +138,12 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   // friction
   this.accel.set(newVel).scale(-friction * time);
   newVel.add(this.accel);
+  angVel *= (1 - friction * time);
   if (AntSpirit.OPTIMIZE && newVel.magnitudeSquared() < AntSpirit.STOPPING_SPEED_SQUARED) {
     newVel.reset();
   }
 
-  if (this.screen.isPlaying()) {
+  if (false && this.screen.isPlaying()) {
     if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
       this.accel.set(body.vel).scale(-traction * time);
       newVel.add(this.accel);
@@ -153,29 +156,27 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       var thrust = AntSpirit.THRUST * (1 + (1 - this.health)* 0.5);
       if (dist >= 0) {
         // avoid obstruction
-        angAccel = -scanRot * (this.stress * 0.8 + 0.2) * 0.6;
+        angAccel = -scanRot * (this.stress * 0.8 + 0.2) * AntSpirit.TWIST;
         this.stress += 0.03;
         thrust *= (dist - 0.05 * this.stress);
       } else {
         // clear path
-        if (this.stress > 0.5) {
-          // escape!
-          angAccel = 0;
-          angVel = 0;
-          dir += scanRot;
-          this.setBodyAngPos(dir);
-        } else {
-          angAccel = scanRot * (this.stress * 0.8 + 0.2);
-        }
+//        if (this.stress > 0.5) {
+//          // escape!
+//          angAccel = 0;
+//          angVel = 0;
+//          dir += scanRot;
+//          this.setBodyAngPos(dir);
+//        } else {
+          angAccel = scanRot * (this.stress * 0.8 + 0.2) * AntSpirit.TWIST;
+//        }
         this.stress = 0;
       }
       this.stress = Math.min(1, Math.max(0, this.stress));
 
-      angVel *= 0.5;
       angVel += angAccel;
-      dir += angVel;
-      this.setBodyAngVel(angVel);
 
+      dir += angVel;
       this.accel.setXY(Math.sin(dir), Math.cos(dir))
           .scale(thrust * traction * time);
       newVel.add(this.accel);
@@ -195,6 +196,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
   body.pathDurationMax = timeoutDuration * 1.1;
   this.setBodyVel(newVel);
+  this.setBodyAngVel(angVel);
 
   world.addTimeout(now + timeoutDuration, this.id, -1);
 };

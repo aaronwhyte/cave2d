@@ -445,31 +445,53 @@ Editor.prototype.handleInput = function() {
 };
 
 Editor.prototype.dragObject = function() {
+  var now = this.now();
   var body = this.host.getBodyById(this.indicatedBodyId);
   var bodyPos = this.host.getBodyPos(body, this.vec2d);
   if (!this.gripPoint) {
     // Get a grip.
     this.gripPoint = Vec2d.alloc()
         .set(this.cursorPos)
-        .subtract(bodyPos);
+        .subtract(bodyPos)
+        .rot(-body.getAngPosAtTime(now));
   }
-  // Drag it! Drag it? Drag it!
-  var newVel = Vec2d.alloc()
+
+  var bodyToGrip = Vec2d.alloc()
+      .set(this.gripPoint)
+      .rot(body.getAngPosAtTime(now));
+  var gripToCursor = Vec2d.alloc()
       .set(this.cursorPos)
-      .subtract(bodyPos)
-      .subtract(this.gripPoint)
+      .subtract(bodyToGrip)
+      .subtract(bodyPos);
+  if (body.turnable) {
+    var gripLength = bodyToGrip.magnitude();
+    var gripRot90 = Vec2d.alloc().set(bodyToGrip).rot90Right().scaleToLength(1);
+    var torque = this.vec2d
+        .set(gripToCursor)
+        .scale(gripLength * (1 - this.gripAccelFraction))
+        .dot(gripRot90);
+    body.setAngVelAtTime(body.angVel - torque / body.moi, now);
+    gripRot90.free();
+  }
+
+  // linear acceleration
+  var newVel = Vec2d.alloc()
+      .set(gripToCursor)
       .scale(this.gripAccelFraction)
       .add(body.vel)
       .scale(1 - this.gripFriction);
   if (newVel.distance(body.vel) > this.maxGripAccel) {
     newVel.subtract(body.vel).clipToMaxLength(this.maxGripAccel).add(body.vel);
   }
-  body.setVelAtTime(newVel, this.host.getWorldTime());
+  body.setVelAtTime(newVel, now);
   newVel.free();
+
+  gripToCursor.free();
+  bodyToGrip.free();
 };
 
 Editor.prototype.doCursorHoverScan = function() {
-  this.cursorBody.setPosAtTime(this.cursorPos, this.host.getWorldTime());
+  this.cursorBody.setPosAtTime(this.cursorPos, this.now());
   var i, hitBody, overlapBodyIds;
 
   // center pinpoint check
@@ -570,4 +592,8 @@ Editor.prototype.getMousePageX = function() {
 
 Editor.prototype.getMousePageY = function() {
   return this.oldMouseEventCoords.y;
+};
+
+Editor.prototype.now = function() {
+  return this.host.getWorldTime();
 };
