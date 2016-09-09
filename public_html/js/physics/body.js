@@ -247,6 +247,36 @@ Body.prototype.setAngVelAtTime = function(av, t) {
   this.angVel = av;
 };
 
+Body.prototype.applyLinearFrictionAtTime = function(friction, time) {
+  this.invalidatePath();
+  this.moveToTime(time);
+  this.vel.scale(1 - friction);
+};
+
+Body.prototype.applyAngularFrictionAtTime = function(friction, time) {
+  this.moveToTime(time);
+  this.angVel *= 1 - friction;
+};
+
+Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now, opt_maxAccel) {
+  // angular acceleration
+  if (this.turnable) {
+    var gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
+    var gripLen = gripVec.magnitude();
+    var torque = force.dot(gripVec.rot90Right()) * gripLen;
+    this.setAngVelAtTime(this.angVel + torque / this.moi, now);
+    gripVec.free();
+  }
+
+  // linear acceleration
+  var newVel = Vec2d.alloc()
+      .set(force)
+      .scale(1 / this.mass)
+      .add(this.vel);
+  this.setVelAtTime(newVel, now);
+  newVel.free();
+};
+
 /**
  * Without invalidating the path, this sets the pathStartTime to t, and adjusts the pathStartPos.
  * @param {number} t

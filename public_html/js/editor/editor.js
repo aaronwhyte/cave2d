@@ -107,7 +107,7 @@ function Editor(host, canvas, renderer, stamps) {
   this.indicatorColorVector = new Vec4();
 
   this.gripPoint = null;
-  this.gripAccelFraction = 0.3;
+  this.gripAccelFraction = 0.12;
   this.gripFriction = 0.2;
   this.maxGripAccel = 10;
 
@@ -447,47 +447,36 @@ Editor.prototype.handleInput = function() {
 Editor.prototype.dragObject = function() {
   var now = this.now();
   var body = this.host.getBodyById(this.indicatedBodyId);
-  var bodyPos = this.host.getBodyPos(body, this.vec2d);
-  if (!this.gripPoint) {
-    // Get a grip.
-    this.gripPoint = Vec2d.alloc()
+  if (body) {
+    var bodyPos = this.host.getBodyPos(body, this.vec2d);
+    if (!this.gripPoint) {
+      // Get a grip.
+      this.gripPoint = Vec2d.alloc()
+          .set(this.cursorPos)
+          .subtract(bodyPos)
+          .rot(-body.getAngPosAtTime(now));
+    }
+
+    var bodyToGrip = Vec2d.alloc()
+        .set(this.gripPoint)
+        .rot(body.getAngPosAtTime(now));
+    var force = Vec2d.alloc()
         .set(this.cursorPos)
+        .subtract(bodyToGrip)
         .subtract(bodyPos)
-        .rot(-body.getAngPosAtTime(now));
-  }
+        .scale(body.mass * this.gripAccelFraction);
+    var gripInWorld = Vec2d.alloc()
+        .set(bodyPos)
+        .add(bodyToGrip);
 
-  var bodyToGrip = Vec2d.alloc()
-      .set(this.gripPoint)
-      .rot(body.getAngPosAtTime(now));
-  var gripToCursor = Vec2d.alloc()
-      .set(this.cursorPos)
-      .subtract(bodyToGrip)
-      .subtract(bodyPos);
-  if (body.turnable) {
-    var gripLength = bodyToGrip.magnitude();
-    var gripRot90 = Vec2d.alloc().set(bodyToGrip).rot90Right().scaleToLength(1);
-    var torque = this.vec2d
-        .set(gripToCursor)
-        .scale(gripLength * (1 - this.gripAccelFraction))
-        .dot(gripRot90);
-    body.setAngVelAtTime(body.angVel - torque / body.moi, now);
-    gripRot90.free();
-  }
+    body.applyForceAtWorldPosAndTime(force, gripInWorld, now);
+    body.applyLinearFrictionAtTime(this.gripFriction, now);
+    body.applyAngularFrictionAtTime(this.gripFriction, now);
 
-  // linear acceleration
-  var newVel = Vec2d.alloc()
-      .set(gripToCursor)
-      .scale(this.gripAccelFraction)
-      .add(body.vel)
-      .scale(1 - this.gripFriction);
-  if (newVel.distance(body.vel) > this.maxGripAccel) {
-    newVel.subtract(body.vel).clipToMaxLength(this.maxGripAccel).add(body.vel);
+    gripInWorld.free();
+    force.free();
+    bodyToGrip.free();
   }
-  body.setVelAtTime(newVel, now);
-  newVel.free();
-
-  gripToCursor.free();
-  bodyToGrip.free();
 };
 
 Editor.prototype.doCursorHoverScan = function() {
