@@ -70,9 +70,33 @@ v make AntSpirit use new rotation system
 v editor
   v grab objects at a point, and apply force to that point when dragging
     v point defined by dist & direction from center of mass.
-  - give cursor a direction based on movement
-  - add objects with initial orientation based on cursor direction
-- s27n
+  v give cursor a direction based on movement
+  v add objects with initial orientation based on cursor direction
+  - s27n
+
+Surface collision grip
+- "surfaceGrip" in body
+  * 0: frictionless, like a bowling ball
+  * 0.3: fair amaount of friction, like a dirty tire
+  * 0.5: very grippy, a basketball
+  * 1: 100% elastic, like a superball
+  There are more realistic characterizations...
+  A superball will grip a bowling ball and a wood floor
+  but a bowlingball will not grip a wood floor
+  so there's smoothness, stickyness, tread
+  there's also grip decrease as surface vel increases, like tires gripping vs slipping
+  and grip is a function of pressure too. arrr
+- collision response
+  - calculate surface velocity vec
+  - multiply surfaceGrips. Naive yes but lets go.
+  - calc force to totally reverse surface vec, then mult by overall grip
+  = apply those forces at edges of objects
+
+chain constraints
+Simple distance between two body positions - no offset from center, because rotation would make that harder.
+- phy map from bodyId to chain constraint
+
+Game 3: Stunt Tank!
 
 Multiplayer
 * up to four touch players
@@ -80,17 +104,12 @@ Multiplayer
 * Gamepad controls if possible
 Player modes: Absent, Wispy, Embodied
 
-chain constraints
-Simple distance between two body positions - no offset from center, because rotation would make that harder.
-- phy map from bodyId to chain constraint
-
 process-ish level creation tools
 - structured digging
 - erosion
 - accretion
 - structured building
 
-Game 3?!
 
 Test XX: Undo and Redo
 - retain last N JSON serializations in RAM or wherevs.

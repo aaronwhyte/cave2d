@@ -7,7 +7,7 @@ function Editor(host, canvas, renderer, stamps) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
-  // 'stamps' is jus for glyph stamps, for the button tool-tips
+  // 'stamps' is just for glyph stamps, for the button tool-tips
 
   // This is for all the special editor-only icons
   this.getStamps();
@@ -95,6 +95,8 @@ function Editor(host, canvas, renderer, stamps) {
   this.modelMatrix2 = new Matrix44();
 
   this.cursorPos = new Vec2d();
+  this.cursorTail = new Vec2d();
+  this.cursorDir = 0;
   this.cursorVel = new Vec2d();
   this.cursorStamp = null; // it'll be a ring
   this.colorVector = new Vec4();
@@ -187,7 +189,17 @@ Editor.prototype.updateHudLayout = function() {
 Editor.prototype.getStamps = function() {
   var model;
   if (!this.cursorStamp) {
-    model = RigidModel.createTube(32).transformPositions(new Matrix44().toScaleOpXYZ(0.9, 0.9, 1));
+    model = new RigidModel();
+    var arrowHead = RigidModel.createTriangle();
+    arrowHead.vertexes[0].position.setXYZ(0, 0, 0);
+    arrowHead.vertexes[1].position.setXYZ(-0.4, -0.5, 0);
+    arrowHead.vertexes[2].position.setXYZ(0.4, -0.5, 0);
+    var arrowShaft = RigidModel.createSquare()
+        .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.35, 1))
+        .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.7, 0));
+    model.addRigidModel(arrowHead).addRigidModel(arrowShaft);
+    model.transformPositions(new Matrix44().toScaleOpXYZ(1.1, 1.1, 1));
+    model.addRigidModel(RigidModel.createTube(32).transformPositions(new Matrix44().toScaleOpXYZ(0.9, 0.9, 1)));
     this.cursorStamp = model.createModelStamp(this.renderer.gl);
   }
   if (!this.indicatorStamp) {
@@ -290,7 +302,6 @@ Editor.prototype.getStamps = function() {
     model = new RigidModel();
     var size = 1.5;
     var brightness = 0.5;
-
     var thickness = 0.3;
     var length = 0.5 + thickness;
     for (var i = 0; i < 4; i++) {
@@ -311,23 +322,6 @@ Editor.prototype.getStamps = function() {
           ));
     }
     model.setColorRGB(brightness, brightness, brightness);
-
-//    model
-//        .addRigidModel(
-//            RigidModel.createRingMesh(4, 0.9)
-//                .transformPositions(new Matrix44().multiply(new Matrix44().toScaleOpXYZ(size, size, 1)))
-//                .setColorRGB(brightness * 1.5, brightness * 1.5, brightness * 1.5))
-//        .addRigidModel(
-//            RigidModel.createCircleMesh(3)
-//                .transformPositions(new Matrix44().toScaleOpXYZ(size, size, 1))
-//                .setColorRGB(brightness, brightness, brightness));
-
-//    model
-//        .addRigidModel(RigidModel.createSquare().transformPositions(
-//            new Matrix44()
-//                .multiply(new Matrix44().toScaleOpXYZ(size, size, 1))
-//        ))
-//        .setColorRGB(brightness, brightness, brightness);
     this.addMenuIndicatorStamp = model.createModelStamp(this.renderer.gl);
   }
 
@@ -433,7 +427,7 @@ Editor.prototype.handleInput = function() {
   }
 
   if (this.addTriggerWidget.getVal() && !this.oldAddTriggerVal) {
-    this.host.addItem(this.menu.getSelectedName(), this.cursorPos);
+    this.host.addItem(this.menu.getSelectedName(), this.cursorPos, this.cursorDir);
   }
   if (this.removeTriggerWidget.getVal() && this.indicatedBodyId) {
     this.host.removeByBodyId(this.indicatedBodyId);
@@ -441,7 +435,17 @@ Editor.prototype.handleInput = function() {
   }
   this.oldAddTriggerVal = this.addTriggerWidget.getVal();
 
+  var moveLen = oldCursorPos.subtract(this.cursorPos).magnitude();
+  if (moveLen) {
+    var tailVel = Vec2d.alloc().set(this.cursorPos).subtract(this.cursorTail).scale(0.2 * moveLen);
+    this.cursorTail.add(tailVel);
+    this.cursorTail.subtract(this.cursorPos).scaleToLength(1).add(this.cursorPos);
+    tailVel.free();
+    var cursorTailDiff = this.vec2d.set(this.cursorPos).subtract(this.cursorTail);
+    this.cursorDir = Math.atan2(cursorTailDiff.x, cursorTailDiff.y) || 0;
+  }
   oldCursorPos.free();
+
 };
 
 Editor.prototype.dragObject = function() {
@@ -549,10 +553,12 @@ Editor.prototype.drawScene = function() {
   var innerCursorRad = this.cursorRad * 0.9;
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
+      .multiply(this.mat44.toRotateZOp(-this.cursorDir))
       .multiply(this.mat44.toScaleOpXYZ(outerCursorRad, outerCursorRad, 1));
   this.renderer.setModelMatrix(this.modelMatrix);
   this.modelMatrix2.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
+      .multiply(this.mat44.toRotateZOp(-this.cursorDir))
       .multiply(this.mat44.toScaleOpXYZ(innerCursorRad, innerCursorRad, 1));
   this.renderer.setModelMatrix2(this.modelMatrix2);
   this.renderer.drawStamp();
