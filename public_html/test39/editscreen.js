@@ -21,7 +21,7 @@ EditScreen.prototype.constructor = EditScreen;
 
 EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
-EditScreen.ANT_RAD = 0.8;
+EditScreen.ANT_RAD = 1.2;
 
 EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.stamps);
@@ -141,7 +141,7 @@ EditScreen.prototype.toJSON = function() {
 
 EditScreen.prototype.createDefaultWorld = function() {
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  this.addItem(BaseScreen.MenuItem.ANT, Vec2d.ZERO, Math.random() * 2 * Math.PI);
+  this.addItem(BaseScreen.MenuItem.ANT, Vec2d.ZERO, 0);
 };
 
 EditScreen.prototype.onHitEvent = function(e) {
