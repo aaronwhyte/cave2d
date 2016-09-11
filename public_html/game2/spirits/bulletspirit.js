@@ -86,12 +86,11 @@ BulletSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
-BulletSpirit.prototype.onHitWall = function(mag) {
+BulletSpirit.prototype.onHitWall = function(mag, pos) {
   var body = this.getBody();
   if (!body) return;
-  var pos = this.getBodyPos();
   if (this.digChance * mag > Math.random()) {
-    var pillRad = this.wallDamageMultiplier * body.rad + 0.5;
+    var pillRad = this.wallDamageMultiplier * body.rad + 0.3;
     this.screen.drawTerrainPill(pos, pos, pillRad, 1);
     this.wallDamageSplash(pos, pillRad);
     this.sounds.wallDamage(pos);
@@ -111,16 +110,15 @@ BulletSpirit.prototype.onHitWall = function(mag) {
   }
 };
 
-BulletSpirit.prototype.onHitEnemy = function(mag) {
+BulletSpirit.prototype.onHitEnemy = function(mag, pos) {
   var body = this.getBody();
   if (!body) return;
-  var pos = this.getBodyPos();
   this.sounds.wallThump(pos, mag);
-  this.wallDamageSplash(pos, Math.random());
+//  this.wallDamageSplash(pos, Math.random());
   this.destroyBody();
 };
 
-BulletSpirit.prototype.onHitOther = function(mag) {
+BulletSpirit.prototype.onHitOther = function(mag, pos) {
   var body = this.getBody();
   if (!body) return;
   // bounce or vanish?
@@ -131,7 +129,7 @@ BulletSpirit.prototype.onHitOther = function(mag) {
   } else {
     // bounce
     this.addTrailSegment();
-    this.wallDamageSplash(this.getBodyPos(), body.rad);
+    this.wallDamageSplash(pos, body.rad);
   }
 };
 

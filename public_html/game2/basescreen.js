@@ -475,9 +475,9 @@ BaseScreen.prototype.onHitEvent = function(e) {
 
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-    var strikeVec = Vec2d.alloc().set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec);
-    var mag = strikeVec.magnitude();
-    strikeVec.free();
+    var vec = Vec2d.alloc();
+    var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
+    var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
 
     var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
     if (playerBody) {
@@ -492,7 +492,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
         playerSpirit.hitAnt(mag);
       }
       if (!exitBody && !antBody) {
-        this.sounds.wallThump(this.getAveragePlayerPos(), mag * 10);
+        this.sounds.wallThump(pos, mag * 10);
       }
     }
 
@@ -503,17 +503,18 @@ BaseScreen.prototype.onHitEvent = function(e) {
       var otherSpirit = this.getSpiritForBody(otherBody);
       if (!otherSpirit) {
         // wall?
-        bulletSpirit.onHitWall(mag);
+        bulletSpirit.onHitWall(mag, pos);
       } else if (otherSpirit.type == BaseScreen.SpiritType.ANT) {
-        otherSpirit.onPlayerBulletHit(bulletSpirit.damage)
-        bulletSpirit.onHitEnemy(mag);
+        otherSpirit.onPlayerBulletHit(bulletSpirit.damage);
+        bulletSpirit.onHitEnemy(mag, pos);
       } else if (otherSpirit.type == BaseScreen.SpiritType.BULLET) {
-        bulletSpirit.onHitOther(mag);
+        bulletSpirit.onHitOther(mag, pos);
         otherSpirit.onHitOther(mag);
       } else {
-        bulletSpirit.onHitOther(mag);
+        bulletSpirit.onHitOther(mag, pos);
       }
     }
+    vec.free();
   }
 };
 

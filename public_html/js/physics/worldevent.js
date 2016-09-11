@@ -8,6 +8,7 @@ function WorldEvent() {
 
   // This is a vector along which collision acceleration should be applied,
   // for default elastic collision resolution.
+  // Its magnitude doesn't signify.
   this.collisionVec = new Vec2d();
   this.reset();
 }

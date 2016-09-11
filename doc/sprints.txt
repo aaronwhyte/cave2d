@@ -75,22 +75,26 @@ v editor
   v s27n
 
 Surface collision grip
+v calc contact point of collision
+  v hitresolver stuff
+  v game2 tweaks
 - "surfaceGrip" in body
   * 0: frictionless, like a bowling ball
   * 0.3: fair amaount of friction, like a dirty tire
-  * 0.5: very grippy, a basketball
+  * 0.5: very grippy, a clean basketball
   * 1: 100% elastic, like a superball
   There are more realistic characterizations...
   A superball will grip a bowling ball and a wood floor
-  but a bowlingball will not grip a wood floor
-  so there's smoothness, stickyness, tread
+  but a bowling ball will not grip a wood floor
+  so there's smoothness, stickyness, tread...
   there's also grip decrease as surface vel increases, like tires gripping vs slipping
   and grip is a function of pressure too. arrr
+  Basically grip is a function of both surfaces, the surface velocity, pressure, hardness...
 - collision response
   - calculate surface velocity vec
   - multiply surfaceGrips. Naive yes but lets go.
   - calc force to totally reverse surface vec, then mult by overall grip
-  = apply those forces at edges of objects
+  - apply those forces at edges of objects
 
 chain constraints
 Simple distance between two body positions - no offset from center, because rotation would make that harder.

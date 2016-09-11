@@ -4,6 +4,9 @@
  */
 function HitResolver() {
   this.defaultElasticity = 0.99;
+  this.v1 = new Vec2d();
+  this.v2 = new Vec2d();
+
 }
 
 /**
@@ -14,8 +17,6 @@ function HitResolver() {
  */
 HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   if (b0.mass == Infinity && b1.mass == Infinity) return;
-  var pos0 = b0.getPosAtTime(time, Vec2d.alloc());
-  var pos1 = b1.getPosAtTime(time, Vec2d.alloc());
 
   // Shift b0 to the origin, holding still.
   var vel = Vec2d.alloc().set(b1.vel).subtract(b0.vel);
@@ -27,13 +28,8 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   accel.scale(-1 - this.defaultElasticity);
   if (accel.equals(Vec2d.ZERO)) {
     accel.free();
-    pos0.free();
-    pos1.free();
     return;
   }
-//  if (accel.magnitudeSquared() < 0.1 * 0.1) {
-//    accel.scaleToLength(0.1);
-//  }
 
   // Use masses to decide which body gets accelerated by how much.
   if (b0.mass == Infinity) {
@@ -54,6 +50,39 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
     work.free();
   }
   accel.free();
-  pos0.free();
-  pos1.free();
+};
+
+HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
+  if (b0.shape == Body.Shape.CIRCLE) {
+    if (b1.shape == Body.Shape.CIRCLE) {
+      return this.getHitPosCircCirc(time, collisionVec, b0, b1, out);
+    } else {
+      return this.getHitPosCircRect(time, collisionVec, b0, b1, out);
+    }
+  } else {
+    if (b1.shape == Body.Shape.CIRCLE) {
+      return this.getHitPosCircRect(time, collisionVec, b1, b0, out);
+    } else {
+      return this.getHitPosRectRect(time, collisionVec, b1, b0, out);
+    }
+  }
+};
+
+HitResolver.prototype.getHitPosCircCirc = function(time, collisionVec, b0, b1, out) {
+  var p0 = b0.getPosAtTime(time, this.v1);
+  var p1 = b1.getPosAtTime(time, this.v2);
+  return out.set(p1).subtract(p0).scaleToLength(b0.rad).add(p0);
+};
+
+HitResolver.prototype.getHitPosCircRect = function(time, collisionVec, b0, b1, out) {
+  var p0 = b0.getPosAtTime(time, this.v1);
+  var p1 = b1.getPosAtTime(time, this.v2);
+  return out.set(p1).subtract(p0).projectOnto(collisionVec).scaleToLength(b0.rad).add(p0);
+};
+
+HitResolver.prototype.getHitPosRectRect = function(time, collisionVec, b0, b1, out) {
+  var p0 = b0.getPosAtTime(time, this.v1);
+  var p1 = b1.getPosAtTime(time, this.v2);
+  // TODO: this is totally not accurate. But I don't care much about rect/rect collisions.
+  return out.set(p1).subtract(p0).projectOnto(collisionVec).scale(0.5).add(p0);
 };
