@@ -90,7 +90,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.turnable = true;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 0.8;
+  b.rad = 1.5;
   b.hitGroup = BaseScreen.Group.ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
