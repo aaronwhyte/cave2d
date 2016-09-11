@@ -72,7 +72,7 @@ v editor
     v point defined by dist & direction from center of mass.
   v give cursor a direction based on movement
   v add objects with initial orientation based on cursor direction
-  - s27n
+  v s27n
 
 Surface collision grip
 - "surfaceGrip" in body
