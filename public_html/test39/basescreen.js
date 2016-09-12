@@ -393,8 +393,6 @@ BaseScreen.prototype.bodyIfSpiritType = function(type, b0, opt_b1) {
 };
 
 BaseScreen.prototype.onHitEvent = function(e) {
-  if (!this.isPlaying()) return;
-
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
 

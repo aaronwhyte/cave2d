@@ -28,7 +28,7 @@ AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.MEASURE_TIMEOUT = 1.2;
-AntSpirit.THRUST = 0.2;
+AntSpirit.THRUST = 0.5;
 AntSpirit.TWIST = 0.1;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
@@ -88,9 +88,11 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
+  b.grip = 0.4;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 1.5;
+  b.setVelAtTime((new Vec2d(0, 0.4)).rot(dir), screen.now());
+  b.rad = 0.7 + Math.random();
   b.hitGroup = BaseScreen.Group.ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
@@ -127,8 +129,8 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   this.stress = this.stress || 0;
 
-  var friction = 0.05;
-  var traction = 0.5;
+  var friction = 0;//0.05;
+  var traction = 0.05;
 
   var now = this.now();
   var time = Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime);
@@ -149,31 +151,24 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       this.accel.set(body.vel).scale(-traction * time);
       newVel.add(this.accel);
       var antennaRotMag = Math.max(Math.PI * 0.13, Math.PI * this.stress);
-      var scanDist = body.rad * (3 + (1 - this.stress));
+      var scanDist = body.rad * 2;
       var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
       var dist = this.scan(pos, scanRot, scanDist, body.rad);
       var angAccel = 0;
       // they get faster as they get hurt
-      var thrust = AntSpirit.THRUST * (1 + (1 - this.health)* 0.5);
+      var thrust = AntSpirit.THRUST;
       if (dist >= 0) {
         // avoid obstruction
         angAccel = -scanRot * (this.stress * 0.8 + 0.2) * AntSpirit.TWIST;
         this.stress += 0.03;
-        thrust *= (dist - 0.05 * this.stress);
+        thrust -= thrust * (dist/scanDist);
       } else {
         // clear path
-//        if (this.stress > 0.5) {
-//          // escape!
-//          angAccel = 0;
-//          angVel = 0;
-//          dir += scanRot;
-//          this.setBodyAngPos(dir);
-//        } else {
-          angAccel = scanRot * (this.stress * 0.8 + 0.2) * AntSpirit.TWIST;
-//        }
-        this.stress = 0;
+        this.stress = Math.max(0, this.stress - 0.1);
+        angAccel = scanRot * (this.stress * 0.8 + 0.2) * AntSpirit.TWIST;
       }
       this.stress = Math.min(1, Math.max(0, this.stress));
+      angAccel -= angVel * 0.1;
 
       angVel += angAccel;
 

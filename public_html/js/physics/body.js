@@ -67,6 +67,7 @@ Body.prototype.reset = function() {
   // data for the basic "bounce" collision response
   this.mass = 1;
   this.elasticity = 1;
+  this.grip = 0.5;
 
   // rotation stuff
   this.turnable = false;

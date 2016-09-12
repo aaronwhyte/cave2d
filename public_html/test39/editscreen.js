@@ -144,14 +144,6 @@ EditScreen.prototype.createDefaultWorld = function() {
   this.addItem(BaseScreen.MenuItem.ANT, Vec2d.ZERO, 0);
 };
 
-EditScreen.prototype.onHitEvent = function(e) {
-  var b0 = this.world.getBodyByPathId(e.pathId0);
-  var b1 = this.world.getBodyByPathId(e.pathId1);
-  if (b0 && b1) {
-    this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-  }
-};
-
 EditScreen.prototype.handleInput = function () {
   if (!this.world) return;
   this.editor.handleInput();

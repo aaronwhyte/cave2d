@@ -26,28 +26,51 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   var accel = Vec2d.alloc().set(vel).projectOnto(collisionVec);
   // Add onto that for elastic collision.
   accel.scale(-1 - this.defaultElasticity);
-  if (accel.equals(Vec2d.ZERO)) {
-    accel.free();
-    return;
+  if (!accel.equals(Vec2d.ZERO)) {
+    // Use masses to decide which body gets accelerated by how much.
+    if (b0.mass == Infinity) {
+      b1.setVelAtTime(accel.add(b1.vel), time);
+    } else if (b1.mass == Infinity) {
+      b0.setVelAtTime(accel.scale(-1).add(b0.vel), time);
+    } else {
+      var work = Vec2d.alloc();
+      var massTotal = b0.mass + b1.mass;
+
+      var frac0 = b1.mass / massTotal;
+      work.set(accel).scale(-frac0).add(b0.vel);
+      b0.setVelAtTime(work, time);
+
+      var frac1 = b0.mass / massTotal;
+      work.set(accel).scale(frac1).add(b1.vel);
+      b1.setVelAtTime(work, time);
+      work.free();
+    }
   }
+  vel.free();
 
-  // Use masses to decide which body gets accelerated by how much.
-  if (b0.mass == Infinity) {
-    b1.setVelAtTime(accel.add(b1.vel), time);
-  } else if (b1.mass == Infinity) {
-    b0.setVelAtTime(accel.scale(-1).add(b0.vel), time);
-  } else {
-    var work = Vec2d.alloc();
-    var massTotal = b0.mass + b1.mass;
-
-    var frac0 = b1.mass / massTotal;
-    work.set(accel).scale(-frac0).add(b0.vel);
-    b0.setVelAtTime(work, time);
-
-    var frac1 = b0.mass / massTotal;
-    work.set(accel).scale(frac1).add(b1.vel);
-    b1.setVelAtTime(work, time);
-    work.free();
+  // Angular stuff
+  if (b0.turnable || b1.turnable) {
+    var hitPos = this.getHitPos(time, collisionVec, b0, b1, Vec2d.alloc());
+    //debugger;
+    var surfaceVec = Vec2d.alloc().set(collisionVec).rot90Right();
+    var v0 = this.getVelocityAtPoint(time, b0, hitPos, Vec2d.alloc()).projectOnto(surfaceVec);
+    var v1 = this.getVelocityAtPoint(time, b1, hitPos, Vec2d.alloc()).projectOnto(surfaceVec);
+    accel.set(v1).subtract(v0).scale(-b0.grip * b1.grip);
+    if (!accel.equals(Vec2d.ZERO)) {
+      if (b0.mass == Infinity) {
+        b1.applyForceAtWorldPosAndTime(accel.scale(b1.moi), hitPos, time);
+      } else if (b1.mass == Infinity) {
+        b0.applyForceAtWorldPosAndTime(accel.scale(-1).scale(b0.moi), hitPos, time);
+      } else {
+        var force = accel.scale((b0.moi + b1.moi) * 0.5);
+        b1.applyForceAtWorldPosAndTime(force, hitPos, time);
+        b0.applyForceAtWorldPosAndTime(force.scale(-1), hitPos, time);
+      }
+    }
+    v1.free();
+    v0.free();
+    surfaceVec.free();
+    hitPos.free();
   }
   accel.free();
 };
@@ -67,6 +90,17 @@ HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
     }
   }
 };
+
+HitResolver.prototype.getVelocityAtPoint = function(now, body, point, out) {
+  if (!body.turnable || !body.angVel) {
+    return out.set(body.vel);
+  }
+  return body.getPosAtTime(now, out).subtract(point).scale(body.angVel).rot90Right().add(body.vel);
+};
+
+//////////////
+// internal
+//////////////
 
 HitResolver.prototype.getHitPosCircCirc = function(time, collisionVec, b0, b1, out) {
   var p0 = b0.getPosAtTime(time, this.v1);
