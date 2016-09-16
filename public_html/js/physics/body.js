@@ -22,6 +22,8 @@ function Body() {
   this.reset();
 }
 
+Body.MAX_ABS_ANGVEL = Math.PI * 1.9;
+
 Body.Shape = {
   CIRCLE: 1,
   RECT: 2
@@ -246,6 +248,11 @@ Body.prototype.setAngPosAtTime = function(ap, t) {
 Body.prototype.setAngVelAtTime = function(av, t) {
   this.moveToTime(t);
   this.angVel = av;
+  if (this.angVel > Body.MAX_ABS_ANGVEL) {
+    this.angVel = Body.MAX_ABS_ANGVEL;
+  } else if (this.angVel < -Body.MAX_ABS_ANGVEL) {
+    this.angVel = -Body.MAX_ABS_ANGVEL;
+  }
 };
 
 Body.prototype.applyLinearFrictionAtTime = function(friction, time) {
