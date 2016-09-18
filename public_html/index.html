@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>cave2d</title>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
 <style>
 body {
@@ -48,6 +49,7 @@ which was based on an 8-bit Atari game, <a href="https://www.google.com/#q=Dandy
 -->
 
 <h1>Little games?</h1>
+
 <h2><a href="game1">Game 1</a></h2>
 Here's a demo of basic combat, and infinite digging through destructible terrain.
 
@@ -61,12 +63,21 @@ There's a <a href="game2/edit">level editor</a>, for creating and testing levels
 main game; I use it to create and test levels, then I export them to JSON, and copy that into the cave2d.com source
 code. But it's kinda fun.
 
-<h1>Editor tests</h1>
 
-<h2><a href="test39">Test 39 - Object Orientation</a></h2>
+<h1>Physics II</h1>
+
+<!--<h2><a href="test40">Test 40 - Chain Constraints</a></h2>-->
+<!--<i>WORK IN PROGRESS</i>-->
+
+<h2><a href="test39">Test 39 - Orientation &amp; Off-Center Force</a></h2>
 Updated the Body class to have angle, angular velocity, and moment of inertia.
-Off-center force applied to a body can rotate it, and the editor supports that now.
-The editor's cursor has a direction arrow, and new items get inserted at that angle.
+Off-center force applied to a body can rotate it.
+<p>
+In the editor, you can grab a rotation-aware object by the edge and rotate it as you drag it.
+And the cursor has a direction arrow, and new items get inserted at that angle.
+
+
+<h1>Editor tests</h1>
 
 <h2><a href="test38">Test 38 - Add and Remove</a></h2>
 Added on-screen triggers for adding and removing items, and a menu for picking which items to add.

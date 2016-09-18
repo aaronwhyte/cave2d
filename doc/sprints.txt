@@ -95,6 +95,20 @@ v "surfaceGrip" in body
   v calc force to totally reverse surface vec
   v then mult by product of surface grips
   v apply those forces at edges of objects
+  - debug it. Energy is not being conserved!
+    t = moi * aa
+    t = f x gripVec
+    f = t / gripVecLen
+    f = aa.scale(moi / gripVecLen)
+    Part of the problem: Forces create both linear and angular accel, but my amount of force is calculated as if
+    only angular accel happens.
+    Constraints:
+    * forces are equal and opposite
+    * end surface velocities will be equal
+    * we know surface velocity
+    So solve for force magnitude.
+    Angular momentum is conserved. It includes lnear motion about COM of combined masses?
+
 
 chain constraints
 Simple distance between two body positions - no offset from center, because rotation would make that harder.

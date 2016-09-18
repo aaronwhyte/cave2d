@@ -69,7 +69,7 @@ Body.prototype.reset = function() {
   // data for the basic "bounce" collision response
   this.mass = 1;
   this.elasticity = 1;
-  this.grip = 0.5;
+  this.grip = 0.4;
 
   // rotation stuff
   this.turnable = false;
@@ -270,8 +270,7 @@ Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now, op
   // angular acceleration
   if (this.turnable) {
     var gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
-    var gripLen = gripVec.magnitude();
-    var torque = force.dot(gripVec.rot90Right()) * gripLen;
+    var torque = gripVec.cross(force);
     this.setAngVelAtTime(this.angVel + torque / this.moi, now);
     gripVec.free();
   }

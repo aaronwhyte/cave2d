@@ -140,6 +140,14 @@ Vec2d.dotXYXY = function(x0, y0, x1, y1) {
   return x0 * x1 + y0 * y1;
 };
 
+Vec2d.prototype.cross = function(that) {
+  return this.x * that.y - that.x * this.y;
+};
+
+Vec2d.crossXYXY = function(x0, y0, x1, y1) {
+  return x0 * y1 - x1 * y0;
+};
+
 Vec2d.prototype.magnitudeSquared = function() {
   return this.x * this.x + this.y * this.y;
 };
