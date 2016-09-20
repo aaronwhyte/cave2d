@@ -47,38 +47,40 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
     }
   }
   vel.free();
-
-  // Angular stuff
-  if (b0.turnable || b1.turnable) {
-    var hitPos = this.getHitPos(time, collisionVec, b0, b1, Vec2d.alloc());
-    //debugger;
-    var surfaceVec = Vec2d.alloc().set(collisionVec).rot90Right();
-    var v0 = this.getVelocityAtPoint(time, b0, hitPos, Vec2d.alloc()).projectOnto(surfaceVec);
-    var v1 = this.getVelocityAtPoint(time, b1, hitPos, Vec2d.alloc()).projectOnto(surfaceVec);
-    // TODO: grip average? OK?
-    var grip = 0.6;//(b0.grip + b1.grip) / 2;
-    accel.set(v1).subtract(v0).scale(-grip);
-    if (!accel.equals(Vec2d.ZERO)) {
-      if (b0.mass == Infinity) {
-        //b1.applyForceAtWorldPosAndTime(accel.scale(b1.moi / b1.rad), hitPos, time);
-      } else if (b1.mass == Infinity) {
-        //b0.applyForceAtWorldPosAndTime(accel.scale(-1).scale(b0.moi / b0.rad), hitPos, time);
-      } else {
-        // TODO force is wrong?
-        var force = accel.scale(Math.min(b0.moi/b0.rad, b1.moi/b1.rad));
-        b1.applyForceAtWorldPosAndTime(force, hitPos, time);
-        b0.applyForceAtWorldPosAndTime(force.scale(-1), hitPos, time);
-        var v0 = this.getVelocityAtPoint(time, b0, hitPos, v0);
-        var v1 = this.getVelocityAtPoint(time, b1, hitPos, v1);
-        console.log(v1.subtract(v0).projectOnto(surfaceVec));
-      }
-    }
-    v1.free();
-    v0.free();
-    surfaceVec.free();
-    hitPos.free();
-  }
   accel.free();
+
+  // Surface rub force, perpendicular to the center-to-center force above.
+  var grip = b0.grip * b1.grip;
+  if (grip) {
+    var hitPos = this.getHitPos(time, collisionVec, b0, b1, Vec2d.alloc());
+    var surfaceVec = Vec2d.alloc().set(collisionVec).rot90Right();
+
+    var p0 = b0.getPosAtTime(time, Vec2d.alloc());
+    var p1 = b1.getPosAtTime(time, Vec2d.alloc());
+
+    var d0 = Vec2d.distance(p0.x, p0.y, hitPos.x, hitPos.y);
+    var d1 = Vec2d.distance(p1.x, p1.y, hitPos.x, hitPos.y);
+
+    var vap0 = b0.getVelocityAtWorldPoint(time, hitPos, Vec2d.alloc());
+    var vap1 = b1.getVelocityAtWorldPoint(time, hitPos, Vec2d.alloc());
+
+    var denom0 = b0.getForceDenom(d0);
+    var denom1 = b1.getForceDenom(d1);
+    var denom = denom0 + denom1;
+    if (denom) {
+      var forceScale = grip * (vap1.dot(surfaceVec) - vap0.dot(surfaceVec)) / denom;
+      var force = surfaceVec.scaleToLength(forceScale);
+      b0.applyForceAtWorldPosAndTime(force, hitPos, time);
+      b1.applyForceAtWorldPosAndTime(force.scale(-1), hitPos, time);
+    }
+
+    vap1.free();
+    vap0.free();
+    p1.free();
+    p0.free();
+    surfaceVec.free();
+  }
+  hitPos.free();
 };
 
 HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
@@ -95,13 +97,6 @@ HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
       return this.getHitPosRectRect(time, collisionVec, b1, b0, out);
     }
   }
-};
-
-HitResolver.prototype.getVelocityAtPoint = function(now, body, point, out) {
-  if (!body.turnable || !body.angVel) {
-    return out.set(body.vel);
-  }
-  return body.getPosAtTime(now, out).subtract(point).scale(body.angVel).rot90Right().add(body.vel);
 };
 
 //////////////

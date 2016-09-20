@@ -69,7 +69,7 @@ Body.prototype.reset = function() {
   // data for the basic "bounce" collision response
   this.mass = 1;
   this.elasticity = 1;
-  this.grip = 0.4;
+  this.grip = 0.5;
 
   // rotation stuff
   this.turnable = false;
@@ -266,9 +266,25 @@ Body.prototype.applyAngularFrictionAtTime = function(friction, time) {
   this.angVel *= 1 - friction;
 };
 
+/**
+ * Calculates the instantaneous linear velocity of a world point,
+ * as if it was attached to the body,
+ * taking into account linear and angular velocity
+ * @param {number} now
+ * @param {Vec2d} point
+ * @param {Vec2d} out
+ * @returns {Vec2d}
+ */
+Body.prototype.getVelocityAtWorldPoint = function(now, point, out) {
+  if (!this.turnable || !this.angVel) {
+    return out.set(this.vel);
+  }
+  return this.getPosAtTime(now, out).subtract(point).scale(this.angVel).rot90Right().add(this.vel);
+};
+
 Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now, opt_maxAccel) {
   // angular acceleration
-  if (this.turnable) {
+  if (this.turnable && this.moi && this.moi != Infinity) {
     var gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
     var torque = gripVec.cross(force);
     this.setAngVelAtTime(this.angVel + torque / this.moi, now);
@@ -276,12 +292,14 @@ Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now, op
   }
 
   // linear acceleration
-  var newVel = Vec2d.alloc()
-      .set(force)
-      .scale(1 / this.mass)
-      .add(this.vel);
-  this.setVelAtTime(newVel, now);
-  newVel.free();
+  if (this.mass && this.mass != Infinity) {
+    var newVel = Vec2d.alloc()
+        .set(force)
+        .scale(1 / this.mass)
+        .add(this.vel);
+    this.setVelAtTime(newVel, now);
+    newVel.free();
+  }
 };
 
 /**
@@ -299,6 +317,17 @@ Body.prototype.moveToTime = function(t) {
     this.angStartPos = this.getAngPosAtTime(t);
     this.angStartTime = t;
   }
+};
+
+Body.prototype.getForceDenom = function(forceDist) {
+  var denom = 0;
+  if (this.mass && this.mass != Infinity) {
+    denom += 1 / this.mass;
+  }
+  if (this.turnable && this.moi && this.moi != Infinity) {
+    denom += forceDist * forceDist / this.moi;
+  }
+  return denom;
 };
 
 /**

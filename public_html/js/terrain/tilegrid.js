@@ -11,6 +11,7 @@ function TileGrid(bitGrid, renderer, world, hitGroup) {
 
   this.tiles = {};
   this.segment = new Segment(new Vec2d(), new Vec2d());
+  this.wallGrip = 0.7;
 }
 
 TileGrid.prototype.drawTerrainPill = function(p1, p2, rad, color) {
@@ -114,6 +115,7 @@ TileGrid.prototype.createWallBody = function(rect) {
   b.hitGroup = this.hitGroup;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
+  b.grip = this.wallGrip;
   return b;
 };
 
