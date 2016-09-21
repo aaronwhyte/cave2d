@@ -141,7 +141,10 @@ EditScreen.prototype.toJSON = function() {
 
 EditScreen.prototype.createDefaultWorld = function() {
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  this.addItem(BaseScreen.MenuItem.ANT, Vec2d.ZERO, 0);
+  var ants = 24;
+  for (var a = 0; a < ants; a++) {
+    this.addItem(BaseScreen.MenuItem.ANT, Vec2d.ZERO, 2 * Math.PI * a / ants);
+  }
 };
 
 EditScreen.prototype.handleInput = function () {
