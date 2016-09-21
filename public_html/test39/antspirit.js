@@ -88,7 +88,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 0.7;
+  b.grip = 0.9;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.setVelAtTime((new Vec2d(0, 0.4)).rot(dir), screen.now());
