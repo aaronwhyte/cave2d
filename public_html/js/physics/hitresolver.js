@@ -18,6 +18,9 @@ function HitResolver() {
 HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   if (b0.mass == Infinity && b1.mass == Infinity) return;
 
+//  var ke0 = b0.getKineticEnergy();
+//  var ke1 = b1.getKineticEnergy();
+
   // Shift b0 to the origin, holding still.
   var vel = Vec2d.alloc().set(b1.vel).subtract(b0.vel);
 
@@ -53,7 +56,7 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   var grip = b0.grip * b1.grip;
   if (grip) {
     var hitPos = this.getHitPos(time, collisionVec, b0, b1, Vec2d.alloc());
-    var surfaceVec = Vec2d.alloc().set(collisionVec).rot90Right();
+    var surfaceUnitVec = Vec2d.alloc().set(collisionVec).rot90Right().scaleToLength(1);
 
     var p0 = b0.getPosAtTime(time, Vec2d.alloc());
     var p1 = b1.getPosAtTime(time, Vec2d.alloc());
@@ -61,26 +64,35 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
     var d0 = Vec2d.distance(p0.x, p0.y, hitPos.x, hitPos.y);
     var d1 = Vec2d.distance(p1.x, p1.y, hitPos.x, hitPos.y);
 
-    var vap0 = b0.getVelocityAtWorldPoint(time, hitPos, Vec2d.alloc());
-    var vap1 = b1.getVelocityAtWorldPoint(time, hitPos, Vec2d.alloc());
+    var vap0 = b0.getVelocityAtWorldPoint(time, hitPos, Vec2d.alloc()).projectOnto(surfaceUnitVec);
+    var vap1 = b1.getVelocityAtWorldPoint(time, hitPos, Vec2d.alloc()).projectOnto(surfaceUnitVec);
 
     var denom0 = b0.getForceDenom(d0);
     var denom1 = b1.getForceDenom(d1);
     var denom = denom0 + denom1;
     if (denom) {
-      var forceScale = grip * (vap1.dot(surfaceVec) - vap0.dot(surfaceVec)) / denom;
-      var force = surfaceVec.scaleToLength(forceScale);
+      var forceScale = grip * (vap1.dot(surfaceUnitVec) - vap0.dot(surfaceUnitVec)) / denom;
+      var force = Vec2d.alloc().set(surfaceUnitVec).scaleToLength(forceScale);
       b0.applyForceAtWorldPosAndTime(force, hitPos, time);
       b1.applyForceAtWorldPosAndTime(force.scale(-1), hitPos, time);
+      force.free();
     }
-
     vap1.free();
     vap0.free();
     p1.free();
     p0.free();
-    surfaceVec.free();
+    surfaceUnitVec.free();
+    hitPos.free();
   }
-  hitPos.free();
+
+//  var ke0b = b0.getKineticEnergy();
+//  var ke1b = b1.getKineticEnergy();
+//  var diff = (ke0b + ke1b) - (ke0 + ke1);
+//  if (diff > 0) {
+//    console.log("before:", ke0, ke1, "after:", ke0b, ke1b);
+//    console.log("diff:", diff);
+//  }
+
 };
 
 HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
