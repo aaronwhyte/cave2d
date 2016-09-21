@@ -69,11 +69,11 @@ Body.prototype.reset = function() {
   // data for the basic "bounce" collision response
   this.mass = 1;
   this.elasticity = 1;
-  this.grip = 0.5;
+  this.grip = 0;
 
   // rotation stuff
   this.turnable = false;
-  this.moi = 1;
+  this.moi = 0;
   this.angVel = 0;
   this.angStartTime = 0;
   this.angStartPos = 0;
@@ -317,6 +317,11 @@ Body.prototype.moveToTime = function(t) {
     this.angStartPos = this.getAngPosAtTime(t);
     this.angStartTime = t;
   }
+};
+
+Body.prototype.getKineticEnergy = function() {
+  return ((0.5 * this.mass * this.vel.magnitudeSquared()) || 0) +
+      ((0.5 * this.moi * this.angVel * this.angVel) || 0);
 };
 
 Body.prototype.getForceDenom = function(forceDist) {
