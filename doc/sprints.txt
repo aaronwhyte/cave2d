@@ -101,8 +101,6 @@ v collision response
     v energy conserved or reduced a little
 
 chain constraints
-Simple distance between two body positions - no offset from center, because rotation would make that harder.
-- phy map from bodyId to chain constraint
 
 Game 3: Stunt Tank!
 

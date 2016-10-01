@@ -28,7 +28,7 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   // Calc accel along the collision vector by enough to cancel velocity along that direction.
   var accel = Vec2d.alloc().set(vel).projectOnto(collisionVec);
   // Add onto that for elastic collision.
-  accel.scale(-1 - this.defaultElasticity);
+  accel.scale(-1 - b0.elasticity * b1.elasticity);
   if (!accel.equals(Vec2d.ZERO)) {
     // Use masses to decide which body gets accelerated by how much.
     if (b0.mass == Infinity) {

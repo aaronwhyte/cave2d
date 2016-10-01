@@ -104,7 +104,8 @@ Body.SCHEMA = {
   13: 'moi',
   14: 'angVel',
   15: 'angStartTime',
-  16: 'angStartPos'
+  16: 'angStartPos',
+  17: 'grip'
 };
 
 Body.getJsoner = function() {
