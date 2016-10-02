@@ -140,7 +140,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
       if (angAccel > PlayerSpirit.TRACKBALL_MAX_ACCEL) angAccel = PlayerSpirit.TRACKBALL_MAX_ACCEL;
       newAngVel += angAccel * time / this.screen.timeMultiplier;
       newAngVel *= 0.99;
-      newAngVel = Math.max(newAngVel, -PlayerSpirit.MAX_ANG_VEL, Math.min(newAngVel, PlayerSpirit.MAX_ANG_VEL));
+      newAngVel = Math.max(-PlayerSpirit.MAX_ANG_VEL, Math.min(newAngVel, PlayerSpirit.MAX_ANG_VEL));
       this.setBodyAngVel(newAngVel);
     }
   }
