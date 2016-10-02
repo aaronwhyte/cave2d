@@ -29,7 +29,7 @@ PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
 PlayerSpirit.GRAVITY = 0.12;
-PlayerSpirit.MAX_ANG_VEL = 1.4;
+PlayerSpirit.MAX_ANG_VEL = 1.5;
 
 PlayerSpirit.SCHEMA = {
   0: "type",

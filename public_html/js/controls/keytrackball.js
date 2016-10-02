@@ -31,6 +31,11 @@ KeyTrackball.prototype.setTraction = function(t) {
   return this;
 };
 
+KeyTrackball.prototype.setTurboMultiplier = function(t) {
+  this.turboMultiplier = t;
+  return this;
+};
+
 /**
  * @param {Vec2d} out
  * @return {Vec2d} out

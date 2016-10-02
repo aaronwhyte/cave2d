@@ -311,6 +311,7 @@ BaseScreen.prototype.createTrackball = function() {
               new KeyTrigger().addTriggerKeyByName(Key.Name.SHIFT))
           .setAccel(1.2)
           .setTraction(0.25)
+          .setTurboMultiplier(4)
   );
   trackball.setFriction(0.05);
   this.addListener(trackball);
