@@ -29,6 +29,7 @@ PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
 PlayerSpirit.GRAVITY = 0.12;
+PlayerSpirit.MAX_ANG_VEL = 1.4;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -139,6 +140,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
       if (angAccel > PlayerSpirit.TRACKBALL_MAX_ACCEL) angAccel = PlayerSpirit.TRACKBALL_MAX_ACCEL;
       newAngVel += angAccel * time / this.screen.timeMultiplier;
       newAngVel *= 0.99;
+      newAngVel = Math.max(newAngVel, -PlayerSpirit.MAX_ANG_VEL, Math.min(newAngVel, PlayerSpirit.MAX_ANG_VEL));
       this.setBodyAngVel(newAngVel);
     }
   }
