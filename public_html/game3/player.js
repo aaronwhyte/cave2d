@@ -69,7 +69,7 @@ Player.prototype.drawHud = function(renderer) {
     }
     if (this.pauseBtn) {
       this.pauseBtn
-          .setCanvasPositionXY(r * 0.1 + r * 0.4, renderer.canvas.height - r * 3.9)
+          .setCanvasPositionXY(renderer.canvas.width / 2, r*0.5)
           .setCanvasScaleXY(r * 0.4, -r * 0.4);
     }
   }
