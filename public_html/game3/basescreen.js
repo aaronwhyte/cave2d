@@ -49,8 +49,6 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, le
 
   this.playerAveragePos = new Vec2d();
 
-  this.bitSize = 0.5;
-  this.bitGridMetersPerCell = BaseScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(0.2, 0.3, 0.6);
 
@@ -90,7 +88,7 @@ BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
 
 BaseScreen.WIDGET_RADIUS = 30;
-BaseScreen.CAMERA_VIEW_DIST = 25;
+BaseScreen.CAMERA_VIEW_DIST = 30;
 
 BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
@@ -122,7 +120,7 @@ BaseScreen.SplashType = {
   ERROR: 4
 };
 
-BaseScreen.BIT_SIZE = 0.5;
+BaseScreen.BIT_SIZE = 0.1;
 BaseScreen.WORLD_CELL_SIZE = BaseScreen.BIT_SIZE * BitGrid.BITS;
 
 BaseScreen.EventLayer = {
@@ -231,7 +229,7 @@ BaseScreen.prototype.initWorld = function() {
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.95;
 
-  this.bitGrid = new BitGrid(this.bitSize);
+  this.bitGrid = new BitGrid(BaseScreen.BIT_SIZE);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
 };
 
@@ -303,8 +301,10 @@ BaseScreen.prototype.loadWorldFromJson = function (json) {
 
 BaseScreen.prototype.createTrackball = function() {
   var trackball = new MultiTrackball()
-      .addTrackball(new TouchTrackball(this.getWorldEventTarget())
-          .setStartZoneFunction(function(x, y) { return true; }))
+      .addTrackball(
+          new TouchTrackball(this.getWorldEventTarget())
+              .setStartZoneFunction(function(x, y) { return true; })
+              .setPixelMultiplier(0.3))
       .addTrackball(
           new KeyTrackball(
               new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT),
@@ -762,9 +762,9 @@ BaseScreen.prototype.drawTiles = function() {
   var cx = Math.round((this.camera.getX() - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
   var cy = Math.round((this.camera.getY() - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
   var pixelsPerMeter = this.getPixelsPerMeter();
-  var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
-  var cellsPerScreenX = this.canvas.width / pixelsPerCell;
-  var cellsPerScreenY = this.canvas.height / pixelsPerCell;
+  var pixelsPerCell = this.bitGrid.bitWorldSize * BitGrid.BITS * pixelsPerMeter;
+  var cellsPerScreenX = 0.5 + this.canvas.width / pixelsPerCell;
+  var cellsPerScreenY = 0.5 + this.canvas.height / pixelsPerCell;
   var rx = Math.ceil(cellsPerScreenX);
   var ry = Math.ceil(cellsPerScreenY);
   for (var dy = -ry; dy <= ry; dy++) {
