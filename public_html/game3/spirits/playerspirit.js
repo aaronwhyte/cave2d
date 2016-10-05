@@ -20,7 +20,7 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.TRACKBALL_ACCEL = 0.5;
+PlayerSpirit.TRACKBALL_ACCEL = 0.1;//0.5;
 PlayerSpirit.TRACKBALL_TRACTION = 0.3;
 PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
 
@@ -29,7 +29,9 @@ PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
 PlayerSpirit.GRAVITY = 0.12;
-PlayerSpirit.MAX_ANG_VEL = 1.5;
+PlayerSpirit.MAX_VEL = 4.5;
+PlayerSpirit.RAD = 3;
+PlayerSpirit.MAX_ANG_VEL = PlayerSpirit.MAX_VEL / PlayerSpirit.RAD;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -98,7 +100,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
-  b.rad = 3;
+  b.rad = PlayerSpirit.RAD;
   b.hitGroup = BaseScreen.Group.PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.turnable = true;
@@ -132,10 +134,11 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
     var body = this.getBody();
     if (body) {
       var newAngVel = this.getBodyAngVel();
-      var angAccel = newAngVel * (-PlayerSpirit.TRACKBALL_TRACTION);
-      newAngVel += angAccel * time / this.screen.timeMultiplier;
-
-      angAccel = tx * PlayerSpirit.TRACKBALL_ACCEL * PlayerSpirit.TRACKBALL_TRACTION;
+      var angAccel = 0;
+//      angAccel = newAngVel * (-PlayerSpirit.TRACKBALL_TRACTION);
+//      newAngVel += angAccel * time / this.screen.timeMultiplier;
+//
+      angAccel = tx * PlayerSpirit.TRACKBALL_ACCEL;// * PlayerSpirit.TRACKBALL_TRACTION;
       if (angAccel < -PlayerSpirit.TRACKBALL_MAX_ACCEL) angAccel = -PlayerSpirit.TRACKBALL_MAX_ACCEL;
       if (angAccel > PlayerSpirit.TRACKBALL_MAX_ACCEL) angAccel = PlayerSpirit.TRACKBALL_MAX_ACCEL;
       newAngVel += angAccel * time / this.screen.timeMultiplier;
