@@ -40,6 +40,11 @@ TouchTrackball.prototype.setStartZoneFunction = function(fn) {
   return this;
 };
 
+TouchTrackball.prototype.setPixelMultiplier = function(m) {
+  this.pixelMultiplier = m;
+  return this;
+};
+
 TouchTrackball.prototype.startListening = function() {
   this.elem.addEventListener('touchstart', this.touchStartListener);
   this.elem.addEventListener('touchmove', this.touchMoveListener);
