@@ -7,6 +7,10 @@ function PlayerSpirit(screen) {
 
   this.type = BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
+//  this.trailColor = new Vec4().setRGBA(0.8, 0.2, 0.6, 1);
+//  this.trailColor2 = new Vec4().setRGBA(1, 0.3, 0.7, 1);
+  this.trailColor = new Vec4().setRGBA(0.8, 0, 0, 1);
+  this.trailColor2 = new Vec4().setRGBA(1, 0.3, 0.2, 1);
 
   this.vec2d = new Vec2d();
   this.accel = new Vec2d();
@@ -16,6 +20,12 @@ function PlayerSpirit(screen) {
   this.modelMatrix = new Matrix44();
   this.lastFrictionTime = this.now();
   this.lastInputTime = this.now();
+
+  // trail stuff
+  this.trail = new Trail(200);
+  this.segStartVec = new Vec2d();
+  this.segEndVec = new Vec2d();
+
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -64,20 +74,32 @@ PlayerSpirit.prototype.setTrackball = function(trackball) {
 };
 
 PlayerSpirit.createModel = function() {
-  return RigidModel.createCircle(37)
-      .setColorRGB(1, 0.3, 0.6)
-      .addRigidModel(RigidModel.createCircle(12)
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(-0.32, 0.23, -0.25))
-          .setColorRGB(0, 0, 0))
-      .addRigidModel(RigidModel.createCircle(12)
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0.32, 0.23, -0.25))
-          .setColorRGB(0, 0, 0))
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.07, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.37, -0.25))
-          .setColorRGB(0, 0, 0));
+  var model =  RigidModel.createCircle(37)
+      .setColorRGB(0.6, 0.6, 0.6);
+  for (var i = 0, m = 4; i < m; i++) {
+    model.addRigidModel(RigidModel.createCircle(24)
+        .transformPositions(new Matrix44().toScaleOpXYZ(0.2, 0.2, 1))
+        .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0.5, -0.25))
+        .transformPositions(new Matrix44().toRotateZOp(2 * Math.PI * i / m))
+        .setColorRGB(0.3, 0.3, 0.3));
+  }
+//      .addRigidModel(RigidModel.createCircle(24)
+//          .transformPositions(new Matrix44().toScaleOpXYZ(0.3, 0.3, 1))
+//          .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.5, -0.25))
+//          .setColorRGB(0.2, 0.2, 0));
+//      .addRigidModel(RigidModel.createCircle(12)
+//          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
+//          .transformPositions(new Matrix44().toTranslateOpXYZ(0.32, 0.23, -0.25))
+//          .setColorRGB(0, 0, 0))
+//      .addRigidModel(RigidModel.createSquare()
+//          .transformPositions(new Matrix44().toScaleOpXYZ(0.25, 0.25, 1))
+//          .transformPositions(new Matrix44().toTranslateOpXYZ(0.5, 0, -0.25))
+//          .setColorRGB(0.8, 0.8, 0.8))
+//  .addRigidModel(RigidModel.createSquare()
+//      .transformPositions(new Matrix44().toScaleOpXYZ(0.25, 0.25, 1))
+//      .transformPositions(new Matrix44().toTranslateOpXYZ(-0.5, 0, -0.25))
+//      .setColorRGB(0.4, 0.4, 0.4));
+  return model;
 };
 
 PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
@@ -147,6 +169,7 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
       this.setBodyAngVel(newAngVel);
     }
   }
+  this.addTrailSegment();
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -170,6 +193,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     }
     // TODO: put addTimeout in screen, remove world access
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
+    this.addTrailSegment();
   } else if (timeoutVal == PlayerSpirit.RESPAWN_TIMEOUT_ID) {
     this.respawn();
   }
@@ -189,5 +213,86 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
     renderer.setModelMatrix(this.modelMatrix);
     renderer.drawStamp();
+  }
+  this.drawTrail();
+};
+
+PlayerSpirit.prototype.onHitWall = function(mag, pos) {
+  var body = this.getBody();
+  if (!body) return;
+  this.addTrailSegment();
+};
+
+PlayerSpirit.prototype.addTrailSegment = function() {
+  var now = this.screen.now();
+  var body = this.getBody();
+  this.rad = body.rad * (1.1 + Math.random() * 0.1);
+  this.trail.append(now, this.getBodyPos(), body.vel);
+};
+
+PlayerSpirit.prototype.drawTrail = function() {
+  var maxTime = this.now();
+  var duration = 6;
+  var minTime = maxTime - duration;
+  var trailWarm = false;
+  this.screen.renderer
+      .setStamp(this.stamps.cylinderStamp)
+      .setColorVector(this.trailColor);
+  for (var i = 0; i < this.trail.size(); i++) {
+    var segStartTime = this.trail.getSegmentStartTime(i);
+    var segEndTime = this.trail.getSegmentEndTime(i);
+    var drawStartTime = Math.max(segStartTime, minTime);
+    var drawEndTime = Math.min(segEndTime, maxTime);
+    if (drawStartTime <= drawEndTime) {
+      trailWarm = true;
+      // something to draw
+      this.trail.getSegmentPosAtTime(i, drawStartTime, this.segStartVec);
+      this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
+
+      var startRad = Math.min(this.rad, 1.1 * this.rad * (drawStartTime - minTime) / (maxTime - minTime));
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0.2))
+          .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
+      this.screen.renderer.setModelMatrix(this.modelMatrix);
+
+      var endRad = Math.min(this.rad, 1.1 * this.rad * (drawEndTime - minTime) / (maxTime - minTime));
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0.2))
+          .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
+      this.screen.renderer.setModelMatrix2(this.modelMatrix);
+      this.screen.renderer.drawStamp();
+    }
+  }
+  var maxTime = this.now();
+  var duration = 3;
+  var minTime = maxTime - duration;
+  var trailWarm = false;
+  this.screen.renderer
+      .setStamp(this.stamps.cylinderStamp)
+      .setColorVector(this.trailColor2);
+  for (var i = 0; i < this.trail.size(); i++) {
+    var segStartTime = this.trail.getSegmentStartTime(i);
+    var segEndTime = this.trail.getSegmentEndTime(i);
+    var drawStartTime = Math.max(segStartTime, minTime);
+    var drawEndTime = Math.min(segEndTime, maxTime);
+    if (drawStartTime <= drawEndTime) {
+      trailWarm = true;
+      // something to draw
+      this.trail.getSegmentPosAtTime(i, drawStartTime, this.segStartVec);
+      this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
+
+      var startRad = 1 * this.rad * (drawStartTime - minTime) / (maxTime - minTime);
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0.1))
+          .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
+      this.screen.renderer.setModelMatrix(this.modelMatrix);
+
+      var endRad = 1 * this.rad * (drawEndTime - minTime) / (maxTime - minTime);
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0.1))
+          .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
+      this.screen.renderer.setModelMatrix2(this.modelMatrix);
+      this.screen.renderer.drawStamp();
+    }
   }
 };

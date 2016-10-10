@@ -5,7 +5,7 @@
 function PlayScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
   BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
-  this.camera = new Camera(0.05, 0.17, BaseScreen.CAMERA_VIEW_DIST);
+  this.camera = new Camera(BaseScreen.CAMERA_MIN_DIST_FRAC, BaseScreen.CAMERA_MAX_DIST_FRAC, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 

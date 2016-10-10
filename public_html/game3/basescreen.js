@@ -89,6 +89,8 @@ BaseScreen.prototype.constructor = BaseScreen;
 
 BaseScreen.WIDGET_RADIUS = 30;
 BaseScreen.CAMERA_VIEW_DIST = 30;
+BaseScreen.CAMERA_MAX_DIST_FRAC = 0.17;
+BaseScreen.CAMERA_MIN_DIST_FRAC = 0.05;
 
 BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
@@ -120,7 +122,7 @@ BaseScreen.SplashType = {
   ERROR: 4
 };
 
-BaseScreen.BIT_SIZE = 0.1;
+BaseScreen.BIT_SIZE = 0.2;
 BaseScreen.WORLD_CELL_SIZE = BaseScreen.BIT_SIZE * BitGrid.BITS;
 
 BaseScreen.EventLayer = {
@@ -483,6 +485,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
     var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
     if (playerBody) {
       var playerSpirit = this.getSpiritForBody(playerBody);
+      playerSpirit.onHitWall(mag, pos);
       var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody && !this.exitStartTime) {
         this.sounds.exit(this.getAveragePlayerPos());
