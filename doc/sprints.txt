@@ -100,19 +100,106 @@ v collision response
     v end surface velocities will be ~equal if grip==1
     v energy conserved or reduced a little
 
-Game3
+Game3 prototype
 Rolling (& jumping?)
 Simple game with same old level editor and junk.
 left, right, jump
 reach the exit
 gravity, obstacles
 v copy game2 to game3
-v player v1
-- sandbag turrets
-- things that chase and push you
-- bouncy: round bumpers
-- rollers!
-- mines. No touching!
+v player v1 - angular accel
+
+Stats 2016-11-06 to ???
+- Stats class path-delimited key/value pairs for tracking values now - no history. Really dumb.
+- StatTrail class can record stat value/time pairs in a circular buffer.
+  - Subclass for calculating rate, ratios, other math using one or more input stats or StatTrails
+- StatGraph class can render a StatTrail in various ways: line, bar
+Example uses:
+* Rate of collision function calls
+* Time spent doing each RequestAnimationFrame
+* Time between RAF calls - should be steady 16ms!
+* rate of game-time over time. Normally a steady N/sec but editing should be 0.
+
+Calibrate max RAF rate during pauses
+
+Undo/Redo
+- quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntary physics-over-time changes
+  - set frictions very high while editing. 100%? No motion beyond active editing.
+  - stop vel when vel is less than TEENY_VEL
+    - zero vel
+    - stop friction timeouts (or maybe one less reason - see angvel below)
+    - set path duration to infinity
+  - stop rotation when angvel is less than TEENY_ANGVEL
+    - zero angvel
+    - stop angvel timeouts (or one less reason to do friction timeout)
+  - wake when accelerated (linear or angular)
+    - start timeouts again
+  * It's OK to let time move fwd, if that's the *only* thing moving fwd. But...
+  - maybe don't move time fwd if nothing is moving and nothing is planned. That's an Eternal Stillness Condition
+- record snapshots...
+  - if the camera moved a lot since the last snapshot, take a snap right before an edit-gesturee takes effect.
+  - when an edit-gesture has ended
+  - during a long change edit-gesture, like a digging drag, throttled by time or change-count.
+- setGame()
+  - terrain cellwise bitgrid diff: added, removed, changed
+  - non-terrain bodies - compare serialized forms
+  - non-terrain spirits
+  - timeouts - ditto
+- undo button
+- redo button
+
+Layers
+Mode switch between Terrain, Objects, and (soon) Snap
+Things in common:
+* add/fill and remove/dig
+* position/clear pin (soon)
+* menu for add
+* cursor helps preview stuff
+This'll simplify keyboard and touch button logiclayout
+
+Pin
+One button will position pin at the cursor, or clear it if you're close enough to it. So if you're not close,
+double-tap will end up clearing it. The presence and position of the pin changes many actions you do,
+like a shift key with coordinates.
+Dig-line, fill-line, add (orientation), scale scalable objects, spin unscalable objects about a fixed point...
+Later it can be used for creating links and chains
+
+
+Snap
+All objects can have snap-points that snap the cursor to them when close enough.
+- Give all objects a snap-point in their centers, to make dragging w/o rotation easy.
+- make snap points snap things, duh.
+Snappers are world objects that only appear when editing, that are studded with snap points.
+Since snappers often overlap with objects (no collisions!) there needs to be a way to separate grab-targets...
+* separate "grab" for snappers and other objects?
+* move overlapping points apart when the cursor is near more than one? Maybe with Z-shear effect?
+  * I don't like targets that move when you hover.
+  * so maybe make a deliberate z-shear
+- snap menu
+  - maybe a triangle of square grids, from 1x1 to 1x9 to 9x9
+  - also some circles with a stud in the middle and studs at the edge: 3, 5, 6 (hex grid?!), 7, 9, 12, 16, 32, 64?
+  - maybe shorter arcs too
+- top-level switch to toggle snapping on/off? I can see it getting annoying when you're doing free-form dragging.
+
+
+Polygons (this will wreck my world so do at own risk)
+- physics
+  - represent segment
+  - primitive static segment vs circle collision detection
+  - represent concave polygon as complex body, lists of primitives with postion offsets
+    - segments
+    - corners
+  - util for collapsing corners and segments of multiple convex into concave polys.
+    - cull in-pointing corners
+    - cull inner segments
+- rendering
+  - divide concave poly into convex chunks
+- editing - polygrid, each tile containing N convex polys
+  - bisect op
+  - cut corner op
+  - add - leave no overlap
+  - subtract - use cut and bisect
+
 
 Multiplayer
 * up to four touch players
@@ -135,23 +222,6 @@ in-bounds, I think.
     - link type determined by jack type
   - link hover indicators
   - link deletion
-
-
-process-ish level creation tools
-- structured digging
-- erosion
-- accretion
-- structured building
-
-
-Test XX: Undo and Redo
-- retain last N JSON serializations in RAM or wherevs.
-- Create new ones using one-token-bucket throttle right before mutations, w 1/sec(realtime) restore rate.
-- Always save the just-after mutation camera and cursor pos, to bring the area into focus before undoing.
-  Keep that as a separate kind of undo record, since it's so tiny and easy to restore.
-- Button for creating an undo record just because time went by. Snapshot?
-- Keyboard support
-- Touch support
 
 Zoomable Editor
 - two-touch pinch/unpinch
