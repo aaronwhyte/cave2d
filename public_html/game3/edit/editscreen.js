@@ -230,11 +230,6 @@ EditScreen.prototype.configMousePointer = function() {
   }
 };
 
-EditScreen.prototype.getPauseTriggerColorVector = function() {
-  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
-  return this.colorVector;
-};
-
 /////////////////////
 // Editor API stuff
 /////////////////////

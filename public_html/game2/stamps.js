@@ -29,4 +29,3 @@ Stamps.create = function(renderer) {
 
   return stamps;
 };
-

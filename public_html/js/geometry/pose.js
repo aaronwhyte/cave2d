@@ -1,7 +1,7 @@
 /**
  * The kind of thing you need to map from model-space to world-space,
  * for objects on the x/y plane that only rotate about the Z axis.
- * 4D is kind of overkill but lets not be stingy.
+ * 4D is kind of overkill for position and scale, but lets not be stingy.
  * @constructor
  */
 function Pose(opt_pos, opt_rotZ, opt_scale) {
@@ -63,8 +63,14 @@ Pose.prototype.set = function(that) {
   this.scale.set(that.scale);
 };
 
-Pose.prototype.setToInterpolation = function(a, b, t) {
-  this.pos.setToInterpolation(a.pos, b.pos, t);
-  this.rotZ = a.rotZ * (1-t) + b.rotZ * t;
-  this.scale.setToInterpolation(a.scale, b.scale, t);
+/**
+ * Overwrites this pose to be an interpolation between two other poses.
+ * @param {Pose} pose0 The first pose, considered "time 0"
+ * @param {Pose} pose1 The second pose, considered "time 1"
+ * @param {number} time usually between 0 and 1
+ */
+Pose.prototype.setToInterpolation = function(pose0, pose1, time) {
+  this.pos.setToInterpolation(pose0.pos, pose1.pos, time);
+  this.rotZ = pose0.rotZ * (1-time) + pose1.rotZ * time;
+  this.scale.setToInterpolation(pose0.scale, pose1.scale, time);
 };
