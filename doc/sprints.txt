@@ -110,10 +110,22 @@ v copy game2 to game3
 v player v1 - angular accel
 
 Stats 2016-11-06 to ???
-- Stats class path-delimited key/value pairs for tracking values now - no history. Really dumb.
-- StatTrail class can record stat value/time pairs in a circular buffer.
-  - Subclass for calculating rate, ratios, other math using one or more input stats or StatTrails
+v Stats class path-delimited key/value pairs for tracking values now - no history. Really dumb.
+v StatTrail class can record stat value/time pairs in a circular buffer.
+v StatRateTrail class subclasses StatTrail, first derivative.
 - StatGraph class can render a StatTrail in various ways: line, bar
+  v Takes a SRT & renderer
+  - optional cues about where to put it and what it'll look like?
+  - draw() draws into the canvas and renders some text? Or all is canvas?
+
+LineDrawer 2016-11-13 to ???
+This will alternate the moving end between group 1 and group 2. That's the only fancy part.
+Use renderer's matrix and color API - don't replicate.
+v takes a renderer and a stamp - probably a closed cylinder, but anything with two groups is good
+v moveToXYZR(x, y, z, r) // remembers but doesn't draw
+v lineToXYZR(x, y, z, r) // draws from prev, moves prev to current
+- test page
+
 Example uses:
 * Rate of collision function calls
 * Time spent doing each RequestAnimationFrame

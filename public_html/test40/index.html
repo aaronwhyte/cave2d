@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+<title>Test 40 - Stats and Line Graphs</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+
+<script src="../js/dom.js"></script>
+<script src="../js/math.js"></script>
+<script src="../js/poolify.js"></script>
+<script src="../js/geometry/vec2d.js"></script>
+<script src="../js/geometry/vec4.js"></script>
+<script src="../js/geometry/matrix33.js"></script>
+<script src="../js/geometry/matrix44.js"></script>
+<script src="../js/geometry/pose.js"></script>
+<script src="../js/pubsub.js"></script>
+<script src="../js/textloader.js"></script>
+<script src="../js/geometry/rect.js"></script>
+<script src="../js/strings.js"></script>
+<script src="../js/skipqueue.js"></script>
+<script src="../js/arrayset.js"></script>
+<script src="../js/objset.js"></script>
+<script src="../js/map.js"></script>
+<script src="../js/circularqueue.js"></script>
+<script src="../js/url.js"></script>
+<script src="../js/geometry/segment.js"></script>
+<script src="../js/events.js"></script>
+<script src="../js/geometry/trail.js"></script>
+
+<script src="../js/bits/jsoner.js"></script>
+
+<script src="../js/terrain/bitgrid.js"></script>
+<script src="../js/terrain/tilegrid.js"></script>
+
+<script src="../js/webgl/webglutil.js"></script>
+<script src="../js/webgl/vertex.js"></script>
+<script src="../js/webgl/modelstamp.js"></script>
+<script src="../js/webgl/rigidmodel.js"></script>
+<script src="../js/webgl/renderer.js"></script>
+<script src="../js/webgl/rendererloader.js"></script>
+<script src="../js/webgl/glyphmaker.js"></script>
+<script src="../js/webgl/glyphs.js"></script>
+<script src="../js/webgl/labelmaker.js"></script>
+<script src="../js/webgl/buttonmaker.js"></script>
+<script src="../js/webgl/screen.js"></script>
+<script src="../js/webgl/camera.js"></script>
+<script src="../js/webgl/splash.js"></script>
+<script src="../js/webgl/splasher.js"></script>
+
+<script src="../js/physics/cell.js"></script>
+<script src="../js/physics/body.js"></script>
+<script src="../js/physics/cellrange.js"></script>
+<script src="../js/physics/hitdetector.js"></script>
+<script src="../js/physics/hitresolver.js"></script>
+<script src="../js/physics/overlapdetector.js"></script>
+<script src="../js/physics/spirit.js"></script>
+<script src="../js/physics/world.js"></script>
+<script src="../js/physics/worldevent.js"></script>
+<script src="../js/physics/scanrequest.js"></script>
+<script src="../js/physics/scanresponse.js"></script>
+
+<script src="../js/sound/soundfx.js"></script>
+
+<script src="../js/controls/pointerevent.js"></script>
+<script src="../js/controls/key.js"></script>
+<script src="../js/controls/keys.js"></script>
+<script src="../js/controls/trackball.js"></script>
+<script src="../js/controls/keytrackball.js"></script>
+<script src="../js/controls/mousetrackball.js"></script>
+<script src="../js/controls/touchtrackball.js"></script>
+<script src="../js/controls/multitrackball.js"></script>
+<script src="../js/controls/mousepointer.js"></script>
+<script src="../js/controls/trigger.js"></script>
+<script src="../js/controls/stick.js"></script>
+<script src="../js/controls/keystick.js"></script>
+<script src="../js/controls/keytrigger.js"></script>
+<script src="../js/controls/mousebuttontrigger.js"></script>
+<script src="../js/controls/mousepointertrigger.js"></script>
+<script src="../js/controls/touchtrigger.js"></script>
+<script src="../js/controls/multitrigger.js"></script>
+
+<script src="../js/widgets/layeredeventdistributor.js"></script>
+<script src="../js/widgets/triggerwidget.js"></script>
+<script src="../js/widgets/modemenuwidget.js"></script>
+
+<script src="../js/editor/editor.js"></script>
+
+<script src="../js/app/page.js"></script>
+<script src="test40page.js"></script>
+<script src="test40app.js"></script>
+
+<script src="models.js"></script>
+<script src="sounds.js"></script>
+<script src="stamps.js"></script>
+
+<script src="../js/stats/stats.js"></script>
+<script src="../js/stats/stattrail.js"></script>
+<script src="../js/stats/statratetrail.js"></script>
+<script src="../js/webgl/linedrawer.js"></script>
+<script src="../js/stats/statgraph.js"></script>
+
+<script src="basescreen.js"></script>
+<script src="editscreen.js"></script>
+
+<script src="basespirit.js"></script>
+<script src="antspirit.js"></script>
+
+<script src="../js/editor/spiritconfig.js"></script>
+<script src="../js/editor/menuitemconfig.js"></script>
+
+<script src="main.js"></script>
+
+<link rel="stylesheet" type="text/css" href="main.css">
+</head>
+
+<body onload="main()">
+
+<script>
+if (document.location.hostname.indexOf('cave2d.com') > -1) {
+  (function (i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function () {
+      (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date();
+    a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+  ga('create', 'UA-7758703-3', 'auto');
+  ga('send', 'pageview');
+}
+</script>
+</body>
+</html>
