@@ -79,6 +79,18 @@ Matrix44.prototype.toScaleOpXYZ = function(x, y, z) {
   return this;
 };
 
+Matrix44.prototype.toTranslateXYZAndScaleXYZOp = function(tx, ty, tz, sx, sy, sz) {
+  this.toIdentity();
+  this.m[3] = tx;
+  this.m[7] = ty;
+  this.m[11] = tz;
+  this.m[0] = sz;
+  this.m[5] = sy;
+  this.m[10] = sz;
+  return this;
+};
+
+
 Matrix44.prototype.toSheerZOpXY = function(x, y) {
   this.toIdentity();
   this.m[2] = x;
