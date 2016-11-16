@@ -6,6 +6,7 @@
  * @constructor
  */
 function StatTrail(stats, key, length) {
+  this.maxLength = length;
   this.stats = stats;
   this.key = key;
   this.vals = new CircularQueue(length);

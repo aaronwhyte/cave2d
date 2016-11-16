@@ -28,7 +28,7 @@ LineDrawer.prototype.lineToXYZR = function (x, y, z, r) {
 };
 
 LineDrawer.prototype.setRendererMatrix = function (x, y, z, r) {
-  this.m.toTranslateXYZAndScaleXYZOp(x, y, z, r, r, 1);
+  this.m.toTranslateXYZAndScaleXYZOp(x, y, z, r, r, r);
   if (this.nextGroup == 1) {
     this.renderer.setModelMatrix(this.m);
   } else {
