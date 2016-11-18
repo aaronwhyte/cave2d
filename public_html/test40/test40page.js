@@ -143,9 +143,9 @@ Test40Page.prototype.requestAnimation = function() {
 };
 
 var frameNum = 0;
-Test40Page.prototype.animateFrame = function() {
+Test40Page.prototype.animateFrame = function(startTime) {
   frameNum++;
-  var startTime = performance.now();
+  startTime = startTime || performance.now();
   if (!this.animationId) {
     return;
   }
@@ -160,7 +160,7 @@ Test40Page.prototype.animateFrame = function() {
   this.screen.drawScreen(1, startTime);
   var endTime = performance.now();
   stats.add(STAT_NAMES.ANIMATION_MS, endTime - startTime);
-  statTrail.sample(frameNum);
+  if (!(frameNum % SAMPLE_PERIOD_FRAMES)) statTrail.sample(frameNum);
 };
 
 Test40Page.prototype.requestFullScreen = function() {

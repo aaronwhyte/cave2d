@@ -11,23 +11,40 @@ function LineDrawer(renderer, stamp) {
   this.stamp = stamp;
 
   this.m = new Matrix44();
+
+  this.nextZ = 0;
+  this.nextLineThickness = 2;
 }
 
-LineDrawer.prototype.moveToXYZR = function (x, y, z, r) {
+LineDrawer.prototype.moveToXY = function(x, y) {
   this.nextGroup = 1;
-  this.setRendererMatrix(x, y, z, r);
+  this.setRendererMatrix(x, y);
+  this.renderer.setStamp(this.stamp);
+  return this;
 };
 
-LineDrawer.prototype.lineToXYZR = function (x, y, z, r) {
+LineDrawer.prototype.lineToXY = function(x, y) {
   if (!this.nextGroup) {
     throw "you gotta moveTo before you lineTo";
   }
   this.nextGroup = (this.nextGroup == 1) ? 2 : 1;
-  this.setRendererMatrix(x, y, z, r);
-  this.renderer.setStamp(this.stamp).drawStamp();
+  this.setRendererMatrix(x, y);
+  this.renderer.drawStamp();
+  return this;
 };
 
-LineDrawer.prototype.setRendererMatrix = function (x, y, z, r) {
+LineDrawer.prototype.drawRect = function(rect, z, r) {
+  var n = rect.getMinY();
+  var s = rect.getMaxY();
+  var w = rect.getMinX();
+  var e = rect.getMaxX();
+  this.moveToXY(w, n).lineToXY(e, n).lineToXY(e, s).lineToXY(w, s).lineToXY(w, n);
+  return this;
+};
+
+LineDrawer.prototype.setRendererMatrix = function (x, y) {
+  var z = this.nextZ;
+  var r = this.nextLineThickness * 0.5;
   this.m.toTranslateXYZAndScaleXYZOp(x, y, z, r, r, r);
   if (this.nextGroup == 1) {
     this.renderer.setModelMatrix(this.m);

@@ -109,30 +109,62 @@ gravity, obstacles
 v copy game2 to game3
 v player v1 - angular accel
 
-Stats 2016-11-06 to ???
+Stats 2016-11-06 to 11-16
 v Stats class path-delimited key/value pairs for tracking values now - no history. Really dumb.
 v StatTrail class can record stat value/time pairs in a circular buffer.
 v StatRateTrail class subclasses StatTrail, first derivative.
-- StatGraph class can render a StatTrail in various ways: line, bar
-  v Takes a SRT & renderer
-  - optional cues about where to put it and what it'll look like?
-  - draw() draws into the canvas and renders some text? Or all is canvas?
+v StatGraph class can render a StatTrail
 
-LineDrawer 2016-11-13 to ???
+LineDrawer 2016-11-13 to 11-16
 This will alternate the moving end between group 1 and group 2. That's the only fancy part.
 Use renderer's matrix and color API - don't replicate.
 v takes a renderer and a stamp - probably a closed cylinder, but anything with two groups is good
 v moveToXYZR(x, y, z, r) // remembers but doesn't draw
 v lineToXYZR(x, y, z, r) // draws from prev, moves prev to current
-- test page
+v test page
 
-Example uses:
-* Rate of collision function calls
-* Time spent doing each RequestAnimationFrame
-* Time between RAF calls - should be steady 16ms!
-* rate of game-time over time. Normally a steady N/sec but editing should be 0.
+Graphing improvements
+v make the lines equal width and height
+  v make the view matrix match upside-down Sector I 2d coords 0, 0 to width-1, height-1
+  v include an expected time domain
+    v render time with now on the right and the past on the left
+  v include an expected value range
+  v use a Rect to show where the graph goes on the plane
+  v make sure the line thickness is at least 2 pixels, for our unantialiased friends
+- encapsulate stuff
+  - SAMPLE_PERIOD_FRAMES = 1;
+  - GRAPH_SAMPLES = 120;
+  - GRAPH_TIMESPAN = 120 * SAMPLE_PERIOD_FRAMES;
+  - trail
+  - graph
+    - domain and range
+    - position and size on screen
+    - color
+    - z
+    - line width
+    - border
+  - sampling call
+  - drawing call
+- multiple timescales
+  - draw the same stat fast on the right, accumulating slow on the left
+- multiple stats
+  - frame stats
+    - time clocking
+    - time drawing
+    - time between frames (should be steady with occasional spikes)
+  - world stats
+    - valid collisions
+    - invalid collisions
+    - valid cell entry/exit events
+    - invalid cell entry/exit events
+    - timeouts
+    - rayscans
+  - renderer stats
+    - draw() calls
+  - memory
+    - pool allocs/frees for various classes
 
-Calibrate max RAF rate during pauses
+Test max RAF rate during pauses, to set max ms-before-bailing
 
 Undo/Redo
 - quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntary physics-over-time changes

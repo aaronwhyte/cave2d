@@ -80,6 +80,9 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.lineDrawer = new LineDrawer(renderer, this.stamps.lineStamp);
   this.statGraph = new StatGraph(statTrail, this.lineDrawer);
+  this.statGraph
+      .setValueRange(0, BaseScreen.MS_UNTIL_CLOCK_ABORT)
+      .setTimespan(GRAPH_TIMESPAN);
   this.graphColor = new Vec4(1, 0.7, 1);
 }
 BaseScreen.prototype = new Screen();
@@ -374,17 +377,24 @@ BaseScreen.prototype.drawStats = function() {
   this.viewMatrix.toIdentity();
 
   this.viewMatrix.multiply(this.mat44.toTranslateOpXYZ(
-      1,
       -1,
+      1,
       0));
   this.viewMatrix.multiply(this.mat44.toScaleOpXYZ(
-          2 / statTrail.maxLength,
-          1 / 32,
+          2/this.canvas.width,
+          -2/this.canvas.height,
           1));
   this.renderer.setViewMatrix(this.viewMatrix).setColorVector(this.graphColor);
-  this.lineDrawer.moveToXYZR(0, BaseScreen.MS_UNTIL_CLOCK_ABORT, -0.09, 0.05);
-  this.lineDrawer.lineToXYZR(-statTrail.maxLength, BaseScreen.MS_UNTIL_CLOCK_ABORT, -0.09, 0.05);
-  this.statGraph.draw(frameNum, -0.1, 0.25);
+
+  var r = this.statGraph.rect;
+  var rw = Math.min(150, this.canvas.width / 5), rh = rw / 3;
+  this.statGraph.rect.setPosXY(this.canvas.width - rw - 10, this.canvas.height - rh - 10).setRadXY(rw, rh);
+
+  this.lineDrawer.nextLineThickness = 1.5;
+  this.lineDrawer.drawRect(r);
+
+  this.statGraph.lineWidth = 3;
+  this.statGraph.draw(frameNum, -0.1);
 };
 
 
