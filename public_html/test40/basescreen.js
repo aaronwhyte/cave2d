@@ -78,9 +78,14 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
     e.preventDefault();
   };
 
-  this.statMon = new StatMon(
+  this.statMon1 = new StatMon(
       stats, STAT_NAMES.ANIMATION_MS,
       1, 60,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp));
+  this.statMon2 = new StatMon(
+      stats, STAT_NAMES.ANIMATION_MS,
+      5, 60,
       0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
       renderer, new LineDrawer(renderer, this.stamps.lineStamp));
 }
@@ -373,8 +378,10 @@ BaseScreen.prototype.updateViewMatrix = function() {
 };
 
 BaseScreen.prototype.drawStats = function() {
-  this.statMon.sample();
-  this.statMon.draw(this.canvas.width, this.canvas.height);
+  this.statMon1.sample();
+  this.statMon2.sample();
+  this.statMon1.draw(this.canvas.width, this.canvas.height);
+  this.statMon2.draw(this.canvas.width, this.canvas.height);
 };
 
 

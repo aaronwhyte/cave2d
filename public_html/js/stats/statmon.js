@@ -33,19 +33,21 @@ function StatMon(stats, statName,
   // TODO: also support non-rate trails? Hm.
   this.trail = new StatRateTrail(stats, this.statName, this.sampleCount);
   this.graph = new StatGraph(this.trail, this.lineDrawer);
-  this.graph.setTimespan(this.sampleCount - 1);
+  this.graph.setTimespan(this.sampleCount * this.sampleInterval - 1);
   this.graph.setValueRange(minVal, maxVal);
 
+  this.sampleCalls = 0;
   this.sampleNum = -1;
   this.canvasWidth = 0;
   this.canvasHeight = 0;
 }
 
 StatMon.prototype.sample = function() {
-  this.sampleNum++;
-  if (this.sampleNum % this.sampleInterval == 0) {
+  this.sampleCalls++;
+  if (this.sampleCalls % this.sampleInterval == 0) {
+    this.sampleNum++;
     // really sample
-    this.trail.sample(this.sampleNum);
+    this.trail.sample(this.sampleCalls);
   }
 };
 
@@ -73,7 +75,7 @@ StatMon.prototype.draw = function(width, height) {
 
   // data
   this.graph.lineWidth = this.lineWidth;
-  this.graph.draw(this.sampleNum, this.z);
+  this.graph.draw(this.sampleCalls, this.z);
 };
 
 StatMon.prototype.positionRect = function() {
