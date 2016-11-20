@@ -160,7 +160,9 @@ Test40Page.prototype.animateFrame = function(startTime) {
   this.screen.drawScreen(1, startTime);
   var endTime = performance.now();
   stats.add(STAT_NAMES.ANIMATION_MS, endTime - startTime);
-  if (!(frameNum % SAMPLE_PERIOD_FRAMES)) statTrail.sample(frameNum);
+  if (!(frameNum % SAMPLE_PERIOD_FRAMES)) {
+    statTrail.sample(frameNum);
+  }
 };
 
 Test40Page.prototype.requestFullScreen = function() {

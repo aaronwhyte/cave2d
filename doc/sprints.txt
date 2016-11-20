@@ -131,27 +131,34 @@ v make the lines equal width and height
   v include an expected value range
   v use a Rect to show where the graph goes on the plane
   v make sure the line thickness is at least 2 pixels, for our unantialiased friends
-- encapsulate stuff
-  - SAMPLE_PERIOD_FRAMES = 1;
-  - GRAPH_SAMPLES = 120;
-  - GRAPH_TIMESPAN = 120 * SAMPLE_PERIOD_FRAMES;
-  - trail
-  - graph
-    - domain and range
+- refactor and encapsulate, for multiple graphs
+  - add a StatMon class
+    - holds a Trail and a Graph, but manages both
+    - sample() for the trail
+      - knows how to read its own time and val
+    - draw(canvasWidth, canvasHeight) for the graph
+      - lazily updates internal view matrix, but always sets renderer view matrix
+    v SAMPLE_PERIOD_FRAMES becomes "sampleInterval", internal to sample()
+    v sampleCount is for trail and graph
+    - graphTimespan (domain roughly)
+    - graph value range
     - position and size on screen
     - color
     - z
     - line width
     - border
-  - sampling call
-  - drawing call
-- multiple timescales
-  - draw the same stat fast on the right, accumulating slow on the left
+      - widths
+      - color
+    - gridlines?
+    - min/max indicators? Or values at least?
+    - current value text?
+- convert test40 to use StatMon
 - multiple stats
   - frame stats
     - time clocking
     - time drawing
     - time between frames (should be steady with occasional spikes)
+    - second slower timescale to the left. Never seen that before but I want it.
   - world stats
     - valid collisions
     - invalid collisions

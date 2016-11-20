@@ -12,7 +12,7 @@ function LineDrawer(renderer, stamp) {
 
   this.m = new Matrix44();
 
-  this.nextZ = 0;
+  this.nextZ = -0.99;
   this.nextLineThickness = 2;
 }
 
