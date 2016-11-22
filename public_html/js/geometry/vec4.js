@@ -109,6 +109,15 @@ Vec4.prototype.setRGBA = function(r, g, b, a) {
   return this;
 };
 
+Vec4.prototype.getIndex = function(i) {
+  return this.v[i];
+};
+
+Vec4.prototype.setIndex = function(i, val) {
+  this.v[i] = val;
+  return this;
+};
+
 Vec4.prototype.getX = Vec4.prototype.getR = function() {
   return this.v[0];
 };

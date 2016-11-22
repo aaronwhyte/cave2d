@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>CuboidRules test</title>
+<script src="../../js/strings.js"></script>
+<script src="../../js/testing.js"></script>
+<script src="../../js/geometry/vec4.js"></script>
+<script src="../../js/geometry/cuboid.js"></script>
+<script>
+
+var SLOP = 0.00001;
+
+addTest(function equals() {
+  var a = new Cuboid().setRadXYZ(1, 2, 3).setPosXYZ(4, 5, 6);
+  var b = new Cuboid().setRadXYZ(1, 2, 3).setPosXYZ(4, 5, 6);
+  assertTrue(a.equals(b));
+
+  b.setRadXYZ(1.1, 2, 3).setPosXYZ(4, 5, 6.02);
+  assertTrue(!a.equals(b));
+  assertTrue(a.equals(b, 0.101));
+});
+
+
+
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>
