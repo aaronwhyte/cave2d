@@ -142,10 +142,30 @@ v refactor and encapsulate, for multiple graphs
     v sampleCount is for trail and graph
     v graph value range
 v convert test40 to use StatMon
+
+Layout system
+v new Cuboid class, not rects, because Z is not to be ignored.
+v new CuboidRule(source, target) for setting target cuboid's position and radii based on another cuboid
+  v size
+    v setSizingMax(maxParentRads, maxPixels) // Vec4s. the system takes the min of these in each dimension
+      v aspect ratio locking can make things even smaller, never larger
+    v setAspectRation(ratio) // optionally lock target aspect ratio. A zero means that the dimension is unconstrained.
+  v position - the target will be moved so the two anchors are at the same position
+    v setTargetAnchor(rads, pixels) // Vec4s. Anchor pos on target = rad*rads + pixels
+    v setSourceAnchor(rads, pixels) // Vec4s. Anchor pos on source = rad*rads + pixels
+    x setAnchorMask(Vec4) interpreted as booleans, truthy means position on this axis, falsey means don't.
+  v apply()
+    v unit-test size
+- layout graphs using cuboids
+- apply rules to canvas and two graphs
+
+- replace Editor trigger layout with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue?
+- make triggers accept cuboids for layout?
+
 - enhance StatMon
   - graphposition and size on screen
   - graphcolor
-  - graphz
+  - graph z
   - graphline width
   - graphborder
     - graphwidths
@@ -153,7 +173,8 @@ v convert test40 to use StatMon
   - graphgridlines?
   - graphmin/max indicators? Or values at least?
   - graphcurrent value text?
-- multiple stats
+
+- more graphs
   - frame stats
     - time clocking
     - time drawing

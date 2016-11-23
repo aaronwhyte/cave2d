@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>CuboidRule test</title>
+<script src="../../js/strings.js"></script>
+<script src="../../js/testing.js"></script>
+<script src="../../js/geometry/vec4.js"></script>
+<script src="../../js/geometry/cuboid.js"></script>
+<script src="../../js/geometry/cuboidrule.js"></script>
+<script>
+
+var SLOP = 0.00001;
+
+addTest(function ruleToCopySize() {
+  var source = new Cuboid(new Vec4(1, 2, 3), new Vec4(4, 5, 6));
+  var target = new Cuboid();
+  var rule = new CuboidRule(source, target);
+  rule.setSizingMax(new Vec4(1, 1, 1), new Vec4(Infinity, Infinity, Infinity));
+  rule.apply();
+  assertTrue(source.rad.equals(target.rad, SLOP));
+});
+
+addTest(function ruleToCopySizePlus3To2AspectRatio() {
+  var source = new Cuboid(new Vec4(1, 2, 3), new Vec4(4, 5, 6));
+  var target = new Cuboid();
+  var rule = new CuboidRule(source, target);
+  rule.setSizingMax(new Vec4(1, 1, 1), new Vec4(Infinity, Infinity, Infinity));
+  rule.setAspectRatio(new Vec4(3, 2, 0));
+  rule.apply();
+  assertTrue(target.rad.equals(new Vec4(4, 4 * 2/3, 6), SLOP));
+});
+
+addTest(function ruleToBottomRightQuadrant() {
+  var source = new Cuboid(new Vec4(200, 150, 0), new Vec4(200, 150, 1));
+  var target = new Cuboid();
+  var rule = new CuboidRule(source, target);
+  rule.setSizingMax(new Vec4(0.5, 0.5, 1), new Vec4(Infinity, Infinity, Infinity));
+  rule.setSourceAnchor(new Vec4(1, 0, 0), new Vec4(0, 0, 0));
+  rule.setTargetAnchor(new Vec4(1, -1, 0), new Vec4(0, 0, 0));
+  rule.apply();
+  var expected = new Cuboid(new Vec4(400 * .75, 300 * .75, 0), new Vec4(100, 75, 1));
+  assertTrue(expected.equals(target, SLOP));
+});
+
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>

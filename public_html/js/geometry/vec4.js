@@ -141,6 +141,13 @@ Vec4.prototype.scale1 = function(s) {
   return this;
 };
 
+Vec4.prototype.scaleVec4 = function(that) {
+  for (var i = 0; i < 3; i++) {
+    this.v[i] *= that.v[i];
+  }
+  return this;
+};
+
 Vec4.prototype.abs = function() {
   for (var i = 0; i < 3; i++) {
     this.v[i] = Math.abs(this.v[i]);
