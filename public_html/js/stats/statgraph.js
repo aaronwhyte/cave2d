@@ -1,15 +1,18 @@
 /**
  * @param {StatTrail} trail
  * @param {LineDrawer} lineDrawer
+ * @param {Cuboid} cuboid
  * @constructor
  */
-function StatGraph(trail, lineDrawer) {
+function StatGraph(trail, lineDrawer, cuboid) {
   this.trail = trail;
   this.lineDrawer = lineDrawer;
+  this.cuboid = cuboid;
+
   this.timespan = 100;
   this.minVal = 0;
   this.maxVal = 99;
-  this.rect = new Rect(50, 50, 50, 50);
+  this.vec4 = new Vec4();
   this.lineWidth = 2;
 }
 
@@ -24,25 +27,30 @@ StatGraph.prototype.setValueRange = function(minVal, maxVal) {
   return this;
 };
 
-StatGraph.prototype.setDrawRect = function(rect) {
-  this.rect.set(rect);
+/**
+ * @param {Cuboid} cuboid  this reference is retained - this doesn't copy the values out
+ * @returns {StatGraph}
+ */
+StatGraph.prototype.setCuboid = function(cuboid) {
+  this.cuboid = cuboid;
   return this;
 };
 
 /**
  * @param {number} now subtracted from all time values
- * @param {number} z
- * @param {number} r
  */
-StatGraph.prototype.draw = function(now, z) {
-  this.lineDrawer.nextZ = z;
+StatGraph.prototype.draw = function(now) {
+  // Z is the closest face of the cuboid.
+  this.lineDrawer.nextZ = this.cuboid.pos.getZ() + this.cuboid.rad.getZ();
   this.lineDrawer.nextLineThickness = this.lineWidth;
 
-  var minX = this.rect.getMinX();
-  var maxX = this.rect.getMaxX();
+  this.cuboid.getMinCorner(this.vec4);
+  var minX = this.vec4.getX();
+  var topY = this.vec4.getY();
 
-  var topY = this.rect.getMinY();
-  var bottomY = this.rect.getMaxY();
+  this.cuboid.getMaxCorner(this.vec4);
+  var maxX = this.vec4.getX();
+  var bottomY = this.vec4.getY();
 
   var timeCoef = (maxX - minX) / this.timespan;
   var valCoef = (bottomY - topY) / (this.maxVal - this.minVal);

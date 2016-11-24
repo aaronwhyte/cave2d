@@ -44,6 +44,7 @@ CuboidRule.prototype.setSizingMax = function(maxParentRads, maxPixels) {
  */
 CuboidRule.prototype.setAspectRatio = function(ratio) {
   this.aspectRatio = ratio;
+  return this;
 };
 
 /**

@@ -8,12 +8,13 @@
  * @param {number} maxVal expected highest value
  * @param {Renderer} renderer
  * @param {LineDrawer} lineDrawer
+ * @param {Cuboid} cuboid
  * @constructor
  */
 function StatMon(stats, statName,
                  sampleInterval, sampleCount,
                  minVal, maxVal,
-                 renderer, lineDrawer) {
+                 renderer, lineDrawer, cuboid) {
   this.stats = stats;
   this.statName = statName;
   this.sampleInterval = sampleInterval;
@@ -35,6 +36,7 @@ function StatMon(stats, statName,
   this.graph = new StatGraph(this.trail, this.lineDrawer);
   this.graph.setTimespan(this.sampleCount * this.sampleInterval - 1);
   this.graph.setValueRange(minVal, maxVal);
+  this.graph.setCuboid(cuboid);
 
   this.sampleCalls = 0;
   this.sampleNum = -1;
@@ -59,30 +61,19 @@ StatMon.prototype.draw = function(width, height) {
     this.viewMatrix.toIdentity();
     this.viewMatrix
         .multiply(this.mat44.toTranslateOpXYZ(-1, 1, 0))
-        .multiply(this.mat44.toScaleOpXYZ(2 / width, -2 / height, 1));
+        .multiply(this.mat44.toScaleOpXYZ(2 / width, -2 / height, -1));
   }
   this.renderer
       .setViewMatrix(this.viewMatrix)
       .setColorVector(this.color);
 
-  this.positionRect();
-
   // border
-  if (this.borderWidth) {
-    this.lineDrawer.nextLineThickness = this.borderWidth;
-    this.lineDrawer.drawRect(this.graph.rect);
-  }
+  // if (this.borderWidth) {
+  //   this.lineDrawer.nextLineThickness = this.borderWidth;
+  //   this.lineDrawer.drawRect(this.graph.rect);
+  // }
 
   // data
   this.graph.lineWidth = this.lineWidth;
-  this.graph.draw(this.sampleCalls, this.z);
-};
-
-StatMon.prototype.positionRect = function() {
-  // TODO: some kinda rect positioning and scaling system
-  var rw = Math.min(150, this.canvasWidth / 5);
-  var rh = rw / 3;
-  this.graph.rect
-      .setPosXY(this.canvasWidth - rw - 10, this.canvasHeight - rh - 10)
-      .setRadXY(rw, rh);
+  this.graph.draw(this.sampleCalls);
 };

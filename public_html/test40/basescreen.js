@@ -78,16 +78,28 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
     e.preventDefault();
   };
 
+  this.cuboid1 = new Cuboid();
   this.statMon1 = new StatMon(
       stats, STAT_NAMES.ANIMATION_MS,
       1, 60,
       0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
-      renderer, new LineDrawer(renderer, this.stamps.lineStamp));
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.cuboid1);
+  this.cuboid2 = new Cuboid();
   this.statMon2 = new StatMon(
       stats, STAT_NAMES.ANIMATION_MS,
-      5, 60,
+      30, 60,
       0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
-      renderer, new LineDrawer(renderer, this.stamps.lineStamp));
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.cuboid2);
+  this.canvasCuboid = new Cuboid();
+  this.cuboidRule1 = new CuboidRule(this.canvasCuboid, this.cuboid1)
+      .setSizingMax(new Vec4(1/3, 1, 1), new Vec4(100, Infinity, Infinity))
+      .setAspectRatio(new Vec4(2, 1, 0))
+      .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-10, -10, 0))
+      .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0));
+  this.cuboidRule2 = new CuboidRule(this.cuboid1, this.cuboid2)
+      .setSizingMax(new Vec4(1, 1, 1), Vec4.INFINITY)
+      .setSourceAnchor(new Vec4(-1, 0, 0),  Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1, 0, 0), Vec4.ZERO);
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -380,6 +392,12 @@ BaseScreen.prototype.updateViewMatrix = function() {
 BaseScreen.prototype.drawStats = function() {
   this.statMon1.sample();
   this.statMon2.sample();
+
+  this.canvasCuboid.pos.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0);
+  this.canvasCuboid.rad.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0.99);
+  this.cuboidRule1.apply();
+  this.cuboidRule2.apply();
+
   this.statMon1.draw(this.canvas.width, this.canvas.height);
   this.statMon2.draw(this.canvas.width, this.canvas.height);
 };

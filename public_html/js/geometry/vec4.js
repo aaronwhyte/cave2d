@@ -46,6 +46,7 @@ Vec4.prototype.free = function() {
 };
 
 Vec4.ZERO = new Vec4();
+Vec4.INFINITY = new Vec4(Infinity, Infinity, Infinity);
 
 Vec4.temp = new Vec4();
 

@@ -153,11 +153,16 @@ v new CuboidRule(source, target) for setting target cuboid's position and radii 
   v position - the target will be moved so the two anchors are at the same position
     v setTargetAnchor(rads, pixels) // Vec4s. Anchor pos on target = rad*rads + pixels
     v setSourceAnchor(rads, pixels) // Vec4s. Anchor pos on source = rad*rads + pixels
-    x setAnchorMask(Vec4) interpreted as booleans, truthy means position on this axis, falsey means don't.
   v apply()
-    v unit-test size
-- layout graphs using cuboids
-- apply rules to canvas and two graphs
+    v unit-test
+      v size
+      v aspect ratio
+      v anchors
+v layout statgraphs using cuboids instead of rects
+  v ditto, therefore, for statmon
+  v higher z is closer to user, on top of lower z
+v apply rules to canvas and two graphs
+- add borders back
 
 - replace Editor trigger layout with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue?
 - make triggers accept cuboids for layout?
