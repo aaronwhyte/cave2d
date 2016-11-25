@@ -211,7 +211,7 @@ Vec4.prototype.setToInterpolation = function(a, b, t) {
 
 Vec4.prototype.equals = function(that, opt_slop) {
   var slop = opt_slop || 0;
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 4; i++) {
     if (Math.abs(this.v[i] - that.v[i]) > slop) return false;
   }
   return true;

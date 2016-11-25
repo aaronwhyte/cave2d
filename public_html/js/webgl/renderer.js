@@ -124,7 +124,7 @@ Renderer.prototype.setModelMatrix2 = function(modelMatrix2) {
 Renderer.prototype.setColorVector = function(color) {
   if (!this.oldColor.equals(color)) {
     this.oldColor.set(color);
-    this.gl.uniform4fv(this.uModelColor, color.v);
+    this.gl.uniform4fv(this.uModelColor, this.oldColor.v);
   }
   return this;
 };
