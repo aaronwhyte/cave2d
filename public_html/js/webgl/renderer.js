@@ -12,6 +12,8 @@ function Renderer(canvas, gl, program) {
   this.gl = gl;
   this.program = program;
   this.initAttributesAndUniforms();
+  this.modelStamp = null;
+  this.oldColor = new Vec4(-1, -1, -1);
 }
 
 Renderer.prototype.initAttributesAndUniforms = function() {
@@ -116,11 +118,14 @@ Renderer.prototype.setModelMatrix2 = function(modelMatrix2) {
 
 /**
  * Sets the shader's color vector uniform.
- * @param {Vec4} colorVector
+ * @param {Vec4} color
  * @return {Renderer}
  */
-Renderer.prototype.setColorVector = function(colorVector) {
-  this.gl.uniform4fv(this.uModelColor, colorVector.v);
+Renderer.prototype.setColorVector = function(color) {
+  if (!this.oldColor.equals(color)) {
+    this.oldColor.set(color);
+    this.gl.uniform4fv(this.uModelColor, color.v);
+  }
   return this;
 };
 
@@ -130,8 +135,10 @@ Renderer.prototype.setColorVector = function(colorVector) {
  * @return {Renderer}
  */
 Renderer.prototype.setStamp = function(stamp) {
-  this.modelStamp = stamp;
-  stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor, this.aVertexGroup);
+  if (this.modelStamp == null || this.modelStamp.id !== stamp.id) {
+    this.modelStamp = stamp;
+    stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor, this.aVertexGroup);
+  }
   return this;
 };
 

@@ -16,7 +16,10 @@ function ModelStamp(glType, posBuff, colorBuff, groupBuff, indexBuff, indexCount
   this.groupBuff = groupBuff;
   this.indexBuff = indexBuff;
   this.indexCount = indexCount;
+  this.id = ModelStamp.nextId++;
 }
+
+ModelStamp.nextId = 1;
 
 
 ModelStamp.prototype.prepareToDraw = function(gl, aVertexPosition, aVertexColor, aVertexGroup) {
