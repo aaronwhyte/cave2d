@@ -84,16 +84,18 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
       1, 60,
       0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
       renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.cuboid1);
+
   this.cuboid2 = new Cuboid();
   this.statMon2 = new StatMon(
       stats, STAT_NAMES.ANIMATION_MS,
       30, 60,
       0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
       renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.cuboid2);
+
   this.canvasCuboid = new Cuboid();
   this.cuboidRule1 = new CuboidRule(this.canvasCuboid, this.cuboid1)
-      .setSizingMax(new Vec4(1/3, 1, 1), new Vec4(100, Infinity, Infinity))
-      .setAspectRatio(new Vec4(2, 1, 0))
+      .setSizingMax(new Vec4(1/4, 1, 1), new Vec4(90, Infinity, Infinity))
+      .setAspectRatio(new Vec4(3, 1, 0))
       .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-10, -10, 0))
       .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0));
   this.cuboidRule2 = new CuboidRule(this.cuboid1, this.cuboid2)

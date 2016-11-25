@@ -65,7 +65,7 @@ AntSpirit.prototype.setModelStamp = function(modelStamp) {
 };
 
 AntSpirit.createModel = function() {
-  return RigidModel.createCircle(11)
+  return RigidModel.createCircle(17)
       .addRigidModel(RigidModel.createSquare()
           .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
