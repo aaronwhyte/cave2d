@@ -94,7 +94,7 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.canvasCuboid = new Cuboid();
   this.cuboidRule1 = new CuboidRule(this.canvasCuboid, this.cuboid1)
-      .setSizingMax(new Vec4(1/4, 1, 1), new Vec4(90, Infinity, Infinity))
+      .setSizingMax(new Vec4(1/2, 1/3, 1), new Vec4(120, Infinity, Infinity))
       .setAspectRatio(new Vec4(3, 1, 0))
       .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-10, -10, 0))
       .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0));

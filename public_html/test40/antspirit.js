@@ -74,7 +74,7 @@ AntSpirit.createModel = function() {
           .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
           .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
-      .setColorRGB(0.1, 1, 0.1);
+      .setColorRGB(0.2, 0.5, 1);
 };
 
 AntSpirit.factory = function(screen, stamp, pos, dir) {
