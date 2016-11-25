@@ -55,6 +55,12 @@ Renderer.prototype.resize = function() {
  */
 Renderer.prototype.clear = function() {
   this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+  // This is to work around an unexplained bug in game1 and test35 (and a few more) where
+  // adding a new terrain tile model somehow invalidates the GL model stamp state from the last frame.
+  this.modelStamp = null;
+  this.oldColor.setRGBA(-1, -1, -1, -1);
+
   return this;
 };
 
