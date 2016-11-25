@@ -2,7 +2,8 @@ var app, stats;
 
 var STAT_NAMES = {
   ANIMATION_MS: 'animation_ms',
-  DRAW_SPIRITS_MS: 'draw_spirits_ms'
+  DRAW_SPIRITS_MS: 'draw_spirits_ms',
+  WORLD_TIME: 'world_time'
 };
 
 function main() {
