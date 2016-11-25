@@ -7,6 +7,19 @@
 <style>
 body {
   font-family: verdana, arial, sans-serif;
+  max-width: 50em;
+  margin-left:auto;
+  margin-right:auto;
+  padding:0.5em;
+}
+
+.gloriousBrand {
+  font-size:500%;
+  font-weight:bolder;
+  color: #f19;
+  text-align:center;
+  padding:0;
+  margin:0;
 }
 
 h1 {
@@ -38,9 +51,11 @@ div {
 </head>
 <body>
 
-HTML5 experiments and game stuff. Most things work with touchscreens, mice, and keyboards.<br>
-Source code is at <a href="https://github.com/aaronwhyte/cave2d">github.com/aaronwhyte/cave2d</a><br>
+<div class="gloriousBrand">cave2d</div>
+<p>
+A growing pile of original JavaScript experiments and games.<br>
 Random screenshots and gifs sometimes on <a href="http://aaryte.tumblr.com/">aaryte.tumblr.com</a><br>
+Source code: <a href="https://github.com/aaronwhyte/cave2d">github.com/aaronwhyte/cave2d</a><br>
 
 <!--
 <h1><a href="fracas2">Fracas II: The Frackening (currently broken)</a></h1>
@@ -48,28 +63,62 @@ This game is a sequel to my first-ever JS game, <a href="http://plexode.com/frac
 which was based on an 8-bit Atari game, <a href="https://www.google.com/#q=Dandy%20Dungeon">Dandy Dungeon</a>.
 -->
 
-<h1>Little games?</h1>
+<h1>Games</h1>
 
-<h2><a href="game1">Game 1</a></h2>
-Here's a demo of basic combat, and infinite digging through destructible terrain.
+<h2><a href="game1">Game 1: Early Demo</a></h2>
+This has one level of basic combat, and infinite digging through destructible terrain.
 
-<h2><a href="game2">Game 2</a></h2>
-This is a simple 2D maze shooter, with one enemy, two weapons, six levels, and destructible terrain.
-The idea was to complete the basic form of a more full-featured, multi-level, arcade-ish game:
-Startup, player controls, weapons, enemy behavior, explosions, sounds, pause menu, level progression, death,
-victory, etc.
+<h2><a href="game2">Game 2: The Good One</a></h2>
+A 2D maze shooter for mobile and desktop, featuring with one kind of enemy, two weapons, six levels, about seven sound
+effects, infinite lives, and fully destructible terrain.
 <p>
-There's a <a href="game2/edit">Game 2 level editor</a>, for creating and testing levels. It's not connected to the
-main game; I use it to create and test levels, then I export them to JSON, and copy that into the cave2d.com source
-code. But it's kinda fun.
+The idea was to complete, multi-level, arcade-ish game with all the little things I took for granted in games
+until I coded it myslef: Startup, player controls, weapons, enemy behavior, explosions, sounds, pause menu,
+level progression, death, victory, etc.
+<p>
+To make the levels I wrote a <a href="game2/edit">level editor</a>, for creating and testing levels. It's not connected
+to the main game; I used it to make levels, then I exported them to JSON, and copied that into the cave2d.com
+source code. But it's kinda fun to play with on its own.
 
-<h2><a href="game3">Game 3 (work in progress)</a></h2>
-plus <a href="game3/edit">Game 3 level editor</a>
+<h2><a href="game3">Game 3: Work in progress</a></h2>
+This is more of a platformer demo. Roll around the test level, using left and right swipes or arrows,
+and the shift for turbo if you're using a keyboard. There's a <a href="game3/edit">level editor</a> too.
 
-<h1>Physics II</h1>
+<h1>Editor Tests</h1>
 
-<!--<h2><a href="test40">Test 40 - Chain Constraints</a></h2>-->
-<!--<i>WORK IN PROGRESS</i>-->
+<h2><a href="test40">Test 40 - Stats and Line Graphs</a></h2>
+I added some stats, graphing, and layout infrastructure, with two graphs to test it.
+<p>
+The top graph is how much of each frame's time budget is taken by each requestAnimationFrame callback.
+Drawing happens first, and then physics. The physics system tries to abort when close to 16ms are used up,
+so we don't drop frames, which is why the graph rarely goes past its upper bound,
+and why you can still edit even if the physics engine bogs down.
+<p>
+The bottom one is how much world-time elapses per frame. If it dips, it means the system had to stop processing
+physics events early, to prevent a dropped frame and an unresponsive UI.
+<p>
+To make those two simple graphs, I needed to write a bunch of support classes:
+<ul>
+  <li><a href="js/stats/stats.js">Stats</a> is a simple key/value pair that holds only the current value for each stat.
+    In general, a stat value increases forever. Rates are calculated below.
+  <li><a href="js/stats/stattrail.js">StatTrail</a> is a circular buffer of values for one stat.
+    It samples from a current Stats value, and records the value/time pair in the buffer.
+  <li><a href="js/stats/statratetrail.js">StatRateTrail</a> is a StatTrail subclass that records the change in a value over
+    time, not the value itself.
+  <li><a href="js/webgl/linedrawer.js">LineDrawer</a> provides basic moveTo and lineTo functions, plus line width and Z.
+    It uses a stretched cylinder to render each line segment with the same line width.
+  <li><a href="js/stats/statgraph.js">StatGraph</a> uses a StatTrail and a LineDrawer to render a graph of a stat over time.
+  <li><a href="js/stats/statmon.js">StatMon</a> wraps a a StatGraph/StatTrail combo, plus layout info.
+</ul>
+To position and size the graphs nicely, I made a small 3D rectangle layout system, that I plan to reuse for UI widget layout:
+<ul>
+  <li><a href="js/geometry/cuboid.js">Cuboid</a> is a 3D axis-aligned rectangle, just a boring data object.
+    In test40, the whole canvas is a big outer Cuboid, and each graph is drawn on another cuboid.
+  <li><a href="js/geometry/cuboidrule.js">CuboidRule</a> can resize and reposition a target cuboid based on a source
+    cuboid, so I can nest, chain, etc. It supports sizing and position by relative size plus absolute offsets, and
+    optional aspect ratios.
+</ul>
+
 
 <h2><a href="test39">Test 39 - Orientation &amp; Off-Center Force</a></h2>
 Updated the Body class to have angle, angular velocity, and moment of inertia.
@@ -79,7 +128,8 @@ In the editor, you can grab a rotation-aware object by the edge and rotate it as
 And the cursor has a direction arrow, and new items get inserted at that angle.
 
 
-<h1>Editor tests</h1>
+<h1>Early Editor tests</h1>
+These were all done as part of the Game 2 work.
 
 <h2><a href="test38">Test 38 - Add and Remove</a></h2>
 Added on-screen triggers for adding and removing items, and a menu for picking which items to add.
@@ -220,14 +270,13 @@ plus some badly-coded animation.
 
 <h2><a href="test13">Test 13 - Separate Physics and Drawing Speeds</a></h2>
 In this test, the game oscillates between slow-motion and fast-motion every few seconds.
-It's smooth and fast on Android, but still a little choppy on an iPad 2 with iOS 8. :-(
 <p>
 The physics engine has a single queue, sorted by time, to keep track of most events that affect the world:
 <ul>
-  <li>a body enters a grid cell</li>
-  <li>a body exits a grid cell</li>
+  <li>body enters a grid cell</li>
+  <li>body exits a grid cell</li>
   <li>two bodies collide</li>
-  <li>a spirit timeout fires</li>
+  <li>timeout fires</li>
 </ul>
 World-time is independent from JavaScript's <code>Date.now()</code>. To advance world-time, a client needs to
 consume events from the queue, in time order. That usually causes more events to be inserted at later world-times.
@@ -271,10 +320,12 @@ or the right half of a touchscreen.
 <div><a href="test8">Test 8 - Collision</a><br>Continuous 2D collision detection between bodies shaped like axis-aligned rectangles and circles.</div>
 
 <h1>Quadtrees</h1>
+Later this was replaced by BitGrid, but I kept the basic vision of a fingerpaint-like editing UI.
 <div><a href="test7">Test 7 - QuadTreeGrid &amp; HallPainter</a><br>You can draw a cave map with a mouse or touchscreen.</div>
 <div><a href="test6">Test 6 - QuadTree Moon</a><br>Demos quadtree editing by adding a circle and deleting a circle, at 60fps</div>
 
 <h1>Graphics</h1>
+I didn't end up using any of this for the games, but it was fun to write.
 <div><a href="test5">Test 5 - Timeshift</a><br>Shifts the subtree's time as a function of time. Draws a clock that makes random, uneven progress.</div>
 <div><a href="test4">Test 4 - Scale</a><br>Changes the size of a drawing tree over time. Looks like a hungry hydra.</div>
 <div><a href="test3">Test 3 - Rotate</a><br>Rotates the drawing tree over time. Looks like a wiggly sea creature.</div>
