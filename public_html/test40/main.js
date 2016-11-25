@@ -1,7 +1,8 @@
 var app, stats;
 
 var STAT_NAMES = {
-  ANIMATION_MS: 'animation_ms'
+  ANIMATION_MS: 'animation_ms',
+  DRAW_SPIRITS_MS: 'draw_spirits_ms'
 };
 
 function main() {

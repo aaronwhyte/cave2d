@@ -141,7 +141,7 @@ EditScreen.prototype.toJSON = function() {
 
 EditScreen.prototype.createDefaultWorld = function() {
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  var ants = 24;
+  var ants = 64;
   for (var a = 0; a < ants; a++) {
     this.addItem(BaseScreen.MenuItem.ANT, Vec2d.ZERO, 2 * Math.PI * a / ants);
   }
@@ -154,9 +154,11 @@ EditScreen.prototype.handleInput = function () {
 
 EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
+  var startTime = performance.now();
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
+  stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);

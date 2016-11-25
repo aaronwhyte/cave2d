@@ -156,8 +156,7 @@ Test40Page.prototype.animateFrame = function(startTime) {
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
   this.screen.drawScreen(1, startTime);
-  var endTime = performance.now();
-  stats.add(STAT_NAMES.ANIMATION_MS, endTime - startTime);
+  stats.add(STAT_NAMES.ANIMATION_MS, performance.now() - startTime);
 };
 
 Test40Page.prototype.requestFullScreen = function() {
