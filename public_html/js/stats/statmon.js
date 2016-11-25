@@ -25,7 +25,8 @@ function StatMon(stats, statName,
   this.lineDrawer = lineDrawer;
 
   this.z = 0;
-  this.color = new Vec4(0.8, 0.8 ,0.5);
+  this.graphColor = new Vec4(0.5, 1, 0.5);
+  this.borderColor = new Vec4(0.3, 0.6, 0.3);
   this.viewMatrix = new Matrix44();
   this.mat44 = new Matrix44();
   this.lineWidth = 3;
@@ -63,17 +64,17 @@ StatMon.prototype.draw = function(width, height) {
         .multiply(this.mat44.toTranslateOpXYZ(-1, 1, 0))
         .multiply(this.mat44.toScaleOpXYZ(2 / width, -2 / height, -1));
   }
-  this.renderer
-      .setViewMatrix(this.viewMatrix)
-      .setColorVector(this.color);
+  this.renderer.setViewMatrix(this.viewMatrix)
 
   // border
-  // if (this.borderWidth) {
-  //   this.lineDrawer.nextLineThickness = this.borderWidth;
-  //   this.lineDrawer.drawRect(this.graph.rect);
-  // }
+  if (this.borderWidth) {
+    this.renderer.setColorVector(this.borderColor);
+    this.lineDrawer.nextLineThickness = this.borderWidth;
+    this.lineDrawer.drawRectFromCuboid(this.graph.cuboid);
+  }
 
   // data
+  this.renderer.setColorVector(this.graphColor);
   this.graph.lineWidth = this.lineWidth;
   this.graph.draw(this.sampleCalls);
 };

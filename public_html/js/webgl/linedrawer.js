@@ -14,6 +14,8 @@ function LineDrawer(renderer, stamp) {
 
   this.nextZ = -0.99;
   this.nextLineThickness = 2;
+
+  this.vec4 = new Vec4();
 }
 
 LineDrawer.prototype.moveToXY = function(x, y) {
@@ -33,12 +35,36 @@ LineDrawer.prototype.lineToXY = function(x, y) {
   return this;
 };
 
-LineDrawer.prototype.drawRect = function(rect, z, r) {
+/**
+ * Draws a rect at a depth of nextZ.
+ * @param {Rect} rect
+ * @returns {LineDrawer}
+ */
+LineDrawer.prototype.drawRect = function(rect) {
   var n = rect.getMinY();
   var s = rect.getMaxY();
   var w = rect.getMinX();
   var e = rect.getMaxX();
   this.moveToXY(w, n).lineToXY(e, n).lineToXY(e, s).lineToXY(w, s).lineToXY(w, n);
+  return this;
+};
+
+/**
+ * Draws a n X/Y rect, in the middle of the cuboid's Z.
+ * @param {Cuboid} cuboid
+ * @return {LineDrawer}
+ */
+LineDrawer.prototype.drawRectFromCuboid = function(cuboid) {
+  var oldZ = this.nextZ;
+  this.nextZ = cuboid.pos.getZ();
+  var v = cuboid.getMinCorner(this.vec4);
+  var n = v.getY();
+  var w = v.getX();
+  var v = cuboid.getMaxCorner(this.vec4);
+  var s = v.getY();
+  var e = v.getX();
+  this.moveToXY(w, n).lineToXY(e, n).lineToXY(e, s).lineToXY(w, s).lineToXY(w, n);
+  this.nextZ = oldZ;
   return this;
 };
 
