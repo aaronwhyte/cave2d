@@ -162,22 +162,19 @@ v layout statgraphs using cuboids instead of rects
   v ditto, therefore, for statmon
   v higher z is closer to user, on top of lower z
 v apply rules to canvas and two graphs
-- add borders back
+v add borders back
 
-- replace Editor trigger layout with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue?
-- make triggers accept cuboids for layout?
-
-- enhance StatMon
-  - graphposition and size on screen
-  - graphcolor
-  - graph z
-  - graphline width
-  - graphborder
-    - graphwidths
-    - graphcolor
-  - graphgridlines?
-  - graphmin/max indicators? Or values at least?
-  - graphcurrent value text?
+v enhance StatMon
+  v graphposition and size on screen
+  v graphcolor
+  v graph z
+  v graphline width
+  v graphborder
+    x graphwidths
+    v graphcolor
+  x graphgridlines?
+  x graphmin/max indicators? Or values at least?
+  x graphcurrent value text?
 
 - more graphs
   - frame stats
@@ -198,6 +195,9 @@ v apply rules to canvas and two graphs
     - pool allocs/frees for various classes
 
 Test max RAF rate during pauses, to set max ms-before-bailing
+
+- replace Editor trigger layout with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue?
+- make triggers accept cuboids for layout?
 
 Undo/Redo
 - quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntary physics-over-time changes
