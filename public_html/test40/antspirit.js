@@ -27,7 +27,7 @@ function AntSpirit(screen) {
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 1.2;
+AntSpirit.MEASURE_TIMEOUT = 3;
 AntSpirit.THRUST = 0.5;
 AntSpirit.TWIST = 0.1;
 AntSpirit.MAX_TIMEOUT = 10;
@@ -89,6 +89,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.9;
+  b.elasticity = 0.95;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.setVelAtTime((new Vec2d(0, 0.4)).rot(dir), screen.now());
@@ -101,7 +102,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
 
   var spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, -1);
+  world.addTimeout(screen.now() + Math.random() * AntSpirit.MEASURE_TIMEOUT, spiritId, -1);
   return spiritId;
 };
 
@@ -206,7 +207,7 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   var pos = this.getBodyPos();
   this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
+  if (this.viewportsFromCamera < 1.1) {
     renderer
         .setStamp(this.modelStamp)
         .setColorVector(this.vec4.set(this.color));

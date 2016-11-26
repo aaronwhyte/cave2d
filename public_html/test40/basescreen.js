@@ -78,30 +78,118 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
     e.preventDefault();
   };
 
-  this.cuboid1 = new Cuboid();
-  this.statMon1 = new StatMon(
-      stats, STAT_NAMES.WORLD_TIME,
-      1, 60,
-      0, BaseScreen.CLOCKS_PER_FRAME,
-      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.cuboid1);
 
-  this.cuboid2 = new Cuboid();
-  this.statMon2 = new StatMon(
-      stats, STAT_NAMES.ANIMATION_MS,
-      1, 60,
-      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
-      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.cuboid2);
+  var framesPerRightSample = 2;
+  var samplesPerRightGraph = 20;
+
+  var framesPerLeftSample = 60;
+  var samplesPerLeftGraph = 20;
 
   this.canvasCuboid = new Cuboid();
-  this.cuboidRule1 = new CuboidRule(this.canvasCuboid, this.cuboid1)
-      .setSizingMax(new Vec4(1/2, 1/3, 1), new Vec4(120, Infinity, Infinity))
-      .setAspectRatio(new Vec4(3, 1, 0))
-      .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-10, -10, 0))
-      .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0));
-  this.cuboidRule2 = new CuboidRule(this.cuboid1, this.cuboid2)
+  this.graphsCuboid = new Cuboid();
+  this.bottomRightCuboid = new Cuboid();
+  this.topRightCuboid = new Cuboid();
+  this.bottomLeftCuboid = new Cuboid();
+  this.topLeftCuboid = new Cuboid();
+  this.cuboidRules = [];
+
+  this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.graphsCuboid)
+      .setSizingMax(new Vec4(1/2, 1/2, 1), new Vec4(120, 120, Infinity))
+      .setAspectRatio(new Vec4(1.5, 1, 0))
+      .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-2, -2, 0))
+      .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0)));
+
+  this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.bottomRightCuboid)
+      .setSizingMax(new Vec4(1/2, 1/4, 1), Vec4.INFINITY)
+      .setSourceAnchor(new Vec4(1, 1, 0), Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1, 1, 0), Vec4.ZERO));
+  this.cuboidRules.push(new CuboidRule(this.bottomRightCuboid, this.bottomLeftCuboid)
       .setSizingMax(new Vec4(1, 1, 1), Vec4.INFINITY)
-      .setSourceAnchor(new Vec4(0, -1, 0),  new Vec4(0, -10, 0))
-      .setTargetAnchor(new Vec4(0, 1, 0), Vec4.ZERO);
+      .setSourceAnchor(new Vec4(-1, 0, 0), Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1, 0, 0), Vec4.ZERO));
+
+  this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.topRightCuboid)
+      .setSizingMax(new Vec4(1/2, 3/4, 1), Vec4.INFINITY)
+      .setSourceAnchor(new Vec4(1, -1, 0), new Vec4(0, -10, 0))
+      .setTargetAnchor(new Vec4(1, -1, 0), Vec4.ZERO));
+  this.cuboidRules.push(new CuboidRule(this.topRightCuboid, this.topLeftCuboid)
+      .setSizingMax(new Vec4(1, 1, 1), Vec4.INFINITY)
+      .setSourceAnchor(new Vec4(-1, 0, 0), Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1, 0, 0), Vec4.ZERO));
+
+  this.statMons = [];
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.WORLD_TIME,
+      framesPerRightSample, samplesPerRightGraph,
+      0, BaseScreen.CLOCKS_PER_FRAME,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.bottomRightCuboid));
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.WORLD_TIME,
+      framesPerLeftSample, samplesPerLeftGraph,
+      0, BaseScreen.CLOCKS_PER_FRAME,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.bottomLeftCuboid));
+
+  // BLUE: overhead to get to draw screen - mostly clearing the screen
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.TO_DRAWSCREEN_MS,
+      framesPerRightSample, samplesPerRightGraph,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topRightCuboid)
+      .setGraphColor(new Vec4(0, 0, 1))
+      .setBorderWidth(0));
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.TO_DRAWSCREEN_MS,
+      framesPerLeftSample, samplesPerLeftGraph,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topLeftCuboid)
+      .setGraphColor(new Vec4(0, 0, 1))
+      .setBorderWidth(0));
+
+  // GREEN: ..through the stat drawing itself..
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.STAT_DRAWING_MS,
+      framesPerRightSample, samplesPerRightGraph,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topRightCuboid)
+      .setGraphColor(new Vec4(0, 1, 0))
+      .setBorderWidth(0));
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.STAT_DRAWING_MS,
+      framesPerLeftSample, samplesPerLeftGraph,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topLeftCuboid)
+      .setGraphColor(new Vec4(0, 1, 0))
+      .setBorderWidth(0));
+
+  // RED: ..through the scene drawing..
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS,
+      framesPerRightSample, samplesPerRightGraph,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topRightCuboid)
+      .setGraphColor(new Vec4(1, 0, 0))
+      .setBorderWidth(0));
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS,
+      framesPerLeftSample, samplesPerLeftGraph,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topLeftCuboid)
+      .setGraphColor(new Vec4(1, 0, 0))
+      .setBorderWidth(0));
+
+  // YELLOW: ..and to the end, which is all physics
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.ANIMATION_MS,
+      framesPerRightSample, samplesPerRightGraph,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topRightCuboid)
+      .setGraphColor(new Vec4(1, 1, 0)));
+  this.statMons.push(new StatMon(
+      stats, STAT_NAMES.ANIMATION_MS,
+      framesPerLeftSample, samplesPerLeftGraph,
+      0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topLeftCuboid)
+      .setGraphColor(new Vec4(1, 1, 0)));
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -110,7 +198,7 @@ BaseScreen.WIDGET_RADIUS = 30;
 BaseScreen.CAMERA_VIEW_DIST = 25;
 
 BaseScreen.MS_PER_FRAME = 1000 / 60;
-BaseScreen.MS_UNTIL_CLOCK_ABORT = BaseScreen.MS_PER_FRAME - 2;
+BaseScreen.MS_UNTIL_CLOCK_ABORT = BaseScreen.MS_PER_FRAME - 1;
 BaseScreen.CLOCKS_PER_FRAME = 0.5;
 BaseScreen.PATH_DURATION = 0xffff;
 
@@ -251,16 +339,27 @@ BaseScreen.prototype.setScreenListening = function(listen) {
 };
 
 BaseScreen.prototype.drawScreen = function(visibility, startTimeMs) {
+  stats.add(STAT_NAMES.TO_DRAWSCREEN_MS, performance.now() - startTimeMs);
   if (this.destroyed) {
     console.warn('drawing destroyed screen - ignoring');
     return;
   }
   this.drawStats();
+  stats.add(STAT_NAMES.STAT_DRAWING_MS, performance.now() - startTimeMs);
+
   this.visibility = visibility;
   this.updateViewMatrix();
   this.drawScene();
+  stats.add(STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS, performance.now() - startTimeMs);
+
   if (this.visibility == 1) {
     this.clock(startTimeMs);
+  }
+};
+
+BaseScreen.prototype.sampleStats = function() {
+  for (var i = 0; i < this.statMons.length; i++) {
+    this.statMons[i].sample();
   }
 };
 
@@ -393,16 +492,14 @@ BaseScreen.prototype.updateViewMatrix = function() {
 };
 
 BaseScreen.prototype.drawStats = function() {
-  this.statMon1.sample();
-  this.statMon2.sample();
-
   this.canvasCuboid.pos.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0);
   this.canvasCuboid.rad.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0.99);
-  this.cuboidRule1.apply();
-  this.cuboidRule2.apply();
-
-  this.statMon1.draw(this.canvas.width, this.canvas.height);
-  this.statMon2.draw(this.canvas.width, this.canvas.height);
+  for (var i = 0; i < this.cuboidRules.length; i++) {
+    this.cuboidRules[i].apply();
+  }
+  for (var i = 0; i < this.statMons.length; i++) {
+    this.statMons[i].draw(this.canvas.width, this.canvas.height);
+  }
 };
 
 

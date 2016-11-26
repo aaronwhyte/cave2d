@@ -176,28 +176,32 @@ v enhance StatMon
   x graphmin/max indicators? Or values at least?
   x graphcurrent value text?
 
-- more graphs
-  - frame stats
-    - time clocking
-    - time drawing
-    - time between frames (should be steady with occasional spikes)
-    - second slower timescale to the left. Never seen that before but I want it.
-  - world stats
-    - valid collisions
-    - invalid collisions
-    - valid cell entry/exit events
-    - invalid cell entry/exit events
-    - timeouts
-    - rayscans
-  - renderer stats
-    - draw() calls
-  - memory
-    - pool allocs/frees for various classes
+v more stats 'n' graphs
+  v frame stats
+    v time drawing
+    v time clocking
+    v time between frames (should be steady with occasional spikes)
+    v second slower timescale to the left. Never seen that before but I want it.
+      (did it and undid it. could do it again)
+  x world stats
+    x valid collisions
+    x invalid collisions
+    x valid cell entry/exit events
+    x invalid cell entry/exit events
+    x timeouts
+    x rayscans
+  x renderer stats
+    x real GL call counts? Hard because GLs get passed around more than renderer.
+  x memory
+    x pool allocs/frees for various classes
 
-Test max RAF rate during pauses, to set max ms-before-bailing
+Test max RAF rate during pauses, to set max ms-before-bailing.
+* This is to defend against devices that don't operate at 60 FPS.
+* I can't base it on in-game performance because if code takes too long to do work, it can't tell that it should
+  have used a shorter cutoff. It just looks like the correct cutoff is one frame longer than it really is.
 
-- replace Editor trigger layout with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue?
-- make triggers accept cuboids for layout?
+- make triggers accept cuboids for layout
+- replace Editor trigger layout code with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue
 
 Undo/Redo
 - quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntary physics-over-time changes

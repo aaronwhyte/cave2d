@@ -6,7 +6,6 @@ function HitResolver() {
   this.defaultElasticity = 0.99;
   this.v1 = new Vec2d();
   this.v2 = new Vec2d();
-
 }
 
 /**

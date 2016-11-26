@@ -87,17 +87,24 @@ and the shift for turbo if you're using a keyboard. There's a <a href="game3/edi
 <h1>Editor Tests</h1>
 
 <h2><a href="test40">Test 40 - Stats and Line Graphs</a></h2>
-I added some stats, graphing, and layout infrastructure, with two graphs to test it.
+I added stat tracking, graphing, and layout infrastructure, with ten(!) graphs to test it.
 <p>
-The top graph is how much of each frame's time budget is taken by each requestAnimationFrame callback.
-Drawing happens first, and then physics. The physics system tries to abort when close to 16ms are used up,
-so we don't drop frames, which is why the graph rarely goes past its upper bound,
-and why you can still edit even if the physics engine bogs down.
+The top graphs show how much of each frame's 16ms time budget is taken by parts of the requestAnimationFrame callback.
+The blue line shows the time from requestAnimationFrame's startTime param until the time drawScene() is called.
+From blue to green is the time it takes to draw the stat graphs themselves. From green to red is the time to draw
+everything else. And from red to yellow is the physics computation time, the last thing that happens.
+The physics system will stop processing physics events early if it gets too close to the 16ms-per-frame limit, to avoid
+skipping a frame. That's why the graph rarely goes past its upper bound, and why you can still edit at 60fps even if
+the physics engine bogs down. That's also why physics has to happen last, because it's the only part of the system that
+is flexible about how much work it does.
 <p>
-The bottom one is how much world-time elapses per frame. If it dips, it means the system had to stop processing
-physics events early, to prevent a dropped frame and an unresponsive UI.
+The bottom graphs show how much simulated world-time elapsed per frame. When the system is not overloaded,
+that should be a flat straight line at the top of the range. When it dips, it means the system had to stop
+processing physics events early, to avoid dropping a frame.
 <p>
-To make those two simple graphs, I needed to write a bunch of support classes:
+Each row has a left and right half, showing the same data at different time scales and sampling intervals.
+<p>
+To make these graphs, I wrote some support classes:
 <ul>
   <li><a href="js/stats/stats.js">Stats</a> is a simple key/value pair that holds only the current value for each stat.
     In general, a stat value increases forever. Rates are calculated below.
@@ -110,13 +117,13 @@ To make those two simple graphs, I needed to write a bunch of support classes:
   <li><a href="js/stats/statgraph.js">StatGraph</a> uses a StatTrail and a LineDrawer to render a graph of a stat over time.
   <li><a href="js/stats/statmon.js">StatMon</a> wraps a a StatGraph/StatTrail combo, plus layout info.
 </ul>
-To position and size the graphs nicely, I made a small 3D rectangle layout system, that I plan to reuse for UI widget layout:
+To position and size the graphs nicely, I made a small 3D rectangle layout system, which I'll reuse for UI widget layout:
 <ul>
   <li><a href="js/geometry/cuboid.js">Cuboid</a> is a 3D axis-aligned rectangle, just a boring data object.
     In test40, the whole canvas is a big outer Cuboid, and each graph is drawn on another cuboid.
   <li><a href="js/geometry/cuboidrule.js">CuboidRule</a> can resize and reposition a target cuboid based on a source
-    cuboid, so I can nest, chain, etc. It supports sizing and position by relative size plus absolute offsets, and
-    optional aspect ratios.
+    cuboid, so I can nest, chain, etc. It supports sizing and position by relative size, plus absolute limits and
+    offsets, with optional aspect ratios.
 </ul>
 
 

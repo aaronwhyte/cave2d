@@ -142,8 +142,7 @@ Test40Page.prototype.requestAnimation = function() {
   }
 };
 
-Test40Page.prototype.animateFrame = function(startTime) {
-  startTime = startTime || performance.now();
+Test40Page.prototype.animateFrame = function(startTimeMs) {
   if (!this.animationId) {
     return;
   }
@@ -151,12 +150,12 @@ Test40Page.prototype.animateFrame = function(startTime) {
     console.log('animateFrame with no this.canvas');
     return;
   }
-
+  this.screen.sampleStats();
   this.animationId = 0;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
-  this.screen.drawScreen(1, startTime);
-  stats.add(STAT_NAMES.ANIMATION_MS, performance.now() - startTime);
+  this.screen.drawScreen(1, startTimeMs);
+  stats.add(STAT_NAMES.ANIMATION_MS, performance.now() - startTimeMs);
 };
 
 Test40Page.prototype.requestFullScreen = function() {

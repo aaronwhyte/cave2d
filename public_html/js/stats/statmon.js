@@ -45,6 +45,26 @@ function StatMon(stats, statName,
   this.canvasHeight = 0;
 }
 
+StatMon.prototype.setBorderWidth = function(w) {
+  this.borderWidth = w;
+  return this;
+};
+
+StatMon.prototype.setBorderColor = function(v) {
+  this.borderColor.set(v);
+  return this;
+};
+
+StatMon.prototype.setLineWidth = function(w) {
+  this.lineWidth = w;
+  return this;
+};
+
+StatMon.prototype.setGraphColor = function(v) {
+  this.graphColor.set(v);
+  return this;
+};
+
 StatMon.prototype.sample = function() {
   this.sampleCalls++;
   if (this.sampleCalls % this.sampleInterval == 0) {
