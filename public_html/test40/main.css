@@ -164,6 +164,7 @@ canvas#canvas {
   background:#fc4;
   border-radius:1em;
   padding:0.5em 1em;
+  margin-top:0.5em;
   font-size:large;
 }
 

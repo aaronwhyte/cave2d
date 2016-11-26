@@ -94,6 +94,34 @@ Test40Page.prototype.refreshPauseMenu = function() {
   e = Dom.ce('div', df, 'gameTitle');
   e.innerHTML = Strings.textToHtml('test 40');
 
+  var debug = Dom.ce('div', df, 'levelEditorDebugOptions');
+
+  var label = Dom.ce('label', debug);
+  e = Dom.ce('input', label);
+  e.type = 'checkbox';
+  e.defaultChecked = true;
+  var self = this;
+  e.addEventListener('change', function(element) {
+    self.screen.drawLeftGraphs = element.target.checked;
+    self.requestAnimation();
+  });
+  e = Dom.ce('span', label);
+  e.innerHTML = Strings.textToHtml(' line graphs');
+
+  Dom.ce('br', debug);
+
+  var label = Dom.ce('label', debug);
+  e = Dom.ce('input', label);
+  e.type = 'checkbox';
+  e.defaultChecked = true;
+  var self = this;
+  e.addEventListener('change', function(element) {
+    self.screen.drawRightGraphs = element.target.checked;
+    self.requestAnimation();
+  });
+  e = Dom.ce('span', label);
+  e.innerHTML = Strings.textToHtml(' dot graphs');
+
   e = Dom.ce('button', df, 'smallButton');
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');

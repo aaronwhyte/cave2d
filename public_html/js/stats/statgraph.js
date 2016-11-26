@@ -52,7 +52,7 @@ StatGraph.prototype.draw = function(now) {
   var maxX = this.vec4.getX();
   var bottomY = this.vec4.getY();
 
-  var timeCoef = (maxX - minX) / this.timespan;
+  var timeCoef = this.timespan ? (maxX - minX) / this.timespan : 0;
   var valCoef = (bottomY - topY) / (this.maxVal - this.minVal);
 
   for (var i = 0, n = this.trail.size(); i < n; i++) {
@@ -60,6 +60,10 @@ StatGraph.prototype.draw = function(now) {
     var y = -(this.trail.getVal(i) - this.minVal) * valCoef + bottomY;
     if (i == 0) {
       this.lineDrawer.moveToXY(x, y);
+      if (n == 1) {
+        // draw a dot if there's just one data point
+        this.lineDrawer.lineToXY(x, y);
+      }
     } else {
       this.lineDrawer.lineToXY(x, y);
     }
