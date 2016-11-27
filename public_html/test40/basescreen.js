@@ -81,8 +81,8 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
   var framesPerRightSample = 1;
   var samplesPerRightGraph = 2;
 
-  var framesPerLeftSample = 4;
-  var samplesPerLeftGraph = 30;
+  var framesPerLeftSample = 10;
+  var samplesPerLeftGraph = 40;
 
   this.canvasCuboid = new Cuboid();
   this.graphsCuboid = new Cuboid();
@@ -96,11 +96,12 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
   var dotSize = 8;
   var lineWidth = 2;
   var margin = 14;
-  var borderColor = new Vec4(0.3, 0.3, 0.3);
+  var borderColor = new Vec4(0.6, 0.6, 0.6);
+  var stripeColor = borderColor;
 
   this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.graphsCuboid)
       .setSizingMax(new Vec4(1/2, 1/2, 1), new Vec4(100, 100, Infinity))
-      .setAspectRatio(new Vec4(1, 2, 0))
+      .setAspectRatio(new Vec4(1, 1, 0))
       .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-margin, -margin, 0))
       .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0)));
 
@@ -129,8 +130,8 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
       framesPerRightSample, samplesPerRightGraph,
       0, BaseScreen.CLOCKS_PER_FRAME,
       renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.bottomRightCuboid)
-      .setBorderColor(borderColor)
-      .setGraphColor(new Vec4(0.8, 0.8, 0.8))
+      .setBorderColor(stripeColor)
+      .setGraphColor(new Vec4(1, 1, 1))
       .setLineWidth(dotSize));
   this.leftStatMons.push(new StatMon(
       stats, STAT_NAMES.WORLD_TIME,
@@ -138,7 +139,7 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
       0, BaseScreen.CLOCKS_PER_FRAME,
       renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.bottomLeftCuboid)
       .setBorderColor(borderColor)
-      .setGraphColor(new Vec4(0.8, 0.8, 0.8))
+      .setGraphColor(new Vec4(1, 1, 1))
       .setLineWidth(lineWidth));
 
   // BLUE: overhead to get to draw screen - mostly clearing the screen
@@ -201,7 +202,7 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
       framesPerRightSample, samplesPerRightGraph,
       0, BaseScreen.MS_UNTIL_CLOCK_ABORT,
       renderer, new LineDrawer(renderer, this.stamps.lineStamp), this.topRightCuboid)
-      .setBorderColor(borderColor)
+      .setBorderColor(stripeColor)
       .setGraphColor(new Vec4(1, 1, 0))
       .setLineWidth(dotSize));
   this.leftStatMons.push(new StatMon(
