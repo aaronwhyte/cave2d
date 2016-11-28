@@ -133,7 +133,7 @@ PlayScreen.prototype.initEditor = function() {
   this.antStamp = this.antModel.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.antStamp);
 
-  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs);
+  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
   this.editor.addMenuItem(0, 0, PlayScreen.MenuItem.ROCK, this.rockModel);
   this.editor.addMenuItem(1, 0, PlayScreen.MenuItem.RED_ANT, this.antModel);
   for (var group = 0; group < 2; group++) {
@@ -220,11 +220,6 @@ PlayScreen.prototype.initPermStamps = function() {
   var model = RigidModel.createTube(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.soundStamp);
-
-  var editorStamps = this.editor.getStamps();
-  for (var i = 0; i < editorStamps.length; i++) {
-    this.levelStamps.push(editorStamps[i]);
-  }
 };
 
 PlayScreen.prototype.initWorld = function() {

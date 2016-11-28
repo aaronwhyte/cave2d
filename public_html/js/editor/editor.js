@@ -3,14 +3,12 @@
  * Hosted by a Screen that owns the world
  * @constructor
  */
-function Editor(host, canvas, renderer, stamps) {
+function Editor(host, canvas, renderer, glyphs, stamps) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
-  // 'stamps' is just for glyph stamps, for the button tool-tips
-
-  // This is for all the special editor-only icons
-  this.getStamps();
+  // 'glyphs' is just for glyph stamps, for the button tool-tips
+  this.stamps = stamps;
 
   this.releasedColorVec4 = new Vec4(1, 1, 1, 0.5);
   this.pressedColorVec4 = new Vec4(1, 1, 1, 0.9);
@@ -18,46 +16,46 @@ function Editor(host, canvas, renderer, stamps) {
   this.addTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(this.addTriggerStamp)
+      .setStamp(stamps.addTrigger)
       .listenToTouch()
       .addTriggerKeyByName('e')
-      .setKeyboardTipStamp(stamps['E'])
+      .setKeyboardTipStamp(glyphs['E'])
       .startListening();
 
   this.removeTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(this.removeTriggerStamp)
+      .setStamp(stamps.removeTrigger)
       .listenToTouch()
       .addTriggerKeyByName('q')
-      .setKeyboardTipStamp(stamps['Q'])
+      .setKeyboardTipStamp(glyphs['Q'])
       .startListening();
 
   this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(this.gripTriggerStamp)
+      .setStamp(stamps.gripTrigger)
       .listenToTouch()
       .addTriggerKeyByName('d')
-      .setKeyboardTipStamp(stamps['D'])
+      .setKeyboardTipStamp(glyphs['D'])
       .startListening();
 
   this.digTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(this.digTriggerStamp)
+      .setStamp(stamps.digTrigger)
       .listenToTouch()
       .addTriggerKeyByName('s')
-      .setKeyboardTipStamp(stamps['S'])
+      .setKeyboardTipStamp(glyphs['S'])
       .startListening();
 
   this.fillTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(this.fillTriggerStamp)
+      .setStamp(stamps.fillTrigger)
       .listenToTouch()
       .addTriggerKeyByName('a')
-      .setKeyboardTipStamp(stamps['A'])
+      .setKeyboardTipStamp(glyphs['A'])
       .startListening();
 
   this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
@@ -98,14 +96,12 @@ function Editor(host, canvas, renderer, stamps) {
   this.cursorTail = new Vec2d();
   this.cursorDir = 0;
   this.cursorVel = new Vec2d();
-  this.cursorStamp = null; // it'll be a ring
   this.colorVector = new Vec4();
   this.cursorRad = 2;
   this.cursorBody = this.createCursorBody();
 
   this.indicatedBodyId = null;
   this.indicatorChangeTime = 0;
-  this.indicatorStamp = null; // it'll be a ring
   this.indicatorColorVector = new Vec4();
 
   this.gripPoint = null;
@@ -120,7 +116,7 @@ function Editor(host, canvas, renderer, stamps) {
   this.oldMouseEventCoords = new Vec2d();
 
   this.menu = new ModeMenuWidget(this.host.getHudEventTarget())
-      .setIndicatorStamp(this.addMenuIndicatorStamp)
+      .setIndicatorStamp(stamps.addMenuIndicator)
       .startListening();
 
   this.updateHudLayout();
@@ -184,150 +180,6 @@ Editor.prototype.updateHudLayout = function() {
   this.menu.setItemPositionMatrix(new Matrix44().toScaleOpXYZ(menuItemSize, menuItemSize, 1));
   this.menu.setItemScale(new Vec2d(1, -1).scale(menuItemSize * 0.3));
   this.menu.setPosition(new Vec2d(this.triggerRad * 2 + menuItemSize, this.triggerSpacing + menuItemSize * 0.6));
-};
-
-Editor.prototype.getStamps = function() {
-  var model;
-  if (!this.cursorStamp) {
-    model = new RigidModel();
-    var arrowHead = RigidModel.createTriangle();
-    arrowHead.vertexes[0].position.setXYZ(0, 0, 0);
-    arrowHead.vertexes[1].position.setXYZ(-0.4, -0.5, 0);
-    arrowHead.vertexes[2].position.setXYZ(0.4, -0.5, 0);
-    var arrowShaft = RigidModel.createSquare()
-        .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.35, 1))
-        .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.7, 0));
-    model.addRigidModel(arrowHead).addRigidModel(arrowShaft);
-    model.transformPositions(new Matrix44().toScaleOpXYZ(1.1, 1.1, 1));
-    model.addRigidModel(RigidModel.createTube(32).transformPositions(new Matrix44().toScaleOpXYZ(0.9, 0.9, 1)));
-    this.cursorStamp = model.createModelStamp(this.renderer.gl);
-  }
-  if (!this.indicatorStamp) {
-    model = RigidModel.createTube(64);
-    this.indicatorStamp = model.createModelStamp(this.renderer.gl);
-  }
-  if (!this.circleStamp) {
-    model = RigidModel.createCircleMesh(5);
-    this.circleStamp = model.createModelStamp(this.renderer.gl);
-  }
-
-  var triggerBackgroundModel = RigidModel.createSquare().transformPositions(
-      new Matrix44().toTranslateOpXYZ(0, 0, 0.1))
-      .setColorRGB(0.3, 0.3, 0.3);
-
-  if (!this.addTriggerStamp) {
-    model =
-        RigidModel.createSquare().transformPositions(
-            new Matrix44().toScaleOpXYZ(0.65, 0.15, 1))
-            .addRigidModel(RigidModel.createSquare().transformPositions(
-                new Matrix44().toScaleOpXYZ(0.15, 0.65, 1)))
-            .addRigidModel(triggerBackgroundModel);
-    this.addTriggerStamp = model.createModelStamp(this.renderer.gl);
-  }
-
-  if (!this.removeTriggerStamp) {
-    model =
-        RigidModel.createSquare()
-            .transformPositions(new Matrix44().toScaleOpXYZ(0.65, 0.15, 1))
-            .addRigidModel(RigidModel.createSquare().transformPositions(
-                new Matrix44().toScaleOpXYZ(0.15, 0.65, 1)))
-            .transformPositions(new Matrix44().toRotateZOp(Math.PI / 4))
-            .addRigidModel(triggerBackgroundModel);
-    this.removeTriggerStamp = model.createModelStamp(this.renderer.gl);
-  }
-
-  if (!this.gripTriggerStamp) {
-    model =
-        RigidModel.createCircleMesh(3).transformPositions(
-            new Matrix44().toScaleOpXYZ(0.3, 0.3, 1))
-            .addRigidModel(RigidModel.createRingMesh(4, 0.8).transformPositions(
-                new Matrix44().toScaleOpXYZ(0.6, 0.6, 1)))
-            .addRigidModel(triggerBackgroundModel);
-    for (var i = 0; i < 4; i++) {
-      model.addRigidModel(RigidModel.createTriangle().transformPositions(
-          new Matrix44()
-              .multiply(new Matrix44().toRotateZOp(i * Math.PI / 2))
-              .multiply(new Matrix44().toTranslateOpXYZ(0, 0.76, 0))
-              .multiply(new Matrix44().toScaleOpXYZ(0.06, 0.06, 1))
-      ));
-    }
-    this.gripTriggerStamp = model.createModelStamp(this.renderer.gl);
-  }
-
-  var cursorIconRad = 0.43;
-
-  if (!this.digTriggerStamp) {
-    model = new RigidModel();
-    for (var x = -7.5; x <= 7.5; x++) {
-      var indent = 0;
-      if (Math.abs(x) < 2) indent = 4/8;
-      else if (Math.abs(x) < 3) indent = 3/8;
-      else if (Math.abs(x) < 4) indent = 2/8;
-      model.addRigidModel(RigidModel.createSquare().transformPositions(
-              new Matrix44()
-                  .multiply(new Matrix44().toTranslateOpXYZ(x/8, -1, 0.05))
-                  .multiply(new Matrix44().toScaleOpXYZ(1/16, 0.5 * (1 - indent), 1))
-                  .multiply(new Matrix44().toTranslateOpXYZ(0, 1, 0))));
-    }
-    model.addRigidModel(RigidModel.createRingMesh(5, 0.8).transformPositions(
-        new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(cursorIconRad, cursorIconRad, 1)))
-        .setColorRGB(1, 1, 1));
-    model.addRigidModel(triggerBackgroundModel);
-    this.digTriggerStamp = model.createModelStamp(this.renderer.gl);
-  }
-
-  if (!this.fillTriggerStamp) {
-    model = new RigidModel();
-    for (var x = -7.5; x <= 7.5; x++) {
-      var outdent = 0;
-      if (Math.abs(x) < 2) outdent = 4/8;
-      else if (Math.abs(x) < 3) outdent = 3/8;
-      else if (Math.abs(x) < 4) outdent = 2/8;
-      model.addRigidModel(RigidModel.createSquare().transformPositions(
-          new Matrix44()
-              .multiply(new Matrix44().toTranslateOpXYZ(x/8, -1, 0.05))
-              .multiply(new Matrix44().toScaleOpXYZ(1/16, 0.5 * (1 + outdent), 1))
-              .multiply(new Matrix44().toTranslateOpXYZ(0, 1, 0))));
-    }
-    model.addRigidModel(RigidModel.createRingMesh(5, 0.8).transformPositions(
-        new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(cursorIconRad, cursorIconRad, 1)))
-        .setColorRGB(0.5, 0.5, 0.5));
-    model.addRigidModel(triggerBackgroundModel);
-    this.fillTriggerStamp = model.createModelStamp(this.renderer.gl);
-  }
-
-  if (!this.addMenuIndicatorStamp) {
-    model = new RigidModel();
-    var size = 1.5;
-    var brightness = 0.5;
-    var thickness = 0.3;
-    var length = 0.5 + thickness;
-    for (var i = 0; i < 4; i++) {
-      model
-          .addRigidModel(RigidModel.createSquare().transformPositions(
-              new Matrix44()
-                  .multiply(new Matrix44().toScaleOpXYZ(size, size, 1))
-                  .multiply(new Matrix44().toRotateZOp(i * Math.PI/2))
-                  .multiply(new Matrix44().toTranslateOpXYZ(-1 + length/2 - thickness, -1 - thickness/2, 0))
-                  .multiply(new Matrix44().toScaleOpXYZ(length/2, thickness/2, 1))
-          ))
-          .addRigidModel(RigidModel.createSquare().transformPositions(
-              new Matrix44()
-                  .multiply(new Matrix44().toScaleOpXYZ(size, size, 1))
-                  .multiply(new Matrix44().toRotateZOp(i * Math.PI/2))
-                  .multiply(new Matrix44().toTranslateOpXYZ(-1 - thickness/2, -1 + length/2 - thickness, 0))
-                  .multiply(new Matrix44().toScaleOpXYZ(thickness/2, length/2, 1))
-          ));
-    }
-    model.setColorRGB(brightness, brightness, brightness);
-    this.addMenuIndicatorStamp = model.createModelStamp(this.renderer.gl);
-  }
-
-  return [this.cursorStamp, this.indicatorStamp, this.circleStamp,
-    this.addTriggerStamp, this.gripTriggerStamp, this.digTriggerStamp, this.fillTriggerStamp,
-    this.addMenuIndicatorStamp];
 };
 
 Editor.prototype.createCursorBody = function() {
@@ -522,7 +374,7 @@ Editor.prototype.drawScene = function() {
     var innerRad = indicatedBody.rad + this.host.getViewDist() * 0.02;
     var outerRad = indicatedBody.rad + this.host.getViewDist() * 0.03;
     this.renderer
-        .setStamp(this.indicatorStamp)
+        .setStamp(this.stamps.indicator)
         .setColorVector(this.getIndicatorColorVector());
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.98))
@@ -543,7 +395,7 @@ Editor.prototype.drawScene = function() {
   var any = ft || dt || gt || rt;
   var coef = any ? 1 : 0.8;
   this.renderer
-      .setStamp(this.cursorStamp)
+      .setStamp(this.stamps.cursor)
       .setColorVector(this.colorVector.setRGBA(
           ft ? 0.5 : coef,
           dt ? 0.5 : coef,

@@ -195,15 +195,15 @@ v more stats 'n' graphs
   x memory
     x pool allocs/frees for various classes
 
-Test max RAF rate during pauses, to set max ms-before-bailing.
-* This is to defend against devices that don't operate at 60 FPS.
-* I can't base it on in-game performance because if code takes too long to do work, it can't tell that it should
-  have used a shorter cutoff. It just looks like the correct cutoff is one frame longer than it really is.
-
+Editor refactor
+v pull stamps-making code into separate file
 - make triggers accept cuboids for layout
 - replace Editor trigger layout code with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue
 
 Undo/Redo
+v design button layout
+  * undo/redo will go on top to the right of the tabs and left of the pause button
+- test41 nest
 - quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntary physics-over-time changes
   - set frictions very high while editing. 100%? No motion beyond active editing.
   - stop vel when vel is less than TEENY_VEL
@@ -262,6 +262,11 @@ Since snappers often overlap with objects (no collisions!) there needs to be a w
   - maybe shorter arcs too
 - top-level switch to toggle snapping on/off? I can see it getting annoying when you're doing free-form dragging.
 
+
+Test max RAF rate during pauses, to set max ms-before-bailing.
+* This is to defend against devices that don't operate at 60 FPS.
+* I can't base it on in-game performance because if code takes too long to do work, it can't tell that it should
+  have used a shorter cutoff. It just looks like the correct cutoff is one frame longer than it really is.
 
 Polygons (this will wreck my world so do at own risk)
 - physics

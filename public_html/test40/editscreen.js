@@ -24,7 +24,7 @@ EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 EditScreen.ANT_RAD = 1.2;
 
 EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, this.stamps);
+  this.editor = new Editor(this, this.canvas, this.renderer, this.stamps, EditorStamps.create(this.renderer));
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
     if (c) {
@@ -34,7 +34,6 @@ EditScreen.prototype.initEditor = function() {
   for (var group = 0; group < this.editor.getMaxGroupNum(); group++) {
     this.editor.addMenuKeyboardShortcut(group, group + 1);
   }
-  this.editor.getStamps();
 };
 
 EditScreen.prototype.updateHudLayout = function() {
