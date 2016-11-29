@@ -1,14 +1,20 @@
 /**
  * Owns the editor's cursor and edit-related triggers, cursor, and camera.
  * Hosted by a Screen that owns the world
+ * @param host
+ * @param canvas
+ * @param renderer
+ * @param {Glyphs} glyphs
+ * @param {EditorStamps} editorStamps
  * @constructor
  */
-function Editor(host, canvas, renderer, glyphs, stamps) {
+function Editor(host, canvas, renderer, glyphs, editorStamps) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
   // 'glyphs' is just for glyph stamps, for the button tool-tips
-  this.stamps = stamps;
+  this.stamps = editorStamps;
+  var glyphStamps = glyphs.initStamps(renderer.gl);
 
   this.releasedColorVec4 = new Vec4(1, 1, 1, 0.5);
   this.pressedColorVec4 = new Vec4(1, 1, 1, 0.9);
@@ -16,46 +22,46 @@ function Editor(host, canvas, renderer, glyphs, stamps) {
   this.addTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(stamps.addTrigger)
+      .setStamp(editorStamps.addTrigger)
       .listenToTouch()
       .addTriggerKeyByName('e')
-      .setKeyboardTipStamp(glyphs['E'])
+      .setKeyboardTipStamp(glyphStamps['E'])
       .startListening();
 
   this.removeTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(stamps.removeTrigger)
+      .setStamp(editorStamps.removeTrigger)
       .listenToTouch()
       .addTriggerKeyByName('q')
-      .setKeyboardTipStamp(glyphs['Q'])
+      .setKeyboardTipStamp(glyphStamps['Q'])
       .startListening();
 
   this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(stamps.gripTrigger)
+      .setStamp(editorStamps.gripTrigger)
       .listenToTouch()
       .addTriggerKeyByName('d')
-      .setKeyboardTipStamp(glyphs['D'])
+      .setKeyboardTipStamp(glyphStamps['D'])
       .startListening();
 
   this.digTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(stamps.digTrigger)
+      .setStamp(editorStamps.digTrigger)
       .listenToTouch()
       .addTriggerKeyByName('s')
-      .setKeyboardTipStamp(glyphs['S'])
+      .setKeyboardTipStamp(glyphStamps['S'])
       .startListening();
 
   this.fillTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
       .setReleasedColorVec4(this.releasedColorVec4)
       .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(stamps.fillTrigger)
+      .setStamp(editorStamps.fillTrigger)
       .listenToTouch()
       .addTriggerKeyByName('a')
-      .setKeyboardTipStamp(glyphs['A'])
+      .setKeyboardTipStamp(glyphStamps['A'])
       .startListening();
 
   this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
@@ -116,7 +122,7 @@ function Editor(host, canvas, renderer, glyphs, stamps) {
   this.oldMouseEventCoords = new Vec2d();
 
   this.menu = new ModeMenuWidget(this.host.getHudEventTarget())
-      .setIndicatorStamp(stamps.addMenuIndicator)
+      .setIndicatorStamp(editorStamps.addMenuIndicator)
       .startListening();
 
   this.updateHudLayout();

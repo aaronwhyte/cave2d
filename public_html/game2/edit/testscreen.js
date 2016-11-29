@@ -2,8 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function TestScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(0.05, 1, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -91,7 +91,7 @@ TestScreen.prototype.initWidgets = function() {
       .listenToMousePointer()
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.untestStamp)
-      .setKeyboardTipStamp(this.stamps['T'])
+      .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T'])
       .setKeyboardTipScaleXY(4, -4)
       .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7)
 };

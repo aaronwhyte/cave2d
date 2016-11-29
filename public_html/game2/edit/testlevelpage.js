@@ -159,17 +159,8 @@ TestLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   gl.useProgram(program);
   this.renderer = new Renderer(this.canvas, gl, program);
 
-  var glyphMaker = new GlyphMaker(0.4, 1.2);
-  var glyphs = new Glyphs(glyphMaker);
-  var glyphStamps = glyphs.initStamps(this.renderer.gl);
-  var stamps = {};
-  for (var key in glyphStamps) {
-    stamps[key] = glyphStamps[key];
-  }
-
-  // TODO: creating a Screen here is nasty.
   this.screen = new TestScreen(
-      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx,
+      this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), Stamps.create(this.renderer), this.sfx,
       this.adventureName, this.levelName);
   this.screen.initWidgets();
   this.screen.initSpiritConfigs();

@@ -7,12 +7,7 @@ function Stamps() {
 
 Stamps.create = function(renderer) {
   var stamps = new Stamps();
-  var glyphs = new Glyphs(new GlyphMaker(0.4, 1.2));
   var models = new Models();
-  var glyphStamps = glyphs.initStamps(renderer.gl);
-  for (var key in glyphStamps) {
-    stamps[key] = glyphStamps[key];
-  }
   function stamp(model) {
     return model.createModelStamp(renderer.gl);
   }

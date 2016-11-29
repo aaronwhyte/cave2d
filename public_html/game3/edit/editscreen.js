@@ -26,7 +26,7 @@ EditScreen.ANT_RAD = 0.8;
 EditScreen.ROCK_RAD = 1.4;
 
 EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, this.stamps, EditorStamps.create(this.renderer));
+  this.editor = new Editor(this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), EditorStamps.create(this.renderer));
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
     if (c) {

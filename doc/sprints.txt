@@ -197,6 +197,7 @@ v more stats 'n' graphs
 
 Editor refactor
 v pull stamps-making code into separate file
+v debug missing keyboard shortcuts
 - make triggers accept cuboids for layout
 - replace Editor trigger layout code with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue
 

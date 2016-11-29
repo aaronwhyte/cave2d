@@ -2,7 +2,7 @@
  * @constructor
  * @extends {Screen}
  */
-function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
   Screen.call(this);
 
   this.adventureName = adventureName;
@@ -14,6 +14,7 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, le
   this.controller = controller;
   this.canvas = canvas;
   this.renderer = renderer;
+  this.glyphs = glyphs;
   this.stamps = stamps;
 
   this.viewMatrix = new Matrix44();
@@ -318,6 +319,7 @@ BaseScreen.prototype.createTrackball = function() {
 };
 
 BaseScreen.prototype.createButtonWidgets = function() {
+  var glyphStamps = this.glyphs.initStamps(this.renderer.gl);
   var widgets = [
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
@@ -325,14 +327,14 @@ BaseScreen.prototype.createButtonWidgets = function() {
         .setStamp(this.stamps.circleStamp)
         .listenToTouch()
         .addTriggerKeyByName('z')
-        .setKeyboardTipStamp(this.stamps['Z']),
+        .setKeyboardTipStamp(glyphStamps['Z']),
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
         .setStamp(this.stamps.circleStamp)
         .listenToTouch()
         .addTriggerKeyByName('x')
-        .setKeyboardTipStamp(this.stamps['X']),
+        .setKeyboardTipStamp(glyphStamps['X']),
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))

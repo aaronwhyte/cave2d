@@ -2,8 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function EditScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(0.2, 0.6, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -26,7 +26,7 @@ EditScreen.ANT_RAD = 0.8;
 EditScreen.ROCK_RAD = 1.4;
 
 EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, this.stamps, EditorStamps.create(this.renderer));
+  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
     if (c) {
@@ -108,7 +108,7 @@ EditScreen.prototype.initWidgets = function() {
       .listenToMousePointer()
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.testStamp)
-      .setKeyboardTipStamp(this.stamps['T'])
+      .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T'])
       .setKeyboardTipScaleXY(4, -4)
       .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7);
 
