@@ -16,19 +16,22 @@ function TriggerWidget(elem) {
   this.pressedColorVec4 = new Vec4().setXYZ(0.8, 0.8, 0.8);
   this.releasedColorVec4 = new Vec4().setXYZ(0.5, 0.5, 0.5);
 
-  this.canvasPos = new Vec2d(0, 0);
-  this.canvasScale = new Vec2d(1, 1);
-
   this.keyboardTipModelMatrix = new Matrix44();
-  this.keyboardTipOffset = new Vec2d(0, 0);
-  this.keyboardTipScale = new Vec2d(1, 1);
   this.keyboardTipStamp = null;
   this.keyboardTipColorVec4 = new Vec4().setRGBA(0.5, 0.5, 0.5, 0.5);
 
   // Time at which the keyboard tip will stop being rendered
   this.keyboardTipUntilTimeMs = -Infinity;
 
-  this.updateModelMatrix();
+  this.widgetCuboid = new Cuboid();
+  this.keyboardTipCuboid = new Cuboid();
+  this.keyboardTipRule = new CuboidRule(this.widgetCuboid, this.keyboardTipCuboid)
+      .setSourceAnchor(new Vec4(0.75, 0.7, 0), Vec4.ZERO)
+      .setTargetAnchor(Vec4.ZERO, Vec4.ZERO)
+      .setSizingMax(new Vec4(0.12, 0.12, 1), Vec4.INFINITY);
+
+  this.oldWidgetCuboid = new Cuboid(new Vec4(-1));
+  this.oldKeyboardTipCuboid = new Cuboid(new Vec4(-1));
 }
 
 TriggerWidget.prototype.addTriggerKeyByName = function(keyName) {
@@ -79,30 +82,19 @@ TriggerWidget.prototype.setReleasedColorVec4 = function(vec4) {
   return this;
 };
 
-TriggerWidget.prototype.setCanvasPositionXY = function(x, y) {
-  this.canvasPos.setXY(x, y);
-  this.updateStartZone();
-  this.updateModelMatrix();
-  return this;
+/**
+ * @returns {Cuboid} a reference to the internal cuboid for layout out the widget, so the caller
+ * can attach a CuboidRule.
+ */
+TriggerWidget.prototype.getWidgetCuboid = function() {
+  return this.widgetCuboid;
 };
 
-TriggerWidget.prototype.setCanvasScaleXY = function(x, y) {
-  this.canvasScale.setXY(x, y);
-  this.updateStartZone();
-  this.updateModelMatrix();
-  return this;
-};
-
-TriggerWidget.prototype.setKeyboardTipOffsetXY = function(x, y) {
-  this.keyboardTipOffset.setXY(x, y);
-  this.updateModelMatrix();
-  return this;
-};
-
-TriggerWidget.prototype.setKeyboardTipScaleXY = function(x, y) {
-  this.keyboardTipScale.setXY(x, y);
-  this.updateModelMatrix();
-  return this;
+/**
+ * @returns {CuboidRule} a reference to the internal keyboard tip rule, so callers can edit it.
+ */
+TriggerWidget.prototype.getKeyboardTipRule = function() {
+  return this.keyboardTipRule;
 };
 
 TriggerWidget.prototype.setKeyboardTipColorVec4 = function(vec4) {
@@ -154,6 +146,14 @@ TriggerWidget.prototype.removeTriggerUpListener = function(fn) {
 };
 
 TriggerWidget.prototype.draw = function(renderer) {
+  this.keyboardTipRule.apply();
+  if (!this.widgetCuboid.equals(this.oldWidgetCuboid) || !this.keyboardTipCuboid.equals(this.oldKeyboardTipCuboid)) {
+    this.oldWidgetCuboid.set(this.widgetCuboid);
+    this.oldKeyboardTipCuboid.set(this.keyboardTipCuboid);
+    this.updateStartZone();
+    this.updateModelMatrix();
+  }
+
   if (this.stamp) {
     renderer
         .setColorVector(this.getVal() ? this.pressedColorVec4 : this.releasedColorVec4)
@@ -179,26 +179,22 @@ TriggerWidget.prototype.updateStartZone = function() {
   var self = this;
   if (this.touchTrigger) {
     this.touchTrigger.setStartZoneFunction(function (x, y) {
-      return Math.abs(x - self.canvasPos.x) <= Math.abs(self.canvasScale.x) &&
-          Math.abs(y - self.canvasPos.y) <= Math.abs(self.canvasScale.y);
+      return self.widgetCuboid.overlapsXY(x, y);
     });
   }
   if (this.mousePointerTrigger) {
     this.mousePointerTrigger.setStartZoneFunction(function (x, y) {
-      return Math.abs(x - self.canvasPos.x) <= Math.abs(self.canvasScale.x) &&
-          Math.abs(y - self.canvasPos.y) <= Math.abs(self.canvasScale.y);
+      return self.widgetCuboid.overlapsXY(x, y);
     });
   }
   return this;
 };
 
 TriggerWidget.prototype.updateModelMatrix = function() {
-  this.modelMatrix.toTranslateOpXYZ(this.canvasPos.x, this.canvasPos.y, -0.99)
-      .multiply(this.mat44.toScaleOpXYZ(this.canvasScale.x, this.canvasScale.y, 1));
+  this.modelMatrix.toTranslateOpXYZ(this.widgetCuboid.pos.getX(), this.widgetCuboid.pos.getY(), -0.99)
+      .multiply(this.mat44.toScaleOpXYZ(this.widgetCuboid.rad.getX(), this.widgetCuboid.rad.getY(), 1));
   this.keyboardTipModelMatrix.toTranslateOpXYZ(
-      this.canvasPos.x + this.keyboardTipOffset.x,
-      this.canvasPos.y + this.keyboardTipOffset.y,
-      -0.99)
-      .multiply(this.mat44.toScaleOpXYZ(this.keyboardTipScale.x, this.keyboardTipScale.y, 0.01));
+      this.keyboardTipCuboid.pos.getX(), this.keyboardTipCuboid.pos.getY(), -0.99)
+      .multiply(this.mat44.toScaleOpXYZ(this.keyboardTipCuboid.rad.getX(), this.keyboardTipCuboid.rad.getY(), 0.01));
   return this;
 };

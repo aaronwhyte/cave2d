@@ -37,7 +37,8 @@ EditScreen.prototype.initEditor = function() {
 };
 
 EditScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS);
+  this.canvasCuboid.setToCanvas(this.canvas);
+  this.pauseTriggerRule.apply();
   this.editor.updateHudLayout();
 };
 
@@ -83,16 +84,20 @@ EditScreen.prototype.setScreenListening = function(listen) {
 };
 
 EditScreen.prototype.initWidgets = function() {
-  var self = this;
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.pauseDownFn)
-      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName(Key.Name.SPACE)
       .setStamp(this.stamps.editorPauseStamp);
+  this.canvasCuboid = new Cuboid();
+  this.pauseTriggerRule = new CuboidRule(this.canvasCuboid, this.pauseTriggerWidget.getWidgetCuboid())
+      .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
+      .setAspectRatio(new Vec4(1, 1))
+      .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1, -1), Vec4.ZERO);
 };
 
 EditScreen.prototype.toJSON = function() {

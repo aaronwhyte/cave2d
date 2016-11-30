@@ -72,6 +72,18 @@ Cuboid.prototype.setToCorners = function(a, b) {
 };
 
 /**
+ * @param canvas
+ * @returns {Cuboid}
+ */
+Cuboid.prototype.setToCanvas = function(canvas) {
+  var w = canvas.width;
+  var h = canvas.height;
+  this.pos.setXYZ(w/2, h/2, 0);
+  this.rad.setXYZ(w/2, h/2, 1);
+  return this;
+};
+
+/**
  * @param {Vec4} v
  * @returns {Cuboid}
  */
@@ -120,11 +132,19 @@ Cuboid.prototype.getMinCorner = function(out) {
 };
 
 /**
- * @param {Vec4} out
  * @returns {Vec4} out set to the high x, y, and z vals
  */
 Cuboid.prototype.getMaxCorner = function(out) {
   return out.set(this.rad).add(this.pos);
+};
+
+/**
+ * @param x
+ * @param y
+ * @return {boolean}
+ */
+Cuboid.prototype.overlapsXY = function(x, y) {
+  return Math.abs(this.pos.getX() - x) <= this.rad.getX() && Math.abs(this.pos.getY() - y);
 };
 
 Cuboid.prototype.equals = function(that, opt_slop) {

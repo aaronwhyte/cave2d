@@ -195,11 +195,38 @@ v more stats 'n' graphs
   x memory
     x pool allocs/frees for various classes
 
-Editor refactor
+Editor & Trigger refactor
 v pull stamps-making code into separate file
 v debug missing keyboard shortcuts
-- make triggers accept cuboids for layout
 - replace Editor trigger layout code with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue
+  v Triggers
+    v layout
+      v use a cuboid reference for layout
+      v getCuboid returns ref to internal cuboid, for rules to target
+      v remember last used cuboid layout, and update automatically when drawing if there's a diff
+      v remove other APIs!
+    v key tip
+      v take CuboidRule for laying out tip
+      v reasonable default
+      v remove other key tip layout APIs
+  - migrate widget users to Cuboid (but maybe not CuboidRule)
+    v test37 pause widget
+    v test38 pause widget
+    v test39 pause widget
+    v test40 pause widget
+    - Editor
+      - canvas cuboid
+      - list of rules
+      - apply in updateHudLayout
+    - game2
+      - player triggers
+      - editscreen pause and test
+      - testscreen untest
+    - game3
+      - delete player triggers because we don't need 'em
+      - editscreen pause and test
+      - testscreen untest
+
 
 Undo/Redo
 v design button layout

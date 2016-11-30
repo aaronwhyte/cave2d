@@ -165,22 +165,23 @@ Editor.prototype.updateHudLayout = function() {
     return 2 * n * self.triggerRad + (n+1) * self.triggerSpacing + self.triggerRad;
   }
   triggerNum = 0;
-  for (var i = 0; i < this.bottomLeftTriggers.length; i++) {
-    this.bottomLeftTriggers[i]
-        .setCanvasPositionXY(this.triggerRad, self.canvas.height - triggerY(triggerNum++))
-        .setCanvasScaleXY(this.triggerRad, this.triggerRad)
-        .setKeyboardTipOffsetXY(tipOffsetX, tipOffsetY)
-        .setKeyboardTipScaleXY(tipScale, -tipScale);
-  }
-  triggerNum = 0;
-  for (var i = 0; i < this.topLeftTriggers.length; i++) {
-    this.topLeftTriggers[i]
-        .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
-        .setCanvasScaleXY(this.triggerRad, this.triggerRad)
-        .setKeyboardTipOffsetXY(tipOffsetX, tipOffsetY)
-        .setKeyboardTipScaleXY(tipScale, -tipScale);
-  }
-  this.panTriggerWidget.setCanvasPositionXY(-1, -1).setCanvasScaleXY(0, 0);
+  // TODO
+  // for (var i = 0; i < this.bottomLeftTriggers.length; i++) {
+  //   this.bottomLeftTriggers[i]
+  //       .setCanvasPositionXY(this.triggerRad, self.canvas.height - triggerY(triggerNum++))
+  //       .setCanvasScaleXY(this.triggerRad, this.triggerRad)
+  //       .setKeyboardTipOffsetXY(tipOffsetX, tipOffsetY)
+  //       .setKeyboardTipScaleXY(tipScale, -tipScale);
+  // }
+  // triggerNum = 0;
+  // for (var i = 0; i < this.topLeftTriggers.length; i++) {
+  //   this.topLeftTriggers[i]
+  //       .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
+  //       .setCanvasScaleXY(this.triggerRad, this.triggerRad)
+  //       .setKeyboardTipOffsetXY(tipOffsetX, tipOffsetY)
+  //       .setKeyboardTipScaleXY(tipScale, -tipScale);
+  // }
+  // this.panTriggerWidget.setCanvasPositionXY(-1, -1).setCanvasScaleXY(0, 0);
 
   var menuItemSize = this.getMenuItemSize();
   this.menu.setItemPositionMatrix(new Matrix44().toScaleOpXYZ(menuItemSize, menuItemSize, 1));

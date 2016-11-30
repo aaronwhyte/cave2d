@@ -26,13 +26,18 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.addListener(this.eventDistributor);
 
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setCanvasScaleXY(20, 20)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName(Key.Name.SPACE)
       .startListening();
+  this.canvasCuboid = new Cuboid();
+  this.pauseTriggerRule = new CuboidRule(this.canvasCuboid, this.pauseTriggerWidget.getWidgetCuboid())
+      .setSizingMax(new Vec4(1, 1, 1), new Vec4(20, 20))
+      .setAspectRatio(new Vec4(1, 1))
+      .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1, -1), Vec4.ZERO);
 
   this.pauseDownFn = function(e) {
     e = e || window.event;
@@ -143,7 +148,8 @@ PlayScreen.prototype.initEditor = function() {
 };
 
 PlayScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - 20, 20);
+  this.canvasCuboid.setToCanvas(this.canvas);
+  this.pauseTriggerRule.apply();
   this.editor.updateHudLayout();
 };
 
