@@ -125,8 +125,37 @@ function Editor(host, canvas, renderer, glyphs, editorStamps) {
       .setIndicatorStamp(editorStamps.addMenuIndicator)
       .startListening();
 
+  this.canvasCuboid = new Cuboid();
+  this.cuboidRules = [];
+  this.addLeftTriggerRules(this.topLeftTriggers, 1);
+  this.addLeftTriggerRules(this.bottomLeftTriggers, -1);
   this.updateHudLayout();
 }
+
+/**
+ * Adds CuboidRules for all the triggers in the array
+ * @param triggers  an array of triggerWidgets
+ * @param direction 1 if you're starting from the top, or -1 if starting from the bottom
+ */
+Editor.prototype.addLeftTriggerRules = function(triggers, direction) {
+  var source, target, i;
+  var triggerFractionY = 1/(this.leftTriggers.length + 1);
+  var maxSizePx = new Vec4(50, 50, Infinity);
+
+  for (i = 0; i < triggers.length; i++) {
+    source = i == 0 ? this.canvasCuboid : target;
+    target = triggers[i].getWidgetCuboid();
+    this.cuboidRules.push(new CuboidRule(source, target)
+        .setAspectRatio(new Vec4(1, 1))
+        .setSizingMax(
+            i == 0 ? new Vec4(1/4, triggerFractionY, 1) : new Vec4(1, 1, 1),
+            maxSizePx)
+        .setTargetAnchor(new Vec4(-1, -direction * 1.25, 0), Vec4.ZERO)
+        .setSourceAnchor(
+            new Vec4(-1, (i == 0 ? -1 : 1) * direction, 0),
+            Vec4.ZERO));
+  }
+};
 
 Editor.KEYBOARD_TIP_TIMEOUT_MS = 30 * 1000;
 
@@ -143,7 +172,7 @@ Editor.prototype.addMenuKeyboardShortcut = function(groupNum, keyName) {
 };
 
 Editor.prototype.getTriggerRad = function() {
-  return Math.min(50, 0.4 * Math.min(this.canvas.height, this.canvas.width*1.3) / this.leftTriggers.length);
+  return this.leftTriggers[0].getWidgetCuboid().rad.getX();
 };
 
 Editor.prototype.getMenuItemSize = function() {
@@ -155,33 +184,11 @@ Editor.prototype.getMenuItemSize = function() {
 Editor.prototype.updateHudLayout = function() {
   this.triggerRad = this.getTriggerRad();
   this.triggerSpacing = this.triggerRad * 0.25;
-  var tipOffsetX = this.triggerRad * 0.75;
-  var tipOffsetY = this.triggerRad * 0.7;
-  var tipScale = this.triggerRad * 0.12;
-  var triggerNum;
-  var self = this;
 
-  function triggerY(n) {
-    return 2 * n * self.triggerRad + (n+1) * self.triggerSpacing + self.triggerRad;
+  this.canvasCuboid.setToCanvas(this.canvas);
+  for (var i = 0; i < this.cuboidRules.length; i++) {
+    this.cuboidRules[i].apply();
   }
-  triggerNum = 0;
-  // TODO
-  // for (var i = 0; i < this.bottomLeftTriggers.length; i++) {
-  //   this.bottomLeftTriggers[i]
-  //       .setCanvasPositionXY(this.triggerRad, self.canvas.height - triggerY(triggerNum++))
-  //       .setCanvasScaleXY(this.triggerRad, this.triggerRad)
-  //       .setKeyboardTipOffsetXY(tipOffsetX, tipOffsetY)
-  //       .setKeyboardTipScaleXY(tipScale, -tipScale);
-  // }
-  // triggerNum = 0;
-  // for (var i = 0; i < this.topLeftTriggers.length; i++) {
-  //   this.topLeftTriggers[i]
-  //       .setCanvasPositionXY(this.triggerRad, triggerY(triggerNum++))
-  //       .setCanvasScaleXY(this.triggerRad, this.triggerRad)
-  //       .setKeyboardTipOffsetXY(tipOffsetX, tipOffsetY)
-  //       .setKeyboardTipScaleXY(tipScale, -tipScale);
-  // }
-  // this.panTriggerWidget.setCanvasPositionXY(-1, -1).setCanvasScaleXY(0, 0);
 
   var menuItemSize = this.getMenuItemSize();
   this.menu.setItemPositionMatrix(new Matrix44().toScaleOpXYZ(menuItemSize, menuItemSize, 1));

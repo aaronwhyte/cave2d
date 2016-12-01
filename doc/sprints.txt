@@ -214,10 +214,12 @@ v debug missing keyboard shortcuts
     v test38 pause widget
     v test39 pause widget
     v test40 pause widget
-    - Editor
-      - canvas cuboid
-      - list of rules
-      - apply in updateHudLayout
+    v Editor
+      v canvas cuboid
+      v each trigger cuboid max y 1/6, max Y 50px, 1:1, anchor offset Y 1/10 of target.
+        * no need for wrapper cubooids hahaha!
+      v list of rules
+      v apply in updateHudLayout
     - game2
       - player triggers
       - editscreen pause and test

@@ -195,6 +195,6 @@ TriggerWidget.prototype.updateModelMatrix = function() {
       .multiply(this.mat44.toScaleOpXYZ(this.widgetCuboid.rad.getX(), this.widgetCuboid.rad.getY(), 1));
   this.keyboardTipModelMatrix.toTranslateOpXYZ(
       this.keyboardTipCuboid.pos.getX(), this.keyboardTipCuboid.pos.getY(), -0.99)
-      .multiply(this.mat44.toScaleOpXYZ(this.keyboardTipCuboid.rad.getX(), this.keyboardTipCuboid.rad.getY(), 0.01));
+      .multiply(this.mat44.toScaleOpXYZ(this.keyboardTipCuboid.rad.getX(), -this.keyboardTipCuboid.rad.getY(), 0.01));
   return this;
 };
