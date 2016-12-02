@@ -198,7 +198,7 @@ v more stats 'n' graphs
 Editor & Trigger refactor
 v pull stamps-making code into separate file
 v debug missing keyboard shortcuts
-- replace Editor trigger layout code with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue
+v replace Editor trigger layout code with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue
   v Triggers
     v layout
       v use a cuboid reference for layout
@@ -209,7 +209,7 @@ v debug missing keyboard shortcuts
       v take CuboidRule for laying out tip
       v reasonable default
       v remove other key tip layout APIs
-  - migrate widget users to Cuboid (but maybe not CuboidRule)
+  v migrate widget users to Cuboid (but maybe not CuboidRule)
     v test37 pause widget
     v test38 pause widget
     v test39 pause widget
@@ -217,17 +217,18 @@ v debug missing keyboard shortcuts
     v Editor
       v canvas cuboid
       v each trigger cuboid max y 1/6, max Y 50px, 1:1, anchor offset Y 1/10 of target.
-        * no need for wrapper cubooids hahaha!
+        * no need for wrapper cuboids hahaha!
       v list of rules
       v apply in updateHudLayout
-    - game2
-      - player triggers
-      - editscreen pause and test
-      - testscreen untest
-    - game3
-      - delete player triggers because we don't need 'em
-      - editscreen pause and test
-      - testscreen untest
+    v game2
+      v player triggers
+      v editscreen pause and test
+      v testscreen untest
+    v game3
+      x delete player triggers because we don't need 'em
+      v editscreen pause and test
+      v testscreen untest
+      v fix test/untest keyboard shortcut
 
 
 Undo/Redo

@@ -13,9 +13,19 @@ function Player() {
 }
 
 Player.prototype.setControls = function(trackball, b1, b2, pauseBtn) {
+  function setKeyCuboidRule(widget) {
+    if (!widget) return;
+    widget.getKeyboardTipRule()
+        .setSizingMax(keySizeRad, Vec4.INFINITY)
+        .setSourceAnchor(Vec4.ZERO, Vec4.ZERO)
+        .setTargetAnchor(Vec4.ZERO, Vec4.ZERO);
+  }
   this.trackball = trackball;
+  var keySizeRad = new Vec4(0.25, 0.25, 1);
   this.b1 = b1;
+  setKeyCuboidRule(b1);
   this.b2 = b2;
+  setKeyCuboidRule(b2);
   this.pauseBtn = pauseBtn;
 };
 
@@ -56,21 +66,19 @@ Player.prototype.drawHud = function(renderer) {
     this.canvasWidth = renderer.canvas.width;
     this.canvasHeight = renderer.canvas.height;
     if (this.b1) {
-      this.b1
-          .setCanvasPositionXY(r * 1.1, renderer.canvas.height - r * 2.1)
-          .setCanvasScaleXY(r, -r)
-          .setKeyboardTipScaleXY(r/4, -r/4);
+      this.b1.getWidgetCuboid()
+          .setPosXYZ(r * 1.1, renderer.canvas.height - r * 2.1, 0)
+          .setRadXYZ(r, r, 0);
     }
     if (this.b2) {
-      this.b2
-          .setCanvasPositionXY(r * 3.3, renderer.canvas.height - r * 1.1)
-          .setCanvasScaleXY(r, -r)
-          .setKeyboardTipScaleXY(r/4, -r/4);
+      this.b2.getWidgetCuboid()
+          .setPosXYZ(r * 3.3, renderer.canvas.height - r * 1.1, 0)
+          .setRadXYZ(r, r, 0);
     }
     if (this.pauseBtn) {
-      this.pauseBtn
-          .setCanvasPositionXY(r * 0.1 + r * 0.4, renderer.canvas.height - r * 3.9)
-          .setCanvasScaleXY(r * 0.4, -r * 0.4);
+      this.pauseBtn.getWidgetCuboid()
+          .setPosXYZ(r * 0.1 + r * 0.4, renderer.canvas.height - r * 3.9, 0)
+          .setRadXYZ(r * 0.4, r * 0.4, 0);
     }
   }
   if (this.b1) {

@@ -39,8 +39,12 @@ EditScreen.prototype.initEditor = function() {
 };
 
 EditScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS);
-  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3);
+  this.pauseTriggerWidget.getWidgetCuboid()
+      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0)
+      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
+  this.testTriggerWidget.getWidgetCuboid()
+      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3, 0)
+      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
   this.editor.updateHudLayout();
 };
 
@@ -101,20 +105,17 @@ EditScreen.prototype.initWidgets = function() {
 
   this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.testDownFn)
-      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.testStamp)
-      .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T'])
-      .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7);
+      .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
+  ;
 
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.pauseDownFn)
-      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()

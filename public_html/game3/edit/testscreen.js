@@ -2,8 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function TestScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(BaseScreen.CAMERA_MIN_DIST_FRAC, BaseScreen.CAMERA_MAX_DIST_FRAC, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -26,7 +26,9 @@ TestScreen.prototype = new BaseScreen();
 TestScreen.prototype.constructor = TestScreen;
 
 TestScreen.prototype.updateHudLayout = function() {
-  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3);
+  this.testTriggerWidget.getWidgetCuboid()
+      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3, 0)
+      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
 };
 
 TestScreen.prototype.setScreenListening = function(listen) {
@@ -84,16 +86,13 @@ TestScreen.prototype.initWidgets = function() {
 
   this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.testDownFn)
-      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.untestStamp)
-      .setKeyboardTipStamp(this.stamps['T'])
-      .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7)
+      .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
 };
 
 TestScreen.prototype.startExit = function() {

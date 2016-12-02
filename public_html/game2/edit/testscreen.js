@@ -26,7 +26,6 @@ TestScreen.prototype = new BaseScreen();
 TestScreen.prototype.constructor = TestScreen;
 
 TestScreen.prototype.updateHudLayout = function() {
-  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3);
 };
 
 TestScreen.prototype.setScreenListening = function(listen) {
@@ -84,7 +83,6 @@ TestScreen.prototype.initWidgets = function() {
 
   this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.testDownFn)
-      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()

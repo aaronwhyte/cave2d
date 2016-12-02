@@ -2,8 +2,8 @@
  * @constructor
  * @extends {BaseScreen}
  */
-function EditScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(0.2, 0.6, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -26,7 +26,7 @@ EditScreen.ANT_RAD = 0.8;
 EditScreen.ROCK_RAD = 1.4;
 
 EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), EditorStamps.create(this.renderer));
+  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
     if (c) {
@@ -39,8 +39,12 @@ EditScreen.prototype.initEditor = function() {
 };
 
 EditScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS);
-  this.testTriggerWidget.setCanvasPositionXY(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3);
+  this.pauseTriggerWidget.getWidgetCuboid()
+      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0)
+      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
+  this.testTriggerWidget.getWidgetCuboid()
+      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3, 0)
+      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
   this.editor.updateHudLayout();
 };
 
@@ -101,20 +105,16 @@ EditScreen.prototype.initWidgets = function() {
 
   this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.testDownFn)
-      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.testStamp)
-      .setKeyboardTipStamp(this.stamps['T'])
-      .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7);
+      .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
 
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.pauseDownFn)
-      .setCanvasScaleXY(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
       .setPressedColorVec4(new Vec4(1, 1, 1, 1))
       .listenToTouch()

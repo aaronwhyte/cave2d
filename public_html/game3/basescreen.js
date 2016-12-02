@@ -2,7 +2,7 @@
  * @constructor
  * @extends {Screen}
  */
-function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
   Screen.call(this);
 
   this.adventureName = adventureName;
@@ -14,6 +14,7 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, le
   this.controller = controller;
   this.canvas = canvas;
   this.renderer = renderer;
+  this.glyphs = glyphs;
   this.stamps = stamps;
 
   this.viewMatrix = new Matrix44();
