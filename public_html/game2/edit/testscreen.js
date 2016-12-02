@@ -26,6 +26,9 @@ TestScreen.prototype = new BaseScreen();
 TestScreen.prototype.constructor = TestScreen;
 
 TestScreen.prototype.updateHudLayout = function() {
+  this.testTriggerWidget.getWidgetCuboid()
+      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3, 0)
+      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
 };
 
 TestScreen.prototype.setScreenListening = function(listen) {
@@ -89,9 +92,7 @@ TestScreen.prototype.initWidgets = function() {
       .listenToMousePointer()
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.untestStamp)
-      .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T'])
-      .setKeyboardTipScaleXY(4, -4)
-      .setKeyboardTipOffsetXY(BaseScreen.WIDGET_RADIUS * 0.6, BaseScreen.WIDGET_RADIUS * 0.7)
+      .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
 };
 
 TestScreen.prototype.startExit = function() {
