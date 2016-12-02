@@ -138,22 +138,17 @@ function Editor(host, canvas, renderer, glyphs, editorStamps) {
  * @param direction 1 if you're starting from the top, or -1 if starting from the bottom
  */
 Editor.prototype.addLeftTriggerRules = function(triggers, direction) {
-  var source, target, i;
   var triggerFractionY = 1/(this.leftTriggers.length + 1);
+  var maxSizeRad = new Vec4(1/4, triggerFractionY, 1);
   var maxSizePx = new Vec4(50, 50, Infinity);
-
-  for (i = 0; i < triggers.length; i++) {
-    source = i == 0 ? this.canvasCuboid : target;
-    target = triggers[i].getWidgetCuboid();
-    this.cuboidRules.push(new CuboidRule(source, target)
+  var sourceAnchorRad = new Vec4(-1, -direction, 0);
+  for (var i = 0; i < triggers.length; i++) {
+    var target = triggers[i].getWidgetCuboid();
+    this.cuboidRules.push(new CuboidRule(this.canvasCuboid, target)
         .setAspectRatio(new Vec4(1, 1))
-        .setSizingMax(
-            i == 0 ? new Vec4(1/4, triggerFractionY, 1) : new Vec4(1, 1, 1),
-            maxSizePx)
-        .setTargetAnchor(new Vec4(-1, -direction * 1.25, 0), Vec4.ZERO)
-        .setSourceAnchor(
-            new Vec4(-1, (i == 0 ? -1 : 1) * direction, 0),
-            Vec4.ZERO));
+        .setSizingMax(maxSizeRad, maxSizePx)
+        .setSourceAnchor(sourceAnchorRad, Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-1, -direction * (1.25 + 2.25*i), 0), Vec4.ZERO));
   }
 };
 
