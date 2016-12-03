@@ -520,8 +520,7 @@ BaseScreen.prototype.updateViewMatrix = function() {
 };
 
 BaseScreen.prototype.drawStats = function() {
-  this.canvasCuboid.pos.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0);
-  this.canvasCuboid.rad.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0.99);
+  this.canvasCuboid.setToCanvas(this.canvas);
   for (var i = 0; i < this.cuboidRules.length; i++) {
     this.cuboidRules[i].apply();
   }

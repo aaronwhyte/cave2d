@@ -92,7 +92,6 @@ EditScreen.prototype.initWidgets = function() {
       .listenToMousePointer()
       .addTriggerKeyByName(Key.Name.SPACE)
       .setStamp(this.stamps.editorPauseStamp);
-  this.canvasCuboid = new Cuboid();
   this.pauseTriggerRule = new CuboidRule(this.canvasCuboid, this.pauseTriggerWidget.getWidgetCuboid())
       .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
       .setAspectRatio(new Vec4(1, 1))

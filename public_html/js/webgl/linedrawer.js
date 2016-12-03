@@ -60,7 +60,7 @@ LineDrawer.prototype.drawRectFromCuboid = function(cuboid) {
   var v = cuboid.getMinCorner(this.vec4);
   var n = v.getY();
   var w = v.getX();
-  var v = cuboid.getMaxCorner(this.vec4);
+  v = cuboid.getMaxCorner(this.vec4);
   var s = v.getY();
   var e = v.getX();
   this.moveToXY(w, n).lineToXY(e, n).lineToXY(e, s).lineToXY(w, s).lineToXY(w, n);
