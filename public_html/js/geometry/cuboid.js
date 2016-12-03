@@ -144,7 +144,7 @@ Cuboid.prototype.getMaxCorner = function(out) {
  * @return {boolean}
  */
 Cuboid.prototype.overlapsXY = function(x, y) {
-  return Math.abs(this.pos.getX() - x) <= this.rad.getX() && Math.abs(this.pos.getY() - y);
+  return Math.abs(this.pos.getX() - x) <= this.rad.getX() && Math.abs(this.pos.getY() - y) <= this.rad.getY();
 };
 
 Cuboid.prototype.equals = function(that, opt_slop) {
