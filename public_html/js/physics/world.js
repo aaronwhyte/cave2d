@@ -453,10 +453,18 @@ World.prototype.getNextEvent = function() {
 };
 
 /**
- * Removes the next event from the queue, and advances the world time to the event time,
+ * Removes the next event from the queue AND FREES IT, and advances the world time to the event time,
  * optionally doing some internal processing.
  */
 World.prototype.processNextEvent = function() {
+  this.processNextEventWthoutFreeing().free();
+};
+
+/**
+ var * Removes the next event from the queue, and advances the world time to the event time,
+ * optionally doing some internal processing.
+ */
+World.prototype.processNextEventWthoutFreeing = function() {
   this.validateBodies();
   var e = this.queue.removeFirst();
   this.now = e.time;
@@ -492,7 +500,7 @@ World.prototype.processNextEvent = function() {
       spirit.onTimeout(this, e.timeoutVal);
     }
   }
-  e.free();
+  return e;
 };
 
 World.prototype.addTimeout = function(time, spiritId, val) {

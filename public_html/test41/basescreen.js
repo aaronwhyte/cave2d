@@ -23,7 +23,6 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.sounds = new Sounds(sfx, this.viewMatrix);
 
-  this.lastPathRefreshTime = -Infinity;
   this.visibility = 0;
   this.listening = false;
   this.paused = false;
@@ -298,8 +297,6 @@ BaseScreen.Group = {
 };
 
 BaseScreen.prototype.initWorld = function() {
-  this.lastPathRefreshTime = -Infinity;
-
   var groupCount = Object.keys(BaseScreen.Group).length;
   var g = BaseScreen.Group;
   var hitPairs = [
@@ -324,7 +321,6 @@ BaseScreen.prototype.initWorld = function() {
   this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs);
 
   this.resolver = new HitResolver();
-  this.resolver.defaultElasticity = 0.95;
 
   this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
@@ -419,36 +415,36 @@ BaseScreen.prototype.clock = function(startTimeMs) {
     this.handleInput();
   }
 
-  if (this.lastPathRefreshTime + BaseScreen.PATH_DURATION <= endClock) {
-    this.lastPathRefreshTime = this.world.now;
-    for (var id in this.world.bodies) {
-      var b = this.world.bodies[id];
-      if (b && b.pathDurationMax > BaseScreen.PATH_DURATION && b.pathDurationMax != Infinity) {
-        b.invalidatePath();
-        b.moveToTime(this.world.now);
+  var somethingMoving = false;
+  for (var id in this.world.bodies) {
+    if (this.world.bodies[id].isMoving()) {
+      somethingMoving = true;
+      break;
+    }
+  }
+
+  if (somethingMoving) {
+    var e = this.world.getNextEvent();
+    // Stop if there are no more events to process, or we've moved the game clock far enough ahead
+    // to match the amount of wall-time elapsed since the last frame,
+    // or (worst case) we're out of time for this frame.
+
+    while (e && e.time <= endClock && performance.now() <= endTimeMs) {
+      this.world.processNextEventWthoutFreeing();
+      if (e.type == WorldEvent.TYPE_HIT) {
+        this.onHitEvent(e);
       }
+      e.free();
+      // Some events can destroy the screen.
+      if (this.destroyed) return;
+      e = this.world.getNextEvent();
+
+      // recompute endClock in case an event changed the timeMultiplier
+      endClock = Math.max(this.world.now, startClock + BaseScreen.CLOCKS_PER_FRAME * this.timeMultiplier);
     }
-  }
-
-  var e = this.world.getNextEvent();
-  // Stop if there are no more events to process, or we've moved the game clock far enough ahead
-  // to match the amount of wall-time elapsed since the last frame,
-  // or (worst case) we're out of time for this frame.
-
-  while (e && e.time <= endClock && performance.now() <= endTimeMs) {
-    this.world.processNextEvent();
-    if (e.type == WorldEvent.TYPE_HIT) {
-      this.onHitEvent(e);
+    if (!e || e.time > endClock) {
+      this.world.now = endClock;
     }
-    // Some events can destroy the screen.
-    if (this.destroyed) return;
-    e = this.world.getNextEvent();
-
-    // recompute endClock in case an event changed the timeMultiplier
-    endClock = Math.max(this.world.now, startClock + BaseScreen.CLOCKS_PER_FRAME * this.timeMultiplier);
-  }
-  if (!e || e.time > endClock) {
-    this.world.now = endClock;
   }
   if (this.exitEndTime && this.world.now >= this.exitEndTime) {
     this.exitLevel();

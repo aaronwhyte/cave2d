@@ -222,6 +222,10 @@ Body.prototype.getPathEndTime = function() {
   return this.pathStartTime + this.pathDurationMax;
 };
 
+Body.prototype.isMoving = function() {
+  return this.angVel != 0 || !this.vel.isZero();
+};
+
 /**
  * Gets the angular position at a given time.
  * @param {number} t

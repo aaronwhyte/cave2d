@@ -23,16 +23,19 @@ function AntSpirit(screen) {
   // So I don't need to delete and re-add ants whenever I change their max health,
   // normalize health to be a fraction, between 0 and 1.
   this.health = 1;
+
+  this.still = false;
 }
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 3;
+AntSpirit.MEASURE_TIMEOUT = 2;
 AntSpirit.THRUST = 0.5;
 AntSpirit.TWIST = 0.1;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
+AntSpirit.STOPPING_ANGVEL = 0.01;
 AntSpirit.MAX_HEALTH = 3;
 AntSpirit.OPTIMIZE = true;
 
@@ -130,7 +133,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   this.stress = this.stress || 0;
 
-  var friction = 0;//0.05;
+  var friction = this.screen.isPlaying() ? 0.1 : 0.8;
   var traction = 0.05;
 
   var now = this.now();
@@ -140,14 +143,17 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var newVel = this.vec2d.set(body.vel);
 
   // friction
-  this.accel.set(newVel).scale(-friction * time);
+  this.accel.set(newVel).scale(-Math.pow(friction, time));
   newVel.add(this.accel);
-  angVel *= (1 - friction * time);
-  if (AntSpirit.OPTIMIZE && newVel.magnitudeSquared() < AntSpirit.STOPPING_SPEED_SQUARED) {
+  angVel *= (1 - Math.pow(friction, time));
+  if (angVel < AntSpirit.STOPPING_ANGVEL) {
+    angVel = 0;
+  }
+  if (newVel.magnitudeSquared() < AntSpirit.STOPPING_SPEED_SQUARED) {
     newVel.reset();
   }
 
-  if (false && this.screen.isPlaying()) {
+  if (this.screen.isPlaying()) {
     if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
       this.accel.set(body.vel).scale(-traction * time);
       newVel.add(this.accel);
@@ -183,19 +189,19 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   // but it is serialized at level-save-time, so old saved values might not
   // match the new compiled-in values. Hm.
   var timeoutDuration;
-  if (AntSpirit.OPTIMIZE) {
+  if (this.screen.isPlaying()) {
     timeoutDuration = Math.min(
         AntSpirit.MAX_TIMEOUT,
         Math.max(this.health, 0.3) *
-            AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
+        AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
   } else {
-    timeoutDuration = AntSpirit.MEASURE_TIMEOUT * (1 - Math.random() * 0.05);
+    timeoutDuration = AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera);
   }
   body.pathDurationMax = timeoutDuration * 1.1;
+  world.addTimeout(now + timeoutDuration, this.id, -1);
+
   this.setBodyVel(newVel);
   this.setBodyAngVel(angVel);
-
-  world.addTimeout(now + timeoutDuration, this.id, -1);
 };
 
 AntSpirit.prototype.getScanHitSpirit = function() {

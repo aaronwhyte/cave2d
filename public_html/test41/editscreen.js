@@ -25,6 +25,7 @@ EditScreen.ANT_RAD = 1.2;
 
 EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), EditorStamps.create(this.renderer));
+  this.editor.gripAccelFraction = 0.25;
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
     if (c) {
@@ -144,9 +145,14 @@ EditScreen.prototype.toJSON = function() {
 
 EditScreen.prototype.createDefaultWorld = function() {
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  var ants = 64;
+  var ants = 24;
   for (var a = 0; a < ants; a++) {
-    this.addItem(BaseScreen.MenuItem.ANT, Vec2d.ZERO, 2 * Math.PI * a / ants);
+    this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+  }
+
+  var ants = 12;
+  for (var a = 0; a < ants; a++) {
+    this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
 };
 
@@ -220,5 +226,5 @@ EditScreen.prototype.addItem = function(name, pos, dir) {
 /////////////////
 
 EditScreen.prototype.isPlaying = function() {
-  return true;
+  return false;
 };

@@ -234,20 +234,21 @@ v replace Editor trigger layout code with a canvas cuboid, trigger cuboids, and 
 Undo/Redo
 v design button layout
   * undo/redo will go on top to the right of the tabs and left of the pause button
-- test41 nest
-- quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntary physics-over-time changes
-  - set frictions very high while editing. 100%? No motion beyond active editing.
-  - stop vel when vel is less than TEENY_VEL
-    - zero vel
-    - stop friction timeouts (or maybe one less reason - see angvel below)
-    - set path duration to infinity
-  - stop rotation when angvel is less than TEENY_ANGVEL
-    - zero angvel
-    - stop angvel timeouts (or one less reason to do friction timeout)
-  - wake when accelerated (linear or angular)
-    - start timeouts again
+v test41 nest
+v quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntary physics-over-time changes
+  v set frictions very high while editing. 100%? No motion beyond active editing.
+  v stop vel when vel is less than TEENY_VEL
+    v zero vel
+    x stop friction timeouts (or maybe one less reason - see angvel below)
+    x set path duration to infinity
+  v stop rotation when angvel is less than TEENY_ANGVEL
+    v zero angvel
+    x stop angvel timeouts (or one less reason to do friction timeout)
+  x wake when accelerated (linear or angular)
+    x start timeouts again
   * It's OK to let time move fwd, if that's the *only* thing moving fwd. But...
-  - maybe don't move time fwd if nothing is moving and nothing is planned. That's an Eternal Stillness Condition
+  x maybe don't move time fwd if nothing is moving and nothing is planned. That's an Eternal Stillness Condition
+  v actually don't move forward if nothing's moving. Ignore timeouts!
 - record snapshots...
   - if the camera moved a lot since the last snapshot, take a snap right before an edit-gesturee takes effect.
   - when an edit-gesture has ended
@@ -259,6 +260,9 @@ v design button layout
   - timeouts - ditto
 - undo button
 - redo button
+
+World.processNextEvent fix
+- fix all world.processNextEvent calls to not reference a freed event! Also maybe reset on free, not on alloc.
 
 Layers
 Mode switch between Terrain, Objects, and (soon) Snap
