@@ -249,17 +249,52 @@ v quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntar
   * It's OK to let time move fwd, if that's the *only* thing moving fwd. But...
   x maybe don't move time fwd if nothing is moving and nothing is planned. That's an Eternal Stillness Condition
   v actually don't move forward if nothing's moving. Ignore timeouts!
-- record snapshots...
-  - if the camera moved a lot since the last snapshot, take a snap right before an edit-gesturee takes effect.
-  - when an edit-gesture has ended
-  - during a long change edit-gesture, like a digging drag, throttled by time or change-count.
-- setGame()
+- SaveStack
+  v class nest
+  v circular buffer of saves
+  v "depth" is usually 0 but higher numbers mean
+  - save(world, view)
+    - pop "depth" times to nuke any redos (the worst part if I remain traditional)
+    - set depth to 0
+    - push(aka enqueue) the world/view pair into the stack
+  - view peeks
+    - getView(1) // undo
+    - getView(-1) // redo
+    - caller should compare the current view with the target world/view pair's view
+      - if it's too different, only change the view - do not alter the world
+      - else close enough, go crazy
+  - canRestore(dir) return  0 <= undoDepth + dir <= queue.size() - 1
+  - selectWorld(dir)
+    - inc/dec undoDepth if possible
+    - return world or null
+- EditScreen should save at appropriate times
+  - dirty bit: always know if any world state changed since the last save
+  - when the user hits undo/redo
+    - halt ongoing edit gestures
+    - stop all motion and rotation. Otherwise, a setWorld() to a state in motion would instantly re-dirty the world.
+    - if there were any changes, saveStack.save()
+    - getView(dir)
+    - if view is close enough,
+      - selectWorld(dir)
+      - apply it.
+    - else set the view only
+  - save when the world is dirty and has settled on its own
+  - save during a long change edit-gesture, like a digging drag, throttled by wall-time?
+- editSceen.setGame() v1
+  - clear world and rebuild everything, regardless
+- undo button
+- redo button
+- setGame() v2
+  - don't clear world
   - terrain cellwise bitgrid diff: added, removed, changed
   - non-terrain bodies - compare serialized forms
   - non-terrain spirits
   - timeouts - ditto
-- undo button
-- redo button
+- optimizations
+  - maybe separate terrain changes from spirit & body changes, to avoid dealing with a mass of unchanged data?
+    Or not. It would make an Save record a "change" not a "state" and then the direction of time would matter. AA -> AB -> BB
+    But a memoized state could prevent deeper checking and not introduce "change" objects.
+    And if states are immutable then reference sharing is OK, to reduce mem cost.
 
 World.processNextEvent fix
 - fix all world.processNextEvent calls to not reference a freed event! Also maybe reset on free, not on alloc.
