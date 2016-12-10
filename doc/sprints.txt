@@ -249,24 +249,21 @@ v quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntar
   * It's OK to let time move fwd, if that's the *only* thing moving fwd. But...
   x maybe don't move time fwd if nothing is moving and nothing is planned. That's an Eternal Stillness Condition
   v actually don't move forward if nothing's moving. Ignore timeouts!
-- SaveStack
+v SaveStack
   v class nest
   v circular buffer of saves
   v "depth" is usually 0 but higher numbers mean
-  - save(world, view)
-    - pop "depth" times to nuke any redos (the worst part if I remain traditional)
-    - set depth to 0
-    - push(aka enqueue) the world/view pair into the stack
-  - view peeks
-    - getView(1) // undo
-    - getView(-1) // redo
-    - caller should compare the current view with the target world/view pair's view
-      - if it's too different, only change the view - do not alter the world
-      - else close enough, go crazy
-  - canRestore(dir) return  0 <= undoDepth + dir <= queue.size() - 1
-  - selectWorld(dir)
-    - inc/dec undoDepth if possible
-    - return world or null
+  v save(world, view)
+    v pop "depth" times to nuke any redos (the worst part if I remain traditional)
+    v set depth to 0
+    v push(aka enqueue) the world/view pair into the stack
+  v view peeks
+    v getView(1) // undo
+    v getView(-1) // redo
+  v canRestore(dir) return  0 <= undoDepth + dir <= queue.size() - 1
+  v selectWorld(dir)
+    v inc/dec undoDepth if possible
+    v return world or null
 - EditScreen should save at appropriate times
   - dirty bit: always know if any world state changed since the last save
   - when the user hits undo/redo
