@@ -315,13 +315,10 @@ BaseScreen.prototype.initWorld = function() {
 
     [g.ENEMY_SCAN, g.WALL],
     [g.ENEMY_SCAN, g.NEUTRAL],
-    [g.ENEMY_SCAN, g.ENEMY],
+    [g.ENEMY_SCAN, g.ENEMY]
   ];
-
   this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs);
-
   this.resolver = new HitResolver();
-
   this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
 };
