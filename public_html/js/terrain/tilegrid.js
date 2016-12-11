@@ -14,10 +14,17 @@ function TileGrid(bitGrid, renderer, world, hitGroup) {
   this.wallGrip = 0.9;
 }
 
+/**
+ * @param {Vec2d} p1
+ * @param {Vec2d} p2
+ * @param {number} rad
+ * @param {number}  color
+ * @return {boolean} true if something actually changed
+ */
 TileGrid.prototype.drawTerrainPill = function(p1, p2, rad, color) {
   this.segment.setP1P2(p1, p2);
   this.bitGrid.drawPill(this.segment, rad, color);
-  this.flushTerrainChanges();
+  return this.flushTerrainChanges();
 };
 
 TileGrid.prototype.getStampAtCellXY = function(cx, cy) {
@@ -32,11 +39,19 @@ TileGrid.prototype.getStampAtCellXY = function(cx, cy) {
 // private
 ////////////
 
+/**
+ * @returns {boolean} true if anything actually changed
+ */
 TileGrid.prototype.flushTerrainChanges = function() {
+  var changed = false;
   var changedCellIds = this.bitGrid.flushChangedCellIds();
-  for (var i = 0; i < changedCellIds.length; i++) {
-    this.changeTerrain(changedCellIds[i]);
+  if (changedCellIds.length) {
+    changed = true;
+    for (var i = 0; i < changedCellIds.length; i++) {
+      this.changeTerrain(changedCellIds[i]);
+    }
   }
+  return changed;
 };
 
 /**

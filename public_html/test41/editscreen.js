@@ -216,6 +216,7 @@ EditScreen.prototype.addItem = function(name, pos, dir) {
     var c = this.spiritConfigs[t];
     if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
       c.menuItemConfig.factory(this, c.stamp, pos, dir);
+      this.setDirty(true);
       return;
     }
   }

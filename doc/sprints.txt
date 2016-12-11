@@ -264,8 +264,16 @@ v SaveStack
   v selectWorld(dir)
     v inc/dec undoDepth if possible
     v return world or null
+- Buttons
+  - undo button
+  - redo button
 - EditScreen should save at appropriate times
-  - dirty bit: always know if any world state changed since the last save
+  v world dirty bit: always know if any world state changed since the last save
+    v EditScreen.isDirty()
+    v EditScreen.setDirty()
+    v world-time advance
+    v terrain change bit
+    v add/remove
   - when the user hits undo/redo
     - halt ongoing edit gestures
     - stop all motion and rotation. Otherwise, a setWorld() to a state in motion would instantly re-dirty the world.
@@ -279,8 +287,6 @@ v SaveStack
   - save during a long change edit-gesture, like a digging drag, throttled by wall-time?
 - editSceen.setGame() v1
   - clear world and rebuild everything, regardless
-- undo button
-- redo button
 - setGame() v2
   - don't clear world
   - terrain cellwise bitgrid diff: added, removed, changed

@@ -214,6 +214,8 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
       .setLineWidth(lineWidth));
   this.drawLeftGraphs = true;
   this.drawRightGraphs = true;
+
+  this.dirty = false;
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -255,6 +257,27 @@ BaseScreen.EventLayer = {
   HUD: 1,
   WORLD: 2
 };
+
+/**
+ * Whether the world has been changed since the last time the bit was set to true
+ * @returns {boolean}
+ */
+BaseScreen.prototype.isDirty = function() {
+  return this.dirty;
+};
+
+/**
+ * True to indicate that the world has changed in an undoable way, false to indicate that the world has been restored
+ * from the undo stack and nothing has happened since.
+ * @param {boolean} d
+ */
+BaseScreen.prototype.setDirty = function(d) {
+  if (this.dirty != d) {
+    console.log('dirty changed to ' + d);
+    this.dirty = d;
+  }
+};
+
 
 BaseScreen.prototype.setPaused = function(paused) {
   this.paused = paused;
@@ -421,6 +444,7 @@ BaseScreen.prototype.clock = function(startTimeMs) {
   }
 
   if (somethingMoving) {
+    this.setDirty(true);
     var e = this.world.getNextEvent();
     // Stop if there are no more events to process, or we've moved the game clock far enough ahead
     // to match the amount of wall-time elapsed since the last frame,
@@ -565,6 +589,7 @@ BaseScreen.prototype.removeByBodyId = function(bodyId) {
       this.world.removeSpiritId(body.spiritId);
     }
     this.world.removeBodyId(bodyId);
+    this.setDirty(true);
   }
 };
 
@@ -690,11 +715,9 @@ BaseScreen.prototype.drawSpirits = function() {
 ///////////////////////////
 
 BaseScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
-  this.tileGrid.drawTerrainPill(pos0, pos1, rad, color);
-};
-
-BaseScreen.prototype.flushTerrainChanges = function() {
-  this.tileGrid.flushTerrainChanges();
+  if (this.tileGrid.drawTerrainPill(pos0, pos1, rad, color)) {
+    this.setDirty(true);
+  }
 };
 
 BaseScreen.prototype.drawTiles = function() {

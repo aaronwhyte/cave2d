@@ -10,6 +10,11 @@ function Segment(p1, p2) {
   this.lengthSquared = -1;
 }
 
+/**
+ * @param {Vec2d} p1
+ * @param {Vec2d} p2
+ * @returns {Segment}
+ */
 Segment.prototype.setP1P2 = function(p1, p2) {
   this.p1.set(p1);
   this.p2.set(p2);
@@ -17,6 +22,10 @@ Segment.prototype.setP1P2 = function(p1, p2) {
   return this;
 };
 
+/**
+ * @param {Vec2d} p3
+ * @returns {number}
+ */
 Segment.prototype.distanceToPointSquared = function(p3) {
   var lsq = this.getLengthSquared();
   if (lsq == 0) return this.p1.distanceSquared(p3);
@@ -42,6 +51,11 @@ Segment.prototype.distanceToPointSquared = function(p3) {
   return retval;
 };
 
+/**
+ * @param {number} x
+ * @param {number} y
+ * @returns {number}
+ */
 Segment.prototype.distanceToPointSquaredXY = function(x, y) {
   var v = Vec2d.alloc(x, y);
   var dist = this.distanceToPointSquared(v);
@@ -49,11 +63,18 @@ Segment.prototype.distanceToPointSquaredXY = function(x, y) {
   return dist;
 };
 
+/**
+ * @param {Rect} rectOut
+ * @return {Rect} rectOut
+ */
 Segment.prototype.getBoundingRect = function(rectOut) {
   if (!rectOut) rectOut = new Rect();
   return rectOut.setToCorners(this.p1, this.p2);
 };
 
+/**
+ * @returns {number}
+ */
 Segment.prototype.getLengthSquared = function() {
   if (this.lengthSquared < 0) {
     this.lengthSquared = this.p1.distanceSquared(this.p2);
