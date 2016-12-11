@@ -36,3 +36,15 @@ Models.prototype.getUntest = function() {
       .transformPositions(new Matrix44().toRotateZOp(Math.PI/2));
 };
 
+Models.prototype.getEditorUndo = function() {
+  return RigidModel.createTriangle()
+      .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
+      .transformPositions(new Matrix44().toRotateZOp(Math.PI/2));
+};
+
+Models.prototype.getEditorRedo = function() {
+  return RigidModel.createTriangle()
+      .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
+      .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2));
+};
+

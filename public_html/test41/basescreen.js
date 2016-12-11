@@ -51,6 +51,9 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.timeMultiplier = 1;
 
+  this.glyphs = new Glyphs(new GlyphMaker(0.4, 1.2));
+  this.glyphs.initStamps(this.renderer.gl);
+
   var self = this;
 
   this.pauseDownFn = function(e) {

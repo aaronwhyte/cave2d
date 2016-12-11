@@ -14,6 +14,28 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
   this.keyTipRevealer = function() {
     var ms = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
     self.editor.setKeyboardTipTimeoutMs(ms);
+    self.undoTriggerWidget.setKeyboardTipTimeoutMs(ms);
+    self.redoTriggerWidget.setKeyboardTipTimeoutMs(ms);
+  };
+
+  this.undoDownFn = function(e) {
+    e = e || window.event;
+    console.log('todo: undo');
+    self.setDirty(false);
+    // Stop the flow of mouse-emulation events on touchscreens, so the
+    // mouse events don't cause weird cursors teleports.
+    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
+    e.preventDefault();
+  };
+
+  this.redoDownFn = function(e) {
+    e = e || window.event;
+    console.log('todo: redo');
+    self.setDirty(false);
+    // Stop the flow of mouse-emulation events on touchscreens, so the
+    // mouse events don't cause weird cursors teleports.
+    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
+    e.preventDefault();
   };
 }
 EditScreen.prototype = new BaseScreen();
@@ -24,7 +46,7 @@ EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 EditScreen.ANT_RAD = 1.2;
 
 EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), EditorStamps.create(this.renderer));
+  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
   this.editor.gripAccelFraction = 0.25;
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
@@ -40,6 +62,8 @@ EditScreen.prototype.initEditor = function() {
 EditScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
   this.pauseTriggerRule.apply();
+  this.undoTriggerRule.apply();
+  this.redoTriggerRule.apply();
   this.editor.updateHudLayout();
 };
 
@@ -98,6 +122,38 @@ EditScreen.prototype.initWidgets = function() {
       .setAspectRatio(new Vec4(1, 1))
       .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
       .setTargetAnchor(new Vec4(1, -1), Vec4.ZERO);
+
+  this.undoTriggerWidget = new TriggerWidget(this.getHudEventTarget())
+      .addTriggerDownListener(this.undoDownFn)
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .listenToTouch()
+      .listenToMousePointer()
+      .addTriggerKeyByName('z')
+      .setKeyboardTipStamp(this.glyphs.stamps['Z'])
+      .setStamp(this.stamps.editorUndoStamp);
+  this.addListener(this.undoTriggerWidget);
+  this.undoTriggerRule = new CuboidRule(this.canvasCuboid, this.undoTriggerWidget.getWidgetCuboid())
+      .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
+      .setAspectRatio(new Vec4(1, 1))
+      .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1 + 3 + 3, -1), Vec4.ZERO);
+
+  this.redoTriggerWidget = new TriggerWidget(this.getHudEventTarget())
+      .addTriggerDownListener(this.redoDownFn)
+      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
+      .listenToTouch()
+      .listenToMousePointer()
+      .addTriggerKeyByName('y')
+      .setKeyboardTipStamp(this.glyphs.stamps['Y'])
+      .setStamp(this.stamps.editorRedoStamp);
+  this.addListener(this.redoTriggerWidget);
+  this.redoTriggerRule = new CuboidRule(this.canvasCuboid, this.redoTriggerWidget.getWidgetCuboid())
+      .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
+      .setAspectRatio(new Vec4(1, 1))
+      .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1 + 3, -1), Vec4.ZERO);
 };
 
 EditScreen.prototype.toJSON = function() {
@@ -193,6 +249,8 @@ EditScreen.prototype.drawHud = function() {
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
   this.pauseTriggerWidget.draw(this.renderer);
+  this.undoTriggerWidget.draw(this.renderer);
+  this.redoTriggerWidget.draw(this.renderer);
   this.editor.drawHud();
   this.renderer.setBlendingEnabled(false);
 };

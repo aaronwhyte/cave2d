@@ -264,9 +264,9 @@ v SaveStack
   v selectWorld(dir)
     v inc/dec undoDepth if possible
     v return world or null
-- Buttons
-  - undo button
-  - redo button
+v Buttons
+  v undo button
+  v redo button
 - EditScreen should save at appropriate times
   v world dirty bit: always know if any world state changed since the last save
     v EditScreen.isDirty()
@@ -293,6 +293,7 @@ v SaveStack
   - non-terrain bodies - compare serialized forms
   - non-terrain spirits
   - timeouts - ditto
+- less crappy undo/redo button models
 - optimizations
   - maybe separate terrain changes from spirit & body changes, to avoid dealing with a mass of unchanged data?
     Or not. It would make an Save record a "change" not a "state" and then the direction of time would matter. AA -> AB -> BB

@@ -22,6 +22,8 @@ Stamps.create = function(renderer) {
   stamps.editorPauseStamp = stamp(models.getEditorPause());
   stamps.testStamp = stamp(models.getTest());
   stamps.untestStamp = stamp(models.getUntest());
+  stamps.editorUndoStamp = stamp(models.getEditorUndo());
+  stamps.editorRedoStamp = stamp(models.getEditorRedo());
 
   return stamps;
 };
