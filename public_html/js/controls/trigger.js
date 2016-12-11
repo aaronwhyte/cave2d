@@ -15,6 +15,10 @@ Trigger.prototype.getVal = function() {
   return this.val;
 };
 
+Trigger.prototype.release = function() {
+  this.val = false;
+};
+
 Trigger.prototype.startListening = function() {console.log("startListening unimplimented")};
 Trigger.prototype.stopListening = function() {console.log("stopListening unimplimented")};
 

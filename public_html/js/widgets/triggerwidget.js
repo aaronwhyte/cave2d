@@ -171,6 +171,10 @@ TriggerWidget.prototype.draw = function(renderer) {
   return this;
 };
 
+TriggerWidget.prototype.release = function() {
+  this.trigger.release();
+};
+
 TriggerWidget.prototype.isMouseHovered = function() {
   return this.mousePointerTrigger && this.mousePointerTrigger.hovered;
 };

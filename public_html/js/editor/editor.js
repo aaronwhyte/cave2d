@@ -205,6 +205,17 @@ Editor.prototype.setKeyboardTipTimeoutMs = function(ms) {
   }
 };
 
+Editor.prototype.interrupt = function() {
+  this.cameraVel.reset();
+  this.setIndicatedBodyId(null);
+  this.oldPanTriggerVal = false;
+  this.oldAddTriggerVal = false;
+  this.panTriggerWidget.release();
+  for (var i = 0; i < this.leftTriggers.length; i++) {
+    this.leftTriggers[i].release();
+  }
+};
+
 Editor.prototype.handleInput = function() {
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.host.getViewDist() * 0.02;

@@ -51,6 +51,14 @@ MultiTrigger.prototype.getVal = function() {
   return false;
 };
 
+MultiTrigger.prototype.release = function() {
+  for (var i = 0; i < this.triggers.length; i++) {
+    this.triggers[i].release();
+  }
+  this.val = false;
+  this.oldVal = false;
+};
+
 MultiTrigger.prototype.addTriggerDownListener = function(fn) {
   this.downPubSub.subscribe(fn);
 };

@@ -51,6 +51,11 @@ TouchTrigger.prototype.stopListening = function() {
   return this;
 };
 
+TouchTrigger.prototype.release = function() {
+  this.touchId = null;
+  this.val = false;
+};
+
 TouchTrigger.prototype.onTouchStart = function(e) {
   if (this.touchId !== null) return;
   e = e || window.event;

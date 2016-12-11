@@ -22,6 +22,7 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
     e = e || window.event;
     console.log('todo: undo');
     self.setDirty(false);
+    self.editor.interrupt();
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
     // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
@@ -32,6 +33,7 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
     e = e || window.event;
     console.log('todo: redo');
     self.setDirty(false);
+    self.editor.interrupt();
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
     // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together

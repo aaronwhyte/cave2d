@@ -62,3 +62,10 @@ KeyTrigger.prototype.getVal = function() {
     if (this.codeToState[code]) return true;
   }
 };
+
+KeyTrigger.prototype.release = function() {
+  for (var code in this.codeToState) {
+    this.codeToState[code] = false;
+  }
+  this.val = false;
+};

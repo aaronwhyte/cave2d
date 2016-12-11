@@ -275,15 +275,19 @@ v Buttons
     v terrain change bit
     v add/remove
   - when the user hits undo/redo
-    - halt ongoing edit gestures
-    - stop all motion and rotation. Otherwise, a setWorld() to a state in motion would instantly re-dirty the world.
-    - if there were any changes, saveStack.save()
-    - getView(dir)
-    - if view is close enough,
-      - selectWorld(dir)
-      - apply it.
-    - else set the view only
-  - save when the world is dirty and has settled on its own
+    v interrupt editor
+      v release grip on object
+      v halt digging/building/whatevs as if user released
+    - stop all object motion and rotation.
+      Otherwise, a setWorld() to a state in motion would instantly re-dirty the world.
+    - if isDirty() then saveStack.save()
+    - view check
+      - getView(dir)
+      - if view is close enough,
+        - selectWorld(dir)
+        - apply it.
+      - else set the view only
+  - auto-save when the world is dirty and has settled on its own. Important! That's the main source of saves.
   - save during a long change edit-gesture, like a digging drag, throttled by wall-time?
 - editSceen.setGame() v1
   - clear world and rebuild everything, regardless
