@@ -71,6 +71,10 @@ SkipQueue.prototype.removeFirst = function() {
   return node;
 };
 
+SkipQueue.prototype.clear = function() {
+  while(this.removeFirst()){};
+};
+
 /**
  * Returns the first node without removing it.
  */

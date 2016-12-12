@@ -710,3 +710,13 @@ World.prototype.getOverlaps = function(body) {
 World.prototype.getPaddedBodyBoundingRect = function(body, time, rectOut) {
   return body.getBoundingRectAtTime(time, rectOut).pad(this.cellSize * World.BRECT_FUDGE_FACTOR)
 }
+
+World.prototype.unload = function() {
+  for (var spiritId in this.spirits) {
+    this.removeSpiritId(spiritId);
+  }
+  for (var bodyId in this.bodies) {
+    this.removeBodyId(bodyId);
+  }
+  this.queue.clear();
+};

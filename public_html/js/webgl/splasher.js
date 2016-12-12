@@ -33,3 +33,10 @@ Splasher.prototype.draw = function(renderer, now) {
   }
 };
 
+Splasher.prototype.clear = function() {
+  for (var i = 0; i < this.splashes.length;) {
+    this.splashes[i].free();
+  }
+  this.splashes.length = 0;
+};
+

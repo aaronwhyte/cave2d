@@ -267,30 +267,29 @@ v SaveStack
 v Buttons
   v undo button
   v redo button
-- EditScreen should save at appropriate times
+v EditScreen should save at appropriate times
   v world dirty bit: always know if any world state changed since the last save
     v EditScreen.isDirty()
     v EditScreen.setDirty()
     v world-time advance
     v terrain change bit
     v add/remove
-  - when the user hits undo/redo
+  v when the user hits undo/redo
     v interrupt editor
       v release grip on object
       v halt digging/building/whatevs as if user released
-    - stop all object motion and rotation.
+    v stop all object motion and rotation.
       Otherwise, a setWorld() to a state in motion would instantly re-dirty the world.
-    - if isDirty() then saveStack.save()
-    - view check
-      - getView(dir)
-      - if view is close enough,
-        - selectWorld(dir)
-        - apply it.
-      - else set the view only
-  - auto-save when the world is dirty and has settled on its own. Important! That's the main source of saves.
-  - save during a long change edit-gesture, like a digging drag, throttled by wall-time?
-- editSceen.setGame() v1
-  - clear world and rebuild everything, regardless
+    v view check
+      v getView(dir)
+      v if view too far off, just set the view
+      v otherwise, really undo/redo
+        v if this is undo, and isDirty() then saveStack.save() so redo will work
+        v selectWorld(dir)
+        v apply it.
+  v auto-save when the world is dirty and has settled on its own. Important! That's the main source of saves.
+v editSceen.setGame() v1
+  v clear world and rebuild everything, regardless
 - setGame() v2
   - don't clear world
   - terrain cellwise bitgrid diff: added, removed, changed
@@ -303,6 +302,7 @@ v Buttons
     Or not. It would make an Save record a "change" not a "state" and then the direction of time would matter. AA -> AB -> BB
     But a memoized state could prevent deeper checking and not introduce "change" objects.
     And if states are immutable then reference sharing is OK, to reduce mem cost.
+- save during a long change edit-gesture, like a digging drag, throttled by wall-time
 
 World.processNextEvent fix
 - fix all world.processNextEvent calls to not reference a freed event! Also maybe reset on free, not on alloc.

@@ -226,6 +226,13 @@ Body.prototype.isMoving = function() {
   return this.angVel != 0 || !this.vel.isZero();
 };
 
+Body.prototype.stopMoving = function(now) {
+  this.invalidatePath();
+  this.moveToTime(now);
+  this.setAngVelAtTime(0, now);
+  this.setVelXYAtTime(0, 0, now);
+};
+
 /**
  * Gets the angular position at a given time.
  * @param {number} t

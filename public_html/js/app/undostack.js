@@ -22,7 +22,7 @@ UndoStack.REDO = -1;
 UndoStack.prototype.save = function(world, view) {
   // Pop all the redo records off, then push the new one on.
   // Saving while at non-zero depth destroys the old future. Typical time-travel rules. Me am play gods!
-  for (var i = 1; i < this.depth; i++) {
+  for (var i = 0; i < this.depth; i++) {
     this.queue.pop();
   }
   this.queue.enqueue(new UndoEntry(world, view));

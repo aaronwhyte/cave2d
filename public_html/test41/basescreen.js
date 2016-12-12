@@ -219,6 +219,7 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
   this.drawRightGraphs = true;
 
   this.dirty = false;
+  this.somethingMoving = false;
 }
 BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
@@ -438,15 +439,15 @@ BaseScreen.prototype.clock = function(startTimeMs) {
     this.handleInput();
   }
 
-  var somethingMoving = false;
+  this.somethingMoving = false;
   for (var id in this.world.bodies) {
     if (this.world.bodies[id].isMoving()) {
-      somethingMoving = true;
+      this.somethingMoving = true;
       break;
     }
   }
 
-  if (somethingMoving) {
+  if (this.somethingMoving) {
     this.setDirty(true);
     var e = this.world.getNextEvent();
     // Stop if there are no more events to process, or we've moved the game clock far enough ahead
@@ -755,25 +756,4 @@ BaseScreen.prototype.approxViewportsFromCamera = function(v) {
   return Math.max(
       Math.abs(this.camera.getX() - v.x) * ppm / this.canvas.width,
       Math.abs(this.camera.getY() - v.y) * ppm / this.canvas.height);
-};
-
-BaseScreen.prototype.unloadLevel = function() {
-  this.tileGrid.unloadAllCells();
-  this.tileGrid = null;
-  if (this.world) {
-    for (var spiritId in this.world.spirits) {
-      var s = this.world.spirits[spiritId];
-      var b = this.world.bodies[s.bodyId];
-      if (b) {
-        this.world.removeBodyId(b.id);
-      }
-      this.world.removeSpiritId(spiritId);
-    }
-    this.world = null;
-  }
-  this.camera.setXY(0, 0);
-  if (this.editor) {
-    this.editor.cursorPos.reset();
-    this.editor.cursorVel.reset();
-  }
 };

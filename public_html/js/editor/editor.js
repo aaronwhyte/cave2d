@@ -130,6 +130,8 @@ function Editor(host, canvas, renderer, glyphs, editorStamps) {
   this.addLeftTriggerRules(this.topLeftTriggers, 1);
   this.addLeftTriggerRules(this.bottomLeftTriggers, -1);
   this.updateHudLayout();
+
+  this.ongoingEditGesture = false;
 }
 
 /**
@@ -139,7 +141,7 @@ function Editor(host, canvas, renderer, glyphs, editorStamps) {
  */
 Editor.prototype.addLeftTriggerRules = function(triggers, direction) {
   var triggerFractionY = 1/(this.leftTriggers.length + 1);
-  var maxSizeRad = new Vec4(1/4, triggerFractionY, 1);
+  var maxSizeRad = new Vec4(1/5, triggerFractionY, 1);
   var maxSizePx = new Vec4(50, 50, Infinity);
   var sourceAnchorRad = new Vec4(-1, -direction, 0);
   for (var i = 0; i < triggers.length; i++) {
@@ -207,6 +209,7 @@ Editor.prototype.setKeyboardTipTimeoutMs = function(ms) {
 
 Editor.prototype.interrupt = function() {
   this.cameraVel.reset();
+  this.cursorVel.reset();
   this.setIndicatedBodyId(null);
   this.oldPanTriggerVal = false;
   this.oldAddTriggerVal = false;
@@ -214,9 +217,11 @@ Editor.prototype.interrupt = function() {
   for (var i = 0; i < this.leftTriggers.length; i++) {
     this.leftTriggers[i].release();
   }
+  this.ongoingEditGesture = false;
 };
 
 Editor.prototype.handleInput = function() {
+  this.ongoingEditGesture = false;
   var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
   var sensitivity = this.host.getViewDist() * 0.02;
 
@@ -284,6 +289,7 @@ Editor.prototype.handleInput = function() {
 
   if (this.gripTriggerWidget.getVal() && this.indicatedBodyId) {
     this.dragObject();
+    this.ongoingEditGesture = true;
   } else {
     if (this.gripPoint) {
       this.gripPoint.free();
@@ -294,8 +300,10 @@ Editor.prototype.handleInput = function() {
 
   if (this.digTriggerWidget.getVal()) {
     this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 1);
+    this.ongoingEditGesture = true;
   } else if (this.fillTriggerWidget.getVal()) {
     this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 0);
+    this.ongoingEditGesture = true;
   }
 
   if (this.addTriggerWidget.getVal() && !this.oldAddTriggerVal) {
@@ -352,6 +360,7 @@ Editor.prototype.dragObject = function() {
     gripInWorld.free();
     force.free();
     bodyToGrip.free();
+    this.ongoingEditGesture = true;
   }
 };
 

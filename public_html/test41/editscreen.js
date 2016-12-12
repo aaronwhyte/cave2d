@@ -8,6 +8,7 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
   this.camera = new Camera(0.2, 0.6, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
+  this.undoStack = new UndoStack(EditScreen.MAX_UNDO_DEPTH);
 
   var self = this;
 
@@ -20,9 +21,8 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.undoDownFn = function(e) {
     e = e || window.event;
-    console.log('todo: undo');
-    self.setDirty(false);
-    self.editor.interrupt();
+    self.restoreFromUndoStack(UndoStack.UNDO);
+
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
     // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
@@ -31,9 +31,8 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.redoDownFn = function(e) {
     e = e || window.event;
-    console.log('todo: redo');
-    self.setDirty(false);
-    self.editor.interrupt();
+    self.restoreFromUndoStack(UndoStack.REDO);
+
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
     // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
@@ -46,6 +45,8 @@ EditScreen.prototype.constructor = EditScreen;
 EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
 EditScreen.ANT_RAD = 1.2;
+
+EditScreen.MAX_UNDO_DEPTH = 200;
 
 EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
@@ -139,7 +140,7 @@ EditScreen.prototype.initWidgets = function() {
       .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
       .setAspectRatio(new Vec4(1, 1))
       .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
-      .setTargetAnchor(new Vec4(1 + 3 + 3, -1), Vec4.ZERO);
+      .setTargetAnchor(new Vec4(1 + 2 * (2 + 0.25), -1), Vec4.ZERO);
 
   this.redoTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.redoDownFn)
@@ -155,19 +156,17 @@ EditScreen.prototype.initWidgets = function() {
       .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
       .setAspectRatio(new Vec4(1, 1))
       .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
-      .setTargetAnchor(new Vec4(1 + 3, -1), Vec4.ZERO);
+      .setTargetAnchor(new Vec4(1 + 1 * (2 + 0.25), -1), Vec4.ZERO);
 };
 
-EditScreen.prototype.toJSON = function() {
+EditScreen.prototype.worldToJSON = function() {
   var json = {
     terrain: this.bitGrid.toJSON(),
     now: this.world.now,
     bodies: [],
     spirits: [],
     timeouts: [],
-    splashes: [],
-    cursorPos: this.editor.cursorPos.toJSON(),
-    cameraPos: this.camera.cameraPos.toJSON()
+    splashes: []
   };
   // bodies
   for (var bodyId in this.world.bodies) {
@@ -201,6 +200,14 @@ EditScreen.prototype.toJSON = function() {
   return json;
 };
 
+EditScreen.prototype.viewToJSON = function() {
+  var json = {
+    cursorPos: this.editor.cursorPos.toJSON(),
+    cameraPos: this.camera.cameraPos.toJSON()
+  };
+  return json;
+};
+
 EditScreen.prototype.createDefaultWorld = function() {
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
   var ants = 24;
@@ -212,12 +219,113 @@ EditScreen.prototype.createDefaultWorld = function() {
   for (var a = 0; a < ants; a++) {
     this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
+  this.saveToUndoStack();
 };
 
 EditScreen.prototype.handleInput = function () {
   if (!this.world) return;
   this.editor.handleInput();
 };
+
+EditScreen.prototype.restoreFromUndoStack = function(offset) {
+  if (this.isDirty()) {
+    if (offset != UndoStack.UNDO) {
+      // throw Error('offset ' + offset + ' is not Undo, and the world is dirty. Inconceivable!');
+      return;
+    }
+    this.saveToUndoStack();
+  }
+  if (!this.undoStack.hasEntryAtOffset(offset)) {
+    // throw Error('Trying to undo/redo with offset ' + offset + ', but there are no more entries.');
+    return;
+  }
+  // TODO: save the view before and after the edit gesture, for symmetrical view restores?
+  var view = this.undoStack.getViewAtOffset(offset == UndoStack.UNDO ? 0 : offset);
+  var viewCameraPos = Vec2d.fromJSON(view.cameraPos);
+  var viewCursorPos = Vec2d.fromJSON(view.cursorPos);
+  var maxDist = this.getViewDist() * 0.9;
+  var restoreWorld = viewCameraPos.distance(this.camera.cameraPos) <= maxDist;// && viewCursorPos.distance(this.editor.cursorPos) <= maxDist;
+  if (!restoreWorld) {
+    this.camera.set(viewCameraPos);
+    this.editor.cursorPos.set(viewCursorPos);
+  } else {
+    // version 1: just unload everything
+    this.tileGrid.unloadAllCells();
+    this.world.unload();
+    this.splasher.clear();
+
+    this.loadWorldFromJson(this.undoStack.selectWorld(offset));
+  }
+};
+
+EditScreen.prototype.saveToUndoStack = function() {
+  this.stopChanges();
+  this.undoStack.save(this.worldToJSON(), this.viewToJSON());
+  this.setDirty(false);
+};
+
+/**
+ * @param {Object} json
+ */
+EditScreen.prototype.loadWorldFromJson = function(json) {
+  this.world.now = json.now;
+
+  // bodies
+  var lostSpiritIdToBodyId = {};
+  for (var i = 0; i < json.bodies.length; i++) {
+    var bodyJson = json.bodies[i];
+    var body = new Body();
+    body.setFromJSON(bodyJson);
+    this.world.loadBody(body);
+    lostSpiritIdToBodyId[body.spiritId] = body.id;
+  }
+
+  // spirits
+  for (var i = 0; i < json.spirits.length; i++) {
+    var spiritJson = json.spirits[i];
+    var spiritType = spiritJson[0];
+    var spiritConfig = this.spiritConfigs[spiritType];
+    if (spiritConfig) {
+      var spirit = new spiritConfig.ctor(this);
+      spirit.setModelStamp(spiritConfig.stamp);
+      spirit.setFromJSON(spiritJson);
+      this.world.loadSpirit(spirit);
+    } else {
+      console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
+    }
+    delete lostSpiritIdToBodyId[spirit.id];
+  }
+
+  // timeouts
+  var e = new WorldEvent();
+  for (var i = 0; i < json.timeouts.length; i++) {
+    e.setFromJSON(json.timeouts[i]);
+    this.world.loadTimeout(e);
+  }
+
+  // terrain
+  // TODO: tileGrid.setFromJSON(json.terrain); and that's it.
+  this.bitGrid = BitGrid.fromJSON(json.terrain);
+  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
+  this.tileGrid.flushTerrainChanges();
+
+//  // splashes
+//  var splash = new Splash();
+//  for (var i = 0; i < json.splashes.length; i++) {
+//    var splashJson = json.splashes[i];
+//    var splashType = splashJson[0];
+//    // TODO: splashConfig plugin, like spiritConfig
+//  }
+
+  // Stop spiritless bodies from haunting the world.
+  // This can happen if I add spirits to a level, then remove the definition.
+  // TODO: something better
+  for (var spiritId in lostSpiritIdToBodyId) {
+    var bodyId = lostSpiritIdToBodyId[spiritId];
+    this.world.removeBodyId(bodyId);
+  }
+};
+
 
 EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
@@ -232,6 +340,11 @@ EditScreen.prototype.drawScene = function() {
   this.editor.drawScene();
   this.drawHud();
   this.configMousePointer();
+
+  // TODO move this somewhere better?
+  if (this.isDirty() && !this.somethingMoving && !this.editor.ongoingEditGesture) {
+    this.saveToUndoStack();
+  }
 
   // Animate whenever this thing draws.
   if (!this.paused) {
@@ -264,6 +377,13 @@ EditScreen.prototype.configMousePointer = function() {
     this.canvas.style.cursor = "";
   } else {
     this.canvas.style.cursor = "crosshair";
+  }
+};
+
+EditScreen.prototype.stopChanges = function () {
+  this.editor.interrupt();
+  for (var bodyId in this.world.bodies) {
+    this.world.bodies[bodyId].stopMoving(this.now());
   }
 };
 
