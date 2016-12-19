@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>ChangeStack test</title>
+  <script src="../../js/strings.js"></script>
+  <script src="../../js/testing.js"></script>
+  <script src="../../js/circularqueue.js"></script>
+  <script src="../../js/app/changeop.js"></script>
+  <script src="../../js/app/changestack.js"></script>
+  <script>
+    function co(id, before, after) {
+      return new ChangeOp('t', id, before, after);
+    }
+
+    function assertChangeEquals(a, b) {
+      var ja = JSON.stringify(a);
+      var jb = JSON.stringify(b);
+      if (ja != jb) throw Error('changes not equal:\n' +  ja + '\n!=\n', jb);
+    }
+
+    addTest(function hasUndoRedo() {
+      var us = new ChangeStack(99);
+      assertEquals(false, us.hasUndo());
+      assertEquals(false, us.hasRedo());
+
+      us.save([co(1, null, 'a'), co(2, 'b', null), co(3, 'c', 'd')]);
+      assertEquals(true, us.hasUndo());
+      assertEquals(false, us.hasRedo());
+
+      var ignored = us.selectUndo();
+      assertEquals(false, us.hasUndo());
+      assertEquals(true, us.hasRedo());
+    });
+
+    addTest(function overflowDropsEntries() {
+      var us = new ChangeStack(2);
+      us.save([co(1, 10, 20)]);
+      us.save([co(1, 20, 30)]);
+      us.save([co(1, 30, 40)]);
+      assertEquals(true, us.hasUndo());
+      us.selectUndo();
+      assertEquals(true, us.hasUndo());
+      us.selectUndo();
+      assertEquals(false, us.hasUndo());
+    });
+
+    addTest(function undoReversesChanges() {
+      var us = new ChangeStack(2);
+      us.save([co(1, null, 'a'), co(2, 'b', null), co(3, 'c', 'd')]);
+      var reverse = us.selectUndo();
+      assertChangeEquals(co(3, 'd', 'c'), reverse[0]);
+      assertChangeEquals(co(2, null, 'b'), reverse[1]);
+      assertChangeEquals(co(1, 'a', null), reverse[2]);
+    });
+  </script>
+</head>
+<body onload="runTests()"></body>
+</html>
