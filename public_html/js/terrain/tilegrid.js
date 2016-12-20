@@ -12,14 +12,17 @@ function TileGrid(bitGrid, renderer, world, hitGroup) {
   this.tiles = {};
   this.segment = new Segment(new Vec2d(), new Vec2d());
   this.wallGrip = 0.9;
+
+  // array accumuating changes while recording, or null if not recording.
+  this.changes = null;
 }
 
 /**
  * @param {Vec2d} p1
  * @param {Vec2d} p2
  * @param {number} rad
- * @param {number}  color
- * @return {boolean} true if something actually changed
+ * @param {number} color
+ * @return {Array.<number>} A freshly allocated array of changed cell IDs
  */
 TileGrid.prototype.drawTerrainPill = function(p1, p2, rad, color) {
   this.segment.setP1P2(p1, p2);
@@ -34,25 +37,43 @@ TileGrid.prototype.getStampAtCellXY = function(cx, cy) {
   return tile && tile.stamp;
 };
 
+TileGrid.prototype.startRecordingChanges = function() {
+  this.bitGrid.startRecordingChanges();
+};
 
-////////////
-// private
-////////////
+TileGrid.prototype.stopRecordingChanges = function() {
+  var changes = this.bitGrid.stopRecordingChanges();
+  for (var i = 0; i < changes.length; i++) {
+    var c = changes[i];
+    // TODO: Decorate changes with before and after rects, in world coords
+  }
+  return changes;
+};
+
+TileGrid.prototype.applyChanges = function(changes) {
+  this.bitGrid.applyChanges(changes);
+  this.flushTerrainChanges();
+};
 
 /**
- * @returns {boolean} true if anything actually changed
+ * @returns {Array.<number>} Freshly allocated array of cell IDs that changed
  */
 TileGrid.prototype.flushTerrainChanges = function() {
-  var changed = false;
+  this.world.pauseRecordingChanges();
   var changedCellIds = this.bitGrid.flushChangedCellIds();
   if (changedCellIds.length) {
-    changed = true;
     for (var i = 0; i < changedCellIds.length; i++) {
       this.changeTerrain(changedCellIds[i]);
     }
   }
-  return changed;
+  this.world.resumeRecordingChanges();
+  return changedCellIds;
 };
+
+
+////////////
+// private
+////////////
 
 /**
  * The cell at the cellId definitely changes, so unload it and reload it.
@@ -91,7 +112,7 @@ TileGrid.prototype.loadCellXY = function(cx, cy) {
       tile.bodyIds.push(this.world.addBody(body));
     }
   }
-  // TODO don't create a stamp until a stampless tiles is actually being rendered.
+  // TODO don't create a stamp until a stampless tile is actually being rendered.
   // TODO don't repeat stamp for 100% solid tiles.
   if (!tile.stamp) {
     if (!rects) rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);

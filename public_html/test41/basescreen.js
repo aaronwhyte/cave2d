@@ -312,6 +312,8 @@ BaseScreen.prototype.initSpiritConfigs = function() {
   // first column
   addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
       BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
+
+  this.spiritFactory = new SpiritFactory(this.spiritConfigs);
 };
 
 BaseScreen.Group = {
@@ -344,7 +346,7 @@ BaseScreen.prototype.initWorld = function() {
     [g.ENEMY_SCAN, g.NEUTRAL],
     [g.ENEMY_SCAN, g.ENEMY]
   ];
-  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs);
+  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs, this.spiritFactory);
   this.resolver = new HitResolver();
   this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
@@ -719,7 +721,8 @@ BaseScreen.prototype.drawSpirits = function() {
 ///////////////////////////
 
 BaseScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
-  if (this.tileGrid.drawTerrainPill(pos0, pos1, rad, color)) {
+  var changedCellIds = this.tileGrid.drawTerrainPill(pos0, pos1, rad, color);
+  if (changedCellIds.length) {
     this.setDirty(true);
   }
 };

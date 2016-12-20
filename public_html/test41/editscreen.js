@@ -8,7 +8,7 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
   this.camera = new Camera(0.2, 0.6, BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
-  this.undoStack = new UndoStack(EditScreen.MAX_UNDO_DEPTH);
+  this.changeStack = new ChangeStack(EditScreen.MAX_UNDO_DEPTH);
 
   var self = this;
 
@@ -21,7 +21,7 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.undoDownFn = function(e) {
     e = e || window.event;
-    self.restoreFromUndoStack(UndoStack.UNDO);
+    self.undo();
 
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
@@ -31,7 +31,7 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.redoDownFn = function(e) {
     e = e || window.event;
-    self.restoreFromUndoStack(UndoStack.REDO);
+    self.redo();
 
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
@@ -209,6 +209,7 @@ EditScreen.prototype.viewToJSON = function() {
 };
 
 EditScreen.prototype.createDefaultWorld = function() {
+  this.world.setChangeRecordingEnabled(true);
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
   var ants = 24;
   for (var a = 0; a < ants; a++) {
@@ -219,7 +220,7 @@ EditScreen.prototype.createDefaultWorld = function() {
   for (var a = 0; a < ants; a++) {
     this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
-  this.saveToUndoStack();
+  this.startRecordingChanges();
 };
 
 EditScreen.prototype.handleInput = function () {
@@ -227,41 +228,63 @@ EditScreen.prototype.handleInput = function () {
   this.editor.handleInput();
 };
 
-EditScreen.prototype.restoreFromUndoStack = function(offset) {
-  if (this.isDirty()) {
-    if (offset != UndoStack.UNDO) {
-      // throw Error('offset ' + offset + ' is not Undo, and the world is dirty. Inconceivable!');
-      return;
-    }
-    this.saveToUndoStack();
-  }
-  if (!this.undoStack.hasEntryAtOffset(offset)) {
-    // throw Error('Trying to undo/redo with offset ' + offset + ', but there are no more entries.');
-    return;
-  }
-  // TODO: save the view before and after the edit gesture, for symmetrical view restores?
-  var view = this.undoStack.getViewAtOffset(offset == UndoStack.UNDO ? 0 : offset);
-  var viewCameraPos = Vec2d.fromJSON(view.cameraPos);
-  var viewCursorPos = Vec2d.fromJSON(view.cursorPos);
-  var maxDist = this.getViewDist() * 0.9;
-  var restoreWorld = viewCameraPos.distance(this.camera.cameraPos) <= maxDist;// && viewCursorPos.distance(this.editor.cursorPos) <= maxDist;
-  if (!restoreWorld) {
-    this.camera.set(viewCameraPos);
-    this.editor.cursorPos.set(viewCursorPos);
-  } else {
-    // version 1: just unload everything
-    this.tileGrid.unloadAllCells();
-    this.world.unload();
-    this.splasher.clear();
+EditScreen.prototype.startRecordingChanges = function() {
+  this.tileGrid.startRecordingChanges();
+  this.world.startRecordingChanges();
+};
 
-    this.loadWorldFromJson(this.undoStack.selectWorld(offset));
+EditScreen.prototype.stopRecordingChanges = function() {
+  var changes = this.tileGrid.stopRecordingChanges();
+  changes.concat(this.world.stopRecordingChanges());
+  return changes;
+};
+
+EditScreen.prototype.undo = function() {
+  if (this.isDirty()) {
+    this.saveToChangeStack();
+  }
+  if (this.changeStack.hasUndo()) {
+    // TODO view stuff
+    this.applyChanges(this.changeStack.selectUndo());
   }
 };
 
-EditScreen.prototype.saveToUndoStack = function() {
-  this.stopChanges();
-  this.undoStack.save(this.worldToJSON(), this.viewToJSON());
+EditScreen.prototype.redo = function() {
+  if (this.changeStack.hasRedo()) {
+    // TODO view stuff
+    this.applyChanges(this.changeStack.selectRedo());
+  }
+};
+
+EditScreen.prototype.applyChanges = function(changes) {
+  var terrainChanges = [];
+  var worldChanges = [];
+  for (var i = 0; i < changes.length; i++) {
+    var c = changes[i];
+    switch (c.type) {
+      case BitGrid.CHANGE_TYPE:
+        terrainChanges.push(c);
+        break;
+      case World.ChangeType.BODY:
+      case World.ChangeType.SPIRIT:
+      case World.ChangeType.NOW:
+        worldChanges.push(c);
+        break;
+      default:
+        console.log('Unhandled change: ' + JSON.stringify(c));
+    }
+  }
+  this.tileGrid.applyChanges(terrainChanges);
+  this.world.applyChanges(worldChanges);
+};
+
+/**
+ * Stops recording, saves the results, and clears the dirty bit.
+ */
+EditScreen.prototype.saveToChangeStack = function () {
+  this.changeStack.save(this.stopRecordingChanges());
   this.setDirty(false);
+  this.startRecordingChanges();
 };
 
 /**
@@ -343,7 +366,7 @@ EditScreen.prototype.drawScene = function() {
 
   // TODO move this somewhere better?
   if (this.isDirty() && !this.somethingMoving && !this.editor.ongoingEditGesture) {
-    this.saveToUndoStack();
+    this.saveToChangeStack();
   }
 
   // Animate whenever this thing draws.

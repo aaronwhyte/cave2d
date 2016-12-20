@@ -8,6 +8,7 @@
   <script src="../../js/bits/bitqueue.js"></script>
   <script src="../../js/bits/lempelziv.js"></script>
   <script src="../../js/bits/squisher.js"></script>
+  <script src="../../js/app/changeop.js"></script>
   <script src="../../js/terrain/bitgrid.js"></script>
   <script src="../../js/geometry/vec2d.js"></script>
   <script src="../../js/geometry/segment.js"></script>
@@ -49,6 +50,27 @@
       bg.drawPill(new Segment(new Vec2d(-100, -200), new Vec2d(300, 0)), 50, 1);
       bg.drawPill(new Segment(new Vec2d(-100, -200), new Vec2d(300, 0)), 50, 0);
       assertStringifyEquals(bg.cells, {});
+    });
+
+    addTest(function recordChanges() {
+      var bg = new BitGrid(1);
+      bg.startRecordingChanges();
+      bg.drawPill(new Segment(new Vec2d(-100, 0), new Vec2d(100, 0)), 50, 1);
+      bg.drawPill(new Segment(new Vec2d(0, -100), new Vec2d(0, 100)), 50, 0);
+      var changeOps = bg.stopRecordingChanges();
+
+      var snapshot = bg.toJSON();
+
+      // undo it all
+      for (var i = changeOps.length - 1; i >= 0; i--) {
+        bg.applyChanges([changeOps[i].createReverse()]);
+      }
+      // the result should be blank.
+      assertStringifyEquals(bg.cells, {});
+
+      // redo it all
+      bg.applyChanges(changeOps);
+      assertStringifyEquals(bg.toJSON(), snapshot);
     });
   </script>
 </head>

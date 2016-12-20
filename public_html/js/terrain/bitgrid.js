@@ -12,8 +12,14 @@ function BitGrid(pixelSize) {
   // 32x32 pixel subgrid.
   this.cells = {};
 
-  // A map from touched cellIds to their old values, so callers can see which were modified.
+  // A map from touched cellIds to their old values, so callers can see which were modified,
+  // for immediate, interactive redrawing, and creation an destruction of world bodies.
   this.changedCells = {};
+
+  // Map from changed cellIds to their old values, when changes are being recorded. Otherwise it's null.
+  // It's scope is longer than changedCells - changeOps's scope is a undoable/redoable gesture. And it is optional,
+  // since it's only important when editing, and therefore undoing, is happening.
+  this.changeOpBefores = null;
 }
 
 /**
@@ -34,6 +40,39 @@ BitGrid.ROW_OF_ONES = (function() {
   }
   return row;
 })();
+
+BitGrid.CHANGE_TYPE = 'bg';
+
+BitGrid.prototype.startRecordingChanges = function() {
+  if (this.changeOpBefores) throw Error("BitGrid already recording changes");
+  this.changeOpBefores = {};
+};
+
+BitGrid.prototype.stopRecordingChanges = function() {
+  if (!this.changeOpBefores) throw Error("BitGrid was not recording changes");
+  var retval = [];
+  for (var cellId in this.changeOpBefores) {
+    retval.push(new ChangeOp(BitGrid.CHANGE_TYPE, cellId, this.changeOpBefores[cellId], this.cells[cellId], null, null));
+  }
+  this.changeOpBefores = null;
+  return retval;
+};
+
+BitGrid.prototype.applyChanges = function(changeOps) {
+  for (var i = 0, n = changeOps.length; i < n; i++) {
+    var changeOp = changeOps[i];
+    var cellId = changeOp.id;
+    // Record changedCells, to support caller.flushChangedCellIds.
+    this.changedCells[cellId] = this.cells[cellId];
+
+    // Really update the cell.
+    if (!changeOp.afterState) {
+      delete this.cells[cellId];
+    } else {
+      this.cells[cellId] = changeOp.afterState;
+    }
+  }
+};
 
 BitGrid.prototype.cellIdToIndexVec = function(cellId, out) {
   if (!out) out = new Vec2d();
@@ -218,7 +257,70 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
     if (newRowVal != oldRowVal) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
-        this.changedCells[cellId] = Array.isArray(cell) ? cell.concat() : cell;
+        var originalVal = Array.isArray(cell) ? cell.concat() : cell;
+        this.changedCells[cellId] = originalVal;
+        if (this.changeOpBefores) {
+          this.changeOpBefores[cellId] = originalVal;
+        }
+        clean = false;
+      }
+      // If it wasn't an array already, make it one now so we can adjust this row.
+      if (!isArray) {
+        cell = this.createCellArray(startingColor);
+        this.setCellAtIndexXY(cx, cy, cell);
+        isArray = true;
+      }
+      cell[by] = newRowVal;
+    }
+  }
+
+  // Simplify the grid?
+  if (zeroRows == BitGrid.BITS) {
+    this.deleteCellAtIndexXY(cx, cy);
+  } else if (oneRows == BitGrid.BITS) {
+    this.setCellAtIndexXY(cx, cy, 1);
+  }
+  pixelCenter.free();
+};
+
+BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
+  var pixelCenter = Vec2d.alloc();
+  var cell = this.getCellAtIndexXY(cx, cy);
+
+  var cellId = this.getCellIdAtIndexXY(cx, cy);
+  var clean = !(cellId in this.changedCells);
+
+  var radSquared = rad * rad;
+  var isArray = Array.isArray(cell);
+  var startingColor = isArray ? 0.5 : (cell ? 1 : 0);
+  var zeroRows = 0;
+  var oneRows = 0;
+  for (var by = 0; by < BitGrid.BITS; by++) {
+    var oldRowVal = isArray ? cell[by] : (startingColor ? BitGrid.ROW_OF_ONES : 0);
+    var newRowVal = oldRowVal;
+    pixelCenter.y = cy * this.cellWorldSize + by * this.bitWorldSize;
+    for (var bx = 0; bx < BitGrid.BITS; bx++) {
+      pixelCenter.x = cx * this.cellWorldSize + bx * this.bitWorldSize;
+      if (seg.distanceToPointSquared(pixelCenter) <= radSquared) {
+        newRowVal = color
+            ? (newRowVal | (1 << bx))
+            : (newRowVal & (BitGrid.ROW_OF_ONES ^ (1 << bx)));
+      }
+    }
+    if (newRowVal == 0) {
+      zeroRows++;
+    } else if (newRowVal == BitGrid.ROW_OF_ONES) {
+      oneRows++;
+    }
+
+    if (newRowVal != oldRowVal) {
+      // If it was clean to start with, then preserve the clean value in changedCells.
+      if (clean) {
+        var originalVal = Array.isArray(cell) ? cell.concat() : cell;
+        this.changedCells[cellId] = originalVal;
+        if (this.changeOpBefores && !(cellId in this.changeOpBefores)) {
+          this.changeOpBefores[cellId] = originalVal;
+        }
         clean = false;
       }
       // If it wasn't an array already, make it one now so we can adjust this row.

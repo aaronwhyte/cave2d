@@ -14,12 +14,15 @@
  * a group's members collide with each other.
  * If falsey, this defaults to one group, "0", which collides with itself.
  *
+ * @param {=SpiritFactory} opt_spiritFactory If you want undo support, you'll need a spirit factory.
+ *
  * @constructor
  */
-function World(opt_cellSize, opt_groupCount, opt_groupPairs) {
+function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) {
   this.cellSize = opt_cellSize || World.DEFAULT_CELL_SIZE;
   this.groupCount = opt_groupCount || 1;
   this.groupPairs = opt_groupPairs || [[0, 0]];
+  this.spiritFactory = opt_spiritFactory || null;
   this.groupHitsGroups = [];
   for (var i = 0; i < this.groupPairs.length; i++) {
     var pair = this.groupPairs[i];
@@ -64,6 +67,15 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs) {
 
   // cache for rayscans and overlap scans.
   this.scannedBodyIds = new ObjSet();
+
+  // If you want this enabled, do it as part of world creation
+  this.changeRecordingEnabled = false;
+
+  this.changeRecordingPaused = false;
+
+  this.bodyBefores = null;
+  this.spiritBefores = null;
+  this.nowBefore = null;
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -79,6 +91,12 @@ World.GRID_HUGENESS = 10000;
  * The cell at index -1, 1 has its center at -CELL_SIZE, CELL_SIZE.
  */
 World.DEFAULT_CELL_SIZE = 15;
+
+World.ChangeType = {
+  BODY: 'wb',
+  SPIRIT: 'ws',
+  NOW: 'wn'
+};
 
 World.prototype.cellCoord = function(worldCoord) {
   return Math.round(worldCoord / this.cellSize);
@@ -709,7 +727,7 @@ World.prototype.getOverlaps = function(body) {
 
 World.prototype.getPaddedBodyBoundingRect = function(body, time, rectOut) {
   return body.getBoundingRectAtTime(time, rectOut).pad(this.cellSize * World.BRECT_FUDGE_FACTOR)
-}
+};
 
 World.prototype.unload = function() {
   for (var spiritId in this.spirits) {
@@ -719,4 +737,89 @@ World.prototype.unload = function() {
     this.removeBodyId(bodyId);
   }
   this.queue.clear();
+};
+
+//////////////////////////
+// Support for undo/redo
+//////////////////////////
+
+World.prototype.setChangeRecordingEnabled = function(enabled) {
+  this.changeRecordingEnabled = enabled;
+};
+
+World.prototype.startRecordingChanges = function() {
+  if (!this.changeRecordingEnabled) throw Error('changeRecordingEnabled is falsey');
+  if (this.bodyBefores || this.spiritBefores) throw Error('change recording was already started');
+  this.bodyBefores = {};
+  this.spiritBefores = {};
+  this.nowBefore = this.now;
+};
+
+World.prototype.pauseRecordingChanges = function() {
+  this.changeRecordingPaused = true;
+};
+
+World.prototype.resumeRecordingChanges = function() {
+  this.changeRecordingPaused = false;
+};
+
+World.prototype.stopRecordingChanges = function() {
+  if (!this.changeRecordingEnabled) throw Error('changeRecordingEnabled is falsey');
+  if (!this.bodyBefores || !this.spiritBefores) throw Error('change recording was not started');
+  var changes = [];
+  for (var bodyId in this.bodyBefores) {
+    var body = this.bodies[bodyId];
+    changes.push(new ChangeOp(
+        World.ChangeType.BODY, bodyId, this.bodyBefores[bodyId], body ? body.toJSON() : null));
+  }
+  for (var spiritId in this.spiritBefores) {
+    var spirit = this.spirits[spiritId];
+    changes.push(new ChangeOp(
+        World.ChangeType.SPIRIT, spiritId, this.spiritBefores[spiritId], spirit ? spirit.toJSON() : null));
+  }
+  if (this.nowBefore != this.now) {
+    changes.push(new ChangeOp(World.ChangeType.NOW, 0, this.nowBefore, this.now));
+  }
+  this.bodyBefores = null;
+  this.spiritBefores = null;
+  this.nowBefore = this.now;
+  return changes;
+};
+
+World.prototype.applyChanges = function(changes) {
+  for (var i = 0; i < changes.length; i++) {
+    this.applyChange(changes[i]);
+  }
+};
+
+World.prototype.applyChange = function(change) {
+  switch (change.type) {
+    case World.ChangeType.BODY:
+      var afterBody = change.afterState ? Body.fromJSON(change.afterState) : null;
+      if (change.beforeState == null) {
+        this.loadBody(afterBody);
+      } else if (!afterBody) {
+        this.removeBodyId(change.id)
+      } else {
+        // do a change as a remove and an add
+        this.removeBodyId(change.id);
+        this.loadBody(afterBody);
+      }
+      break;
+    case World.ChangeType.SPIRIT:
+      var afterSpirit = this.spiritFactory.createSpiritFromJson(change.afterState);
+      if (change.beforeState == null) {
+        this.loadSpirit(afterSpirit);
+      } else if (!afterSpirit) {
+        this.removeSpiritId(change.id)
+      } else {
+        // do a change as a remove and an add
+        this.removeSpiritId(change.id);
+        this.loadSpirit(afterSpirit);
+      }
+      break;
+    case World.ChangeType.NOW:
+      this.now = change.afterState;
+      break;
+  }
 };

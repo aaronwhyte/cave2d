@@ -290,18 +290,96 @@ v EditScreen should save at appropriate times
   v auto-save when the world is dirty and has settled on its own. Important! That's the main source of saves.
 v editSceen.setGame() v1
   v clear world and rebuild everything, regardless
-- setGame() v2
-  - don't clear world
-  - terrain cellwise bitgrid diff: added, removed, changed
-  - non-terrain bodies - compare serialized forms
-  - non-terrain spirits
-  - timeouts - ditto
+
+Undo/Redo 2: Redoing Undo
+It's most important to make *recording* changes efficient, since that happens all the time even if the recordings are
+never used to undo. But applying changes (undo/redo) should also be not 100s of ms or worse.
+The old undo system got slower as the world grew. The new one should scale with the size of each change, not the size
+of the world.
+v reversible ChangeOp class
+  v object identifier
+  v states, before and after. null means nonexistence - creation/destruction
+  v bounding rect (before and after) of the change in world-space
+    * for terrain, it's cell rect (or even something surrounding the affected bits)
+    * for object, it's starting/ending position and rads (null for nonexistence)
+    * for timeouts and other non-spacial changes, null.
+v "Changable" API for objects that support generating and applying changes?????
+  * startRecordingChanges()
+  * changes stopRecordingChanges()
+  * applyChange(ChangeOp)
+  v BitGrid
+    v startRecordingChanges()
+    v changes stopRecordingChanges()
+    v applyChange()
+    v unit-test BitGrid more
+  v TileGrid
+    v startRecordingChanges()
+    v changes stopRecordingChanges()
+    v applyChange()
+      v pauseRecordingChanges and resumeRecordingChanges around body-adding
+  v ChangeOp: add "type" enum, controlled by app, for routing changes the the code that knows how to apply them
+Make the UI work for terrain at least
+v ChangeStack
+  v depth points to last set of changes applied, so it's to the right of the changes basically
+  v each entry is just an array of ChangeOps
+  v save - chops off redo and stuff
+  v hasUndo, Redo
+  v selectUndo, Redo
+  v unit test
+
+- EditScreen again
+  v gets changes when button is pushed, if they exist
+  v applies 'em, routing them to the right place based on type.
+  v start recording changes at some point. Immeidately after stopping them? Should I ever actually stop, or do I really want a "flush"?
+  - Bug: redo is not chunking terrain changes correctly.
+
+- design harder!
+  Starting to feel like we need a higher-level manager for the EditScreen to delegate to...
+  * has a list of Changable things
+  * fans out startRecordingChanges
+  * fans out stopRecordingChanges and updates ChangeStack
+  * routes changes for apply()
+  * something about view rect comparisons
+Changable World
+  v add "recordChanges" boolean - field, setter/constructor
+  v bodyBefores: map bodyId to before-state JSON
+  v spiritBefores: map spiritId to before-state JSON
+  v startRecordingChanges()
+  v stopRecordingChanges()
+  v pauseRecordingChanges()
+  v resumeRecordingChanges()
+  - change listeners
+    - onBeforeBodyChange(body)
+      - if recording && "before" is not already present, record "before"
+      - map of body before-states
+    - onBeforeSpiritChange(body): if recording && "before" is not already present, record "before"
+  - Body changes
+    - optional setChangeListener(bodyChangeListener)
+    - calls changeListener.onBeforeBodyChange(this) before any mutation
+  - timeoutBefores?: map timeoutId to before-state JSON? They don't really have IDs though do they?
+  - Add "type" enum to ChangeOp for easy routing: terrain, body, spirit, timeout, world time, camera pos, etc.
+    - world implements
+    * Easiest: snapshot non-terrain world when starting to record
+      * World stores snapshot JSON for all non-terrain bodies in startRecordingChanges,
+      * World compares with originals with newly updated bodies (plus adds and removes)
+      * Alterations update the snapshot.
+      * gross and hacky and scales with world size, not edit size.
+    * BEST: beforeChange() in bodies which (lazily) records a "before" snapshot if the world is recording
+      * world needs to tell non-terrain bodies about world's beforeChangeBody method.
+      * Every damn bit of mutation code (compatible with undo) needs to be in a Body method so it can trigger
+        beforeChange(). It should anyhow so OK.
+      * so then beforeChange can be body-private.
+      * Ditto for spirits: beforeChange before changing serializable state.
+      * maybe don't worry about timeouts - just fully snapshot and rebuild w/o deltas for now
+  - applyChange()
+    v body
+    v spirit
+    v now
+    - timeout
+
+
+Undo/Redo UX polish
 - less crappy undo/redo button models
-- optimizations
-  - maybe separate terrain changes from spirit & body changes, to avoid dealing with a mass of unchanged data?
-    Or not. It would make an Save record a "change" not a "state" and then the direction of time would matter. AA -> AB -> BB
-    But a memoized state could prevent deeper checking and not introduce "change" objects.
-    And if states are immutable then reference sharing is OK, to reduce mem cost.
 - save during a long change edit-gesture, like a digging drag, throttled by wall-time
 
 World.processNextEvent fix

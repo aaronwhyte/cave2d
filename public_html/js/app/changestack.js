@@ -49,7 +49,7 @@ ChangeStack.prototype.selectUndo = function() {
 };
 
 ChangeStack.prototype.selectRedo = function() {
-  if (!this.hasUndo()) throw new Error('no redo data. check hasRedo()');
+  if (!this.hasRedo()) throw new Error('no redo data. check hasRedo()');
   this.depth += ChangeStack.REDO;
   return this.queue.getFromHead(this.depth);
 };
