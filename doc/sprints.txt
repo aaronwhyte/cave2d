@@ -331,7 +331,8 @@ v ChangeStack
   v gets changes when button is pushed, if they exist
   v applies 'em, routing them to the right place based on type.
   v start recording changes at some point. Immeidately after stopping them? Should I ever actually stop, or do I really want a "flush"?
-  - Bug: redo is not chunking terrain changes correctly.
+  v Bug: redo is not chunking terrain changes correctly.
+  - replace "isDirty" tracking with new "hasChanges" query for terrain and world
 
 - design harder!
   Starting to feel like we need a higher-level manager for the EditScreen to delegate to...

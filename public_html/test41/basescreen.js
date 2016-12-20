@@ -277,7 +277,6 @@ BaseScreen.prototype.isDirty = function() {
  */
 BaseScreen.prototype.setDirty = function(d) {
   if (this.dirty != d) {
-    console.log('dirty changed to ' + d);
     this.dirty = d;
   }
 };

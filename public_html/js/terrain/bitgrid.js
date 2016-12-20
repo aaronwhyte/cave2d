@@ -52,14 +52,22 @@ BitGrid.prototype.stopRecordingChanges = function() {
   if (!this.changeOpBefores) throw Error("BitGrid was not recording changes");
   var retval = [];
   for (var cellId in this.changeOpBefores) {
-    retval.push(new ChangeOp(BitGrid.CHANGE_TYPE, cellId, this.changeOpBefores[cellId], this.cells[cellId], null, null));
+    retval.push(new ChangeOp(BitGrid.CHANGE_TYPE, cellId, this.copyCell(this.changeOpBefores[cellId]), this.copyCell(this.cells[cellId]), null, null));
   }
   this.changeOpBefores = null;
   return retval;
 };
 
+BitGrid.prototype.copyCell = function(cell) {
+  if (Array.isArray(cell)) {
+    return cell.concat();
+  } else {
+    return cell;
+  }
+};
+
 BitGrid.prototype.applyChanges = function(changeOps) {
-  for (var i = 0, n = changeOps.length; i < n; i++) {
+  for (var i = 0; i < changeOps.length; i++) {
     var changeOp = changeOps[i];
     var cellId = changeOp.id;
     // Record changedCells, to support caller.flushChangedCellIds.
@@ -259,7 +267,7 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
       if (clean) {
         var originalVal = Array.isArray(cell) ? cell.concat() : cell;
         this.changedCells[cellId] = originalVal;
-        if (this.changeOpBefores) {
+        if (this.changeOpBefores && !(cellId in this.changeOpBefores)) {
           this.changeOpBefores[cellId] = originalVal;
         }
         clean = false;

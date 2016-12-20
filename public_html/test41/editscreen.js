@@ -240,20 +240,26 @@ EditScreen.prototype.stopRecordingChanges = function() {
 };
 
 EditScreen.prototype.undo = function() {
+  var changes = this.stopRecordingChanges();
   if (this.isDirty()) {
-    this.saveToChangeStack();
+    this.saveToChangeStack(changes);
+  } else {
+    if (changes.length) console.log('weird undo state?');
   }
   if (this.changeStack.hasUndo()) {
     // TODO view stuff
     this.applyChanges(this.changeStack.selectUndo());
   }
+  this.startRecordingChanges();
 };
 
 EditScreen.prototype.redo = function() {
+  var changes = this.stopRecordingChanges();
+  if (changes.length) throw Error('unexpected changes present before a redo');
   if (this.changeStack.hasRedo()) {
-    // TODO view stuff
     this.applyChanges(this.changeStack.selectRedo());
   }
+  this.startRecordingChanges();
 };
 
 EditScreen.prototype.applyChanges = function(changes) {
@@ -279,12 +285,11 @@ EditScreen.prototype.applyChanges = function(changes) {
 };
 
 /**
- * Stops recording, saves the results, and clears the dirty bit.
+ * Saves changes and clears the dirty bit.
  */
-EditScreen.prototype.saveToChangeStack = function () {
-  this.changeStack.save(this.stopRecordingChanges());
+EditScreen.prototype.saveToChangeStack = function (changes) {
+  this.changeStack.save(changes);
   this.setDirty(false);
-  this.startRecordingChanges();
 };
 
 /**
@@ -364,9 +369,10 @@ EditScreen.prototype.drawScene = function() {
   this.drawHud();
   this.configMousePointer();
 
-  // TODO move this somewhere better?
   if (this.isDirty() && !this.somethingMoving && !this.editor.ongoingEditGesture) {
-    this.saveToChangeStack();
+    // Push this completed change onto the change stack.
+    this.saveToChangeStack(this.stopRecordingChanges());
+    this.startRecordingChanges();
   }
 
   // Animate whenever this thing draws.
