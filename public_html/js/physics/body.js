@@ -33,13 +33,14 @@ Body.pool = [];
 
 Body.alloc = function() {
   if (Body.pool.length) {
-    return Body.pool.pop().reset();
+    return Body.pool.pop();
   }
   return new Body();
 };
 
 Body.prototype.free = function() {
-  Body.pool.push(this);
+  // reset in free() to clear expensive references like the changeListener, which could be a World
+  Body.pool.push(this.reset());
 };
 
 Body.prototype.reset = function() {
@@ -84,6 +85,8 @@ Body.prototype.reset = function() {
   this.freezePathStartTime = 0;
   this.freezePathDurationMax = 0;
 
+  this.changeListener = null;
+
   return this;
 };
 
@@ -121,6 +124,15 @@ Body.prototype.toJSON = function() {
 
 Body.prototype.setFromJSON = function(json) {
   Body.getJsoner().setFromJSON(json, this);
+  return this;
+};
+
+Body.prototype.setChangeListener = function(listener) {
+  this.changeListener = listener;
+};
+
+Body.prototype.onBeforeChange = function() {
+  if (this.changeListener) this.changeListener.onBeforeBodyChange(this);
 };
 
 /**
@@ -172,6 +184,7 @@ Body.prototype.getPosAtTime = function(t, out) {
  * @param {number} t
  */
 Body.prototype.setPosAtTime = function(pos, t) {
+  this.onBeforeChange();
   this.invalidatePath();
   this.pathStartTime = t;
   this.pathStartPos.set(pos);
@@ -185,6 +198,7 @@ Body.prototype.setPosAtTime = function(pos, t) {
  * @param {number} t
  */
 Body.prototype.setPosXYAtTime = function(x, y, t) {
+  this.onBeforeChange();
   this.invalidatePath();
   this.pathStartTime = t;
   this.pathStartPos.setXY(x, y);
@@ -197,6 +211,7 @@ Body.prototype.setPosXYAtTime = function(x, y, t) {
  * @param {number} t
  */
 Body.prototype.setVelAtTime = function(vel, t) {
+  this.onBeforeChange();
   this.invalidatePath();
   this.moveToTime(t);
   this.vel.set(vel);
@@ -210,6 +225,7 @@ Body.prototype.setVelAtTime = function(vel, t) {
  * @param {number} t
  */
 Body.prototype.setVelXYAtTime = function(x, y, t) {
+  this.onBeforeChange();
   this.invalidatePath();
   this.moveToTime(t);
   this.vel.setXY(x, y);
@@ -248,6 +264,7 @@ Body.prototype.getAngPosAtTime = function(t) {
  * @param {number} t
  */
 Body.prototype.setAngPosAtTime = function(ap, t) {
+  this.onBeforeChange();
   this.angStartTime = t;
   this.angStartPos = ap;
 };
@@ -258,6 +275,7 @@ Body.prototype.setAngPosAtTime = function(ap, t) {
  * @param {number} t
  */
 Body.prototype.setAngVelAtTime = function(av, t) {
+  this.onBeforeChange();
   this.moveToTime(t);
   this.angVel = av;
   if (this.angVel > Body.MAX_ABS_ANGVEL) {
@@ -268,12 +286,14 @@ Body.prototype.setAngVelAtTime = function(av, t) {
 };
 
 Body.prototype.applyLinearFrictionAtTime = function(friction, time) {
+  this.onBeforeChange();
   this.invalidatePath();
   this.moveToTime(time);
   this.vel.scale(1 - friction);
 };
 
 Body.prototype.applyAngularFrictionAtTime = function(friction, time) {
+  this.onBeforeChange();
   this.moveToTime(time);
   this.angVel *= 1 - friction;
 };

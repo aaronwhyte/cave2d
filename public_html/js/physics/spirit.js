@@ -5,6 +5,7 @@
  */
 function Spirit(id) {
   this.id = id;
+  this.changeListener = null;
 }
 
 /**
@@ -39,4 +40,8 @@ Spirit.prototype.onHit = function(world, thisBody, thatBody, hit) {
  * @param {Renderer} renderer
  */
 Spirit.prototype.onDraw = function(world, renderer) {
+};
+
+Spirit.prototype.setChangeListener = function(listener) {
+  this.onChangeListener = listener;
 };

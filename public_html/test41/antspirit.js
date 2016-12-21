@@ -95,7 +95,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.elasticity = 0.95;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.setVelAtTime((new Vec2d(0, 0.4)).rot(dir), screen.now());
+  //b.setVelAtTime((new Vec2d(0, 0.4)).rot(dir), screen.now());
   b.rad = 0.7 + Math.random();
   b.hitGroup = BaseScreen.Group.ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
@@ -211,6 +211,10 @@ AntSpirit.prototype.getScanHitSpirit = function() {
 
 AntSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
+  // if (!body) {
+  //   console.warn('spirit with no body!');
+  //   return;
+  // }
   var pos = this.getBodyPos();
   this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
   if (this.viewportsFromCamera < 1.1) {

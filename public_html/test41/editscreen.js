@@ -211,15 +211,15 @@ EditScreen.prototype.viewToJSON = function() {
 EditScreen.prototype.createDefaultWorld = function() {
   this.world.setChangeRecordingEnabled(true);
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  var ants = 24;
-  for (var a = 0; a < ants; a++) {
-    this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
-  }
-
-  var ants = 12;
-  for (var a = 0; a < ants; a++) {
-    this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
-  }
+  // var ants = 24;
+  // for (var a = 0; a < ants; a++) {
+  //   this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+  // }
+  //
+  // var ants = 12;
+  // for (var a = 0; a < ants; a++) {
+  //   this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+  // }
   this.startRecordingChanges();
 };
 
@@ -234,17 +234,13 @@ EditScreen.prototype.startRecordingChanges = function() {
 };
 
 EditScreen.prototype.stopRecordingChanges = function() {
-  var changes = this.tileGrid.stopRecordingChanges();
-  changes.concat(this.world.stopRecordingChanges());
-  return changes;
+  return this.tileGrid.stopRecordingChanges().concat(this.world.stopRecordingChanges());
 };
 
 EditScreen.prototype.undo = function() {
   var changes = this.stopRecordingChanges();
-  if (this.isDirty()) {
+  if (changes.length) {
     this.saveToChangeStack(changes);
-  } else {
-    if (changes.length) console.log('weird undo state?');
   }
   if (this.changeStack.hasUndo()) {
     // TODO view stuff
@@ -287,7 +283,7 @@ EditScreen.prototype.applyChanges = function(changes) {
 /**
  * Saves changes and clears the dirty bit.
  */
-EditScreen.prototype.saveToChangeStack = function (changes) {
+EditScreen.prototype.saveToChangeStack = function(changes) {
   this.changeStack.save(changes);
   this.setDirty(false);
 };
@@ -319,7 +315,7 @@ EditScreen.prototype.loadWorldFromJson = function(json) {
       spirit.setFromJSON(spiritJson);
       this.world.loadSpirit(spirit);
     } else {
-      console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
+      console.warn("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
     }
     delete lostSpiritIdToBodyId[spirit.id];
   }

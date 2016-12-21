@@ -71,7 +71,8 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   // If you want this enabled, do it as part of world creation
   this.changeRecordingEnabled = false;
 
-  this.changeRecordingPaused = false;
+  // This is counted, so nesting can work
+  this.changeRecordingPaused = 0;
 
   this.bodyBefores = null;
   this.spiritBefores = null;
@@ -137,8 +138,7 @@ World.prototype.newId = function() {
  */
 World.prototype.addSpirit = function(spirit) {
   spirit.id = this.newId();
-  // If spirit loading gets more complicated, then call loadSpirit instead of inlining.
-  this.spirits[spirit.id] = spirit;
+  this.loadSpirit(spirit);
   return spirit.id;
 };
 
@@ -149,6 +149,11 @@ World.prototype.loadSpirit = function(spirit) {
   if (this.spirits[spirit.id]) throw Error("Spirit with id '" + spirit.id + "' already exists!");
   this.spirits[spirit.id] = spirit;
   this.nextId = Math.max(this.nextId, spirit.id + 1);
+
+  if (this.changeRecordingEnabled) {
+    spirit.setChangeListener(this);
+    this.maybeRecordSpiritBefore(spirit.id, null);
+  }
 };
 
 /**
@@ -158,6 +163,7 @@ World.prototype.loadSpirit = function(spirit) {
 World.prototype.removeSpiritId = function(id) {
   var spirit = this.spirits[id];
   if (spirit) {
+    this.maybeRecordSpiritBefore(id, spirit);
     delete this.spirits[id];
     if (spirit.free) {
       spirit.free();
@@ -188,6 +194,11 @@ World.prototype.loadBody = function(body) {
   // Hook the path invalidator into the body. A wee bit hacky.
   body.invalidBodyIds = this.invalidBodyIds;
   body.invalidatePath();
+
+  if (this.changeRecordingEnabled) {
+    body.setChangeListener(this);
+    this.maybeRecordBodyBefore(body.id, null);
+  }
 };
 
 /**
@@ -197,6 +208,7 @@ World.prototype.loadBody = function(body) {
 World.prototype.removeBodyId = function(bodyId) {
   var body = this.bodies[bodyId];
   if (body) {
+    this.maybeRecordBodyBefore(bodyId, body);
     var rect = Rect.alloc();
     this.getPaddedBodyBoundingRect(body, this.now, rect);
     var range = CellRange.alloc();
@@ -748,34 +760,42 @@ World.prototype.setChangeRecordingEnabled = function(enabled) {
 };
 
 World.prototype.startRecordingChanges = function() {
-  if (!this.changeRecordingEnabled) throw Error('changeRecordingEnabled is falsey');
-  if (this.bodyBefores || this.spiritBefores) throw Error('change recording was already started');
+  if (this.isChangeRecordingStarted()) throw Error('change recording was already started');
   this.bodyBefores = {};
   this.spiritBefores = {};
   this.nowBefore = this.now;
 };
 
 World.prototype.pauseRecordingChanges = function() {
-  this.changeRecordingPaused = true;
+  this.changeRecordingPaused++;
 };
 
 World.prototype.resumeRecordingChanges = function() {
-  this.changeRecordingPaused = false;
+  this.changeRecordingPaused--;
 };
 
 World.prototype.stopRecordingChanges = function() {
-  if (!this.changeRecordingEnabled) throw Error('changeRecordingEnabled is falsey');
-  if (!this.bodyBefores || !this.spiritBefores) throw Error('change recording was not started');
+  if (!this.isChangeRecordingStarted()) throw Error('change recording was not started');
   var changes = [];
   for (var bodyId in this.bodyBefores) {
+    var bodyBefore = this.bodyBefores[bodyId];
     var body = this.bodies[bodyId];
-    changes.push(new ChangeOp(
-        World.ChangeType.BODY, bodyId, this.bodyBefores[bodyId], body ? body.toJSON() : null));
+    var bodyAfter = body ? body.toJSON() : null;
+    if (!(bodyBefore || bodyAfter)) {
+      console.warn('body change with no before or after')
+    } else {
+      changes.push(new ChangeOp(World.ChangeType.BODY, bodyId, bodyBefore, bodyAfter));
+    }
   }
   for (var spiritId in this.spiritBefores) {
+    var spiritBefore = this.spiritBefores[spiritId];
     var spirit = this.spirits[spiritId];
-    changes.push(new ChangeOp(
-        World.ChangeType.SPIRIT, spiritId, this.spiritBefores[spiritId], spirit ? spirit.toJSON() : null));
+    var spiritAfter = spirit ? spirit.toJSON() : null;
+    if (!(spiritBefore || spiritAfter)) {
+      console.warn('spirit change with no before or after');
+    } else {
+      changes.push(new ChangeOp(World.ChangeType.SPIRIT, spiritId, spiritBefore, spiritAfter));
+    }
   }
   if (this.nowBefore != this.now) {
     changes.push(new ChangeOp(World.ChangeType.NOW, 0, this.nowBefore, this.now));
@@ -784,6 +804,10 @@ World.prototype.stopRecordingChanges = function() {
   this.spiritBefores = null;
   this.nowBefore = this.now;
   return changes;
+};
+
+World.prototype.isChangeRecordingStarted = function() {
+  return this.changeRecordingEnabled && this.bodyBefores && this.spiritBefores;
 };
 
 World.prototype.applyChanges = function(changes) {
@@ -795,7 +819,7 @@ World.prototype.applyChanges = function(changes) {
 World.prototype.applyChange = function(change) {
   switch (change.type) {
     case World.ChangeType.BODY:
-      var afterBody = change.afterState ? Body.fromJSON(change.afterState) : null;
+      var afterBody = change.afterState ? new Body().setFromJSON(change.afterState) : null;
       if (change.beforeState == null) {
         this.loadBody(afterBody);
       } else if (!afterBody) {
@@ -807,7 +831,7 @@ World.prototype.applyChange = function(change) {
       }
       break;
     case World.ChangeType.SPIRIT:
-      var afterSpirit = this.spiritFactory.createSpiritFromJson(change.afterState);
+      var afterSpirit = change.afterState ? this.spiritFactory.createSpiritFromJson(change.afterState) : null;
       if (change.beforeState == null) {
         this.loadSpirit(afterSpirit);
       } else if (!afterSpirit) {
@@ -821,5 +845,25 @@ World.prototype.applyChange = function(change) {
     case World.ChangeType.NOW:
       this.now = change.afterState;
       break;
+  }
+};
+
+World.prototype.onBeforeBodyChange = function(body) {
+  this.maybeRecordBodyBefore(body.id, body);
+};
+
+World.prototype.onBeforeSpiritChange = function(spirit) {
+  this.maybeRecordSpiritBefore(spirit.id, spirit);
+};
+
+World.prototype.maybeRecordBodyBefore = function(id, body) {
+  if (this.isChangeRecordingStarted() && !this.changeRecordingPaused && !(id in this.bodyBefores)) {
+    this.bodyBefores[id] = body ? body.toJSON() : null;
+  }
+};
+
+World.prototype.maybeRecordSpiritBefore = function(id, spirit) {
+  if (this.isChangeRecordingStarted() && !this.changeRecordingPaused && !(id in this.spiritBefores)) {
+    this.spiritBefores[id] = spirit ? spirit.toJSON() : null;
   }
 };

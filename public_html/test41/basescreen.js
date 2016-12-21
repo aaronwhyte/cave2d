@@ -312,7 +312,7 @@ BaseScreen.prototype.initSpiritConfigs = function() {
   addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
       BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
 
-  this.spiritFactory = new SpiritFactory(this.spiritConfigs);
+  this.spiritFactory = new SpiritFactory(this, this.spiritConfigs);
 };
 
 BaseScreen.Group = {

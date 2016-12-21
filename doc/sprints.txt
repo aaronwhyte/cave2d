@@ -327,57 +327,44 @@ v ChangeStack
   v selectUndo, Redo
   v unit test
 
-- EditScreen again
+v EditScreen again
   v gets changes when button is pushed, if they exist
   v applies 'em, routing them to the right place based on type.
   v start recording changes at some point. Immeidately after stopping them? Should I ever actually stop, or do I really want a "flush"?
   v Bug: redo is not chunking terrain changes correctly.
-  - replace "isDirty" tracking with new "hasChanges" query for terrain and world
 
-- design harder!
-  Starting to feel like we need a higher-level manager for the EditScreen to delegate to...
-  * has a list of Changable things
-  * fans out startRecordingChanges
-  * fans out stopRecordingChanges and updates ChangeStack
-  * routes changes for apply()
-  * something about view rect comparisons
 Changable World
-  v add "recordChanges" boolean - field, setter/constructor
-  v bodyBefores: map bodyId to before-state JSON
-  v spiritBefores: map spiritId to before-state JSON
-  v startRecordingChanges()
-  v stopRecordingChanges()
-  v pauseRecordingChanges()
-  v resumeRecordingChanges()
-  - change listeners
-    - onBeforeBodyChange(body)
-      - if recording && "before" is not already present, record "before"
-      - map of body before-states
-    - onBeforeSpiritChange(body): if recording && "before" is not already present, record "before"
-  - Body changes
-    - optional setChangeListener(bodyChangeListener)
-    - calls changeListener.onBeforeBodyChange(this) before any mutation
-  - timeoutBefores?: map timeoutId to before-state JSON? They don't really have IDs though do they?
-  - Add "type" enum to ChangeOp for easy routing: terrain, body, spirit, timeout, world time, camera pos, etc.
-    - world implements
-    * Easiest: snapshot non-terrain world when starting to record
-      * World stores snapshot JSON for all non-terrain bodies in startRecordingChanges,
-      * World compares with originals with newly updated bodies (plus adds and removes)
-      * Alterations update the snapshot.
-      * gross and hacky and scales with world size, not edit size.
-    * BEST: beforeChange() in bodies which (lazily) records a "before" snapshot if the world is recording
-      * world needs to tell non-terrain bodies about world's beforeChangeBody method.
-      * Every damn bit of mutation code (compatible with undo) needs to be in a Body method so it can trigger
-        beforeChange(). It should anyhow so OK.
-      * so then beforeChange can be body-private.
-      * Ditto for spirits: beforeChange before changing serializable state.
-      * maybe don't worry about timeouts - just fully snapshot and rebuild w/o deltas for now
-  - applyChange()
-    v body
-    v spirit
-    v now
-    - timeout
+v add "recordChanges" boolean - field, setter/constructor
+v bodyBefores: map bodyId to before-state JSON
+v spiritBefores: map spiritId to before-state JSON
+v startRecordingChanges()
+v stopRecordingChanges()
+v pauseRecordingChanges()
+v resumeRecordingChanges()
+v change listeners
+  v onBeforeBodyChange(body)
+    v if recording && "before" is not already present, record "before"
+    v map of body before-states
+  v onBeforeSpiritChange(body): if recording && "before" is not already present, record "before"
+v Body changes
+  v optional setChangeListener(bodyChangeListener)
+  v clear that in reset().
+  v calls changeListener.onBeforeBodyChange(this) before any mutation
+  v Every bit of mutation code (compatible with undo) needs to be in a method, so it can trigger listener
+v Spirit changes
+  v optional setChangeListener(spiritChangeListener)
+  ? calls changeListener.onBeforeSpiritChange(this) before any mutation
+  ? Every bit of mutation code (compatible with undo) needs to be in a method, so it can trigger listener
 
+- timeoutBefores?: map timeoutId to before-state JSON? They don't really have IDs though do they?
+  * maybe don't worry about timeouts - just fully snapshot and rebuild w/o deltas for now
+- applyChange()
+  v body
+  v spirit
+  v now
+  - timeout
+
+- replace EditScreen "isDirty" tracking with new "hasChanges" query for terrain and world
 
 Undo/Redo UX polish
 - less crappy undo/redo button models

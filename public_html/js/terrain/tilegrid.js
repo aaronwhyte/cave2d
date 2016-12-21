@@ -31,7 +31,9 @@ TileGrid.prototype.drawTerrainPill = function(p1, p2, rad, color) {
 };
 
 TileGrid.prototype.getStampAtCellXY = function(cx, cy) {
+  this.world.pauseRecordingChanges();
   this.loadCellXY(cx, cy);
+  this.world.resumeRecordingChanges();
   var cellId = this.bitGrid.getCellIdAtIndexXY(cx, cy);
   var tile = this.tiles[cellId];
   return tile && tile.stamp;
