@@ -769,7 +769,9 @@ PlayScreen.prototype.unloadLevel = function() {
     for (var spiritId in this.world.spirits) {
       var s = this.world.spirits[spiritId];
       var b = this.world.bodies[s.bodyId];
-      this.world.removeBodyId(b.id);
+      if (b) {
+        this.world.removeBodyId(b.id);
+      }
       this.world.removeSpiritId(spiritId);
     }
     this.world = null;

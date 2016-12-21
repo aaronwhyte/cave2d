@@ -27,6 +27,9 @@ BallSpirit.prototype.setColorRGB = function(r, g, b) {
 
 BallSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody(world);
+  if (!body) {
+    return;
+  }
   var bodyPos = body.getPosAtTime(world.now, this.vec2d);
   renderer
       .setStamp(this.modelStamp)
