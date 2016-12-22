@@ -215,8 +215,8 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
       .setBorderColor(borderColor)
       .setGraphColor(new Vec4(1, 1, 0))
       .setLineWidth(lineWidth));
-  this.drawLeftGraphs = true;
-  this.drawRightGraphs = true;
+  this.drawLeftGraphs = false;
+  this.drawRightGraphs = false;
 
   this.dirty = false;
   this.somethingMoving = false;
@@ -225,7 +225,7 @@ BaseScreen.prototype = new Screen();
 BaseScreen.prototype.constructor = BaseScreen;
 
 BaseScreen.WIDGET_RADIUS = 30;
-BaseScreen.CAMERA_VIEW_DIST = 25;
+BaseScreen.CAMERA_VIEW_DIST = 40;
 
 BaseScreen.MS_PER_FRAME = 1000 / 60;
 BaseScreen.MS_UNTIL_CLOCK_ABORT = BaseScreen.MS_PER_FRAME - 1;

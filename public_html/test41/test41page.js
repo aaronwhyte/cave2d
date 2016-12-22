@@ -99,7 +99,7 @@ Test41Page.prototype.refreshPauseMenu = function() {
   var label = Dom.ce('label', debug);
   e = Dom.ce('input', label);
   e.type = 'checkbox';
-  e.defaultChecked = true;
+  e.defaultChecked = false;
   var self = this;
   e.addEventListener('change', function(element) {
     self.screen.drawLeftGraphs = element.target.checked;
@@ -113,7 +113,7 @@ Test41Page.prototype.refreshPauseMenu = function() {
   var label = Dom.ce('label', debug);
   e = Dom.ce('input', label);
   e.type = 'checkbox';
-  e.defaultChecked = true;
+  e.defaultChecked = false;
   var self = this;
   e.addEventListener('change', function(element) {
     self.screen.drawRightGraphs = element.target.checked;
