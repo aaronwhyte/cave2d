@@ -353,22 +353,27 @@ v Body changes
   v Every bit of mutation code (compatible with undo) needs to be in a method, so it can trigger listener
 v Spirit changes
   v optional setChangeListener(spiritChangeListener)
-  ? calls changeListener.onBeforeSpiritChange(this) before any mutation
-  ? Every bit of mutation code (compatible with undo) needs to be in a method, so it can trigger listener
-
-- timeoutBefores?: map timeoutId to before-state JSON? They don't really have IDs though do they?
-  * maybe don't worry about timeouts - just fully snapshot and rebuild w/o deltas for now
-- applyChange()
+  v calls changeListener.onBeforeSpiritChange(this) before any mutation
+  v Every bit of mutation code (compatible with undo) needs to be in a method, so it can trigger listener
+v timeoutBefores
+  v record before - all timeouts
+  v return change - from prev all timeouts to current all timeouts
+  v apply change - remove all timeouts and add change's timeouts
+v applyChange()
   v body
   v spirit
   v now
-  - timeout
+  v timeout
+
+Terrain chunking bug
+- fix it! Something to do with scrolling and loading and undo and redo??
 
 - replace EditScreen "isDirty" tracking with new "hasChanges" query for terrain and world
 
 Undo/Redo UX polish
 - less crappy undo/redo button models
 - save during a long change edit-gesture, like a digging drag, throttled by wall-time
+- a bunch of stuff with view rectangles? Save it for when it's zoomable?
 
 World.processNextEvent fix
 - fix all world.processNextEvent calls to not reference a freed event! Also maybe reset on free, not on alloc.
