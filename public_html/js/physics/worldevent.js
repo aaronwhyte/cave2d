@@ -18,7 +18,13 @@ WorldEvent.SCHEMA = {
   0: 'time',
   1: 'type',
   2: 'spiritId',
-  3: 'timeoutVal'
+  3: 'timeoutVal',
+  4: 'axis',
+  5: 'pathId',
+  6: 'cellRange',
+  7: 'pathId0',
+  8: 'pathId1',
+  9: 'collosionVec'
 };
 
 WorldEvent.getJsoner = function() {
@@ -34,6 +40,7 @@ WorldEvent.prototype.toJSON = function() {
 
 WorldEvent.prototype.setFromJSON = function(json) {
   WorldEvent.getJsoner().setFromJSON(json, this);
+  return this;
 };
 
 WorldEvent.TYPE_TIMEOUT = 'timeout';
