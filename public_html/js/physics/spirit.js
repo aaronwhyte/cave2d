@@ -43,5 +43,5 @@ Spirit.prototype.onDraw = function(world, renderer) {
 };
 
 Spirit.prototype.setChangeListener = function(listener) {
-  this.onChangeListener = listener;
+  this.changeListener = listener;
 };
