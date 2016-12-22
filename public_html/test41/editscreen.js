@@ -165,7 +165,7 @@ EditScreen.prototype.worldToJSON = function() {
     now: this.world.now,
     bodies: [],
     spirits: [],
-    timeouts: [],
+    timeouts: null,
     splashes: []
   };
   // bodies
@@ -184,14 +184,8 @@ EditScreen.prototype.worldToJSON = function() {
     json.spirits.push(spirit.toJSON());
   }
   // timeouts
-  for (var e = this.world.queue.getFirst(); e; e = e.next[0]) {
-    if (e.type === WorldEvent.TYPE_TIMEOUT) {
-      var spirit = this.world.spirits[e.spiritId];
-      if (spirit) {
-        json.timeouts.push(e.toJSON());
-      }
-    }
-  }
+  json.timeouts = this.world.getTimeoutsAsJson();
+
   // splashes
   var splashes = this.splasher.splashes;
   for (var i = 0; i < splashes.length; i++) {
@@ -211,15 +205,15 @@ EditScreen.prototype.viewToJSON = function() {
 EditScreen.prototype.createDefaultWorld = function() {
   this.world.setChangeRecordingEnabled(true);
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  // var ants = 24;
-  // for (var a = 0; a < ants; a++) {
-  //   this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
-  // }
-  //
-  // var ants = 12;
-  // for (var a = 0; a < ants; a++) {
-  //   this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
-  // }
+  var ants = 24;
+  for (var a = 0; a < ants; a++) {
+    this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+  }
+
+  var ants = 12;
+  for (var a = 0; a < ants; a++) {
+    this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+  }
   this.startRecordingChanges();
 };
 
@@ -238,6 +232,7 @@ EditScreen.prototype.stopRecordingChanges = function() {
 };
 
 EditScreen.prototype.undo = function() {
+  this.stopChanges();
   var changes = this.stopRecordingChanges();
   if (changes.length) {
     this.saveToChangeStack(changes);
@@ -250,8 +245,11 @@ EditScreen.prototype.undo = function() {
 };
 
 EditScreen.prototype.redo = function() {
+  this.stopChanges();
   var changes = this.stopRecordingChanges();
-  if (changes.length) throw Error('unexpected changes present before a redo');
+  if (changes.length) {
+    this.saveToChangeStack(changes);
+  }
   if (this.changeStack.hasRedo()) {
     this.applyChanges(this.changeStack.selectRedo());
   }
@@ -270,6 +268,7 @@ EditScreen.prototype.applyChanges = function(changes) {
       case World.ChangeType.BODY:
       case World.ChangeType.SPIRIT:
       case World.ChangeType.NOW:
+      case World.ChangeType.QUEUE:
         worldChanges.push(c);
         break;
       default:
@@ -405,6 +404,11 @@ EditScreen.prototype.configMousePointer = function() {
   }
 };
 
+/**
+ * Halts edit gestures and world movement, so the world can be saved without instantly
+ * introducing more changes. If there are instant changes after a save, then it could
+ * be impossible to undo past that point afterwards.
+ */
 EditScreen.prototype.stopChanges = function () {
   this.editor.interrupt();
   for (var bodyId in this.world.bodies) {

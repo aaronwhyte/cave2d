@@ -77,6 +77,7 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   this.bodyBefores = null;
   this.spiritBefores = null;
   this.nowBefore = null;
+  this.timeoutsBefore = null;
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -96,7 +97,8 @@ World.DEFAULT_CELL_SIZE = 15;
 World.ChangeType = {
   BODY: 'wb',
   SPIRIT: 'ws',
-  NOW: 'wn'
+  NOW: 'wn',
+  QUEUE: 'wq'
 };
 
 World.prototype.cellCoord = function(worldCoord) {
@@ -751,6 +753,27 @@ World.prototype.unload = function() {
   this.queue.clear();
 };
 
+World.prototype.getTimeoutsAsJson = function() {
+  var timeouts = [];
+  for (var e = this.queue.getFirst(); e; e = e.next[0]) {
+    if (e.type === WorldEvent.TYPE_TIMEOUT) {
+      var spirit = this.spirits[e.spiritId];
+      if (spirit) {
+        timeouts.push(e.toJSON());
+      }
+    }
+  }
+  return timeouts;
+};
+
+World.prototype.getQueueAsJson = function() {
+  var json = [];
+  for (var e = this.queue.getFirst(); e; e = e.next[0]) {
+    json.push(e.toJSON());
+  }
+  return json;
+};
+
 //////////////////////////
 // Support for undo/redo
 //////////////////////////
@@ -764,6 +787,7 @@ World.prototype.startRecordingChanges = function() {
   this.bodyBefores = {};
   this.spiritBefores = {};
   this.nowBefore = this.now;
+  this.queueBefore = this.getQueueAsJson();
 };
 
 World.prototype.pauseRecordingChanges = function() {
@@ -781,9 +805,8 @@ World.prototype.stopRecordingChanges = function() {
     var bodyBefore = this.bodyBefores[bodyId];
     var body = this.bodies[bodyId];
     var bodyAfter = body ? body.toJSON() : null;
-    if (!(bodyBefore || bodyAfter)) {
-      console.warn('body change with no before or after')
-    } else {
+    // make sure it's not a no-op, like an add and a delete in the same changelist
+    if (bodyBefore || bodyAfter) {
       changes.push(new ChangeOp(World.ChangeType.BODY, bodyId, bodyBefore, bodyAfter));
     }
   }
@@ -791,18 +814,20 @@ World.prototype.stopRecordingChanges = function() {
     var spiritBefore = this.spiritBefores[spiritId];
     var spirit = this.spirits[spiritId];
     var spiritAfter = spirit ? spirit.toJSON() : null;
-    if (!(spiritBefore || spiritAfter)) {
-      console.warn('spirit change with no before or after');
-    } else {
+    // make sure it's not a no-op, like an add and a delete in the same changelist
+    if (spiritBefore || spiritAfter) {
       changes.push(new ChangeOp(World.ChangeType.SPIRIT, spiritId, spiritBefore, spiritAfter));
     }
   }
   if (this.nowBefore != this.now) {
     changes.push(new ChangeOp(World.ChangeType.NOW, 0, this.nowBefore, this.now));
+    changes.push(new ChangeOp(World.ChangeType.QUEUE, 0, this.queueBefore, this.getQueueAsJson()));
   }
+
   this.bodyBefores = null;
   this.spiritBefores = null;
   this.nowBefore = this.now;
+  this.queueBefore = null;
   return changes;
 };
 
@@ -844,6 +869,13 @@ World.prototype.applyChange = function(change) {
       break;
     case World.ChangeType.NOW:
       this.now = change.afterState;
+      break;
+    case World.ChangeType.QUEUE:
+      // replace the whole thing, since it's easy and not too expensive
+      this.queue.clear();
+      for (var i = 0; i < change.afterState.length; i++) {
+        this.queue.add(new WorldEvent().setFromJSON(change.afterState[i]));
+      }
       break;
   }
 };
