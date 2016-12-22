@@ -366,7 +366,7 @@ v applyChange()
   v timeout
 
 Terrain chunking bug
-- fix it! Something to do with scrolling and loading and undo and redo??
+v fix it! Something to do with scrolling and loading and undo and redo??
 
 - replace EditScreen "isDirty" tracking with new "hasChanges" query for terrain and world
 

@@ -80,7 +80,7 @@ BitGrid.prototype.applyChanges = function(changeOps) {
     if (!changeOp.afterState) {
       delete this.cells[cellId];
     } else {
-      this.cells[cellId] = changeOp.afterState;
+      this.cells[cellId] = this.copyCell(changeOp.afterState);
     }
   }
 };
