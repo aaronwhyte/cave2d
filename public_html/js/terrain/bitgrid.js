@@ -52,7 +52,10 @@ BitGrid.prototype.stopRecordingChanges = function() {
   if (!this.changeOpBefores) throw Error("BitGrid was not recording changes");
   var retval = [];
   for (var cellId in this.changeOpBefores) {
-    retval.push(new ChangeOp(BitGrid.CHANGE_TYPE, cellId, this.copyCell(this.changeOpBefores[cellId]), this.copyCell(this.cells[cellId]), null, null));
+    retval.push(new ChangeOp(BitGrid.CHANGE_TYPE, cellId,
+        this.copyCell(this.changeOpBefores[cellId]),
+        this.copyCell(this.cells[cellId]),
+        null, null));
   }
   this.changeOpBefores = null;
   return retval;
@@ -71,7 +74,7 @@ BitGrid.prototype.applyChanges = function(changeOps) {
     var changeOp = changeOps[i];
     var cellId = changeOp.id;
     // Record changedCells, to support caller.flushChangedCellIds.
-    this.changedCells[cellId] = this.cells[cellId];
+    this.changedCells[cellId] = this.copyCell(this.cells[cellId]);
 
     // Really update the cell.
     if (!changeOp.afterState) {
@@ -93,6 +96,7 @@ BitGrid.prototype.cellIdToIndexVec = function(cellId, out) {
 BitGrid.prototype.flushChangedCellIds = function() {
   var changedIds = [];
   for (var id in this.changedCells) {
+    // TODO: Arrays are never equal. Is this just optimization for primitive cells?
     if (this.changedCells[id] != this.cells[id]) {
       changedIds.push(id);
     }
@@ -324,10 +328,9 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
     if (newRowVal != oldRowVal) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
-        var originalVal = Array.isArray(cell) ? cell.concat() : cell;
-        this.changedCells[cellId] = originalVal;
+        this.changedCells[cellId] = this.copyCell(cell);
         if (this.changeOpBefores && !(cellId in this.changeOpBefores)) {
-          this.changeOpBefores[cellId] = originalVal;
+          this.changeOpBefores[cellId] = this.copyCell(cell);
         }
         clean = false;
       }
