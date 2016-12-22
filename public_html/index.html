@@ -85,10 +85,15 @@ This is more of a platformer demo. Roll around the test level, using left and ri
 and the shift for turbo if you're using a keyboard. There's a <a href="game3/edit">level editor</a> too.
 
 <h1>Editor Tests</h1>
-<h2><a href="test41">Test 41 - Undo and Redo (under construction)</a></h2>
-To support undo and redo in an editor that is also a physics simulation, the world needs to hold still when you're not
-actively changing it, so the only thing you undo is what you've done. The bottom graph shows the rate at which
-the world clock is advancing, and in this test it drops to zero when nothing is moving. More coming up soon...
+<h2><a href="test41">Test 41 - Undo and Redo</a></h2>
+This was harder than I expected.<br>
+First I made the physics engine stop advancing the world clock when nothing is happening - easy first step.<br>
+Then I made a simple undo/redo system where the whole world was copied whenever the user made a change, and the
+whole world was replaced whenever the user did an undo or redo. But in large levels, the UI would slow down just from
+recording the world whenever a change ended, and undo/redo slowed down, too.<br>
+So, I rewrote it to track <i>changes</i> in terrain, bodies, spirits, timeouts, and the world time. Only the
+changed things are updated when there's an undo/redo. It's more complex than I wanted, but it seems to be
+working, and it's fast.
 
 <h2><a href="test40">Test 40 - Stats and Line Graphs</a></h2>
 I added stat tracking, graphing, and layout infrastructure, with ten(!) graphs to test it.
