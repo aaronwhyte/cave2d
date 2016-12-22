@@ -45,7 +45,8 @@ AntSpirit.SCHEMA = {
   2: "bodyId",
   3: "color",
   4: "stress",
-  5: "health"
+  5: "health",
+  6: "lastControlTime"
 };
 
 AntSpirit.getJsoner = function() {
@@ -61,6 +62,7 @@ AntSpirit.prototype.toJSON = function() {
 
 AntSpirit.prototype.setFromJSON = function(json) {
   AntSpirit.getJsoner().setFromJSON(json, this);
+  return this;
 };
 
 AntSpirit.prototype.setModelStamp = function(modelStamp) {
@@ -126,6 +128,10 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 };
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
+  if (this.changeListener) {
+    this.changeListener.onBeforeSpiritChange(this);
+  }
+
   var body = this.getBody();
   var pos = this.getBodyPos();
   var dir = this.getBodyAngPos();
