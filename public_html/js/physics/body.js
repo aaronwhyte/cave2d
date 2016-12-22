@@ -184,8 +184,9 @@ Body.prototype.getPosAtTime = function(t, out) {
  * @param {number} t
  */
 Body.prototype.setPosAtTime = function(pos, t) {
-  this.onBeforeChange();
   this.invalidatePath();
+  // TODO: handle no-op
+  this.onBeforeChange();
   this.pathStartTime = t;
   this.pathStartPos.set(pos);
 };
@@ -198,8 +199,9 @@ Body.prototype.setPosAtTime = function(pos, t) {
  * @param {number} t
  */
 Body.prototype.setPosXYAtTime = function(x, y, t) {
-  this.onBeforeChange();
   this.invalidatePath();
+  // TODO handle no-op
+  this.onBeforeChange();
   this.pathStartTime = t;
   this.pathStartPos.setXY(x, y);
 };
@@ -211,8 +213,9 @@ Body.prototype.setPosXYAtTime = function(x, y, t) {
  * @param {number} t
  */
 Body.prototype.setVelAtTime = function(vel, t) {
-  this.onBeforeChange();
   this.invalidatePath();
+  if (this.vel.equals(vel)) return;
+  this.onBeforeChange();
   this.moveToTime(t);
   this.vel.set(vel);
 };
@@ -225,8 +228,9 @@ Body.prototype.setVelAtTime = function(vel, t) {
  * @param {number} t
  */
 Body.prototype.setVelXYAtTime = function(x, y, t) {
-  this.onBeforeChange();
   this.invalidatePath();
+  if (this.vel.x == x && this.vel.y == y) return;
+  this.onBeforeChange();
   this.moveToTime(t);
   this.vel.setXY(x, y);
 };
@@ -243,8 +247,6 @@ Body.prototype.isMoving = function() {
 };
 
 Body.prototype.stopMoving = function(now) {
-  this.invalidatePath();
-  this.moveToTime(now);
   this.setAngVelAtTime(0, now);
   this.setVelXYAtTime(0, 0, now);
 };
@@ -275,6 +277,7 @@ Body.prototype.setAngPosAtTime = function(ap, t) {
  * @param {number} t
  */
 Body.prototype.setAngVelAtTime = function(av, t) {
+  if (this.angVel == av) return;
   this.onBeforeChange();
   this.moveToTime(t);
   this.angVel = av;
