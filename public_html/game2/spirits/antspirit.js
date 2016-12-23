@@ -212,6 +212,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
   body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, now);
+  body.invalidatePath();
   world.addTimeout(now + timeoutDuration, this.id, -1);
 };
 

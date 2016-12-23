@@ -184,8 +184,8 @@ Body.prototype.getPosAtTime = function(t, out) {
  * @param {number} t
  */
 Body.prototype.setPosAtTime = function(pos, t) {
-  this.invalidatePath();
   // TODO: handle no-op
+  this.invalidatePath();
   this.onBeforeChange();
   this.pathStartTime = t;
   this.pathStartPos.set(pos);
@@ -199,8 +199,8 @@ Body.prototype.setPosAtTime = function(pos, t) {
  * @param {number} t
  */
 Body.prototype.setPosXYAtTime = function(x, y, t) {
-  this.invalidatePath();
   // TODO handle no-op
+  this.invalidatePath();
   this.onBeforeChange();
   this.pathStartTime = t;
   this.pathStartPos.setXY(x, y);
@@ -213,8 +213,8 @@ Body.prototype.setPosXYAtTime = function(x, y, t) {
  * @param {number} t
  */
 Body.prototype.setVelAtTime = function(vel, t) {
-  this.invalidatePath();
   if (this.vel.equals(vel)) return;
+  this.invalidatePath();
   this.onBeforeChange();
   this.moveToTime(t);
   this.vel.set(vel);
@@ -228,8 +228,8 @@ Body.prototype.setVelAtTime = function(vel, t) {
  * @param {number} t
  */
 Body.prototype.setVelXYAtTime = function(x, y, t) {
-  this.invalidatePath();
   if (this.vel.x == x && this.vel.y == y) return;
+  this.invalidatePath();
   this.onBeforeChange();
   this.moveToTime(t);
   this.vel.setXY(x, y);
@@ -289,6 +289,7 @@ Body.prototype.setAngVelAtTime = function(av, t) {
 };
 
 Body.prototype.applyLinearFrictionAtTime = function(friction, time) {
+  if (this.vel.isZero()) return;
   this.onBeforeChange();
   this.invalidatePath();
   this.moveToTime(time);
@@ -296,6 +297,7 @@ Body.prototype.applyLinearFrictionAtTime = function(friction, time) {
 };
 
 Body.prototype.applyAngularFrictionAtTime = function(friction, time) {
+  if (!this.angVel) return;
   this.onBeforeChange();
   this.moveToTime(time);
   this.angVel *= 1 - friction;

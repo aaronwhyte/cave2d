@@ -131,8 +131,8 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-
   var body = this.getBody();
+  body.invalidatePath(); // TODO harmlessly extend the lease?? Such a thing?
   var pos = this.getBodyPos();
   var dir = this.getBodyAngPos();
   var angVel = this.getBodyAngVel();

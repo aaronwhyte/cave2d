@@ -190,6 +190,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
       // match the new compiled-in values. Hm.
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
       body.setVelAtTime(this.newVel, now);
+      body.invalidatePath();
     }
     // TODO: put addTimeout in screen, remove world access
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);

@@ -124,6 +124,7 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody();
+  body.invalidatePath();
   var pos = this.getBodyPos();
   var dir = this.getBodyAngPos();
   var angVel = this.getBodyAngVel();
