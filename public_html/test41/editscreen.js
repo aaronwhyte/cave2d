@@ -46,7 +46,7 @@ EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
 EditScreen.ANT_RAD = 1.2;
 
-EditScreen.MAX_UNDO_DEPTH = 200;
+EditScreen.MAX_UNDO_DEPTH = 20000;
 
 EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
