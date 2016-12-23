@@ -364,6 +364,8 @@ v applyChange()
   v spirit
   v now
   v timeout
+v do NOT iterate over all bodies to see if anything is moving. For now use spirits instead...
+  v use spirits as proxy for movables for now but maybe use "movable" collection later??
 
 Terrain chunking bug
 v fix it! Something to do with scrolling and loading and undo and redo??

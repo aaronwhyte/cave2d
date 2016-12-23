@@ -441,8 +441,8 @@ BaseScreen.prototype.clock = function(startTimeMs) {
   }
 
   this.somethingMoving = false;
-  for (var id in this.world.bodies) {
-    if (this.world.bodies[id].isMoving()) {
+  for (var id in this.world.spirits) {
+    if (this.world.bodies[this.world.spirits[id].bodyId].isMoving()) {
       this.somethingMoving = true;
       break;
     }
