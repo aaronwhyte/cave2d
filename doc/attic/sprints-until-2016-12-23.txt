@@ -1,0 +1,371 @@
+Game2 refactoring I
+v pull up menuitemconfig to cave2d lib
+v pull up spiritconfig to cave2d lib
+v break up game2/basescreen a bit.
+  * baseScreen won't be re-used, but it will be copied
+  * some useful code can be extracted from it for true re-use
+  * it can be made smaller and more template-y.
+  v sounds as plugin
+    v put sound effect code in it's own file
+    v call screen.sounds.foo() - remove screen sound methods
+      yeah yeah Law of Demeter... Adding a param to every Spirit is a PITA. Not gonna do it.
+  v stamps as plugin
+    v glyphs
+    v generic shapes like "tube"
+    x spirit config stamps?
+    v replace uses, violate Law of Demeter, but mainly in reset() methods, where fields are extracted from screen obj
+  v replace screenXXX.lazyInit
+    v make it deliberate, not lazy
+    v unpack calls into the pages that build screens
+      v play
+      v edit
+      v test
+
+Make basic app page-creation configurable.
+v rename
+  v LevelEditorPage to EditLevelPage
+  v LevelTestPage to TestLevelPage
+  v LevelPlayPage to PlayLevelPage
+v Move to game2
+  v EditLevelPage
+  v TestLevelPage
+  v PlayLevelPage
+v EditorApp
+  v inject EditLevelPage ctor
+  v inject TestLevelPage ctor
+v PlayApp
+  v inject PlayLevelPage ctor
+
+Game2 BaseScreen refactoring II
+v generalize wall tile code: TileGrid yay!
+x generalize level JSON deserislization logic
+x generalize controls setup?
+x generalize dom event handling (listen, unlisten, distributor setup)
+x phy stuff
+  x groups setup
+  x collision handling
+  x scan util
+
+Test 39: Orientation & off-center force
+v test nest based on previous editor tests
+v Start over? nest based on game2 edit app?
+v prepare nest
+  v remove the multi-adventure multi-level bits. Just one level and adventure.
+  v remove test switch
+  v edit and play at the same time
+v change spirits
+  v remove exit
+  v remove player
+  v remove bullet
+v body values
+  v moi
+  v "turnable" boolean? - default undefined means no?
+  v angStart
+  v angTime
+  v angVel
+  v getAngPosAtTime()
+  v setAngPosAtTime()
+  v setAngVelAtTime()
+v make AntSpirit use new rotation system
+v editor
+  v grab objects at a point, and apply force to that point when dragging
+    v point defined by dist & direction from center of mass.
+  v give cursor a direction based on movement
+  v add objects with initial orientation based on cursor direction
+  v s27n
+
+Surface collision grip
+v calc contact point of collision
+  v hitresolver stuff
+  v game2 tweaks
+v "surfaceGrip" in body
+  * 0: frictionless, like a bowling ball
+  * 0.3: fair amount of friction, like a dirty tire
+  * 0.5: very grippy, a clean basketball
+  * 1: 100% elastic, like a superball
+  There are more realistic characterizations...
+  A superball will grip a bowling ball and a wood floor
+  but a bowling ball will not grip a wood floor
+  so there's smoothness, stickyness, tread...
+  there's also grip decrease as surface vel increases, like tires gripping vs slipping
+  and grip is a function of pressure too. arrr
+  Basically grip is a function of both surfaces, the surface velocity, pressure, hardness...
+v collision response
+  v calculate surface velocity vec
+  v calc force to totally reverse surface vec
+  v then mult by product of surface grips
+  v apply those forces at edges of objects
+  v really solve for force. Math works!
+  v debug it. Energy is not being conserved?
+    v end surface velocities will be ~equal if grip==1
+    v energy conserved or reduced a little
+
+Game3 prototype
+Rolling (& jumping?)
+Simple game with same old level editor and junk.
+left, right, jump
+reach the exit
+gravity, obstacles
+v copy game2 to game3
+v player v1 - angular accel
+
+Stats 2016-11-06 to 11-16
+v Stats class path-delimited key/value pairs for tracking values now - no history. Really dumb.
+v StatTrail class can record stat value/time pairs in a circular buffer.
+v StatRateTrail class subclasses StatTrail, first derivative.
+v StatGraph class can render a StatTrail
+
+LineDrawer 2016-11-13 to 11-16
+This will alternate the moving end between group 1 and group 2. That's the only fancy part.
+Use renderer's matrix and color API - don't replicate.
+v takes a renderer and a stamp - probably a closed cylinder, but anything with two groups is good
+v moveToXYZR(x, y, z, r) // remembers but doesn't draw
+v lineToXYZR(x, y, z, r) // draws from prev, moves prev to current
+v test page
+
+Graphing improvements
+v make the lines equal width and height
+  v make the view matrix match upside-down Sector I 2d coords 0, 0 to width-1, height-1
+  v include an expected time domain
+    v render time with now on the right and the past on the left
+  v include an expected value range
+  v use a Rect to show where the graph goes on the plane
+  v make sure the line thickness is at least 2 pixels, for our unantialiased friends
+v refactor and encapsulate, for multiple graphs
+  v add a StatMon class
+    v holds a Trail and a Graph, but manages both
+    v sample() for the trail
+      v knows how to read its own time and val
+    v draw(canvasWidth, canvasHeight) for the graph
+      v lazily updates internal view matrix, but always sets renderer view matrix
+    v SAMPLE_PERIOD_FRAMES becomes "sampleInterval", internal to sample()
+    v sampleCount is for trail and graph
+    v graph value range
+v convert test40 to use StatMon
+
+Layout system
+v new Cuboid class, not rects, because Z is not to be ignored.
+v new CuboidRule(source, target) for setting target cuboid's position and radii based on another cuboid
+  v size
+    v setSizingMax(maxParentRads, maxPixels) // Vec4s. the system takes the min of these in each dimension
+      v aspect ratio locking can make things even smaller, never larger
+    v setAspectRation(ratio) // optionally lock target aspect ratio. A zero means that the dimension is unconstrained.
+  v position - the target will be moved so the two anchors are at the same position
+    v setTargetAnchor(rads, pixels) // Vec4s. Anchor pos on target = rad*rads + pixels
+    v setSourceAnchor(rads, pixels) // Vec4s. Anchor pos on source = rad*rads + pixels
+  v apply()
+    v unit-test
+      v size
+      v aspect ratio
+      v anchors
+v layout statgraphs using cuboids instead of rects
+  v ditto, therefore, for statmon
+  v higher z is closer to user, on top of lower z
+v apply rules to canvas and two graphs
+v add borders back
+
+v enhance StatMon
+  v graphposition and size on screen
+  v graphcolor
+  v graph z
+  v graphline width
+  v graphborder
+    x graphwidths
+    v graphcolor
+  x graphgridlines?
+  x graphmin/max indicators? Or values at least?
+  x graphcurrent value text?
+
+v more stats 'n' graphs
+  v frame stats
+    v time drawing
+    v time clocking
+    v time between frames (should be steady with occasional spikes)
+    v second slower timescale to the left. Never seen that before but I want it.
+      (did it and undid it. could do it again)
+  x world stats
+    x valid collisions
+    x invalid collisions
+    x valid cell entry/exit events
+    x invalid cell entry/exit events
+    x timeouts
+    x rayscans
+  x renderer stats
+    x real GL call counts? Hard because GLs get passed around more than renderer.
+  x memory
+    x pool allocs/frees for various classes
+
+Editor & Trigger refactor
+v pull stamps-making code into separate file
+v debug missing keyboard shortcuts
+v replace Editor trigger layout code with a canvas cuboid, trigger cuboids, and some rules, and cuboid/trigger glue
+  v Triggers
+    v layout
+      v use a cuboid reference for layout
+      v getCuboid returns ref to internal cuboid, for rules to target
+      v remember last used cuboid layout, and update automatically when drawing if there's a diff
+      v remove other APIs!
+    v key tip
+      v take CuboidRule for laying out tip
+      v reasonable default
+      v remove other key tip layout APIs
+  v migrate widget users to Cuboid (but maybe not CuboidRule)
+    v test37 pause widget
+    v test38 pause widget
+    v test39 pause widget
+    v test40 pause widget
+    v Editor
+      v canvas cuboid
+      v each trigger cuboid max y 1/6, max Y 50px, 1:1, anchor offset Y 1/10 of target.
+        * no need for wrapper cuboids hahaha!
+      v list of rules
+      v apply in updateHudLayout
+    v game2
+      v player triggers
+      v editscreen pause and test
+      v testscreen untest
+    v game3
+      x delete player triggers because we don't need 'em
+      v editscreen pause and test
+      v testscreen untest
+      v fix test/untest keyboard shortcut
+
+
+Undo/Redo
+v design button layout
+  * undo/redo will go on top to the right of the tabs and left of the pause button
+v test41 nest
+v quiet stillness, to reduce diffs so you're not unwinding a bunch of involuntary physics-over-time changes
+  v set frictions very high while editing. 100%? No motion beyond active editing.
+  v stop vel when vel is less than TEENY_VEL
+    v zero vel
+    x stop friction timeouts (or maybe one less reason - see angvel below)
+    x set path duration to infinity
+  v stop rotation when angvel is less than TEENY_ANGVEL
+    v zero angvel
+    x stop angvel timeouts (or one less reason to do friction timeout)
+  x wake when accelerated (linear or angular)
+    x start timeouts again
+  * It's OK to let time move fwd, if that's the *only* thing moving fwd. But...
+  x maybe don't move time fwd if nothing is moving and nothing is planned. That's an Eternal Stillness Condition
+  v actually don't move forward if nothing's moving. Ignore timeouts!
+v SaveStack
+  v class nest
+  v circular buffer of saves
+  v "depth" is usually 0 but higher numbers mean
+  v save(world, view)
+    v pop "depth" times to nuke any redos (the worst part if I remain traditional)
+    v set depth to 0
+    v push(aka enqueue) the world/view pair into the stack
+  v view peeks
+    v getView(1) // undo
+    v getView(-1) // redo
+  v canRestore(dir) return  0 <= undoDepth + dir <= queue.size() - 1
+  v selectWorld(dir)
+    v inc/dec undoDepth if possible
+    v return world or null
+v Buttons
+  v undo button
+  v redo button
+v EditScreen should save at appropriate times
+  v world dirty bit: always know if any world state changed since the last save
+    v EditScreen.isDirty()
+    v EditScreen.setDirty()
+    v world-time advance
+    v terrain change bit
+    v add/remove
+  v when the user hits undo/redo
+    v interrupt editor
+      v release grip on object
+      v halt digging/building/whatevs as if user released
+    v stop all object motion and rotation.
+      Otherwise, a setWorld() to a state in motion would instantly re-dirty the world.
+    v view check
+      v getView(dir)
+      v if view too far off, just set the view
+      v otherwise, really undo/redo
+        v if this is undo, and isDirty() then saveStack.save() so redo will work
+        v selectWorld(dir)
+        v apply it.
+  v auto-save when the world is dirty and has settled on its own. Important! That's the main source of saves.
+v editSceen.setGame() v1
+  v clear world and rebuild everything, regardless
+
+Undo/Redo 2: Redoing Undo
+It's most important to make *recording* changes efficient, since that happens all the time even if the recordings are
+never used to undo. But applying changes (undo/redo) should also be not 100s of ms or worse.
+The old undo system got slower as the world grew. The new one should scale with the size of each change, not the size
+of the world.
+v reversible ChangeOp class
+  v object identifier
+  v states, before and after. null means nonexistence - creation/destruction
+  v bounding rect (before and after) of the change in world-space
+    * for terrain, it's cell rect (or even something surrounding the affected bits)
+    * for object, it's starting/ending position and rads (null for nonexistence)
+    * for timeouts and other non-spacial changes, null.
+v "Changable" API for objects that support generating and applying changes?????
+  * startRecordingChanges()
+  * changes stopRecordingChanges()
+  * applyChange(ChangeOp)
+  v BitGrid
+    v startRecordingChanges()
+    v changes stopRecordingChanges()
+    v applyChange()
+    v unit-test BitGrid more
+  v TileGrid
+    v startRecordingChanges()
+    v changes stopRecordingChanges()
+    v applyChange()
+      v pauseRecordingChanges and resumeRecordingChanges around body-adding
+  v ChangeOp: add "type" enum, controlled by app, for routing changes the the code that knows how to apply them
+Make the UI work for terrain at least
+v ChangeStack
+  v depth points to last set of changes applied, so it's to the right of the changes basically
+  v each entry is just an array of ChangeOps
+  v save - chops off redo and stuff
+  v hasUndo, Redo
+  v selectUndo, Redo
+  v unit test
+
+v EditScreen again
+  v gets changes when button is pushed, if they exist
+  v applies 'em, routing them to the right place based on type.
+  v start recording changes at some point. Immeidately after stopping them? Should I ever actually stop, or do I really want a "flush"?
+  v Bug: redo is not chunking terrain changes correctly.
+
+Changable World
+v add "recordChanges" boolean - field, setter/constructor
+v bodyBefores: map bodyId to before-state JSON
+v spiritBefores: map spiritId to before-state JSON
+v startRecordingChanges()
+v stopRecordingChanges()
+v pauseRecordingChanges()
+v resumeRecordingChanges()
+v change listeners
+  v onBeforeBodyChange(body)
+    v if recording && "before" is not already present, record "before"
+    v map of body before-states
+  v onBeforeSpiritChange(body): if recording && "before" is not already present, record "before"
+v Body changes
+  v optional setChangeListener(bodyChangeListener)
+  v clear that in reset().
+  v calls changeListener.onBeforeBodyChange(this) before any mutation
+  v Every bit of mutation code (compatible with undo) needs to be in a method, so it can trigger listener
+v Spirit changes
+  v optional setChangeListener(spiritChangeListener)
+  v calls changeListener.onBeforeSpiritChange(this) before any mutation
+  v Every bit of mutation code (compatible with undo) needs to be in a method, so it can trigger listener
+v timeoutBefores
+  v record before - all timeouts
+  v return change - from prev all timeouts to current all timeouts
+  v apply change - remove all timeouts and add change's timeouts
+v applyChange()
+  v body
+  v spirit
+  v now
+  v timeout
+v do NOT iterate over all bodies to see if anything is moving. For now use spirits instead...
+  v use spirits as proxy for movables for now but maybe use "movable" collection later??
+
+Terrain chunking bug
+v fix it! Something to do with scrolling and loading and undo and redo??
