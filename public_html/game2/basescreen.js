@@ -8,6 +8,8 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
   this.adventureName = adventureName;
   this.levelName = levelName;
 
+  this.camera = new Camera(0.05, 0.17, BaseScreen.CAMERA_VIEW_DIST);
+
   this.exitStartTime = 0;
   this.exitEndTime = 0;
 
@@ -227,7 +229,8 @@ BaseScreen.prototype.initWorld = function() {
     [g.EXPLODEY_BITS, g.WALL]
   ];
 
-  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs);
+  var spiritFactory = new SpiritFactory(this, this.spiritConfigs);
+  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs, spiritFactory);
 
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.95;
@@ -239,67 +242,14 @@ BaseScreen.prototype.initWorld = function() {
 /**
  * @param {Object} json
  */
-BaseScreen.prototype.loadWorldFromJson = function (json) {
-  this.world.now = json.now;
-
-  // bodies
-  var lostSpiritIdToBodyId = {};
-  for (var i = 0; i < json.bodies.length; i++) {
-    var bodyJson = json.bodies[i];
-    var body = new Body();
-    body.setFromJSON(bodyJson);
-    this.world.loadBody(body);
-    lostSpiritIdToBodyId[body.spiritId] = body.id;
-  }
-
-  // spirits
-  for (var i = 0; i < json.spirits.length; i++) {
-    var spiritJson = json.spirits[i];
-    var spiritType = spiritJson[0];
-    var spiritConfig = this.spiritConfigs[spiritType];
-    if (spiritConfig) {
-      var spirit = new spiritConfig.ctor(this);
-      spirit.setModelStamp(spiritConfig.stamp);
-      spirit.setFromJSON(spiritJson);
-      this.world.loadSpirit(spirit);
-    } else {
-      console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
-    }
-    delete lostSpiritIdToBodyId[spirit.id];
-  }
-
-  // timeouts
-  var e = new WorldEvent();
-  for (var i = 0; i < json.timeouts.length; i++) {
-    e.setFromJSON(json.timeouts[i]);
-    this.world.loadTimeout(e);
-  }
-
-  // terrain
-  // TODO: tileGrid.setFromJSON(json.terrain); and that's it.
+BaseScreen.prototype.loadWorldFromJson = function(json) {
+  var worldJsoner = new WorldJsoner();
+  worldJsoner.loadWorldFromJson(this.world, json);
   this.bitGrid = BitGrid.fromJSON(json.terrain);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
   this.tileGrid.flushTerrainChanges();
-
-  // cursor and camera
   if (this.editor) this.editor.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
   this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
-
-//  // splashes
-//  var splash = new Splash();
-//  for (var i = 0; i < json.splashes.length; i++) {
-//    var splashJson = json.splashes[i];
-//    var splashType = splashJson[0];
-//    // TODO: splashConfig plugin, like spiritConfig
-//  }
-
-  // Stop spiritless bodies from haunting the world.
-  // This can happen if I add spirits to a level, then remove the definition.
-  // TODO: something better
-  for (var spiritId in lostSpiritIdToBodyId) {
-    var bodyId = lostSpiritIdToBodyId[spiritId];
-    this.world.removeBodyId(bodyId);
-  }
 };
 
 BaseScreen.prototype.createTrackball = function() {

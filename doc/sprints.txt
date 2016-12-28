@@ -1,8 +1,39 @@
+Code Harvesting
+- WorldJsoner for s27n
+  - write class
+  - replace game2 code
+  - replace game3 code
+  -
+
 Multiplayer
 * up to four touch players
 * Up to three keyboard players: wasd, ijkl, arrows
-* Gamepad controls if possible?
-Player modes: Absent, Wispy, Embodied
+* Mouse control with pointerlock and keys?
+* Gamepad controls if possible
+- test42 nest
+- PlayerInterface baseclass
+  * Not many setters in the interface. The code's the thing. Subclass for particulars.
+  * Doesn't own player spirit, position, etc.
+  - onJoin()
+    - touch controls add visible triggers
+  - onDrop()
+  - getJoinTriggerVal()
+  - getGrabTriggerVal()
+  - getThrowTriggerVal()
+  - (later: getPackTriggerVal())
+  - Trackball?
+    - getTrackballValue()
+    - getTrackballIsTouched()
+  - setPauseListener() (so I don't need a Page to make a PI)
+- Join
+  - game loop listens for join trigger value down on unjoined players
+  - joining adds a new PlayerCharacter, a Spirit with a PlayerInterface for controlling the Spirit.
+  - PI.onJoin()
+- Drop
+  - Spirit listens for long hold on join trigger
+  - remove spirit and stuff
+  - PI.onDrop
+
 
 chain constraints
 Simple distance between two body positions - no offset from center, because rotation would make that harder...
@@ -62,8 +93,16 @@ Since snappers often overlap with objects (no collisions!) there needs to be a w
   - maybe shorter arcs too
 - top-level switch to toggle snapping on/off? I can see it getting annoying when you're doing free-form dragging.
 
+Batch rendering?
+- Add vector versions of existing uniforms?
+  -
+Add "instanceNum" attrib to each vec?
+... or extend "group" mechanism to support an array of model matrixes, and make a sweet polyline model with tons of groups??
+
+
 Undo/Redo UX polish
 - less crappy undo/redo button models
+  - RigidModelLineDrawer
 - save during a long change edit-gesture, like a digging drag, throttled by wall-time
 - a bunch of stuff with view rectangles? Save it for when it's zoomable?
 

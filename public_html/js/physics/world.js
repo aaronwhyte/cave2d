@@ -856,7 +856,7 @@ World.prototype.applyChange = function(change) {
       }
       break;
     case World.ChangeType.SPIRIT:
-      var afterSpirit = change.afterState ? this.spiritFactory.createSpiritFromJson(change.afterState) : null;
+      var afterSpirit = change.afterState ? this.createSpiritFromJson(change.afterState) : null;
       if (change.beforeState == null) {
         this.loadSpirit(afterSpirit);
       } else if (!afterSpirit) {
@@ -878,6 +878,10 @@ World.prototype.applyChange = function(change) {
       }
       break;
   }
+};
+
+World.prototype.createSpiritFromJson = function(json) {
+  return this.spiritFactory.createSpiritFromJson(json);
 };
 
 World.prototype.onBeforeBodyChange = function(body) {
