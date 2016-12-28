@@ -103,8 +103,8 @@ BulletSpirit.prototype.onHitWall = function(mag, pos) {
       this.addTrailSegment();
     } else {
       // vanish
-      this.destroyBody();
       this.wallDamageSplash(pos, body.rad);
+      this.destroyBody();
     }
     this.sounds.wallThump(pos, mag * body.mass);
   }
@@ -192,7 +192,7 @@ BulletSpirit.prototype.destroy = function() {
   }
 };
 
-  BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
+BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   var s = this.screen.splash;
   s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
