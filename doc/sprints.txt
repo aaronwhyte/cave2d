@@ -3,9 +3,10 @@ v WorldJsoner for s27n
   v write class
   v replace game2 code
   v replace game3 code
-- TileGrid consolidation
-  - move tile drawing to TileGrid
-  - move terrain pill mutation to TileGrid
+v TileGrid consolidation
+  v move tile drawing to TileGrid
+  x move terrain pill mutation to TileGrid (already done!)
+v remove obsolete BaseScreen.flushTerrain func
 - World API
   - move body/spirit query stuff from basescreens to World
   - give editor access to World, to remove a lot of editor->screen->world call routing

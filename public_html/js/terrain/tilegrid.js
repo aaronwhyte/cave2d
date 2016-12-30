@@ -17,7 +17,13 @@ function TileGrid(bitGrid, renderer, world, hitGroup) {
   this.changes = null;
 }
 
+TileGrid.prototype.setWallGrip = function(grip) {
+  this.wallGrip = grip;
+  return this;
+};
+
 /**
+ * Mutates the grid contents with a "drawing" stroke. Nothing to do with rendering on the screen.
  * @param {Vec2d} p1
  * @param {Vec2d} p2
  * @param {number} rad
@@ -28,6 +34,26 @@ TileGrid.prototype.drawTerrainPill = function(p1, p2, rad, color) {
   this.segment.setP1P2(p1, p2);
   this.bitGrid.drawPill(this.segment, rad, color);
   return this.flushTerrainChanges();
+};
+
+/**
+ * Draws the visible tiles using the renderer.
+ */
+TileGrid.prototype.drawTiles = function(centerX, centerY, pixelsPerCell) {
+  var cx = Math.round((centerX - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
+  var cy = Math.round((centerY - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
+  var cellsPerScreenX = this.renderer.canvas.width / pixelsPerCell;
+  var cellsPerScreenY = this.renderer.canvas.height / pixelsPerCell;
+  var rx = Math.ceil(cellsPerScreenX);
+  var ry = Math.ceil(cellsPerScreenY);
+  for (var dy = -ry; dy <= ry; dy++) {
+    for (var dx = -rx; dx <= rx; dx++) {
+      var stamp = this.getStampAtCellXY(cx + dx, cy + dy);
+      if (stamp) {
+        this.renderer.setStamp(stamp).drawStamp();
+      }
+    }
+  }
 };
 
 TileGrid.prototype.getStampAtCellXY = function(cx, cy) {

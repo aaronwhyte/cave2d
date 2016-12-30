@@ -45,7 +45,6 @@ function BaseScreen(controller, canvas, renderer, stamps, sfx) {
   this.world = null;
 
   this.bitSize = 0.5;
-  this.bitGridMetersPerCell = BaseScreen.BIT_SIZE * BitGrid.BITS;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(0.2, 0.3, 0.6);
 
@@ -582,39 +581,19 @@ BaseScreen.prototype.drawSpirits = function() {
 // Wall manipulation stuff
 ///////////////////////////
 
-BaseScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
-  this.tileGrid.drawTerrainPill(pos0, pos1, rad, color);
-};
-
-BaseScreen.prototype.flushTerrainChanges = function() {
-  this.tileGrid.flushTerrainChanges();
+BaseScreen.prototype.drawTerrainPill = function(p1, p2, rad, color) {
+  this.tileGrid.drawTerrainPill(p1, p2, rad, color);
 };
 
 BaseScreen.prototype.drawTiles = function() {
-  if (!this.tileGrid) {
-    return;
+  if (this.tileGrid) {
+    this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
+    this.tileGrid.drawTiles(this.camera.getX(), this.camera.getY(), this.getPixelsPerGridCell());
   }
-  this.renderer
-      .setColorVector(this.levelColorVector)
-      .setModelMatrix(this.levelModelMatrix);
-  var cx = Math.round((this.camera.getX() - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
-  var cy = Math.round((this.camera.getY() - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
-  var pixelsPerMeter = this.getPixelsPerMeter();
-  var pixelsPerCell = this.bitGridMetersPerCell * pixelsPerMeter;
-  var cellsPerScreenX = this.canvas.width / pixelsPerCell;
-  var cellsPerScreenY = this.canvas.height / pixelsPerCell;
-  var rx = Math.ceil(cellsPerScreenX);
-  var ry = Math.ceil(cellsPerScreenY);
-  for (var dy = -ry; dy <= ry; dy++) {
-    for (var dx = -rx; dx <= rx; dx++) {
-      var stamp = this.tileGrid.getStampAtCellXY(cx + dx, cy + dy);
-      if (stamp) {
-        this.renderer
-            .setStamp(stamp)
-            .drawStamp();
-      }
-    }
-  }
+};
+
+BaseScreen.prototype.getPixelsPerGridCell = function() {
+  return this.bitGrid.bitWorldSize * BitGrid.BITS * this.getPixelsPerMeter();
 };
 
 BaseScreen.prototype.approxViewportsFromCamera = function(v) {

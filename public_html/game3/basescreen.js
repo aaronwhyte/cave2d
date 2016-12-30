@@ -50,6 +50,7 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
 
   this.playerAveragePos = new Vec2d();
 
+  this.bitSize = 0.2;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(0.2, 0.3, 0.6);
 
@@ -117,8 +118,6 @@ BaseScreen.SplashType = {
   ERROR: 4
 };
 
-BaseScreen.BIT_SIZE = 0.2;
-BaseScreen.WORLD_CELL_SIZE = BaseScreen.BIT_SIZE * BitGrid.BITS;
 
 BaseScreen.EventLayer = {
   POPUP: 0,
@@ -222,12 +221,12 @@ BaseScreen.prototype.initWorld = function() {
   ];
 
   var spiritFactory = new SpiritFactory(this, this.spiritConfigs);
-  this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs, spiritFactory);
+  this.world = new World(this.bitSize * BitGrid.BITS, groupCount, hitPairs, spiritFactory);
 
   this.resolver = new HitResolver();
   this.resolver.defaultElasticity = 0.95;
 
-  this.bitGrid = new BitGrid(BaseScreen.BIT_SIZE);
+  this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
 };
 
@@ -265,20 +264,6 @@ BaseScreen.prototype.createTrackball = function() {
 
 BaseScreen.prototype.createButtonWidgets = function() {
   var widgets = [
-//    new TriggerWidget(this.getHudEventTarget())
-//        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-//        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-//        .setStamp(this.stamps.circleStamp)
-//        .listenToTouch()
-//        .addTriggerKeyByName('z')
-//        .setKeyboardTipStamp(this.stamps['Z']),
-//    new TriggerWidget(this.getHudEventTarget())
-//        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-//        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-//        .setStamp(this.stamps.circleStamp)
-//        .listenToTouch()
-//        .addTriggerKeyByName('x')
-//        .setKeyboardTipStamp(this.stamps['X']),
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
@@ -694,35 +679,15 @@ BaseScreen.prototype.drawTerrainPill = function(p1, p2, rad, color) {
   this.tileGrid.drawTerrainPill(p1, p2, rad, color);
 };
 
-BaseScreen.prototype.flushTerrainChanges = function() {
-  this.tileGrid.flushTerrainChanges();
+BaseScreen.prototype.drawTiles = function() {
+  if (this.tileGrid) {
+    this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
+    this.tileGrid.drawTiles(this.camera.getX(), this.camera.getY(), this.getPixelsPerGridCell());
+  }
 };
 
-BaseScreen.prototype.drawTiles = function() {
-  if (!this.tileGrid) {
-    return;
-  }
-  this.renderer
-      .setColorVector(this.levelColorVector)
-      .setModelMatrix(this.levelModelMatrix);
-  var cx = Math.round((this.camera.getX() - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
-  var cy = Math.round((this.camera.getY() - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
-  var pixelsPerMeter = this.getPixelsPerMeter();
-  var pixelsPerCell = this.bitGrid.bitWorldSize * BitGrid.BITS * pixelsPerMeter;
-  var cellsPerScreenX = 0.5 + this.canvas.width / pixelsPerCell;
-  var cellsPerScreenY = 0.5 + this.canvas.height / pixelsPerCell;
-  var rx = Math.ceil(cellsPerScreenX);
-  var ry = Math.ceil(cellsPerScreenY);
-  for (var dy = -ry; dy <= ry; dy++) {
-    for (var dx = -rx; dx <= rx; dx++) {
-      var stamp = this.tileGrid.getStampAtCellXY(cx + dx, cy + dy);
-      if (stamp) {
-        this.renderer
-            .setStamp(stamp)
-            .drawStamp();
-      }
-    }
-  }
+BaseScreen.prototype.getPixelsPerGridCell = function() {
+  return this.bitGrid.bitWorldSize * BitGrid.BITS * this.getPixelsPerMeter();
 };
 
 BaseScreen.prototype.approxViewportsFromCamera = function(v) {
