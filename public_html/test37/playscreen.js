@@ -94,12 +94,6 @@ PlayScreen.Group = {
   CURSOR: 3
 };
 
-PlayScreen.Terrain = {
-  WALL: 0,
-  FLOOR: 1,
-  MIXED: 2
-};
-
 PlayScreen.SpiritType = {
   BALL: 1,
   SOUND: 2

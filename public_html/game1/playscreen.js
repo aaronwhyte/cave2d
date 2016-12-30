@@ -75,12 +75,6 @@ PlayScreen.Group = {
   ENEMY_MISSILE: 6
 };
 
-PlayScreen.Terrain = {
-  WALL: 0,
-  FLOOR: 1,
-  MIXED: 2
-};
-
 PlayScreen.SplashType = {
   PLAYER_TRAIL: 1,
   EXPLOSION: 2,

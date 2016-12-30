@@ -67,12 +67,6 @@ PlayScreen.Group = {
   CURSOR: 3
 };
 
-PlayScreen.Terrain = {
-  WALL: 0,
-  FLOOR: 1,
-  MIXED: 2
-};
-
 PlayScreen.CursorMode = {
   WALL: 0,
   FLOOR: 1,

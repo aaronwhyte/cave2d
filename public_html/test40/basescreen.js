@@ -235,12 +235,6 @@ BaseScreen.MenuItem = {
   ANT: 'ant'
 };
 
-BaseScreen.Terrain = {
-  WALL: 0,
-  FLOOR: 1,
-  MIXED: 2
-};
-
 BaseScreen.SplashType = {
   NOTE: 1,
   SCAN: 2,
