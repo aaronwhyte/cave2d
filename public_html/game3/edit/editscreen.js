@@ -124,45 +124,15 @@ EditScreen.prototype.initWidgets = function() {
 };
 
 EditScreen.prototype.toJSON = function() {
-  var json = {
-    terrain: this.bitGrid.toJSON(),
-    now: this.world.now,
-    bodies: [],
-    spirits: [],
-    timeouts: [],
-    splashes: [],
-    cursorPos: this.editor.cursorPos.toJSON(),
-    cameraPos: this.camera.cameraPos.toJSON()
-  };
-  // bodies
-  for (var bodyId in this.world.bodies) {
-    var body = this.world.bodies[bodyId];
-    if (body.hitGroup != BaseScreen.Group.WALL) {
-      // round velocity on save, to stop from saving tons of high-precision teeny tiny velocities
-      this.vec2d.set(body.vel).roundToGrid(EditScreen.ROUND_VELOCITY_TO_NEAREST);
-      body.setVelAtTime(this.vec2d, this.now());
-      json.bodies.push(body.toJSON());
-    }
-  }
-  // spirits
-  for (var spiritId in this.world.spirits) {
-    var spirit = this.world.spirits[spiritId];
-    json.spirits.push(spirit.toJSON());
-  }
-  // timeouts
-  for (var e = this.world.queue.getFirst(); e; e = e.next[0]) {
-    if (e.type === WorldEvent.TYPE_TIMEOUT) {
-      var spirit = this.world.spirits[e.spiritId];
-      if (spirit) {
-        json.timeouts.push(e.toJSON());
-      }
-    }
-  }
-  // splashes
-  var splashes = this.splasher.splashes;
-  for (var i = 0; i < splashes.length; i++) {
-    json.splashes.push(splashes[i].toJSON());
-  }
+  var worldJsoner = new WorldJsoner();
+  worldJsoner.setIsBodySerializableFn(function(body) {
+    return body.hitGroup != BaseScreen.Group.WALL;
+  });
+  worldJsoner.roundBodyVelocities(this.world, EditScreen.ROUND_VELOCITY_TO_NEAREST);
+  var json = worldJsoner.worldToJson(this.world);
+  json.terrain = this.bitGrid.toJSON();
+  json.cursorPos = this.editor.cursorPos.toJSON();
+  json.cameraPos = this.camera.cameraPos.toJSON();
   return json;
 };
 

@@ -1,9 +1,8 @@
 Code Harvesting
-- WorldJsoner for s27n
-  - write class
-  - replace game2 code
-  - replace game3 code
-  -
+v WorldJsoner for s27n
+  v write class
+  v replace game2 code
+  v replace game3 code
 
 Multiplayer
 * up to four touch players
