@@ -8,7 +8,7 @@ v TileGrid consolidation
   x move terrain pill mutation to TileGrid (already done!)
 v remove obsolete BaseScreen.flushTerrain func
 - Prepare: prepend "GameX" and "TestX" to base, play, test, and edit screens for
-  - t41
+  v t41
   - g3
   - t40
   - g2

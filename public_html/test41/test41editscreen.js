@@ -1,14 +1,14 @@
 /**
  * @constructor
- * @extends {BaseScreen}
+ * @extends {Test41BaseScreen}
  */
-function EditScreen(controller, canvas, renderer, stamps, sfx) {
-  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx);
+function Test41EditScreen(controller, canvas, renderer, stamps, sfx) {
+  Test41BaseScreen.call(this, controller, canvas, renderer, stamps, sfx);
 
-  this.camera = new Camera(0.2, 0.6, BaseScreen.CAMERA_VIEW_DIST);
+  this.camera = new Camera(0.2, 0.6, Test41BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
-  this.changeStack = new ChangeStack(EditScreen.MAX_UNDO_DEPTH);
+  this.changeStack = new ChangeStack(Test41EditScreen.MAX_UNDO_DEPTH);
 
   var self = this;
 
@@ -39,16 +39,16 @@ function EditScreen(controller, canvas, renderer, stamps, sfx) {
     e.preventDefault();
   };
 }
-EditScreen.prototype = new BaseScreen();
-EditScreen.prototype.constructor = EditScreen;
+Test41EditScreen.prototype = new Test41BaseScreen();
+Test41EditScreen.prototype.constructor = Test41EditScreen;
 
-EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
+Test41EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
-EditScreen.ANT_RAD = 1.2;
+Test41EditScreen.ANT_RAD = 1.2;
 
-EditScreen.MAX_UNDO_DEPTH = 20000;
+Test41EditScreen.MAX_UNDO_DEPTH = 20000;
 
-EditScreen.prototype.initEditor = function() {
+Test41EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
   this.editor.gripAccelFraction = 0.25;
   for (var t in this.spiritConfigs) {
@@ -62,7 +62,7 @@ EditScreen.prototype.initEditor = function() {
   }
 };
 
-EditScreen.prototype.updateHudLayout = function() {
+Test41EditScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
   this.pauseTriggerRule.apply();
   this.undoTriggerRule.apply();
@@ -70,10 +70,10 @@ EditScreen.prototype.updateHudLayout = function() {
   this.editor.updateHudLayout();
 };
 
-EditScreen.prototype.setScreenListening = function(listen) {
+Test41EditScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var fsb, rb, i;
-  BaseScreen.prototype.setScreenListening.call(this, listen);
+  Test41BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
@@ -111,7 +111,7 @@ EditScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-EditScreen.prototype.initWidgets = function() {
+Test41EditScreen.prototype.initWidgets = function() {
   this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.pauseDownFn)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
@@ -121,7 +121,7 @@ EditScreen.prototype.initWidgets = function() {
       .addTriggerKeyByName(Key.Name.SPACE)
       .setStamp(this.stamps.editorPauseStamp);
   this.pauseTriggerRule = new CuboidRule(this.canvasCuboid, this.pauseTriggerWidget.getWidgetCuboid())
-      .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
+      .setSizingMax(new Vec4(1, 1, 1), new Vec4(Test41BaseScreen.WIDGET_RADIUS, Test41BaseScreen.WIDGET_RADIUS))
       .setAspectRatio(new Vec4(1, 1))
       .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
       .setTargetAnchor(new Vec4(1, -1), Vec4.ZERO);
@@ -137,7 +137,7 @@ EditScreen.prototype.initWidgets = function() {
       .setStamp(this.stamps.editorUndoStamp);
   this.addListener(this.undoTriggerWidget);
   this.undoTriggerRule = new CuboidRule(this.canvasCuboid, this.undoTriggerWidget.getWidgetCuboid())
-      .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
+      .setSizingMax(new Vec4(1, 1, 1), new Vec4(Test41BaseScreen.WIDGET_RADIUS, Test41BaseScreen.WIDGET_RADIUS))
       .setAspectRatio(new Vec4(1, 1))
       .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
       .setTargetAnchor(new Vec4(1 + 2 * (2 + 0.25), -1), Vec4.ZERO);
@@ -153,13 +153,13 @@ EditScreen.prototype.initWidgets = function() {
       .setStamp(this.stamps.editorRedoStamp);
   this.addListener(this.redoTriggerWidget);
   this.redoTriggerRule = new CuboidRule(this.canvasCuboid, this.redoTriggerWidget.getWidgetCuboid())
-      .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
+      .setSizingMax(new Vec4(1, 1, 1), new Vec4(Test41BaseScreen.WIDGET_RADIUS, Test41BaseScreen.WIDGET_RADIUS))
       .setAspectRatio(new Vec4(1, 1))
       .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
       .setTargetAnchor(new Vec4(1 + 1 * (2 + 0.25), -1), Vec4.ZERO);
 };
 
-EditScreen.prototype.worldToJSON = function() {
+Test41EditScreen.prototype.worldToJSON = function() {
   var json = {
     terrain: this.bitGrid.toJSON(),
     now: this.world.now,
@@ -171,9 +171,9 @@ EditScreen.prototype.worldToJSON = function() {
   // bodies
   for (var bodyId in this.world.bodies) {
     var body = this.world.bodies[bodyId];
-    if (body.hitGroup != BaseScreen.Group.WALL) {
+    if (body.hitGroup != Test41BaseScreen.Group.WALL) {
       // round velocity on save, to stop from saving tons of high-precision teeny tiny velocities
-      this.vec2d.set(body.vel).roundToGrid(EditScreen.ROUND_VELOCITY_TO_NEAREST);
+      this.vec2d.set(body.vel).roundToGrid(Test41EditScreen.ROUND_VELOCITY_TO_NEAREST);
       body.setVelAtTime(this.vec2d, this.now());
       json.bodies.push(body.toJSON());
     }
@@ -194,7 +194,7 @@ EditScreen.prototype.worldToJSON = function() {
   return json;
 };
 
-EditScreen.prototype.viewToJSON = function() {
+Test41EditScreen.prototype.viewToJSON = function() {
   var json = {
     cursorPos: this.editor.cursorPos.toJSON(),
     cameraPos: this.camera.cameraPos.toJSON()
@@ -202,36 +202,36 @@ EditScreen.prototype.viewToJSON = function() {
   return json;
 };
 
-EditScreen.prototype.createDefaultWorld = function() {
+Test41EditScreen.prototype.createDefaultWorld = function() {
   this.world.setChangeRecordingEnabled(true);
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
   var ants = 24;
   for (var a = 0; a < ants; a++) {
-    this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+    this.addItem(Test41BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
 
   var ants = 12;
   for (var a = 0; a < ants; a++) {
-    this.addItem(BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+    this.addItem(Test41BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
   this.startRecordingChanges();
 };
 
-EditScreen.prototype.handleInput = function () {
+Test41EditScreen.prototype.handleInput = function () {
   if (!this.world) return;
   this.editor.handleInput();
 };
 
-EditScreen.prototype.startRecordingChanges = function() {
+Test41EditScreen.prototype.startRecordingChanges = function() {
   this.tileGrid.startRecordingChanges();
   this.world.startRecordingChanges();
 };
 
-EditScreen.prototype.stopRecordingChanges = function() {
+Test41EditScreen.prototype.stopRecordingChanges = function() {
   return this.tileGrid.stopRecordingChanges().concat(this.world.stopRecordingChanges());
 };
 
-EditScreen.prototype.undo = function() {
+Test41EditScreen.prototype.undo = function() {
   this.stopChanges();
   var changes = this.stopRecordingChanges();
   if (changes.length) {
@@ -244,7 +244,7 @@ EditScreen.prototype.undo = function() {
   this.startRecordingChanges();
 };
 
-EditScreen.prototype.redo = function() {
+Test41EditScreen.prototype.redo = function() {
   this.stopChanges();
   var changes = this.stopRecordingChanges();
   if (changes.length) {
@@ -256,7 +256,7 @@ EditScreen.prototype.redo = function() {
   this.startRecordingChanges();
 };
 
-EditScreen.prototype.applyChanges = function(changes) {
+Test41EditScreen.prototype.applyChanges = function(changes) {
   var terrainChanges = [];
   var worldChanges = [];
   for (var i = 0; i < changes.length; i++) {
@@ -282,7 +282,7 @@ EditScreen.prototype.applyChanges = function(changes) {
 /**
  * Saves changes and clears the dirty bit.
  */
-EditScreen.prototype.saveToChangeStack = function(changes) {
+Test41EditScreen.prototype.saveToChangeStack = function(changes) {
   this.changeStack.save(changes);
   this.setDirty(false);
 };
@@ -290,7 +290,7 @@ EditScreen.prototype.saveToChangeStack = function(changes) {
 /**
  * @param {Object} json
  */
-EditScreen.prototype.loadWorldFromJson = function(json) {
+Test41EditScreen.prototype.loadWorldFromJson = function(json) {
   this.world.now = json.now;
 
   // bodies
@@ -350,7 +350,7 @@ EditScreen.prototype.loadWorldFromJson = function(json) {
 };
 
 
-EditScreen.prototype.drawScene = function() {
+Test41EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
   var startTime = performance.now();
   for (var id in this.world.spirits) {
@@ -376,7 +376,7 @@ EditScreen.prototype.drawScene = function() {
   }
 };
 
-EditScreen.prototype.drawHud = function() {
+Test41EditScreen.prototype.drawHud = function() {
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
           2 / this.canvas.width,
@@ -394,7 +394,7 @@ EditScreen.prototype.drawHud = function() {
   this.renderer.setBlendingEnabled(false);
 };
 
-EditScreen.prototype.configMousePointer = function() {
+Test41EditScreen.prototype.configMousePointer = function() {
   if (this.pauseTriggerWidget.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
@@ -409,7 +409,7 @@ EditScreen.prototype.configMousePointer = function() {
  * introducing more changes. If there are instant changes after a save, then it could
  * be impossible to undo past that point afterwards.
  */
-EditScreen.prototype.stopChanges = function () {
+Test41EditScreen.prototype.stopChanges = function () {
   this.editor.interrupt();
   for (var bodyId in this.world.bodies) {
     this.world.bodies[bodyId].stopMoving(this.now());
@@ -420,7 +420,7 @@ EditScreen.prototype.stopChanges = function () {
 // Editor API stuff
 /////////////////////
 
-EditScreen.prototype.addItem = function(name, pos, dir) {
+Test41EditScreen.prototype.addItem = function(name, pos, dir) {
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t];
     if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
@@ -435,6 +435,6 @@ EditScreen.prototype.addItem = function(name, pos, dir) {
 // Spirit APIs //
 /////////////////
 
-EditScreen.prototype.isPlaying = function() {
+Test41EditScreen.prototype.isPlaying = function() {
   return false;
 };
