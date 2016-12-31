@@ -7,13 +7,48 @@ v TileGrid consolidation
   v move tile drawing to TileGrid
   x move terrain pill mutation to TileGrid (already done!)
 v remove obsolete BaseScreen.flushTerrain func
+- Prepare: prepend "GameX" and "TestX" to base, play, test, and edit screens for
+  - t41
+  - g3
+  - t40
+  - g2
+- WorldScreen is the base of BaseScreen
+  - Create comon WorldScreen class, borrowing from BaseScreen
+    - default impls:
+      - getSpiritConfigs()
+      - getHitGroups()
+      - getWallGroup()
+      - getHitPairs()
+      - clock()
+      - draw()
+      - resolveCollision()
+  - Extend it in the XxxBaseScreen classes to eliminate a lot of code:
+    - t41
+    - g3
+    - t40
+    - g2
+  - ??? Extend it in libs
+    - WorldPlayScreen?
+    - WorldEditScreen
+    - WorldTestScreen
 - World API
   - move body/spirit query stuff from basescreens to World
-  - give editor access to World, to remove a lot of editor->screen->world call routing
+  - give Editor access to World, to remove a lot of editor->screen->world call routing? but Undo/redo in test41...
 - Pages: pull the three main screen-having Page classes up
   - Play
   - Edit
   - Test
+  - Pull most "pause" code up to those common pages
+  - pull Fullscreen code up too
+
+Solve the lastPathRefreshTime problem
+Sometimes I want to add a body without also adding a spirit with a timeout loop just for invalidating the path.
+Often I still want a spirit (for drawing or whatevs) but don't want to re-code the timeout loop.
+Giving a body a maxPathDuration of Infinity cause tons of far-future collision events to be recorded,
+effectively leaking them.
+* Every movable body needs a Spirit chaperone w timeout invalidation loop?
+* Add a common spirit behavior that registeres the timeout for me?
+* Special world maxPathDuration=auto code?
 
 Multiplayer
 * up to four touch players
