@@ -1,11 +1,11 @@
 /**
  * @constructor
- * @extends {BaseScreen}
+ * @extends {Game3BaseScreen}
  */
-function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function Game3EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+  Game3BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
-  this.camera = new Camera(0.2, 0.6, BaseScreen.CAMERA_VIEW_DIST);
+  this.camera = new Camera(0.2, 0.6, Game3BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
@@ -17,15 +17,15 @@ function EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     self.editor.setKeyboardTipTimeoutMs(ms);
   };
 }
-EditScreen.prototype = new BaseScreen();
-EditScreen.prototype.constructor = EditScreen;
+Game3EditScreen.prototype = new Game3BaseScreen();
+Game3EditScreen.prototype.constructor = Game3EditScreen;
 
-EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
+Game3EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
-EditScreen.ANT_RAD = 0.8;
-EditScreen.ROCK_RAD = 1.4;
+Game3EditScreen.ANT_RAD = 0.8;
+Game3EditScreen.ROCK_RAD = 1.4;
 
-EditScreen.prototype.initEditor = function() {
+Game3EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t].menuItemConfig;
@@ -38,20 +38,20 @@ EditScreen.prototype.initEditor = function() {
   }
 };
 
-EditScreen.prototype.updateHudLayout = function() {
+Game3EditScreen.prototype.updateHudLayout = function() {
   this.pauseTriggerWidget.getWidgetCuboid()
-      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0)
-      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
+      .setPosXYZ(this.canvas.width - Game3BaseScreen.WIDGET_RADIUS, Game3BaseScreen.WIDGET_RADIUS, 0)
+      .setRadXYZ(Game3BaseScreen.WIDGET_RADIUS, Game3BaseScreen.WIDGET_RADIUS, 0);
   this.testTriggerWidget.getWidgetCuboid()
-      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3, 0)
-      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
+      .setPosXYZ(this.canvas.width - Game3BaseScreen.WIDGET_RADIUS, Game3BaseScreen.WIDGET_RADIUS * 3, 0)
+      .setRadXYZ(Game3BaseScreen.WIDGET_RADIUS, Game3BaseScreen.WIDGET_RADIUS, 0);
   this.editor.updateHudLayout();
 };
 
-EditScreen.prototype.setScreenListening = function(listen) {
+Game3EditScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var fsb, rb, i;
-  BaseScreen.prototype.setScreenListening.call(this, listen);
+  Game3BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
@@ -91,7 +91,7 @@ EditScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-EditScreen.prototype.initWidgets = function() {
+Game3EditScreen.prototype.initWidgets = function() {
   var self = this;
   this.testDownFn = function(e) {
     e = e || window.event;
@@ -123,12 +123,12 @@ EditScreen.prototype.initWidgets = function() {
       .setStamp(this.stamps.editorPauseStamp);
 };
 
-EditScreen.prototype.toJSON = function() {
+Game3EditScreen.prototype.toJSON = function() {
   var worldJsoner = new WorldJsoner();
   worldJsoner.setIsBodySerializableFn(function(body) {
-    return body.hitGroup != BaseScreen.Group.WALL;
+    return body.hitGroup != Game3BaseScreen.Group.WALL;
   });
-  worldJsoner.roundBodyVelocities(this.world, EditScreen.ROUND_VELOCITY_TO_NEAREST);
+  worldJsoner.roundBodyVelocities(this.world, Game3EditScreen.ROUND_VELOCITY_TO_NEAREST);
   var json = worldJsoner.worldToJson(this.world);
   json.terrain = this.bitGrid.toJSON();
   json.cursorPos = this.editor.cursorPos.toJSON();
@@ -136,11 +136,11 @@ EditScreen.prototype.toJSON = function() {
   return json;
 };
 
-EditScreen.prototype.createDefaultWorld = function() {
+Game3EditScreen.prototype.createDefaultWorld = function() {
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 9.8, 1);
 };
 
-EditScreen.prototype.onHitEvent = function(e) {
+Game3EditScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
   if (b0 && b1) {
@@ -148,12 +148,12 @@ EditScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-EditScreen.prototype.handleInput = function () {
+Game3EditScreen.prototype.handleInput = function () {
   if (!this.world) return;
   this.editor.handleInput();
 };
 
-EditScreen.prototype.drawScene = function() {
+Game3EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
@@ -171,7 +171,7 @@ EditScreen.prototype.drawScene = function() {
   }
 };
 
-EditScreen.prototype.drawHud = function() {
+Game3EditScreen.prototype.drawHud = function() {
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
               2 / this.canvas.width,
@@ -188,7 +188,7 @@ EditScreen.prototype.drawHud = function() {
   this.renderer.setBlendingEnabled(false);
 };
 
-EditScreen.prototype.configMousePointer = function() {
+Game3EditScreen.prototype.configMousePointer = function() {
   if (this.pauseTriggerWidget.isMouseHovered() ||
       this.testTriggerWidget.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
@@ -203,7 +203,7 @@ EditScreen.prototype.configMousePointer = function() {
 // Editor API stuff
 /////////////////////
 
-EditScreen.prototype.addItem = function(name, pos, dir) {
+Game3EditScreen.prototype.addItem = function(name, pos, dir) {
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t];
     if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
@@ -217,6 +217,6 @@ EditScreen.prototype.addItem = function(name, pos, dir) {
 // Spirit APIs //
 /////////////////
 
-EditScreen.prototype.isPlaying = function() {
+Game3EditScreen.prototype.isPlaying = function() {
   return false;
 };

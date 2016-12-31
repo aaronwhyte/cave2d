@@ -1,11 +1,11 @@
 /**
  * @constructor
- * @extends {BaseScreen}
+ * @extends {Game3BaseScreen}
  */
 function PlayScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+  Game3BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
-  this.camera = new Camera(BaseScreen.CAMERA_MIN_DIST_FRAC, BaseScreen.CAMERA_MAX_DIST_FRAC, BaseScreen.CAMERA_VIEW_DIST);
+  this.camera = new Camera(Game3BaseScreen.CAMERA_MIN_DIST_FRAC, Game3BaseScreen.CAMERA_MAX_DIST_FRAC, Game3BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
@@ -26,7 +26,7 @@ function PlayScreen(controller, canvas, renderer, stamps, sfx, adventureName, le
     e.preventDefault();
   };
 }
-PlayScreen.prototype = new BaseScreen();
+PlayScreen.prototype = new Game3BaseScreen();
 PlayScreen.prototype.constructor = PlayScreen;
 
 PlayScreen.EXIT_DURATION = 3;
@@ -38,7 +38,7 @@ PlayScreen.prototype.updateHudLayout = function() {
 PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var fullScreenButton, restartButton, resumeButton, i;
-  BaseScreen.prototype.setScreenListening.call(this, listen);
+  Game3BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
@@ -93,7 +93,7 @@ PlayScreen.prototype.startExit = function(x, y) {
 
   // giant tube implosion
   var s = this.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
+  s.reset(Game3BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
   s.startTime = this.exitStartTime;
   s.duration = PlayScreen.EXIT_DURATION;

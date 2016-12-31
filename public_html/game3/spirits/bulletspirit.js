@@ -4,7 +4,7 @@
  */
 function BulletSpirit(screen) {
   BaseSpirit.call(this, screen);
-  this.type = BaseScreen.SpiritType.BULLET;
+  this.type = Game3BaseScreen.SpiritType.BULLET;
 
   this.color = new Vec4();
 
@@ -194,7 +194,7 @@ BulletSpirit.prototype.destroy = function() {
 
   BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
   var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
+  s.reset(Game3BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
   s.startTime = this.now();
   s.duration = 4 + (2 * rad);

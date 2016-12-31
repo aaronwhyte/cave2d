@@ -1,11 +1,11 @@
 /**
  * @constructor
- * @extends {BaseScreen}
+ * @extends {Game3BaseScreen}
  */
-function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function Game3TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+  Game3BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
-  this.camera = new Camera(BaseScreen.CAMERA_MIN_DIST_FRAC, BaseScreen.CAMERA_MAX_DIST_FRAC, BaseScreen.CAMERA_VIEW_DIST);
+  this.camera = new Camera(Game3BaseScreen.CAMERA_MIN_DIST_FRAC, Game3BaseScreen.CAMERA_MAX_DIST_FRAC, Game3BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
@@ -22,19 +22,19 @@ function TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     }
   };
 }
-TestScreen.prototype = new BaseScreen();
-TestScreen.prototype.constructor = TestScreen;
+Game3TestScreen.prototype = new Game3BaseScreen();
+Game3TestScreen.prototype.constructor = Game3TestScreen;
 
-TestScreen.prototype.updateHudLayout = function() {
+Game3TestScreen.prototype.updateHudLayout = function() {
   this.testTriggerWidget.getWidgetCuboid()
-      .setPosXYZ(this.canvas.width - BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS * 3, 0)
-      .setRadXYZ(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS, 0);
+      .setPosXYZ(this.canvas.width - Game3BaseScreen.WIDGET_RADIUS, Game3BaseScreen.WIDGET_RADIUS * 3, 0)
+      .setRadXYZ(Game3BaseScreen.WIDGET_RADIUS, Game3BaseScreen.WIDGET_RADIUS, 0);
 };
 
-TestScreen.prototype.setScreenListening = function(listen) {
+Game3TestScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var fsb, rb, i;
-  BaseScreen.prototype.setScreenListening.call(this, listen);
+  Game3BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
@@ -72,7 +72,7 @@ TestScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-TestScreen.prototype.initWidgets = function() {
+Game3TestScreen.prototype.initWidgets = function() {
   var self = this;
   this.testDownFn = function(e) {
     e = e || window.event;
@@ -95,11 +95,11 @@ TestScreen.prototype.initWidgets = function() {
       .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
 };
 
-TestScreen.prototype.startExit = function() {
+Game3TestScreen.prototype.startExit = function() {
   // ignore in test screen
 };
 
-TestScreen.prototype.drawScene = function() {
+Game3TestScreen.prototype.drawScene = function() {
   if (!this.players.length) {
     this.addPlayer();
   }
@@ -121,7 +121,7 @@ TestScreen.prototype.drawScene = function() {
   }
 };
 
-TestScreen.prototype.drawHud = function() {
+Game3TestScreen.prototype.drawHud = function() {
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
               2 / this.canvas.width,
@@ -143,6 +143,6 @@ TestScreen.prototype.drawHud = function() {
 // Spirit APIs //
 /////////////////
 
-TestScreen.prototype.isPlaying = function() {
+Game3TestScreen.prototype.isPlaying = function() {
   return true;
 };

@@ -5,7 +5,7 @@
 function PlayerSpirit(screen) {
   BaseSpirit.call(this, screen);
 
-  this.type = BaseScreen.SpiritType.PLAYER;
+  this.type = Game3BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
 //  this.trailColor = new Vec4().setRGBA(0.8, 0.2, 0.6, 1);
 //  this.trailColor2 = new Vec4().setRGBA(1, 0.3, 0.7, 1);
@@ -123,7 +123,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
   b.rad = PlayerSpirit.RAD;
-  b.hitGroup = BaseScreen.Group.PLAYER;
+  b.hitGroup = Game3BaseScreen.Group.PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.turnable = true;
   b.moi = b.mass * b.rad * b.rad / 2;

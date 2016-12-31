@@ -2,7 +2,7 @@
  * @constructor
  * @extends {Screen}
  */
-function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+function Game3BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
   Screen.call(this);
 
   this.adventureName = adventureName;
@@ -86,32 +86,32 @@ function BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
 
   this.playerChasePolarity = 1;
 }
-BaseScreen.prototype = new Screen();
-BaseScreen.prototype.constructor = BaseScreen;
+Game3BaseScreen.prototype = new Screen();
+Game3BaseScreen.prototype.constructor = Game3BaseScreen;
 
-BaseScreen.WIDGET_RADIUS = 30;
-BaseScreen.CAMERA_VIEW_DIST = 30;
-BaseScreen.CAMERA_MAX_DIST_FRAC = 0.17;
-BaseScreen.CAMERA_MIN_DIST_FRAC = 0.05;
+Game3BaseScreen.WIDGET_RADIUS = 30;
+Game3BaseScreen.CAMERA_VIEW_DIST = 30;
+Game3BaseScreen.CAMERA_MAX_DIST_FRAC = 0.17;
+Game3BaseScreen.CAMERA_MIN_DIST_FRAC = 0.05;
 
-BaseScreen.MS_PER_FRAME = 1000 / 60;
-BaseScreen.CLOCKS_PER_FRAME = 0.5;
-BaseScreen.PATH_DURATION = 0xffff;
+Game3BaseScreen.MS_PER_FRAME = 1000 / 60;
+Game3BaseScreen.CLOCKS_PER_FRAME = 0.5;
+Game3BaseScreen.PATH_DURATION = 0xffff;
 
-BaseScreen.SpiritType = {
+Game3BaseScreen.SpiritType = {
   ANT: 3,
   PLAYER: 4,
   EXIT: 5,
   BULLET: 6
 };
 
-BaseScreen.MenuItem = {
+Game3BaseScreen.MenuItem = {
   RED_ANT: 'red_ant',
   PLAYER: 'player',
   EXIT: 'exit'
 };
 
-BaseScreen.SplashType = {
+Game3BaseScreen.SplashType = {
   NOTE: 1,
   SCAN: 2,
   WALL_DAMAGE: 3,
@@ -119,13 +119,13 @@ BaseScreen.SplashType = {
 };
 
 
-BaseScreen.EventLayer = {
+Game3BaseScreen.EventLayer = {
   POPUP: 0,
   HUD: 1,
   WORLD: 2
 };
 
-BaseScreen.prototype.setPaused = function(paused) {
+Game3BaseScreen.prototype.setPaused = function(paused) {
   this.paused = paused;
   if (this.paused) {
     // pause
@@ -137,7 +137,7 @@ BaseScreen.prototype.setPaused = function(paused) {
   }
 };
 
-BaseScreen.prototype.initSpiritConfigs = function() {
+Game3BaseScreen.prototype.initSpiritConfigs = function() {
   this.spiritConfigs = {};
 
   var self = this;
@@ -152,21 +152,21 @@ BaseScreen.prototype.initSpiritConfigs = function() {
   }
 
   // first column
-  addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
-      BaseScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
+  addConfig(Game3BaseScreen.SpiritType.ANT, AntSpirit,
+      Game3BaseScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
 
   // second column
-  addConfig(BaseScreen.SpiritType.PLAYER, PlayerSpirit,
-      BaseScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
+  addConfig(Game3BaseScreen.SpiritType.PLAYER, PlayerSpirit,
+      Game3BaseScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
 
-  addConfig(BaseScreen.SpiritType.EXIT, ExitSpirit,
-      BaseScreen.MenuItem.EXIT, 1, 1, ExitSpirit.factory);
+  addConfig(Game3BaseScreen.SpiritType.EXIT, ExitSpirit,
+      Game3BaseScreen.MenuItem.EXIT, 1, 1, ExitSpirit.factory);
 
-  addConfig(BaseScreen.SpiritType.BULLET, BulletSpirit,
+  addConfig(Game3BaseScreen.SpiritType.BULLET, BulletSpirit,
       null, -1, -1, BulletSpirit.factory);
 };
 
-BaseScreen.Group = {
+Game3BaseScreen.Group = {
   EMPTY: 0,
   WALL: 1,
   NEUTRAL: 2,
@@ -179,11 +179,11 @@ BaseScreen.Group = {
   EXPLODEY_BITS: 9
 };
 
-BaseScreen.prototype.initWorld = function() {
+Game3BaseScreen.prototype.initWorld = function() {
   this.lastPathRefreshTime = -Infinity;
 
-  var groupCount = Object.keys(BaseScreen.Group).length;
-  var g = BaseScreen.Group;
+  var groupCount = Object.keys(Game3BaseScreen.Group).length;
+  var g = Game3BaseScreen.Group;
   var hitPairs = [
     [g.EMPTY, g.EMPTY],
 
@@ -233,7 +233,7 @@ BaseScreen.prototype.initWorld = function() {
 /**
  * @param {Object} json
  */
-BaseScreen.prototype.loadWorldFromJson = function(json) {
+Game3BaseScreen.prototype.loadWorldFromJson = function(json) {
   var worldJsoner = new WorldJsoner();
   worldJsoner.loadWorldFromJson(this.world, json);
   this.bitGrid = BitGrid.fromJSON(json.terrain);
@@ -243,7 +243,7 @@ BaseScreen.prototype.loadWorldFromJson = function(json) {
   this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
 };
 
-BaseScreen.prototype.createTrackball = function() {
+Game3BaseScreen.prototype.createTrackball = function() {
   var trackball = new MultiTrackball()
       .addTrackball(
           new TouchTrackball(this.getWorldEventTarget())
@@ -262,7 +262,7 @@ BaseScreen.prototype.createTrackball = function() {
   return trackball;
 };
 
-BaseScreen.prototype.createButtonWidgets = function() {
+Game3BaseScreen.prototype.createButtonWidgets = function() {
   var widgets = [
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
@@ -278,14 +278,14 @@ BaseScreen.prototype.createButtonWidgets = function() {
   return widgets;
 };
 
-BaseScreen.prototype.getResizeFn = function() {
+Game3BaseScreen.prototype.getResizeFn = function() {
   var self = this;
   return function() {
     self.controller.requestAnimation();
   }
 };
 
-BaseScreen.prototype.setScreenListening = function(listen) {
+Game3BaseScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   if (listen) {
     window.addEventListener('resize', this.resizeFn);
@@ -295,7 +295,7 @@ BaseScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-BaseScreen.prototype.drawScreen = function(visibility) {
+Game3BaseScreen.prototype.drawScreen = function(visibility) {
   if (this.destroyed) {
     console.warn('drawing destroyed screen - ignoring');
     return;
@@ -308,39 +308,39 @@ BaseScreen.prototype.drawScreen = function(visibility) {
   }
 };
 
-BaseScreen.prototype.drawScene = function() {};
+Game3BaseScreen.prototype.drawScene = function() {};
 
-BaseScreen.prototype.destroyScreen = function() {
+Game3BaseScreen.prototype.destroyScreen = function() {
   this.setScreenListening(false);
   this.unloadLevel();
   this.destroyed = true;
 };
 
-BaseScreen.prototype.showPauseMenu = function() {
+Game3BaseScreen.prototype.showPauseMenu = function() {
   document.querySelector('#pauseMenu').style.display = 'block';
   this.canvas.style.cursor = "auto";
 };
 
-BaseScreen.prototype.hidePauseMenu = function() {
+Game3BaseScreen.prototype.hidePauseMenu = function() {
   document.querySelector('#pauseMenu').style.display = 'none';
   this.canvas.style.cursor = "";
 };
 
-BaseScreen.prototype.clock = function() {
+Game3BaseScreen.prototype.clock = function() {
   if (this.paused) return;
-  var endTimeMs = Date.now() + BaseScreen.MS_PER_FRAME;
+  var endTimeMs = Date.now() + Game3BaseScreen.MS_PER_FRAME;
   var startClock = this.world.now;
-  var endClock = this.world.now + BaseScreen.CLOCKS_PER_FRAME * this.timeMultiplier;
+  var endClock = this.world.now + Game3BaseScreen.CLOCKS_PER_FRAME * this.timeMultiplier;
 
   if (this.handleInput) {
     this.handleInput();
   }
 
-  if (this.lastPathRefreshTime + BaseScreen.PATH_DURATION <= endClock) {
+  if (this.lastPathRefreshTime + Game3BaseScreen.PATH_DURATION <= endClock) {
     this.lastPathRefreshTime = this.world.now;
     for (var id in this.world.bodies) {
       var b = this.world.bodies[id];
-      if (b && b.pathDurationMax > BaseScreen.PATH_DURATION && b.pathDurationMax != Infinity) {
+      if (b && b.pathDurationMax > Game3BaseScreen.PATH_DURATION && b.pathDurationMax != Infinity) {
         b.invalidatePath();
         b.moveToTime(this.world.now);
       }
@@ -362,7 +362,7 @@ BaseScreen.prototype.clock = function() {
     e = this.world.getNextEvent();
 
     // recompute endClock in case an event changed the timeMultiplier
-    endClock = Math.max(this.world.now, startClock + BaseScreen.CLOCKS_PER_FRAME * this.timeMultiplier);
+    endClock = Math.max(this.world.now, startClock + Game3BaseScreen.CLOCKS_PER_FRAME * this.timeMultiplier);
   }
   if (!e || e.time > endClock) {
     this.world.now = endClock;
@@ -372,23 +372,23 @@ BaseScreen.prototype.clock = function() {
   }
 };
 
-BaseScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
+Game3BaseScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
   if (b0 && b0.hitGroup == group) return b0;
   if (b1 && b1.hitGroup == group) return b1;
   return null;
 };
 
-BaseScreen.prototype.otherBody = function(thisBody, b0, b1) {
+Game3BaseScreen.prototype.otherBody = function(thisBody, b0, b1) {
   if (thisBody != b0) return b0;
   if (thisBody != b1) return b1;
   return null;
 };
 
-BaseScreen.prototype.getSpiritForBody = function(b) {
+Game3BaseScreen.prototype.getSpiritForBody = function(b) {
   return b ? this.world.spirits[b.spiritId] : null;
 };
 
-BaseScreen.prototype.bodyIfSpiritType = function(type, b0, opt_b1) {
+Game3BaseScreen.prototype.bodyIfSpiritType = function(type, b0, opt_b1) {
   var s0 = this.getSpiritForBody(b0);
   if (s0 && s0.type == type) return b0;
   if (opt_b1) {
@@ -398,7 +398,7 @@ BaseScreen.prototype.bodyIfSpiritType = function(type, b0, opt_b1) {
   return null;
 };
 
-BaseScreen.prototype.onHitEvent = function(e) {
+Game3BaseScreen.prototype.onHitEvent = function(e) {
   if (!this.isPlaying()) return;
 
   var b0 = this.world.getBodyByPathId(e.pathId0);
@@ -410,16 +410,16 @@ BaseScreen.prototype.onHitEvent = function(e) {
     var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
     var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
 
-    var playerBody = this.bodyIfSpiritType(BaseScreen.SpiritType.PLAYER, b0, b1);
+    var playerBody = this.bodyIfSpiritType(Game3BaseScreen.SpiritType.PLAYER, b0, b1);
     if (playerBody) {
       var playerSpirit = this.getSpiritForBody(playerBody);
       playerSpirit.onHitWall(mag, pos);
-      var exitBody = this.bodyIfSpiritType(BaseScreen.SpiritType.EXIT, b0, b1);
+      var exitBody = this.bodyIfSpiritType(Game3BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody && !this.exitStartTime) {
         this.sounds.exit(this.getAveragePlayerPos());
         this.startExit(exitBody.pathStartPos.x, exitBody.pathStartPos.y);
       }
-      var antBody = this.bodyIfSpiritType(BaseScreen.SpiritType.ANT, b0, b1);
+      var antBody = this.bodyIfSpiritType(Game3BaseScreen.SpiritType.ANT, b0, b1);
       if (antBody) {
         playerSpirit.hitAnt(mag);
       }
@@ -428,7 +428,7 @@ BaseScreen.prototype.onHitEvent = function(e) {
       }
     }
 
-    var bulletBody = this.bodyIfSpiritType(BaseScreen.SpiritType.BULLET, b0, b1);
+    var bulletBody = this.bodyIfSpiritType(Game3BaseScreen.SpiritType.BULLET, b0, b1);
     if (bulletBody) {
       var bulletSpirit = this.getSpiritForBody(bulletBody);
       var otherBody = this.otherBody(bulletBody, b0, b1);
@@ -436,10 +436,10 @@ BaseScreen.prototype.onHitEvent = function(e) {
       if (!otherSpirit) {
         // wall?
         bulletSpirit.onHitWall(mag, pos);
-      } else if (otherSpirit.type == BaseScreen.SpiritType.ANT) {
+      } else if (otherSpirit.type == Game3BaseScreen.SpiritType.ANT) {
         otherSpirit.onPlayerBulletHit(bulletSpirit.damage);
         bulletSpirit.onHitEnemy(mag, pos);
-      } else if (otherSpirit.type == BaseScreen.SpiritType.BULLET) {
+      } else if (otherSpirit.type == Game3BaseScreen.SpiritType.BULLET) {
         bulletSpirit.onHitOther(mag, pos);
         otherSpirit.onHitOther(mag);
       } else {
@@ -450,35 +450,35 @@ BaseScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-BaseScreen.prototype.startExit = function() {};
+Game3BaseScreen.prototype.startExit = function() {};
 
-BaseScreen.prototype.exitLevel = function() {};
+Game3BaseScreen.prototype.exitLevel = function() {};
 
-BaseScreen.prototype.handleInput = function() {
+Game3BaseScreen.prototype.handleInput = function() {
   for (var i = 0; i < this.players.length; i++) {
     this.players[i].handleInput();
   }
 };
 
-BaseScreen.prototype.addPlayer = function() {
+Game3BaseScreen.prototype.addPlayer = function() {
   var p = new Player();
   var trackball = this.createTrackball();
   var buttons = this.createButtonWidgets();
   p.setControls(trackball, null, null, buttons[0]);
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
-    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
+    if (spirit.type == Game3BaseScreen.SpiritType.PLAYER) {
       p.addSpirit(spirit);
     }
   }
   this.players.push(p);
 };
 
-BaseScreen.prototype.getPixelsPerMeter = function() {
+Game3BaseScreen.prototype.getPixelsPerMeter = function() {
   return 0.5 * (this.canvas.height + this.canvas.width) / this.camera.getViewDist();
 };
 
-BaseScreen.prototype.updateViewMatrix = function() {
+Game3BaseScreen.prototype.updateViewMatrix = function() {
   // scale
   this.viewMatrix.toIdentity();
   var pixelsPerMeter = this.getPixelsPerMeter();
@@ -500,30 +500,30 @@ BaseScreen.prototype.updateViewMatrix = function() {
 // Editor API stuff
 //////////////////////
 
-BaseScreen.prototype.getBodyPos = function(body, outVec2d) {
+Game3BaseScreen.prototype.getBodyPos = function(body, outVec2d) {
   return body.getPosAtTime(this.world.now, outVec2d);
 };
 
-BaseScreen.prototype.getCanvas = function() {
+Game3BaseScreen.prototype.getCanvas = function() {
   return this.canvas;
 };
 
-BaseScreen.prototype.addListener = function(listener) {
+Game3BaseScreen.prototype.addListener = function(listener) {
   this.listeners.put(listener);
   if (this.listening) {
     listener.startListening();
   }
 };
 
-BaseScreen.prototype.getBodyOverlaps = function(body) {
+Game3BaseScreen.prototype.getBodyOverlaps = function(body) {
   return this.world.getOverlaps(body);
 };
 
-BaseScreen.prototype.getBodyById = function(id) {
+Game3BaseScreen.prototype.getBodyById = function(id) {
   return this.world.bodies[id];
 };
 
-BaseScreen.prototype.removeByBodyId = function(bodyId) {
+Game3BaseScreen.prototype.removeByBodyId = function(bodyId) {
   var body = this.world.getBody(bodyId);
   if (body) {
     if (body.spiritId) {
@@ -533,36 +533,36 @@ BaseScreen.prototype.removeByBodyId = function(bodyId) {
   }
 };
 
-BaseScreen.prototype.getCursorHitGroup = function() {
-  return BaseScreen.Group.CURSOR;
+Game3BaseScreen.prototype.getCursorHitGroup = function() {
+  return Game3BaseScreen.Group.CURSOR;
 };
 
-BaseScreen.prototype.getWallHitGroup = function() {
-  return BaseScreen.Group.WALL;
+Game3BaseScreen.prototype.getWallHitGroup = function() {
+  return Game3BaseScreen.Group.WALL;
 };
 
-BaseScreen.prototype.getWorldTime = function() {
+Game3BaseScreen.prototype.getWorldTime = function() {
   return this.world.now;
 };
 
-BaseScreen.prototype.getViewDist = function() {
+Game3BaseScreen.prototype.getViewDist = function() {
   return this.camera.getViewDist();
 };
 
-BaseScreen.prototype.getViewMatrix = function() {
+Game3BaseScreen.prototype.getViewMatrix = function() {
   return this.viewMatrix;
 };
 
-BaseScreen.prototype.getPopupEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(BaseScreen.EventLayer.POPUP);
+Game3BaseScreen.prototype.getPopupEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(Game3BaseScreen.EventLayer.POPUP);
 };
 
-BaseScreen.prototype.getHudEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(BaseScreen.EventLayer.HUD);
+Game3BaseScreen.prototype.getHudEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(Game3BaseScreen.EventLayer.HUD);
 };
 
-BaseScreen.prototype.getWorldEventTarget = function() {
-  return this.eventDistributor.getFakeLayerElement(BaseScreen.EventLayer.WORLD);
+Game3BaseScreen.prototype.getWorldEventTarget = function() {
+  return this.eventDistributor.getFakeLayerElement(Game3BaseScreen.EventLayer.WORLD);
 };
 
 
@@ -578,7 +578,7 @@ BaseScreen.prototype.getWorldEventTarget = function() {
  * @param {=ScanResponse} opt_resp
  * @returns {number} fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
  */
-BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
+Game3BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
   var resp = opt_resp || this.scanResp;
   this.scanReq.hitGroup = hitGroup;
   // write the body's position into the req's position slot.
@@ -597,13 +597,13 @@ BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
   return retval;
 };
 
-BaseScreen.prototype.setTimeWarp = function(multiplier) {
+Game3BaseScreen.prototype.setTimeWarp = function(multiplier) {
   this.timeMultiplier = multiplier;
 };
 
-BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
+Game3BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
   var s = this.splash;
-  s.reset(BaseScreen.SplashType.SCAN, this.stamps.cylinderStamp);
+  s.reset(Game3BaseScreen.SplashType.SCAN, this.stamps.cylinderStamp);
 
   s.startTime = this.world.now;
   s.duration = 20;
@@ -639,22 +639,22 @@ BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
   this.splasher.addCopy(s);
 };
 
-BaseScreen.prototype.now = function() {
+Game3BaseScreen.prototype.now = function() {
   return this.world.now;
 };
 
-BaseScreen.prototype.drawSpirits = function() {
+Game3BaseScreen.prototype.drawSpirits = function() {
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
     spirit.onDraw(this.world, this.renderer);
   }
 };
 
-BaseScreen.prototype.getAveragePlayerPos = function() {
+Game3BaseScreen.prototype.getAveragePlayerPos = function() {
   var playerCount = 0;
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
-    if (spirit.type == BaseScreen.SpiritType.PLAYER) {
+    if (spirit.type == Game3BaseScreen.SpiritType.PLAYER) {
       var body = spirit.getBody(this.world);
       if (body) {
         if (playerCount == 0) {
@@ -675,29 +675,29 @@ BaseScreen.prototype.getAveragePlayerPos = function() {
 // Wall manipulation stuff
 ///////////////////////////
 
-BaseScreen.prototype.drawTerrainPill = function(p1, p2, rad, color) {
+Game3BaseScreen.prototype.drawTerrainPill = function(p1, p2, rad, color) {
   this.tileGrid.drawTerrainPill(p1, p2, rad, color);
 };
 
-BaseScreen.prototype.drawTiles = function() {
+Game3BaseScreen.prototype.drawTiles = function() {
   if (this.tileGrid) {
     this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
     this.tileGrid.drawTiles(this.camera.getX(), this.camera.getY(), this.getPixelsPerGridCell());
   }
 };
 
-BaseScreen.prototype.getPixelsPerGridCell = function() {
+Game3BaseScreen.prototype.getPixelsPerGridCell = function() {
   return this.bitGrid.bitWorldSize * BitGrid.BITS * this.getPixelsPerMeter();
 };
 
-BaseScreen.prototype.approxViewportsFromCamera = function(v) {
+Game3BaseScreen.prototype.approxViewportsFromCamera = function(v) {
   var ppm = this.getPixelsPerMeter();
   return Math.max(
       Math.abs(this.camera.getX() - v.x) * ppm / this.canvas.width,
       Math.abs(this.camera.getY() - v.y) * ppm / this.canvas.height);
 };
 
-BaseScreen.prototype.unloadLevel = function() {
+Game3BaseScreen.prototype.unloadLevel = function() {
   this.tileGrid.unloadAllCells();
   this.tileGrid = null;
   if (this.world) {
