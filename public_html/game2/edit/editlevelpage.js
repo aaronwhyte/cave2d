@@ -156,7 +156,7 @@ EditLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   gl.useProgram(program);
   this.renderer = new Renderer(this.canvas, gl, program);
 
-  this.screen = new EditScreen(
+  this.screen = new Game2EditScreen(
       this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), Stamps.create(this.renderer), this.sfx,
       this.adventureName, this.levelName);
   this.screen.initWidgets();

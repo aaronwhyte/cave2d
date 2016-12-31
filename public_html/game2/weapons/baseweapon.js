@@ -1,6 +1,6 @@
 /**
  * Base class for weapons. Spirits own these and delegate weapon management to these.
- * @param {BaseScreen} screen access to sound effects, the world, etc.
+ * @param {Game2BaseScreen} screen access to sound effects, the world, etc.
  * @param {BaseSpirit} spirit to find the body location, and to do timeouts w spiritid
  * @param {number} fireHitGroup what do the bullets hit?
  * @param {number} fireTimeoutId so the spirit can route the timeout to the weapon

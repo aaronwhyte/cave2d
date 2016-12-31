@@ -4,7 +4,7 @@
  */
 function AntSpirit(screen) {
   BaseSpirit.call(this, screen);
-  this.type = BaseScreen.SpiritType.ANT;
+  this.type = Game2BaseScreen.SpiritType.ANT;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   // 0 is up, PI/2 is right
   this.dir = 0;//Math.random() * Math.PI * 2;
@@ -94,7 +94,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.8;
-  b.hitGroup = BaseScreen.Group.ENEMY;
+  b.hitGroup = Game2BaseScreen.Group.ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 1.1;
   spirit.bodyId = world.addBody(b);
@@ -111,7 +111,7 @@ AntSpirit.prototype.setColorRGB = function(r, g, b) {
 
 AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
   return this.screen.scan(
-      BaseScreen.Group.ENEMY_SCAN,
+      Game2BaseScreen.Group.ENEMY_SCAN,
       pos,
       this.scanVec.setXY(
           Math.sin(this.dir + rot) * dist,
@@ -162,7 +162,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       if (dist >= 0) {
         // rayscan hit
         var otherSpirit = this.getScanHitSpirit();
-        if (otherSpirit && otherSpirit.type == BaseScreen.SpiritType.PLAYER) {
+        if (otherSpirit && otherSpirit.type == Game2BaseScreen.SpiritType.PLAYER) {
           // attack player!
           this.stress = 0;
           angAccel = scanRot * 0.2;
@@ -291,7 +291,7 @@ AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   b.setPosAtTime(pos, now);
   b.setVelAtTime(vel, now);
   b.rad = rad;
-  b.hitGroup = BaseScreen.Group.ENEMY_FIRE;
+  b.hitGroup = Game2BaseScreen.Group.ENEMY_FIRE;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = duration;
   spirit.bodyId = this.screen.world.addBody(b);
@@ -321,7 +321,7 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
   var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
   function addSplash(x, y, dx, dy, duration, sizeFactor) {
-    s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
+    s.reset(Game2BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
     s.startTime = now;
     s.duration = duration;
 

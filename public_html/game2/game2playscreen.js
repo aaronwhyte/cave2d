@@ -1,9 +1,9 @@
 /**
  * @constructor
- * @extends {BaseScreen}
+ * @extends {Game2BaseScreen}
  */
-function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function Game2PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
+  Game2BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
 
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
@@ -25,19 +25,19 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventure
     e.preventDefault();
   };
 }
-PlayScreen.prototype = new BaseScreen();
-PlayScreen.prototype.constructor = PlayScreen;
+Game2PlayScreen.prototype = new Game2BaseScreen();
+Game2PlayScreen.prototype.constructor = Game2PlayScreen;
 
-PlayScreen.EXIT_DURATION = 3;
-PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
+Game2PlayScreen.EXIT_DURATION = 3;
+Game2PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 
-PlayScreen.prototype.updateHudLayout = function() {
+Game2PlayScreen.prototype.updateHudLayout = function() {
 };
 
-PlayScreen.prototype.setScreenListening = function(listen) {
+Game2PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
   var fullScreenButton, restartButton, resumeButton, i;
-  BaseScreen.prototype.setScreenListening.call(this, listen);
+  Game2BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
@@ -85,17 +85,17 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   this.listening = listen;
 };
 
-PlayScreen.prototype.startExit = function(x, y) {
+Game2PlayScreen.prototype.startExit = function(x, y) {
   this.exitStartTime = this.now();
-  this.exitEndTime = this.exitStartTime + PlayScreen.EXIT_DURATION;
-  this.setTimeWarp(PlayScreen.EXIT_WARP_MULTIPLIER);
+  this.exitEndTime = this.exitStartTime + Game2PlayScreen.EXIT_DURATION;
+  this.setTimeWarp(Game2PlayScreen.EXIT_WARP_MULTIPLIER);
 
   // giant tube implosion
   var s = this.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
+  s.reset(Game2BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
   s.startTime = this.exitStartTime;
-  s.duration = PlayScreen.EXIT_DURATION;
+  s.duration = Game2PlayScreen.EXIT_DURATION;
   var rad = 80;
 
   s.startPose.pos.setXYZ(x, y, -0.9999);
@@ -116,18 +116,18 @@ PlayScreen.prototype.startExit = function(x, y) {
   this.splasher.addCopy(s);
 };
 
-PlayScreen.prototype.exitLevel = function() {
+Game2PlayScreen.prototype.exitLevel = function() {
   this.controller.exitLevel();
 };
 
-PlayScreen.prototype.snapCameraToPlayers = function() {
+Game2PlayScreen.prototype.snapCameraToPlayers = function() {
   var pos = this.getAveragePlayerPos();
   if (pos) {
     this.camera.set(pos);
   }
 };
 
-PlayScreen.prototype.drawScene = function() {
+Game2PlayScreen.prototype.drawScene = function() {
   if (!this.players.length) {
     this.addPlayer();
   }
@@ -149,7 +149,7 @@ PlayScreen.prototype.drawScene = function() {
   }
 };
 
-PlayScreen.prototype.drawHud = function() {
+Game2PlayScreen.prototype.drawHud = function() {
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
               2 / this.canvas.width,
@@ -170,6 +170,6 @@ PlayScreen.prototype.drawHud = function() {
 // Spirit APIs //
 /////////////////
 
-PlayScreen.prototype.isPlaying = function() {
+Game2PlayScreen.prototype.isPlaying = function() {
   return true;
 };

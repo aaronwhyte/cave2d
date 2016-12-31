@@ -5,7 +5,7 @@
 function PlayerSpirit(screen) {
   BaseSpirit.call(this, screen);
 
-  this.type = BaseScreen.SpiritType.PLAYER;
+  this.type = Game2BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   // 0 is up, PI/2 is right
   this.dir = 0;//Math.random() * Math.PI * 2;
@@ -32,8 +32,8 @@ function PlayerSpirit(screen) {
   this.lastWarp = -Infinity;
   this.lastFireTime =-Infinity;
 
-  this.shotgun = new ShotgunWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.SHOTGUN_TIMEOUT_ID);
-  this.laser = new LaserWeapon(screen, this, BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.LASER_TIMEOUT_ID);
+  this.shotgun = new ShotgunWeapon(screen, this, Game2BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.SHOTGUN_TIMEOUT_ID);
+  this.laser = new LaserWeapon(screen, this, Game2BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.LASER_TIMEOUT_ID);
   this.weapon = this.shotgun;
   this.oldb1 = false;
 
@@ -136,7 +136,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
   b.rad = 0.9;
-  b.hitGroup = BaseScreen.Group.PLAYER;
+  b.hitGroup = Game2BaseScreen.Group.PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
   b.spiritId = this.id;
@@ -337,7 +337,7 @@ PlayerSpirit.prototype.die = function() {
 
     // giant tube explosion
     var s = this.screen.splash;
-    s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
+    s.reset(Game2BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
     s.startTime = now;
     s.duration = 20;
@@ -368,7 +368,7 @@ PlayerSpirit.prototype.die = function() {
     var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
     function addSplash(x, y, dx, dy, duration, sizeFactor) {
-      s.reset(BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
+      s.reset(Game2BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
       s.startTime = now;
       s.duration = duration;
 
@@ -453,7 +453,7 @@ PlayerSpirit.prototype.addExplosionBullet = function(pos, vel, rad, duration) {
   b.setPosAtTime(pos, now);
   b.setVelAtTime(vel, now);
   b.rad = rad;
-  b.hitGroup = BaseScreen.Group.PLAYER_FIRE;
+  b.hitGroup = Game2BaseScreen.Group.PLAYER_FIRE;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = duration;
   spirit.bodyId = this.screen.world.addBody(b);
@@ -487,7 +487,7 @@ PlayerSpirit.prototype.respawn = function() {
   var y = pos.y;
 
   var s = this.screen.splash;
-  s.reset(BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
+  s.reset(Game2BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
   s.startTime = now;
   s.duration = 10;

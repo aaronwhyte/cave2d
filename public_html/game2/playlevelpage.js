@@ -173,7 +173,7 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
     return;
   }
 
-  this.screen = new PlayScreen(
+  this.screen = new Game2PlayScreen(
       this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), Stamps.create(this.renderer), this.sfx,
       this.adventureName, this.levelName);
   this.screen.initSpiritConfigs();
