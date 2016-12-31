@@ -171,7 +171,7 @@ BaseScreen.prototype.initWorld = function() {
 
     [g.ENEMY_SCAN, g.WALL],
     [g.ENEMY_SCAN, g.NEUTRAL],
-    [g.ENEMY_SCAN, g.ENEMY],
+    [g.ENEMY_SCAN, g.ENEMY]
   ];
 
   this.world = new World(BaseScreen.WORLD_CELL_SIZE, groupCount, hitPairs);
