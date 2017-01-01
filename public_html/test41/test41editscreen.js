@@ -24,20 +24,12 @@ function Test41EditScreen(controller, canvas, renderer, stamps, sfx) {
   this.undoDownFn = function(e) {
     e = e || window.event;
     self.undo();
-
-    // Stop the flow of mouse-emulation events on touchscreens, so the
-    // mouse events don't cause weird cursors teleports.
-    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
     e.preventDefault();
   };
 
   this.redoDownFn = function(e) {
     e = e || window.event;
     self.redo();
-
-    // Stop the flow of mouse-emulation events on touchscreens, so the
-    // mouse events don't cause weird cursors teleports.
-    // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
     e.preventDefault();
   };
 }
@@ -180,8 +172,9 @@ Test41EditScreen.prototype.createDefaultWorld = function() {
 };
 
 Test41EditScreen.prototype.handleInput = function () {
-  if (!this.world) return;
-  this.editor.handleInput();
+  if (this.editor) {
+    this.editor.handleInput();
+  }
 };
 
 Test41EditScreen.prototype.startRecordingChanges = function() {

@@ -578,6 +578,13 @@ WorldScreen.prototype.loadWorldFromJson = function(json) {
   this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
 };
 
+/**
+ * Add an object to the world using its SpiritConfig.MenuItemConfig.itemName name,
+ * at a position and facing a direction.
+ * @param {String} name
+ * @param {Vec2d} pos
+ * @param {number} dir
+ */
 WorldScreen.prototype.addItem = function(name, pos, dir) {
   var configs = this.getSpiritConfigs();
   for (var t in configs) {
