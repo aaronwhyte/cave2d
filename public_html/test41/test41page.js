@@ -155,7 +155,6 @@ Test41Page.prototype.onShaderTextChange = function(vertexShaderText, fragmentSha
 
   this.screen = new Test41EditScreen(this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx);
   this.screen.initWidgets();
-  this.screen.initSpiritConfigs();
   this.screen.initEditor();
   this.screen.updateHudLayout();
   this.screen.initWorld();

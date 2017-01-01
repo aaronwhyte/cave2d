@@ -13,24 +13,20 @@ v Prepare: prepend "GameX" and "TestX" to base, play, test, and edit screens for
   v t40
   v g2
 - WorldScreen is the base of BaseScreen
-  - Create comon WorldScreen class, borrowing from BaseScreen
-    - default impls:
-      - getSpiritConfigs()
-      - getHitGroups()
-      - getWallGroup()
-      - getHitPairs()
-      - clock()
-      - draw()
-      - resolveCollision()
+  v Create common WorldScreen class, borrowing from BaseScreen
+    v getSpiritConfigs()
+    v getHitGroups()
+    v getWallGroup()
+    v getHitPairs()
+    v clock()
+    v draw()
+    v onHitEvent()
+    v keep stats but omit statmons
   - Extend it in the XxxBaseScreen classes to eliminate a lot of code:
-    - t41
+    v t41
     - g3
-    - t40
-    - g2
-  - ??? Extend it in libs
-    - WorldPlayScreen?
-    - WorldEditScreen
-    - WorldTestScreen
+    - t40?
+    - g2?
 - World API
   - move body/spirit query stuff from basescreens to World
   - give Editor access to World, to remove a lot of editor->screen->world call routing? but Undo/redo in test41...

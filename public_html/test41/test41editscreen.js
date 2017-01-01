@@ -10,6 +10,8 @@ function Test41EditScreen(controller, canvas, renderer, stamps, sfx) {
   this.renderer.setViewMatrix(this.viewMatrix);
   this.changeStack = new ChangeStack(Test41EditScreen.MAX_UNDO_DEPTH);
 
+  this.hudViewMatrix = new Matrix44();
+
   var self = this;
 
   this.keyTipRevealer = function() {
@@ -42,8 +44,6 @@ function Test41EditScreen(controller, canvas, renderer, stamps, sfx) {
 Test41EditScreen.prototype = new Test41BaseScreen();
 Test41EditScreen.prototype.constructor = Test41EditScreen;
 
-Test41EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
-
 Test41EditScreen.ANT_RAD = 1.2;
 
 Test41EditScreen.MAX_UNDO_DEPTH = 20000;
@@ -51,8 +51,9 @@ Test41EditScreen.MAX_UNDO_DEPTH = 20000;
 Test41EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
   this.editor.gripAccelFraction = 0.25;
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t].menuItemConfig;
+  var configs = this.getSpiritConfigs();
+  for (var t in configs) {
+    var c = configs[t].menuItemConfig;
     if (c) {
       this.editor.addMenuItem(c.group, c.rank, c.itemName, c.model);
     }
@@ -68,6 +69,10 @@ Test41EditScreen.prototype.updateHudLayout = function() {
   this.undoTriggerRule.apply();
   this.redoTriggerRule.apply();
   this.editor.updateHudLayout();
+};
+
+Test41EditScreen.prototype.getCamera = function() {
+  return this.camera;
 };
 
 Test41EditScreen.prototype.setScreenListening = function(listen) {
@@ -159,49 +164,6 @@ Test41EditScreen.prototype.initWidgets = function() {
       .setTargetAnchor(new Vec4(1 + 1 * (2 + 0.25), -1), Vec4.ZERO);
 };
 
-Test41EditScreen.prototype.worldToJSON = function() {
-  var json = {
-    terrain: this.bitGrid.toJSON(),
-    now: this.world.now,
-    bodies: [],
-    spirits: [],
-    timeouts: null,
-    splashes: []
-  };
-  // bodies
-  for (var bodyId in this.world.bodies) {
-    var body = this.world.bodies[bodyId];
-    if (body.hitGroup != Test41BaseScreen.Group.WALL) {
-      // round velocity on save, to stop from saving tons of high-precision teeny tiny velocities
-      this.vec2d.set(body.vel).roundToGrid(Test41EditScreen.ROUND_VELOCITY_TO_NEAREST);
-      body.setVelAtTime(this.vec2d, this.now());
-      json.bodies.push(body.toJSON());
-    }
-  }
-  // spirits
-  for (var spiritId in this.world.spirits) {
-    var spirit = this.world.spirits[spiritId];
-    json.spirits.push(spirit.toJSON());
-  }
-  // timeouts
-  json.timeouts = this.world.getTimeoutsAsJson();
-
-  // splashes
-  var splashes = this.splasher.splashes;
-  for (var i = 0; i < splashes.length; i++) {
-    json.splashes.push(splashes[i].toJSON());
-  }
-  return json;
-};
-
-Test41EditScreen.prototype.viewToJSON = function() {
-  var json = {
-    cursorPos: this.editor.cursorPos.toJSON(),
-    cameraPos: this.camera.cameraPos.toJSON()
-  };
-  return json;
-};
-
 Test41EditScreen.prototype.createDefaultWorld = function() {
   this.world.setChangeRecordingEnabled(true);
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
@@ -287,69 +249,6 @@ Test41EditScreen.prototype.saveToChangeStack = function(changes) {
   this.setDirty(false);
 };
 
-/**
- * @param {Object} json
- */
-Test41EditScreen.prototype.loadWorldFromJson = function(json) {
-  this.world.now = json.now;
-
-  // bodies
-  var lostSpiritIdToBodyId = {};
-  for (var i = 0; i < json.bodies.length; i++) {
-    var bodyJson = json.bodies[i];
-    var body = new Body();
-    body.setFromJSON(bodyJson);
-    this.world.loadBody(body);
-    lostSpiritIdToBodyId[body.spiritId] = body.id;
-  }
-
-  // spirits
-  for (var i = 0; i < json.spirits.length; i++) {
-    var spiritJson = json.spirits[i];
-    var spiritType = spiritJson[0];
-    var spiritConfig = this.spiritConfigs[spiritType];
-    if (spiritConfig) {
-      var spirit = new spiritConfig.ctor(this);
-      spirit.setModelStamp(spiritConfig.stamp);
-      spirit.setFromJSON(spiritJson);
-      this.world.loadSpirit(spirit);
-    } else {
-      console.warn("Unknown spiritType " + spiritType + " in spirit JSON: " + spiritJson);
-    }
-    delete lostSpiritIdToBodyId[spirit.id];
-  }
-
-  // timeouts
-  var e = new WorldEvent();
-  for (var i = 0; i < json.timeouts.length; i++) {
-    e.setFromJSON(json.timeouts[i]);
-    this.world.loadTimeout(e);
-  }
-
-  // terrain
-  // TODO: tileGrid.setFromJSON(json.terrain); and that's it.
-  this.bitGrid = BitGrid.fromJSON(json.terrain);
-  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
-  this.tileGrid.flushTerrainChanges();
-
-//  // splashes
-//  var splash = new Splash();
-//  for (var i = 0; i < json.splashes.length; i++) {
-//    var splashJson = json.splashes[i];
-//    var splashType = splashJson[0];
-//    // TODO: splashConfig plugin, like spiritConfig
-//  }
-
-  // Stop spiritless bodies from haunting the world.
-  // This can happen if I add spirits to a level, then remove the definition.
-  // TODO: something better
-  for (var spiritId in lostSpiritIdToBodyId) {
-    var bodyId = lostSpiritIdToBodyId[spiritId];
-    this.world.removeBodyId(bodyId);
-  }
-};
-
-
 Test41EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
   var startTime = performance.now();
@@ -415,25 +314,6 @@ Test41EditScreen.prototype.stopChanges = function () {
     this.world.bodies[bodyId].stopMoving(this.now());
   }
 };
-
-/////////////////////
-// Editor API stuff
-/////////////////////
-
-Test41EditScreen.prototype.addItem = function(name, pos, dir) {
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t];
-    if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
-      c.menuItemConfig.factory(this, c.stamp, pos, dir);
-      this.setDirty(true);
-      return;
-    }
-  }
-};
-
-/////////////////
-// Spirit APIs //
-/////////////////
 
 Test41EditScreen.prototype.isPlaying = function() {
   return false;
