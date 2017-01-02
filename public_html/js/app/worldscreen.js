@@ -516,8 +516,7 @@ WorldScreen.prototype.now = function() {
 
 WorldScreen.prototype.drawSpirits = function() {
   for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    spirit.onDraw(this.world, this.renderer);
+    this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 };
 
