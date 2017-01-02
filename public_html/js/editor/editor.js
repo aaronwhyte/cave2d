@@ -6,68 +6,22 @@
  * @param renderer
  * @param {Glyphs} glyphs
  * @param {EditorStamps} editorStamps
+ * @param {Object} spiritConfigs map maps spirit.type to Spiritconfig object, for building the "add" menu.
+ * @param {=ChangeStack} opt_changeStack if you want undo
  * @constructor
  */
-function Editor(host, canvas, renderer, glyphs, editorStamps) {
+function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt_changeStack) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
   // 'glyphs' is just for glyph stamps, for the button tool-tips
   this.stamps = editorStamps;
-  var glyphStamps = glyphs.initStamps(renderer.gl);
+  this.changeStack = opt_changeStack || null;
 
   this.releasedColorVec4 = new Vec4(1, 1, 1, 0.5);
   this.pressedColorVec4 = new Vec4(1, 1, 1, 0.9);
 
-  this.addTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
-      .setReleasedColorVec4(this.releasedColorVec4)
-      .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(editorStamps.addTrigger)
-      .listenToTouch()
-      .addTriggerKeyByName('e')
-      .setKeyboardTipStamp(glyphStamps['E'])
-      .startListening();
-
-  this.removeTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
-      .setReleasedColorVec4(this.releasedColorVec4)
-      .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(editorStamps.removeTrigger)
-      .listenToTouch()
-      .addTriggerKeyByName('q')
-      .setKeyboardTipStamp(glyphStamps['Q'])
-      .startListening();
-
-  this.gripTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
-      .setReleasedColorVec4(this.releasedColorVec4)
-      .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(editorStamps.gripTrigger)
-      .listenToTouch()
-      .addTriggerKeyByName('d')
-      .setKeyboardTipStamp(glyphStamps['D'])
-      .startListening();
-
-  this.digTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
-      .setReleasedColorVec4(this.releasedColorVec4)
-      .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(editorStamps.digTrigger)
-      .listenToTouch()
-      .addTriggerKeyByName('s')
-      .setKeyboardTipStamp(glyphStamps['S'])
-      .startListening();
-
-  this.fillTriggerWidget = new TriggerWidget(this.host.getHudEventTarget())
-      .setReleasedColorVec4(this.releasedColorVec4)
-      .setPressedColorVec4(this.pressedColorVec4)
-      .setStamp(editorStamps.fillTrigger)
-      .listenToTouch()
-      .addTriggerKeyByName('a')
-      .setKeyboardTipStamp(glyphStamps['A'])
-      .startListening();
-
-  this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
-      .listenToMouseButton()
-      .addTriggerKeyByName('w')
-      .startListening();
+  this.initWidgets(glyphs.initStamps(renderer.gl), editorStamps);
 
   this.topLeftTriggers = [this.addTriggerWidget, this.removeTriggerWidget];
   this.bottomLeftTriggers = [this.fillTriggerWidget, this.digTriggerWidget, this.gripTriggerWidget];
@@ -129,10 +83,62 @@ function Editor(host, canvas, renderer, glyphs, editorStamps) {
   this.cuboidRules = [];
   this.addLeftTriggerRules(this.topLeftTriggers, 1);
   this.addLeftTriggerRules(this.bottomLeftTriggers, -1);
+  this.addTopRightTriggerRules();
   this.updateHudLayout();
 
   this.ongoingEditGesture = false;
+
+  this.buildMenu(spiritConfigs);
 }
+
+Editor.WIDGET_RADIUS = 30;
+
+Editor.prototype.initWidgets = function(glyphStamps, editorStamps) {
+  var self = this;
+  function createTrigger(stamp, keyName, keyStamp, mouseable) {
+    var widget = new TriggerWidget(self.host.getHudEventTarget())
+        .setReleasedColorVec4(self.releasedColorVec4)
+        .setPressedColorVec4(self.pressedColorVec4)
+        .setStamp(stamp)
+        .listenToTouch()
+        .addTriggerKeyByName(keyName);
+    if (keyStamp) widget.setKeyboardTipStamp(keyStamp);
+    if (mouseable) widget.listenToMousePointer();
+    return widget.startListening();
+  }
+
+  this.addTriggerWidget = createTrigger(editorStamps.addTrigger, 'e', glyphStamps['E'], false);
+  this.removeTriggerWidget = createTrigger(editorStamps.removeTrigger, 'q', glyphStamps['Q'], false);
+  this.gripTriggerWidget = createTrigger(editorStamps.gripTrigger, 'd', glyphStamps['D'], false);
+  this.digTriggerWidget = createTrigger(editorStamps.digTrigger, 's', glyphStamps['S'], false);
+  this.fillTriggerWidget = createTrigger(editorStamps.fillTrigger, 'a', glyphStamps['A'], false);
+
+  this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
+      .listenToMouseButton()
+      .addTriggerKeyByName('w')
+      .startListening();
+
+  this.pauseTriggerWidget = createTrigger(editorStamps.pauseTrigger, Key.Name.SPACE, null, true)
+      .addTriggerDownListener(this.host.pauseDownFn);
+
+  if (this.changeStack) {
+    this.undoDownFn = function(e) {
+      e = e || window.event;
+      self.undo();
+      e.preventDefault();
+    };
+
+    this.redoDownFn = function(e) {
+      e = e || window.event;
+      self.redo();
+      e.preventDefault();
+    };
+    this.undoTriggerWidget = createTrigger(editorStamps.undoTrigger, 'z', glyphStamps['Z'], true)
+        .addTriggerDownListener(this.undoDownFn);
+    this.redoTriggerWidget = createTrigger(editorStamps.redoTrigger, 'y', glyphStamps['Y'], true)
+        .addTriggerDownListener(this.redoDownFn);
+  }
+};
 
 /**
  * Adds CuboidRules for all the triggers in the array
@@ -151,6 +157,40 @@ Editor.prototype.addLeftTriggerRules = function(triggers, direction) {
         .setSizingMax(maxSizeRad, maxSizePx)
         .setSourceAnchor(sourceAnchorRad, Vec4.ZERO)
         .setTargetAnchor(new Vec4(-1, -direction * (1.25 + 2.25*i), 0), Vec4.ZERO));
+  }
+};
+
+Editor.prototype.addTopRightTriggerRules = function() {
+  this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.pauseTriggerWidget.getWidgetCuboid())
+      .setSizingMax(new Vec4(1, 1, 1), new Vec4(Editor.WIDGET_RADIUS, Editor.WIDGET_RADIUS))
+      .setAspectRatio(new Vec4(1, 1))
+      .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
+      .setTargetAnchor(new Vec4(1, -1), Vec4.ZERO));
+
+  if (this.changeStack) {
+    this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.undoTriggerWidget.getWidgetCuboid())
+        .setSizingMax(new Vec4(1, 1, 1), new Vec4(Editor.WIDGET_RADIUS, Editor.WIDGET_RADIUS))
+        .setAspectRatio(new Vec4(1, 1))
+        .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(1 + 2 * (2 + 0.25), -1), Vec4.ZERO));
+
+    this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.redoTriggerWidget.getWidgetCuboid())
+        .setSizingMax(new Vec4(1, 1, 1), new Vec4(Editor.WIDGET_RADIUS, Editor.WIDGET_RADIUS))
+        .setAspectRatio(new Vec4(1, 1))
+        .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(1 + 2 + 0.25, -1), Vec4.ZERO));
+  }
+};
+
+Editor.prototype.buildMenu = function(spiritConfigs) {
+  for (var t in spiritConfigs) {
+    var c = spiritConfigs[t].menuItemConfig;
+    if (c) {
+      this.addMenuItem(c.group, c.rank, c.itemName, c.model);
+    }
+  }
+  for (var group = 0; group < this.getMaxGroupNum(); group++) {
+    this.addMenuKeyboardShortcut(group, group + 1);
   }
 };
 
@@ -204,6 +244,10 @@ Editor.prototype.createCursorBody = function() {
 Editor.prototype.setKeyboardTipTimeoutMs = function(ms) {
   for (var i = 0; i < this.leftTriggers.length; i++) {
     this.leftTriggers[i].setKeyboardTipTimeoutMs(ms);
+  }
+  if (this.changeStack) {
+    this.undoTriggerWidget.setKeyboardTipTimeoutMs(ms);
+    this.redoTriggerWidget.setKeyboardTipTimeoutMs(ms);
   }
 };
 
@@ -445,6 +489,15 @@ Editor.prototype.drawScene = function() {
   this.renderer.drawStamp();
 
   this.renderer.setBlendingEnabled(false);
+
+  if (this.changeStack) {
+    // TODO: Move this somewhere more logical, or rename "drawScene" to "animate".
+    if (this.host.isDirty() && !this.host.somethingMoving && !this.ongoingEditGesture) {
+      // Push this completed change onto the change stack.
+      this.saveToChangeStack(this.stopRecordingChanges());
+      this.startRecordingChanges();
+    }
+  }
 };
 
 /**
@@ -454,6 +507,13 @@ Editor.prototype.drawHud = function() {
   for (var i = 0; i < this.leftTriggers.length; i++) {
     this.leftTriggers[i].draw(this.renderer);
   }
+  this.pauseTriggerWidget.draw(this.renderer);
+
+  if (this.changeStack) {
+    this.undoTriggerWidget.draw(this.renderer);
+    this.redoTriggerWidget.draw(this.renderer);
+  }
+
   this.menu.draw(this.renderer);
 };
 
@@ -473,3 +533,81 @@ Editor.prototype.getMousePageY = function() {
 Editor.prototype.now = function() {
   return this.host.getWorldTime();
 };
+
+Editor.prototype.startRecordingChanges = function() {
+  this.host.tileGrid.startRecordingChanges();
+  this.host.world.startRecordingChanges();
+};
+
+Editor.prototype.stopRecordingChanges = function() {
+  return this.host.tileGrid.stopRecordingChanges().concat(this.host.world.stopRecordingChanges());
+};
+
+Editor.prototype.undo = function() {
+  this.stopChanges();
+  var changes = this.stopRecordingChanges();
+  if (changes.length) {
+    this.saveToChangeStack(changes);
+  }
+  if (this.changeStack.hasUndo()) {
+    // TODO view stuff
+    this.applyChanges(this.changeStack.selectUndo());
+  }
+  this.startRecordingChanges();
+};
+
+Editor.prototype.redo = function() {
+  this.stopChanges();
+  var changes = this.stopRecordingChanges();
+  if (changes.length) {
+    this.saveToChangeStack(changes);
+  }
+  if (this.changeStack.hasRedo()) {
+    this.applyChanges(this.changeStack.selectRedo());
+  }
+  this.startRecordingChanges();
+};
+
+Editor.prototype.applyChanges = function(changes) {
+  var terrainChanges = [];
+  var worldChanges = [];
+  for (var i = 0; i < changes.length; i++) {
+    var c = changes[i];
+    switch (c.type) {
+      case BitGrid.CHANGE_TYPE:
+        terrainChanges.push(c);
+        break;
+      case World.ChangeType.BODY:
+      case World.ChangeType.SPIRIT:
+      case World.ChangeType.NOW:
+      case World.ChangeType.QUEUE:
+        worldChanges.push(c);
+        break;
+      default:
+        console.log('Unhandled change: ' + JSON.stringify(c));
+    }
+  }
+  this.host.tileGrid.applyChanges(terrainChanges);
+  this.host.world.applyChanges(worldChanges);
+};
+
+/**
+ * Saves changes and clears the dirty bit.
+ */
+Editor.prototype.saveToChangeStack = function(changes) {
+  this.changeStack.save(changes);
+  this.host.setDirty(false);
+};
+
+/**
+ * Halts edit gestures and world movement, so the world can be saved without instantly
+ * introducing more changes. If there are instant changes after a save, then it could
+ * be impossible to undo past that point afterwards.
+ */
+Editor.prototype.stopChanges = function () {
+  this.interrupt();
+  for (var bodyId in this.host.world.bodies) {
+    this.host.world.bodies[bodyId].stopMoving(this.now());
+  }
+};
+

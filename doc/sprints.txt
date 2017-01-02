@@ -22,20 +22,32 @@ v Prepare: prepend "GameX" and "TestX" to base, play, test, and edit screens for
     v draw()
     v onHitEvent()
     v keep stats but omit statmons
-  - Extend it in the XxxBaseScreen classes to eliminate a lot of code:
+  v Extend it in the XxxBaseScreen classes to eliminate a lot of code
     v t41
+      * hm, too much editor code remains...
+- Move undo, redo, and pause from Test41EditScreen to Editor, but make undo/redo optional
+  v t41
+  - fix other Editor users by removing their Pause code
+    v t40
+    - t39
+    - t38
+    - t37
+    - g2
     - g3
-    - t40?
-    - g2?
-- World API
-  - move body/spirit query stuff from basescreens to World
-  - give Editor access to World, to remove a lot of editor->screen->world call routing? but Undo/redo in test41...
+- Inject collider info instead of using "createXXX" overrides.
+- Continue XxxBaseScreen port to WorldScreen
+  - g3
+  - t40?
+  - g2?
 - Pages: pull the three main screen-having Page classes up
   - Play
   - Edit
   - Test
   - Pull most "pause" code up to those common pages
   - pull Fullscreen code up too
+- World API
+  - move body/spirit query stuff from basescreens to World
+  - give Editor access to World, to remove a lot of editor->screen->world call routing? but Undo/redo in test41...
 
 Solve the lastPathRefreshTime problem
 Sometimes I want to add a body without also adding a spirit with a timeout loop just for invalidating the path.

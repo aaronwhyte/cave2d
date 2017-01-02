@@ -13,7 +13,6 @@ function Test41BaseScreen(controller, canvas, renderer, stamps, sfx) {
 Test41BaseScreen.prototype = new WorldScreen();
 Test41BaseScreen.prototype.constructor = Test41BaseScreen;
 
-Test41BaseScreen.WIDGET_RADIUS = 30;
 Test41BaseScreen.CAMERA_VIEW_DIST = 35;
 
 Test41BaseScreen.MS_PER_FRAME = 1000 / 60;

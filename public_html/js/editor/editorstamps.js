@@ -23,6 +23,13 @@ EditorStamps.create = function(renderer) {
   stamps.digTrigger = stamp(models.getDigTrigger());
   stamps.fillTrigger = stamp(models.getFillTrigger());
   stamps.addMenuIndicator = stamp(models.getAddMenuIndicator());
+
+  stamps.testTrigger = stamp(models.getTest());
+  stamps.untestTrigger = stamp(models.getUntest());
+  stamps.pauseTrigger = stamp(models.getPause());
+  stamps.undoTrigger = stamp(models.getUndo());
+  stamps.redoTrigger = stamp(models.getRedo());
+
   return stamps;
 };
 
