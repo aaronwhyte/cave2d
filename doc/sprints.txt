@@ -43,9 +43,9 @@ v Make all Editor callers supply spiritConfigs, and make spiritConfigs mandatory
   v g3
 - Continue XxxBaseScreen port to WorldScreen
   * delete screen's addItem()
+  v t40
   - g3
-  - t40?
-  - g2?
+  - g2
 - Add Undo to game2 and game3
   - g2
   - g3

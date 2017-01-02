@@ -94,7 +94,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.setPosAtTime(pos, screen.now());
   b.setVelAtTime((new Vec2d(0, 0.4)).rot(dir), screen.now());
   b.rad = 0.7 + Math.random();
-  b.hitGroup = Test40BaseScreen.Group.ENEMY;
+  b.hitGroup = screen.getHitGroups().ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
   b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 1.1;

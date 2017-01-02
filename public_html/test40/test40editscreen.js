@@ -9,6 +9,8 @@ function Test40EditScreen(controller, canvas, renderer, stamps, sfx) {
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
+  this.hudViewMatrix = new Matrix44();
+
   var self = this;
 
   this.keyTipRevealer = function() {
@@ -25,12 +27,16 @@ Test40EditScreen.ANT_RAD = 1.2;
 
 Test40EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer,
-      new Glyphs(new GlyphMaker(0.4, 1.2)), EditorStamps.create(this.renderer), this.spiritConfigs);
+      new Glyphs(new GlyphMaker(0.4, 1.2)), EditorStamps.create(this.renderer), this.getSpiritConfigs());
 };
 
 Test40EditScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
   this.editor.updateHudLayout();
+};
+
+Test40EditScreen.prototype.getCamera = function() {
+  return this.camera;
 };
 
 Test40EditScreen.prototype.setScreenListening = function(listen) {
@@ -171,20 +177,6 @@ Test40EditScreen.prototype.configMousePointer = function() {
     this.canvas.style.cursor = "";
   } else {
     this.canvas.style.cursor = "crosshair";
-  }
-};
-
-/////////////////////
-// Editor API stuff
-/////////////////////
-
-Test40EditScreen.prototype.addItem = function(name, pos, dir) {
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t];
-    if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
-      c.menuItemConfig.factory(this, c.stamp, pos, dir);
-      return;
-    }
   }
 };
 
