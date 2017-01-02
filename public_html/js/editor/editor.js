@@ -6,11 +6,11 @@
  * @param renderer
  * @param {Glyphs} glyphs
  * @param {EditorStamps} editorStamps
- * @param {Object} spiritConfigs map maps spirit.type to Spiritconfig object, for building the "add" menu.
+ * @param {=Object} opt_spiritConfigs map maps spirit.type to Spiritconfig object, for automatically building the "add" menu.
  * @param {=ChangeStack} opt_changeStack if you want undo
  * @constructor
  */
-function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt_changeStack) {
+function Editor(host, canvas, renderer, glyphs, editorStamps, opt_spiritConfigs, opt_changeStack) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
@@ -88,7 +88,9 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
 
   this.ongoingEditGesture = false;
 
-  this.buildMenu(spiritConfigs);
+  if (opt_spiritConfigs) {
+    this.buildMenu(opt_spiritConfigs);
+  }
 }
 
 Editor.WIDGET_RADIUS = 30;
