@@ -26,16 +26,8 @@ Game3EditScreen.ANT_RAD = 0.8;
 Game3EditScreen.ROCK_RAD = 1.4;
 
 Game3EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer));
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t].menuItemConfig;
-    if (c) {
-      this.editor.addMenuItem(c.group, c.rank, c.itemName, c.model);
-    }
-  }
-  for (var group = 0; group < this.editor.getMaxGroupNum(); group++) {
-    this.editor.addMenuKeyboardShortcut(group, group + 1);
-  }
+  this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs, EditorStamps.create(this.renderer),
+      this.spiritConfigs);
 };
 
 Game3EditScreen.prototype.updateHudLayout = function() {

@@ -6,16 +6,17 @@
  * @param renderer
  * @param {Glyphs} glyphs
  * @param {EditorStamps} editorStamps
- * @param {=Object} opt_spiritConfigs map maps spirit.type to Spiritconfig object, for automatically building the "add" menu.
+ * @param {Object} spiritConfigs map maps spirit.type to Spiritconfig object, for the "add" menu and for adding items.
  * @param {=ChangeStack} opt_changeStack if you want undo
  * @constructor
  */
-function Editor(host, canvas, renderer, glyphs, editorStamps, opt_spiritConfigs, opt_changeStack) {
+function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt_changeStack) {
   this.host = host;
   this.canvas = canvas;
   this.renderer = renderer;
   // 'glyphs' is just for glyph stamps, for the button tool-tips
   this.stamps = editorStamps;
+  this.spiritConfigs = spiritConfigs;
   this.changeStack = opt_changeStack || null;
 
   this.releasedColorVec4 = new Vec4(1, 1, 1, 0.5);
@@ -86,11 +87,9 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, opt_spiritConfigs,
   this.addTopRightTriggerRules();
   this.updateHudLayout();
 
-  this.ongoingEditGesture = false;
+  this.buildMenu();
 
-  if (opt_spiritConfigs) {
-    this.buildMenu(opt_spiritConfigs);
-  }
+  this.ongoingEditGesture = false;
 }
 
 Editor.WIDGET_RADIUS = 30;
@@ -184,9 +183,10 @@ Editor.prototype.addTopRightTriggerRules = function() {
   }
 };
 
-Editor.prototype.buildMenu = function(spiritConfigs) {
-  for (var t in spiritConfigs) {
-    var c = spiritConfigs[t].menuItemConfig;
+Editor.prototype.buildMenu = function() {
+  if (!this.spiritConfigs) throw new Error('Editor spiritConfigs is falsy: ' + this.spiritConfigs);
+  for (var t in this.spiritConfigs) {
+    var c = this.spiritConfigs[t].menuItemConfig;
     if (c) {
       this.addMenuItem(c.group, c.rank, c.itemName, c.model);
     }
@@ -371,7 +371,6 @@ Editor.prototype.handleInput = function() {
     this.cursorDir = Math.atan2(cursorTailDiff.x, cursorTailDiff.y) || 0;
   }
   oldCursorPos.free();
-
 };
 
 Editor.prototype.dragObject = function() {

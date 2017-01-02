@@ -24,16 +24,8 @@ EditScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 EditScreen.ANT_RAD = 1.2;
 
 EditScreen.prototype.initEditor = function() {
-  this.editor = new Editor(this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), EditorStamps.create(this.renderer));
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t].menuItemConfig;
-    if (c) {
-      this.editor.addMenuItem(c.group, c.rank, c.itemName, c.model);
-    }
-  }
-  for (var group = 0; group < this.editor.getMaxGroupNum(); group++) {
-    this.editor.addMenuKeyboardShortcut(group, group + 1);
-  }
+  this.editor = new Editor(this, this.canvas, this.renderer,
+      new Glyphs(new GlyphMaker(0.4, 1.2)), EditorStamps.create(this.renderer), this.spiritConfigs);
 };
 
 EditScreen.prototype.updateHudLayout = function() {
