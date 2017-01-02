@@ -5,7 +5,7 @@
 function Test41EditScreen(controller, canvas, renderer, stamps, sfx) {
   Test41BaseScreen.call(this, controller, canvas, renderer, stamps, sfx);
 
-  this.camera = new Camera(0.2, 0.6, Test41BaseScreen.CAMERA_VIEW_DIST);
+  this.camera = new Camera(0.2, 0.6, 30);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 

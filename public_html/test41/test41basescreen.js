@@ -13,13 +13,6 @@ function Test41BaseScreen(controller, canvas, renderer, stamps, sfx) {
 Test41BaseScreen.prototype = new WorldScreen();
 Test41BaseScreen.prototype.constructor = Test41BaseScreen;
 
-Test41BaseScreen.CAMERA_VIEW_DIST = 35;
-
-Test41BaseScreen.MS_PER_FRAME = 1000 / 60;
-Test41BaseScreen.MS_UNTIL_CLOCK_ABORT = Test41BaseScreen.MS_PER_FRAME - 1;
-Test41BaseScreen.CLOCKS_PER_FRAME = 0.5;
-Test41BaseScreen.PATH_DURATION = 0xffff;
-
 Test41BaseScreen.SpiritType = {
   ANT: 3
 };
@@ -77,7 +70,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.rightStatMons.push(new StatMon(
       stats, STAT_NAMES.WORLD_TIME,
       framesPerRightSample, samplesPerRightGraph,
-      0, Test41BaseScreen.CLOCKS_PER_FRAME,
+      0, this.getClocksPerFrame(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.bottomRightCuboid)
       .setBorderColor(stripeColor)
       .setGraphColor(new Vec4(1, 1, 1))
@@ -85,7 +78,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.leftStatMons.push(new StatMon(
       stats, STAT_NAMES.WORLD_TIME,
       framesPerLeftSample, samplesPerLeftGraph,
-      0, Test41BaseScreen.CLOCKS_PER_FRAME,
+      0, this.getClocksPerFrame(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.bottomLeftCuboid)
       .setBorderColor(borderColor)
       .setGraphColor(new Vec4(1, 1, 1))
@@ -95,7 +88,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.rightStatMons.push(new StatMon(
       stats, STAT_NAMES.TO_DRAWSCREEN_MS,
       framesPerRightSample, samplesPerRightGraph,
-      0, Test41BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
       .setGraphColor(new Vec4(0, 0, 1))
       .setBorderWidth(0)
@@ -103,7 +96,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.leftStatMons.push(new StatMon(
       stats, STAT_NAMES.TO_DRAWSCREEN_MS,
       framesPerLeftSample, samplesPerLeftGraph,
-      0, Test41BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
       .setGraphColor(new Vec4(0, 0, 1))
       .setBorderWidth(0)
@@ -113,7 +106,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.rightStatMons.push(new StatMon(
       stats, STAT_NAMES.STAT_DRAWING_MS,
       framesPerRightSample, samplesPerRightGraph,
-      0, Test41BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
       .setGraphColor(new Vec4(0, 1, 0))
       .setBorderWidth(0)
@@ -121,7 +114,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.leftStatMons.push(new StatMon(
       stats, STAT_NAMES.STAT_DRAWING_MS,
       framesPerLeftSample, samplesPerLeftGraph,
-      0, Test41BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
       .setGraphColor(new Vec4(0, 1, 0))
       .setBorderWidth(0)
@@ -131,7 +124,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.rightStatMons.push(new StatMon(
       stats, STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS,
       framesPerRightSample, samplesPerRightGraph,
-      0, Test41BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
       .setGraphColor(new Vec4(1, 0, 0))
       .setBorderWidth(0)
@@ -139,7 +132,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.leftStatMons.push(new StatMon(
       stats, STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS,
       framesPerLeftSample, samplesPerLeftGraph,
-      0, Test41BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
       .setGraphColor(new Vec4(1, 0, 0))
       .setBorderWidth(0)
@@ -149,7 +142,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.rightStatMons.push(new StatMon(
       stats, STAT_NAMES.ANIMATION_MS,
       framesPerRightSample, samplesPerRightGraph,
-      0, Test41BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
       .setBorderColor(stripeColor)
       .setGraphColor(new Vec4(1, 1, 0))
@@ -157,7 +150,7 @@ Test41BaseScreen.prototype.initStatMons = function() {
   this.leftStatMons.push(new StatMon(
       stats, STAT_NAMES.ANIMATION_MS,
       framesPerLeftSample, samplesPerLeftGraph,
-      0, Test41BaseScreen.MS_UNTIL_CLOCK_ABORT,
+      0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
       .setBorderColor(borderColor)
       .setGraphColor(new Vec4(1, 1, 0))
