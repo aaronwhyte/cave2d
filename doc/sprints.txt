@@ -27,14 +27,16 @@ v Prepare: prepend "GameX" and "TestX" to base, play, test, and edit screens for
       * hm, too much editor code remains...
 - Move undo, redo, and pause from Test41EditScreen to Editor, but make undo/redo optional
   v t41
-  - fix other Editor users by removing their Pause code
+  v fix other Editor users by removing their Pause code
     v t40
-    - t39
-    - t38
-    - t37
-    - g2
-    - g3
-- Inject collider info instead of using "createXXX" overrides.
+    v t39
+    v t38
+    v t37
+    v g2
+    v g3
+- Inject collider info into baseScreen instead of using "createXXX" overrides? But from where, pages?
+  Pages will be factored up later... but they'll still need to know how to construct stuff.
+  Maybe factor page baseclasses up, not whole pages. Yeah. So then each game/test will have Page code still OK.
 - Continue XxxBaseScreen port to WorldScreen
   - g3
   - t40?

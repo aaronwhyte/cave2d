@@ -38,7 +38,6 @@ EditScreen.prototype.initEditor = function() {
 
 EditScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
-  this.pauseTriggerRule.apply();
   this.editor.updateHudLayout();
 };
 
@@ -50,8 +49,6 @@ EditScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
-    this.pauseTriggerWidget.startListening();
-
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
     fsb.addEventListener('touchend', this.fullScreenFn);
@@ -67,8 +64,6 @@ EditScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
-    this.pauseTriggerWidget.stopListening();
-
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
     fsb.removeEventListener('touchend', this.fullScreenFn);
@@ -84,20 +79,7 @@ EditScreen.prototype.setScreenListening = function(listen) {
 };
 
 EditScreen.prototype.initWidgets = function() {
-  this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .addTriggerDownListener(this.pauseDownFn)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .listenToTouch()
-      .listenToMousePointer()
-      .addTriggerKeyByName(Key.Name.SPACE)
-      .setStamp(this.stamps.editorPauseStamp);
   this.canvasCuboid = new Cuboid();
-  this.pauseTriggerRule = new CuboidRule(this.canvasCuboid, this.pauseTriggerWidget.getWidgetCuboid())
-      .setSizingMax(new Vec4(1, 1, 1), new Vec4(BaseScreen.WIDGET_RADIUS, BaseScreen.WIDGET_RADIUS))
-      .setAspectRatio(new Vec4(1, 1))
-      .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
-      .setTargetAnchor(new Vec4(1, -1), Vec4.ZERO);
 };
 
 EditScreen.prototype.toJSON = function() {
@@ -185,24 +167,18 @@ EditScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-  this.pauseTriggerWidget.draw(this.renderer);
   this.editor.drawHud();
   this.renderer.setBlendingEnabled(false);
 };
 
 EditScreen.prototype.configMousePointer = function() {
-  if (this.pauseTriggerWidget.isMouseHovered()) {
+  if (this.editor.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
     this.canvas.style.cursor = "";
   } else {
     this.canvas.style.cursor = "crosshair";
   }
-};
-
-EditScreen.prototype.getPauseTriggerColorVector = function() {
-  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
-  return this.colorVector;
 };
 
 /////////////////////

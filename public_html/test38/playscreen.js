@@ -25,19 +25,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
   this.addListener(this.eventDistributor);
 
-  this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .listenToTouch()
-      .listenToMousePointer()
-      .addTriggerKeyByName(Key.Name.SPACE)
-      .startListening();
   this.canvasCuboid = new Cuboid();
-  this.pauseTriggerRule = new CuboidRule(this.canvasCuboid, this.pauseTriggerWidget.getWidgetCuboid())
-      .setSizingMax(new Vec4(1, 1, 1), new Vec4(20, 20))
-      .setAspectRatio(new Vec4(1, 1))
-      .setSourceAnchor(new Vec4(1, -1), Vec4.ZERO)
-      .setTargetAnchor(new Vec4(1, -1), Vec4.ZERO);
 
   this.pauseDownFn = function(e) {
     e = e || window.event;
@@ -143,7 +131,6 @@ PlayScreen.prototype.initEditor = function() {
 
 PlayScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
-  this.pauseTriggerRule.apply();
   this.editor.updateHudLayout();
 };
 
@@ -164,8 +151,6 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
-    this.pauseTriggerWidget.addTriggerDownListener(this.pauseDownFn);
-
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
     fsb.addEventListener('touchend', this.fullScreenFn);
@@ -178,8 +163,6 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
-    this.pauseTriggerWidget.removeTriggerDownListener(this.pauseDownFn);
-
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
     fsb.removeEventListener('touchend', this.fullScreenFn);
@@ -204,18 +187,6 @@ PlayScreen.prototype.lazyInit = function() {
 PlayScreen.prototype.initPermStamps = function() {
   this.cubeStamp = RigidModel.createCube().createModelStamp(this.renderer.gl);
   this.levelStamps.push(this.cubeStamp);
-
-  var pauseModel = new RigidModel();
-  for (var x = -1; x <= 1; x+=2) {
-    pauseModel.addRigidModel(RigidModel.createSquare().transformPositions(
-        new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.6, 1)
-            .multiply(new Matrix44().toTranslateOpXYZ(x*1.9, 0, 0)
-    ))));
-  }
-  this.pauseStamp = pauseModel.createModelStamp(this.renderer.gl);
-  this.levelStamps.push(this.pauseStamp);
-  this.pauseTriggerWidget.setStamp(this.pauseStamp);
 
   var model = RigidModel.createTube(64);
   this.soundStamp = model.createModelStamp(this.renderer.gl);
@@ -707,24 +678,18 @@ PlayScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-  this.pauseTriggerWidget.draw(this.renderer);
   this.editor.drawHud();
   this.renderer.setBlendingEnabled(false);
 };
 
 PlayScreen.prototype.configMousePointer = function() {
-  if (this.pauseTriggerWidget.isMouseHovered()) {
+  if (this.editor.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
     this.canvas.style.cursor = "";
   } else {
     this.canvas.style.cursor = "crosshair";
   }
-};
-
-PlayScreen.prototype.getPauseTriggerColorVector = function() {
-  this.colorVector.setRGBA(1, 1, 1, this.paused ? 0 : 0.1);
-  return this.colorVector;
 };
 
 PlayScreen.prototype.unloadLevel = function() {

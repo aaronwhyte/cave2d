@@ -39,9 +39,6 @@ Game2EditScreen.prototype.initEditor = function() {
 };
 
 Game2EditScreen.prototype.updateHudLayout = function() {
-  this.pauseTriggerWidget.getWidgetCuboid()
-      .setPosXYZ(this.canvas.width - Game2BaseScreen.WIDGET_RADIUS, Game2BaseScreen.WIDGET_RADIUS, 0)
-      .setRadXYZ(Game2BaseScreen.WIDGET_RADIUS, Game2BaseScreen.WIDGET_RADIUS, 0);
   this.testTriggerWidget.getWidgetCuboid()
       .setPosXYZ(this.canvas.width - Game2BaseScreen.WIDGET_RADIUS, Game2BaseScreen.WIDGET_RADIUS * 3, 0)
       .setRadXYZ(Game2BaseScreen.WIDGET_RADIUS, Game2BaseScreen.WIDGET_RADIUS, 0);
@@ -56,7 +53,6 @@ Game2EditScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].startListening();
     }
-    this.pauseTriggerWidget.startListening();
     this.testTriggerWidget.startListening();
 
     fsb = document.querySelector('#fullScreenButton');
@@ -74,8 +70,7 @@ Game2EditScreen.prototype.setScreenListening = function(listen) {
     for (i = 0; i < this.listeners.vals.length; i++) {
       this.listeners.vals[i].stopListening();
     }
-    this.pauseTriggerWidget.stopListening();
-    this.testTriggerWidget.stopListening();;
+    this.testTriggerWidget.stopListening();
 
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
@@ -112,16 +107,6 @@ Game2EditScreen.prototype.initWidgets = function() {
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.testStamp)
       .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
-  ;
-
-  this.pauseTriggerWidget = new TriggerWidget(this.getHudEventTarget())
-      .addTriggerDownListener(this.pauseDownFn)
-      .setReleasedColorVec4(new Vec4(1, 1, 1, 0.5))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 1))
-      .listenToTouch()
-      .listenToMousePointer()
-      .addTriggerKeyByName(Key.Name.SPACE)
-      .setStamp(this.stamps.editorPauseStamp);
 };
 
 Game2EditScreen.prototype.toJSON = function() {
@@ -183,15 +168,13 @@ Game2EditScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-  this.pauseTriggerWidget.draw(this.renderer);
   this.testTriggerWidget.draw(this.renderer);
   this.editor.drawHud();
   this.renderer.setBlendingEnabled(false);
 };
 
 Game2EditScreen.prototype.configMousePointer = function() {
-  if (this.pauseTriggerWidget.isMouseHovered() ||
-      this.testTriggerWidget.isMouseHovered()) {
+  if (this.editor.isMouseHovered() || this.testTriggerWidget.isMouseHovered()) {
     this.canvas.style.cursor = "auto"
   } else if (this.paused) {
     this.canvas.style.cursor = "";

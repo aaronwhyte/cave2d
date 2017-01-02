@@ -173,7 +173,9 @@ Test40EditScreen.prototype.drawHud = function() {
 };
 
 Test40EditScreen.prototype.configMousePointer = function() {
-  if (this.paused) {
+  if (this.editor.isMouseHovered()) {
+    this.canvas.style.cursor = "auto"
+  } else if (this.paused) {
     this.canvas.style.cursor = "";
   } else {
     this.canvas.style.cursor = "crosshair";

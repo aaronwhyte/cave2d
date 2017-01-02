@@ -530,9 +530,21 @@ Editor.prototype.getMousePageY = function() {
   return this.oldMouseEventCoords.y;
 };
 
+/**
+ * @return {boolean} true if the mouse is over a widget that is mouse-clickable.
+ */
+Editor.prototype.isMouseHovered = function() {
+  // TODO also include all add-menu targets
+  return this.pauseTriggerWidget.isMouseHovered();
+};
+
 Editor.prototype.now = function() {
   return this.host.getWorldTime();
 };
+
+///////////////
+// Undo/Redo
+///////////////
 
 Editor.prototype.startRecordingChanges = function() {
   this.host.tileGrid.startRecordingChanges();

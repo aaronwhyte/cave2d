@@ -132,11 +132,9 @@ Test41EditScreen.prototype.drawHud = function() {
 };
 
 Test41EditScreen.prototype.configMousePointer = function() {
-  // TODO config pointer based on editor button hovers too
-  // if (this.pauseTriggerWidget.isMouseHovered()) {
-  //   this.canvas.style.cursor = "auto"
-  // } else
-  if (this.paused) {
+  if (this.editor.isMouseHovered()) {
+    this.canvas.style.cursor = "auto"
+  } else if (this.paused) {
     this.canvas.style.cursor = "";
   } else {
     this.canvas.style.cursor = "crosshair";

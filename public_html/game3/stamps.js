@@ -18,7 +18,6 @@ Stamps.create = function(renderer) {
 
   // HUD icons
   stamps.playerPauseStamp = stamp(models.getPlayerPause());
-  stamps.editorPauseStamp = stamp(models.getEditorPause());
   stamps.testStamp = stamp(models.getTest());
   stamps.untestStamp = stamp(models.getUntest());
 
