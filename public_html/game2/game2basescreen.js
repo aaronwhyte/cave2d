@@ -184,25 +184,6 @@ Game2BaseScreen.prototype.createButtonWidgets = function() {
   return widgets;
 };
 
-Game2BaseScreen.prototype.getResizeFn = function() {
-  var self = this;
-  return function() {
-    self.controller.requestAnimation();
-  }
-};
-
-Game2BaseScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
-  if (listen) {
-    window.addEventListener('resize', this.resizeFn);
-  } else {
-    window.removeEventListener('resize', this.resizeFn);
-  }
-  this.listening = listen;
-};
-
-Game2BaseScreen.prototype.drawScene = function() {};
-
 // Game2BaseScreen.prototype.refreshPaths = function() {
 //   if (this.lastPathRefreshTime + Game2BaseScreen.PATH_DURATION <= endClock) {
 //     this.lastPathRefreshTime = this.world.now;
