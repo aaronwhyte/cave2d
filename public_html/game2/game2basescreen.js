@@ -137,19 +137,6 @@ Game2BaseScreen.prototype.getCamera = function() {
   return this.camera;
 };
 
-/**
- * @param {Object} json
- */
-Game2BaseScreen.prototype.loadWorldFromJson = function(json) {
-  var worldJsoner = new WorldJsoner();
-  worldJsoner.loadWorldFromJson(this.world, json);
-  this.bitGrid = BitGrid.fromJSON(json.terrain);
-  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
-  this.tileGrid.flushTerrainChanges();
-  if (this.editor) this.editor.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
-  this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
-};
-
 Game2BaseScreen.prototype.createTrackball = function() {
   var trackball = new MultiTrackball()
       .addTrackball(new TouchTrackball(this.getWorldEventTarget())
