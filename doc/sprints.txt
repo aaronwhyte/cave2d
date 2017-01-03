@@ -1,4 +1,4 @@
-Code Harvesting
+Code Refactoring
 v WorldJsoner for s27n
   v write class
   v replace game2 code
@@ -12,7 +12,7 @@ v Prepare: prepend "GameX" and "TestX" to base, play, test, and edit screens for
   v g3
   v t40
   v g2
-- WorldScreen is the base of BaseScreen
+v WorldScreen is the base of BaseScreen: Part 1
   v Create common WorldScreen class, borrowing from BaseScreen
     v getSpiritConfigs()
     v getHitGroups()
@@ -41,14 +41,14 @@ v Make all Editor callers supply spiritConfigs, and make spiritConfigs mandatory
   v t37 (empty map)
   v g2
   v g3
-- Continue XxxBaseScreen port to WorldScreen
+v WorldScreen is the base of BaseScreen: Part 2
   * delete screen's addItem()
   v t40
-  - g3
+  v g2: This is the big one.
+  - g3? Do I have it in me? g2 was a lot of work. Maybe abandon g3.
+- Add Undo to game editors
   - g2
-- Add Undo to game2 and game3
-  - g2
-  - g3
+  - g3?
 - Inject collider info into baseScreen instead of using "createXXX" overrides? But from where, pages?
   Pages will be factored up later... but they'll still need to know how to construct stuff.
   Maybe factor page baseclasses up, not whole pages. Yeah. So then each game/test will have Page code still OK.
@@ -60,7 +60,7 @@ v Make all Editor callers supply spiritConfigs, and make spiritConfigs mandatory
   - pull Fullscreen code up too
 - World API
   - move body/spirit query stuff from basescreens to World
-  - give Editor access to World, to remove a lot of editor->screen->world call routing? but Undo/redo in test41...
+  - give Editor access to World, to remove a lot of editor->screen->world call routing?
 
 Solve the lastPathRefreshTime problem
 Sometimes I want to add a body without also adding a spirit with a timeout loop just for invalidating the path.
@@ -68,7 +68,7 @@ Often I still want a spirit (for drawing or whatevs) but don't want to re-code t
 Giving a body a maxPathDuration of Infinity cause tons of far-future collision events to be recorded,
 effectively leaking them.
 * Every movable body needs a Spirit chaperone w timeout invalidation loop?
-* Add a common spirit behavior that registeres the timeout for me?
+* Add a common spirit behavior that registers the timeout for me?
 * Special world maxPathDuration=auto code?
 
 Multiplayer

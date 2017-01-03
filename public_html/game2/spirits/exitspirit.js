@@ -39,7 +39,7 @@ ExitSpirit.factory = function(screen, stamp, pos) {
   b.shape = Body.Shape.RECT;
   b.setPosAtTime(pos, screen.now());
   b.rectRad.setXY(1.5, 1.5);
-  b.hitGroup = Game2BaseScreen.Group.NEUTRAL;
+  b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
   spirit.bodyId = world.addBody(b);

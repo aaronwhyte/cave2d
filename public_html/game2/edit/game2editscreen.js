@@ -2,8 +2,8 @@
  * @constructor
  * @extends {Game2BaseScreen}
  */
-function Game2EditScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  Game2BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function Game2EditScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  Game2BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(0.2, 0.6, Game2BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -27,7 +27,7 @@ Game2EditScreen.ROCK_RAD = 1.4;
 
 Game2EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs,
-      EditorStamps.create(this.renderer), this.spiritConfigs);
+      EditorStamps.create(this.renderer), this.getSpiritConfigs());
 };
 
 Game2EditScreen.prototype.updateHudLayout = function() {
@@ -99,19 +99,6 @@ Game2EditScreen.prototype.initWidgets = function() {
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.testStamp)
       .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
-};
-
-Game2EditScreen.prototype.toJSON = function() {
-  var worldJsoner = new WorldJsoner();
-  worldJsoner.setIsBodySerializableFn(function(body) {
-    return body.hitGroup != Game2BaseScreen.Group.WALL;
-  });
-  worldJsoner.roundBodyVelocities(this.world, Game2EditScreen.ROUND_VELOCITY_TO_NEAREST);
-  var json = worldJsoner.worldToJson(this.world);
-  json.terrain = this.bitGrid.toJSON();
-  json.cursorPos = this.editor.cursorPos.toJSON();
-  json.cameraPos = this.camera.cameraPos.toJSON();
-  return json;
 };
 
 Game2EditScreen.prototype.createDefaultWorld = function() {

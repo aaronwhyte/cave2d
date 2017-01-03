@@ -32,8 +32,8 @@ function PlayerSpirit(screen) {
   this.lastWarp = -Infinity;
   this.lastFireTime =-Infinity;
 
-  this.shotgun = new ShotgunWeapon(screen, this, Game2BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.SHOTGUN_TIMEOUT_ID);
-  this.laser = new LaserWeapon(screen, this, Game2BaseScreen.Group.PLAYER_FIRE, PlayerSpirit.LASER_TIMEOUT_ID);
+  this.shotgun = new ShotgunWeapon(screen, this, screen.getHitGroups().PLAYER_FIRE, PlayerSpirit.SHOTGUN_TIMEOUT_ID);
+  this.laser = new LaserWeapon(screen, this, screen.getHitGroups().PLAYER_FIRE, PlayerSpirit.LASER_TIMEOUT_ID);
   this.weapon = this.shotgun;
   this.oldb1 = false;
 
@@ -136,7 +136,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
   b.rad = 0.9;
-  b.hitGroup = Game2BaseScreen.Group.PLAYER;
+  b.hitGroup = this.screen.getHitGroups().PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
   b.spiritId = this.id;
@@ -453,7 +453,7 @@ PlayerSpirit.prototype.addExplosionBullet = function(pos, vel, rad, duration) {
   b.setPosAtTime(pos, now);
   b.setVelAtTime(vel, now);
   b.rad = rad;
-  b.hitGroup = Game2BaseScreen.Group.PLAYER_FIRE;
+  b.hitGroup = this.screen.getHitGroups().PLAYER_FIRE;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = duration;
   spirit.bodyId = this.screen.world.addBody(b);

@@ -2,11 +2,10 @@
  * @constructor
  * @extends {Game2BaseScreen}
  */
-function Game2PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  Game2BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function Game2PlayScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  Game2BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.updateViewMatrix();
-  this.renderer.setViewMatrix(this.viewMatrix);
 
   this.players = [];
 
@@ -165,10 +164,6 @@ Game2PlayScreen.prototype.drawHud = function() {
   }
   this.renderer.setBlendingEnabled(false);
 };
-
-/////////////////
-// Spirit APIs //
-/////////////////
 
 Game2PlayScreen.prototype.isPlaying = function() {
   return true;

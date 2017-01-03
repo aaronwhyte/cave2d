@@ -36,6 +36,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx) {
   this.bitSize = 0.5;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(0.4, 0.4, 0.4);
+  this.drawScans = false;
 
   this.timeMultiplier = 1;
 
@@ -345,10 +346,10 @@ WorldScreen.prototype.clock = function(startTimeMs) {
       this.world.now = endClock;
     }
   }
+  stats.set(STAT_NAMES.WORLD_TIME, this.world.now);
   if (this.exitEndTime && this.world.now >= this.exitEndTime) {
     this.exitLevel();
   }
-  stats.set(STAT_NAMES.WORLD_TIME, this.world.now);
 };
 
 WorldScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
@@ -390,8 +391,7 @@ WorldScreen.prototype.startExit = function() {};
 
 WorldScreen.prototype.exitLevel = function() {};
 
-WorldScreen.prototype.handleInput = function() {
-};
+WorldScreen.prototype.handleInput = function() {};
 
 WorldScreen.prototype.getPixelsPerMeter = function() {
   return 0.5 * (this.canvas.height + this.canvas.width) / this.getViewDist();
@@ -503,8 +503,21 @@ WorldScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
   if (hit) {
     retval = resp.timeOffset;
   }
+  // TODO drawScans is not a great API.
+  if (this.drawScans) {
+    this.addScanSplash(pos, vel, rad, retval);
+  }
   return retval;
 };
+
+/**
+ * Hacky empty impl to support Game2's test rayscan-drawing feature, which is fun.
+ * @param {Vec2d} pos
+ * @param {Vec2d} vel
+ * @param {number} rad
+ * @param {number} result fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
+ */
+WorldScreen.prototype.addScanSplash = function(pos, vel, rad, result) {};
 
 WorldScreen.prototype.setTimeWarp = function(multiplier) {
   this.timeMultiplier = multiplier;
@@ -549,8 +562,9 @@ WorldScreen.prototype.approxViewportsFromCamera = function(v) {
 
 WorldScreen.prototype.worldToJson = function() {
   var worldJsoner = new WorldJsoner();
+  var self = this;
   worldJsoner.setIsBodySerializableFn(function(body) {
-    return body.hitGroup != this.getWallHitGroup();
+    return body.hitGroup != self.getWallHitGroup();
   });
   worldJsoner.roundBodyVelocities(this.world, WorldScreen.ROUND_VELOCITY_TO_NEAREST);
   var json = worldJsoner.worldToJson(this.world);
@@ -593,5 +607,26 @@ WorldScreen.prototype.addItem = function(name, pos, dir) {
       this.setDirty(true);
       return;
     }
+  }
+};
+
+WorldScreen.prototype.unloadLevel = function() {
+  this.tileGrid.unloadAllCells();
+  this.tileGrid = null;
+  if (this.world) {
+    for (var spiritId in this.world.spirits) {
+      var s = this.world.spirits[spiritId];
+      var b = this.world.bodies[s.bodyId];
+      if (b) {
+        this.world.removeBodyId(b.id);
+      }
+      this.world.removeSpiritId(spiritId);
+    }
+    this.world = null;
+  }
+  this.getCamera().setXY(0, 0);
+  if (this.editor) {
+    this.editor.cursorPos.reset();
+    this.editor.cursorVel.reset();
   }
 };

@@ -94,7 +94,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.8;
-  b.hitGroup = Game2BaseScreen.Group.ENEMY;
+  b.hitGroup = screen.getHitGroups().ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = AntSpirit.MEASURE_TIMEOUT * 1.1;
   spirit.bodyId = world.addBody(b);
@@ -111,7 +111,7 @@ AntSpirit.prototype.setColorRGB = function(r, g, b) {
 
 AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
   return this.screen.scan(
-      Game2BaseScreen.Group.ENEMY_SCAN,
+      this.screen.getHitGroups().ENEMY_SCAN,
       pos,
       this.scanVec.setXY(
           Math.sin(this.dir + rot) * dist,
@@ -291,7 +291,7 @@ AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   b.setPosAtTime(pos, now);
   b.setVelAtTime(vel, now);
   b.rad = rad;
-  b.hitGroup = Game2BaseScreen.Group.ENEMY_FIRE;
+  b.hitGroup = this.screen.getHitGroups().ENEMY_FIRE;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = duration;
   spirit.bodyId = this.screen.world.addBody(b);

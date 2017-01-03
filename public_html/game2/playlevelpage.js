@@ -174,9 +174,7 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
   }
 
   this.screen = new Game2PlayScreen(
-      this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), Stamps.create(this.renderer), this.sfx,
-      this.adventureName, this.levelName);
-  this.screen.initSpiritConfigs();
+      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx, this.adventureName, this.levelName);
   this.screen.updateHudLayout();
   this.screen.initWorld();
   this.screen.loadWorldFromJson(this.jsonObj);
@@ -192,7 +190,7 @@ PlayLevelPage.prototype.requestAnimation = function() {
   }
 };
 
-PlayLevelPage.prototype.animateFrame = function() {
+PlayLevelPage.prototype.animateFrame = function(startTimeMs) {
   if (!this.animationId) {
     return;
   }
@@ -204,7 +202,7 @@ PlayLevelPage.prototype.animateFrame = function() {
   this.animationId = 0;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
-  this.screen.drawScreen(1);
+  this.screen.drawScreen(1, startTimeMs);
 };
 
 PlayLevelPage.prototype.requestFullScreen = function() {

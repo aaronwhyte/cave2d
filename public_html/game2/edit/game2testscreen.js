@@ -2,11 +2,10 @@
  * @constructor
  * @extends {Game2BaseScreen}
  */
-function Game2TestScreen(controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName) {
-  Game2BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx, adventureName, levelName);
+function Game2TestScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  Game2BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.updateViewMatrix();
-  this.renderer.setViewMatrix(this.viewMatrix);
 
   this.playerAveragePos = new Vec2d();
   this.players = [];

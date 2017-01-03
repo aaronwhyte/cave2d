@@ -105,7 +105,7 @@ EditLevelPage.prototype.saveLevel = function() {
     console.warn('No screen, cannot get JSON to save level: ' + this.levelName);
     return;
   }
-  this.jsonObj = this.screen.toJSON();
+  this.jsonObj = this.screen.worldToJson();
   this.fileTree.setFile(this.levelDataPath, this.jsonObj);
 };
 
@@ -157,10 +157,8 @@ EditLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   this.renderer = new Renderer(this.canvas, gl, program);
 
   this.screen = new Game2EditScreen(
-      this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), Stamps.create(this.renderer), this.sfx,
-      this.adventureName, this.levelName);
+      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx, this.adventureName, this.levelName);
   this.screen.initWidgets();
-  this.screen.initSpiritConfigs();
   this.screen.initEditor();
   this.screen.updateHudLayout();
   this.screen.initWorld();

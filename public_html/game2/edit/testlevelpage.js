@@ -160,10 +160,8 @@ TestLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   this.renderer = new Renderer(this.canvas, gl, program);
 
   this.screen = new Game2TestScreen(
-      this, this.canvas, this.renderer, new Glyphs(new GlyphMaker(0.4, 1.2)), Stamps.create(this.renderer), this.sfx,
-      this.adventureName, this.levelName);
+      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx, this.adventureName, this.levelName);
   this.screen.initWidgets();
-  this.screen.initSpiritConfigs();
   this.screen.updateHudLayout();
   this.screen.initWorld();
   if (this.jsonObj) {
@@ -181,7 +179,7 @@ TestLevelPage.prototype.requestAnimation = function() {
   }
 };
 
-TestLevelPage.prototype.animateFrame = function() {
+TestLevelPage.prototype.animateFrame = function(startTimeMs) {
   if (!this.animationId) {
     return;
   }
@@ -193,7 +191,7 @@ TestLevelPage.prototype.animateFrame = function() {
   this.animationId = 0;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
-  this.screen.drawScreen(1);
+  this.screen.drawScreen(1, startTimeMs);
 };
 
 TestLevelPage.prototype.requestFullScreen = function() {
