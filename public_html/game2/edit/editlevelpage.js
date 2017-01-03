@@ -167,6 +167,7 @@ EditLevelPage.prototype.onShaderTextChange = function(vertexShaderText, fragment
   } else {
     this.screen.createDefaultWorld();
   }
+  this.screen.startRecordingChanges();
 
   this.requestAnimation();
 };
@@ -177,7 +178,7 @@ EditLevelPage.prototype.requestAnimation = function() {
   }
 };
 
-EditLevelPage.prototype.animateFrame = function() {
+EditLevelPage.prototype.animateFrame = function(startTimeMs) {
   if (!this.animationId) {
     return;
   }
@@ -189,7 +190,7 @@ EditLevelPage.prototype.animateFrame = function() {
   this.animationId = 0;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
-  this.screen.drawScreen(1);
+  this.screen.drawScreen(1, startTimeMs);
 };
 
 EditLevelPage.prototype.requestFullScreen = function() {

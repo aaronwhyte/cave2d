@@ -35,7 +35,7 @@ AntSpirit.MEASURE_TIMEOUT = 1.2;
 AntSpirit.THRUST = 0.33;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
-AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
+AntSpirit.STOPPING_SPEED_SQUARED = 0.2 * 0.2;
 AntSpirit.MAX_HEALTH = 3;
 AntSpirit.OPTIMIZE = true;
 
@@ -47,7 +47,8 @@ AntSpirit.SCHEMA = {
   4: "dir",
   5: "angVel",
   6: "stress",
-  7: "health"
+  7: "health",
+  8: "lastControlTime"
 };
 
 AntSpirit.getJsoner = function() {
@@ -132,7 +133,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var pos = this.getBodyPos();
   this.stress = this.stress || 0;
 
-  var friction = 0.05;
+  var friction = this.isPlaying ? 0.05 : 0.3;
   var traction = 0.5;
 
   var now = this.now();

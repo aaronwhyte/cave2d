@@ -27,7 +27,16 @@ Game2EditScreen.ROCK_RAD = 1.4;
 
 Game2EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs,
-      EditorStamps.create(this.renderer), this.getSpiritConfigs());
+      EditorStamps.create(this.renderer), this.getSpiritConfigs(), new ChangeStack(2000));
+};
+
+Game2EditScreen.prototype.initWorld = function() {
+  Game2BaseScreen.prototype.initWorld.call(this);
+  this.world.setChangeRecordingEnabled(true);
+};
+
+Game2EditScreen.prototype.startRecordingChanges = function() {
+  this.editor.startRecordingChanges();
 };
 
 Game2EditScreen.prototype.updateHudLayout = function() {
@@ -159,20 +168,6 @@ Game2EditScreen.prototype.configMousePointer = function() {
     this.canvas.style.cursor = "";
   } else {
     this.canvas.style.cursor = "crosshair";
-  }
-};
-
-/////////////////////
-// Editor API stuff
-/////////////////////
-
-Game2EditScreen.prototype.addItem = function(name, pos, dir) {
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t];
-    if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
-      c.menuItemConfig.factory(this, c.stamp, pos, dir);
-      break;
-    }
   }
 };
 

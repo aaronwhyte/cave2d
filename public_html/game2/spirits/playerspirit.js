@@ -29,7 +29,6 @@ function PlayerSpirit(screen) {
   this.maxHealth = PlayerSpirit.STARTING_HEALTH;
   this.health = this.maxHealth;
 
-  this.lastWarp = -Infinity;
   this.lastFireTime =-Infinity;
 
   this.shotgun = new ShotgunWeapon(screen, this, screen.getHitGroups().PLAYER_FIRE, PlayerSpirit.SHOTGUN_TIMEOUT_ID);
@@ -55,6 +54,8 @@ PlayerSpirit.AIM_SENSITIVITY = 2;
 PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
+PlayerSpirit.STOPPING_SPEED_SQUARED = 0.2 * 0.2;
+
 
 PlayerSpirit.SHOTGUN_TIMEOUT_ID = 20;
 PlayerSpirit.LASER_TIMEOUT_ID = 21;
@@ -72,7 +73,8 @@ PlayerSpirit.SCHEMA = {
   4: "dir",
   5: "angVel",
   6: "maxHealth",
-  7: "health"
+  7: "health",
+  8: "lastFrictionTime"
 };
 
 PlayerSpirit.getJsoner = function() {
@@ -223,17 +225,23 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     var body = this.getBody();
     if (body) {
       this.newVel.set(body.vel);
-      this.accel.set(this.newVel).scale(-PlayerSpirit.FRICTION);
+      var friction = this.isPlaying ? PlayerSpirit.FRICTION : 0.3;
+
+      this.accel.set(this.newVel).scale(-friction);
       this.newVel.add(this.accel.scale(time));
 
       // Reset the body's pathDurationMax because it gets changed at compile-time,
       // but it is serialized at level-save-time, so old saved values might not
       // match the new compiled-in values. Hm.
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
+
+      if (!this.screen.isPlaying() && this.newVel.magnitudeSquared() < PlayerSpirit.STOPPING_SPEED_SQUARED) {
+        this.newVel.reset();
+      }
       body.setVelAtTime(this.newVel, now);
       body.invalidatePath();
     }
-    // TODO: put addTimeout in screen, remove world access
+    // TODO: put addTimeout in screen, remove spirit's world access
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
   } else if (timeoutVal == PlayerSpirit.SHOTGUN_TIMEOUT_ID) {
     this.shotgun.onTimeout();
