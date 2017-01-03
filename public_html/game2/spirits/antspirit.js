@@ -35,7 +35,7 @@ AntSpirit.MEASURE_TIMEOUT = 1.2;
 AntSpirit.THRUST = 0.33;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
-AntSpirit.STOPPING_SPEED_SQUARED = 0.2 * 0.2;
+AntSpirit.STOPPING_SPEED_SQUARED = 0.05 * 0.05;
 AntSpirit.MAX_HEALTH = 3;
 AntSpirit.OPTIMIZE = true;
 
@@ -133,7 +133,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var pos = this.getBodyPos();
   this.stress = this.stress || 0;
 
-  var friction = this.isPlaying ? 0.05 : 0.3;
+  var friction = this.screen.isPlaying() ? 0.05 : 0.3;
   var traction = 0.5;
 
   var now = this.now();

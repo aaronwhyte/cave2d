@@ -54,7 +54,7 @@ PlayerSpirit.AIM_SENSITIVITY = 2;
 PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
-PlayerSpirit.STOPPING_SPEED_SQUARED = 0.2 * 0.2;
+PlayerSpirit.STOPPING_SPEED_SQUARED = 0.05 * 0.05;
 
 
 PlayerSpirit.SHOTGUN_TIMEOUT_ID = 20;
@@ -225,7 +225,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     var body = this.getBody();
     if (body) {
       this.newVel.set(body.vel);
-      var friction = this.isPlaying ? PlayerSpirit.FRICTION : 0.3;
+      var friction = this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3;
 
       this.accel.set(this.newVel).scale(-friction);
       this.newVel.add(this.accel.scale(time));
