@@ -28,6 +28,7 @@ Game2EditScreen.ROCK_RAD = 1.4;
 Game2EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs,
       EditorStamps.create(this.renderer), this.getSpiritConfigs(), new ChangeStack(2000));
+  this.editor.gripAccelFraction = 0.25;
 };
 
 Game2EditScreen.prototype.initWorld = function() {

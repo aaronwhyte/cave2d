@@ -217,6 +217,9 @@ PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
+  if (this.changeListener) {
+    this.changeListener.onBeforeSpiritChange(this);
+  }
   var now = this.now();
   if (timeoutVal == PlayerSpirit.FRICTION_TIMEOUT_ID || timeoutVal == -1) {
     var time = now - this.lastFrictionTime;

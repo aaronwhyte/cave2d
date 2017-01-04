@@ -319,7 +319,7 @@ Body.prototype.getVelocityAtWorldPoint = function(now, point, out) {
   return this.getPosAtTime(now, out).subtract(point).scale(this.angVel).rot90Right().add(this.vel);
 };
 
-Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now, opt_maxAccel) {
+Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now) {
   // angular acceleration
   if (this.turnable && this.moi && this.moi != Infinity) {
     var gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
@@ -337,6 +337,23 @@ Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now, op
     this.setVelAtTime(newVel, now);
     newVel.free();
   }
+};
+
+Body.prototype.applyAccelAtWorldPosAndTime = function(accel, worldPoint, now) {
+  // angular acceleration
+  if (this.turnable) {
+    var gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
+    var angAccel = gripVec.cross(accel);
+    this.setAngVelAtTime(this.angVel + angAccel, now);
+    gripVec.free();
+  }
+
+  // linear acceleration
+  var newVel = Vec2d.alloc()
+      .set(accel)
+      .add(this.vel);
+  this.setVelAtTime(newVel, now);
+  newVel.free();
 };
 
 /**

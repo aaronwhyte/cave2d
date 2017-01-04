@@ -389,21 +389,21 @@ Editor.prototype.dragObject = function() {
     var bodyToGrip = Vec2d.alloc()
         .set(this.gripPoint)
         .rot(body.getAngPosAtTime(now));
-    var force = Vec2d.alloc()
+    var accel = Vec2d.alloc()
         .set(this.cursorPos)
         .subtract(bodyToGrip)
         .subtract(bodyPos)
-        .scale(body.mass * this.gripAccelFraction);
+        .scale(this.gripAccelFraction);
     var gripInWorld = Vec2d.alloc()
         .set(bodyPos)
         .add(bodyToGrip);
 
-    body.applyForceAtWorldPosAndTime(force, gripInWorld, now);
+    body.applyAccelAtWorldPosAndTime(accel, gripInWorld, now);
     body.applyLinearFrictionAtTime(this.gripFriction, now);
     body.applyAngularFrictionAtTime(this.gripFriction, now);
 
     gripInWorld.free();
-    force.free();
+    accel.free();
     bodyToGrip.free();
     this.ongoingEditGesture = true;
   }

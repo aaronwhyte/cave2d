@@ -21,7 +21,7 @@ function AntSpirit(screen) {
   this.accel = new Vec2d();
   this.stress = 0;
 
-  this.lastControlTime = this.screen.now();
+  this.lastControlTime = this.now();
   this.viewportsFromCamera = 0;
 
   // So I don't need to delete and re-add ants whenever I change their max health,
@@ -129,6 +129,9 @@ AntSpirit.prototype.turnToPlayer = function() {
 };
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
+  if (this.changeListener) {
+    this.changeListener.onBeforeSpiritChange(this);
+  }
   var body = this.getBody();
   var pos = this.getBodyPos();
   this.stress = this.stress || 0;
@@ -137,7 +140,8 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var traction = 0.5;
 
   var now = this.now();
-  var time = Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime);
+  var time = Math.max(0, Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
+  console.log(time);
   this.lastControlTime = now;
 
   var newVel = this.vec2d.set(body.vel);

@@ -45,22 +45,20 @@ v WorldScreen is the base of BaseScreen: Part 2
   * delete screen's addItem()
   v t40
   v g2: This is the big one.
-  - g3? Do I have it in me? g2 was a lot of work. Maybe abandon g3.
-- Add Undo to game editors
-  - g2
-  - g3?
-- Inject collider info into baseScreen instead of using "createXXX" overrides? But from where, pages?
-  Pages will be factored up later... but they'll still need to know how to construct stuff.
-  Maybe factor page baseclasses up, not whole pages. Yeah. So then each game/test will have Page code still OK.
-- Pages: pull the three main screen-having Page classes up
+  x g3? Do I have it in me? g2 was a lot of work. leave g3 for now.
+v Add Undo to game editors
+  v g2
+  x g3? meh.
+- Pages: Add baseclass pages.
   - Play
   - Edit
   - Test
   - Pull most "pause" code up to those common pages
   - pull Fullscreen code up too
+- Inject collider info into baseScreen instead of using "createXXX" overrides, from pages.
 - World API
   - move body/spirit query stuff from basescreens to World
-  - give Editor access to World, to remove a lot of editor->screen->world call routing?
+  - give Editor access to World, to remove a lot of editor->screen->world call routing??
 
 Solve the lastPathRefreshTime problem
 Sometimes I want to add a body without also adding a spirit with a timeout loop just for invalidating the path.
