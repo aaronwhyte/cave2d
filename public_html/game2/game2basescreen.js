@@ -21,7 +21,7 @@ function Game2BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.hudViewMatrix = new Matrix44();
 
   this.playerAveragePos = new Vec2d();
-  this.levelColorVector.setRGBA(0.2, 0.3, 0.9, 1);
+  this.levelColorVector.setRGBA(0.2, 0.3, 0.8, 1);
   this.timeMultiplier = 1;
   this.drawScans = false;
   this.playerChasePolarity = 1;
@@ -183,19 +183,6 @@ Game2BaseScreen.prototype.createButtonWidgets = function() {
   }
   return widgets;
 };
-
-// Game2BaseScreen.prototype.refreshPaths = function() {
-//   if (this.lastPathRefreshTime + Game2BaseScreen.PATH_DURATION <= endClock) {
-//     this.lastPathRefreshTime = this.world.now;
-//     for (var id in this.world.bodies) {
-//       var b = this.world.bodies[id];
-//       if (b && b.pathDurationMax > Game2BaseScreen.PATH_DURATION && b.pathDurationMax != Infinity) {
-//         b.invalidatePath();
-//         b.moveToTime(this.world.now);
-//       }
-//     }
-//   }
-// };
 
 Game2BaseScreen.prototype.onHitEvent = function(e) {
   if (!this.isPlaying()) return;
