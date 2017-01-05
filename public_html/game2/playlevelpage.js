@@ -51,7 +51,7 @@ PlayLevelPage.prototype.enterDoc = function() {
   this.refreshOverlay();
 
   this.sfx = new SoundFx();
-  this.sfx.setListenerXYZ(0, 0, 4);
+  this.sfx.setListenerXYZ(0, 0, 2);
 
   // On-event sound unlocker for iOS.
   var resumeButton = document.querySelector('#resumeButton');

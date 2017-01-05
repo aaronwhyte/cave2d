@@ -20,6 +20,9 @@ function Game2BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.hudViewMatrix = new Matrix44();
 
+  this.sounds.setMasterGain(0.5);
+
+
   this.playerAveragePos = new Vec2d();
   this.levelColorVector.setRGBA(0.2, 0.3, 0.8, 1);
   this.timeMultiplier = 1;

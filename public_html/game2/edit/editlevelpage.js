@@ -49,7 +49,7 @@ EditLevelPage.prototype.enterDoc = function() {
   this.refreshPauseMenu();
 
   this.sfx = new SoundFx();
-  this.sfx.setListenerXYZ(0, 0, 4);
+  this.sfx.setListenerXYZ(0, 0, 2);
 
   // On-event sound unlocker for iOS.
   var resumeButton = document.querySelector('#resumeButton');
