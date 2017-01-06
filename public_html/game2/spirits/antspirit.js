@@ -141,7 +141,6 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   var now = this.now();
   var time = Math.max(0, Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
-  console.log(time);
   this.lastControlTime = now;
 
   var newVel = this.vec2d.set(body.vel);
