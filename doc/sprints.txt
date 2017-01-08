@@ -49,32 +49,36 @@ v WorldScreen is the base of BaseScreen: Part 2
 v Add Undo to game editors
   v g2
   x g3? meh.
-- Pages: Add baseclass pages.
-  - Play
-  - Edit
-  - Test
-  - Pull most "pause" code up to those common pages
-  - pull Fullscreen code up too
-- Inject collider info into baseScreen instead of using "createXXX" overrides, from pages.
-- World API
+v Remember undo/redo when switching between edit and test.
+  * don't overdo it. Just make it so that a one-window users can make a change, test, untest, and undo.
+  v when saving level to json
+    v put a random changestack token into the JSON
+    v store the changestack in app RAM using that token
+      * survives level renames
+      * never gives the wrong changestack to an edit screen
+      * SessionStorage requires JSONing and that seems overkill
+  v when loading from json in edit mode
+    v get the token from JSON
+    v look for the changestack JSON
+    v If it exists, initialize the world's ChangeStack using the result
+- Pages: Reduce redundant code
+  - Make a Game2ScreenPage baseclass for game2
+  - Extend it:
+    - Play
+    - Edit
+    - Test
+  - Add an app-level "ScreenPage" baseclass and extend that in Game2ScreenPage? Too far?
+- Inject collider info into baseScreen from pages, instead of using "createXXX" overrides.
+? World API
   - move body/spirit query stuff from basescreens to World
   - give Editor access to World, to remove a lot of editor->screen->world call routing??
 
-Solve the lastPathRefreshTime problem
-Sometimes I want to add a body without also adding a spirit with a timeout loop just for invalidating the path.
-Often I still want a spirit (for drawing or whatevs) but don't want to re-code the timeout loop.
-Giving a body a maxPathDuration of Infinity cause tons of far-future collision events to be recorded,
-effectively leaking them.
-* Every movable body needs a Spirit chaperone w timeout invalidation loop?
-* Add a common spirit behavior that registers the timeout for me?
-* Special world maxPathDuration=auto code?
-
-Multiplayer
+Game4: Multiplayer
 * up to four touch players
 * Up to three keyboard players: wasd, ijkl, arrows
 * Mouse control with pointerlock and keys?
 * Gamepad controls if possible
-- test42 nest
+- game4 nest, copy of game2
 - PlayerInterface baseclass
   * Not many setters in the interface. The code's the thing. Subclass for particulars.
   * Doesn't own player spirit, position, etc.
@@ -98,6 +102,14 @@ Multiplayer
   - remove spirit and stuff
   - PI.onDrop
 
+Solve the lastPathRefreshTime problem
+Sometimes I want to add a body without also adding a spirit and timeout loop just for invalidating the path.
+Often I still want a spirit (for drawing or whatevs) but don't want to re-code the timeout loop.
+Giving a moving body a maxPathDuration of Infinity causes tons of far-future collision events to be recorded,
+effectively leaking them.
+* Every movable body needs a Spirit chaperone w timeout invalidation loop?
+* Add a common spirit behavior that registers the timeout for me?
+* Special world maxPathDuration=auto code? nah
 
 chain constraints
 Simple distance between two body positions - no offset from center, because rotation would make that harder...
