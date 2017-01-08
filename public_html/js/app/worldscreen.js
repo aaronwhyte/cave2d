@@ -573,7 +573,7 @@ WorldScreen.prototype.worldToJson = function() {
 
   // TODO make less not good
   if (this.editor) {
-    json.cursorPos = this.editor.cursorPos.toJSON();
+    this.editor.onWorldToJson(json);
   }
   return json;
 };
@@ -587,7 +587,9 @@ WorldScreen.prototype.loadWorldFromJson = function(json) {
   this.bitGrid = BitGrid.fromJSON(json.terrain);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
   this.tileGrid.flushTerrainChanges();
-  if (this.editor) this.editor.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
+  if (this.editor) {
+    this.editor.onLoadWorldFromJson(json);
+  }
   this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
 };
 

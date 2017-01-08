@@ -367,10 +367,14 @@ Editor.prototype.handleInput = function() {
     this.cursorTail.add(tailVel);
     this.cursorTail.subtract(this.cursorPos).scaleToLength(1).add(this.cursorPos);
     tailVel.free();
-    var cursorTailDiff = this.vec2d.set(this.cursorPos).subtract(this.cursorTail);
-    this.cursorDir = Math.atan2(cursorTailDiff.x, cursorTailDiff.y) || 0;
+    this.updateCursorDir();
   }
   oldCursorPos.free();
+};
+
+Editor.prototype.updateCursorDir = function() {
+  var cursorTailDiff = this.vec2d.set(this.cursorPos).subtract(this.cursorTail);
+  this.cursorDir = Math.atan2(cursorTailDiff.x, cursorTailDiff.y) || 0;
 };
 
 Editor.prototype.dragObject = function() {
@@ -624,3 +628,18 @@ Editor.prototype.stopChanges = function () {
   }
 };
 
+Editor.prototype.onWorldToJson = function(json) {
+  json.cursorPos = this.cursorPos.toJSON();
+  json.cursorTail = this.cursorTail.toJSON();
+};
+
+Editor.prototype.onLoadWorldFromJson = function(json) {
+  if (json.cursorPos) {
+    var cursorPos = Vec2d.fromJSON(json.cursorPos);
+    if (cursorPos) this.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
+  }
+  if (json.cursorTail) {
+    this.cursorTail.set(Vec2d.fromJSON(json.cursorTail));
+  }
+  this.updateCursorDir();
+};
