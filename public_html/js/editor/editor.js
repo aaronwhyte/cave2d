@@ -92,6 +92,36 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
   this.ongoingEditGesture = false;
 }
 
+/**
+ * Hacky static cache to allow the editor to save stuff (like ChangeStack) in RAM while the user toggles between edit
+ * and test.
+ */
+Editor.cache = null;
+Editor.cacheKey = null;
+
+/**
+ * Returns a random key for the cache, to be used to get the cache back.
+ * @param {*} val
+ * @returns {number}
+ */
+Editor.setCache = function(val) {
+  Editor.cache = val;
+  Editor.cacheKey = Math.random() + performance.now();
+  return Editor.cacheKey;
+};
+
+/**
+ * If the key matches the last cached val, then this returns the cached val. Otherwise it returns null.
+ * @param {number} key
+ * @returns {*|null}
+ */
+Editor.getCache = function(key) {
+  if (key && Editor.cacheKey == key) {
+    return Editor.cache;
+  }
+  return null;
+};
+
 Editor.WIDGET_RADIUS = 30;
 
 Editor.prototype.initWidgets = function(glyphStamps, editorStamps) {
@@ -105,7 +135,8 @@ Editor.prototype.initWidgets = function(glyphStamps, editorStamps) {
         .addTriggerKeyByName(keyName);
     if (keyStamp) widget.setKeyboardTipStamp(keyStamp);
     if (mouseable) widget.listenToMousePointer();
-    return widget.startListening();
+    self.host.addListener(widget);
+    return widget;
   }
 
   this.addTriggerWidget = createTrigger(editorStamps.addTrigger, 'e', glyphStamps['E'], false);
@@ -113,11 +144,6 @@ Editor.prototype.initWidgets = function(glyphStamps, editorStamps) {
   this.gripTriggerWidget = createTrigger(editorStamps.gripTrigger, 'd', glyphStamps['D'], false);
   this.digTriggerWidget = createTrigger(editorStamps.digTrigger, 's', glyphStamps['S'], false);
   this.fillTriggerWidget = createTrigger(editorStamps.fillTrigger, 'a', glyphStamps['A'], false);
-
-  this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
-      .listenToMouseButton()
-      .addTriggerKeyByName('w')
-      .startListening();
 
   this.pauseTriggerWidget = createTrigger(editorStamps.pauseTrigger, Key.Name.SPACE, null, true)
       .addTriggerDownListener(this.host.pauseDownFn);
@@ -139,6 +165,12 @@ Editor.prototype.initWidgets = function(glyphStamps, editorStamps) {
     this.redoTriggerWidget = createTrigger(editorStamps.redoTrigger, 'y', glyphStamps['Y'], true)
         .addTriggerDownListener(this.redoDownFn);
   }
+
+  // weird keyboard-only one that doesn't use createTrigger
+  this.panTriggerWidget = new TriggerWidget(this.host.getWorldEventTarget())
+      .listenToMouseButton()
+      .addTriggerKeyByName('w');
+  this.host.addListener(this.panTriggerWidget);
 };
 
 /**
@@ -561,7 +593,7 @@ Editor.prototype.stopRecordingChanges = function() {
 };
 
 Editor.prototype.undo = function() {
-  this.stopChanges();
+  this.stopMoving();
   var changes = this.stopRecordingChanges();
   if (changes.length) {
     this.saveToChangeStack(changes);
@@ -574,7 +606,7 @@ Editor.prototype.undo = function() {
 };
 
 Editor.prototype.redo = function() {
-  this.stopChanges();
+  this.stopMoving();
   var changes = this.stopRecordingChanges();
   if (changes.length) {
     this.saveToChangeStack(changes);
@@ -621,7 +653,7 @@ Editor.prototype.saveToChangeStack = function(changes) {
  * introducing more changes. If there are instant changes after a save, then it could
  * be impossible to undo past that point afterwards.
  */
-Editor.prototype.stopChanges = function () {
+Editor.prototype.stopMoving = function () {
   this.interrupt();
   for (var bodyId in this.host.world.bodies) {
     this.host.world.bodies[bodyId].stopMoving(this.now());
@@ -631,6 +663,7 @@ Editor.prototype.stopChanges = function () {
 Editor.prototype.onWorldToJson = function(json) {
   json.cursorPos = this.cursorPos.toJSON();
   json.cursorTail = this.cursorTail.toJSON();
+  json.cacheKey = Editor.setCache(this.changeStack);
 };
 
 Editor.prototype.onLoadWorldFromJson = function(json) {
@@ -640,6 +673,10 @@ Editor.prototype.onLoadWorldFromJson = function(json) {
   }
   if (json.cursorTail) {
     this.cursorTail.set(Vec2d.fromJSON(json.cursorTail));
+  }
+  var cacheVal = Editor.getCache(json.cacheKey);
+  if (cacheVal) {
+    this.changeStack = cacheVal;
   }
   this.updateCursorDir();
 };
