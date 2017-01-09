@@ -753,19 +753,6 @@ World.prototype.unload = function() {
   this.queue.clear();
 };
 
-World.prototype.getTimeoutsAsJson = function() {
-  var timeouts = [];
-  for (var e = this.queue.getFirst(); e; e = e.next[0]) {
-    if (e.type === WorldEvent.TYPE_TIMEOUT) {
-      var spirit = this.spirits[e.spiritId];
-      if (spirit) {
-        timeouts.push(e.toJSON());
-      }
-    }
-  }
-  return timeouts;
-};
-
 World.prototype.getQueueAsJson = function() {
   var json = [];
   for (var e = this.queue.getFirst(); e; e = e.next[0]) {
@@ -821,7 +808,10 @@ World.prototype.stopRecordingChanges = function() {
   }
   if (this.nowBefore != this.now) {
     changes.push(new ChangeOp(World.ChangeType.NOW, 0, this.nowBefore, this.now));
-    changes.push(new ChangeOp(World.ChangeType.QUEUE, 0, this.queueBefore, this.getQueueAsJson()));
+  }
+  var queueAfter = this.getQueueAsJson();
+  if (!this.queueJsonsEqual(this.queueBefore, queueAfter)) {
+    changes.push(new ChangeOp(World.ChangeType.QUEUE, 0, this.queueBefore, queueAfter));
   }
 
   this.bodyBefores = null;
@@ -829,6 +819,16 @@ World.prototype.stopRecordingChanges = function() {
   this.nowBefore = this.now;
   this.queueBefore = null;
   return changes;
+};
+
+World.prototype.queueJsonsEqual = function(a, b) {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (JSON.stringify(a[i]) != JSON.stringify(b[i])) return false;
+  }
+  return true;
 };
 
 World.prototype.isChangeRecordingStarted = function() {
@@ -873,7 +873,7 @@ World.prototype.applyChange = function(change) {
     case World.ChangeType.QUEUE:
       // replace the whole thing, since it's easy and not too expensive
       this.queue.clear();
-      for (var i = 0; i < change.afterState.length; i++) {
+      for (var i = 0; change.afterState && i < change.afterState.length; i++) {
         this.queue.add(new WorldEvent().setFromJSON(change.afterState[i]));
       }
       break;

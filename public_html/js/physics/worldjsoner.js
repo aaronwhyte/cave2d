@@ -77,10 +77,7 @@ WorldJsoner.prototype.worldToJson = function(world) {
   // timeouts
   for (var e = world.queue.getFirst(); e; e = e.next[0]) {
     if (e.type === WorldEvent.TYPE_TIMEOUT) {
-      spirit = world.spirits[e.spiritId];
-      if (spirit) {
-        json.timeouts.push(e.toJSON());
-      }
+      json.timeouts.push(e.toJSON());
     }
   }
   return json;
