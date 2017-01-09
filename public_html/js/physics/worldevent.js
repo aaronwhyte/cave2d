@@ -24,7 +24,7 @@ WorldEvent.SCHEMA = {
   6: 'cellRange',
   7: 'pathId0',
   8: 'pathId1',
-  9: 'collosionVec'
+  9: 'collisionVec'
 };
 
 WorldEvent.getJsoner = function() {
