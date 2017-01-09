@@ -590,7 +590,7 @@ WorldScreen.prototype.loadWorldFromJson = function(json) {
   if (this.editor) {
     this.editor.onLoadWorldFromJson(json);
   }
-  this.camera.cameraPos.set(Vec2d.fromJSON(json.cameraPos));
+  this.getCamera().cameraPos.set(Vec2d.fromJSON(json.cameraPos));
 };
 
 /**
