@@ -62,7 +62,7 @@ LevelListPage.prototype.refreshList = function() {
   e.innerHTML = Strings.textToHtml('create');
 
   var names = this.fileTree.listChildren(
-      EditorApp.path(this.basePath, this.adventureName).concat(EditorApp.PATH_LEVELS));
+      BaseApp.path(this.basePath, this.adventureName).concat(BaseApp.PATH_LEVELS));
   var rows = Dom.ce('div', df, 'rows');
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
@@ -110,7 +110,7 @@ LevelListPage.prototype.createDeleteFunction = function(name) {
   return function() {
     if (confirm('Delete level ' + name + '\nAre you sure?')) {
       self.fileTree.moveDescendants(
-          EditorApp.path(self.basePath, self.adventureName, name),
+          BaseApp.path(self.basePath, self.adventureName, name),
           EditorApp.trashPath(self.basePath, new Date(), self.adventureName, name));
       self.refreshList();
     }
@@ -123,8 +123,8 @@ LevelListPage.prototype.createRenameFunction = function(name) {
     var newName = prompt('Rename ' + name + '\nNew name?');
     if (newName) {
       self.fileTree.moveDescendants(
-          EditorApp.path(self.basePath, self.adventureName, name),
-          EditorApp.path(self.basePath, self.adventureName, newName));
+          BaseApp.path(self.basePath, self.adventureName, name),
+          BaseApp.path(self.basePath, self.adventureName, newName));
       self.refreshList();
     }
   };
@@ -136,8 +136,8 @@ LevelListPage.prototype.createCopyFunction = function(name) {
     var newName = prompt('Copy ' + name + '\nNew name?');
     if (newName) {
       self.fileTree.copyDescendants(
-          EditorApp.path(self.basePath, self.adventureName, name),
-          EditorApp.path(self.basePath, self.adventureName, newName));
+          BaseApp.path(self.basePath, self.adventureName, name),
+          BaseApp.path(self.basePath, self.adventureName, newName));
       self.refreshList();
     }
   };
@@ -145,6 +145,6 @@ LevelListPage.prototype.createCopyFunction = function(name) {
 
 LevelListPage.prototype.touch = function(name) {
   this.fileTree.setFile(
-      EditorApp.path(this.basePath, this.adventureName, name).concat([LevelListPage.TOUCHDATE]),
+      BaseApp.path(this.basePath, this.adventureName, name).concat([LevelListPage.TOUCHDATE]),
       Date.now());
 };

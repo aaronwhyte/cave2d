@@ -14,8 +14,9 @@ function main() {
   stats = new Stats();
   var basePath = ['game2'];
   var fileTree = new FileTree(new RealStorage(localStorage));
-  app = new EditorApp('Game 2', basePath, fileTree,
+  app = new EditorApp('Game 2', basePath,
       '../vertex-shader.txt', '../fragment-shader.txt',
+      fileTree,
       EditLevelPage, TestLevelPage);
   app.start();
 }

@@ -48,7 +48,7 @@ ExportPage.prototype.showJson = function() {
   var df = document.createDocumentFragment();
   var e;
   e = Dom.ce('div', df);
-  var path = EditorApp.path(this.basePath, this.adventureName, this.levelName);
+  var path = BaseApp.path(this.basePath, this.adventureName, this.levelName);
   var names = this.fileTree.listDescendants(path);
   var json = {};
   for (var i = 0; i < names.length; i++) {

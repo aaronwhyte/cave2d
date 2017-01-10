@@ -14,8 +14,8 @@ function main() {
   stats = new Stats();
   var basePath = ['game2'];
   app = new PlayApp('Game 2', basePath,
-      'adventures/splendid6.txt',
       'vertex-shader.txt', 'fragment-shader.txt',
+      'adventures/splendid6.txt',
       PlayLevelPage);
   app.start();
 }

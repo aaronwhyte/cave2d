@@ -15,8 +15,8 @@ function TestLevelPage(gameTitle, basePath, fileTree, adventureName, levelName) 
   this.fileTree = fileTree;
   this.adventureName = adventureName;
   this.levelName = levelName;
-  this.levelDataPath = EditorApp.path(this.basePath, this.adventureName, this.levelName)
-      .concat(EditorApp.PATH_LEVEL_JSON);
+  this.levelDataPath = BaseApp.path(this.basePath, this.adventureName, this.levelName)
+      .concat(BaseApp.PATH_LEVEL_JSON);
 
   this.canvas = null;
   this.pauseMenuDiv = null;

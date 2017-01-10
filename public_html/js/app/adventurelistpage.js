@@ -52,7 +52,7 @@ AdventureListPage.prototype.refreshList = function() {
   e.onclick = this.createCreateFunction();
   e.innerHTML = Strings.textToHtml('create');
 
-  var names = this.fileTree.listChildren(EditorApp.path(this.basePath).concat(EditorApp.PATH_ADVENTURES));
+  var names = this.fileTree.listChildren(BaseApp.path(this.basePath).concat(BaseApp.PATH_ADVENTURES));
   var rows = Dom.ce('div', df, 'rows');
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
@@ -106,7 +106,7 @@ AdventureListPage.prototype.createDeleteFunction = function(name) {
   return function() {
     if (confirm('Delete adventure ' + name + '\nAre you sure?')) {
       self.fileTree.moveDescendants(
-          EditorApp.path(self.basePath, name),
+          BaseApp.path(self.basePath, name),
           EditorApp.trashPath(self.basePath, new Date(), name));
       self.refreshList();
     }
@@ -119,8 +119,8 @@ AdventureListPage.prototype.createRenameFunction = function(name) {
     var newName = prompt('Rename ' + name + '\nNew name?');
     if (newName) {
       self.fileTree.moveDescendants(
-          EditorApp.path(self.basePath, name),
-          EditorApp.path(self.basePath, newName));
+          BaseApp.path(self.basePath, name),
+          BaseApp.path(self.basePath, newName));
       self.refreshList();
     }
   };
@@ -132,8 +132,8 @@ AdventureListPage.prototype.createCopyFunction = function(name) {
     var newName = prompt('Copy ' + name + '\nNew name?');
     if (newName) {
       self.fileTree.copyDescendants(
-          EditorApp.path(self.basePath, name),
-          EditorApp.path(self.basePath, newName));
+          BaseApp.path(self.basePath, name),
+          BaseApp.path(self.basePath, newName));
       self.refreshList();
     }
   };
@@ -141,6 +141,6 @@ AdventureListPage.prototype.createCopyFunction = function(name) {
 
 AdventureListPage.prototype.touch = function(name) {
   this.fileTree.setFile(
-      EditorApp.path(this.basePath, name).concat([AdventureListPage.TOUCHDATE]),
+      BaseApp.path(this.basePath, name).concat([AdventureListPage.TOUCHDATE]),
       Date.now());
 };

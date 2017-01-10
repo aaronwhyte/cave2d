@@ -17,8 +17,8 @@ function PlayLevelPage(app, gameTitle, basePath, fileTree, adventureName, levelN
   this.fileTree = fileTree;
   this.adventureName = adventureName;
   this.levelName = levelName;
-  this.levelDataPath = PlayApp.path(this.basePath, this.adventureName, this.levelName)
-      .concat(PlayApp.PATH_LEVEL_JSON);
+  this.levelDataPath = BaseApp.path(this.basePath, this.adventureName, this.levelName)
+      .concat(BaseApp.PATH_LEVEL_JSON);
 
   this.canvas = null;
   this.pauseMenuDiv = null;

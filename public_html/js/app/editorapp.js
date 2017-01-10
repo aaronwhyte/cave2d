@@ -2,30 +2,25 @@
  * Generic app for editing a game's adventures and levels.
  * @param {String} gameTitle
  * @param {Array.<String>} basePath
- * @param {FileTree} fileTree
  * @param {String} vertexShaderPath
  * @param {String} fragmentShaderPath
+ * @param {FileTree} fileTree
  * @param {function} editLevelPageCtor
  * @param {function} testLevelPageCtor
+ * @extends {BaseApp}
  * @constructor
  */
-function EditorApp(gameTitle, basePath, fileTree, vertexShaderPath, fragmentShaderPath,
-    editLevelPageCtor, testLevelPageCtor) {
-  this.gameTitle = gameTitle;
-  this.basePath = basePath;
+function EditorApp(gameTitle, basePath, vertexShaderPath, fragmentShaderPath,
+                   fileTree, editLevelPageCtor, testLevelPageCtor) {
+  BaseApp.call(this, gameTitle, basePath, vertexShaderPath, fragmentShaderPath);
   this.fileTree = fileTree;
-  this.vertexShaderPath = vertexShaderPath;
-  this.fragmentShaderPath = fragmentShaderPath;
   this.editLevelPageCtor = editLevelPageCtor;
   this.testLevelPageCtor = testLevelPageCtor;
-  this.page = null;
 }
+EditorApp.prototype = new BaseApp();
+EditorApp.prototype.constructor = EditorApp;
 
 EditorApp.PATH_TRASH = 'trash';
-
-EditorApp.PATH_ADVENTURES = 'adventures';
-EditorApp.PATH_LEVELS = 'levels';
-EditorApp.PATH_LEVEL_JSON = 'leveljson';
 
 EditorApp.PARAM_MODE = 'mode';
 EditorApp.PARAM_ADVENTURE_NAME = 'adv';
@@ -37,15 +32,12 @@ EditorApp.MODE_TEST = 'test';
 
 /**
  * Starts listening to hash-fragment queries, to navigate to the right page.
+ * @override
  */
 EditorApp.prototype.start = function() {
-  this.shaderTextLoader = new TextLoader([this.vertexShaderPath, this.fragmentShaderPath]);
-  var self = this;
-  // pre-load, so the resources are ready ASAP.
-  this.shaderTextLoader.load(function() {
-    self.maybeForwardShaderTexts();
-  });
+  this.startLoadingShaders();
 
+  // editor stuff
   this.beforeUnloadFunction = this.getBeforeUnloadFunction();
   window.addEventListener('beforeunload', this.beforeUnloadFunction, false);
 
@@ -54,23 +46,8 @@ EditorApp.prototype.start = function() {
   this.hashChangeFunction();
 };
 
-/**
- * If the shader texts are loaded, forward them to the current page.
- */
-EditorApp.prototype.maybeForwardShaderTexts = function() {
-  var vt = this.getVertexShaderText();
-  var ft = this.getFragmentShaderText();
-  if (vt && ft && this.page && this.page.onShaderTextChange) {
-    this.page.onShaderTextChange(vt, ft);
-  }
-};
-
-EditorApp.prototype.getVertexShaderText = function() {
-  return this.shaderTextLoader.getTextByPath(this.vertexShaderPath);
-};
-
-EditorApp.prototype.getFragmentShaderText = function() {
-  return this.shaderTextLoader.getTextByPath(this.fragmentShaderPath);
+EditorApp.prototype.getFileTree = function() {
+  return this.fileTree;
 };
 
 EditorApp.prototype.getHashChangeFunction = function() {
@@ -112,41 +89,13 @@ EditorApp.prototype.getHashChangeFunction = function() {
   };
 };
 
-EditorApp.prototype.getBeforeUnloadFunction = function() {
-  var self = this;
-  return function(e) {
-    if (self.page) {
-      // If the page is the level editor, this will cause an auto-save.
-      self.page.exitDoc();
-    }
-  };
-};
-
-EditorApp.prototype.hasAdventure = function(name) {
-  return this.fileTree.hasDescendants(EditorApp.path(this.basePath, name));
-};
-
-EditorApp.prototype.hasLevel = function(adventureName, levelName) {
-  return this.fileTree.hasDescendants(EditorApp.path(this.basePath, adventureName, levelName));
-};
-
-EditorApp.path = function(base, adventureName, levelName) {
-  if (adventureName && levelName) {
-    return base.concat([EditorApp.PATH_ADVENTURES, adventureName, EditorApp.PATH_LEVELS, levelName]);
-  } else if (adventureName) {
-    return base.concat([EditorApp.PATH_ADVENTURES, adventureName]);
-  } else {
-    return base.concat();
-  }
-};
-
 EditorApp.trashPath = function(base, date, adventureName, levelName) {
   var dateStr = Strings.formatTimeString(date);
   if (adventureName && levelName) {
     return base.concat(
-        [EditorApp.PATH_TRASH, dateStr, EditorApp.PATH_ADVENTURES, adventureName, EditorApp.PATH_LEVELS, levelName]);
+        [EditorApp.PATH_TRASH, dateStr, BaseApp.PATH_ADVENTURES, adventureName, BaseApp.PATH_LEVELS, levelName]);
   } else if (adventureName) {
-    return base.concat([EditorApp.PATH_TRASH, dateStr, EditorApp.PATH_ADVENTURES, adventureName]);
+    return base.concat([EditorApp.PATH_TRASH, dateStr, BaseApp.PATH_ADVENTURES, adventureName]);
   } else {
     return base.concat([EditorApp.PATH_TRASH, dateStr]);
   }
