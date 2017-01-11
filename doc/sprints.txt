@@ -70,10 +70,9 @@ v Pages: Reduce redundant code
     v Play
     v Edit
     v Test
-- Inject collider info into baseScreen from pages, instead of using "createXXX" overrides.
-? World API
-  - move body/spirit query stuff from basescreens to World
-  - give Editor access to World, to remove a lot of editor->screen->world call routing??
+
+Better undo/redo icons
+v square-turn arrows are OK, you clunky so-and-so.
 
 Game4: Multiplayer
 * up to four touch players
@@ -112,6 +111,13 @@ effectively leaking them.
 * Every movable body needs a Spirit chaperone w timeout invalidation loop?
 * Add a common spirit behavior that registers the timeout for me?
 * Special world maxPathDuration=auto code? nah
+
+More refactoring...
+- Inject collider info into baseScreen from pages, instead of using "createXXX" overrides?
+- World API
+  - move body/spirit query stuff from basescreens to World
+  - give Editor access to World, to remove a lot of editor->screen->world call routing??
+
 
 chain constraints
 Simple distance between two body positions - no offset from center, because rotation would make that harder...
@@ -153,7 +159,6 @@ double-tap will end up clearing it. The presence and position of the pin changes
 like a shift key with coordinates.
 Dig-line, fill-line, add (orientation), scale scalable objects, spin unscalable objects about a fixed point...
 Later it can be used for creating links and chains
-
 
 Snap
 All objects can have snap-points that snap the cursor to them when close enough.

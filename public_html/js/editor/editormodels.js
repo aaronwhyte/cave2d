@@ -104,7 +104,7 @@ EditorModels.prototype.getFillTrigger = function() {
 };
 
 EditorModels.prototype.getAddMenuIndicator = function() {
-  model = new RigidModel();
+  var model = new RigidModel();
   var size = 1.5;
   var brightness = 0.5;
   var thickness = 0.3;
@@ -136,8 +136,8 @@ EditorModels.prototype.getPause = function() {
   for (var x = -1; x <= 1; x += 2) {
     var bar = RigidModel.createSquare().transformPositions(
         new Matrix44()
-            .multiply(new Matrix44().toScaleOpXYZ(0.2, 0.5, 1)
-                .multiply(new Matrix44().toTranslateOpXYZ(x * 1.5, 0, 0.9)
+            .multiply(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1)
+                .multiply(new Matrix44().toTranslateOpXYZ(x * 3.25, 0, 0.9)
                 )));
     m.addRigidModel(bar);
   }
@@ -157,14 +157,27 @@ EditorModels.prototype.getUntest = function() {
 };
 
 EditorModels.prototype.getUndo = function() {
-  return RigidModel.createTriangle()
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
-      .transformPositions(new Matrix44().toRotateZOp(Math.PI/2));
+  var m = new RigidModel.createTriangle()
+      .transformPositions(new Matrix44().toRotateZOp(Math.PI/2))
+      .transformPositions(new Matrix44().toScaleOpXYZ(0.17, 0.25, 1))
+      .transformPositions(new Matrix44().toTranslateOpXYZ(0.1, 0, 0));
+  m.addRigidModel(RigidModel.createSquare().transformPositions(
+      new Matrix44()
+          .multiply(new Matrix44().toTranslateOpXYZ(0.4, 0, 0))
+          .multiply(new Matrix44().toScaleOpXYZ(0.4, 0.1, 1))));
+  m.addRigidModel(RigidModel.createSquare().transformPositions(
+      new Matrix44()
+          .multiply(new Matrix44().toTranslateOpXYZ(0.85, 0.4, 0))
+          .multiply(new Matrix44().toScaleOpXYZ(0.1, 0.35, 1))));
+  m.addRigidModel(RigidModel.createSquare().transformPositions(
+      new Matrix44()
+          .multiply(new Matrix44().toTranslateOpXYZ(0.4, 0.8, 0))
+          .multiply(new Matrix44().toScaleOpXYZ(0.4, 0.1, 1))));
+  m.transformPositions(new Matrix44().toTranslateOpXYZ(-0.45, -0.3, 0));
+  return m;
 };
 
 EditorModels.prototype.getRedo = function() {
-  return RigidModel.createTriangle()
-      .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
-      .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2));
+  return this.getUndo().transformPositions(new Matrix44().toScaleOpXYZ(-1, 1, 1));
 };
 
