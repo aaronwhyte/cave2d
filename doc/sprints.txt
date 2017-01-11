@@ -64,13 +64,12 @@ v Remember undo/redo when switching between edit and test.
 v BUG: editor, add ant, remove ant, test, untest, undo (to re-add ant), test. Ant can be seen but never moves!
   * also works w player. Clear that timeout loop is broken!
   * pretty definitely to do with timeouts...
-- Pages: Reduce redundant code
-  - Make a Game2ScreenPage baseclass for game2
-  - Extend it:
-    - Play
-    - Edit
-    - Test
-  - Add an app-level "ScreenPage" baseclass and extend that in Game2ScreenPage? Too far?
+v Pages: Reduce redundant code
+  v Make an app-level ScreenPage baseclass for (game2) pages with screens
+  v Extend it:
+    v Play
+    v Edit
+    v Test
 - Inject collider info into baseScreen from pages, instead of using "createXXX" overrides.
 ? World API
   - move body/spirit query stuff from basescreens to World
