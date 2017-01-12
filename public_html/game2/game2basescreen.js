@@ -56,15 +56,19 @@ Game2BaseScreen.SplashType = {
 };
 
 Game2BaseScreen.prototype.createSpiritConfigs = function() {
+  var st = Game2BaseScreen.SpiritType;
+  var mi = Game2BaseScreen.MenuItem;
+  var a  = [
+      [st.ANT, AntSpirit, mi.RED_ANT, 0, 0],
+      [st.PLAYER, PlayerSpirit, mi.PLAYER, 1, 0],
+      [st.EXIT, ExitSpirit, mi.EXIT, 1, 1],
+      [st.BULLET, BulletSpirit]
+  ];
   var sc = {};
-  sc[Game2BaseScreen.SpiritType.ANT] = this.createSpiritConfig(Game2BaseScreen.SpiritType.ANT,
-      AntSpirit, Game2BaseScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
-  sc[Game2BaseScreen.SpiritType.PLAYER] = this.createSpiritConfig(Game2BaseScreen.SpiritType.PLAYER,
-      PlayerSpirit, Game2BaseScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
-  sc[Game2BaseScreen.SpiritType.EXIT] = this.createSpiritConfig(Game2BaseScreen.SpiritType.EXIT,
-      ExitSpirit, Game2BaseScreen.MenuItem.EXIT, 1, 1, ExitSpirit.factory);
-  sc[Game2BaseScreen.SpiritType.BULLET] = this.createSpiritConfig(Game2BaseScreen.SpiritType.BULLET,
-      BulletSpirit, null, -1, -1, BulletSpirit.factory);
+  for (var i = 0; i < a.length; i++) {
+    var p = a[i];
+    sc[p[0]] = this.createSpiritConfig(p[0], p[1], p[2], p[3], p[4]);
+  }
   return sc;
 };
 
@@ -78,8 +82,7 @@ Game2BaseScreen.prototype.createHitGroups = function() {
     PLAYER_FIRE: 5,
     ENEMY: 6,
     ENEMY_FIRE: 7,
-    ENEMY_SCAN: 8,
-    EXPLODEY_BITS: 9
+    ENEMY_SCAN: 8
   }
 };
 
@@ -116,9 +119,7 @@ Game2BaseScreen.prototype.createHitPairs = function() {
     [g.ENEMY_SCAN, g.WALL],
     [g.ENEMY_SCAN, g.NEUTRAL],
     [g.ENEMY_SCAN, g.PLAYER],
-    [g.ENEMY_SCAN, g.ENEMY],
-
-    [g.EXPLODEY_BITS, g.WALL]
+    [g.ENEMY_SCAN, g.ENEMY]
   ];
 };
 

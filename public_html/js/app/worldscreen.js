@@ -109,13 +109,13 @@ WorldScreen.prototype.getPathDuration = function() {
  *     If this is falsy, then the rest of the argumets can be omitted.
  * @param {=number} group The menu item group
  * @param {=number} rank The menu item rank within the group
- * @param {=Function} factory The function for creating this new item
+ * @param {=Function} factory The function for creating this new item. Defaults to ctor.factory
  * @returns {SpiritConfig}
  */
 WorldScreen.prototype.createSpiritConfig = function(type, ctor, menuItemName, group, rank, factory) {
   var model = ctor.createModel();
   var stamp = model.createModelStamp(this.renderer.gl);
-  var menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, factory) : null;
+  var menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, factory || ctor.factory) : null;
   return new SpiritConfig(type, ctor, stamp, menuItemConfig);
 };
 
