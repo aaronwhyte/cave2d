@@ -4,7 +4,7 @@
  */
 function LaserWeapon(screen, spiritId, fireHitGroup, fireTimeoutId) {
   BaseWeapon.call(this, screen, spiritId, fireHitGroup, fireTimeoutId);
-  this.firePeriod = 1.33;
+  this.firePeriod = 1.17;
 }
 LaserWeapon.prototype = new BaseWeapon();
 LaserWeapon.prototype.constructor = LaserWeapon;

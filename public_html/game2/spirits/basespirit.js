@@ -14,7 +14,7 @@ BaseSpirit.prototype.constructor = BaseSpirit;
 BaseSpirit.prototype.reset = function(screen) {
   this.screen = screen;
 
-  // Voilate Law of Demeter here :-/
+  // Violate Law of Demeter here :-/
   if (this.screen) {
     this.stamps = this.screen.stamps;
     this.sounds = this.screen.sounds;
