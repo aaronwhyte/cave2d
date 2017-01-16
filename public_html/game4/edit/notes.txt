@@ -1,0 +1,26 @@
+main.js --> EditorApp --> Page
+
+main.js creates the EditorApp.
+The EditorApp lasts for the duration of the HTML page, until a non-hashfrag nav, refresh, close, etc.
+EditorApp pays attention to the URL hash, and loads and unloads Pages.
+
+Pages have load and unload, where they add and remove HTML, and can do other things.
+Some Pages are boring old DOM, like a file tree browser.
+Other Pages create a full-screen canvas element, and then delegate most logic to a Screen,
+which takes the canvas and handles WebGL, RequestAnimationFrame, on-canvas control widgets, etc.
+
+AdventureListPage is the top level "Page" based on hash-frag nav.
+It lists all the adventures, and has UI for creating more, deleting, exporting, etc.
+
+Within an Adventure:
+* LevelListPage is for managing levels that constitute a single adventure
+* ExportPage is for exporting a single adventure's worth of JSON
+
+For a single level:
+* EditLevelPage is for editing
+  * Creates HTML and kicks off shader loading, and then creates the Screen, below.
+  * EditScreen handles a single large canvas + a menu popup element
+  * Auto-saves when this virtual Page is unloaded for any reason, including closing the tab.
+* TestLevelPage is for play-testing
+  * Creates HTML and kicks off shader loading, and then creates the Screen, below.
+  * TestScreen handles a single large canvas + a menu popup element

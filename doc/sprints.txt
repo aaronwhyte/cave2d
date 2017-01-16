@@ -79,7 +79,10 @@ Game4: Multiplayer
 * Up to three keyboard players: wasd, ijkl, arrows
 * Mouse control with pointerlock and keys?
 * Gamepad controls if possible
-- game4 nest, copy of game2
+v game4 nest, copy of game2
+- change wall color
+- make ants use proper rotation
+- make player
 - PlayerInterface baseclass
   * Not many setters in the interface. The code's the thing. Subclass for particulars.
   * Doesn't own player spirit, position, etc.
