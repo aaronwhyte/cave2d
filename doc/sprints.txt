@@ -80,19 +80,20 @@ Game4: Multiplayer
 * Mouse control with pointerlock and keys?
 * Gamepad controls if possible
 v game4 nest, copy of game2
-- change wall color
-- make ants use proper rotation
-- make player
+- spirits
+  - make ants use proper rotation
+  - make player use proper rotation too
+- walls
+  - change wall color
+  - try crazy idea of changing default wall contents to be a function of position. Make a roundish planet, for starters.
+  - change the cell model pixel colors based on position.
 - PlayerInterface baseclass
   * Not many setters in the interface. The code's the thing. Subclass for particulars.
   * Doesn't own player spirit, position, etc.
   - onJoin()
-    - touch controls add visible triggers
+    - the touch controls add visible triggers
   - onDrop()
   - getJoinTriggerVal()
-  - getGrabTriggerVal()
-  - getThrowTriggerVal()
-  - (later: getPackTriggerVal())
   - Trackball?
     - getTrackballValue()
     - getTrackballIsTouched()
