@@ -39,7 +39,7 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.setModelStamp(this.screen.circleStamp);
   spirit.setColorRGB(0.5, 1, 1);
-  var density = 1;
+  var density = 2;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -49,6 +49,7 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   b.hitGroup = this.fireHitGroup;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = duration;
+  b.grip = 1;
   spirit.bodyId = this.screen.world.addBody(b);
 
   var spiritId = this.screen.world.addSpirit(spirit);

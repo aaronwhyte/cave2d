@@ -223,6 +223,20 @@ Body.prototype.setVelAtTime = function(vel, t) {
 /**
  * Shifts the path so that it intersects the same position at time t that it used to,
  * but it arrives with a new velocity (and therefore is coming from and going to new places.)
+ * @param {Vec2d} vel
+ * @param {number} t
+ */
+Body.prototype.addVelAtTime = function(vel, t) {
+  if (this.vel.isZero()) return;
+  this.invalidatePath();
+  this.onBeforeChange();
+  this.moveToTime(t);
+  this.vel.add(vel);
+};
+
+/**
+ * Shifts the path so that it intersects the same position at time t that it used to,
+ * but it arrives with a new velocity (and therefore is coming from and going to new places.)
  * @param {number} x
  * @param {number} y
  * @param {number} t
@@ -233,6 +247,21 @@ Body.prototype.setVelXYAtTime = function(x, y, t) {
   this.onBeforeChange();
   this.moveToTime(t);
   this.vel.setXY(x, y);
+};
+
+/**
+ * Shifts the path so that it intersects the same position at time t that it used to,
+ * but it arrives with a new velocity (and therefore is coming from and going to new places.)
+ * @param {number} x
+ * @param {number} y
+ * @param {number} t
+ */
+Body.prototype.addVelXYAtTime = function(x, y, t) {
+  if (this.vel.x == x && this.vel.y == y) return;
+  this.invalidatePath();
+  this.onBeforeChange();
+  this.moveToTime(t);
+  this.vel.addXY(x, y);
 };
 
 /**
@@ -286,6 +315,10 @@ Body.prototype.setAngVelAtTime = function(av, t) {
   } else if (this.angVel < -Body.MAX_ABS_ANGVEL) {
     this.angVel = -Body.MAX_ABS_ANGVEL;
   }
+};
+
+Body.prototype.addAngVelAtTime = function(av, t) {
+  this.setAngVelAtTime(this.angVel + av, t);
 };
 
 Body.prototype.applyLinearFrictionAtTime = function(friction, time) {

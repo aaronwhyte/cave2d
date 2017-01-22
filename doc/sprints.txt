@@ -80,9 +80,11 @@ Game4: Multiplayer
 * Mouse control with pointerlock and keys?
 * Gamepad controls if possible
 v game4 nest, copy of game2
-- spirits
-  - make ants use proper rotation
-  - make player use proper rotation too
+v spirits
+  v make ants use proper rotation
+    v use body rotation to store self
+    v actually respond to torque and use angular momentum correctly
+  x make player use proper rotation too // nah, gonna nuke and restart player spirit code anyhow.
 - walls
   - change wall color
   - try crazy idea of changing default wall contents to be a function of position. Make a roundish planet, for starters.

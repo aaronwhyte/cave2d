@@ -29,10 +29,10 @@ AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.MEASURE_TIMEOUT = 1.2;
-AntSpirit.THRUST = 0.33;
+AntSpirit.THRUST = 0.3;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
-AntSpirit.STOPPING_SPEED_SQUARED = 0.05 * 0.05;
+AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.MAX_HEALTH = 3;
 AntSpirit.OPTIMIZE = true;
 
@@ -122,9 +122,12 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 
 AntSpirit.prototype.turnToPlayer = function() {
   var toPlayer = this.vecToPlayer.set(this.screen.playerAveragePos).subtract(this.getBodyPos());
+  var playerDist = toPlayer.magnitude();
   var right = this.vec2d2.setXY(1, 0).rot(this.getBodyAngPos());
   var dot = right.dot(toPlayer);
-  this.setBodyAngVel(this.getBodyAngVel() + 0.1 * dot / toPlayer.magnitude() * this.screen.playerChasePolarity);
+  var dotUnit = dot / playerDist;
+
+  this.addBodyAngVel(2 * dotUnit / (0.4 * playerDist + 8) * this.screen.playerChasePolarity);
 };
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -136,16 +139,15 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   this.stress = this.stress || 0;
 
   var friction = this.screen.isPlaying() ? 0.05 : 0.3;
-  var traction = 0.5;
+  var traction = 0.4;
 
   var now = this.now();
   var time = Math.max(0, Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
   this.lastControlTime = now;
 
-
   // friction
-  body.applyLinearFrictionAtTime(friction*time, now);
-  body.applyAngularFrictionAtTime(friction*time, now);
+  body.applyLinearFrictionAtTime(friction * time, now);
+  body.applyAngularFrictionAtTime(friction * time, now);
 
   var newVel = this.vec2d.set(body.vel);
   if (AntSpirit.OPTIMIZE && newVel.magnitudeSquared() < AntSpirit.STOPPING_SPEED_SQUARED) {
@@ -154,16 +156,14 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   if (this.screen.isPlaying()) {
     if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
-      this.accel.set(body.vel).scale(-traction * time);
-      newVel.add(this.accel);
-      var antennaRotMag = Math.max(Math.PI * 0.13, Math.PI * this.stress);
-      var scanDist = body.rad * (3 + (1 - this.stress));
+      var antennaRotMag = Math.max(Math.PI * 0.1, Math.PI * this.stress);
+      var scanDist = 0.7 * (3 + (1 - this.stress));
       var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
-      var dist = this.scan(pos, scanRot, scanDist, body.rad);
+      var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
       var angAccel = 0;
       // they get faster as they get hurt
-      var thrust = AntSpirit.THRUST * (1 + (1 - this.health)* 0.5) * (body.rad);
-      if (dist >= 0) {
+      var thrust = AntSpirit.THRUST * (1 + (1 - this.health) + (body.rad < 1 ? 1 - body.rad/2 : 0));
+      if (distFrac >= 0) {
         // rayscan hit
         var otherSpirit = this.getScanHitSpirit();
         if (otherSpirit && otherSpirit.type == Game4BaseScreen.SpiritType.PLAYER) {
@@ -174,30 +174,33 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
           thrust *= 1.2;
         } else {
           // avoid obstruction
-          angAccel = -scanRot * (this.stress * 0.8 + 0.2);
+          // angAccel = -1.5 * scanRot * (this.stress * 0.1 + 0.5);
+          // this.stress += 0.02;
+          angAccel = -scanRot * (this.stress * 0.4 + 1) * (1 - distFrac);
           this.stress += 0.03;
-          thrust *= (dist - 0.05 * this.stress);
+
+          thrust *= (distFrac - 0.05 * this.stress);
         }
       } else {
         // clear path
-        if (this.stress > 0.5) {
-          // escape!
-          angAccel = 0;
-          this.setBodyAngVel(0);
-          this.setBodyAngPos(this.getBodyAngPos() + scanRot);
-        } else {
-          angAccel = scanRot * (this.stress * 0.8 + 0.2);
-          this.turnToPlayer();
-        }
+        // turn towards the scan
+        angAccel = scanRot * (this.stress * 0.8 + 0.4);
+        // and turn towards the player
+        this.turnToPlayer();
         this.stress = 0;
       }
       this.stress = Math.min(1, Math.max(0, this.stress));
 
-      this.setBodyAngVel(this.getBodyAngVel() * 0.5 + angAccel);
+      body.addAngVelAtTime(angAccel, now);
+      body.applyAngularFrictionAtTime(0.5, now);
 
       var dir = this.getBodyAngPos();
-      this.accel.setXY(Math.sin(dir), Math.cos(dir))
-          .scale(thrust * traction * time);
+
+      this.accel
+          .set(body.vel).scale(-traction * time)
+          .addXY(
+              Math.sin(dir) * thrust * traction * time,
+              Math.cos(dir) * thrust * traction * time);
       newVel.add(this.accel);
     }
   }
@@ -208,7 +211,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (AntSpirit.OPTIMIZE) {
     timeoutDuration = Math.min(
         AntSpirit.MAX_TIMEOUT,
-        Math.max(this.health, 0.3) *
+        0.3 * //Math.max(this.health, 0.3) *
             AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
   } else {
     timeoutDuration = AntSpirit.MEASURE_TIMEOUT * (1 - Math.random() * 0.05);

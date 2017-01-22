@@ -114,7 +114,7 @@ BulletSpirit.prototype.onHitEnemy = function(mag, pos) {
   var body = this.getBody();
   if (!body) return;
   this.sounds.wallThump(pos, mag);
-//  this.wallDamageSplash(pos, Math.random());
+  this.wallDamageSplash(pos, mag/5);
   this.destroyBody();
 };
 

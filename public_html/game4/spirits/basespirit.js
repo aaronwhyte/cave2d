@@ -34,6 +34,14 @@ BaseSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
+/**
+ * @param group
+ * @param pos
+ * @param dir
+ * @param dist
+ * @param rad
+ * @returns {number} a fraction (0 to 1) of the total scan distance , or -1 if there was no hit
+ */
 BaseSpirit.prototype.scan = function(group, pos, dir, dist, rad) {
   return this.screen.scan(
       group,
@@ -64,6 +72,11 @@ BaseSpirit.prototype.setBodyVel = function(v) {
   return body ? body.setVelAtTime(v, this.now()) : null;
 };
 
+BaseSpirit.prototype.addBodyVel = function(v) {
+  var body = this.getBody();
+  return body ? body.setVelAtTime(v, this.now()) : null;
+};
+
 BaseSpirit.prototype.getBodyAngPos = function() {
   var body = this.getBody();
   return body ? body.getAngPosAtTime(this.now()) : null;
@@ -85,6 +98,13 @@ BaseSpirit.prototype.setBodyAngVel = function(av) {
   var body = this.getBody();
   if (body) {
     return body.setAngVelAtTime(av, this.now());
+  }
+};
+
+BaseSpirit.prototype.addBodyAngVel = function(av) {
+  var body = this.getBody();
+  if (body) {
+    return body.addAngVelAtTime(av, this.now());
   }
 };
 
