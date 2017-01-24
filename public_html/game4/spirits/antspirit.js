@@ -92,7 +92,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.grip = 0.9;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 0.3 + Math.random();
+  b.rad = 0.5 + Math.random();
   b.hitGroup = screen.getHitGroups().ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
@@ -127,7 +127,7 @@ AntSpirit.prototype.turnToPlayer = function() {
   var dot = right.dot(toPlayer);
   var dotUnit = dot / playerDist;
 
-  this.addBodyAngVel(2 * dotUnit / (0.4 * playerDist + 8) * this.screen.playerChasePolarity);
+  this.addBodyAngVel(0.9 * this.screen.playerChasePolarity * dotUnit / (0.5 * playerDist + 2));
 };
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -156,43 +156,41 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   if (this.screen.isPlaying()) {
     if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
-      var antennaRotMag = Math.max(Math.PI * 0.1, Math.PI * this.stress);
-      var scanDist = 0.7 * (3 + (1 - this.stress));
-      var scanRot = 2 * antennaRotMag * (Math.random() - 0.5);
-      var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
-      var angAccel = 0;
+      var antennaRotMag = Math.max(Math.PI * 0.15, Math.PI * this.stress);
       // they get faster as they get hurt
-      var thrust = AntSpirit.THRUST * (1 + (1 - this.health) + (body.rad < 1 ? 1 - body.rad/2 : 0));
+      var thrust = AntSpirit.THRUST * (2 - this.health) +
+          (body.rad < 1 ? 0.5 * (1 - body.rad) : 0);
+      var scanDist = 0.6 * (3 + (1 - this.stress)) * thrust / AntSpirit.THRUST;
+      var scanRot = 2 * antennaRotMag * (Math.random() - 0.5) + this.getBodyAngVel();
+      var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
+      var closeness = 1 - distFrac;
+      var angAccel = 0;
       if (distFrac >= 0) {
         // rayscan hit
         var otherSpirit = this.getScanHitSpirit();
         if (otherSpirit && otherSpirit.type == Game4BaseScreen.SpiritType.PLAYER) {
           // attack player!
           this.stress = 0;
-          angAccel = scanRot * 0.2;
-          this.turnToPlayer();
+          angAccel = 0.4 * scanRot;
           thrust *= 1.2;
         } else {
           // avoid obstruction
-          // angAccel = -1.5 * scanRot * (this.stress * 0.1 + 0.5);
-          // this.stress += 0.02;
-          angAccel = -scanRot * (this.stress * 0.4 + 1) * (1 - distFrac);
-          this.stress += 0.03;
-
-          thrust *= (distFrac - 0.05 * this.stress);
+          angAccel = -scanRot * (0.2 * this.stress + 1) * closeness;
+          this.stress += 0.06 * closeness;
+          thrust *= distFrac;
         }
       } else {
         // clear path
         // turn towards the scan
-        angAccel = scanRot * (this.stress * 0.8 + 0.4);
+        angAccel = 0.2 * scanRot;
+        this.stress = 0;
         // and turn towards the player
         this.turnToPlayer();
-        this.stress = 0;
       }
       this.stress = Math.min(1, Math.max(0, this.stress));
 
       body.addAngVelAtTime(angAccel, now);
-      body.applyAngularFrictionAtTime(0.5, now);
+      body.applyAngularFrictionAtTime(0.4, now);
 
       var dir = this.getBodyAngPos();
 

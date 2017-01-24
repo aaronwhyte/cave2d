@@ -457,7 +457,7 @@ PlayerSpirit.prototype.addExplosionBullet = function(pos, vel, rad, duration) {
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.setModelStamp(this.stamps.circleStamp);
   spirit.setColorRGB(1, 0.3, 0.6);
-  var density = 1;
+  var density = 5;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
