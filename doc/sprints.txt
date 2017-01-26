@@ -85,6 +85,9 @@ v spirits
     v use body rotation to store self
     v actually respond to torque and use angular momentum correctly
   x make player use proper rotation too // nah, gonna nuke and restart player spirit code anyhow.
+v undo bug! Can't redo sometimes.
+  It was because I wasn't stopping ant angular velocity, and also wasn't stopping Exit velocity because bugs.
+  To debug I added the line graphs to game4, and I'll leave 'em in.
 - walls
   - change wall color
   - try crazy idea of changing default wall contents to be a function of position. Make a roundish planet, for starters.

@@ -33,6 +33,7 @@ AntSpirit.THRUST = 0.3;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
+AntSpirit.STOPPING_ANGVEL = 0.01;
 AntSpirit.MAX_HEALTH = 3;
 AntSpirit.OPTIMIZE = true;
 
@@ -150,7 +151,13 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   body.applyAngularFrictionAtTime(friction * time, now);
 
   var newVel = this.vec2d.set(body.vel);
-  if (AntSpirit.OPTIMIZE && newVel.magnitudeSquared() < AntSpirit.STOPPING_SPEED_SQUARED) {
+
+  var oldAngVelMag = Math.abs(this.getBodyAngVel());
+  if (oldAngVelMag && oldAngVelMag < AntSpirit.STOPPING_ANGVEL) {
+    this.setBodyAngVel(0);
+  }
+  var oldVelMagSq = newVel.magnitudeSquared();
+  if (oldVelMagSq && oldVelMagSq < AntSpirit.STOPPING_SPEED_SQUARED) {
     newVel.reset();
   }
 

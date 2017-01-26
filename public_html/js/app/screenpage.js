@@ -183,6 +183,7 @@ ScreenPage.prototype.animateFrame = function(startTimeMs) {
     return;
   }
 
+  this.screen.sampleStats();
   this.animationId = 0;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);

@@ -165,6 +165,7 @@ canvas#canvas {
   border-radius:1em;
   padding:0.5em 1em;
   font-size:large;
+  text-align:left;
 }
 
 .levelEditorDebugOptions label {

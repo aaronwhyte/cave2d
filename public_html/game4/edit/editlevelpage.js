@@ -39,6 +39,8 @@ EditLevelPage.prototype.refreshPauseMenu = function() {
   e = Dom.ce('div', nav, 'levelEditorLevelName');
   e.innerHTML = Strings.textToHtml(this.levelName);
 
+  this.appendDebugOptions(df);
+
   this.appendFullScreenButton(df);
   Dom.ce('br', df);
   this.appendResumeButton(df);
@@ -46,6 +48,37 @@ EditLevelPage.prototype.refreshPauseMenu = function() {
   this.pauseMenuDiv.innerHTML = '';
   this.pauseMenuDiv.appendChild(df);
 };
+
+EditLevelPage.prototype.appendDebugOptions = function(df) {
+  var debug = Dom.ce('div', df, 'levelEditorDebugOptions');
+
+  var label = Dom.ce('label', debug);
+  var e = Dom.ce('input', label);
+  e.type = 'checkbox';
+  e.defaultChecked = false;
+  var self = this;
+  e.addEventListener('change', function (element) {
+    self.screen.drawLeftGraphs = element.target.checked;
+    self.requestAnimation();
+  });
+  e = Dom.ce('span', label);
+  e.innerHTML = Strings.textToHtml(' line graphs');
+
+  Dom.ce('br', debug);
+
+  var label = Dom.ce('label', debug);
+  e = Dom.ce('input', label);
+  e.type = 'checkbox';
+  e.defaultChecked = false;
+  var self = this;
+  e.addEventListener('change', function (element) {
+    self.screen.drawRightGraphs = element.target.checked;
+    self.requestAnimation();
+  });
+  e = Dom.ce('span', label);
+  e.innerHTML = Strings.textToHtml(' dot graphs');
+};
+
 
 EditLevelPage.prototype.maybeCreateScreen = function() {
   if (this.screen) return;

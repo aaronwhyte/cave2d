@@ -287,6 +287,9 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
   }
 };
 
+WorldScreen.prototype.sampleStats = function() {
+};
+
 WorldScreen.prototype.drawStats = function() {
 };
 

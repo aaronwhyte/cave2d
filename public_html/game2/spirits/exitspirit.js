@@ -57,7 +57,7 @@ ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (!body.vel.isZero()) {
     var friction = 0.5;
     var newVel = this.vec2d.set(body.vel).scale(1 - friction);
-    if (newVel.magnitudeSquared < 0.1) {
+    if (newVel.magnitudeSquared() < 0.01) {
       newVel.reset();
     }
     body.setVelAtTime(newVel, world.now);
