@@ -128,7 +128,7 @@ AntSpirit.prototype.turnToPlayer = function() {
   var dot = right.dot(toPlayer);
   var dotUnit = dot / playerDist;
 
-  this.addBodyAngVel(0.9 * this.screen.playerChasePolarity * dotUnit / (0.5 * playerDist + 2));
+  this.addBodyAngVel(this.screen.playerChasePolarity * dotUnit / (2 * playerDist + 1));
 };
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -213,14 +213,9 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   // but it is serialized at level-save-time, so old saved values might not
   // match the new compiled-in values. Hm.
   var timeoutDuration;
-  if (AntSpirit.OPTIMIZE) {
-    timeoutDuration = Math.min(
-        AntSpirit.MAX_TIMEOUT,
-        0.3 * //Math.max(this.health, 0.3) *
-            AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera));
-  } else {
-    timeoutDuration = AntSpirit.MEASURE_TIMEOUT * (1 - Math.random() * 0.05);
-  }
+  timeoutDuration = Math.min(
+      AntSpirit.MAX_TIMEOUT,
+      AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
   body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, now);
   body.invalidatePath();
