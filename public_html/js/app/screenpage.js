@@ -188,6 +188,9 @@ ScreenPage.prototype.animateFrame = function(startTimeMs) {
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
   this.screen.drawScreen(1, startTimeMs);
+  if (stats && STAT_NAMES && STAT_NAMES.ANIMATION_MS) {
+    stats.add(STAT_NAMES.ANIMATION_MS, performance.now() - startTimeMs);
+  }
 };
 
 ScreenPage.prototype.requestFullScreen = function() {
