@@ -29,7 +29,7 @@ AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.MEASURE_TIMEOUT = 1.2;
-AntSpirit.THRUST = 0.32;
+AntSpirit.THRUST = 0.31;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -299,7 +299,7 @@ AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   b.setVelAtTime(vel, now);
   b.rad = rad;
   b.hitGroup = this.screen.getHitGroups().ENEMY_FIRE;
-  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.mass = (Math.PI * 4/3) * b.rad * density;
   b.pathDurationMax = duration;
   spirit.bodyId = this.screen.world.addBody(b);
 
@@ -333,12 +333,13 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
     s.duration = duration;
 
     s.startPose.pos.setXYZ(x, y, -0.9);
-    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0);
+    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0.9);
     var startRad = sizeFactor * rad;
     s.startPose.scale.setXYZ(startRad, startRad, 1);
     s.endPose.scale.setXYZ(0, 0, 1);
-    s.startColor.setXYZ(0, 1, 0); // ant color
-    s.endColor.setXYZ(0.2, 0.3, 0.6); // wall color
+    s.startColor.setXYZ(0, 1, 0); // ant-ish color
+    s.endColor.setXYZ(0, 0.4, 0);
+    // s.endColor.setXYZ(0.2, 0.3, 0.6); // wall color
     self.screen.splasher.addCopy(s);
   }
 
@@ -346,10 +347,10 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
   explosionRad = rad/2;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    duration = 6 * Math.random() + 3;
+    duration = 10 * Math.random() + 6;
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
     dx = Math.sin(dir) * explosionRad / duration;
     dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x + dx, y + dy, dx, dy, duration, explosionRad/2);
+    addSplash(x, y, dx, dy, duration, 0.9 + Math.random() * 0.1);
   }
 };
