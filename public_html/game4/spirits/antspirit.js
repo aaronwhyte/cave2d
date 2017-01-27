@@ -29,7 +29,7 @@ AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.MEASURE_TIMEOUT = 1.2;
-AntSpirit.THRUST = 0.3;
+AntSpirit.THRUST = 0.32;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -128,7 +128,7 @@ AntSpirit.prototype.turnToPlayer = function() {
   var dot = right.dot(toPlayer);
   var dotUnit = dot / playerDist;
 
-  this.addBodyAngVel(this.screen.playerChasePolarity * dotUnit / (2 * playerDist + 1));
+  this.addBodyAngVel(this.screen.playerChasePolarity * dotUnit / (0.5 * playerDist + 4));
 };
 
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -165,9 +165,9 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
     if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
       var antennaRotMag = Math.max(Math.PI * 0.15, Math.PI * this.stress);
       // they get faster as they get hurt
-      var thrust = AntSpirit.THRUST * (2 - this.health) +
-          (body.rad < 1 ? 0.5 * (1 - body.rad) : 0);
-      var scanDist = 0.6 * (3 + (1 - this.stress)) * thrust / AntSpirit.THRUST;
+      var radThrust = (body.rad < 1 ? 0.5 * (1 - body.rad) : 0);
+      var thrust = AntSpirit.THRUST * (2 - this.health) + radThrust;
+      var scanDist = 0.6 * (2 - this.stress) * (1 + radThrust) / AntSpirit.THRUST;
       var scanRot = 2 * antennaRotMag * (Math.random() - 0.5) + this.getBodyAngVel();
       var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
       var closeness = 1 - distFrac;
@@ -182,9 +182,9 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
           thrust *= 1.2;
         } else {
           // avoid obstruction
-          angAccel = -scanRot * (0.2 * this.stress + 1) * closeness;
+          angAccel = -scanRot * (0.5 * this.stress + 1) * closeness;
           this.stress += 0.06 * closeness;
-          thrust *= distFrac;
+          thrust *= distFrac * distFrac;
         }
       } else {
         // clear path
@@ -255,12 +255,14 @@ AntSpirit.prototype.onPlayerBulletHit = function(damage) {
 AntSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  var craterRad = body.rad * (7 + 2 * Math.random());
-  this.explosionSplash(pos, craterRad * 0.6);
-  var bulletRad = body.rad * 0.75;
-  this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad);
+  var craterRad = body.rad * 4 + Math.random();
+  var pillSize = craterRad / 2;
+  this.screen.drawTerrainPill(pos, pos, pillSize, 1);
+  this.explosionSplash(pos, pillSize * 1.5);
+  var bulletRad = body.rad * 0.5;
+  this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad * 1.5);
   this.screen.sounds.antExplode(pos);
-  this.screen.drawTerrainPill(pos, pos, body.rad, 0);
+  this.screen.drawTerrainPill(pos, pos, body.rad * (Math.random() * 0.5 + 0.5), 0);
 
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
@@ -269,10 +271,10 @@ AntSpirit.prototype.explode = function() {
 AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
   var p = Vec2d.alloc();
   var v = Vec2d.alloc();
-  var bulletCount = Math.floor(8 + 2 * Math.random());
+  var bulletCount = Math.floor(5 + 3 * Math.random());
   var a = Math.random() * Math.PI;
   for (var i = 0; i < bulletCount; i++) {
-    var duration = 7 + 2 * Math.random();
+    var duration = 6 + 2 * Math.random();
     var speed = (endRad - startRad) / duration;
     a += 2 * Math.PI / bulletCount;
     v.setXY(0, 1).rot(a + Math.random() * Math.PI * 0.15);
@@ -344,10 +346,10 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
   explosionRad = rad/2;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    duration = 10 * (0.5 + Math.random());
+    duration = 6 * Math.random() + 3;
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = 0.5 * Math.sin(dir) * explosionRad / duration;
-    dy = 0.5 * Math.cos(dir) * explosionRad / duration;
+    dx = Math.sin(dir) * explosionRad / duration;
+    dy = Math.cos(dir) * explosionRad / duration;
     addSplash(x + dx, y + dy, dx, dy, duration, explosionRad/2);
   }
 };
