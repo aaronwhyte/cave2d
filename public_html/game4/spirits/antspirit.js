@@ -255,14 +255,12 @@ AntSpirit.prototype.onPlayerBulletHit = function(damage) {
 AntSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  var craterRad = body.rad * 4 + Math.random();
-  var pillSize = craterRad / 2;
-  this.screen.drawTerrainPill(pos, pos, pillSize, 1);
-  this.explosionSplash(pos, pillSize * 1.5);
-  var bulletRad = body.rad * 0.5;
-  this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad * 1.5);
+  var craterRad = body.rad * 3;
+  this.explosionSplash(pos, craterRad);
+  var bulletRad = body.rad / 2;
+  this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad * 1.75);
+  this.screen.drawTerrainPill(pos, pos, body.rad * 0.7, 0);
   this.screen.sounds.antExplode(pos);
-  this.screen.drawTerrainPill(pos, pos, body.rad * (Math.random() * 0.5 + 0.5), 0);
 
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
@@ -271,10 +269,10 @@ AntSpirit.prototype.explode = function() {
 AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
   var p = Vec2d.alloc();
   var v = Vec2d.alloc();
-  var bulletCount = Math.floor(5 + 3 * Math.random());
+  var bulletCount = Math.floor(3 + bulletRad*5);
   var a = Math.random() * Math.PI;
   for (var i = 0; i < bulletCount; i++) {
-    var duration = 6 + 2 * Math.random();
+    var duration = (6 + 2 * Math.random());
     var speed = (endRad - startRad) / duration;
     a += 2 * Math.PI / bulletCount;
     v.setXY(0, 1).rot(a + Math.random() * Math.PI * 0.15);
@@ -349,8 +347,8 @@ AntSpirit.prototype.explosionSplash = function(pos, rad) {
   for (i = 0; i < particles; i++) {
     duration = 10 * Math.random() + 6;
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = Math.sin(dir) * explosionRad / duration;
-    dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.9 + Math.random() * 0.1);
+    dx = 2 * Math.sin(dir) * explosionRad / duration;
+    dy = 2 * Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 0.3 + Math.random() * 0.1);
   }
 };
