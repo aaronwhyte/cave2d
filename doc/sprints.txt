@@ -74,7 +74,7 @@ v Pages: Reduce redundant code
 Better undo/redo icons
 v square-turn arrows are OK, you clunky so-and-so.
 
-Game4: Multiplayer
+Game4: Multiplayer Tractorbeam 1
 * up to four touch players
 * Up to three keyboard players: wasd, ijkl, arrows
 * Mouse control with pointerlock and keys?
@@ -86,31 +86,18 @@ v spirits
     v actually respond to torque and use angular momentum correctly
   x make player use proper rotation too // nah, gonna nuke and restart player spirit code anyhow.
 v undo bug! Can't redo sometimes.
-  It was because I wasn't stopping ant angular velocity, and also wasn't stopping Exit velocity because bugs.
+  It was because I wasn't stopping ant angular velocity, and also wasn't stopping ExitSpirit velocity because bugs.
   To debug I added the line graphs to game4, and I'll leave 'em in.
-- walls
-  - change wall color
-  - try crazy idea of changing default wall contents to be a function of position. Make a roundish planet, for starters.
-  - change the cell model pixel colors based on position.
-- PlayerInterface baseclass
-  * Not many setters in the interface. The code's the thing. Subclass for particulars.
-  * Doesn't own player spirit, position, etc.
-  - onJoin()
-    - the touch controls add visible triggers
-  - onDrop()
-  - getJoinTriggerVal()
-  - Trackball?
-    - getTrackballValue()
-    - getTrackballIsTouched()
-  - setPauseListener() (so I don't need a Page to make a PI)
-- Join
-  - game loop listens for join trigger value down on unjoined players
-  - joining adds a new PlayerCharacter, a Spirit with a PlayerInterface for controlling the Spirit.
-  - PI.onJoin()
-- Drop
-  - Spirit listens for long hold on join trigger
-  - remove spirit and stuff
-  - PI.onDrop
+
+Test 42: Multiplayer Controls
+v nest
+- PlayerControls (NOT in charge of joining game)
+  - stick, triggers
+  - spirit setter
+  - calls spirit's handleInput
+- start buttons
+  -
+
 
 Solve the lastPathRefreshTime problem
 Sometimes I want to add a body without also adding a spirit and timeout loop just for invalidating the path.
@@ -193,8 +180,8 @@ Add "instanceNum" attrib to each vec?
 
 
 Undo/Redo UX polish
-- less crappy undo/redo button models
-  - RigidModelLineDrawer
+v less crappy undo/redo button models
+  x RigidModelLineDrawer
 - save during a long change edit-gesture, like a digging drag, throttled by wall-time
 - a bunch of stuff with view rectangles? Save it for when it's zoomable?
 
