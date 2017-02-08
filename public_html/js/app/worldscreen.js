@@ -602,17 +602,19 @@ WorldScreen.prototype.loadWorldFromJson = function(json) {
  * @param {String} name
  * @param {Vec2d} pos
  * @param {number} dir
+ * @return the new spiritId or null
  */
 WorldScreen.prototype.addItem = function(name, pos, dir) {
   var configs = this.getSpiritConfigs();
   for (var t in configs) {
     var config = configs[t];
     if (config.menuItemConfig && config.menuItemConfig.itemName == name) {
-      config.menuItemConfig.factory(this, config.stamp, pos, dir);
+      var spiritId = config.menuItemConfig.factory(this, config.stamp, pos, dir);
       this.setDirty(true);
-      return;
+      return spiritId;
     }
   }
+  return null;
 };
 
 WorldScreen.prototype.unloadLevel = function() {

@@ -14,10 +14,12 @@ Test42BaseScreen.prototype = new WorldScreen();
 Test42BaseScreen.prototype.constructor = Test42BaseScreen;
 
 Test42BaseScreen.SpiritType = {
-  ANT: 3
+  PLAYER: 1,
+  ANT: 2
 };
 
 Test42BaseScreen.MenuItem = {
+  PLAYER: 'player',
   ANT: 'ant'
 };
 
@@ -163,6 +165,8 @@ Test42BaseScreen.prototype.createSpiritConfigs = function() {
   var sc = {};
   sc[Test42BaseScreen.SpiritType.ANT] = this.createSpiritConfig(
       Test42BaseScreen.SpiritType.ANT, AntSpirit, Test42BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
+  sc[Test42BaseScreen.SpiritType.PLAYER] = this.createSpiritConfig(
+      Test42BaseScreen.SpiritType.PLAYER, PlayerSpirit, Test42BaseScreen.MenuItem.PLAYER, 0, 0, PlayerSpirit.factory);
   return sc;
 };
 
@@ -173,7 +177,8 @@ Test42BaseScreen.prototype.createHitGroups = function() {
     NEUTRAL: 2,
     CURSOR: 3,
     ENEMY: 4,
-    ENEMY_SCAN: 5
+    ENEMY_SCAN: 5,
+    PLAYER: 6
   };
 };
 
@@ -195,7 +200,14 @@ Test42BaseScreen.prototype.createHitPairs = function() {
 
     [g.ENEMY_SCAN, g.WALL],
     [g.ENEMY_SCAN, g.NEUTRAL],
-    [g.ENEMY_SCAN, g.ENEMY]
+    [g.ENEMY_SCAN, g.ENEMY],
+
+    [g.PLAYER, g.NEUTRAL],
+    [g.PLAYER, g.WALL],
+    [g.PLAYER, g.CURSOR],
+    [g.PLAYER, g.ENEMY],
+    [g.PLAYER, g.ENEMY_SCAN],
+    [g.PLAYER, g.PLAYER]
   ];
 };
 

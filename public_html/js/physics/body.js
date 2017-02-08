@@ -227,7 +227,7 @@ Body.prototype.setVelAtTime = function(vel, t) {
  * @param {number} t
  */
 Body.prototype.addVelAtTime = function(vel, t) {
-  if (this.vel.isZero()) return;
+  if (vel.isZero()) return;
   this.invalidatePath();
   this.onBeforeChange();
   this.moveToTime(t);

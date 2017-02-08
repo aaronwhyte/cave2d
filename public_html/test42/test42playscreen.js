@@ -11,7 +11,8 @@ function Test42PlayScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.hudViewMatrix = new Matrix44();
 
-  var self = this;
+  this.playerSpirits = [];
+
 }
 Test42PlayScreen.prototype = new Test42BaseScreen();
 Test42PlayScreen.prototype.constructor = Test42PlayScreen;
@@ -70,15 +71,17 @@ Test42PlayScreen.prototype.setScreenListening = function(listen) {
 Test42PlayScreen.prototype.createDefaultWorld = function() {
   this.world.setChangeRecordingEnabled(true);
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  var ants = 24;
+  var ants = 7;
   for (var a = 0; a < ants; a++) {
     this.addItem(Test42BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
-
-  var ants = 12;
-  for (var a = 0; a < ants; a++) {
-    this.addItem(Test42BaseScreen.MenuItem.ANT, new Vec2d(0, 10).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
-  }
+  var spiritId = this.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(0, 0), 0);
+  var spirit = this.world.spirits[spiritId];
+  var controls = new PlayerControls(
+      new KeyStick().setUpRightDownLeftByName(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT).startListening(),
+      null, null, null);
+  spirit.setControls(controls);
+  this.playerSpirits.push(spirit);
 };
 
 Test42PlayScreen.prototype.handleInput = function () {
@@ -98,6 +101,9 @@ Test42PlayScreen.prototype.drawScene = function() {
   // Animate whenever this thing draws.
   if (!this.paused) {
     this.controller.requestAnimation();
+    for (var i = 0; i < this.playerSpirits.length; i++) {
+      this.playerSpirits[i].handleInput();
+    }
   }
 };
 

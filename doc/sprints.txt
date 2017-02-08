@@ -91,12 +91,13 @@ v undo bug! Can't redo sometimes.
 
 Test 42: Multiplayer Controls
 v nest
-- PlayerControls (NOT in charge of joining game)
-  - stick, triggers
-  - spirit setter
-  - calls spirit's handleInput
-- start buttons
-  -
+v PlayerControls (NOT in charge of joining game)
+  v stick, triggers
+  v spirit setter
+  v calls spirit's handleInput
+- join the game
+  - keyboard start buttons
+
 
 
 Solve the lastPathRefreshTime problem
