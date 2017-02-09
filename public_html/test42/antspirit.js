@@ -164,18 +164,10 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       var angAccel = 0;
       if (distFrac >= 0) {
         // rayscan hit
-        var otherSpirit = this.getScanHitSpirit();
-        if (otherSpirit && otherSpirit.type == Test42BaseScreen.SpiritType.PLAYER) {
-          // attack player!
-          this.stress = 0;
-          angAccel = 0.4 * scanRot;
-          thrust *= 1.2;
-        } else {
-          // avoid obstruction
-          angAccel = -scanRot * (0.5 * this.stress + 1) * closeness;
-          this.stress += 0.06 * closeness;
-          thrust *= distFrac * distFrac;
-        }
+        // avoid obstruction
+        angAccel = -scanRot * (0.5 * this.stress + 1) * closeness;
+        this.stress += 0.06 * closeness;
+        thrust *= distFrac * distFrac;
       } else {
         // clear path
         // turn towards the scan
