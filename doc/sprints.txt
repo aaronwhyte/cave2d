@@ -95,10 +95,29 @@ v PlayerControls (NOT in charge of joining game)
   v stick, triggers
   v spirit setter
   v calls spirit's handleInput
-- join the game
-  - keyboard start buttons
-
-
+v PlayerSlot
+  v join trigger
+    v multitrigger of KeyTriggers for keyboard slot
+    v TriggerWidget for touch slot
+  v enable()
+    v status disabled --> enabled
+    v enable the join triggers
+  v join()
+    v status enabled --> playing
+    v disable the join triggers
+    v enable the control triggers
+  v leave()
+    v status playing --> disabled
+    v enable the join triggers
+    v disable the control triggers
+  v disable()
+    v leave() if not already left
+    v disable the join triggers
+  v test w two keyboard players
+- touch players
+  - drawHud()
+    - join button if waiting
+    - b1 and b2 if playing
 
 Solve the lastPathRefreshTime problem
 Sometimes I want to add a body without also adding a spirit and timeout loop just for invalidating the path.

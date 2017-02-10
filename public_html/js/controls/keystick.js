@@ -60,6 +60,7 @@ KeyStick.prototype.startListening = function() {
 KeyStick.prototype.stopListening = function() {
   document.removeEventListener('keydown', this.downListener);
   document.removeEventListener('keyup', this.upListener);
+  this.release();
   return this;
 };
 
@@ -77,8 +78,14 @@ KeyStick.prototype.getVal = function(out) {
 KeyStick.prototype.isAnyKeyPressed = function() {
   for (var code in this.codeToState) {
     if (this.codeToState[code]) {
-      return true;;
+      return true;
     }
   }
   return false;
+};
+
+KeyStick.prototype.release = function() {
+  for (var code in this.codeToState) {
+    this.codeToState[code] = false;
+  }
 };

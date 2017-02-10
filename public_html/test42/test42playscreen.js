@@ -75,17 +75,58 @@ Test42PlayScreen.prototype.createDefaultWorld = function() {
   for (var a = 0; a < ants; a++) {
     this.addItem(Test42BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
-  var spiritId = this.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(0, 0), 0);
-  var spirit = this.world.spirits[spiritId];
-  var controls = new PlayerControls(
-      new KeyStick().setUpRightDownLeftByName(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT).startListening(),
-      null, null, null);
-  spirit.setControls(controls);
-  this.playerSpirits.push(spirit);
+
+  this.configurePlayerSlots();
+};
+
+Test42PlayScreen.prototype.configurePlayerSlots = function() {
+  function createKeyboardSlot(up, right, down, left, b1, b2, menu) {
+    return new PlayerSlot(
+        new KeyTrigger()
+            .addTriggerKeyByName(up)
+            .addTriggerKeyByName(right)
+            .addTriggerKeyByName(down)
+            .addTriggerKeyByName(left)
+            .addTriggerKeyByName(b1)
+            .addTriggerKeyByName(b2)
+            .addTriggerKeyByName(menu),
+        new PlayerControls(
+            new KeyStick().setUpRightDownLeftByName(up, right, down, left),
+            new KeyTrigger().addTriggerKeyByName(b1),
+            new KeyTrigger().addTriggerKeyByName(b2),
+            new KeyTrigger().addTriggerKeyByName(menu)
+        )
+    );
+  }
+
+  this.slots = [
+      createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, ',', '.', '/'),
+      createKeyboardSlot('w', 'd', 's', 'a', 'z', 'x', 'q')
+  ];
+
+  for (var i = 0; i < this.slots.length; i++) {
+    var slot = this.slots[i];
+    slot.enable();
+    slot.joinTrigger.addTriggerDownListener(this.createJoinFn(slot));
+  }
+};
+
+Test42PlayScreen.prototype.createJoinFn = function(slot) {
+  var self = this;
+  return function() {
+    var spiritId = self.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(0, 0), 0);
+    var spirit = self.world.spirits[spiritId];
+    spirit.setControls(slot.playerControls);
+    spirit.setColorRGB(Math.random() + 0.5, 2*Math.random() + 0.5, Math.random() + 0.7);
+    self.playerSpirits.push(spirit);
+    slot.join();
+  };
 };
 
 Test42PlayScreen.prototype.handleInput = function () {
-  // TOOD players
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    this.playerSpirits[i].handleInput();
+  }
 };
 
 Test42PlayScreen.prototype.drawScene = function() {
@@ -101,9 +142,6 @@ Test42PlayScreen.prototype.drawScene = function() {
   // Animate whenever this thing draws.
   if (!this.paused) {
     this.controller.requestAnimation();
-    for (var i = 0; i < this.playerSpirits.length; i++) {
-      this.playerSpirits[i].handleInput();
-    }
   }
 };
 
@@ -123,4 +161,35 @@ Test42PlayScreen.prototype.drawHud = function() {
 
 Test42PlayScreen.prototype.isPlaying = function() {
   return true;
+};
+
+Test42PlayScreen.prototype.onHitEvent = function(e) {
+  if (!this.isPlaying()) return;
+
+  var b0 = this.world.getBodyByPathId(e.pathId0);
+  var b1 = this.world.getBodyByPathId(e.pathId1);
+
+  if (b0 && b1) {
+    this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
+    var vec = Vec2d.alloc();
+    var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
+    var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
+
+    this.maybeKillPlayerByBody(b0);
+    this.maybeKillPlayerByBody(b1);
+  }
+};
+
+Test42PlayScreen.prototype.maybeKillPlayerByBody = function(b) {
+  var spirit = this.getSpiritForBody(b);
+  if (spirit && spirit.type == Test42BaseScreen.SpiritType.PLAYER) {
+    for (var i = 0; i < this.slots.length; i++) {
+      var slot = this.slots[i];
+      if (slot.playerControls == spirit.controls) {
+        this.removeByBodyId(b.id);
+        slot.leave();
+        return;
+      }
+    }
+  }
 };
