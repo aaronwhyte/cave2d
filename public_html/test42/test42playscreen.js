@@ -106,20 +106,16 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
   function createTouchSlot(xFrac, yFrac) {
     var joinTrigger = new TriggerWidget(self.canvas);
     joinTrigger
-        .setStamp(self.stamps.circleStamp)
         .listenToTouch()
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25));
-    var n = Math.sqrt(0.5);
     var rule = new CuboidRule(self.canvasCuboid, joinTrigger.getWidgetCuboid())
-        .setAspectRatio(new Vec4(1, 1), Vec4.ZERO)
         .setSourceAnchor(new Vec4(xFrac ? 1 : -1, yFrac ? 1 : -1), Vec4.ZERO)
-        .setTargetAnchor(new Vec4(xFrac ? n : -n, yFrac ? n : -n), Vec4.ZERO)
-        .setSizingMax(new Vec4(0.2, 0.2, 0.99), new Vec4(30, 30));
+        .setTargetAnchor(Vec4.ZERO, Vec4.ZERO)
+        .setSizingMax(new Vec4(0.9, 0.9, 0.99), Vec4.ZERO);
     self.cuboidRules.push(rule);
     self.touchButtons.push(joinTrigger);
 
     var stick = new TouchStick(self.canvas);
-    stick.setRadius(16);
     stick.setStartZoneFunction(function(x, y) {
       return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
     });
@@ -151,9 +147,9 @@ Test42PlayScreen.prototype.createJoinFn = function(slot) {
     var spiritId = self.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(Math.random() * 8 - 4, Math.random() * 8 - 4), 0);
     var spirit = self.world.spirits[spiritId];
     spirit.setControls(slot.playerControls);
-    var r = Math.random();
-    var g = Math.random();
-    var b = 1 - (r + g)/3;
+    var r = 1.1 - 0.6 * Math.random();
+    var g = 1 - 0.8 * Math.random();
+    var b = 1 - 0.9 * Math.random();
     spirit.setColorRGB(r, g, b);
     self.playerSpirits.push(spirit);
     slot.join();
