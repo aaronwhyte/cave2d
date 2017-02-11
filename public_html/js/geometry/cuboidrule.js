@@ -81,7 +81,7 @@ CuboidRule.prototype.apply = function() {
   for (var i = 0; i < 3; i++) {
     var maxParentRads = this.maxParentRads.getIndex(i);
     var maxPixels = this.maxPixels.getIndex(i);
-    var rad = Math.min(maxParentRads * s.rad.getIndex(i), maxPixels);
+    var rad = Math.min(maxParentRads * s.rad.getIndex(i), maxPixels ? maxPixels : Infinity);
     t.rad.setIndex(i, rad);
     // Find the most restricted dimension for aspect-ratio-based shrinking
     var dimAspectRatio = this.aspectRatio.getIndex(i);
