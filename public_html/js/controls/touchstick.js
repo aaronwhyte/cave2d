@@ -56,6 +56,7 @@ TouchStick.prototype.stopListening = function() {
   document.body.removeEventListener('touchmove', this.touchMoveListener);
   document.body.removeEventListener('touchend', this.touchEndListener);
   document.body.removeEventListener('touchcancel', this.touchEndListener);
+  this.release();
   return this;
 };
 
@@ -112,3 +113,8 @@ TouchStick.prototype.onTouchEnd = function(e) {
   }
 };
 
+
+TouchStick.prototype.release = function() {
+  this.center.reset();
+  this.tip.reset();
+};

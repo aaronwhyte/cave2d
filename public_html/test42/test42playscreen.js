@@ -5,13 +5,14 @@
 function Test42PlayScreen(controller, canvas, renderer, stamps, sfx) {
   Test42BaseScreen.call(this, controller, canvas, renderer, stamps, sfx);
 
-  this.camera = new Camera(0.2, 0.6, 30);
+  this.camera = new Camera(0.2, 0.6, 25);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
   this.hudViewMatrix = new Matrix44();
 
   this.playerSpirits = [];
+  this.touchButtons = [];
 }
 Test42PlayScreen.prototype = new Test42BaseScreen();
 Test42PlayScreen.prototype.constructor = Test42PlayScreen;
@@ -22,6 +23,9 @@ Test42PlayScreen.MAX_UNDO_DEPTH = 20000;
 
 Test42PlayScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
+  for (var i = 0; i < this.cuboidRules.length; i++) {
+    this.cuboidRules[i].apply();
+  }
 };
 
 Test42PlayScreen.prototype.getCamera = function() {
@@ -79,6 +83,7 @@ Test42PlayScreen.prototype.createDefaultWorld = function() {
 };
 
 Test42PlayScreen.prototype.configurePlayerSlots = function() {
+  var self = this;
   function createKeyboardSlot(up, right, down, left, b1, b2, menu) {
     return new PlayerSlot(
         new KeyTrigger()
@@ -98,27 +103,93 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
     );
   }
 
+  function createTouchSlot(xFrac, yFrac) {
+    var joinTrigger = new TriggerWidget(self.canvas);
+    joinTrigger
+        .setStamp(self.stamps.circleStamp)
+        .listenToTouch()
+        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25));
+    var n = Math.sqrt(0.5);
+    var rule = new CuboidRule(self.canvasCuboid, joinTrigger.getWidgetCuboid())
+        .setAspectRatio(new Vec4(1, 1), Vec4.ZERO)
+        .setSourceAnchor(new Vec4(xFrac ? 1 : -1, yFrac ? 1 : -1), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(xFrac ? n : -n, yFrac ? n : -n), Vec4.ZERO)
+        .setSizingMax(new Vec4(0.2, 0.2, 0.99), new Vec4(30, 30));
+    self.cuboidRules.push(rule);
+    self.touchButtons.push(joinTrigger);
+
+    var stick = new TouchStick();
+    stick.setRadius(16);
+    stick.setStartZoneFunction(function(x, y) {
+      return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
+    });
+    return new PlayerSlot(
+        joinTrigger,
+        new PlayerControls(stick, null, null, null)
+    );
+  }
+
   this.slots = [
-      createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, ',', '.', '/'),
-      createKeyboardSlot('w', 'd', 's', 'a', 'z', 'x', 'q')
+    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, ',', '.', '/'),
+    createKeyboardSlot('w', 'd', 's', 'a', 'z', 'x', 'q'),
+    createTouchSlot(0, 0),
+    createTouchSlot(1, 0),
+    createTouchSlot(0, 1),
+    createTouchSlot(1, 1)
   ];
 
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
     slot.enable();
-    slot.joinTrigger.addTriggerDownListener(this.createJoinFn(slot));
+    slot.joinTrigger.addTriggerUpListener(this.createJoinFn(slot));
   }
 };
 
 Test42PlayScreen.prototype.createJoinFn = function(slot) {
   var self = this;
   return function() {
-    var spiritId = self.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(0, 0), 0);
+    var spiritId = self.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(Math.random() * 8 - 4, Math.random() * 8 - 4), 0);
     var spirit = self.world.spirits[spiritId];
     spirit.setControls(slot.playerControls);
-    spirit.setColorRGB(Math.random() + 0.5, 2*Math.random() + 0.5, Math.random() + 0.7);
+    var r = Math.random();
+    var g = Math.random();
+    var b = 1 - (r + g)/3;
+    spirit.setColorRGB(r, g, b);
     self.playerSpirits.push(spirit);
     slot.join();
+
+    // splash
+    var body = self.getBodyById(spirit.bodyId);
+    var pos = spirit.getBodyPos();
+    // self.sounds.playerSpawn(pos);
+
+    var now = self.now();
+    var x = pos.x;
+    var y = pos.y;
+
+    var s = new Splash(1, self.stamps.tubeStamp);
+
+    s.startTime = now;
+    s.duration = 10;
+    var startRad = body.rad * 2;
+    var endRad = body.rad * 8;
+
+    s.startPose.pos.setXYZ(x, y, 1);
+    s.endPose.pos.setXYZ(x, y, 1);
+    s.startPose.scale.setXYZ(0, 0, 1);
+    s.endPose.scale.setXYZ(endRad, endRad, 1);
+
+    s.startPose2.pos.setXYZ(x, y, 1);
+    s.endPose2.pos.setXYZ(x, y, 1);
+    s.startPose2.scale.setXYZ(startRad, startRad, 1);
+    s.endPose2.scale.setXYZ(endRad, endRad, 1);
+
+    s.startPose.rotZ = 0;
+    s.endPose.rotZ = 0;
+    s.startColor.setXYZ(r*2, g*2, b*2);
+    s.endColor.setXYZ(0, 0, 0);
+
+    self.splasher.addCopy(s);
   };
 };
 
@@ -155,6 +226,12 @@ Test42PlayScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
+  for (var i = 0; i < this.touchButtons.length; i++) {
+    var b = this.touchButtons[i];
+    if (b.isListening()) {
+      b.draw(this.renderer);
+    }
+  }
   this.renderer.setBlendingEnabled(false);
 };
 
@@ -194,6 +271,7 @@ Test42PlayScreen.prototype.killPlayerSpirit = function(spirit) {
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
     if (slot.playerControls == spirit.controls) {
+      spirit.explode();
       this.removeByBodyId(spirit.bodyId);
       slot.leave();
       return;

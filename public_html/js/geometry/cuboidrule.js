@@ -49,8 +49,8 @@ CuboidRule.prototype.setAspectRatio = function(ratio) {
 
 /**
  * Defines position on the source that will be pinned to the other anchor on the target cuboid.
- * @param rads
- * @param pixels
+ * @param {Vec4} rads
+ * @param {Vec4} pixels
  * @returns {CuboidRule} this
  */
 CuboidRule.prototype.setSourceAnchor = function(rads, pixels) {
@@ -61,8 +61,8 @@ CuboidRule.prototype.setSourceAnchor = function(rads, pixels) {
 
 /**
  * Defines position on the target that will be pinned to the other anchor on the source cuboid.
- * @param rads
- * @param pixels
+ * @param {Vec4} rads
+ * @param {Vec4} pixels
  * @returns {CuboidRule} this
  */
 CuboidRule.prototype.setTargetAnchor = function(rads, pixels) {

@@ -32,6 +32,8 @@ function TriggerWidget(elem) {
 
   this.oldWidgetCuboid = new Cuboid(new Vec4(-1));
   this.oldKeyboardTipCuboid = new Cuboid(new Vec4(-1));
+  
+  this.listening = false;
 }
 
 TriggerWidget.prototype.addTriggerKeyByName = function(keyName) {
@@ -112,13 +114,20 @@ TriggerWidget.prototype.setKeyboardTipTimeoutMs = function(timeMs) {
 };
 
 TriggerWidget.prototype.startListening = function() {
+  this.trigger.release();
   this.trigger.startListening();
+  this.listening = true;
   return this;
 };
 
 TriggerWidget.prototype.stopListening = function() {
   this.trigger.stopListening();
+  this.listening = false;
   return this;
+};
+
+TriggerWidget.prototype.isListening = function() {
+  return this.listening;
 };
 
 TriggerWidget.prototype.getVal = function() {

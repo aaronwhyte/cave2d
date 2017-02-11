@@ -115,8 +115,8 @@ v PlayerSlot
     v disable the join triggers
   v test w two keyboard players
 - touch players
-  - drawHud()
-    - join button if waiting
+  v drawHud()
+    v join button if waiting
     - b1 and b2 if playing
 
 v simple pattern-match for collision response because JEEZ.
