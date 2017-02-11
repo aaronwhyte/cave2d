@@ -23,6 +23,8 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx) {
   this.splasher = new Splasher();
   this.splash = new Splash();
 
+  this.pair = [null, null];
+
   this.scanReq = new ScanRequest();
   this.scanResp = new ScanResponse();
 
@@ -480,6 +482,28 @@ WorldScreen.prototype.getWorldEventTarget = function() {
   return this.eventDistributor.getFakeLayerElement(WorldScreen.EventLayer.WORLD);
 };
 
+/**
+ * If the two spirit types match the spirits in the pair, then this returns the pair, maybe flipped.
+ * @param pair A pair of Spirit objects in a two-element array
+ * @param spiritType0
+ * @param spiritType1
+ * @returns null, or the original pair array, maybe with first two elements reversed
+ */
+WorldScreen.prototype.getSpiritPairMatchingTypes = function(pair, spiritType0, spiritType1) {
+  if (!pair[0] || !pair[1]) {
+    return null;
+  }
+  if (pair[0].type == spiritType0 && pair[1].type == spiritType1) {
+    return pair;
+  }
+  if (pair[0].type == spiritType1 && pair[1].type == spiritType0) {
+    var temp = pair[0];
+    pair[0] = pair[1];
+    pair[1] = temp;
+    return pair;
+  }
+  return null;
+};
 
 /////////////////
 // Spirit APIs //

@@ -12,7 +12,6 @@ function Test42PlayScreen(controller, canvas, renderer, stamps, sfx) {
   this.hudViewMatrix = new Matrix44();
 
   this.playerSpirits = [];
-
 }
 Test42PlayScreen.prototype = new Test42BaseScreen();
 Test42PlayScreen.prototype.constructor = Test42PlayScreen;
@@ -175,21 +174,29 @@ Test42PlayScreen.prototype.onHitEvent = function(e) {
     var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
     var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
 
-    this.maybeKillPlayerByBody(b0);
-    this.maybeKillPlayerByBody(b1);
+    var s0 = this.getSpiritForBody(b0);
+    var s1 = this.getSpiritForBody(b1);
+    if (s0 && s1) {
+      this.pair[0] = s0;
+      this.pair[1] = s1;
+      this.checkPlayerAntHit(this.pair);
+    }
   }
 };
 
-Test42PlayScreen.prototype.maybeKillPlayerByBody = function(b) {
-  var spirit = this.getSpiritForBody(b);
-  if (spirit && spirit.type == Test42BaseScreen.SpiritType.PLAYER) {
-    for (var i = 0; i < this.slots.length; i++) {
-      var slot = this.slots[i];
-      if (slot.playerControls == spirit.controls) {
-        this.removeByBodyId(b.id);
-        slot.leave();
-        return;
-      }
+Test42PlayScreen.prototype.checkPlayerAntHit = function(pair) {
+  if (this.getSpiritPairMatchingTypes(pair, Test42BaseScreen.SpiritType.PLAYER, Test42BaseScreen.SpiritType.ANT)) {
+    this.killPlayerSpirit(pair[0]);
+  }
+};
+
+Test42PlayScreen.prototype.killPlayerSpirit = function(spirit) {
+  for (var i = 0; i < this.slots.length; i++) {
+    var slot = this.slots[i];
+    if (slot.playerControls == spirit.controls) {
+      this.removeByBodyId(spirit.bodyId);
+      slot.leave();
+      return;
     }
   }
 };

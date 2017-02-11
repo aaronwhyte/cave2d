@@ -119,6 +119,8 @@ v PlayerSlot
     - join button if waiting
     - b1 and b2 if playing
 
+v simple pattern-match for collision response because JEEZ.
+
 Solve the lastPathRefreshTime problem
 Sometimes I want to add a body without also adding a spirit and timeout loop just for invalidating the path.
 Often I still want a spirit (for drawing or whatevs) but don't want to re-code the timeout loop.
