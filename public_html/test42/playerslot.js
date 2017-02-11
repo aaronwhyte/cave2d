@@ -22,6 +22,7 @@ PlayerSlot.prototype.enable = function() {
 
 PlayerSlot.prototype.join = function() {
   this.enable();
+  if (!this.status == PlayerSlot.Status.WAITING_TO_JOIN) return;
   this.status = PlayerSlot.Status.PLAYING;
   this.joinTrigger.stopListening();
   this.playerControls.startListening();
@@ -30,8 +31,8 @@ PlayerSlot.prototype.join = function() {
 PlayerSlot.prototype.leave = function() {
   if (!this.status == PlayerSlot.Status.PLAYING) return;
   this.status = PlayerSlot.Status.WAITING_TO_JOIN;
-  this.joinTrigger.startListening();
   this.playerControls.stopListening();
+  this.joinTrigger.startListening();
 };
 
 PlayerSlot.prototype.disable = function() {
