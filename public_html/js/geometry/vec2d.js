@@ -197,6 +197,7 @@ Vec2d.prototype.clipToMaxLength = function(maxLength) {
 Vec2d.prototype.slideByFraction = function(towardsPoint, fraction) {
   this.x = this.x * (1 - fraction) + towardsPoint.x * fraction;
   this.y = this.y * (1 - fraction) + towardsPoint.y * fraction;
+  return this;
 };
 
 
