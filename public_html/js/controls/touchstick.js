@@ -3,8 +3,10 @@
  * @constructor
  * @extends {Stick}
  */
-function TouchStick() {
+function TouchStick(element) {
   Stick.call(this);
+
+  this.element = element || document.body;
 
   this.radius = 30;
   this.startZoneFn = function(x, y) {
@@ -28,6 +30,8 @@ function TouchStick() {
   this.touchEndListener = function(e) {
     self.onTouchEnd(e);
   };
+
+  this.listening = false;
 }
 TouchStick.prototype = new Stick();
 TouchStick.prototype.constructor = TouchStick;
@@ -43,20 +47,26 @@ TouchStick.prototype.setRadius = function(r) {
 };
 
 TouchStick.prototype.startListening = function() {
-  document.body.addEventListener('touchstart', this.touchStartListener);
-  document.body.addEventListener('touchmove', this.touchMoveListener);
-  document.body.addEventListener('touchend', this.touchEndListener);
-  document.body.addEventListener('touchcancel', this.touchEndListener);
+  if (!this.listening) {
+    this.element.addEventListener('touchstart', this.touchStartListener);
+    this.element.addEventListener('touchmove', this.touchMoveListener);
+    this.element.addEventListener('touchend', this.touchEndListener);
+    this.element.addEventListener('touchcancel', this.touchEndListener);
+    this.listening = true;
+  }
   return this;
 
 };
 
 TouchStick.prototype.stopListening = function() {
-  document.body.removeEventListener('touchstart', this.touchStartListener);
-  document.body.removeEventListener('touchmove', this.touchMoveListener);
-  document.body.removeEventListener('touchend', this.touchEndListener);
-  document.body.removeEventListener('touchcancel', this.touchEndListener);
-  this.release();
+  if (this.listening) {
+    this.element.removeEventListener('touchstart', this.touchStartListener);
+    this.element.removeEventListener('touchmove', this.touchMoveListener);
+    this.element.removeEventListener('touchend', this.touchEndListener);
+    this.element.removeEventListener('touchcancel', this.touchEndListener);
+    this.listening = false;
+    this.release();
+  }
   return this;
 };
 
@@ -117,4 +127,5 @@ TouchStick.prototype.onTouchEnd = function(e) {
 TouchStick.prototype.release = function() {
   this.center.reset();
   this.tip.reset();
+  this.touchId = null;
 };
