@@ -118,7 +118,7 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
     self.cuboidRules.push(rule);
     self.touchButtons.push(joinTrigger);
 
-    var stick = new TouchStick();
+    var stick = new TouchStick(self.canvas);
     stick.setRadius(16);
     stick.setStartZoneFunction(function(x, y) {
       return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
