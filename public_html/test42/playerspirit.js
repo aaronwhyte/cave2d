@@ -18,8 +18,8 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.SPEED = 0.8;
-PlayerSpirit.TRACTION = 0.3;
+PlayerSpirit.SPEED = 1;
+PlayerSpirit.TRACTION = 0.2;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -115,14 +115,20 @@ PlayerSpirit.prototype.handleInput = function() {
     this.changeListener.onBeforeSpiritChange(this);
   }
 
+  // TODO make this input-rate-independent?
+  var duration = this.now() - this.lastInputTime;
+
   // traction slowdown
   this.vec2d.set(body.vel).scale(-PlayerSpirit.TRACTION);
   body.addVelAtTime(this.vec2d, this.now());
 
   // traction speedup
-  this.vec2d.set(body.vel).scale(-PlayerSpirit.TRACTION);
-  this.controls.stick.getVal(this.vec2d).scale(PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
+  this.controls.stick.getVal(this.vec2d);
+  var stickMag = this.vec2d.magnitude();
+  this.vec2d.scale(PlayerSpirit.TRACTION * PlayerSpirit.SPEED);
   body.addVelAtTime(this.vec2d, this.now());
+
+  this.lastInputTime = this.now();
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -166,7 +172,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   if (!body) return;
   var bodyPos = this.getBodyPos();
-  this.vec2d.set(body.vel).scaleToLength(-1.2 * Math.max(0.5, Math.min(1, body.vel.magnitude())));
+  this.controls.stick.getVal(this.vec2d).scaleToLength(-1.2 * Math.max(0.5, Math.min(1, body.vel.magnitude())));
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
