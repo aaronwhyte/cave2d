@@ -127,6 +127,13 @@ TouchStick.prototype.onTouchEnd = function(e) {
   }
 };
 
+TouchStick.prototype.isTouched = function() {
+  return this.touchId != null;
+};
+
+TouchStick.prototype.scale = function(s) {
+  this.center.slideByFraction(this.tip, 1 - s);
+};
 
 TouchStick.prototype.release = function() {
   this.center.reset();

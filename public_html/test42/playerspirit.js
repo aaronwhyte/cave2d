@@ -14,12 +14,15 @@ function PlayerSpirit(screen) {
   this.modelMatrix = new Matrix44();
   this.lastFrictionTime = this.now();
   this.lastInputTime = this.now();
+
+  this.accel = new Vec2d();
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.SPEED = 1;
-PlayerSpirit.TRACTION = 0.2;
+PlayerSpirit.TRACTION = 0.15;
+PlayerSpirit.DISPLACEMENT_TRACTION = 0.5;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -118,15 +121,32 @@ PlayerSpirit.prototype.handleInput = function() {
   // TODO make this input-rate-independent?
   var duration = this.now() - this.lastInputTime;
 
+  var a = this.accel.reset();
+
   // traction slowdown
-  this.vec2d.set(body.vel).scale(-PlayerSpirit.TRACTION);
-  body.addVelAtTime(this.vec2d, this.now());
+  a.set(body.vel).scale(-PlayerSpirit.TRACTION);
+  body.addVelAtTime(a, this.now());
+  a.reset();
+
+  var stickScale = 1;
+  if (this.controls.stick.scale && this.controls.stick.isTouched()) {
+    this.controls.stick.getVal(this.vec2d);
+    var stickMag = this.vec2d.magnitude();
+    a.add(this.vec2d.scale(PlayerSpirit.SPEED * PlayerSpirit.DISPLACEMENT_TRACTION));
+    stickScale = Math.min(1, 0.5 + stickMag * 0.6);
+  }
 
   // traction speedup
   this.controls.stick.getVal(this.vec2d);
-  var stickMag = this.vec2d.magnitude();
-  this.vec2d.scale(PlayerSpirit.TRACTION * PlayerSpirit.SPEED);
-  body.addVelAtTime(this.vec2d, this.now());
+  this.vec2d.scale(PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
+  a.add(this.vec2d);
+
+  a.clipToMaxLength(PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
+  body.addVelAtTime(a, this.now());
+
+  if (this.controls.stick.scale) {
+    this.controls.stick.scale(stickScale);
+  }
 
   this.lastInputTime = this.now();
 };
