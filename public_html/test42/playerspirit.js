@@ -20,9 +20,9 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.SPEED = 1;
-PlayerSpirit.TRACTION = 0.15;
-PlayerSpirit.DISPLACEMENT_TRACTION = 0.5;
+PlayerSpirit.SPEED = 1.5;
+PlayerSpirit.TRACTION = 0.12;
+PlayerSpirit.DISPLACEMENT_BOOST = 2;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -129,22 +129,23 @@ PlayerSpirit.prototype.handleInput = function() {
   a.reset();
 
   var stickScale = 1;
-  if (this.controls.stick.scale && this.controls.stick.isTouched()) {
-    this.controls.stick.getVal(this.vec2d);
-    var stickMag = this.vec2d.magnitude();
-    a.add(this.vec2d.scale(PlayerSpirit.SPEED * PlayerSpirit.DISPLACEMENT_TRACTION));
-    stickScale = Math.min(1, 0.5 + stickMag * 0.6);
+  var stick = this.controls.stick;
+  var touched = stick.isTouched && stick.isTouched();
+  stick.getVal(this.vec2d);
+  var stickMag = this.vec2d.magnitude();
+  if (touched) {
+    a.add(this.vec2d.scale(PlayerSpirit.SPEED * PlayerSpirit.DISPLACEMENT_BOOST));
+    stickScale = Math.min(1, (stickMag+0.1) * (stickMag+0.1));
   }
 
   // traction speedup
-  this.controls.stick.getVal(this.vec2d);
-  this.vec2d.scale(PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
+  stick.getVal(this.vec2d).scale(stickMag * PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
   a.add(this.vec2d);
 
   a.clipToMaxLength(PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
   body.addVelAtTime(a, this.now());
 
-  if (this.controls.stick.scale) {
+  if (touched) {
     this.controls.stick.scale(stickScale);
   }
 
@@ -192,7 +193,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   if (!body) return;
   var bodyPos = this.getBodyPos();
-  this.controls.stick.getVal(this.vec2d).scaleToLength(-1.2 * Math.max(0.5, Math.min(1, body.vel.magnitude())));
+  this.controls.stick.getVal(this.vec2d).scaleToLength(-1);
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
