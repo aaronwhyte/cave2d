@@ -6,6 +6,7 @@ function PlayerSlot(joinTrigger, playerControls) {
   this.joinTrigger = joinTrigger;
   this.playerControls = playerControls;
   this.status = PlayerSlot.Status.DISABLED;
+  this.minWaitTimeMs = 500;
 }
 
 PlayerSlot.Status = {
@@ -17,7 +18,12 @@ PlayerSlot.Status = {
 PlayerSlot.prototype.enable = function() {
   if (!this.status == PlayerSlot.Status.DISABLED) return;
   this.status = PlayerSlot.Status.WAITING_TO_JOIN;
+  this.waitingSinceTime = Date.now();
   this.joinTrigger.startListening();
+};
+
+PlayerSlot.prototype.readyToJoin = function() {
+  return this.status == PlayerSlot.Status.WAITING_TO_JOIN && this.waitingSinceTime + this.minWaitTimeMs < Date.now();
 };
 
 PlayerSlot.prototype.join = function() {
@@ -32,6 +38,7 @@ PlayerSlot.prototype.leave = function() {
   if (!this.status == PlayerSlot.Status.PLAYING) return;
   this.status = PlayerSlot.Status.WAITING_TO_JOIN;
   this.playerControls.stopListening();
+  this.waitingSinceTime = Date.now();
   this.joinTrigger.startListening();
 };
 

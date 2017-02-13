@@ -119,6 +119,7 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
     stick.setStartZoneFunction(function(x, y) {
       return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
     });
+    stick.setRadius(40);
     return new PlayerSlot(
         joinTrigger,
         new PlayerControls(stick, null, null, null)
@@ -137,56 +138,68 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
     slot.enable();
-    slot.joinTrigger.addTriggerUpListener(this.createJoinFn(slot));
+    this.addJoinClickListener(slot)
   }
 };
 
-Test42PlayScreen.prototype.createJoinFn = function(slot) {
+Test42PlayScreen.prototype.addJoinClickListener = function(slot) {
+  slot.joinTrigger.addTriggerDownListener(function() {
+    if (slot.readyToJoin()) {
+      slot.joinDown = true;
+    }
+  });
   var self = this;
-  return function() {
-    var spiritId = self.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(Math.random() * 8 - 4, Math.random() * 8 - 4), 0);
-    var spirit = self.world.spirits[spiritId];
-    spirit.setControls(slot.playerControls);
-    var r = 1.1 - 0.6 * Math.random();
-    var g = 1 - 0.8 * Math.random();
-    var b = 1 - 0.9 * Math.random();
-    spirit.setColorRGB(r, g, b);
-    self.playerSpirits.push(spirit);
-    slot.join();
+  slot.joinTrigger.addTriggerUpListener(function() {
+    if (slot.joinDown && slot.readyToJoin()) {
+      self.playerJoin(slot);
+    }
+    slot.joinDown = false;
+  });
+};
 
-    // splash
-    var body = self.getBodyById(spirit.bodyId);
-    var pos = spirit.getBodyPos();
-    // self.sounds.playerSpawn(pos);
+Test42PlayScreen.prototype.playerJoin = function(slot) {
+  var spiritId = this.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(Math.random() * 8 - 4, Math.random() * 8 - 4), 0);
+  var spirit = this.world.spirits[spiritId];
+  spirit.setControls(slot.playerControls);
+  var r = 1.1 - 0.6 * Math.random();
+  var g = 1 - 0.8 * Math.random();
+  var b = 1 - 0.9 * Math.random();
+  spirit.setColorRGB(r, g, b);
+  this.playerSpirits.push(spirit);
+  slot.join();
 
-    var now = self.now();
-    var x = pos.x;
-    var y = pos.y;
+  // splash
+  var body = this.getBodyById(spirit.bodyId);
+  var pos = spirit.getBodyPos();
+  // this.sounds.playerSpawn(pos);
 
-    var s = new Splash(1, self.stamps.tubeStamp);
+  var now = this.now();
+  var x = pos.x;
+  var y = pos.y;
 
-    s.startTime = now;
-    s.duration = 10;
-    var startRad = body.rad * 2;
-    var endRad = body.rad * 8;
+  var s = new Splash(1, this.stamps.tubeStamp);
 
-    s.startPose.pos.setXYZ(x, y, 1);
-    s.endPose.pos.setXYZ(x, y, 1);
-    s.startPose.scale.setXYZ(0, 0, 1);
-    s.endPose.scale.setXYZ(endRad, endRad, 1);
+  s.startTime = now;
+  s.duration = 10;
+  var startRad = body.rad * 2;
+  var endRad = body.rad * 8;
 
-    s.startPose2.pos.setXYZ(x, y, 1);
-    s.endPose2.pos.setXYZ(x, y, 1);
-    s.startPose2.scale.setXYZ(startRad, startRad, 1);
-    s.endPose2.scale.setXYZ(endRad, endRad, 1);
+  s.startPose.pos.setXYZ(x, y, 1);
+  s.endPose.pos.setXYZ(x, y, 1);
+  s.startPose.scale.setXYZ(0, 0, 1);
+  s.endPose.scale.setXYZ(endRad, endRad, 1);
 
-    s.startPose.rotZ = 0;
-    s.endPose.rotZ = 0;
-    s.startColor.setXYZ(r*2, g*2, b*2);
-    s.endColor.setXYZ(0, 0, 0);
+  s.startPose2.pos.setXYZ(x, y, 1);
+  s.endPose2.pos.setXYZ(x, y, 1);
+  s.startPose2.scale.setXYZ(startRad, startRad, 1);
+  s.endPose2.scale.setXYZ(endRad, endRad, 1);
 
-    self.splasher.addCopy(s);
-  };
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+  s.startColor.setXYZ(r*2, g*2, b*2);
+  s.endColor.setXYZ(0, 0, 0);
+
+  this.splasher.addCopy(s);
 };
 
 Test42PlayScreen.prototype.handleInput = function () {
