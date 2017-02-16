@@ -114,12 +114,21 @@ v PlayerSlot
     v leave() if not already left
     v disable the join triggers
   v test w two keyboard players
-- touch players
+v touch players
   v drawHud()
     v join button if waiting
-    - b1 and b2 if playing
-
+    x b1 and b2 if playing - meh do it later when I really want buttons
 v simple pattern-match for collision response because JEEZ.
+v PointerLockStick support
+- TurboKeyStick
+
+Test 43: Multiplayer Camera
+- zoom and position
+- selective tile draw
+- selective spirit draw
+- shader aid - function of max player-count, min dist from a plr
+
+Idea:
 
 Solve the lastPathRefreshTime problem
 Sometimes I want to add a body without also adding a spirit and timeout loop just for invalidating the path.

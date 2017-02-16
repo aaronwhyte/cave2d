@@ -3,15 +3,14 @@
  * @constructor
  * @extends {Stick}
  */
-function PointerLockStick() {
+function PointerLockStick(elem) {
   Stick.call(this);
+  this.elem = elem;
   this.radius = 30;
   var self = this;
   this.tip = new Vec2d();
   this.locked = false;
   this.listening = false;
-
-  this.canvas = null;
 
   this.lockChangeListener = function(e) {
     self.onLockChange(e);
@@ -43,11 +42,6 @@ PointerLockStick.prototype.setRadius = function(r) {
   return this;
 };
 
-PointerLockStick.prototype.setCanvas = function(canvas) {
-  this.canvas = canvas;
-  return this;
-};
-
 PointerLockStick.prototype.startListening = function() {
   for (var i = 0; i < PointerLockStick.BROWSER_PREFIXES.length; i++) {
     var prefix = PointerLockStick.BROWSER_PREFIXES[i];
@@ -57,7 +51,7 @@ PointerLockStick.prototype.startListening = function() {
   document.body.addEventListener('mousedown', this.mouseDownListener);
   document.body.addEventListener('mousemove', this.mouseMoveListener);
   document.body.addEventListener('mouseup', this.mouseUpListener);
-  this.canvas.addEventListener('click', this.clickListener);
+  this.elem.addEventListener('click', this.clickListener);
   this.listening = true;
   return this;
 };
@@ -71,27 +65,24 @@ PointerLockStick.prototype.stopListening = function() {
   document.body.removeEventListener('mousedown', this.mouseDownListener);
   document.body.removeEventListener('mousemove', this.mouseMoveListener);
   document.body.removeEventListener('mouseup', this.mouseUpListener);
-  this.canvas.removeEventListener('click', this.clickListener);
+  this.elem.removeEventListener('click', this.clickListener);
+  this.release();
   this.listening = false;
   return this;
 };
 
 PointerLockStick.prototype.getVal = function(out) {
-  if (this.mouseDown) {
-    this.val.set(this.tip).scale(1 / this.radius).scaleXY(1, -1);
-    this.clip();
-    return out.set(this.val);
-  } else {
-    return out.reset();
-  }
+  this.val.set(this.tip).scale(1 / this.radius).scaleXY(1, -1);
+  this.clip();
+  return out.set(this.val);
 };
 
 PointerLockStick.prototype.requestLock = function() {
-  this.canvas.requestPointerLock = this.canvas.requestPointerLock ||
-      this.canvas.mozRequestPointerLock ||
-      this.canvas.webkitRequestPointerLock;
-  if (this.canvas.requestPointerLock) {
-    this.canvas.requestPointerLock();
+  this.elem.requestPointerLock = this.elem.requestPointerLock ||
+      this.elem.mozRequestPointerLock ||
+      this.elem.webkitRequestPointerLock;
+  if (this.elem.requestPointerLock) {
+    this.elem.requestPointerLock();
   }
 };
 
@@ -106,9 +97,9 @@ PointerLockStick.prototype.exitPointerLock = function() {
 
 PointerLockStick.prototype.onLockChange = function(e) {
   this.locked =
-      document.pointerLockElement === this.canvas ||
-      document.mozPointerLockElement === this.canvas ||
-      document.webkitPointerLockElement === this.canvas;
+      document.pointerLockElement === this.elem ||
+      document.mozPointerLockElement === this.elem ||
+      document.webkitPointerLockElement === this.elem;
 };
 
 PointerLockStick.prototype.onLockError = function(e) {
@@ -122,7 +113,9 @@ PointerLockStick.prototype.onMouseDown = function(e) {
 PointerLockStick.prototype.onMouseMove = function(e) {
   var dx = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
   var dy = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
-  this.tip.addXY(dx, dy).clipToMaxLength(this.radius);
+
+  var distFrac = 1 + this.tip.magnitude() / this.radius;
+  this.tip.addXY(dx * distFrac, dy * distFrac).clipToMaxLength(this.radius);
 };
 
 PointerLockStick.prototype.onMouseUp = function(e) {
@@ -130,7 +123,19 @@ PointerLockStick.prototype.onMouseUp = function(e) {
 };
 
 PointerLockStick.prototype.onClick = function(e) {
-  // At least on Chrome, you have to click the canvas to request pointerlock.
+  // At least on Chrome, you have to click the elem to request pointerlock.
   // If you try to request it in any other execution thread, you'll get an error.
   this.requestLock();
+};
+
+PointerLockStick.prototype.isTouchlike = function() {
+  return true;
+};
+
+PointerLockStick.prototype.scale = function(s) {
+  this.tip.scale(s);
+};
+
+PointerLockStick.prototype.release = function() {
+  this.tip.reset();
 };

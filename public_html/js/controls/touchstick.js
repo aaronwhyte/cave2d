@@ -131,6 +131,10 @@ TouchStick.prototype.isTouched = function() {
   return this.touchId != null;
 };
 
+TouchStick.prototype.isTouchlike = function() {
+  return true;
+};
+
 TouchStick.prototype.scale = function(s) {
   this.center.slideByFraction(this.tip, 1 - s);
 };

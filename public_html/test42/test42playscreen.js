@@ -126,13 +126,24 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
     );
   }
 
+  function createPointerLockSlot() {
+    var joinTrigger = new MouseButtonTrigger(self.canvas);
+    var stick = new PointerLockStick(self.canvas);
+    stick.setRadius(200);
+    return new PlayerSlot(
+        joinTrigger,
+        new PlayerControls(stick, null, null, null)
+    );
+  }
+
   this.slots = [
     createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, ',', '.', '/'),
     createKeyboardSlot('w', 'd', 's', 'a', 'z', 'x', 'q'),
     createTouchSlot(0, 0),
     createTouchSlot(1, 0),
     createTouchSlot(0, 1),
-    createTouchSlot(1, 1)
+    createTouchSlot(1, 1),
+    createPointerLockSlot()
   ];
 
   for (var i = 0; i < this.slots.length; i++) {

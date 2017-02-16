@@ -20,9 +20,9 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.SPEED = 1.5;
-PlayerSpirit.TRACTION = 0.12;
-PlayerSpirit.DISPLACEMENT_BOOST = 2;
+PlayerSpirit.SPEED = 2;
+PlayerSpirit.TRACTION = 0.5;
+PlayerSpirit.DISPLACEMENT_BOOST = 4;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -122,30 +122,24 @@ PlayerSpirit.prototype.handleInput = function() {
   var duration = this.now() - this.lastInputTime;
 
   var a = this.accel.reset();
+  var stickScale = 1;
+  var stick = this.controls.stick;
+  var touchlike = stick.isTouchlike();
 
   // traction slowdown
   a.set(body.vel).scale(-PlayerSpirit.TRACTION);
-  body.addVelAtTime(a, this.now());
-  a.reset();
 
-  var stickScale = 1;
-  var stick = this.controls.stick;
-  var touched = stick.isTouched && stick.isTouched();
   stick.getVal(this.vec2d);
   var stickMag = this.vec2d.magnitude();
-  if (touched) {
-    a.add(this.vec2d.scale(PlayerSpirit.SPEED * PlayerSpirit.DISPLACEMENT_BOOST));
-    stickScale = Math.min(1, (stickMag+0.1) * (stickMag+0.1));
+  if (touchlike) {
+    stickScale = Math.min(1, (stickMag * 0.5 + 0.52));
+    this.vec2d.scale(PlayerSpirit.DISPLACEMENT_BOOST);
   }
-
-  // traction speedup
-  stick.getVal(this.vec2d).scale(stickMag * PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
+  this.vec2d.scale(PlayerSpirit.SPEED * PlayerSpirit.TRACTION).clipToMaxLength(PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
   a.add(this.vec2d);
-
-  a.clipToMaxLength(PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
   body.addVelAtTime(a, this.now());
 
-  if (touched) {
+  if (touchlike) {
     this.controls.stick.scale(stickScale);
   }
 

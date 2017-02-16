@@ -21,3 +21,7 @@ Stick.prototype.getVal = function(out) {
 Stick.prototype.clip = function() {
   return this.val.clipToMaxLength(1);
 };
+
+Stick.prototype.isTouchlike = function() {
+  return false;
+};
