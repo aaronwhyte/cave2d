@@ -46,6 +46,14 @@ Keys.prototype.initKeys = function() {
   addKeySequence('a', 65, 'z');
   addKeySequence('0', 48, '9');
 
+  // http://keycode.info/ is pretty nice
+  addKey(",", 188);
+  addKey(".", 190);
+  addKey("/", 191);
+  addKey("`", 192);
+  addKey("[", 219);
+  addKey("]", 221);
+
   addKey(Key.Name.LEFT, 37);
   addKey(Key.Name.UP, 38);
   addKey(Key.Name.RIGHT, 39);
@@ -60,6 +68,8 @@ Keys.prototype.initKeys = function() {
 
   addKey(Key.Name.ESC, 27);
   addKey(Key.Name.SHIFT, 16);
+  addKey(Key.Name.CTRL, 17);
+  addKey(Key.Name.ALT, 18);
 
   this.initialized = true;
 };

@@ -24,5 +24,7 @@ Key.Name = {
   SEMICOLON: ';',
   BACKSLASH: '\\',
   ESC: 'esc',
-  SHIFT: 'shift'
+  SHIFT: 'shift',
+  CTRL: 'ctrl',
+  ALT: 'alt'
 };
