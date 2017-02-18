@@ -84,21 +84,19 @@ Test42PlayScreen.prototype.createDefaultWorld = function() {
 
 Test42PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
-  function createKeyboardSlot(up, right, down, left, b1, b2, menu) {
+  function createKeyboardSlot(up, right, down, left, turbo) {
     return new PlayerSlot(
         new KeyTrigger()
             .addTriggerKeyByName(up)
             .addTriggerKeyByName(right)
             .addTriggerKeyByName(down)
             .addTriggerKeyByName(left)
-            .addTriggerKeyByName(b1)
-            .addTriggerKeyByName(b2)
-            .addTriggerKeyByName(menu),
+            .addTriggerKeyByName(turbo),
         new PlayerControls(
-            new KeyStick().setUpRightDownLeftByName(up, right, down, left),
-            new KeyTrigger().addTriggerKeyByName(b1),
-            new KeyTrigger().addTriggerKeyByName(b2),
-            new KeyTrigger().addTriggerKeyByName(menu)
+            new TurboKeyStick()
+                .setUpRightDownLeftByName(up, right, down, left)
+                .setTurboTrigger(new KeyTrigger().addTriggerKeyByName(turbo)),
+            null, null, null
         )
     );
   }
@@ -137,8 +135,8 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
   }
 
   this.slots = [
-    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, ',', '.', '/'),
-    createKeyboardSlot('w', 'd', 's', 'a', 'z', 'x', 'q'),
+    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'm'),
+    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT),
     createTouchSlot(0, 0),
     createTouchSlot(1, 0),
     createTouchSlot(0, 1),

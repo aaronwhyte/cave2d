@@ -120,7 +120,7 @@ v touch players
     x b1 and b2 if playing - meh do it later when I really want buttons
 v simple pattern-match for collision response because JEEZ.
 v PointerLockStick support
-- TurboKeyStick
+v TurboKeyStick
 
 Test 43: Multiplayer Camera
 - zoom and position

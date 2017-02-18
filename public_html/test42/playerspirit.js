@@ -21,7 +21,8 @@ PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.SPEED = 2;
-PlayerSpirit.TRACTION = 0.5;
+PlayerSpirit.TRACTION = 0.4;
+PlayerSpirit.SLOW_TRACTION = 0.4;
 PlayerSpirit.DISPLACEMENT_BOOST = 4;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -125,9 +126,12 @@ PlayerSpirit.prototype.handleInput = function() {
   var stickScale = 1;
   var stick = this.controls.stick;
   var touchlike = stick.isTouchlike();
+  var slow = stick.isTurboDown && !stick.isTurboDown();
+  var traction = slow ? PlayerSpirit.SLOW_TRACTION : PlayerSpirit.TRACTION;
+  var speed = PlayerSpirit.SPEED;
 
   // traction slowdown
-  a.set(body.vel).scale(-PlayerSpirit.TRACTION);
+  a.set(body.vel).scale(-traction);
 
   stick.getVal(this.vec2d);
   var stickMag = this.vec2d.magnitude();
@@ -135,7 +139,7 @@ PlayerSpirit.prototype.handleInput = function() {
     stickScale = Math.min(1, (stickMag * 0.5 + 0.52));
     this.vec2d.scale(PlayerSpirit.DISPLACEMENT_BOOST);
   }
-  this.vec2d.scale(PlayerSpirit.SPEED * PlayerSpirit.TRACTION).clipToMaxLength(PlayerSpirit.SPEED * PlayerSpirit.TRACTION);
+  this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
   a.add(this.vec2d);
   body.addVelAtTime(a, this.now());
 
