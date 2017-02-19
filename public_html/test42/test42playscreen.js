@@ -104,12 +104,15 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
   function createTouchSlot(xFrac, yFrac) {
     var joinTrigger = new TriggerWidget(self.canvas);
     joinTrigger
+        .setStamp(self.stamps.circleStamp)
         .listenToTouch()
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25));
+    var n = Math.sqrt(0.5);
     var rule = new CuboidRule(self.canvasCuboid, joinTrigger.getWidgetCuboid())
+        .setAspectRatio(new Vec4(1, 1), Vec4.ZERO)
         .setSourceAnchor(new Vec4(xFrac ? 1 : -1, yFrac ? 1 : -1), Vec4.ZERO)
-        .setTargetAnchor(Vec4.ZERO, Vec4.ZERO)
-        .setSizingMax(new Vec4(0.9, 0.9, 0.99), Vec4.ZERO);
+        .setTargetAnchor(new Vec4(xFrac ? n : -n, yFrac ? n : -n), Vec4.ZERO)
+        .setSizingMax(new Vec4(0.12, 0.12, 0.99), new Vec4(30, 30));
     self.cuboidRules.push(rule);
     self.touchButtons.push(joinTrigger);
 
