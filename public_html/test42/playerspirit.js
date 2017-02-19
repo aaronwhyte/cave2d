@@ -127,7 +127,7 @@ PlayerSpirit.prototype.handleInput = function() {
   var stick = this.controls.stick;
   var touchlike = stick.isTouchlike();
   var slow = stick.isTurboDown && !stick.isTurboDown();
-  var traction = slow ? PlayerSpirit.SLOW_TRACTION : PlayerSpirit.TRACTION;
+  var traction = PlayerSpirit.TRACTION * duration;
   var speed = PlayerSpirit.SPEED;
 
   // traction slowdown
@@ -136,7 +136,8 @@ PlayerSpirit.prototype.handleInput = function() {
   stick.getVal(this.vec2d);
   var stickMag = this.vec2d.magnitude();
   if (touchlike) {
-    stickScale = Math.min(1, (stickMag * 0.5 + 0.52));
+    // Allow the player to maintain top speed as long as they provide a teeny bit of input.
+    stickScale = Math.min(1, (stickMag * 0.5 + 0.499999999));
     this.vec2d.scale(PlayerSpirit.DISPLACEMENT_BOOST);
   }
   this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
