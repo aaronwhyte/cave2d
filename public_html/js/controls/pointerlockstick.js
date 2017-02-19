@@ -18,14 +18,8 @@ function PointerLockStick(elem) {
   this.lockErrorListener = function(e) {
     self.onLockError(e);
   };
-  this.mouseDownListener = function(e) {
-    self.onMouseDown(e);
-  };
   this.mouseMoveListener = function(e) {
     self.onMouseMove(e);
-  };
-  this.mouseUpListener = function(e) {
-    self.onMouseUp(e);
   };
   this.clickListener = function(e) {
     self.onClick(e);
@@ -48,9 +42,7 @@ PointerLockStick.prototype.startListening = function() {
     document.addEventListener('on' + prefix + 'pointerlockchange', this.lockChangeListener, false);
     document.addEventListener(prefix + 'pointerlockerror', this.lockErrorListener, false);
   }
-  document.body.addEventListener('mousedown', this.mouseDownListener);
   document.body.addEventListener('mousemove', this.mouseMoveListener);
-  document.body.addEventListener('mouseup', this.mouseUpListener);
   this.elem.addEventListener('click', this.clickListener);
   this.listening = true;
   return this;
@@ -62,9 +54,7 @@ PointerLockStick.prototype.stopListening = function() {
     document.removeEventListener('on' + prefix + 'pointerlockchange', this.lockChangeListener, false);
     document.removeEventListener(prefix + 'pointerlockerror', this.lockErrorListener, false);
   }
-  document.body.removeEventListener('mousedown', this.mouseDownListener);
   document.body.removeEventListener('mousemove', this.mouseMoveListener);
-  document.body.removeEventListener('mouseup', this.mouseUpListener);
   this.elem.removeEventListener('click', this.clickListener);
   this.release();
   this.listening = false;
@@ -106,20 +96,12 @@ PointerLockStick.prototype.onLockError = function(e) {
   console.warn('PointerLockStick.onLockError: ' + e);
 };
 
-PointerLockStick.prototype.onMouseDown = function(e) {
-  this.mouseDown = true;
-};
-
 PointerLockStick.prototype.onMouseMove = function(e) {
   var dx = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
   var dy = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
 
   var distFrac = 1 + this.tip.magnitude() / this.radius;
   this.tip.addXY(dx * distFrac, dy * distFrac).clipToMaxLength(this.radius);
-};
-
-PointerLockStick.prototype.onMouseUp = function(e) {
-  this.mouseDown = false;
 };
 
 PointerLockStick.prototype.onClick = function(e) {
