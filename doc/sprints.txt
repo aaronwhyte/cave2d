@@ -121,15 +121,51 @@ v touch players
 v simple pattern-match for collision response because JEEZ.
 v PointerLockStick support
 v TurboKeyStick
+- aim: each player has an aim line, like game2
+  - player spirit vec-
+  - keyboard
+  - pointer lock
+  - touch
+- triggers
+  - keys for keyboard
+  - two mouse buttons (for mouse) and two keys (trackpad) for pointer lock
+  - two on-screen buttons for touch players. Positioning them is tricky!
+- pause menu
+  - bring middle-of-screen pause back for touch
+  - spacebar for keyboard? Also "esc" and "p"? Maybe NOT spacebar since that's prime real-estate.
+Join/Drop 3.0:
+For touch players, explicit join and drop is good because if other players aren't joining, it's good to give
+that touch area to the actual players. So stop dropping players when they die. Make drop explicit somehow...
+I'd like each player to have their own menu for changing appearance, adjusting controls, and yes, dropping.
+And joining can go back to that little button I used to have for touch.
+v bring back little touch join buttons
 
 Test 43: Multiplayer Camera
-- zoom and position
-- selective tile draw
+- code nest
+- bigger playable area random map gen?
+- zoom and position camera so everyone's view-circle is on screen. Easy because rectangles.
+- selective tile draw with multiple players
+  - create set of tiles
+  - draw 'em
 - selective spirit draw
-- shader aid - function of max player-count, min dist from a plr
+  - select world cells that touch view circles
+  - draw stuff in those cells
+  - also mark things in those cells as near a player, with some extra padding so spirits look wide awake before they get drawn.
+- Smooth the circles
+ - shader aid - function of max player-count, min dist from a plr. Vertex shader on color, approaching black?
+- Draw even more stuff near players that are close to each other - a kind of sensor bonus?
+
+
+Uniclock physics optimization
+I did the math and doing all the acceleration at the same time is up to 2x as efficient in terms of collision count,
+among moving objects that are all potentially colliding with each other. Not that big a deal in my case since
+So...
+- graph collision computation count
+- add a master timer that triggers friction and control for NPCs, to minimize collision recomputation
+- add switch to change between individual spaced-out computation and master switch
+- compare
 
 Idea:
-
 Solve the lastPathRefreshTime problem
 Sometimes I want to add a body without also adding a spirit and timeout loop just for invalidating the path.
 Often I still want a spirit (for drawing or whatevs) but don't want to re-code the timeout loop.
@@ -138,6 +174,7 @@ effectively leaking them.
 * Every movable body needs a Spirit chaperone w timeout invalidation loop?
 * Add a common spirit behavior that registers the timeout for me?
 * Special world maxPathDuration=auto code? nah
+*** Uniclock also handles path invalidation
 
 More refactoring...
 - Inject collider info into baseScreen from pages, instead of using "createXXX" overrides?
