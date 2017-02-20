@@ -148,6 +148,8 @@ PlayerSpirit.prototype.handleInput = function() {
     this.controls.stick.scale(stickScale);
   }
 
+  if (this.controls.clickPad) this.controls.clickPad.poll();
+
   this.lastInputTime = this.now();
 };
 

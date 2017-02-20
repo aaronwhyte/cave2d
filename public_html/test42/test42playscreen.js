@@ -120,7 +120,8 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
             new TurboKeyStick()
                 .setUpRightDownLeftByName(up, right, down, left)
                 .setTurboTrigger(new KeyTrigger().addTriggerKeyByName(turbo)),
-            null, null, null
+            null, null, null,
+            new KeyClickPad().setUpRightDownLeftByName(up, right, down, left)
         )
     );
   }
@@ -140,24 +141,29 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
     self.cuboidRules.push(rule);
     self.touchButtons.push(joinTrigger);
 
-    var stick = new TouchStick(self.canvas);
-    stick.setStartZoneFunction(function(x, y) {
-      return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
-    });
-    stick.setRadius(40);
+    var stick = new TouchStick(self.canvas)
+        .setStartZoneFunction(function(x, y) {
+          return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
+        })
+        .setRadius(40);
+    var stick2 = new TouchStick(self.canvas)
+        .setStartZoneFunction(function(x, y) {
+          return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
+        })
+        .setRadius(40);
     return new PlayerSlot(
         joinTrigger,
-        new PlayerControls(stick, null, null, null)
+        new PlayerControls(stick, null, null, null, new TouchlikeClickPad().setStick(stick2))
     );
   }
 
   function createPointerLockSlot() {
     var joinTrigger = new MouseButtonTrigger(self.canvas);
-    var stick = new PointerLockStick(self.canvas);
-    stick.setRadius(200);
+    var stick = new PointerLockStick(self.canvas).setRadius(200);
+    var stick2 = new PointerLockStick(self.canvas).setRadius(200);
     return new PlayerSlot(
         joinTrigger,
-        new PlayerControls(stick, null, null, null)
+        new PlayerControls(stick, null, null, null, new TouchlikeClickPad().setStick(stick2))
     );
   }
 

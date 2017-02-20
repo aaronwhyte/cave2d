@@ -3,11 +3,12 @@
  *
  * @constructor
  */
-function PlayerControls(stick, trigger1, trigger2, menuTrigger) {
+function PlayerControls(stick, t1, t2, menuTrigger, clickPad) {
   this.stick = stick;
-  this.t1 = trigger1;
-  this.t2 = trigger2;
+  this.t1 = t1;
+  this.t2 = t2;
   this.menuTrigger = menuTrigger;
+  this.clickPad = clickPad;
 
   this.spiritId = null;
 }
@@ -17,6 +18,7 @@ PlayerControls.prototype.startListening = function() {
   if (this.t1) this.t1.startListening();
   if (this.t2) this.t2.startListening();
   if (this.menuTrigger) this.menuTrigger.startListening();
+  if (this.clickPad) this.clickPad.startListening();
 };
 
 PlayerControls.prototype.stopListening = function() {
@@ -24,9 +26,13 @@ PlayerControls.prototype.stopListening = function() {
   if (this.t1) this.t1.stopListening();
   if (this.t2) this.t2.stopListening();
   if (this.menuTrigger) this.menuTrigger.stopListening();
+  if (this.clickPad) this.clickPad.stopListening();
 };
 
 PlayerControls.prototype.handleInput = function(world) {
+  if (this.clickPad) {
+    this.clickPad.poll();
+  }
   var spirit = world.spirits[this.spiritId];
   if (spirit) {
     spirit.handleInput(this);

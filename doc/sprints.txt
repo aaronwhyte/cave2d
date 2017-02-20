@@ -130,18 +130,17 @@ v bring back little touch join buttons
 v pause menu
   v spacebar for keyboard
   v bring middle-of-screen pause back for touch
-- explicit drop, but where?
-  * maybe every player has a button
-    * touch: same place as add, as I always planned
-    * and add another trigger for everyone else
-  * or put it all in the pause menu. That's probably easiest.
-  * or every player has a menu button and a pop-up menu, which seems crazy but I want it.
-    * change color
-    * change look
-    * map
-    * inventory
-    * other junk
-    * >>> drop <<<
+v ClickPad(stick)
+  v output is an event: sub to the pub my daime
+  v non-touchlike (keyboard)
+  v touchlike (touch, pointer lock)
+- player menu
+  - takes a clickpad and a list of items
+  - movable anchor to screen
+  - actual menu items
+    - change color
+    - fireworks?
+    - drop
 more player expressiveness
 - aim: each player has an aim line, like game2
   - player spirit vec
