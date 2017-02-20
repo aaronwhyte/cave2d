@@ -13,6 +13,8 @@ function Test42PlayScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.playerSpirits = [];
   this.touchButtons = [];
+
+  this.initPauseButtons();
 }
 Test42PlayScreen.prototype = new Test42BaseScreen();
 Test42PlayScreen.prototype.constructor = Test42PlayScreen;
@@ -31,6 +33,28 @@ Test42PlayScreen.prototype.updateHudLayout = function() {
 Test42PlayScreen.prototype.getCamera = function() {
   return this.camera;
 };
+
+Test42PlayScreen.prototype.initPauseButtons = function() {
+  this.pauseKeyTrigger = new KeyTrigger();
+  this.pauseKeyTrigger
+      .addTriggerKeyByName(Key.Name.SPACE)
+      .addTriggerDownListener(this.pauseDownFn);
+  this.addListener(this.pauseKeyTrigger);
+
+  this.pauseTouchWidget = new ClearDoubleTapWidget(this.getHudEventTarget());
+  this.pauseTouchWidget
+      .addDoubleTapListener(this.pauseDownFn)
+      .setStamp(this.stamps.pauseStamp);
+  var rule = new CuboidRule(this.canvasCuboid, this.pauseTouchWidget.getWidgetCuboid())
+      .setAspectRatio(new Vec4(1, 1), Vec4.ZERO)
+      .setSourceAnchor(Vec4.ZERO, Vec4.ZERO)
+      .setTargetAnchor(Vec4.ZERO, Vec4.ZERO)
+      .setSizingMax(new Vec4(0.2, 0.2), new Vec4(50, 50));
+  this.cuboidRules.push(rule);
+
+  this.addListener(this.pauseTouchWidget);
+};
+
 
 Test42PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen == this.listening) return;
@@ -253,6 +277,7 @@ Test42PlayScreen.prototype.drawHud = function() {
       b.draw(this.renderer);
     }
   }
+  this.pauseTouchWidget.draw(this.renderer);
   this.renderer.setBlendingEnabled(false);
 };
 

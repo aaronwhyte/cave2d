@@ -18,6 +18,7 @@ Stamps.create = function(renderer) {
   stamps.lineStamp = stamp(RigidModel.createCylinder(9));
 
   // HUD icons
+  stamps.pauseStamp = stamp(models.getPause());
   stamps.playerPauseStamp = stamp(models.getPlayerPause());
 
   return stamps;

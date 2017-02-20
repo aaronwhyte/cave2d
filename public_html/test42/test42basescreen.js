@@ -6,7 +6,7 @@ function Test42BaseScreen(controller, canvas, renderer, stamps, sfx) {
   if (!controller) return; // generating prototype
   WorldScreen.call(this, controller, canvas, renderer, stamps, sfx);
 
-  this.levelColorVector = new Vec4(0.4, 0.4, 0.4);
+  this.levelColorVector = new Vec4(0.3, 0.3, 0.4);
 
   this.initStatMons();
 }

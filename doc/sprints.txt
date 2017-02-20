@@ -121,8 +121,31 @@ v touch players
 v simple pattern-match for collision response because JEEZ.
 v PointerLockStick support
 v TurboKeyStick
+Join/Drop 3.0:
+For touch players, explicit join and drop is good because if other players aren't joining, it's good to give
+that touch area to the actual players. So stop dropping players when they die. Make drop explicit somehow...
+I'd like each player to have their own menu for changing appearance, adjusting controls, and yes, dropping.
+And joining can go back to that little button I used to have for touch.
+v bring back little touch join buttons
+v pause menu
+  v spacebar for keyboard
+  v bring middle-of-screen pause back for touch
+- explicit drop, but where?
+  * maybe every player has a button
+    * touch: same place as add, as I always planned
+    * and add another trigger for everyone else
+  * or put it all in the pause menu. That's probably easiest.
+  * or every player has a menu button and a pop-up menu, which seems crazy but I want it.
+    * change color
+    * change look
+    * map
+    * inventory
+    * other junk
+    * >>> drop <<<
+more player expressiveness
 - aim: each player has an aim line, like game2
-  - player spirit vec-
+  - player spirit vec
+  - rendering (steal from game 2)
   - keyboard
   - pointer lock
   - touch
@@ -130,15 +153,6 @@ v TurboKeyStick
   - keys for keyboard
   - two mouse buttons (for mouse) and two keys (trackpad) for pointer lock
   - two on-screen buttons for touch players. Positioning them is tricky!
-- pause menu
-  - bring middle-of-screen pause back for touch
-  - spacebar for keyboard? Also "esc" and "p"? Maybe NOT spacebar since that's prime real-estate.
-Join/Drop 3.0:
-For touch players, explicit join and drop is good because if other players aren't joining, it's good to give
-that touch area to the actual players. So stop dropping players when they die. Make drop explicit somehow...
-I'd like each player to have their own menu for changing appearance, adjusting controls, and yes, dropping.
-And joining can go back to that little button I used to have for touch.
-v bring back little touch join buttons
 
 Test 43: Multiplayer Camera
 - code nest

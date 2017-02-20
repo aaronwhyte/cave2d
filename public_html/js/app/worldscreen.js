@@ -66,7 +66,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx) {
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
     // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
-    e.preventDefault();
+    if (e) e.preventDefault();
   };
 
   this.fullScreenFn = function(e) {
