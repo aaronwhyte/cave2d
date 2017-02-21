@@ -109,21 +109,20 @@ Test42PlayScreen.prototype.createDefaultWorld = function() {
 Test42PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
   function createKeyboardSlot(up, right, down, left, turbo) {
-    return new PlayerSlot(
-        new KeyTrigger()
-            .addTriggerKeyByName(up)
-            .addTriggerKeyByName(right)
-            .addTriggerKeyByName(down)
-            .addTriggerKeyByName(left)
-            .addTriggerKeyByName(turbo),
-        new PlayerControls(
-            new TurboKeyStick()
+    return new PlayerSlot()
+        .add(PlayerSpirit.STATE_WAITING, new ControlMap()
+            .add('joinTrigger', new KeyTrigger()
+                .addTriggerKeyByName(up)
+                .addTriggerKeyByName(right)
+                .addTriggerKeyByName(down)
+                .addTriggerKeyByName(left)
+                .addTriggerKeyByName(turbo)))
+        .add(PlayerSpirit.STATE_PLAYING, new ControlMap()
+            .add('stick', new TurboKeyStick()
                 .setUpRightDownLeftByName(up, right, down, left)
-                .setTurboTrigger(new KeyTrigger().addTriggerKeyByName(turbo)),
-            null, null, null,
-            new KeyClickPad().setUpRightDownLeftByName(up, right, down, left)
-        )
-    );
+                .setTurboTrigger(new KeyTrigger().addTriggerKeyByName(turbo))));
+        // .add(PlayerSpirit.STATE_MENU, new ControlMap()
+        //     .add('clickPad', new KeyClickPad().setUpRightDownLeftByName(up, right, down, left)));
   }
 
   function createTouchSlot(xFrac, yFrac) {
@@ -146,25 +145,23 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
           return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
         })
         .setRadius(40);
-    var stick2 = new TouchStick(self.canvas)
-        .setStartZoneFunction(function(x, y) {
-          return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
-        })
-        .setRadius(40);
-    return new PlayerSlot(
-        joinTrigger,
-        new PlayerControls(stick, null, null, null, new TouchlikeClickPad().setStick(stick2))
-    );
+    return new PlayerSlot()
+        .add(PlayerSpirit.STATE_WAITING, new ControlMap()
+            .add('joinTrigger', joinTrigger))
+        .add(PlayerSpirit.STATE_PLAYING, new ControlMap()
+            .add('stick', stick));
   }
 
   function createPointerLockSlot() {
     var joinTrigger = new MouseButtonTrigger(self.canvas);
     var stick = new PointerLockStick(self.canvas).setRadius(200);
-    var stick2 = new PointerLockStick(self.canvas).setRadius(200);
-    return new PlayerSlot(
-        joinTrigger,
-        new PlayerControls(stick, null, null, null, new TouchlikeClickPad().setStick(stick2))
-    );
+    return new PlayerSlot()
+        .add(PlayerSpirit.STATE_WAITING, new ControlMap()
+            .add('joinTrigger', new MouseButtonTrigger(self.canvas)))
+        .add(PlayerSpirit.STATE_PLAYING, new ControlMap()
+            .add('stick', new PointerLockStick(self.canvas).setRadius(200)));
+    // var stick2 = new PointerLockStick(self.canvas).setRadius(200);
+    //     new PlayerControls(stick, null, null, null, new TouchlikeClickPad().setStick(stick2))
   }
 
   this.slots = [
@@ -179,36 +176,30 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
 
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
-    slot.enable();
-    this.addJoinClickListener(slot)
+    slot.setState(PlayerSpirit.STATE_WAITING);
+    this.addJoinClickListener(slot);
   }
 };
 
 Test42PlayScreen.prototype.addJoinClickListener = function(slot) {
-  slot.joinTrigger.addTriggerDownListener(function() {
-    if (slot.readyToJoin()) {
-      slot.joinDown = true;
-    }
-  });
+  var controlMap = slot.getControlList();
+  var joinTrigger = controlMap.get('joinTrigger');
   var self = this;
-  slot.joinTrigger.addTriggerUpListener(function() {
-    if (slot.joinDown && slot.readyToJoin()) {
-      self.playerJoin(slot);
-    }
-    slot.joinDown = false;
+  joinTrigger.addTriggerDownListener(function() {
+    self.playerJoin(slot);
   });
 };
 
 Test42PlayScreen.prototype.playerJoin = function(slot) {
+  slot.setState(PlayerSpirit.STATE_PLAYING);
   var spiritId = this.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(Math.random() * 8 - 4, Math.random() * 8 - 4), 0);
   var spirit = this.world.spirits[spiritId];
-  spirit.setControls(slot.playerControls);
+  spirit.setControls(slot.getControlList());
   var r = 1.1 - 0.6 * Math.random();
   var g = 1 - 0.8 * Math.random();
   var b = 1 - 0.9 * Math.random();
   spirit.setColorRGB(r, g, b);
   this.playerSpirits.push(spirit);
-  slot.join();
 
   // splash
   var body = this.getBodyById(spirit.bodyId);
@@ -322,10 +313,10 @@ Test42PlayScreen.prototype.checkPlayerAntHit = function(pair) {
 Test42PlayScreen.prototype.killPlayerSpirit = function(spirit) {
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
-    if (slot.playerControls == spirit.controls) {
+    if (slot.getControlList() == spirit.controls) {
       spirit.explode();
       this.removeByBodyId(spirit.bodyId);
-      slot.leave();
+      slot.setState(PlayerSpirit.STATE_WAITING);
       return;
     }
   }

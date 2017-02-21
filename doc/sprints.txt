@@ -130,28 +130,36 @@ v bring back little touch join buttons
 v pause menu
   v spacebar for keyboard
   v bring middle-of-screen pause back for touch
-v ClickPad(stick)
+v ClickPad
   v output is an event: sub to the pub my daime
   v non-touchlike (keyboard)
   v touchlike (touch, pointer lock)
-- player menu
-  - takes a clickpad and a list of items
-  - movable anchor to screen
-  - actual menu items
-    - change color
-    - fireworks?
-    - drop
-more player expressiveness
+v PlayerSlot takes on more responsibility and generality
+  v create ControlMap class, with startListening and stopListening
+  v PlayerSlot is a map from name to ControlMap, generic listen/unlisten
+  v convert test42 to use new more generic scheme
+- tidy up
+  - structure control names
+  - restore respawn delay, for keyboard players
+- give the whole slot to the PlayerSpirit, not just the controls, so the player can do different things for each state
+- triggers (has to happen before "player menu", below)
+  - keys for keyboard
+  - two mouse buttons (for mouse) and two keys (trackpad) for pointer lock
+  - two on-screen buttons for touch players. Positioning them is tricky!
 - aim: each player has an aim line, like game2
   - player spirit vec
   - rendering (steal from game 2)
   - keyboard
   - pointer lock
   - touch
-- triggers
-  - keys for keyboard
-  - two mouse buttons (for mouse) and two keys (trackpad) for pointer lock
-  - two on-screen buttons for touch players. Positioning them is tricky!
+- player menu
+  - takes a clickpad and a list of items
+  - movable anchor to screen
+  - actual menu items
+    - back
+    - change color
+    - move buttons (move between about five different positions)
+    - drop player
 
 Test 43: Multiplayer Camera
 - code nest

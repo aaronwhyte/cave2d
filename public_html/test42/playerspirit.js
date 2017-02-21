@@ -30,6 +30,9 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
+PlayerSpirit.STATE_WAITING = "w";
+PlayerSpirit.STATE_PLAYING = "p";
+PlayerSpirit.STATE_MENU = "m";
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -124,9 +127,8 @@ PlayerSpirit.prototype.handleInput = function() {
 
   var a = this.accel.reset();
   var stickScale = 1;
-  var stick = this.controls.stick;
+  var stick = this.controls.get('stick');
   var touchlike = stick.isTouchlike();
-  var slow = stick.isTurboDown && !stick.isTurboDown();
   var traction = PlayerSpirit.TRACTION * duration;
   var speed = PlayerSpirit.SPEED;
 
@@ -145,10 +147,10 @@ PlayerSpirit.prototype.handleInput = function() {
   body.addVelAtTime(a, this.now());
 
   if (touchlike) {
-    this.controls.stick.scale(stickScale);
+    stick.scale(stickScale);
   }
 
-  if (this.controls.clickPad) this.controls.clickPad.poll();
+  // if (this.controls.clickPad) this.controls.clickPad.poll();
 
   this.lastInputTime = this.now();
 };
@@ -194,7 +196,10 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   if (!body) return;
   var bodyPos = this.getBodyPos();
-  this.controls.stick.getVal(this.vec2d).scaleToLength(-1);
+  this.vec2d.reset();
+  if (this.controls.stick) {
+    this.controls.stick.getVal(this.vec2d).scaleToLength(-1);
+  }
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
