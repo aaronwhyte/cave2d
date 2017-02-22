@@ -1,5 +1,5 @@
 /**
- * A single control Trigger, using the left mouse button.
+ * A single control Trigger, using the left mouse button or another button.
  * @constructor
  * @extends {Trigger}
  */
@@ -7,9 +7,12 @@ function MouseButtonTrigger(elem) {
   Trigger.call(this);
   this.elem = elem || document;
   var self = this;
+
+  this.listenToLeftButton = true;
+
   this.downListener = function(e) {
     if (!e) e = window.event;
-    if (MouseButtonTrigger.isLeftButton(e)) {
+    if (MouseButtonTrigger.isLeftButton(e) == self.listenToLeftButton) {
       self.val = true;
       self.publishTriggerDown(e);
 
@@ -19,7 +22,7 @@ function MouseButtonTrigger(elem) {
   };
   this.upListener = function(e) {
     if (!e) e = window.event;
-    if (MouseButtonTrigger.isLeftButton(e)) {
+    if (MouseButtonTrigger.isLeftButton(e) == self.listenToLeftButton) {
       self.val = false;
       self.publishTriggerUp(e);
 
@@ -31,6 +34,15 @@ function MouseButtonTrigger(elem) {
 
 MouseButtonTrigger.prototype = new Trigger();
 MouseButtonTrigger.prototype.constructor = MouseButtonTrigger;
+
+/**
+ * Sets this to either listen to the left button (the default), or to listen to anything except the left button.
+ * @param {boolean} b
+ */
+MouseButtonTrigger.prototype.setListenToLeftButton = function(b) {
+  this.listenToLeftButton = b;
+  return this;
+};
 
 MouseButtonTrigger.isLeftButton = function(e) {
   if (e.buttons) {
