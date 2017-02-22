@@ -20,11 +20,41 @@ Sounds.prototype.wallThump = function(worldPos, mag) {
   var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
-  var vol = Math.min(1, mag * 0.05);
+  var vol = Math.min(1, mag * 2);
   if (vol > 0.01) {
-    var dur = Math.min(0.1, 0.01 * mag*mag);
-    var freq = mag + 200 + 5 * Math.random();
-    var freq2 = 1;
-    this.sfx.sound(x, y, 0, vol, 0, 0, dur, freq, freq2, 'square');
+    var dur = 0.1;
+    var freq = 10 * mag + 100 + 5 * Math.random();
+    this.sfx.sound(x, y, 0, vol, 0, 0, dur, freq, 2, 'square');
+  }
+};
+
+Sounds.prototype.playerExplode = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
+  var x = screenPos.x;
+  var y = screenPos.y;
+  // quick rise
+  this.sfx.sound(x, y, 0, 2, 0, 0.1, 0, 20, 250, 'square');
+
+  // fading crackle
+  var voices = 3;
+  var attack = 0.05;
+  var sustain = 0.2 * (Math.random() + 1);
+  var decay = (Math.random()*0.2 + 1) * 0.3;
+  for (var i = 0; i < voices; i++) {
+    var freq1 = (Math.random() + i) * 10 + 40;
+    var freq2 = Math.random() + 1 + i * 4;
+    this.sfx.sound(x, y, 0, 1.7 / voices, attack, sustain, decay, freq1, freq2, 'square');
+  }
+};
+
+Sounds.prototype.playerSpawn = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
+  var x = screenPos.x;
+  var y = screenPos.y;
+  var freq = 200;
+  for (var i = 0; i < 3; i++) {
+    freq *= 2;
+    this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.05);
+    this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.05);
   }
 };
