@@ -124,7 +124,7 @@ v TurboKeyStick
 Join/Drop 3.0:
 For touch players, explicit join and drop is good because if other players aren't joining, it's good to give
 that touch area to the actual players. So stop dropping players when they die. Make drop explicit somehow...
-I'd like each player to have their own menu for changing appearance, adjusting controls, and yes, dropping.
+I'd like each player to have their own menu for changing appearance, adjusting controls, and dropping.
 And joining can go back to that little button I used to have for touch.
 v bring back little touch join buttons
 v pause menu
@@ -141,14 +141,16 @@ v PlayerSlot takes on more responsibility and generality
 v structure control names
 v give the whole slot to the PlayerSpirit, not just the controls, so the player can do different things based on current state.
   v listen in PlayerSpirit when PLAYING
-- triggers (has to happen before "player menu", below)
+- triggers
   v keys for keyboard
   v two mouse buttons (for mouse) and two keys (trackpad) for pointer lock
-  - two on-screen buttons for touch players. Positioning them is tricky!
+  - two on-screen buttons for touch players.
+    - positioning: just put them in the corner for now.
+    - stamps with numbers in them.
 - separate "drop" from "die".
-  - Make one of the buttons drop the player for now.
+  - Make button1 drop the player for now.
   - Dead players auto-respawn after a short timeout.
-- improve touchstick startzone in test42
+- improve touchstick startzone
   - add touch starting-spot to player slot
   - create function bound to the set of touch slots and the current slot,
     and returns true if params x, y are closest to the current touch-player's starting spot.
@@ -158,7 +160,7 @@ v give the whole slot to the PlayerSpirit, not just the controls, so the player 
   - actual menu items
     - back
     - change color
-    - move buttons (move between about five different positions)
+    - move buttons? (move between about five different positions)
     - drop player
 - aim: each player has an aim line, like game2
   - player spirit vec
