@@ -30,10 +30,6 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.STATE_WAITING = "w";
-PlayerSpirit.STATE_PLAYING = "p";
-PlayerSpirit.STATE_MENU = "m";
-
 PlayerSpirit.SCHEMA = {
   0: "type",
   1: "id",
@@ -127,7 +123,7 @@ PlayerSpirit.prototype.handleInput = function() {
 
   var a = this.accel.reset();
   var stickScale = 1;
-  var stick = this.controls.get('stick');
+  var stick = this.controls.get(ControlName.STICK);
   var touchlike = stick.isTouchlike();
   var traction = PlayerSpirit.TRACTION * duration;
   var speed = PlayerSpirit.SPEED;

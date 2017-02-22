@@ -138,10 +138,7 @@ v PlayerSlot takes on more responsibility and generality
   v create ControlMap class, with startListening and stopListening
   v PlayerSlot is a map from name to ControlMap, generic listen/unlisten
   v convert test42 to use new more generic scheme
-- tidy up
-  - structure control names
-  - restore respawn delay, for keyboard players
-- give the whole slot to the PlayerSpirit, not just the controls, so the player can do different things for each state
+v structure control names
 - triggers (has to happen before "player menu", below)
   - keys for keyboard
   - two mouse buttons (for mouse) and two keys (trackpad) for pointer lock
@@ -152,6 +149,14 @@ v PlayerSlot takes on more responsibility and generality
   - keyboard
   - pointer lock
   - touch
+- separate "drop" from "die".
+  - Make one of the buttons drop the player for now.
+  - Dead players auto-respawn after a short timeout.
+- improve touchstick startzone in test42
+  - add touch starting-spot to player slot
+  - create function bound to the set of touch slots and the current slot,
+    and returns true if params x, y are closest to the current touch-player's starting spot.
+- give the whole slot to the PlayerSpirit, not just the controls, so the player can do different things based on current state.
 - player menu
   - takes a clickpad and a list of items
   - movable anchor to screen
