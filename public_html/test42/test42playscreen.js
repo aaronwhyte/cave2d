@@ -108,7 +108,7 @@ Test42PlayScreen.prototype.createDefaultWorld = function() {
 
 Test42PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
-  function createKeyboardSlot(up, right, down, left, turbo) {
+  function createKeyboardSlot(up, right, down, left, turbo, b1, b2) {
     return new PlayerSlot()
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
@@ -116,11 +116,16 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(right)
                 .addTriggerKeyByName(down)
                 .addTriggerKeyByName(left)
-                .addTriggerKeyByName(turbo)))
+                .addTriggerKeyByName(turbo)
+                .addTriggerKeyByName(b1)
+                .addTriggerKeyByName(b2)
+            ))
         .add(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, new TurboKeyStick()
                 .setUpRightDownLeftByName(up, right, down, left)
-                .setTurboTrigger(new KeyTrigger().addTriggerKeyByName(turbo))));
+                .setTurboTrigger(new KeyTrigger().addTriggerKeyByName(turbo)))
+            .add(ControlName.BUTTON_1, new KeyTrigger().addTriggerKeyByName(b1))
+            .add(ControlName.BUTTON_2, new KeyTrigger().addTriggerKeyByName(b2)));
         // .add(PlayerSpirit.STATE_MENU, new ControlMap()
         //     .add('clickPad', new KeyClickPad().setUpRightDownLeftByName(up, right, down, left)));
   }
@@ -152,26 +157,30 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
             .add(ControlName.STICK, stick));
   }
 
-  function createPointerLockSlot() {
-    var joinTrigger = new MouseButtonTrigger(self.canvas);
-    var stick = new PointerLockStick(self.canvas).setRadius(200);
+  function createPointerLockSlot(b1, b2) {
+    // Only join on mouse-click, since that's a good indication you have a mouse in hand,
+    // and it starts the Pointer Lock process.
     return new PlayerSlot()
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new MouseButtonTrigger(self.canvas)))
         .add(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(200)));
-    // var stick2 = new PointerLockStick(self.canvas).setRadius(200);
-    //     new PlayerControls(stick, null, null, null, new TouchlikeClickPad().setStick(stick2))
+            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(200))
+            .add(ControlName.BUTTON_1, new MultiTrigger()
+                .addTrigger(new MouseButtonTrigger(self.canvas))
+                .addTrigger(new KeyTrigger().addTriggerKeyByName(b1)))
+            .add(ControlName.BUTTON_2, new MultiTrigger()
+                .addTrigger(new MouseButtonTrigger(self.canvas).setListenToLeftButton(false))
+                .addTrigger(new KeyTrigger().addTriggerKeyByName(b2))));
   }
 
   this.slots = [
-    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'm'),
-    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT),
+    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'm', ',', '.'),
+    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'x'),
     createTouchSlot(0, 0),
     createTouchSlot(1, 0),
     createTouchSlot(0, 1),
     createTouchSlot(1, 1),
-    createPointerLockSlot()
+    createPointerLockSlot('v', 'b')
   ];
 
   for (var i = 0; i < this.slots.length; i++) {
@@ -194,7 +203,7 @@ Test42PlayScreen.prototype.playerJoin = function(slot) {
   slot.setState(ControlState.PLAYING);
   var spiritId = this.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(Math.random() * 8 - 4, Math.random() * 8 - 4), 0);
   var spirit = this.world.spirits[spiritId];
-  spirit.setControls(slot.getControlList());
+  spirit.setSlot(slot);
   var r = 1.1 - 0.6 * Math.random();
   var g = 1 - 0.8 * Math.random();
   var b = 1 - 0.9 * Math.random();
@@ -204,7 +213,7 @@ Test42PlayScreen.prototype.playerJoin = function(slot) {
   // splash
   var body = this.getBodyById(spirit.bodyId);
   var pos = spirit.getBodyPos();
-  // this.sounds.playerSpawn(pos);
+  this.sounds.playerSpawn(pos);
 
   var now = this.now();
   var x = pos.x;
@@ -293,6 +302,7 @@ Test42PlayScreen.prototype.onHitEvent = function(e) {
     var vec = Vec2d.alloc();
     var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
     var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
+    this.sounds.wallThump(pos, mag);
 
     var s0 = this.getSpiritForBody(b0);
     var s1 = this.getSpiritForBody(b1);
@@ -311,13 +321,9 @@ Test42PlayScreen.prototype.checkPlayerAntHit = function(pair) {
 };
 
 Test42PlayScreen.prototype.killPlayerSpirit = function(spirit) {
-  for (var i = 0; i < this.slots.length; i++) {
-    var slot = this.slots[i];
-    if (slot.getControlList() == spirit.controls) {
-      spirit.explode();
-      this.removeByBodyId(spirit.bodyId);
-      slot.setState(ControlState.WAITING);
-      return;
-    }
-  }
+  this.sounds.playerExplode(spirit.getBodyPos());
+  var slot = spirit.slot;
+  spirit.explode();
+  this.removeByBodyId(spirit.bodyId);
+  slot.setState(ControlState.WAITING);
 };

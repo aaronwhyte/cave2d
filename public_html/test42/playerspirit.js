@@ -16,6 +16,7 @@ function PlayerSpirit(screen) {
   this.lastInputTime = this.now();
 
   this.accel = new Vec2d();
+  this.slot = null;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -51,14 +52,30 @@ PlayerSpirit.prototype.toJSON = function() {
 
 PlayerSpirit.prototype.setFromJSON = function(json) {
   PlayerSpirit.getJsoner().setFromJSON(json, this);
+  return this;
 };
 
+/**
+ * @param {ModelStamp} modelStamp
+ * @returns {PlayerSpirit}
+ */
 PlayerSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
+  return this;
 };
 
-PlayerSpirit.prototype.setControls = function(controls) {
-  this.controls = controls;
+/**
+ * @param {PlayerSlot} slot
+ * @returns {PlayerSpirit}
+ */
+PlayerSpirit.prototype.setSlot = function(slot) {
+  this.slot = slot;
+  return this;
+};
+
+PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
+  this.color.setXYZ(r, g, b);
+  return this;
 };
 
 PlayerSpirit.createModel = function() {
@@ -106,49 +123,62 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   return b;
 };
 
-PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
-};
-
 PlayerSpirit.prototype.handleInput = function() {
-  if (!this.controls) return;
-  var body = this.getBody();
-  if (!body) return;
-  if (this.changeListener) {
-    this.changeListener.onBeforeSpiritChange(this);
+  var now = this.now();
+  var duration = now - this.lastInputTime;
+  this.lastInputTime = now;
+
+  if (!this.slot) return;
+  var state = this.slot.stateName;
+  if (state == ControlState.PLAYING) {
+    var body = this.getBody();
+    if (!body) return;
+    if (this.changeListener) {
+      this.changeListener.onBeforeSpiritChange(this);
+    }
+
+    var controls = this.slot.getControlList();
+
+    var a = this.accel.reset();
+    var stickScale = 1;
+    var stick = controls.get(ControlName.STICK);
+    var touchlike = stick.isTouchlike();
+    var traction = PlayerSpirit.TRACTION * duration;
+    var speed = PlayerSpirit.SPEED;
+
+    // traction slowdown
+    a.set(body.vel).scale(-traction);
+
+    stick.getVal(this.vec2d);
+    var stickMag = this.vec2d.magnitude();
+    if (touchlike) {
+      // Allow the player to maintain top speed as long as they provide a teeny bit of input.
+      stickScale = Math.min(1, (stickMag * 0.5 + 0.499999999));
+      this.vec2d.scale(PlayerSpirit.DISPLACEMENT_BOOST);
+    }
+    this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
+    a.add(this.vec2d);
+    body.addVelAtTime(a, this.now());
+
+    if (touchlike) {
+      stick.scale(stickScale);
+    }
+
+    var b1 = controls.get(ControlName.BUTTON_1);
+    var b2 = controls.get(ControlName.BUTTON_2);
+    if (b1.getVal()) {
+      var r = 0;
+      var g = 1 - 0.8 * Math.random();
+      var b = 1 - 0.9 * Math.random();
+      this.setColorRGB(r, g, b);
+    }
+    if (b2.getVal()) {
+      var r = 1;
+      var g = 1 - 0.8 * Math.random();
+      var b = 1 - 0.9 * Math.random();
+      this.setColorRGB(r, g, b);
+    }
   }
-
-  // TODO make this input-rate-independent?
-  var duration = this.now() - this.lastInputTime;
-
-  var a = this.accel.reset();
-  var stickScale = 1;
-  var stick = this.controls.get(ControlName.STICK);
-  var touchlike = stick.isTouchlike();
-  var traction = PlayerSpirit.TRACTION * duration;
-  var speed = PlayerSpirit.SPEED;
-
-  // traction slowdown
-  a.set(body.vel).scale(-traction);
-
-  stick.getVal(this.vec2d);
-  var stickMag = this.vec2d.magnitude();
-  if (touchlike) {
-    // Allow the player to maintain top speed as long as they provide a teeny bit of input.
-    stickScale = Math.min(1, (stickMag * 0.5 + 0.499999999));
-    this.vec2d.scale(PlayerSpirit.DISPLACEMENT_BOOST);
-  }
-  this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
-  a.add(this.vec2d);
-  body.addVelAtTime(a, this.now());
-
-  if (touchlike) {
-    stick.scale(stickScale);
-  }
-
-  // if (this.controls.clickPad) this.controls.clickPad.poll();
-
-  this.lastInputTime = this.now();
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -193,8 +223,12 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   if (!body) return;
   var bodyPos = this.getBodyPos();
   this.vec2d.reset();
-  if (this.controls.stick) {
-    this.controls.stick.getVal(this.vec2d).scaleToLength(-1);
+
+  if (this.slot) {
+    var stick = this.slot.getControlList().get(ControlName.STICK);
+    if (stick) {
+      stick.getVal(this.vec2d).scaleToLength(-1);
+    }
   }
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
@@ -221,10 +255,9 @@ PlayerSpirit.prototype.explode = function() {
     s.reset(1, this.stamps.tubeStamp);
 
     s.startTime = now;
-    s.duration = 20;
-    var rad = 30;
-
-    var endRad = rad * 2;
+    s.duration = 10;
+    var rad = 10;
+    var endRad = 0;
 
     s.startPose.pos.setXYZ(x, y, -0.5);
     s.endPose.pos.setXYZ(x, y, 0);
@@ -264,17 +297,17 @@ PlayerSpirit.prototype.explode = function() {
       self.screen.splasher.addCopy(s);
     }
 
-    // // fast outer particles
-    // particles = Math.ceil(15 * (1 + 0.5 * Math.random()));
-    // explosionRad = 20;
-    // dirOffset = 2 * Math.PI * Math.random();
-    // for (i = 0; i < particles; i++) {
-    //   duration = 15 * (1 + Math.random());
-    //   dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
-    //   dx = Math.sin(dir) * explosionRad / duration;
-    //   dy = Math.cos(dir) * explosionRad / duration;
-    //   addSplash(x, y, dx, dy, duration, 1);
-    // }
+    // fast outer particles
+    particles = Math.ceil(15 * (1 + 0.5 * Math.random()));
+    explosionRad = 20;
+    dirOffset = 2 * Math.PI * Math.random();
+    for (i = 0; i < particles; i++) {
+      duration = 15 * (1 + Math.random());
+      dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
+      dx = Math.sin(dir) * explosionRad / duration;
+      dy = Math.cos(dir) * explosionRad / duration;
+      addSplash(x, y, dx, dy, duration, 1);
+    }
 
     // inner smoke ring
     particles = Math.ceil(20 * (1 + 0.5 * Math.random()));

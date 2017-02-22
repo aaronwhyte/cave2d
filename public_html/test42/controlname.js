@@ -3,5 +3,7 @@
  */
 var ControlName = {
   JOIN_TRIGGER: 'j',
-  STICK: 's'
+  STICK: 's',
+  BUTTON_1: '1',
+  BUTTON_2: '2'
 };
