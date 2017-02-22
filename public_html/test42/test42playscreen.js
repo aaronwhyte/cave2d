@@ -150,11 +150,14 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
           return Math.abs(x / self.canvas.width - xFrac) < 0.5 && Math.abs(y / self.canvas.height - yFrac) < 0.5;
         })
         .setRadius(40);
+    // TODO real buttons with positioning and stamps
     return new PlayerSlot()
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, joinTrigger))
         .add(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, stick));
+            .add(ControlName.STICK, stick)
+            .add(ControlName.BUTTON_1, new MultiTrigger())
+            .add(ControlName.BUTTON_2, new MultiTrigger()));
   }
 
   function createPointerLockSlot(b1, b2) {
