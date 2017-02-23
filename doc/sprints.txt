@@ -141,19 +141,24 @@ v PlayerSlot takes on more responsibility and generality
 v structure control names
 v give the whole slot to the PlayerSpirit, not just the controls, so the player can do different things based on current state.
   v listen in PlayerSpirit when PLAYING
+v improve touchstick startzone
+  v add touch starting-spot to player slot
+  v create function bound to the set of touch slots and the current slot,
+    and returns true if params x, y are closest to the current touch-player's starting spot.
 - triggers
   v keys for keyboard
   v two mouse buttons (for mouse) and two keys (trackpad) for pointer lock
-  - two on-screen buttons for touch players.
-    - positioning: just put them in the corner for now.
-    - stamps with numbers in them.
+  v two on-screen buttons for touch players.
+    * soon I'll want to re-position these buttons so I'll need the slot to know how to do that...
+      I think I can predefine all positions as CuboidRule stuff. There are basically two setups: corner and edge.
+      By transforming the vec4's in a template I can create all 12.
+    - stamps
+      v circles
+      - with numbers in them
+    - at least pairs of cuboid rules
 - separate "drop" from "die".
   - Make button1 drop the player for now.
   - Dead players auto-respawn after a short timeout.
-- improve touchstick startzone
-  - add touch starting-spot to player slot
-  - create function bound to the set of touch slots and the current slot,
-    and returns true if params x, y are closest to the current touch-player's starting spot.
 - player menu
   - takes a clickpad and a list of items
   - movable anchor to screen
