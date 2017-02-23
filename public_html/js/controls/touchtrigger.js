@@ -39,6 +39,7 @@ TouchTrigger.prototype.startListening = function() {
   this.elem.addEventListener('touchstart', this.touchStartListener);
   this.elem.addEventListener('touchend', this.touchEndListener);
   this.elem.addEventListener('touchcancel', this.touchEndListener);
+  this.listening = true;
   return this;
 };
 
@@ -48,6 +49,7 @@ TouchTrigger.prototype.stopListening = function() {
   this.elem.removeEventListener('touchcancel', this.touchEndListener);
   this.touchId = null;
   this.val = false;
+  this.listening = false;
   return this;
 };
 
