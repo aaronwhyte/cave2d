@@ -23,6 +23,17 @@ function CuboidRule(source, target) {
   this.targetAnchor = new Vec4();
 }
 
+CuboidRule.prototype.set = function(that) {
+  this.source = that.source;
+  this.target = that.target;
+  for (var v4 in this) {
+    if (this[v4] instanceof Vec4) {
+      this[v4].set(that[v4]);
+    }
+  }
+  return this;
+};
+
 /**
  * Sets rules for setting the size of the target based on the parent size and a constant max pixel size.
  * Zero in a dimension means unconstrained.
