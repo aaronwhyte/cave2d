@@ -7,6 +7,7 @@ function TriggerWidget(elem) {
 
   this.modelMatrix = new Matrix44();
   this.mat44 = new Matrix44();
+  this.angle = 0;
 
   this.trigger = new MultiTrigger();
   this.touchTrigger = null;
@@ -48,7 +49,10 @@ TriggerWidget.prototype.listenToMouseButton = function() {
 
 TriggerWidget.prototype.listenToTouch = function() {
   if (!this.touchTrigger) {
-    this.touchTrigger = new TouchTrigger(this.elem).startListening();
+    this.touchTrigger = new TouchTrigger(this.elem);
+    if (this.listening) {
+      this.touchTrigger.startListening();
+    }
     this.trigger.addTrigger(this.touchTrigger);
     this.updateStartZone();
   }
@@ -57,7 +61,10 @@ TriggerWidget.prototype.listenToTouch = function() {
 
 TriggerWidget.prototype.listenToMousePointer = function() {
   if (!this.mousePointerTrigger) {
-    this.mousePointerTrigger = new MousePointerTrigger(this.elem).startListening();
+    this.mousePointerTrigger = new MousePointerTrigger(this.elem);
+    if (this.listening) {
+      this.mousePointerTrigger.startListening();
+    }
     this.trigger.addTrigger(this.mousePointerTrigger);
     this.updateStartZone();
   }
@@ -66,6 +73,11 @@ TriggerWidget.prototype.listenToMousePointer = function() {
 
 TriggerWidget.prototype.setStamp = function(stamp) {
   this.stamp = stamp;
+  return this;
+};
+
+TriggerWidget.prototype.setAngle = function(angle) {
+  this.angle = angle;
   return this;
 };
 
@@ -205,6 +217,7 @@ TriggerWidget.prototype.updateStartZone = function() {
 
 TriggerWidget.prototype.updateModelMatrix = function() {
   this.modelMatrix.toTranslateOpXYZ(this.widgetCuboid.pos.getX(), this.widgetCuboid.pos.getY(), -0.99)
+      .multiply(this.mat44.toRotateZOp(this.angle))
       .multiply(this.mat44.toScaleOpXYZ(this.widgetCuboid.rad.getX(), this.widgetCuboid.rad.getY(), 1));
   this.keyboardTipModelMatrix.toTranslateOpXYZ(
       this.keyboardTipCuboid.pos.getX(), this.keyboardTipCuboid.pos.getY(), -0.99)
