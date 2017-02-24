@@ -107,7 +107,7 @@ Test42PlayScreen.prototype.createDefaultWorld = function() {
 
 Test42PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
-  function createKeyboardSlot(up, right, down, left, turbo, b1, b2) {
+  function createKeyboardSlot(up, right, down, left, turbo, b1, b2, menuKey) {
     return new PlayerSlot()
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
@@ -124,17 +124,29 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
                 .setUpRightDownLeftByName(up, right, down, left)
                 .setTurboTrigger(new KeyTrigger().addTriggerKeyByName(turbo)))
             .add(ControlName.BUTTON_1, new KeyTrigger().addTriggerKeyByName(b1))
-            .add(ControlName.BUTTON_2, new KeyTrigger().addTriggerKeyByName(b2)));
+            .add(ControlName.BUTTON_2, new KeyTrigger().addTriggerKeyByName(b2))
+            .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
+        );
         // .add(PlayerSpirit.STATE_MENU, new ControlMap()
         //     .add('clickPad', new KeyClickPad().setUpRightDownLeftByName(up, right, down, left)));
   }
 
   function createTouchSlot(angle) {
+    var buttonAngle = angle + Math.PI / 4;
+    var releasedColor = new Vec4(1, 1, 1, 0.15);
+    var pressedColor = new Vec4(1, 1, 1, 0.3);
     var matrix = new Matrix44().toRotateZOp(angle);
-    var joinTrigger = new TriggerWidget(self.getHudEventTarget())
-        .setStamp(self.stamps.circleStamp)
-        .listenToTouch()
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25));
+
+    function button(stamp) {
+      return new TriggerWidget(self.getHudEventTarget())
+          .setStamp(stamp)
+          .setAngle(buttonAngle)
+          .listenToTouch()
+          .setPressedColorVec4(pressedColor)
+          .setReleasedColorVec4(releasedColor);
+    }
+
+    var joinTrigger = button(self.stamps.joinButton);
     var n = Math.sqrt(0.5);
     var rule = new CuboidRule(self.canvasCuboid, joinTrigger.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
@@ -166,24 +178,30 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
         })
         .setRadius(40);
 
-    var button1 = new TriggerWidget(self.getHudEventTarget())
-        .listenToTouch()
-        .setStamp(self.stamps.circleStamp);
-    var button2 = new TriggerWidget(self.getHudEventTarget())
-        .listenToTouch()
-        .setStamp(self.stamps.circleStamp);
-    var leftRule1 = new CuboidRule(self.canvasCuboid, button1.getWidgetCuboid())
+    var buttonRad = 45;
+    var button1 = button(self.stamps.button1);
+    var rule1 = new CuboidRule(self.canvasCuboid, button1.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
-        .setSourceAnchor(new Vec4(-1, 0).transform(matrix), Vec4.ZERO)
-        .setTargetAnchor(new Vec4(-1, -1).transform(matrix), new Vec4(-2, 4).transform(matrix))
-        .setSizingMax(new Vec4(0.15, 0.15), new Vec4(40, 40));
-    self.cuboidRules.push(leftRule1);
-    var leftRule2 = new CuboidRule(button1.getWidgetCuboid(), button2.getWidgetCuboid())
+        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-1, 2.6).transform(matrix), new Vec4(-2, 0).transform(matrix))
+        .setSizingMax(new Vec4(0.2, 0.2), new Vec4(buttonRad, buttonRad));
+    self.cuboidRules.push(rule1);
+
+    var button2 = button(self.stamps.button2);
+    var rule2 = new CuboidRule(self.canvasCuboid, button2.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
-        .setSourceAnchor(new Vec4(0, 1).transform(matrix), Vec4.ZERO)
-        .setTargetAnchor(new Vec4(0, -1).transform(matrix), new Vec4(0, -4).transform(matrix))
-        .setSizingMax(new Vec4(1, 1), Vec4.ZERO);
-    self.cuboidRules.push(leftRule2);
+        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-2.6, 1).transform(matrix), new Vec4(0, 2).transform(matrix))
+        .setSizingMax(new Vec4(0.2, 0.2), new Vec4(buttonRad, buttonRad));
+    self.cuboidRules.push(rule2);
+
+    var menuTrigger = button(self.stamps.menuButton);
+    var menuRule = new CuboidRule(self.canvasCuboid, menuTrigger.getWidgetCuboid())
+        .setAspectRatio(new Vec4(1, 1))
+        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-n, n).transform(matrix), Vec4.ZERO)
+        .setSizingMax(new Vec4(0.12, 0.12, 0.99), new Vec4(30, 30));
+    self.cuboidRules.push(menuRule);
 
     var slot = new PlayerSlot()
         .add(ControlState.WAITING, new ControlMap()
@@ -191,12 +209,13 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
         .add(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, stick)
             .add(ControlName.BUTTON_1, button1)
-            .add(ControlName.BUTTON_2, button2));
+            .add(ControlName.BUTTON_2, button2)
+            .add(ControlName.MENU, menuTrigger));
     slot.corner = new Vec4(-1, 1).transform(matrix);
     return slot;
   }
 
-  function createPointerLockSlot(b1, b2) {
+  function createPointerLockSlot(b1, b2, menuKey) {
     // Only join on mouse-click, since that's a good indication you have a mouse in hand,
     // and it starts the Pointer Lock process.
     return new PlayerSlot()
@@ -209,13 +228,15 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTrigger(new KeyTrigger().addTriggerKeyByName(b1)))
             .add(ControlName.BUTTON_2, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas).setListenToLeftButton(false))
-                .addTrigger(new KeyTrigger().addTriggerKeyByName(b2))));
+                .addTrigger(new KeyTrigger().addTriggerKeyByName(b2)))
+            .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
+        );
   }
 
   this.slots = [
-    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'm', ',', '.'),
-    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'x'),
-    createPointerLockSlot('v', 'b'),
+    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'm', ',', '.', 'l'),
+    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'x', 'q'),
+    createPointerLockSlot('v', 'b', 'g'),
     createTouchSlot(0),
     createTouchSlot(Math.PI / 2),
     createTouchSlot(Math.PI),

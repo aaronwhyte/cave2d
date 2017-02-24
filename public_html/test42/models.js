@@ -2,7 +2,8 @@
  * Common models for this game, besides the ones the Spirit classes own.
  * @constructor
  */
-function Models() {
+function Models(glyphs) {
+  this.glyphs = glyphs;
 }
 
 Models.prototype.getPause = function() {
@@ -18,7 +19,6 @@ Models.prototype.getPause = function() {
   return m;
 };
 
-
 Models.prototype.getPlayerPause = function() {
   var m = new RigidModel();
   for (var x = -1; x <= 1; x += 2) {
@@ -29,6 +29,30 @@ Models.prototype.getPlayerPause = function() {
                 )));
     m.addRigidModel(bar);
   }
+  m.addRigidModel(RigidModel.createCircle(24));
+  return m;
+};
+
+Models.prototype.getJoinButton = function() {
+  return this.getCharButton('?');
+};
+
+Models.prototype.getButton1 = function() {
+  return this.getCharButton('1');
+};
+
+Models.prototype.getButton2 = function() {
+  return this.getCharButton('2');
+};
+
+Models.prototype.getMenuButton = function() {
+  return this.getCharButton('!');
+};
+
+Models.prototype.getCharButton = function(char) {
+  var m = new RigidModel();
+  var glyphSize = 0.25;
+  m.addRigidModel(this.glyphs.models[char]).transformPositions(new Matrix44().toScaleOpXYZ(glyphSize, -glyphSize, 1));
   m.addRigidModel(RigidModel.createCircle(24));
   return m;
 };

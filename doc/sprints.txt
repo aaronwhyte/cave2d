@@ -145,34 +145,37 @@ v improve touchstick startzone
   v add touch starting-spot to player slot
   v create function bound to the set of touch slots and the current slot,
     and returns true if params x, y are closest to the current touch-player's starting spot.
-- triggers
+v triggers
   v keys for keyboard
   v two mouse buttons (for mouse) and two keys (trackpad) for pointer lock
   v two on-screen buttons for touch players.
-    * soon I'll want to re-position these buttons so I'll need the slot to know how to do that...
-      I think I can predefine all positions as CuboidRule stuff. There are basically two setups: corner and edge.
-      By transforming the vec4's in a template I can create all 12.
-    - stamps
+    v stamps
       v circles
-      - with numbers in them
-    - at least pairs of cuboid rules
-- separate "drop" from "die".
-  - Make button1 drop the player for now.
-  - Dead players auto-respawn after a short timeout.
-- player menu
-  - takes a clickpad and a list of items
-  - movable anchor to screen
-  - actual menu items
-    - back
-    - change color
-    - move buttons? (move between about five different positions)
-    - drop player
+      v with numbers in them
+    v pairs of cuboid rules
+    v in the corner always
+  v and a third button that does nothing yet, right where the join button goes.
 - aim: each player has an aim line, like game2
   - player spirit vec
   - rendering (steal from game 2)
   - keyboard
   - pointer lock
   - touch
+- player menu
+  - menu triggers
+    - keyboard
+    - pointerlock
+    - touch
+  - menu class
+    - takes a clickpad and a list of items
+    - movable anchor to screen
+    - actual menu items
+      - back
+      - change color
+      - drop player
+- separate "drop" from "die".
+  - Make button1 drop the player for now.
+  - Dead players auto-respawn after a short timeout.
 
 Test 43: Multiplayer Camera
 - code nest
