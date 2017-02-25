@@ -535,12 +535,12 @@ World.prototype.processNextEventWthoutFreeing = function() {
   return e;
 };
 
-World.prototype.addTimeout = function(time, spiritId, val) {
+World.prototype.addTimeout = function(time, spiritId, timeoutVal) {
   var e = WorldEvent.alloc();
   e.type = WorldEvent.TYPE_TIMEOUT;
   e.time = time;
   e.spiritId = spiritId;
-  e.timeoutVal = val;
+  e.timeoutVal = timeoutVal;
   this.queue.add(e);
 };
 

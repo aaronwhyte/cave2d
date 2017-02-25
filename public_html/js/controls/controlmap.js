@@ -31,9 +31,22 @@ ControlMap.prototype.stopListening = function() {
 
 ControlMap.prototype.draw = function(renderer) {
   for (var i in this.map) {
-    if (this.map[i].draw) {
-      this.map[i].draw(renderer);
+    var control = this.map[i];
+    if (control.draw) {
+      control.draw(renderer);
     }
   }
   return this;
 };
+
+ControlMap.prototype.releaseControls = function() {
+  for (var i in this.map) {
+    var control = this.map[i];
+    if (control.release) {
+      control.release();
+    }
+  }
+  return this;
+};
+
+

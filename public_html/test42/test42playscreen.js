@@ -22,6 +22,8 @@ Test42PlayScreen.ANT_RAD = 1.2;
 
 Test42PlayScreen.MAX_UNDO_DEPTH = 20000;
 
+Test42PlayScreen.RESPAWN_TIMEOUT = 40;
+
 Test42PlayScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
   for (var i = 0; i < this.cuboidRules.length; i++) {
@@ -245,23 +247,20 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
 
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
+    slot.id = this.world.newId();
     slot.setState(ControlState.WAITING);
-    this.addJoinClickListener(slot);
   }
-};
-
-Test42PlayScreen.prototype.addJoinClickListener = function(slot) {
-  var controlMap = slot.getControlList();
-  var joinTrigger = controlMap.get(ControlName.JOIN_TRIGGER);
-  var self = this;
-  joinTrigger.addTriggerDownListener(function() {
-    self.playerJoin(slot);
-  });
 };
 
 Test42PlayScreen.prototype.playerJoin = function(slot) {
   slot.setState(ControlState.PLAYING);
+  this.playerSpawn(slot);
+};
+
+Test42PlayScreen.prototype.playerSpawn = function(slot) {
+  slot.releaseControls();
   var spiritId = this.addItem(Test42BaseScreen.MenuItem.PLAYER, new Vec2d(Math.random() * 8 - 4, Math.random() * 8 - 4), 0);
+  slot.lastSpiritId = spiritId;
   var spirit = this.world.spirits[spiritId];
   spirit.setSlot(slot);
   var r = 1.1 - 0.6 * Math.random();
@@ -304,9 +303,31 @@ Test42PlayScreen.prototype.playerJoin = function(slot) {
   this.splasher.addCopy(s);
 };
 
+Test42PlayScreen.prototype.playerDrop = function(slot) {
+  var playerSpirit = this.world.spirits[slot.lastSpiritId];
+  if (playerSpirit) {
+    this.killPlayerSpirit(playerSpirit);
+  }
+  slot.setState(ControlState.WAITING);
+};
+
+
 Test42PlayScreen.prototype.handleInput = function () {
   for (var i = 0; i < this.playerSpirits.length; i++) {
     this.playerSpirits[i].handleInput();
+  }
+  for (var i = 0; i < this.slots.length; i++) {
+    var slot = this.slots[i];
+    var controls = slot.getControlList();
+    if (slot.stateName == ControlState.PLAYING) {
+      if (controls.get(ControlName.MENU).getVal()) {
+        this.playerDrop(slot);
+      }
+    } else if (slot.stateName == ControlState.WAITING) {
+      if (controls.get(ControlName.JOIN_TRIGGER).getVal()) {
+        this.playerJoin(slot);
+      }
+    }
   }
 };
 
@@ -371,16 +392,46 @@ Test42PlayScreen.prototype.onHitEvent = function(e) {
   }
 };
 
+Test42PlayScreen.prototype.onTimeout = function(e) {
+  var slot = this.getSlotFromRespawnTimeOutVal(e.timeoutVal);
+  if (slot && slot.stateName != ControlState.WAITING) {
+    this.playerSpawn(slot);
+  }
+};
+
 Test42PlayScreen.prototype.checkPlayerAntHit = function(pair) {
   if (this.getSpiritPairMatchingTypes(pair, Test42BaseScreen.SpiritType.PLAYER, Test42BaseScreen.SpiritType.ANT)) {
-    this.killPlayerSpirit(pair[0]);
+    var playerSpirit = pair[0];
+    this.killPlayerSpirit(playerSpirit);
+    this.schedulePlayerRespawn(playerSpirit.slot);
   }
 };
 
 Test42PlayScreen.prototype.killPlayerSpirit = function(spirit) {
-  this.sounds.playerExplode(spirit.getBodyPos());
   var slot = spirit.slot;
   spirit.explode();
+  this.sounds.playerExplode(spirit.getBodyPos());
   this.removeByBodyId(spirit.bodyId);
-  slot.setState(ControlState.WAITING);
+};
+
+Test42PlayScreen.prototype.schedulePlayerRespawn = function(slot) {
+  this.world.addTimeout(this.now() + Test42PlayScreen.RESPAWN_TIMEOUT, null, this.getRespawnTimeoutValForSlot(slot));
+};
+
+Test42PlayScreen.prototype.getRespawnTimeoutValForSlot = function(slot) {
+  return ['respawn', slot.id, slot.lastSpiritId];
+};
+
+Test42PlayScreen.prototype.getSlotFromRespawnTimeOutVal = function(timeoutVal) {
+  if (!timeoutVal || 'respawn' != timeoutVal[0]) return null;
+  var slotId = timeoutVal[1];
+  var lastSpiritId = timeoutVal[2];
+  for (var i = 0; i < this.slots.length; i++) {
+    var slot = this.slots[i];
+    // make sure there wasn't a new spirit created for this slot since the timeout was created
+    if (slot.id == slotId && slot.lastSpiritId == lastSpiritId) {
+      return slot;
+    }
+  }
+  return null;
 };

@@ -5,6 +5,9 @@
 function PlayerSlot() {
   this.stateMap = {};
   this.stateName = null;
+
+  // hm...
+  this.lastSpiritId = null;
 }
 
 /**
@@ -40,11 +43,27 @@ PlayerSlot.prototype.getControlList = function() {
 };
 
 /**
+ * @returns {ControlMap}
+ */
+PlayerSlot.prototype.getControlListForState = function(stateName) {
+  return this.stateMap[stateName];
+};
+
+/**
  * @param {Renderer} renderer
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.draw = function(renderer) {
-  var c = this.getControls();
+  var c = this.getControlList();
   if (c) c.draw(renderer);
+  return this;
+};
+
+/**
+ * @returns {PlayerSlot}
+ */
+PlayerSlot.prototype.releaseControls = function() {
+  var c = this.getControlList();
+  if (c) c.releaseControls();
   return this;
 };

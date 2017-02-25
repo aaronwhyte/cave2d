@@ -338,6 +338,8 @@ WorldScreen.prototype.clock = function(startTimeMs) {
       this.world.processNextEventWthoutFreeing();
       if (e.type == WorldEvent.TYPE_HIT) {
         this.onHitEvent(e);
+      } else if (e.type == WorldEvent.TYPE_TIMEOUT && !e.spiritId) {
+        this.onTimeout(e);
       }
       e.free();
       // Some events can destroy the screen.
@@ -355,6 +357,14 @@ WorldScreen.prototype.clock = function(startTimeMs) {
   if (this.exitEndTime && this.world.now >= this.exitEndTime) {
     this.exitLevel();
   }
+};
+
+/**
+ * Override this to handle null-spirit timeouts in your screen.
+ * @param e
+ */
+WorldScreen.prototype.onTimeout = function(e) {
+  console.warn('unhandled WorldScreen timeout event ' + e);
 };
 
 WorldScreen.prototype.bodyIfInGroup = function(group, b0, b1) {

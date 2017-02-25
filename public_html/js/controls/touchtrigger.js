@@ -47,7 +47,7 @@ TouchTrigger.prototype.stopListening = function() {
   this.elem.removeEventListener('touchstart', this.touchStartListener);
   this.elem.removeEventListener('touchend', this.touchEndListener);
   this.elem.removeEventListener('touchcancel', this.touchEndListener);
-  this.release()
+  this.release();
   this.listening = false;
   return this;
 };

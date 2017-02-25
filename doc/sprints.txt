@@ -154,18 +154,21 @@ v triggers
       v with numbers in them
     v pairs of cuboid rules
     v in the corner always
-  v and a third button that does nothing yet, right where the join button goes.
+v menu triggers
+  v keyboard
+  v pointerlock
+  v touch
+v separate "drop" from "die".
+  v Make menu button drop the player for now.
+  v Dead players auto-respawn after a short timeout.
 - aim: each player has an aim line, like game2
   - player spirit vec
   - rendering (steal from game 2)
+  - aim is a function of the type of control, the old aim, and the new stick value).
   - keyboard
   - pointer lock
   - touch
-- player menu
-  - menu triggers
-    - keyboard
-    - pointerlock
-    - touch
+- player menu (do I even need this now? Maybe not important yet)
   - menu class
     - takes a clickpad and a list of items
     - movable anchor to screen
@@ -173,9 +176,6 @@ v triggers
       - back
       - change color
       - drop player
-- separate "drop" from "die".
-  - Make button1 drop the player for now.
-  - Dead players auto-respawn after a short timeout.
 
 Test 43: Multiplayer Camera
 - code nest
