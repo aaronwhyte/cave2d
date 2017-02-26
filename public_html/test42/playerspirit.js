@@ -8,7 +8,11 @@ function PlayerSpirit(screen) {
   this.type = Test42BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
 
+  this.aim = new Vec2d();
+  this.destAim = new Vec2d();
+
   this.vec2d = new Vec2d();
+  this.vec2d2 = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
@@ -21,9 +25,8 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.SPEED = 2;
+PlayerSpirit.SPEED = 1.3;
 PlayerSpirit.TRACTION = 0.4;
-PlayerSpirit.SLOW_TRACTION = 0.4;
 PlayerSpirit.DISPLACEMENT_BOOST = 4;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -36,7 +39,8 @@ PlayerSpirit.SCHEMA = {
   1: "id",
   2: "bodyId",
   3: "color",
-  4: "lastFrictionTime"
+  4: "lastFrictionTime",
+  5: "aim"
 };
 
 PlayerSpirit.getJsoner = function() {
@@ -179,6 +183,24 @@ PlayerSpirit.prototype.handleInput = function() {
       this.setColorRGB(r, g, b);
     }
   }
+
+  if (touchlike) {
+    if (stickMag) {
+      this.aim.scale(0.4).add(stick.getVal(this.vec2d).scale(2 + 2 * this.vec2d.magnitude()));
+    }
+  } else {
+    if (stickMag) {
+      stick.getVal(this.destAim).scaleToLength(1);
+    }
+    var dist = this.aim.distance(this.destAim);
+    var twist = 0.15;
+    if (dist > 1.2 || dist < twist) {
+      this.aim.set(this.destAim);
+    } else if (dist) {
+      this.aim.slideByFraction(this.destAim, twist / dist);
+    }
+  }
+  this.aim.scaleToLength(1);
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -222,24 +244,38 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   if (!body) return;
   var bodyPos = this.getBodyPos();
-  this.vec2d.reset();
-
-  if (this.slot) {
-    var stick = this.slot.getControlList().get(ControlName.STICK);
-    if (stick) {
-      stick.getVal(this.vec2d).scaleToLength(-1);
-    }
-  }
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-      .multiply(this.mat44.toSheerZOpXY(this.vec2d.x, this.vec2d.y))
+      .multiply(this.mat44.toSheerZOpXY(-this.aim.x, -this.aim.y))
       .multiply(this.mat44.toRotateZOp(-body.vel.x * 0.2));
   renderer
       .setStamp(this.modelStamp)
       .setColorVector(this.color)
       .setModelMatrix(this.modelMatrix)
       .drawStamp();
+
+  // draw aim guide
+  renderer.setStamp(this.stamps.cylinderStamp);
+  // renderer.setColorVector(this.color);
+  var p1 = this.vec2d;
+  var p2 = this.vec2d2;
+  var aimLen = body.rad * 4;
+  var rad = body.rad * 0.2;
+  p1.set(this.aim).scaleToLength(body.rad * 2).add(bodyPos);
+  p2.set(this.aim).scaleToLength(body.rad * (aimLen)).add(bodyPos);
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0))
+      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  renderer.setModelMatrix(this.modelMatrix);
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0))
+      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  renderer.setModelMatrix2(this.modelMatrix);
+  renderer.drawStamp();
+  // p1.free();
+  // p2.free();
+
 };
 
 PlayerSpirit.prototype.explode = function() {

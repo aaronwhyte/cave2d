@@ -22,7 +22,7 @@ Test42PlayScreen.ANT_RAD = 1.2;
 
 Test42PlayScreen.MAX_UNDO_DEPTH = 20000;
 
-Test42PlayScreen.RESPAWN_TIMEOUT = 40;
+Test42PlayScreen.RESPAWN_TIMEOUT = 30;
 
 Test42PlayScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);

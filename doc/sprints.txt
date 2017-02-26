@@ -161,25 +161,17 @@ v menu triggers
 v separate "drop" from "die".
   v Make menu button drop the player for now.
   v Dead players auto-respawn after a short timeout.
-- aim: each player has an aim line, like game2
-  - player spirit vec
-  - rendering (steal from game 2)
-  - aim is a function of the type of control, the old aim, and the new stick value).
-  - keyboard
-  - pointer lock
-  - touch
-- player menu (do I even need this now? Maybe not important yet)
-  - menu class
-    - takes a clickpad and a list of items
-    - movable anchor to screen
-    - actual menu items
-      - back
-      - change color
-      - drop player
+v aim: each player has an aim line, like game2
+  v player spirit vec
+  v rendering (steal from game 2)
+  v aim is a function of the type of control, the old aim, and the new stick value.
+  v keyboard
+  v pointer lock
+  v touch
 
 Test 43: Multiplayer Camera
 - code nest
-- bigger playable area random map gen?
+- bigger playable area
 - zoom and position camera so everyone's view-circle is on screen. Easy because rectangles.
 - selective tile draw with multiple players
   - create set of tiles
@@ -192,7 +184,6 @@ Test 43: Multiplayer Camera
  - shader aid - function of max player-count, min dist from a plr. Vertex shader on color, approaching black?
 - Draw even more stuff near players that are close to each other - a kind of sensor bonus?
 
-
 Uniclock physics optimization
 I did the math and doing all the acceleration at the same time is up to 2x as efficient in terms of collision count,
 among moving objects that are all potentially colliding with each other. Not that big a deal in my case since
@@ -201,6 +192,15 @@ So...
 - add a master timer that triggers friction and control for NPCs, to minimize collision recomputation
 - add switch to change between individual spaced-out computation and master switch
 - compare
+
+Player menu (do I even need this now? Maybe not important yet)
+- menu class
+  - takes a clickpad and a list of items
+  - movable anchor to screen
+  - actual menu items
+    - back
+    - change color
+    - drop player
 
 Idea:
 Solve the lastPathRefreshTime problem
