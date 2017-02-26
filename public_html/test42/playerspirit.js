@@ -185,22 +185,31 @@ PlayerSpirit.prototype.handleInput = function() {
   }
 
   if (touchlike) {
+    // touch or pointer-lock
     if (stickMag) {
-      this.aim.scale(0.4).add(stick.getVal(this.vec2d).scale(2 + 2 * this.vec2d.magnitude()));
+      var dot = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
+      var reverseness = Math.max(0, -dot);
+      this.destAim.scale(0.5 * (1 - reverseness)).add(stick.getVal(this.vec2d).scale(Math.min(3, 2 + 2 * stickMag)));
+      this.destAim.scaleToLength(1);
+      var dist = stick.getVal(this.vec2d).distance(this.destAim);
+      this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
     }
+    this.aim.slideByFraction(this.destAim, 0.5);
   } else {
+    // up/down/left/right buttons
     if (stickMag) {
       stick.getVal(this.destAim).scaleToLength(1);
     }
-    var dist = this.aim.distance(this.destAim);
-    var twist = 0.15;
-    if (dist > 1.2 || dist < twist) {
+    var dot = this.destAim.dot(this.aim);
+    if (dot < -0.9) {
+      // 180 degree flip, so set it instantly.
       this.aim.set(this.destAim);
-    } else if (dist) {
-      this.aim.slideByFraction(this.destAim, twist / dist);
+    } else {
+      var dist = this.aim.distance(this.destAim);
+      this.aim.slideByFraction(this.destAim, Math.min(1, 0.1/(dist + 0.1) + dist * 0.25));
+      this.aim.scaleToLength(1);
     }
   }
-  this.aim.scaleToLength(1);
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
