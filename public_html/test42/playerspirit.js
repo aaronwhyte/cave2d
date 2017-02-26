@@ -184,14 +184,15 @@ PlayerSpirit.prototype.handleInput = function() {
     }
   }
 
+  var dot, dist;
   if (touchlike) {
     // touch or pointer-lock
     if (stickMag) {
-      var dot = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
+      dot = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
       var reverseness = Math.max(0, -dot);
       this.destAim.scale(0.5 * (1 - reverseness)).add(stick.getVal(this.vec2d).scale(Math.min(3, 2 + 2 * stickMag)));
       this.destAim.scaleToLength(1);
-      var dist = stick.getVal(this.vec2d).distance(this.destAim);
+      dist = stick.getVal(this.vec2d).distance(this.destAim);
       this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
     }
     this.aim.slideByFraction(this.destAim, 0.5);
@@ -200,12 +201,12 @@ PlayerSpirit.prototype.handleInput = function() {
     if (stickMag) {
       stick.getVal(this.destAim).scaleToLength(1);
     }
-    var dot = this.destAim.dot(this.aim);
+    dot = this.destAim.dot(this.aim);
     if (dot < -0.9) {
       // 180 degree flip, so set it instantly.
       this.aim.set(this.destAim);
     } else {
-      var dist = this.aim.distance(this.destAim);
+      dist = this.aim.distance(this.destAim);
       this.aim.slideByFraction(this.destAim, Math.min(1, 0.1/(dist + 0.1) + dist * 0.25));
       this.aim.scaleToLength(1);
     }
