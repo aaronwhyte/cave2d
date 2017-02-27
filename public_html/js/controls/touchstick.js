@@ -100,13 +100,12 @@ TouchStick.prototype.onTouchMove = function(e) {
       // Keep tracking this one.
       var xDiff = touch.pageX - this.tip.x;
       var yDiff = touch.pageY - this.tip.y;
-      // The further the stick is currently displaced, the more sensitive it is to changes, from 100% to 200%.
-      var distFrac = 1 + this.tip.distance(this.center) / this.radius;
+      // The further the stick is currently displaced, the more sensitive it is to changes.
+      var distFrac = Math.min(1, 0.5 + 0.5 * this.tip.distance(this.center) / this.radius);
       this.tip.addXY(xDiff * distFrac, yDiff * distFrac);
       var dist = this.tip.distance(this.center);
-      var max = this.radius;
-      if (dist > max) {
-        this.center.slideByFraction(this.tip, (dist - max) / dist);
+      if (dist > this.radius) {
+        this.center.slideByFraction(this.tip, (dist - this.radius) / this.radius);
       }
       break;
     }
