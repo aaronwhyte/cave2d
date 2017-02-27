@@ -45,24 +45,41 @@ Vec2d.otherAxis = function(axis) {
   return axis === Vec2d.X ? Vec2d.Y : Vec2d.X;
 };
 
+/**
+ * @param {Vec2d} v
+ * @return {Vec2d}
+ */
 Vec2d.prototype.add = function(v) {
   this.x += v.x;
   this.y += v.y;
   return this;
 };
 
+/**
+ * @param {number} x
+ * @param {number} y
+ * @returns {Vec2d}
+ */
 Vec2d.prototype.addXY = function(x, y) {
   this.x += x;
   this.y += y;
   return this;
 };
 
+/**
+ * @param {Vec2d} v
+ * @returns {Vec2d}
+ */
 Vec2d.prototype.subtract = function(v) {
   this.x -= v.x;
   this.y -= v.y;
   return this;
 };
 
+/**
+ * @param {Vec2d} v
+ * @returns {Vec2d}
+ */
 Vec2d.prototype.multiply = function(v) {
   this.x *= v.x;
   this.y *= v.y;
@@ -266,6 +283,7 @@ Vec2d.distanceSq = function(x0, y0, x1, y1) {
 };
 
 Vec2d.prototype.projectOnto = function(that) {
+  // TODO: is this right? unit test.
   var coef = this.dot(that) / that.dot(that);
   return this.set(that).scale(coef);
 };
