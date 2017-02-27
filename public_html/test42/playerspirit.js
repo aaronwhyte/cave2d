@@ -10,6 +10,7 @@ function PlayerSpirit(screen) {
 
   this.aim = new Vec2d();
   this.destAim = new Vec2d();
+  this.slowKeyAimSpeed = 0;
 
   this.vec2d = new Vec2d();
   this.vec2d2 = new Vec2d();
@@ -25,8 +26,8 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.SPEED = 1.3;
-PlayerSpirit.TRACTION = 0.4;
+PlayerSpirit.SPEED = 2;
+PlayerSpirit.TRACTION = 0.1;
 PlayerSpirit.DISPLACEMENT_BOOST = 4;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -143,7 +144,7 @@ PlayerSpirit.prototype.handleInput = function() {
 
     var controls = this.slot.getControlList();
 
-    var a = this.accel.reset();
+    this.accel.reset();
     var stickScale = 1;
     var stick = controls.get(ControlName.STICK);
     var touchlike = stick.isTouchlike();
@@ -151,7 +152,7 @@ PlayerSpirit.prototype.handleInput = function() {
     var speed = PlayerSpirit.SPEED;
 
     // traction slowdown
-    a.set(body.vel).scale(-traction);
+    this.accel.set(body.vel).scale(-traction);
 
     stick.getVal(this.vec2d);
     var stickMag = this.vec2d.magnitude();
@@ -159,10 +160,14 @@ PlayerSpirit.prototype.handleInput = function() {
       // Allow the player to maintain top speed as long as they provide a teeny bit of input.
       stickScale = Math.min(1, (stickMag * 0.5 + 0.499999999));
       this.vec2d.scale(PlayerSpirit.DISPLACEMENT_BOOST);
+    } else if (stick.isSpeedTriggerDown() && stickMag) {
+      // When in keyboard precise-aiming mode, only accelerate
+      // when the stick and the aim are close to the same direction.
+      this.vec2d.scale(Math.max(0, this.vec2d.dot(this.aim)) / stickMag);
     }
     this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
-    a.add(this.vec2d);
-    body.addVelAtTime(a, this.now());
+    this.accel.add(this.vec2d);
+    body.addVelAtTime(this.accel, this.now());
 
     if (touchlike) {
       stick.scale(stickScale);
@@ -189,6 +194,9 @@ PlayerSpirit.prototype.handleInput = function() {
     // touch or pointer-lock
     if (stickMag) {
       dot = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
+      // Any stick vector more than 90 degrees away from the aim vector is somewhat reverse:
+      // 0 for 90 degreees,
+      // 1 for 180 degrees.
       var reverseness = Math.max(0, -dot);
       this.destAim.scale(0.5 * (1 - reverseness)).add(stick.getVal(this.vec2d).scale(Math.min(3, 2 + 2 * stickMag)));
       this.destAim.scaleToLength(1);
@@ -196,18 +204,35 @@ PlayerSpirit.prototype.handleInput = function() {
       this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
     }
     this.aim.slideByFraction(this.destAim, 0.5);
+
   } else {
     // up/down/left/right buttons
+    var slowAimFriction = 0.05;
     if (stickMag) {
-      stick.getVal(this.destAim).scaleToLength(1);
+      if (stick.isSpeedTriggerDown()) {
+        // precise keyboard aiming
+        var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
+        dist = correction.magnitude();
+        this.slowKeyAimSpeed += 0.004 * dist;
+        slowAimFriction = 0.01;
+        this.destAim.add(correction.scale(Math.min(1, this.slowKeyAimSpeed)));
+      } else {
+        // normal fast corrections
+        stick.getVal(this.destAim);
+        slowAimFriction = 1;
+      }
     }
+    this.slowKeyAimSpeed *= (1 - slowAimFriction);
+    this.destAim.scaleToLength(1);
     dot = this.destAim.dot(this.aim);
     if (dot < -0.9) {
       // 180 degree flip, so set it instantly.
       this.aim.set(this.destAim);
     } else {
       dist = this.aim.distance(this.destAim);
-      this.aim.slideByFraction(this.destAim, Math.min(1, 0.1/(dist + 0.1) + dist * 0.25));
+      var distContrib = dist * 0.25;
+      var smoothContrib = 0.1/(dist + 0.1);
+      this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
       this.aim.scaleToLength(1);
     }
   }
@@ -270,10 +295,10 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   // renderer.setColorVector(this.color);
   var p1 = this.vec2d;
   var p2 = this.vec2d2;
-  var aimLen = body.rad * 4;
+  var aimLen = 1.5;
   var rad = body.rad * 0.2;
   p1.set(this.aim).scaleToLength(body.rad * 2).add(bodyPos);
-  p2.set(this.aim).scaleToLength(body.rad * (aimLen)).add(bodyPos);
+  p2.set(this.aim).scaleToLength(body.rad * 2 + aimLen).add(bodyPos);
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));

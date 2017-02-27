@@ -109,7 +109,7 @@ Test42PlayScreen.prototype.createDefaultWorld = function() {
 
 Test42PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
-  function createKeyboardSlot(up, right, down, left, turbo, b1, b2, menuKey) {
+  function createKeyboardSlot(up, right, down, left, slow, b1, b2, menuKey) {
     return new PlayerSlot()
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
@@ -117,14 +117,16 @@ Test42PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(right)
                 .addTriggerKeyByName(down)
                 .addTriggerKeyByName(left)
-                .addTriggerKeyByName(turbo)
+                .addTriggerKeyByName(slow)
                 .addTriggerKeyByName(b1)
                 .addTriggerKeyByName(b2)
             ))
         .add(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, new TurboKeyStick()
+            .add(ControlName.STICK, new TwoSpeedKeyStick()
                 .setUpRightDownLeftByName(up, right, down, left)
-                .setTurboTrigger(new KeyTrigger().addTriggerKeyByName(turbo)))
+                .setSpeedTrigger(new KeyTrigger().addTriggerKeyByName(slow))
+                .setDefaultMultiplier(1)
+                .setSpeedTwoMultiplier(1/3))
             .add(ControlName.BUTTON_1, new KeyTrigger().addTriggerKeyByName(b1))
             .add(ControlName.BUTTON_2, new KeyTrigger().addTriggerKeyByName(b2))
             .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))

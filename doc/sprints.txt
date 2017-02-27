@@ -120,7 +120,7 @@ v touch players
     x b1 and b2 if playing - meh do it later when I really want buttons
 v simple pattern-match for collision response because JEEZ.
 v PointerLockStick support
-v TurboKeyStick
+v TwoSpeedKeyStick
 Join/Drop 3.0:
 For touch players, explicit join and drop is good because if other players aren't joining, it's good to give
 that touch area to the actual players. So stop dropping players when they die. Make drop explicit somehow...
@@ -168,6 +168,11 @@ v aim: each player has an aim line, like game2
   v keyboard
   v pointer lock
   v touch
+v fix touch jitters - it's overcorrecting at high stick displacement sometimes
+v try floatier movement
+v "slow" button for keyboarders to aim better, instead of turbo.
+  v make turbostick a more generic two-speed stick
+
 
 Test 43: Multiplayer Camera
 - code nest
