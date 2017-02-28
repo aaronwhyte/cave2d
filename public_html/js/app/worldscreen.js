@@ -81,6 +81,8 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx) {
 
 WorldScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
+WorldScreen.MINIMUM_PHYSICS_MS = 4;
+
 WorldScreen.EventLayer = {
   POPUP: 0,
   HUD: 1,
@@ -96,7 +98,7 @@ WorldScreen.prototype.getMsPerFrame = function() {
 };
 
 WorldScreen.prototype.getMsUntilClockAbort = function() {
-  return this.getMsPerFrame() - 1;
+  return this.getMsPerFrame() - 4;
 };
 
 WorldScreen.prototype.getPathDuration = function() {
@@ -333,6 +335,12 @@ WorldScreen.prototype.clock = function(startTimeMs) {
     // Stop if there are no more events to process, or we've moved the game clock far enough ahead
     // to match the amount of wall-time elapsed since the last frame,
     // or (worst case) we're out of time for this frame.
+
+    // Ensure that if there's not enough time to calculate all the physics, we spend at least *some* time on it,
+    // even if that puts us over our frame budget.
+    // Otherwise, if drawing takes so much time that there's nothing left for physics afterwards,
+    // then we might never make progress on physics again.
+    endTimeMs = Math.max(performance.now() + WorldScreen.MINIMUM_PHYSICS_MS, endTimeMs);
 
     while (e && e.time <= endClock && performance.now() <= endTimeMs) {
       this.world.processNextEventWthoutFreeing();
