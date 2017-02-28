@@ -173,6 +173,18 @@ v try floatier movement
 v "slow" button for keyboarders to aim better, instead of turbo.
   v make turbostick a more generic two-speed stick
 
+Don't let drawing completely block physics. Better to skip frames.
+- Do physics for a few ms, then all the drawing, then any remaining physics with early bailout.
+- Don't handle input twice
+
+Uniclock physics optimization
+I did the math and doing all the acceleration at the same time is up to 2x as efficient in terms of collision count,
+among moving objects that are all potentially colliding with each other. Not that big a deal in my case since
+So...
+- graph collision computation count
+- add a master timer that triggers friction and control for NPCs, to minimize collision recomputation
+- add switch to change between individual spaced-out computation and master switch
+- compare
 
 Test 43: Multiplayer Camera
 - code nest
@@ -189,14 +201,7 @@ Test 43: Multiplayer Camera
  - shader aid - function of max player-count, min dist from a plr. Vertex shader on color, approaching black?
 - Draw even more stuff near players that are close to each other - a kind of sensor bonus?
 
-Uniclock physics optimization
-I did the math and doing all the acceleration at the same time is up to 2x as efficient in terms of collision count,
-among moving objects that are all potentially colliding with each other. Not that big a deal in my case since
-So...
-- graph collision computation count
-- add a master timer that triggers friction and control for NPCs, to minimize collision recomputation
-- add switch to change between individual spaced-out computation and master switch
-- compare
+Tractor Beam YEAAAAA
 
 Player menu (do I even need this now? Maybe not important yet)
 - menu class
