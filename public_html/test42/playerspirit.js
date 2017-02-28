@@ -144,6 +144,8 @@ PlayerSpirit.prototype.handleInput = function() {
 
     var controls = this.slot.getControlList();
 
+    ////////////
+    // MOVEMENT
     this.accel.reset();
     var stickScale = 1;
     var stick = controls.get(ControlName.STICK);
@@ -173,6 +175,8 @@ PlayerSpirit.prototype.handleInput = function() {
       stick.scale(stickScale);
     }
 
+    ////////////
+    // BUTTONS
     var b1 = controls.get(ControlName.BUTTON_1);
     var b2 = controls.get(ControlName.BUTTON_2);
     if (b1.getVal()) {
@@ -187,56 +191,61 @@ PlayerSpirit.prototype.handleInput = function() {
       var b = 1 - 0.9 * Math.random();
       this.setColorRGB(r, g, b);
     }
-  }
 
-  var dot, dist;
-  if (touchlike) {
-    // touch or pointer-lock
-    if (stickMag) {
-      dot = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
-      // Any stick vector more than 90 degrees away from the aim vector is somewhat reverse:
-      // 0 for 90 degreees,
-      // 1 for 180 degrees.
-      var reverseness = Math.max(0, -dot);
-      this.destAim.scale(0.5 * (1 - reverseness)).add(stick.getVal(this.vec2d).scale(Math.min(3, 2 + 2 * stickMag)));
-      this.destAim.scaleToLength(1);
-      dist = stick.getVal(this.vec2d).distance(this.destAim);
-      this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
-    }
-    this.aim.slideByFraction(this.destAim, 0.5);
-
-  } else {
-    // up/down/left/right buttons
-    var slowAimFriction = 0.05;
-    if (stickMag) {
-      if (stick.isSpeedTriggerDown()) {
-        // precise keyboard aiming
-        var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
-        dist = correction.magnitude();
-        this.slowKeyAimSpeed += 0.004 * dist;
-        slowAimFriction = 0.01;
-        this.destAim.add(correction.scale(Math.min(1, this.slowKeyAimSpeed)));
-      } else {
-        // normal fast corrections
-        stick.getVal(this.destAim);
-        slowAimFriction = 1;
+    ////////
+    // AIM
+    var dot, dist;
+    if (touchlike) {
+      // touch or pointer-lock
+      if (stickMag) {
+        dot = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
+        // Any stick vector more than 90 degrees away from the aim vector is somewhat reverse:
+        // 0 for 90 degreees, 1 for 180 degrees.
+        // The more reverse the stick is, the less the old aim's contribution to the new aim.
+        // That makes it easier to flip the aim nearly 180 degrees quickly.
+        // Without that, the player ends up facing gliding backwards instead of aiming.
+        var reverseness = Math.max(0, -dot);
+        this.destAim.scale(0.5 * (1 - reverseness * 0.9)).add(stick.getVal(this.vec2d).scale(Math.min(3, 2 + 2 * stickMag)));
+        this.destAim.scaleToLength(1);
+        dist = stick.getVal(this.vec2d).distance(this.destAim);
+        this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
       }
-    }
-    this.slowKeyAimSpeed *= (1 - slowAimFriction);
-    this.destAim.scaleToLength(1);
-    dot = this.destAim.dot(this.aim);
-    if (dot < -0.9) {
-      // 180 degree flip, so set it instantly.
-      this.aim.set(this.destAim);
+      this.aim.slideByFraction(this.destAim, 0.5);
+
     } else {
-      dist = this.aim.distance(this.destAim);
-      var distContrib = dist * 0.25;
-      var smoothContrib = 0.1/(dist + 0.1);
-      this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
-      this.aim.scaleToLength(1);
+      // up/down/left/right buttons
+      var slowAimFriction = 0.05;
+      if (stickMag) {
+        if (stick.isSpeedTriggerDown()) {
+          // precise keyboard aiming
+          var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
+          dist = correction.magnitude();
+          this.slowKeyAimSpeed += 0.004 * dist;
+          slowAimFriction = 0.01;
+          this.destAim.add(correction.scale(Math.min(1, this.slowKeyAimSpeed)));
+        } else {
+          // normal fast corrections
+          stick.getVal(this.destAim);
+          slowAimFriction = 1;
+        }
+      }
+      this.slowKeyAimSpeed *= (1 - slowAimFriction);
+      this.destAim.scaleToLength(1);
+      dot = this.destAim.dot(this.aim);
+      if (dot < -0.9) {
+        // 180 degree flip, so set it instantly.
+        this.aim.set(this.destAim);
+      } else {
+        dist = this.aim.distance(this.destAim);
+        var distContrib = dist * 0.25;
+        var smoothContrib = 0.1/(dist + 0.1);
+        this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
+        this.aim.scaleToLength(1);
+      }
     }
   }
 };
+
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
