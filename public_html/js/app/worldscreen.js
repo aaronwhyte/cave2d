@@ -81,7 +81,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx) {
 
 WorldScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
-WorldScreen.MINIMUM_PHYSICS_MS = 4;
+WorldScreen.MINIMUM_PHYSICS_MS = 2;
 
 WorldScreen.EventLayer = {
   POPUP: 0,
@@ -289,6 +289,7 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
     }
     this.clock(startTimeMs);
   }
+  this.onFrameEnd(startTimeMs);
 };
 
 WorldScreen.prototype.sampleStats = function() {
@@ -365,6 +366,10 @@ WorldScreen.prototype.clock = function(startTimeMs) {
   if (this.exitEndTime && this.world.now >= this.exitEndTime) {
     this.exitLevel();
   }
+};
+
+WorldScreen.prototype.onFrameEnd = function(startFrameMs) {
+  // Empty by default. Override me maybe?
 };
 
 /**
