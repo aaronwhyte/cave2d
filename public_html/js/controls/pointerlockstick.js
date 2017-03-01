@@ -12,6 +12,8 @@ function PointerLockStick(elem) {
   this.locked = false;
   this.listening = false;
 
+  this.legacyHack = false;
+
   this.lockChangeListener = function(e) {
     self.onLockChange(e);
   };
@@ -33,6 +35,17 @@ PointerLockStick.BROWSER_PREFIXES = ['', 'moz', 'webkit'];
 
 PointerLockStick.prototype.setRadius = function(r) {
   this.radius = r;
+  return this;
+};
+
+/**
+ * @param canvas
+ * @deprecated legacy stuff. Use the constructor.
+ * @returns {PointerLockStick}
+ */
+PointerLockStick.prototype.setCanvas = function(canvas) {
+  this.legacyHack = true;
+  this.elem = canvas;
   return this;
 };
 
@@ -64,6 +77,12 @@ PointerLockStick.prototype.stopListening = function() {
 PointerLockStick.prototype.getVal = function(out) {
   this.val.set(this.tip).scale(1 / this.radius).scaleXY(1, -1);
   this.clip();
+  if (this.legacyHack) {
+    this.scale(0.5);
+    if (this.val.magnitudeSquared() < 0.01) {
+      this.val.reset();
+    }
+  }
   return out.set(this.val);
 };
 
