@@ -173,18 +173,14 @@ v try floatier movement
 v "slow" button for keyboarders to aim better, instead of turbo.
   v make turbostick a more generic two-speed stick
 
-Don't let drawing completely block physics. Better to skip frames.
-- Do physics for a few ms, then all the drawing, then any remaining physics with early bailout.
-- Don't handle input twice
+v Don't let drawing completely block physics. Better to skip frames. This is good.
 
-Uniclock physics optimization
+Uniclock physics optimization? Summary: Not worth it.
 I did the math and doing all the acceleration at the same time is up to 2x as efficient in terms of collision count,
-among moving objects that are all potentially colliding with each other. Not that big a deal in my case since
-So...
-- graph collision computation count
-- add a master timer that triggers friction and control for NPCs, to minimize collision recomputation
-- add switch to change between individual spaced-out computation and master switch
-- compare
+among moving objects that are all changing trajectory and potentially colliding with each other.
+But that makes the cpu load spiky, so every third frame or so is overloaded, and the rest are underloaded. Plus I lose
+a lot of timing flexibility. I guess I don't really mind the individual timing loops. Plus a ton of my
+collisions are really rayscans or unmoving walls. Meh.
 
 Test 43: Multiplayer Camera
 - code nest

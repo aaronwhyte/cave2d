@@ -97,7 +97,6 @@ Test42PlayScreen.prototype.setScreenListening = function(listen) {
 };
 
 Test42PlayScreen.prototype.createDefaultWorld = function() {
-  this.world.setChangeRecordingEnabled(true);
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
   var ants = 7;
   for (var a = 0; a < ants; a++) {

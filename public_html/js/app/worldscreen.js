@@ -318,10 +318,11 @@ WorldScreen.prototype.clock = function(startTimeMs) {
   if (this.paused) return;
   var endTimeMs = startTimeMs + this.getMsUntilClockAbort();
   var startClock = this.world.now;
-  var endClock = this.world.now + this.getClocksPerFrame() * this.timeMultiplier;
+  var endClock = startClock + this.getClocksPerFrame() * this.timeMultiplier;
 
   this.somethingMoving = this.isPlaying();
   if (!this.isPlaying()) {
+    // editing!
     for (var id in this.world.spirits) {
       if (this.world.bodies[this.world.spirits[id].bodyId].isMoving()) {
         this.somethingMoving = true;
@@ -332,7 +333,6 @@ WorldScreen.prototype.clock = function(startTimeMs) {
 
   if (this.somethingMoving) {
     this.setDirty(true);
-    var e = this.world.getNextEvent();
     // Stop if there are no more events to process, or we've moved the game clock far enough ahead
     // to match the amount of wall-time elapsed since the last frame,
     // or (worst case) we're out of time for this frame.
@@ -343,7 +343,9 @@ WorldScreen.prototype.clock = function(startTimeMs) {
     // then we might never make progress on physics again.
     endTimeMs = Math.max(performance.now() + WorldScreen.MINIMUM_PHYSICS_MS, endTimeMs);
 
-    while (e && e.time <= endClock && performance.now() <= endTimeMs) {
+    var e = this.world.getNextEvent();
+    var pnow = performance.now();
+    while (e && e.time <= endClock ){//&& pnow <= endTimeMs) {
       this.world.processNextEventWthoutFreeing();
       if (e.type == WorldEvent.TYPE_HIT) {
         this.onHitEvent(e);
@@ -357,7 +359,9 @@ WorldScreen.prototype.clock = function(startTimeMs) {
 
       // recompute endClock in case an event changed the timeMultiplier
       endClock = Math.max(this.world.now, startClock + this.getClocksPerFrame() * this.timeMultiplier);
+      pnow = performance.now();
     }
+
     if (!e || e.time > endClock) {
       this.world.now = endClock;
     }
