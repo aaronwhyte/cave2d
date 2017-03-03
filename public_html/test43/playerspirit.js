@@ -7,6 +7,7 @@ function PlayerSpirit(screen) {
 
   this.type = Test43BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
+  this.camera = new Camera(0, 0, 25);
 
   this.aim = new Vec2d();
   this.destAim = new Vec2d();
@@ -123,6 +124,8 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   b.rad = 0.9;
   b.hitGroup = this.screen.getHitGroups().PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.grip = 0.5;
+  b.elasticity = 0.7;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
   b.spiritId = this.id;
   return b;
@@ -288,6 +291,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   if (!body) return;
   var bodyPos = this.getBodyPos();
+  this.camera.follow(bodyPos);
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))

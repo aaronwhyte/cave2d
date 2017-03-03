@@ -5,7 +5,9 @@
 function Test43PlayScreen(controller, canvas, renderer, stamps, sfx) {
   Test43BaseScreen.call(this, controller, canvas, renderer, stamps, sfx);
 
-  this.camera = new Camera(0.2, 0.6, 25);
+  this.camera = new Camera(0, 0, 25);
+  this.viewableWorldRect = new Rect();
+  this.pixelsPerMeter = 100;
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
@@ -19,8 +21,6 @@ Test43PlayScreen.prototype = new Test43BaseScreen();
 Test43PlayScreen.prototype.constructor = Test43PlayScreen;
 
 Test43PlayScreen.ANT_RAD = 1.2;
-
-Test43PlayScreen.MAX_UNDO_DEPTH = 20000;
 
 Test43PlayScreen.RESPAWN_TIMEOUT = 30;
 
@@ -97,6 +97,25 @@ Test43PlayScreen.prototype.setScreenListening = function(listen) {
 };
 
 Test43PlayScreen.prototype.createDefaultWorld = function() {
+  this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 18, 1);
+  var pos = new Vec2d();
+  var pos2 = new Vec2d();
+  var rooms = 10;
+  for (var r = 0; r < rooms; r++) {
+    var rad = 4 + Math.random() * 10;
+    pos.setXY(0, rad + 20 + 40 * Math.random()).rot(2 * Math.PI * (r / rooms)).rot(0.3 * (Math.random() - 0.5));
+    this.tileGrid.drawTerrainPill(pos, pos2.reset().addXY(0, (rad + Math.random() * rad * 3)).rot(Math.random() * Math.PI * 2).add(pos), rad, 1);
+    this.tileGrid.drawTerrainPill(pos, Vec2d.ZERO, 2, 1);
+    if (Math.random() > 0.4) this.tileGrid.drawTerrainPill(pos, pos, 1 + Math.random() * (rad - 4), 0);
+  }
+  rooms = 10;
+  for (var r = 0; r < rooms; r++) {
+    var rad = 6 + Math.random() * 10;
+    pos.setXY(0, rad + 20 + 5 * Math.random()).rot(2 * Math.PI * (r / rooms)).rot(0.1 * (Math.random() - 0.5));
+    this.tileGrid.drawTerrainPill(pos, pos, rad, 1);
+    this.tileGrid.drawTerrainPill(pos, Vec2d.ZERO, 3, 1);
+    if (Math.random() > 0.2) this.tileGrid.drawTerrainPill(pos, pos, 1 + Math.random() * (rad - 5), 0);
+  }
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
   var ants = 7;
   for (var a = 0; a < ants; a++) {
@@ -339,6 +358,7 @@ Test43PlayScreen.prototype.handleInput = function () {
 };
 
 Test43PlayScreen.prototype.drawScene = function() {
+  this.positionCamera();
   this.renderer.setViewMatrix(this.viewMatrix);
   var startTime = performance.now();
   this.drawSpirits();
@@ -352,6 +372,51 @@ Test43PlayScreen.prototype.drawScene = function() {
   if (!this.paused) {
     this.controller.requestAnimation();
   }
+};
+
+Test43PlayScreen.prototype.positionCamera = function() {
+  if (this.playerSpirits.length == 0) {
+    this.viewableWorldRect.setPosXY(0, 0);
+  }
+  this.viewableWorldRect.rad.reset();
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    var spirit = this.playerSpirits[i];
+    var playerCamera = spirit.camera;
+    if (i == 0) {
+      this.viewableWorldRect.setPosXY(playerCamera.getX(), playerCamera.getY());
+    } else {
+      this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
+    }
+  }
+  var pad = 22;
+  this.viewableWorldRect.padXY(pad, pad);
+
+  // Smooth the zoom changes when the players are all close to each other,
+  // to avoid sudden zoom in/out during casual movement.
+  var sqr = 8;
+  var r = this.viewableWorldRect.rad;
+  var ux = Math.max(0, (pad + sqr - r.x) / sqr);
+  r.x += ux * ux * sqr / 2;
+  var uy = Math.max(0, (pad + sqr - r.y) / sqr);
+  r.y += uy * uy * sqr / 2;
+
+  var destPixelsPerMeter = Math.min(
+      2 * this.canvas.width / this.viewableWorldRect.getWidth(),
+      2 * this.canvas.height / this.viewableWorldRect.getHeight());
+  if (destPixelsPerMeter < this.pixelsPerMeter) {
+    // zoom out quickly
+    this.pixelsPerMeter = (this.pixelsPerMeter + destPixelsPerMeter) / 2;
+  } else {
+    // zoom in slowly
+    this.pixelsPerMeter = (this.pixelsPerMeter * 19 + destPixelsPerMeter) / 20;
+  }
+
+  this.camera.cameraPos.scale(9).add(this.viewableWorldRect.pos).scale(1/10);
+  this.updateViewMatrix();
+};
+
+Test43PlayScreen.prototype.getPixelsPerMeter = function() {
+  return this.pixelsPerMeter;
 };
 
 Test43PlayScreen.prototype.drawHud = function() {
@@ -419,6 +484,13 @@ Test43PlayScreen.prototype.killPlayerSpirit = function(spirit) {
   spirit.explode();
   this.sounds.playerExplode(spirit.getBodyPos());
   this.removeByBodyId(spirit.bodyId);
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    if (this.playerSpirits[i] == spirit) {
+      this.playerSpirits[i] = this.playerSpirits[this.playerSpirits.length - 1];
+      this.playerSpirits.pop();
+      break;
+    }
+  }
 };
 
 Test43PlayScreen.prototype.schedulePlayerRespawn = function(slot) {

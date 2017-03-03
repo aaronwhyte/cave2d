@@ -184,8 +184,9 @@ collisions are really rayscans or unmoving walls. Meh.
 
 Test 43: Multiplayer Camera
 v code nest
-- bigger playable area
-- zoom and position camera so everyone's view-circle is on screen. Easy because rectangles.
+v bigger playable area
+- zoom and position camera so everyone's view-circle is on screen. Easy because rectangles...
+  v but the old "pretend screen is square" system won't work. This needs independent width and height zoom.
 - selective tile draw with multiple players
   - create set of tiles
   - draw 'em
