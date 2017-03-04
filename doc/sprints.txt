@@ -198,7 +198,8 @@ v selective tile draw with multiple players
   - also mark things in those cells as near a player, with some extra padding so spirits look wide awake before they get drawn.
 - Smooth the circles
  - shader aid - function of max player-count, min dist from a plr. Vertex shader on color, approaching black?
-- Draw even more stuff near players that are close to each other - a kind of sensor bonus?
+x Draw even more stuff near players that are close to each other - a kind of sensor bonus?
+  nah it messes with the incentives too much
 
 Tractor Beam YEAAAAA
 

@@ -15,6 +15,9 @@ function Test43PlayScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.playerSpirits = [];
   this.circles = [];
+  this.startingCircle = new Circle();
+
+  this.bitSize = 0.5;
 
   this.initPauseButtons();
 }
@@ -367,22 +370,28 @@ Test43PlayScreen.prototype.drawScene = function() {
 
   var circles = this.circles;
   var count = 0;
+
+  var pad = 26;
+  // give the players some bonus visibility if they're near each other?
+  // var r = this.viewableWorldRect.rad.magnitude();
+  // pad += Math.max(0, pad * 2 - r);
+
   for (var i = 0; i < this.playerSpirits.length; i++) {
     var spirit = this.playerSpirits[i];
     var cam = spirit.camera;
     var circle = spirit.circle;
     circle.pos.set(cam.cameraPos);
-    circle.rad = 22;
+    circle.rad = pad;
     circles[i] = circle;
     count++;
   }
   circles.length = count;
   if (count == 0) {
-    this.drawTiles();
-  } else {
-    this.drawTilesOverlappingCircles(circles);
+    this.startingCircle.rad = pad;
+    this.circles[0] = this.startingCircle;
   }
-  // this.drawTiles();
+  this.drawTilesOverlappingCircles(circles);
+
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();
 
