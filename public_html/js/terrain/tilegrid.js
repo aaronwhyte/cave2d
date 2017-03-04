@@ -15,6 +15,11 @@ function TileGrid(bitGrid, renderer, world, hitGroup) {
 
   // array accumuating changes while recording, or null if not recording.
   this.changes = null;
+
+  // temp cache
+  this.cellIdsToDraw = new ObjSet();
+  this.v0 = new Vec2d();
+  this.v1 = new Vec2d();
 }
 
 TileGrid.prototype.setWallGrip = function(grip) {
@@ -39,28 +44,78 @@ TileGrid.prototype.drawTerrainPill = function(p1, p2, rad, color) {
 /**
  * Draws the visible tiles using the renderer.
  */
-TileGrid.prototype.drawTiles = function(centerX, centerY, pixelsPerCell) {
-  var cx = Math.round((centerX - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
-  var cy = Math.round((centerY - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
+TileGrid.prototype.drawTiles = function(worldX, worldY, pixelsPerCell) {
+  var cx = this.getCellIndexAtWorld(worldX);
+  var cy = this.getCellIndexAtWorld(worldY);
   var cellsPerScreenX = this.renderer.canvas.width / pixelsPerCell;
   var cellsPerScreenY = this.renderer.canvas.height / pixelsPerCell;
   var rx = Math.ceil(cellsPerScreenX);
   var ry = Math.ceil(cellsPerScreenY);
   for (var dy = -ry; dy <= ry; dy++) {
     for (var dx = -rx; dx <= rx; dx++) {
-      var stamp = this.getStampAtCellXY(cx + dx, cy + dy);
-      if (stamp) {
-        this.renderer.setStamp(stamp).drawStamp();
+      this.drawTileAtCellXY(cx + dx, cy + dy);
+    }
+  }
+};
+
+/**
+ * Draws the visible tiles using the renderer.
+ */
+TileGrid.prototype.drawTilesOverlappingCircles = function(circles, pixelsPerCell) {
+  this.cellIdsToDraw.reset();
+  for (var i = 0; i < circles.length; i++) {
+    var circle = circles[i];
+    if (!circle) continue;
+    this.addCellIdsOverlappingCircle(this.cellIdsToDraw, circle, pixelsPerCell);
+  }
+  for (var cellId in this.cellIdsToDraw.vals) {
+    this.drawTileAtCellId(cellId);
+  }
+};
+TileGrid.prototype.addCellIdsOverlappingCircle = function(objSet, circle, pixelsPerCell) {
+  var x0 = this.getCellIndexAtWorld(circle.pos.x - circle.rad);
+  var x1 = this.getCellIndexAtWorld(circle.pos.x + circle.rad);
+  var y0 = this.getCellIndexAtWorld(circle.pos.y - circle.rad);
+  var y1 = this.getCellIndexAtWorld(circle.pos.y + circle.rad);
+  var rectRad = this.v1.setXY(this.bitGrid.cellWorldSize/2, this.bitGrid.cellWorldSize/2);
+  for (var cy = y0; cy <= y1; cy++) {
+    for (var cx = x0; cx <= x1; cx++) {
+      var rectPos = this.v0.setXY((cx + 0.5) * this.bitGrid.cellWorldSize, (cy + 0.5) * this.bitGrid.cellWorldSize);
+      // console.log(rectPos, this.bitGrid.cellWorldSize/2, circle.pos, circle.rad);
+      if (OverlapDetector.isRectOverlappingCircle(rectPos, rectRad, circle.pos, circle.rad)) {
+        objSet.put(this.bitGrid.getCellIdAtIndexXY(cx, cy));
       }
     }
   }
 };
 
+
+TileGrid.prototype.getCellIndexAtWorld = function(worldVal) {
+  return Math.round((worldVal - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
+};
+
+TileGrid.prototype.drawTileAtCellXY = function(cellX, cellY) {
+  var stamp = this.getStampAtCellXY(cellX, cellY);
+  if (stamp) {
+    this.renderer.setStamp(stamp).drawStamp();
+  }
+};
+
+TileGrid.prototype.drawTileAtCellId = function(cellId) {
+  var stamp = this.getStampAtCellId(cellId);
+  if (stamp) {
+    this.renderer.setStamp(stamp).drawStamp();
+  }
+};
+
 TileGrid.prototype.getStampAtCellXY = function(cx, cy) {
+  return this.getStampAtCellId(this.bitGrid.getCellIdAtIndexXY(cx, cy));
+};
+
+TileGrid.prototype.getStampAtCellId = function(cellId) {
   this.world.pauseRecordingChanges();
-  this.loadCellXY(cx, cy);
+  this.loadCellId(cellId);
   this.world.resumeRecordingChanges();
-  var cellId = this.bitGrid.getCellIdAtIndexXY(cx, cy);
   var tile = this.tiles[cellId];
   return tile && tile.stamp;
 };
@@ -121,7 +176,10 @@ TileGrid.prototype.changeTerrain = function(cellId) {
 };
 
 TileGrid.prototype.loadCellXY = function(cx, cy) {
-  var cellId = this.bitGrid.getCellIdAtIndexXY(cx, cy);
+  this.loadCellId(this.bitGrid.getCellIdAtIndexXY(cx, cy));
+};
+
+TileGrid.prototype.loadCellId = function(cellId) {
   var tile = this.tiles[cellId];
   if (!tile) {
     this.tiles[cellId] = tile = {

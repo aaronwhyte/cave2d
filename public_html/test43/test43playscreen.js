@@ -14,6 +14,7 @@ function Test43PlayScreen(controller, canvas, renderer, stamps, sfx) {
   this.hudViewMatrix = new Matrix44();
 
   this.playerSpirits = [];
+  this.circles = [];
 
   this.initPauseButtons();
 }
@@ -364,7 +365,24 @@ Test43PlayScreen.prototype.drawScene = function() {
   this.drawSpirits();
   stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
-  this.drawTiles();
+  var circles = this.circles;
+  var count = 0;
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    var spirit = this.playerSpirits[i];
+    var cam = spirit.camera;
+    var circle = spirit.circle;
+    circle.pos.set(cam.cameraPos);
+    circle.rad = 22;
+    circles[i] = circle;
+    count++;
+  }
+  circles.length = count;
+  if (count == 0) {
+    this.drawTiles();
+  } else {
+    this.drawTilesOverlappingCircles(circles);
+  }
+  // this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);
   this.drawHud();
 
@@ -393,7 +411,7 @@ Test43PlayScreen.prototype.positionCamera = function() {
 
   // Smooth the zoom changes when the players are all close to each other,
   // to avoid sudden zoom in/out during casual movement.
-  var sqr = 8;
+  var sqr = 5;
   var r = this.viewableWorldRect.rad;
   var ux = Math.max(0, (pad + sqr - r.x) / sqr);
   r.x += ux * ux * sqr / 2;
@@ -405,7 +423,7 @@ Test43PlayScreen.prototype.positionCamera = function() {
       2 * this.canvas.height / this.viewableWorldRect.getHeight());
   if (destPixelsPerMeter < this.pixelsPerMeter) {
     // zoom out quickly
-    this.pixelsPerMeter = (this.pixelsPerMeter + destPixelsPerMeter) / 2;
+    this.pixelsPerMeter = destPixelsPerMeter;
   } else {
     // zoom in slowly
     this.pixelsPerMeter = (this.pixelsPerMeter * 19 + destPixelsPerMeter) / 20;

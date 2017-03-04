@@ -594,11 +594,24 @@ WorldScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
   }
 };
 
+/**
+ * Draws all the tiles that overlap the screen.
+ */
 WorldScreen.prototype.drawTiles = function() {
   var camera = this.getCamera();
   if (this.tileGrid) {
     this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
     this.tileGrid.drawTiles(camera.getX(), camera.getY(), this.getPixelsPerGridCell());
+  }
+};
+
+/**
+ * Draws all the tiles that overlap the circles in the array. Array values may be null.
+ */
+WorldScreen.prototype.drawTilesOverlappingCircles = function(circles) {
+  if (this.tileGrid) {
+    this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
+    this.tileGrid.drawTilesOverlappingCircles(circles, this.getPixelsPerGridCell())
   }
 };
 
