@@ -185,6 +185,33 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
   return rects;
 };
 
+BitGrid.prototype.getTinyRectsOfColorForCellId = function(color, cellId) {
+  var self = this;
+  function createRect(bx, by) {
+    var wx = cx * self.cellWorldSize + (bx) * self.bitWorldSize;
+    var wy = cy * self.cellWorldSize + (by) * self.bitWorldSize;
+    return new Rect(wx, wy, self.bitWorldSize/2, self.bitWorldSize/2);
+  }
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  var rects = [];
+  var cell = this.cells[cellId];
+  var isArray = Array.isArray(cell);
+  for (var by = 0; by < BitGrid.BITS; by++) {
+    for (var bx = 0; bx < BitGrid.BITS; bx++) {
+      if (isArray) {
+        var bit = (cell[by] >> bx) & 1;
+        if (bit == color) {
+          rects.push(createRect(bx, by))
+        }
+      } else if (this.cellEqualsColor(cell, color)) {
+        rects.push(createRect(bx, by))
+      }
+    }
+  }
+  return rects;
+};
+
 /**
  * @returns {Number} the grid cell X index that corresponds with world coord X.
  */
@@ -466,18 +493,3 @@ BitGrid.fromJSON = function(json) {
   }
   return bitGrid;
 };
-
-// Old naive serializer/deserializer.
-//BitGrid.prototype.toJSON = function() {
-//  return {
-//    bitWorldSize: this.bitWorldSize,
-//    cells: this.cells
-//  };
-//};
-//
-//BitGrid.fromJSON = function(json) {
-//  var bitGrid = new BitGrid(json.bitWorldSize);
-//  bitGrid.cells = json.cells;
-//  return bitGrid;
-//};
-

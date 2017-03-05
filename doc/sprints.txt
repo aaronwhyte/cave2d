@@ -192,6 +192,7 @@ v selective tile draw with multiple players
   v draw 'em
   v actually circular selection
   v do real allocation in test43 circle biz
+v distinguish floor from invisible void
 - selective spirit draw
   - select world cells that touch view circles
   - draw stuff in those cells

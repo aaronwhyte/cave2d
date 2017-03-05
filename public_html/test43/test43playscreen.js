@@ -18,6 +18,8 @@ function Test43PlayScreen(controller, canvas, renderer, stamps, sfx) {
   this.startingCircle = new Circle();
 
   this.bitSize = 0.5;
+  //this.levelColorVector = new Vec4(0.8, 0.6, 0.2);
+  this.levelColorVector = new Vec4(0.8, 0.8, 0.8);
 
   this.initPauseButtons();
 }

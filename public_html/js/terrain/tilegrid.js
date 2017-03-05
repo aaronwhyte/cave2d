@@ -20,6 +20,7 @@ function TileGrid(bitGrid, renderer, world, hitGroup) {
   this.cellIdsToDraw = new ObjSet();
   this.v0 = new Vec2d();
   this.v1 = new Vec2d();
+  this.rect = new Rect();
 }
 
 TileGrid.prototype.setWallGrip = function(grip) {
@@ -94,17 +95,25 @@ TileGrid.prototype.getCellIndexAtWorld = function(worldVal) {
   return Math.round((worldVal - 0.5 * this.bitGrid.cellWorldSize) / this.bitGrid.cellWorldSize);
 };
 
-TileGrid.prototype.drawTileAtCellXY = function(cellX, cellY) {
-  var stamp = this.getStampAtCellXY(cellX, cellY);
-  if (stamp) {
-    this.renderer.setStamp(stamp).drawStamp();
-  }
+/**
+ * Lazily creates the tile stamp, and draws it.
+ * @param cx
+ * @param cy
+ */
+TileGrid.prototype.drawTileAtCellXY = function(cx, cy) {
+  this.drawTileAtCellId(this.bitGrid.getCellIdAtIndexXY(cx, cy));
 };
 
 TileGrid.prototype.drawTileAtCellId = function(cellId) {
-  var stamp = this.getStampAtCellId(cellId);
-  if (stamp) {
-    this.renderer.setStamp(stamp).drawStamp();
+  var tile = this.tiles[cellId];
+  if (!tile) {
+    tile = this.loadCellId(cellId);
+  }
+  if (!tile.stamp) {
+    tile.stamp = this.createTileStampForCellId(cellId);
+  }
+  if (tile.stamp) {
+    this.renderer.setStamp(tile.stamp).drawStamp();
   }
 };
 
@@ -198,12 +207,7 @@ TileGrid.prototype.loadCellId = function(cellId) {
       tile.bodyIds.push(this.world.addBody(body));
     }
   }
-  // TODO don't create a stamp until a stampless tile is actually being rendered.
-  // TODO don't repeat stamp for 100% solid tiles.
-  if (!tile.stamp) {
-    if (!rects) rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
-    tile.stamp = this.createTileStamp(rects);
-  }
+  return tile;
 };
 
 TileGrid.prototype.unloadCellXY = function(cx, cy) {
@@ -242,15 +246,22 @@ TileGrid.prototype.createWallBody = function(rect) {
 };
 
 /**
- * Creates a single stamp out of all the rects in a tile.
- * @param rects
+ * Creates a single default stamp out of all the wall rects in a tile, just by concatenating them together.
+ * @param cellId
  * @returns {ModelStamp}
  */
-TileGrid.prototype.createTileStamp = function(rects) {
+TileGrid.prototype.createTileStampForCellId = function(cellId) {
+  // var rects = this.bitGrid.getTinyRectsOfColorForCellId(0, cellId);
+  var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+
   var model = new RigidModel();
   for (var i = 0; i < rects.length; i++) {
     model.addRigidModel(this.createWallModel(rects[i]));
   }
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+
+  model.addRigidModel(this.createFloorModelForCellXY(cx, cy));
   return model.createModelStamp(this.renderer.gl);
 };
 
@@ -260,7 +271,25 @@ TileGrid.prototype.createWallModel = function(rect) {
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   var wallModel = RigidModel.createSquare().transformPositions(transformation);
   // TODO: color options? I guess this method could be overridden in a pinch.
+  // wallModel.setColorRGB(
+  //     Math.sin(rect.pos.y * rect.pos.x * 0.1 + 1) < -0.999 ? 0.8 : 1,
+  //     Math.sin(rect.pos.y * rect.pos.x * 0.13 + 2) < -0.999 ? 0.8 : 1,
+  //     Math.sin(rect.pos.y * rect.pos.x * 0.17 + 3) < -0.999 ? 0.8 : 1);
   wallModel.setColorRGB(1, 1, 1);
+  return wallModel;
+};
+
+TileGrid.prototype.createFloorModelForCellXY = function(cx, cy) {
+  var x = (cx + 0.5) * this.bitGrid.cellWorldSize - this.bitGrid.bitWorldSize/2;
+  var y = (cy + 0.5) * this.bitGrid.cellWorldSize - this.bitGrid.bitWorldSize/2;
+  var r = this.bitGrid.cellWorldSize / 2;
+  this.rect.setPosXY(x, y);
+  var transformation = new Matrix44()
+      .toTranslateOpXYZ(x, y, 0.999)
+      .multiply(new Matrix44().toScaleOpXYZ(r, r, 1));
+  var wallModel = RigidModel.createSquare().transformPositions(transformation);
+  // TODO: color options?
+  wallModel.setColorRGB(0.25, 0.18, 0.25);
   return wallModel;
 };
 
