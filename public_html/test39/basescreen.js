@@ -443,7 +443,7 @@ BaseScreen.prototype.addListener = function(listener) {
 };
 
 BaseScreen.prototype.getBodyOverlaps = function(body) {
-  return this.world.getOverlaps(body);
+  return this.world.getBodyOverlaps(body);
 };
 
 BaseScreen.prototype.getBodyById = function(id) {

@@ -193,14 +193,19 @@ v selective tile draw with multiple players
   v actually circular selection
   v do real allocation in test43 circle biz
 v distinguish floor from invisible void
-- selective spirit draw
-  - select world cells that touch view circles
-  - draw stuff in those cells
-  - also mark things in those cells as near a player, with some extra padding so spirits look wide awake before they get drawn.
+v selective spirit draw
+  v select world cells that touch view circles
+    v make a thing that collects list of worl cells overlapping circle, like bitgrid
+  v draw stuff in those cells
 - Smooth the circles
  - shader aid - function of max player-count, min dist from a plr. Vertex shader on color, approaching black?
 x Draw even more stuff near players that are close to each other - a kind of sensor bonus?
   nah it messes with the incentives too much
+- Critter sleep
+  - Critters sleep by default.
+  - On a global timer, mark things that are in world cells near player (but sightly beyond view) as "nearby" plus timestamp,
+  - onPlayerNearby() can wake a sleeping spirit and start its timeout loop
+  - Spirits
 
 Tractor Beam YEAAAAA
 

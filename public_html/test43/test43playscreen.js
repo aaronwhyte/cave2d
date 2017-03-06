@@ -17,8 +17,7 @@ function Test43PlayScreen(controller, canvas, renderer, stamps, sfx) {
   this.circles = [];
   this.startingCircle = new Circle();
 
-  this.bitSize = 0.5;
-  //this.levelColorVector = new Vec4(0.8, 0.6, 0.2);
+  this.bitSize = 0.2;
   this.levelColorVector = new Vec4(0.8, 0.8, 0.8);
 
   this.initPauseButtons();
@@ -29,6 +28,7 @@ Test43PlayScreen.prototype.constructor = Test43PlayScreen;
 Test43PlayScreen.ANT_RAD = 1.2;
 
 Test43PlayScreen.RESPAWN_TIMEOUT = 30;
+Test43PlayScreen.PLAYER_VIEW_RADIUS = 26;
 
 Test43PlayScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
@@ -123,7 +123,7 @@ Test43PlayScreen.prototype.createDefaultWorld = function() {
     if (Math.random() > 0.2) this.tileGrid.drawTerrainPill(pos, pos, 1 + Math.random() * (rad - 5), 0);
   }
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  var ants = 7;
+  var ants = 10;
   for (var a = 0; a < ants; a++) {
     this.addItem(Test43BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
@@ -368,17 +368,11 @@ Test43PlayScreen.prototype.drawScene = function() {
   this.positionCamera();
   this.renderer.setViewMatrix(this.viewMatrix);
   var startTime = performance.now();
-  this.drawSpirits();
-  stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
+  // update this.circles to match all the player cameras, or the starting area if there are no players now.
+  var pad = Test43PlayScreen.PLAYER_VIEW_RADIUS;
   var circles = this.circles;
   var count = 0;
-
-  var pad = 26;
-  // give the players some bonus visibility if they're near each other?
-  // var r = this.viewableWorldRect.rad.magnitude();
-  // pad += Math.max(0, pad * 2 - r);
-
   for (var i = 0; i < this.playerSpirits.length; i++) {
     var spirit = this.playerSpirits[i];
     var cam = spirit.camera;
@@ -393,6 +387,14 @@ Test43PlayScreen.prototype.drawScene = function() {
     this.startingCircle.rad = pad;
     this.circles[0] = this.startingCircle;
   }
+
+  this.drawSpiritsOverlappingCircles(circles);
+  stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
+
+  // give the players some bonus visibility if they're near each other?
+  // var r = this.viewableWorldRect.rad.magnitude();
+  // pad += Math.max(0, pad * 2 - r);
+
   this.drawTilesOverlappingCircles(circles);
 
   this.splasher.draw(this.renderer, this.world.now);
@@ -402,6 +404,27 @@ Test43PlayScreen.prototype.drawScene = function() {
   if (!this.paused) {
     this.controller.requestAnimation();
   }
+};
+
+Test43PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
+  var cellIdSet = ObjSet.alloc();
+  var spiritIdSet = ObjSet.alloc();
+  var i;
+  for (i = 0; i < circles.length; i++) {
+    this.world.addCellIdsOverlappingCircle(cellIdSet, circles[i]);
+  }
+  for (var cellId in cellIdSet.vals) {
+    for (var groupNum = 0; groupNum < this.world.getGroupCount(); groupNum++) {
+      if (groupNum == this.getWallHitGroup()) continue;
+      this.world.addSpiritIdsInCellAndGroup(spiritIdSet, cellId, groupNum);
+    }
+  }
+  for (var spiritId in spiritIdSet.vals) {
+    var spirit = this.world.spirits[spiritId];
+    if (spirit) spirit.onDraw(this.world, this.renderer);
+  }
+  spiritIdSet.free();
+  cellIdSet.free();
 };
 
 Test43PlayScreen.prototype.positionCamera = function() {
@@ -418,7 +441,7 @@ Test43PlayScreen.prototype.positionCamera = function() {
       this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
     }
   }
-  var pad = 22;
+  var pad = Test43PlayScreen.PLAYER_VIEW_RADIUS;
   this.viewableWorldRect.padXY(pad, pad);
 
   // Smooth the zoom changes when the players are all close to each other,

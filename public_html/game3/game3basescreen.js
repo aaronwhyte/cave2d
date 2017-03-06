@@ -516,7 +516,7 @@ Game3BaseScreen.prototype.addListener = function(listener) {
 };
 
 Game3BaseScreen.prototype.getBodyOverlaps = function(body) {
-  return this.world.getOverlaps(body);
+  return this.world.getBodyOverlaps(body);
 };
 
 Game3BaseScreen.prototype.getBodyById = function(id) {

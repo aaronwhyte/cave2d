@@ -467,7 +467,7 @@ WorldScreen.prototype.addListener = function(listener) {
 };
 
 WorldScreen.prototype.getBodyOverlaps = function(body) {
-  return this.world.getOverlaps(body);
+  return this.world.getBodyOverlaps(body);
 };
 
 WorldScreen.prototype.getBodyById = function(id) {

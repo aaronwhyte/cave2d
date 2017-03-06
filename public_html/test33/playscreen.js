@@ -325,7 +325,7 @@ PlayScreen.prototype.doCursorHoverScan = function() {
 
   // center pinpoint check
   this.cursorBody.rad = 0;
-  overlapBodyIds = this.world.getOverlaps(this.cursorBody);
+  overlapBodyIds = this.world.getBodyOverlaps(this.cursorBody);
   var lowestArea = Infinity;
   var smallestBody = null;
   var overWall = false;

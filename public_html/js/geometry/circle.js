@@ -8,6 +8,14 @@ function Circle(opt_x, opt_y, opt_rad) {
   this.pos = new Vec2d(opt_x, opt_y);
   this.rad = opt_rad || 0;
 }
+
+/**
+ * @param {Rect} out
+ */
+Circle.prototype.getBoundingRect = function(out) {
+  return out.setPos(this.pos).setRadXY(this.rad, this.rad);
+};
+
 //
 //
 // /**

@@ -74,7 +74,6 @@ TileGrid.prototype.drawTilesOverlappingCircles = function(circles) {
   }
 };
 
-
 /**
  * Finds cells overlapping the world-coord circle, and puts thier cellIds into the objSet
  * @param objSet THe set to write to
@@ -89,7 +88,6 @@ TileGrid.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
   for (var cy = y0; cy <= y1; cy++) {
     for (var cx = x0; cx <= x1; cx++) {
       var rectPos = this.v0.setXY((cx + 0.5) * this.bitGrid.cellWorldSize, (cy + 0.5) * this.bitGrid.cellWorldSize);
-      // console.log(rectPos, this.bitGrid.cellWorldSize/2, circle.pos, circle.rad);
       if (OverlapDetector.isRectOverlappingCircle(rectPos, rectRad, circle.pos, circle.rad)) {
         objSet.put(this.bitGrid.getCellIdAtIndexXY(cx, cy));
       }

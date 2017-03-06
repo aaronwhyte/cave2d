@@ -264,6 +264,10 @@ World.prototype.getBodyByPathId = function(pathId) {
   return body;
 };
 
+/**
+ * Make sure all the invalidated bodies get added to the grid with events enqueued.
+ * It's good to do this after manipulating bodies and before reading them.
+ */
 World.prototype.validateBodies = function() {
   for (var bodyId in this.invalidBodyIds) {
     delete this.invalidBodyIds[bodyId];
@@ -695,11 +699,11 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
 
 /**
  * Gets the instantaneous overlaps of a body with the objects in the world, at world.now.
- * Takes the body's hitGtoup into account, but not its path duration.
+ * Takes the body's hitGroup into account, but not its path duration, since this is instantaneous.
  * @param {Body} body  the query, as a Body.
  * @return {Array.<String>} body IDs
  */
-World.prototype.getOverlaps = function(body) {
+World.prototype.getBodyOverlaps = function(body) {
   var retval = [];
   this.validateBodies();
   this.scannedBodyIds.reset();
@@ -739,6 +743,61 @@ World.prototype.getOverlaps = function(body) {
   return retval;
 };
 
+
+/**
+ * Finds all the cells overlapping the circle, and adds their IDs to the objSet.
+ * @param {ObjSet} objSet
+ * @param {Circle} circle
+ * @return {ObjSet}
+ */
+World.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
+  this.validateBodies();
+  var brect = circle.getBoundingRect(Rect.alloc());
+  var range = this.getCellRangeForRect(brect, CellRange.alloc());
+  for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
+    for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
+      var cell = this.getCell(ix, iy);
+      if (cell) {
+        objSet.put(this.gridIndexForCellCoords(ix, iy));
+      }
+    }
+  }
+  brect.free();
+  range.free();
+  return objSet;
+};
+
+/**
+ * Adds all the spirit IDs that are in a given cell and collison groupNum. This does not call validateBodies,
+ * because that wrecks performance...?
+ * @param {ObjSet} spiritIdSet
+ * @param cellId
+ * @param groupNum
+ * @returns {ObjSet}
+ */
+World.prototype.addSpiritIdsInCellAndGroup = function(spiritIdSet, cellId, groupNum) {
+  var cell = this.grid[cellId];
+  if (cell) {
+    var pathIdSet = cell.getPathIdsForGroup(groupNum);
+    var pathIdArray = pathIdSet.vals;
+    for (var pi = 0; pi < pathIdArray.length;) {
+      var pathId = pathIdArray[pi];
+      var body = this.paths[pathId];
+      if (body && body.pathId == pathId) {
+        var spirit = this.spirits[body.spiritId];
+        if (spirit) {
+          spiritIdSet.put(spirit.id);
+        }
+        pi++;
+      } else {
+        // opportunistically erase obsolete path from cell
+        pathIdSet.removeIndex(pi);
+      }
+    }
+  }
+  return spiritIdSet;
+};
+
 World.prototype.getPaddedBodyBoundingRect = function(body, time, rectOut) {
   return body.getBoundingRectAtTime(time, rectOut).pad(this.cellSize * World.BRECT_FUDGE_FACTOR)
 };
@@ -760,6 +819,7 @@ World.prototype.getQueueAsJson = function() {
   }
   return json;
 };
+
 
 //////////////////////////
 // Support for undo/redo

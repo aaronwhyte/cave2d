@@ -685,7 +685,7 @@ PlayScreen.prototype.addListener = function(listener) {
 };
 
 PlayScreen.prototype.getBodyOverlaps = function(body) {
-  return this.world.getOverlaps(body);
+  return this.world.getBodyOverlaps(body);
 };
 
 PlayScreen.prototype.getBodyById = function(id) {
