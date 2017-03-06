@@ -133,7 +133,7 @@ Test43PlayScreen.prototype.createDefaultWorld = function() {
 
 Test43PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
-  function createKeyboardSlot(up, right, down, left, slow, b1, b2, menuKey) {
+  function createKeyboardSlot(up, right, down, left, speed, b1, b2, menuKey) {
     return new PlayerSlot()
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
@@ -141,7 +141,7 @@ Test43PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(right)
                 .addTriggerKeyByName(down)
                 .addTriggerKeyByName(left)
-                .addTriggerKeyByName(slow)
+                .addTriggerKeyByName(speed)
                 .addTriggerKeyByName(b1)
                 .addTriggerKeyByName(b2)
                 .addTriggerKeyByName(menuKey)
@@ -149,9 +149,9 @@ Test43PlayScreen.prototype.configurePlayerSlots = function() {
         .add(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, new TwoSpeedKeyStick()
                 .setUpRightDownLeftByName(up, right, down, left)
-                .setSpeedTrigger(new KeyTrigger().addTriggerKeyByName(slow))
-                .setDefaultMultiplier(1)
-                .setSpeedTwoMultiplier(1/3))
+                .setSpeedTrigger(new KeyTrigger().addTriggerKeyByName(speed))
+                .setDefaultMultiplier(1/2)
+                .setSpeedTwoMultiplier(1))
             .add(ControlName.BUTTON_1, new KeyTrigger().addTriggerKeyByName(b1))
             .add(ControlName.BUTTON_2, new KeyTrigger().addTriggerKeyByName(b2))
             .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
@@ -205,15 +205,16 @@ Test43PlayScreen.prototype.configurePlayerSlots = function() {
           }
           return true;
         })
-        .setRadius(40);
+        .setRadius(35);
 
     var buttonRad = 45;
+    var maxButtonRatio = 1/6;
     var button1 = button(self.stamps.button1);
     var rule1 = new CuboidRule(self.canvasCuboid, button1.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
         .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
         .setTargetAnchor(new Vec4(-1, 2.6).transform(matrix), new Vec4(-2, 0).transform(matrix))
-        .setSizingMax(new Vec4(0.2, 0.2), new Vec4(buttonRad, buttonRad));
+        .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
     self.cuboidRules.push(rule1);
 
     var button2 = button(self.stamps.button2);
@@ -221,7 +222,7 @@ Test43PlayScreen.prototype.configurePlayerSlots = function() {
         .setAspectRatio(new Vec4(1, 1))
         .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
         .setTargetAnchor(new Vec4(-2.6, 1).transform(matrix), new Vec4(0, 2).transform(matrix))
-        .setSizingMax(new Vec4(0.2, 0.2), new Vec4(buttonRad, buttonRad));
+        .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
     self.cuboidRules.push(rule2);
 
     var menuTrigger = button(self.stamps.menuButton);

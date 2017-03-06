@@ -13,7 +13,7 @@ function PlayerSpirit(screen) {
 
   this.aim = new Vec2d();
   this.destAim = new Vec2d();
-  this.slowKeyAimSpeed = 0;
+  this.slowAimSpeed = 0;
 
   this.vec2d = new Vec2d();
   this.vec2d2 = new Vec2d();
@@ -30,7 +30,7 @@ PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.SPEED = 2;
-PlayerSpirit.TRACTION = 0.1;
+PlayerSpirit.TRACTION = 0.3;
 PlayerSpirit.DISPLACEMENT_BOOST = 4;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -155,6 +155,7 @@ PlayerSpirit.prototype.handleInput = function() {
     var stickScale = 1;
     var stick = controls.get(ControlName.STICK);
     var touchlike = stick.isTouchlike();
+    var preciseKeyboard = !touchlike && !stick.isSpeedTriggerDown();
     var traction = PlayerSpirit.TRACTION * duration;
     var speed = PlayerSpirit.SPEED;
 
@@ -165,9 +166,10 @@ PlayerSpirit.prototype.handleInput = function() {
     var stickMag = this.vec2d.magnitude();
     if (touchlike) {
       // Allow the player to maintain top speed as long as they provide a teeny bit of input.
-      stickScale = Math.min(1, (stickMag * 0.5 + 0.499999999));
+      var teeny = 0.02;
+      stickScale = Math.min(1, (Math.min(1, 0.7 + teeny + 0.3 * stickMag)));
       this.vec2d.scale(PlayerSpirit.DISPLACEMENT_BOOST);
-    } else if (stick.isSpeedTriggerDown() && stickMag) {
+    } else if (preciseKeyboard && stickMag) {
       // When in keyboard precise-aiming mode, only accelerate
       // when the stick and the aim are close to the same direction.
       this.vec2d.scale(Math.max(0, this.vec2d.dot(this.aim)) / stickMag);
@@ -199,17 +201,17 @@ PlayerSpirit.prototype.handleInput = function() {
 
     ////////
     // AIM
-    var dot, dist;
+    var dist;
+    var stickDotAim = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
+    var reverseness = Math.max(0, -stickDotAim);
     if (touchlike) {
       // touch or pointer-lock
       if (stickMag) {
-        dot = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
         // Any stick vector more than 90 degrees away from the aim vector is somewhat reverse:
         // 0 for 90 degreees, 1 for 180 degrees.
         // The more reverse the stick is, the less the old aim's contribution to the new aim.
         // That makes it easier to flip the aim nearly 180 degrees quickly.
         // Without that, the player ends up facing gliding backwards instead of aiming.
-        var reverseness = Math.max(0, -dot);
         this.destAim.scale(0.5 * (1 - reverseness * 0.9)).add(stick.getVal(this.vec2d).scale(Math.min(3, 2 + 2 * stickMag)));
         this.destAim.scaleToLength(1);
         dist = stick.getVal(this.vec2d).distance(this.destAim);
@@ -221,24 +223,23 @@ PlayerSpirit.prototype.handleInput = function() {
       // up/down/left/right buttons
       var slowAimFriction = 0.05;
       if (stickMag) {
-        if (stick.isSpeedTriggerDown()) {
-          // precise keyboard aiming
+        if (preciseKeyboard) {
           var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
           dist = correction.magnitude();
-          this.slowKeyAimSpeed += 0.004 * dist;
+          this.slowAimSpeed += 0.006 * dist;
           slowAimFriction = 0.01;
-          this.destAim.add(correction.scale(Math.min(1, this.slowKeyAimSpeed)));
+          this.destAim.add(correction.scale(Math.min(1, this.slowAimSpeed)));
         } else {
-          // normal fast corrections
+          // fast imprecise corrections
           stick.getVal(this.destAim);
           slowAimFriction = 1;
         }
       }
-      this.slowKeyAimSpeed *= (1 - slowAimFriction);
+      this.slowAimSpeed *= (1 - slowAimFriction);
       this.destAim.scaleToLength(1);
-      dot = this.destAim.dot(this.aim);
-      if (dot < -0.9) {
-        // 180 degree flip, so set it instantly.
+      if (reverseness > 0.95) {
+        // 180 degree flip, precise or not, so set it instantly.
+        this.destAim.set(stick.getVal(this.vec2d)).scaleToLength(1);
         this.aim.set(this.destAim);
       } else {
         dist = this.aim.distance(this.destAim);
