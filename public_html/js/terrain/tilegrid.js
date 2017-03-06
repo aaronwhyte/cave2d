@@ -62,18 +62,25 @@ TileGrid.prototype.drawTiles = function(worldX, worldY, pixelsPerCell) {
 /**
  * Draws the visible tiles using the renderer.
  */
-TileGrid.prototype.drawTilesOverlappingCircles = function(circles, pixelsPerCell) {
+TileGrid.prototype.drawTilesOverlappingCircles = function(circles) {
   this.cellIdsToDraw.reset();
   for (var i = 0; i < circles.length; i++) {
     var circle = circles[i];
     if (!circle) continue;
-    this.addCellIdsOverlappingCircle(this.cellIdsToDraw, circle, pixelsPerCell);
+    this.addCellIdsOverlappingCircle(this.cellIdsToDraw, circle);
   }
   for (var cellId in this.cellIdsToDraw.vals) {
     this.drawTileAtCellId(cellId);
   }
 };
-TileGrid.prototype.addCellIdsOverlappingCircle = function(objSet, circle, pixelsPerCell) {
+
+
+/**
+ * Finds cells overlapping the world-coord circle, and puts thier cellIds into the objSet
+ * @param objSet THe set to write to
+ * @param circle in world coords
+ */
+TileGrid.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
   var x0 = this.getCellIndexAtWorld(circle.pos.x - circle.rad);
   var x1 = this.getCellIndexAtWorld(circle.pos.x + circle.rad);
   var y0 = this.getCellIndexAtWorld(circle.pos.y - circle.rad);

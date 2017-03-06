@@ -105,6 +105,14 @@ BitGrid.prototype.flushChangedCellIds = function() {
   return changedIds;
 };
 
+/**
+ * Gets a minimal number of rects that cover the bits of a certain color. Horizontally adjacent bits are merged into
+ * rows. Vertically adjacent rows covering the same horizontal range are merged into taller blocks.
+ * These rect are new'ed, not alloc'ed, so don't free them; just let them get garbage collected.
+ * @param color
+ * @param cellId
+ * @returns {Array}
+ */
 BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
   var bx, by;
   var self = this;
@@ -185,6 +193,13 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
   return rects;
 };
 
+/**
+ * Gets one freshly allocated Rect for each bit of the target color. Up to 32x32 = 1024 of them!
+ * This is a bad idea. Don't use this.
+ * @param color
+ * @param cellId
+ * @returns {Array}
+ */
 BitGrid.prototype.getTinyRectsOfColorForCellId = function(color, cellId) {
   var self = this;
   function createRect(bx, by) {
