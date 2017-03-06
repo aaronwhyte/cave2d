@@ -119,8 +119,6 @@ TouchStick.prototype.onTouchEnd = function(e) {
     var touch = touches[i];
     if (touch.identifier == this.touchId) {
       this.touchId = null;
-      this.center.setXY(touch.pageX, touch.pageY);
-      this.tip.setXY(touch.pageX, touch.pageY);
       break;
     }
   }
