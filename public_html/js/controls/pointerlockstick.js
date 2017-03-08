@@ -14,6 +14,8 @@ function PointerLockStick(elem) {
 
   this.legacyHack = false;
 
+  this.lastEventTime = 0;
+
   this.lockChangeListener = function(e) {
     self.onLockChange(e);
   };
@@ -32,6 +34,8 @@ PointerLockStick.prototype = new Stick();
 PointerLockStick.prototype.constructor = PointerLockStick;
 
 PointerLockStick.BROWSER_PREFIXES = ['', 'moz', 'webkit'];
+
+PointerLockStick.TOUCH_TIMEOUT_MS = 16 * 3.5;
 
 PointerLockStick.prototype.setRadius = function(r) {
   this.radius = r;
@@ -75,13 +79,18 @@ PointerLockStick.prototype.stopListening = function() {
 };
 
 PointerLockStick.prototype.getVal = function(out) {
-  this.val.set(this.tip).scale(1 / this.radius).scaleXY(1, -1);
-  this.clip();
-  if (this.legacyHack) {
-    this.scale(0.5);
-    if (this.val.magnitudeSquared() < 0.01) {
-      this.val.reset();
+  if (this.isTouched()) {
+    this.val.set(this.tip).scale(1 / this.radius).scaleXY(1, -1);
+    this.clip();
+    if (this.legacyHack) {
+      this.scale(0.5);
+      if (this.val.magnitudeSquared() < 0.01) {
+        this.val.reset();
+      }
     }
+  } else {
+    // untouched
+    this.val.reset();
   }
   return out.set(this.val);
 };
@@ -121,6 +130,8 @@ PointerLockStick.prototype.onMouseMove = function(e) {
 
   var distFrac = 1 + this.tip.magnitude() / this.radius;
   this.tip.addXY(dx * distFrac, dy * distFrac).clipToMaxLength(this.radius);
+
+  this.lastEventTime = performance.now();
 };
 
 PointerLockStick.prototype.onClick = function(e) {
@@ -131,6 +142,10 @@ PointerLockStick.prototype.onClick = function(e) {
 
 PointerLockStick.prototype.isTouchlike = function() {
   return true;
+};
+
+PointerLockStick.prototype.isTouched = function() {
+  return this.lastEventTime + PointerLockStick.TOUCH_TIMEOUT_MS > performance.now();
 };
 
 PointerLockStick.prototype.scale = function(s) {

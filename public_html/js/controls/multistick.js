@@ -25,3 +25,10 @@ MultiStick.prototype.getVal = function(out) {
   this.clip();
   return out.set(this.val);
 };
+
+MultiStick.prototype.isTouched = function() {
+  for (var i = 0; i < this.sticks.length; i++) {
+    if (this.sticks[i].isTouched()) return true;
+  }
+  return false;
+};

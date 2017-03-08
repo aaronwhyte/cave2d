@@ -29,7 +29,7 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.SPEED = 2;
+PlayerSpirit.SPEED = 1.5;
 PlayerSpirit.TRACTION = 0.3;
 PlayerSpirit.DISPLACEMENT_BOOST = 4;
 PlayerSpirit.FRICTION = 0.01;

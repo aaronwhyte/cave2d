@@ -25,3 +25,7 @@ Stick.prototype.clip = function() {
 Stick.prototype.isTouchlike = function() {
   return false;
 };
+
+Stick.prototype.isTouched = function() {
+  return false;
+};

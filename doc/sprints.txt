@@ -197,6 +197,12 @@ v selective spirit draw
   v select world cells that touch view circles
     v make a thing that collects list of worl cells overlapping circle, like bitgrid
   v draw stuff in those cells
+v control tweaks
+  v release touchlike full-turbo when that control is released
+    v easy for touch
+    v use timing for pointerlock I guess
+  v lower top speed
+  v increase default zoom
 - Smooth the circles
  - shader aid - function of max player-count, min dist from a plr. Vertex shader on color, approaching black?
 x Draw even more stuff near players that are close to each other - a kind of sensor bonus?

@@ -17,7 +17,7 @@ function Test43PlayScreen(controller, canvas, renderer, stamps, sfx) {
   this.circles = [];
   this.startingCircle = new Circle();
 
-  this.bitSize = 0.2;
+  this.bitSize = 0.5;
   this.levelColorVector = new Vec4(0.8, 0.8, 0.8);
 
   this.initPauseButtons();
@@ -28,7 +28,7 @@ Test43PlayScreen.prototype.constructor = Test43PlayScreen;
 Test43PlayScreen.ANT_RAD = 1.2;
 
 Test43PlayScreen.RESPAWN_TIMEOUT = 30;
-Test43PlayScreen.PLAYER_VIEW_RADIUS = 26;
+Test43PlayScreen.PLAYER_VIEW_RADIUS = 20;
 
 Test43PlayScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
@@ -365,8 +365,6 @@ Test43PlayScreen.prototype.handleInput = function () {
 };
 
 Test43PlayScreen.prototype.drawScene = function() {
-  this.positionCamera();
-  this.renderer.setViewMatrix(this.viewMatrix);
   var startTime = performance.now();
 
   // update this.circles to match all the player cameras, or the starting area if there are no players now.
@@ -387,6 +385,10 @@ Test43PlayScreen.prototype.drawScene = function() {
     this.startingCircle.rad = pad;
     this.circles[0] = this.startingCircle;
   }
+
+  this.positionCamera();
+  this.updateViewMatrix();
+  this.renderer.setViewMatrix(this.viewMatrix);
 
   this.drawSpiritsOverlappingCircles(circles);
   stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
@@ -444,15 +446,6 @@ Test43PlayScreen.prototype.positionCamera = function() {
   var pad = Test43PlayScreen.PLAYER_VIEW_RADIUS;
   this.viewableWorldRect.padXY(pad, pad);
 
-  // Smooth the zoom changes when the players are all close to each other,
-  // to avoid sudden zoom in/out during casual movement.
-  var sqr = 5;
-  var r = this.viewableWorldRect.rad;
-  var ux = Math.max(0, (pad + sqr - r.x) / sqr);
-  r.x += ux * ux * sqr / 2;
-  var uy = Math.max(0, (pad + sqr - r.y) / sqr);
-  r.y += uy * uy * sqr / 2;
-
   var destPixelsPerMeter = Math.min(
       2 * this.canvas.width / this.viewableWorldRect.getWidth(),
       2 * this.canvas.height / this.viewableWorldRect.getHeight());
@@ -461,11 +454,11 @@ Test43PlayScreen.prototype.positionCamera = function() {
     this.pixelsPerMeter = destPixelsPerMeter;
   } else {
     // zoom in slowly
-    this.pixelsPerMeter = (this.pixelsPerMeter * 19 + destPixelsPerMeter) / 20;
+    this.pixelsPerMeter = (this.pixelsPerMeter * 29 + destPixelsPerMeter) / 30;
   }
 
-  this.camera.cameraPos.scale(9).add(this.viewableWorldRect.pos).scale(1/10);
-  this.updateViewMatrix();
+  // gently update the camera position
+  this.camera.cameraPos.scale(4).add(this.viewableWorldRect.pos).scale(1/5);
 };
 
 Test43PlayScreen.prototype.getPixelsPerMeter = function() {

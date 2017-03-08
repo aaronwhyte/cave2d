@@ -111,6 +111,10 @@ TwoSpeedKeyStick.prototype.isSpeedTriggerDown = function() {
   return this.speedTrigger.getVal();
 };
 
+TwoSpeedKeyStick.prototype.isTouched = function() {
+  return this.isAnyKeyPressed();
+};
+
 TwoSpeedKeyStick.prototype.isAnyKeyPressed = function() {
   if (this.isSpeedTriggerDown()) return true;
   for (var code in this.codeToState) {
