@@ -31,7 +31,6 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.SPEED = 1.5;
 PlayerSpirit.TRACTION = 0.3;
-PlayerSpirit.DISPLACEMENT_BOOST = 4;
 PlayerSpirit.FRICTION = 0.01;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -164,12 +163,7 @@ PlayerSpirit.prototype.handleInput = function() {
 
     stick.getVal(this.vec2d);
     var stickMag = this.vec2d.magnitude();
-    if (touchlike) {
-      // Allow the player to maintain top speed as long as they provide a teeny bit of input.
-      var teeny = 0.02;
-      stickScale = Math.min(1, (Math.min(1, 0.7 + teeny + 0.3 * stickMag)));
-      this.vec2d.scale(PlayerSpirit.DISPLACEMENT_BOOST);
-    } else if (preciseKeyboard && stickMag) {
+    if (preciseKeyboard && stickMag) {
       // When in keyboard precise-aiming mode, only accelerate
       // when the stick and the aim are close to the same direction.
       this.vec2d.scale(Math.max(0, this.vec2d.dot(this.aim)) / stickMag);
@@ -177,10 +171,6 @@ PlayerSpirit.prototype.handleInput = function() {
     this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
     this.accel.add(this.vec2d);
     body.addVelAtTime(this.accel, this.now());
-
-    if (touchlike) {
-      stick.scale(stickScale);
-    }
 
     ////////////
     // BUTTONS
@@ -212,7 +202,7 @@ PlayerSpirit.prototype.handleInput = function() {
         // The more reverse the stick is, the less the old aim's contribution to the new aim.
         // That makes it easier to flip the aim nearly 180 degrees quickly.
         // Without that, the player ends up facing gliding backwards instead of aiming.
-        this.destAim.scale(0.5 * (1 - reverseness * 0.9)).add(stick.getVal(this.vec2d).scale(Math.min(3, 2 + 2 * stickMag)));
+        this.destAim.scale(0.5 * (1 - reverseness * 0.9)).add(stick.getVal(this.vec2d).scale(Math.min(1.5, 1 + 1 * stickMag)));
         this.destAim.scaleToLength(1);
         dist = stick.getVal(this.vec2d).distance(this.destAim);
         this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
@@ -248,6 +238,13 @@ PlayerSpirit.prototype.handleInput = function() {
         this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
         this.aim.scaleToLength(1);
       }
+    }
+
+    if (touchlike) {
+      var baseScale = 0.95;
+      var overScale = 0.99;
+      stickScale = Math.min(1, (Math.min(1, baseScale + (1 - baseScale) * stickMag * overScale)));
+      stick.scale(stickScale);
     }
   }
 };
