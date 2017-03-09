@@ -205,7 +205,7 @@ Test43PlayScreen.prototype.configurePlayerSlots = function() {
           }
           return true;
         })
-        .setRadius(35);
+        .setRadius(40);
 
     var buttonRad = 45;
     var maxButtonRatio = 1/6;
