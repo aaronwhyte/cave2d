@@ -15,6 +15,7 @@ function PointerLockStick(elem) {
   this.legacyHack = false;
 
   this.lastEventTime = 0;
+  this.lastGetValTime = 0;
 
   this.lockChangeListener = function(e) {
     self.onLockChange(e);
@@ -79,19 +80,19 @@ PointerLockStick.prototype.stopListening = function() {
 };
 
 PointerLockStick.prototype.getVal = function(out) {
-  if (this.isTouched()) {
-    this.val.set(this.tip).scale(1 / this.radius).scaleXY(1, -1);
-    this.clip();
-    if (this.legacyHack) {
-      this.scale(0.5);
-      if (this.val.magnitudeSquared() < 0.01) {
-        this.val.reset();
-      }
-    }
-  } else {
-    // untouched
-    this.val.reset();
+  var now = performance.now();
+  if (!this.isTouched()) {
+    this.scale(1 - 0.1 * Math.min(1, (now - this.lastGetValTime) / 16));
   }
+  this.val.set(this.tip).scale(1 / this.radius).scaleXY(1, -1);
+  this.clip();
+  if (this.legacyHack) {
+    this.scale(0.5);
+    if (this.val.magnitudeSquared() < 0.01) {
+      this.val.reset();
+    }
+  }
+  this.lastGetValTime = now;
   return out.set(this.val);
 };
 
@@ -125,10 +126,13 @@ PointerLockStick.prototype.onLockError = function(e) {
 };
 
 PointerLockStick.prototype.onMouseMove = function(e) {
+  if (!this.isTouched()) {
+    this.scale(0.9)
+  }
   var dx = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
   var dy = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
 
-  var distFrac = 1 + this.tip.magnitude() / this.radius;
+  var distFrac = 1;//1 + this.tip.magnitude() / this.radius;
   this.tip.addXY(dx * distFrac, dy * distFrac).clipToMaxLength(this.radius);
 
   this.lastEventTime = performance.now();
