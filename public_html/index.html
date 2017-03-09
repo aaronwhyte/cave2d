@@ -133,28 +133,8 @@ processing physics events early, to avoid dropping a frame.
 <p>
 Each row has a left and right half, showing the same data at different time scales and sampling intervals.
 <p>
-To make these graphs, I wrote some support classes:
-<ul>
-  <li><a href="js/stats/stats.js">Stats</a> is a simple key/value pair that holds only the current value for each stat.
-    In general, a stat value increases forever. Rates are calculated below.
-  <li><a href="js/stats/stattrail.js">StatTrail</a> is a circular buffer of values for one stat.
-    It samples from a current Stats value, and records the value/time pair in the buffer.
-  <li><a href="js/stats/statratetrail.js">StatRateTrail</a> is a StatTrail subclass that records the change in a value over
-    time, not the value itself.
-  <li><a href="js/webgl/linedrawer.js">LineDrawer</a> provides basic moveTo and lineTo functions, plus line width and Z.
-    It uses a stretched cylinder to render each line segment with the same line width.
-  <li><a href="js/stats/statgraph.js">StatGraph</a> uses a StatTrail and a LineDrawer to render a graph of a stat over time.
-  <li><a href="js/stats/statmon.js">StatMon</a> wraps a a StatGraph/StatTrail combo, plus layout info.
-</ul>
-To position and size the graphs nicely, I made a small 3D rectangle layout system, which I'll reuse for UI widget layout:
-<ul>
-  <li><a href="js/geometry/cuboid.js">Cuboid</a> is a 3D axis-aligned rectangle, just a boring data object.
-    In test40, the whole canvas is a big outer Cuboid, and each graph is drawn on another cuboid.
-  <li><a href="js/geometry/cuboidrule.js">CuboidRule</a> can resize and reposition a target cuboid based on a source
-    cuboid, so I can nest, chain, etc. It supports sizing and position by relative size, plus absolute limits and
-    offsets, with optional aspect ratios.
-</ul>
-
+To position and size the graphs nicely, I made a small 3D rectangle (Cuboid) layout system, which I'm now also using
+for UI widget layout.
 
 <h2><a href="test39">Test 39 - Orientation &amp; Off-Center Force</a></h2>
 Updated the Body class to have angle, angular velocity, and moment of inertia.
