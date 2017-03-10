@@ -30,8 +30,8 @@ PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.SPEED = 1.5;
-PlayerSpirit.TRACTION = 0.3;
-PlayerSpirit.FRICTION = 0.01;
+PlayerSpirit.TRACTION = 0.4;
+PlayerSpirit.FRICTION = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -147,46 +147,29 @@ PlayerSpirit.prototype.handleInput = function() {
     }
 
     var controls = this.slot.getControlList();
-
-    ////////////
-    // MOVEMENT
-    this.accel.reset();
-    var stickScale = 1;
     var stick = controls.get(ControlName.STICK);
     var touchlike = stick.isTouchlike();
     var preciseKeyboard = !touchlike && !stick.isSpeedTriggerDown();
-    var traction = PlayerSpirit.TRACTION * duration;
-    var speed = PlayerSpirit.SPEED;
-
-    // traction slowdown
-    this.accel.set(body.vel).scale(-traction);
-
-    stick.getVal(this.vec2d);
-    var stickMag = this.vec2d.magnitude();
-    if (preciseKeyboard && stickMag) {
-      // When in keyboard precise-aiming mode, only accelerate
-      // when the stick and the aim are close to the same direction.
-      this.vec2d.scale(Math.max(0, this.vec2d.dot(this.aim)) / stickMag);
-    }
-    this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
-    this.accel.add(this.vec2d);
-    body.addVelAtTime(this.accel, this.now());
 
     ////////////
-    // BUTTONS
-    var b1 = controls.get(ControlName.BUTTON_1);
-    var b2 = controls.get(ControlName.BUTTON_2);
-    if (b1.getVal()) {
-      var r = 0;
-      var g = 1 - 0.8 * Math.random();
-      var b = 1 - 0.9 * Math.random();
-      this.setColorRGB(r, g, b);
-    }
-    if (b2.getVal()) {
-      var r = 1;
-      var g = 1 - 0.8 * Math.random();
-      var b = 1 - 0.9 * Math.random();
-      this.setColorRGB(r, g, b);
+    // MOVEMENT
+    var speed = PlayerSpirit.SPEED;
+    stick.getVal(this.vec2d);
+    var stickMag = this.vec2d.magnitude();
+    var traction = PlayerSpirit.TRACTION;
+
+    if (stick.isTouched()) {
+      if (preciseKeyboard && stickMag) {
+        // When in keyboard precise-aiming mode, accelerate less
+        // when the stick and the aim point in different directions.
+        traction *= Math.max(0, this.vec2d.dot(this.aim)) / stickMag;
+      }
+      // traction slowdown
+      this.accel.set(body.vel).scale(-traction);
+
+      this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
+      this.accel.add(this.vec2d);
+      body.addVelAtTime(this.accel, this.now());
     }
 
     ////////
@@ -216,7 +199,7 @@ PlayerSpirit.prototype.handleInput = function() {
         if (preciseKeyboard) {
           var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
           dist = correction.magnitude();
-          this.slowAimSpeed += 0.006 * dist;
+          this.slowAimSpeed += 0.01 * dist;
           slowAimFriction = 0.01;
           this.destAim.add(correction.scale(Math.min(1, this.slowAimSpeed)));
         } else {
@@ -227,7 +210,7 @@ PlayerSpirit.prototype.handleInput = function() {
       }
       this.slowAimSpeed *= (1 - slowAimFriction);
       this.destAim.scaleToLength(1);
-      if (reverseness > 0.95) {
+      if (reverseness > 0.99) {
         // 180 degree flip, precise or not, so set it instantly.
         this.destAim.set(stick.getVal(this.vec2d)).scaleToLength(1);
         this.aim.set(this.destAim);
@@ -240,12 +223,30 @@ PlayerSpirit.prototype.handleInput = function() {
       }
     }
 
-    if (touchlike) {
-      var baseScale = 0.95;
-      var overScale = 0.99;
-      stickScale = Math.min(1, (Math.min(1, baseScale + (1 - baseScale) * stickMag * overScale)));
-      stick.scale(stickScale);
+    // if (touchlike) {
+    //   var baseScale = 0.95;
+    //   var overScale = 0.99;
+    //   stickScale = Math.min(1, (Math.min(1, baseScale + (1 - baseScale) * stickMag * overScale)));
+    //   stick.scale(stickScale);
+    // }
+
+    ////////////
+    // BUTTONS
+    var b1 = controls.get(ControlName.BUTTON_1);
+    var b2 = controls.get(ControlName.BUTTON_2);
+    if (b1.getVal()) {
+      var r = 0;
+      var g = 1 - 0.8 * Math.random();
+      var b = 1 - 0.9 * Math.random();
+      this.setColorRGB(r, g, b);
     }
+    if (b2.getVal()) {
+      var r = 1;
+      var g = 1 - 0.8 * Math.random();
+      var b = 1 - 0.9 * Math.random();
+      this.setColorRGB(r, g, b);
+    }
+
   }
 };
 

@@ -132,7 +132,7 @@ PointerLockStick.prototype.onMouseMove = function(e) {
   var dx = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
   var dy = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
 
-  var distFrac = 1;//1 + this.tip.magnitude() / this.radius;
+  var distFrac = 0.5 + 0.5 * this.tip.magnitude() / this.radius;
   this.tip.addXY(dx * distFrac, dy * distFrac).clipToMaxLength(this.radius);
 
   this.lastEventTime = performance.now();
