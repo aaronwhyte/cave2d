@@ -223,12 +223,13 @@ PlayerSpirit.prototype.handleInput = function() {
       }
     }
 
-    // if (touchlike) {
-    //   var baseScale = 0.95;
-    //   var overScale = 0.99;
-    //   stickScale = Math.min(1, (Math.min(1, baseScale + (1 - baseScale) * stickMag * overScale)));
-    //   stick.scale(stickScale);
-    // }
+    if (touchlike && stickMag) {
+      var unshrinkingMag = 0.4;
+      if (stickMag < unshrinkingMag) {
+        var stickScale = 0.93 + 0.07 * stickMag / unshrinkingMag;
+        stick.scale(stickScale);
+      }
+    }
 
     ////////////
     // BUTTONS
