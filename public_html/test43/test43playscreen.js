@@ -394,10 +394,6 @@ Test43PlayScreen.prototype.drawScene = function() {
   this.drawSpiritsOverlappingCircles(circles);
   stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
-  // give the players some bonus visibility if they're near each other?
-  // var r = this.viewableWorldRect.rad.magnitude();
-  // pad += Math.max(0, pad * 2 - r);
-
   this.drawTilesOverlappingCircles(circles);
 
   this.splasher.draw(this.renderer, this.world.now);
