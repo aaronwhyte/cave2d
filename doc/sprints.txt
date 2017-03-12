@@ -203,8 +203,7 @@ v control tweaks
     v use timing for pointerlock I guess
   v lower top speed
   v increase default zoom
-- Smooth the circles
- - shader aid - function of max player-count, min dist from a plr. Vertex shader on color, approaching black?
+v Smooth the circles with a fragment shader!
 x Draw even more stuff near players that are close to each other - a kind of sensor bonus?
   nah it messes with the incentives too much
 - Critter sleep
@@ -214,6 +213,9 @@ x Draw even more stuff near players that are close to each other - a kind of sen
   - Spirits
 
 Tractor Beam YEAAAAA
+
+Another movement scheme:
+trackball
 
 Player menu (do I even need this now? Maybe not important yet)
 - menu class

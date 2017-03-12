@@ -28,7 +28,7 @@ Test43PlayScreen.prototype.constructor = Test43PlayScreen;
 Test43PlayScreen.ANT_RAD = 1.2;
 
 Test43PlayScreen.RESPAWN_TIMEOUT = 30;
-Test43PlayScreen.PLAYER_VIEW_RADIUS = 20;
+Test43PlayScreen.PLAYER_VIEW_RADIUS = 30;
 
 Test43PlayScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
@@ -162,8 +162,8 @@ Test43PlayScreen.prototype.configurePlayerSlots = function() {
 
   function createTouchSlot(angle) {
     var buttonAngle = angle + Math.PI / 4;
-    var releasedColor = new Vec4(1, 1, 1, 0.15);
-    var pressedColor = new Vec4(1, 1, 1, 0.3);
+    var releasedColor = new Vec4(1, 1, 1, 0.3);
+    var pressedColor = new Vec4(1, 1, 1, 0.5);
     var matrix = new Matrix44().toRotateZOp(angle);
 
     function button(stamp) {
@@ -389,6 +389,7 @@ Test43PlayScreen.prototype.drawScene = function() {
   this.positionCamera();
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
+  this.renderer.setCircleMode(this.circles);
 
   this.drawSpiritsOverlappingCircles(circles);
   stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
@@ -400,6 +401,8 @@ Test43PlayScreen.prototype.drawScene = function() {
   this.drawTilesOverlappingCircles(circles);
 
   this.splasher.draw(this.renderer, this.world.now);
+
+  this.renderer.setNormalMode();
   this.drawHud();
 
   // Animate whenever this thing draws.
@@ -443,7 +446,7 @@ Test43PlayScreen.prototype.positionCamera = function() {
       this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
     }
   }
-  var pad = Test43PlayScreen.PLAYER_VIEW_RADIUS;
+  var pad = Test43PlayScreen.PLAYER_VIEW_RADIUS * 0.7;
   this.viewableWorldRect.padXY(pad, pad);
 
   var destPixelsPerMeter = Math.min(

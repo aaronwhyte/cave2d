@@ -8,7 +8,7 @@ function PlayerSpirit(screen) {
   this.type = Test43BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
 
-  this.camera = new Camera(0.1, 0.2, 3);
+  this.camera = new Camera(0.1, 0.4, 7);
   this.circle = new Circle();
 
   this.aim = new Vec2d();
