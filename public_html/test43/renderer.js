@@ -14,6 +14,8 @@ function Renderer(canvas, gl, program) {
   this.initAttributesAndUniforms();
   this.modelStamp = null;
   this.oldColor = new Vec4(-1, -1, -1);
+
+  this.circleArray = [];
 }
 
 Renderer.prototype.initAttributesAndUniforms = function() {
@@ -26,8 +28,7 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   this.createUniform('uModelColor');
 
   this.createUniform('uType');
-  this.createUniform('uCircleRad');
-  this.createUniform('uCirclePos');
+  this.createUniform('uCircles');
   this.createUniform('uCircleCount');
 };
 
@@ -141,17 +142,18 @@ Renderer.prototype.setColorVector = function(color) {
 };
 
 Renderer.prototype.setCircleMode = function(circles) {
-  var radArray = [];
-  var posArray = [];
+  if (circles.length * 3 != this.circleArray.length) {
+    this.circleArray.length = circles.length * 3;
+  }
   for (var i = 0; i < circles.length; i++) {
     var c = circles[i];
-    radArray.push(c.rad);
-    posArray.push(c.pos.x, c.pos.y, 0, 0);
+    this.circleArray[i * 3] = c.pos.x;
+    this.circleArray[i * 3 + 1] = c.pos.y;
+    this.circleArray[i * 3 + 2] = c.rad;
   }
   this.gl.uniform1i(this.uType, 1);
   this.gl.uniform1i(this.uCircleCount, circles.length);
-  this.gl.uniform1fv(this.uCircleRad, radArray);
-  this.gl.uniform4fv(this.uCirclePos, posArray);
+  this.gl.uniform3fv(this.uCircles, this.circleArray);
 };
 
 Renderer.prototype.setNormalMode = function() {

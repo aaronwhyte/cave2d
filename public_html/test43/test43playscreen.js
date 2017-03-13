@@ -162,7 +162,7 @@ Test43PlayScreen.prototype.configurePlayerSlots = function() {
 
   function createTouchSlot(angle) {
     var buttonAngle = angle + Math.PI / 4;
-    var releasedColor = new Vec4(1, 1, 1, 0.3);
+    var releasedColor = new Vec4(1, 1, 1, 0.2);
     var pressedColor = new Vec4(1, 1, 1, 0.5);
     var matrix = new Matrix44().toRotateZOp(angle);
 

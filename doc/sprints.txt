@@ -195,7 +195,7 @@ v selective tile draw with multiple players
 v distinguish floor from invisible void
 v selective spirit draw
   v select world cells that touch view circles
-    v make a thing that collects list of worl cells overlapping circle, like bitgrid
+    v make a thing that collects list of world cells overlapping circle, like bitgrid
   v draw stuff in those cells
 v control tweaks
   v release touchlike full-turbo when that control is released
@@ -206,16 +206,22 @@ v control tweaks
 v Smooth the circles with a fragment shader!
 x Draw even more stuff near players that are close to each other - a kind of sensor bonus?
   nah it messes with the incentives too much
-- Critter sleep
+v fix circle array allocation madness
+
+
+Test 45: Tractor Beam!
+- test nest
+-
+
+
+
+- Critters
   - Critters sleep by default.
   - On a global timer, mark things that are in world cells near player (but sightly beyond view) as "nearby" plus timestamp,
   - onPlayerNearby() can wake a sleeping spirit and start its timeout loop
   - Spirits
 
-Tractor Beam YEAAAAA
 
-Another movement scheme:
-trackball
 
 Player menu (do I even need this now? Maybe not important yet)
 - menu class
@@ -225,17 +231,6 @@ Player menu (do I even need this now? Maybe not important yet)
     - back
     - change color
     - drop player
-
-Idea:
-Solve the lastPathRefreshTime problem
-Sometimes I want to add a body without also adding a spirit and timeout loop just for invalidating the path.
-Often I still want a spirit (for drawing or whatevs) but don't want to re-code the timeout loop.
-Giving a moving body a maxPathDuration of Infinity causes tons of far-future collision events to be recorded,
-effectively leaking them.
-* Every movable body needs a Spirit chaperone w timeout invalidation loop?
-* Add a common spirit behavior that registers the timeout for me?
-* Special world maxPathDuration=auto code? nah
-*** Uniclock also handles path invalidation
 
 More refactoring...
 - Inject collider info into baseScreen from pages, instead of using "createXXX" overrides?
@@ -261,7 +256,7 @@ in-bounds, I think.
   - link deletion
 
 Zoomable Editor
-- two-touch pinch/unpinch
+- two-touch pinch/unpinch?
 - mouse onscroll, like Vorp
 - keys, maybe "[" and "]" or "," and "."
 - Touching the zoom indicator buttons zooms to that level Maybe four: close, medium, wide, far.
