@@ -1,0 +1,33 @@
+// Special rendering type:
+// 0: none
+// 1: circle cut-off
+uniform lowp int uType;
+
+uniform lowp int uCircleCount; // 1 to 8
+uniform lowp vec3 uCircles[8];
+
+varying lowp vec4 vColor;
+varying lowp vec2 vPos;
+
+void main(void) {
+  if (uType == 0) {
+    gl_FragColor = vColor;
+  } else if (uType == 1) {
+    lowp float minDist = 1.0;
+    for (int i = 0; i < 8; i++) {
+      if (i < uCircleCount) {
+        lowp vec3 circle = uCircles[i];
+        lowp vec2 circlePos = circle.xy;
+        lowp float circleRad = circle.z;
+        minDist = min(minDist, distance(vPos, circlePos) / circleRad);
+      }
+    }
+    if (minDist < 0.85) {
+      gl_FragColor = vColor;
+    } else if (minDist < 1.0) {
+      gl_FragColor = vColor * 0.6;
+    } else {
+      discard;
+    }
+  }
+}

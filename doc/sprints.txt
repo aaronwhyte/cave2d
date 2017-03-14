@@ -209,11 +209,40 @@ x Draw even more stuff near players that are close to each other - a kind of sen
 v fix circle array allocation madness
 
 
-Test 45: Tractor Beam!
-- test nest
--
+Test 44: Tractor Beam!
+v test nest - from test 43
+- grab part 1
+  - clear: no grip, button 2 up
+  - seeking: no grip, button 2 down
+    - sparks
+    - rayscan
+  - onGripStart transition
+    - state change
+    - remember
+      - body
+      - location relative to body's orientation
+      - grab vector relative to body's orientation too - not just straight at center of mass
+  - squeezing: grip, button 2 down
+    - draw (same as carrying but thicker or new color or something?)
+    - force
+      - maintain distance between endpoints - tractorbeam constant
+      - torque both endpoints to maintain relative orientation
+      - torque player to maintain "upright" abolute orientation? Or give players effective infinite moment-of-inertia?
+        ? should player have orientation and MOI at all? How does that interact with aim? Hm.
+  - carrying: grip, button 2 up
+    - draw
+      - draw line from player to grip point
+      - draw unit vector from grip point to a short dist away
+    - force
+      - maintain distance
+      - gently try to move load in front of player?
+- kick part 1
+  -
 
+- handles & using
 
+Bendy lines
+Today models have vertex groups, up to two of them. Expand that to about 10, in an array format.
 
 - Critters
   - Critters sleep by default.
