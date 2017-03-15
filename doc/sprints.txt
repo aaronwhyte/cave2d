@@ -211,8 +211,8 @@ v fix circle array allocation madness
 
 Test 44: Tractor Beam!
 v test nest - from test 43
+v buttons lock aim
 - grab part 1
-  - clear: no grip, button 2 up
   - seeking: no grip, button 2 down
     - sparks
     - rayscan
@@ -222,20 +222,12 @@ v test nest - from test 43
       - body
       - location relative to body's orientation
       - grab vector relative to body's orientation too - not just straight at center of mass
-  - squeezing: grip, button 2 down
-    - draw (same as carrying but thicker or new color or something?)
-    - force
-      - maintain distance between endpoints - tractorbeam constant
-      - torque both endpoints to maintain relative orientation
-      - torque player to maintain "upright" abolute orientation? Or give players effective infinite moment-of-inertia?
-        ? should player have orientation and MOI at all? How does that interact with aim? Hm.
-  - carrying: grip, button 2 up
+  - gripping
     - draw
-      - draw line from player to grip point
-      - draw unit vector from grip point to a short dist away
-    - force
-      - maintain distance
-      - gently try to move load in front of player?
+    - forces: from points left and right of player center (or player surface?), to points left and right of grab location.
+  - squeezing: button 2 down
+    - draw
+    - forces: same as above, but from two points on player, left and right of center.
 - kick part 1
   -
 

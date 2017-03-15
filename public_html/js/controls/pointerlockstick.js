@@ -82,7 +82,7 @@ PointerLockStick.prototype.stopListening = function() {
 PointerLockStick.prototype.getVal = function(out) {
   var now = performance.now();
   if (!this.isTouched()) {
-    this.scale(1 - 0.1 * Math.min(1, (now - this.lastGetValTime) / 16));
+    this.scale(1 - 0.25 * Math.min(1, (now - this.lastGetValTime) / 16));
   }
   this.val.set(this.tip).scale(1 / this.radius).scaleXY(1, -1);
   this.clip();
