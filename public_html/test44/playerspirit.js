@@ -133,131 +133,130 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
 };
 
 PlayerSpirit.prototype.handleInput = function() {
+  if (!this.slot) return;
+  var state = this.slot.stateName;
+  if (state != ControlState.PLAYING) return;
+
+  var body = this.getBody();
+  if (!body) return;
+
+  if (this.changeListener) {
+    this.changeListener.onBeforeSpiritChange(this);
+  }
+
   var now = this.now();
   var duration = now - this.lastInputTime;
   this.lastInputTime = now;
 
-  if (!this.slot) return;
-  var state = this.slot.stateName;
-  if (state == ControlState.PLAYING) {
-    var body = this.getBody();
-    if (!body) return;
-    if (this.changeListener) {
-      this.changeListener.onBeforeSpiritChange(this);
+  var controls = this.slot.getControlList();
+  var stick = controls.get(ControlName.STICK);
+  var touchlike = stick.isTouchlike();
+
+  ////////////
+  // BUTTONS
+  var b1 = controls.get(ControlName.BUTTON_1);
+  var b2 = controls.get(ControlName.BUTTON_2);
+  if (b1.getVal()) {
+  }
+  if (b2.getVal()) {
+  }
+
+  var aimLocked = b1.getVal() || b2.getVal();
+  var preciseKeyboard = !touchlike && !stick.isSpeedTriggerDown() && !aimLocked;
+  stick.getVal(this.vec2d);
+  var stickMag = this.vec2d.magnitude();
+
+  ////////////
+  // MOVEMENT
+  var speed = PlayerSpirit.SPEED;
+  var traction = PlayerSpirit.TRACTION;
+
+  if (stick.isTouched()) {
+    if (preciseKeyboard && stickMag) {
+      // When in keyboard precise-aiming mode, accelerate less
+      // when the stick and the aim point in different directions.
+      traction *= Math.max(0, this.vec2d.dot(this.aim)) / stickMag;
     }
+    // traction slowdown
+    this.accel.set(body.vel).scale(-traction);
 
-    var controls = this.slot.getControlList();
-    var stick = controls.get(ControlName.STICK);
-    var touchlike = stick.isTouchlike();
-    var aimLocked = false;
+    this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
+    this.accel.add(this.vec2d);
+    body.addVelAtTime(this.accel, this.now());
+  }
 
-    ////////////
-    // BUTTONS
-    var b1 = controls.get(ControlName.BUTTON_1);
-    var b2 = controls.get(ControlName.BUTTON_2);
-    if (b1.getVal()) {
-      var r = 0;
-      var g = 1 - 0.8 * Math.random();
-      var b = 1 - 0.9 * Math.random();
-      this.setColorRGB(r, g, b);
-      aimLocked = true;
-    }
-    if (b2.getVal()) {
-      var r = 1;
-      var g = 1 - 0.8 * Math.random();
-      var b = 1 - 0.9 * Math.random();
-      this.setColorRGB(r, g, b);
-      aimLocked = true;
-    }
-
-    var preciseKeyboard = !touchlike && !stick.isSpeedTriggerDown() && !aimLocked;
-
-    ////////////
-    // MOVEMENT
-    var speed = PlayerSpirit.SPEED;
-    stick.getVal(this.vec2d);
-    var stickMag = this.vec2d.magnitude();
-    var traction = PlayerSpirit.TRACTION;
-
-    if (stick.isTouched()) {
-      if (preciseKeyboard && stickMag) {
-        // When in keyboard precise-aiming mode, accelerate less
-        // when the stick and the aim point in different directions.
-        traction *= Math.max(0, this.vec2d.dot(this.aim)) / stickMag;
-      }
-      // traction slowdown
-      this.accel.set(body.vel).scale(-traction);
-
-      this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
-      this.accel.add(this.vec2d);
-      body.addVelAtTime(this.accel, this.now());
-    }
-
-    ////////
-    // AIM
-    var dist;
-    var stickDotAim = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
-    var reverseness = Math.max(0, -stickDotAim);
-    if (aimLocked) {
-      // lock destAim at whatever it was going into aimlock, so aim doesn't change when coming out of aimlock.
-      this.destAim.set(this.aim);
+  ////////
+  // AIM
+  var stickDotAim = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
+  var reverseness = Math.max(0, -stickDotAim);
+  if (aimLocked) {
+    // lock destAim at whatever it was going into aimlock, so aim doesn't change when coming out of aimlock.
+    this.destAim.set(this.aim);
+  } else {
+    if (touchlike) {
+      this.handleTouchlikeAim(stick, stickMag, reverseness);
     } else {
-      if (touchlike) {
-        // touch or pointer-lock
-        if (stickMag && stick.isTouched()) {
-          // Any stick vector more than 90 degrees away from the aim vector is somewhat reverse:
-          // 0 for 90 degreees, 1 for 180 degrees.
-          // The more reverse the stick is, the less the old aim's contribution to the new aim.
-          // That makes it easier to flip the aim nearly 180 degrees quickly.
-          // Without that, the player ends up facing gliding backwards instead of aiming.
-          this.destAim.scale(0.5 * (1 - reverseness * 0.9)).add(stick.getVal(this.vec2d).scale(Math.min(1.5, 1 + 1 * stickMag)));
-          this.destAim.scaleToLength(1);
-          dist = stick.getVal(this.vec2d).distance(this.destAim);
-          this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
-        }
-        this.aim.slideByFraction(this.destAim, 0.5);
-
-      } else {
-        // up/down/left/right buttons
-        var slowAimFriction = 0.05;
-        if (stickMag) {
-          if (preciseKeyboard) {
-            var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
-            dist = correction.magnitude();
-            this.slowAimSpeed += 0.01 * dist;
-            slowAimFriction = 0.01;
-            this.destAim.add(correction.scale(Math.min(1, this.slowAimSpeed)));
-          } else {
-            // fast imprecise corrections
-            stick.getVal(this.destAim);
-            slowAimFriction = 1;
-          }
-        }
-        this.slowAimSpeed *= (1 - slowAimFriction);
-        this.destAim.scaleToLength(1);
-        if (!aimLocked && reverseness > 0.99) {
-          // 180 degree flip, precise or not, so set it instantly.
-          this.destAim.set(stick.getVal(this.vec2d)).scaleToLength(1);
-          this.aim.set(this.destAim);
-        } else {
-          dist = this.aim.distance(this.destAim);
-          var distContrib = dist * 0.25;
-          var smoothContrib = 0.1 / (dist + 0.1);
-          this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
-          this.aim.scaleToLength(1);
-        }
-      }
+      this.handleKeyboardAim(stick, stickMag, reverseness, preciseKeyboard, aimLocked);
     }
+  }
 
-    //////////////////
-    // STICK SCALING
-    if (touchlike && stickMag) {
-      var unshrinkingMag = 0.4;
-      if (stickMag < unshrinkingMag) {
-        var stickScale = 0.93 + 0.07 * stickMag / unshrinkingMag;
-        stick.scale(stickScale);
-      }
+  //////////////////
+  // STICK SCALING
+  if (touchlike && stickMag) {
+    var unshrinkingMag = 0.4;
+    if (stickMag < unshrinkingMag) {
+      var stickScale = 0.93 + 0.07 * stickMag / unshrinkingMag;
+      stick.scale(stickScale);
     }
+  }
+};
+
+
+PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reverseness) {
+  // touch or pointer-lock
+    if (stickMag && stick.isTouched()) {
+      // Any stick vector more than 90 degrees away from the aim vector is somewhat reverse:
+      // 0 for 90 degreees, 1 for 180 degrees.
+      // The more reverse the stick is, the less the old aim's contribution to the new aim.
+      // That makes it easier to flip the aim nearly 180 degrees quickly.
+      // Without that, the player ends up facing gliding backwards instead of aiming.
+      this.destAim.scale(0.5 * (1 - reverseness * 0.9)).add(stick.getVal(this.vec2d).scale(Math.min(1.5, 1 + 1 * stickMag)));
+      this.destAim.scaleToLength(1);
+      var dist = stick.getVal(this.vec2d).distance(this.destAim);
+      this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
+    }
+    this.aim.slideByFraction(this.destAim, 0.5);
+};
+
+
+PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness, preciseKeyboard, aimLocked) {
+  // up/down/left/right buttons
+  var slowAimFriction = 0.05;
+  if (stickMag) {
+    if (preciseKeyboard) {
+      var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
+      dist = correction.magnitude();
+      this.slowAimSpeed += 0.01 * dist;
+      slowAimFriction = 0.01;
+      this.destAim.add(correction.scale(Math.min(1, this.slowAimSpeed)));
+    } else {
+      // fast imprecise corrections
+      stick.getVal(this.destAim);
+      slowAimFriction = 1;
+    }
+  }
+  this.slowAimSpeed *= (1 - slowAimFriction);
+  this.destAim.scaleToLength(1);
+  if (!aimLocked && reverseness > 0.99) {
+    // 180 degree flip, precise or not, so set it instantly.
+    this.destAim.set(stick.getVal(this.vec2d)).scaleToLength(1);
+    this.aim.set(this.destAim);
+  } else {
+    var dist = this.aim.distance(this.destAim);
+    var distContrib = dist * 0.25;
+    var smoothContrib = 0.1 / (dist + 0.1);
+    this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
+    this.aim.scaleToLength(1);
   }
 };
 
