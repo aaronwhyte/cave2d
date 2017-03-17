@@ -211,11 +211,11 @@ v fix circle array allocation madness
 
 Test 44: Tractor Beam!
 v test nest - from test 43
-v buttons lock aim
+v buttons lock aim (but it's more fun without it)
 - grab part 1
-  - seeking: no grip, button 2 down
-    - sparks
-    - rayscan
+  v seeking: no grip, button 2 down
+    v rayscan
+    v sparks
   - onGripStart transition
     - state change
     - remember

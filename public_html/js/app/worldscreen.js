@@ -276,6 +276,11 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
     console.warn('drawing destroyed screen - ignoring');
     return;
   }
+  if (visibility == 1) {
+    if (this.handleInput) {
+      this.handleInput();
+    }
+  }
   this.drawStats();
   stats.add(STAT_NAMES.STAT_DRAWING_MS, performance.now() - startTimeMs);
 
@@ -284,9 +289,6 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
   stats.add(STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS, performance.now() - startTimeMs);
 
   if (visibility == 1) {
-    if (this.handleInput) {
-      this.handleInput();
-    }
     this.clock(startTimeMs);
   }
   this.onFrameEnd(startTimeMs);

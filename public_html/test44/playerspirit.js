@@ -7,6 +7,7 @@ function PlayerSpirit(screen) {
 
   this.type = Test44BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
+  this.aimColor = new Vec4();
 
   this.camera = new Camera(0.1, 0.4, 7);
   this.circle = new Circle();
@@ -23,6 +24,10 @@ function PlayerSpirit(screen) {
   this.lastFrictionTime = this.now();
   this.lastInputTime = this.now();
 
+  this.gripBodyId = null;
+  this.gripPos = null;
+  this.gripAim = null;
+
   this.accel = new Vec2d();
   this.slot = null;
 }
@@ -36,6 +41,9 @@ PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
+
+PlayerSpirit.SEEKSCAN_DIST = 7;
+PlayerSpirit.SEEKSCAN_RAD = 0.2;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -159,9 +167,19 @@ PlayerSpirit.prototype.handleInput = function() {
   if (b1.getVal()) {
   }
   if (b2.getVal()) {
+    var scanPos = this.getBodyPos();
+    var scanVel = this.vec2d.set(this.aim).scaleToLength(PlayerSpirit.SEEKSCAN_DIST);
+    var result = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
+    if (result == -1) {
+      this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, result);
+    } else {
+      this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD * (0.1), result);
+      scanVel.scale(result);
+      this.screen.addScanSplash(scanPos.add(scanVel), Vec2d.ZERO, PlayerSpirit.SEEKSCAN_RAD*3, result);
+    }
   }
 
-  var aimLocked = b1.getVal() || b2.getVal();
+  var aimLocked = false;//b1.getVal() || b2.getVal();
   var preciseKeyboard = !touchlike && !stick.isSpeedTriggerDown() && !aimLocked;
   stick.getVal(this.vec2d);
   var stickMag = this.vec2d.magnitude();
@@ -203,7 +221,7 @@ PlayerSpirit.prototype.handleInput = function() {
   //////////////////
   // STICK SCALING
   if (touchlike && stickMag) {
-    var unshrinkingMag = 0.4;
+    var unshrinkingMag = 0.9;
     if (stickMag < unshrinkingMag) {
       var stickScale = 0.93 + 0.07 * stickMag / unshrinkingMag;
       stick.scale(stickScale);
@@ -315,8 +333,9 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       .drawStamp();
 
   // draw aim guide
-  renderer.setStamp(this.stamps.cylinderStamp);
-  // renderer.setColorVector(this.color);
+  renderer.setStamp(this.stamps.lineStamp);
+  this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
+  renderer.setColorVector(this.aimColor);
   var p1 = this.vec2d;
   var p2 = this.vec2d2;
   var aimLen = 1.5;
@@ -324,17 +343,14 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   p1.set(this.aim).scaleToLength(body.rad * 2).add(bodyPos);
   p2.set(this.aim).scaleToLength(body.rad * 2 + aimLen).add(bodyPos);
   this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0))
+      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
       .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
   renderer.setModelMatrix(this.modelMatrix);
   this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0))
+      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
       .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
   renderer.setModelMatrix2(this.modelMatrix);
   renderer.drawStamp();
-  // p1.free();
-  // p2.free();
-
 };
 
 PlayerSpirit.prototype.explode = function() {

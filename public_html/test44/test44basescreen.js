@@ -23,6 +23,14 @@ Test44BaseScreen.MenuItem = {
   ANT: 'ant'
 };
 
+Test44BaseScreen.SplashType = {
+  NOTE: 1,
+  SCAN: 2,
+  WALL_DAMAGE: 3,
+  ERROR: 4
+};
+
+
 Test44BaseScreen.prototype.initStatMons = function() {
   var framesPerRightSample = 1;
   var samplesPerRightGraph = 2;
@@ -171,15 +179,7 @@ Test44BaseScreen.prototype.createSpiritConfigs = function() {
 };
 
 Test44BaseScreen.prototype.createHitGroups = function() {
-  return {
-    EMPTY: 0,
-    WALL: 1,
-    NEUTRAL: 2,
-    CURSOR: 3,
-    ENEMY: 4,
-    ENEMY_SCAN: 5,
-    PLAYER: 6
-  };
+  return HitGroups;
 };
 
 Test44BaseScreen.prototype.createHitPairs = function() {
@@ -207,7 +207,12 @@ Test44BaseScreen.prototype.createHitPairs = function() {
     [g.PLAYER, g.CURSOR],
     [g.PLAYER, g.ENEMY],
     [g.PLAYER, g.ENEMY_SCAN],
-    [g.PLAYER, g.PLAYER]
+    [g.PLAYER, g.PLAYER],
+
+    [g.PLAYER_SCAN, g.NEUTRAL],
+    [g.PLAYER_SCAN, g.WALL],
+    [g.PLAYER_SCAN, g.ENEMY],
+    [g.PLAYER_SCAN, g.PLAYER]
   ];
 };
 
@@ -271,3 +276,42 @@ Test44BaseScreen.prototype.drawStats = function() {
     }
   }
 };
+
+Test44BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
+  var s = this.splash;
+  s.reset(Test44BaseScreen.SplashType.SCAN, this.stamps.cylinderStamp);
+
+  s.startTime = this.world.now;
+  s.duration = 3;
+
+  var x = pos.x;
+  var y = pos.y;
+  var hit = dist >= 0;
+  var d = hit ? dist : 1;
+  var dx = vel.x * d;
+  var dy = vel.y * d;
+
+  s.startPose.pos.setXYZ(x, y, 0);
+  s.endPose.pos.setXYZ(x, y, 1);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad, rad, 1);
+
+  s.startPose2.pos.setXYZ(x + dx, y + dy, 0);
+  s.endPose2.pos.setXYZ(x + dx, y + dy, 1);
+  s.startPose2.scale.setXYZ(rad, rad, 1);
+  s.endPose2.scale.setXYZ(rad, rad, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  if (dist < 0) {
+    s.startColor.setXYZ(0.2, 0.5, 0.2);
+    s.endColor.setXYZ(0.02, 0.05, 0.02);
+  } else {
+    s.startColor.setXYZ(0.8, 0.2, 0.2);
+    s.endColor.setXYZ(0.08, 0.02, 0.02);
+  }
+
+  this.splasher.addCopy(s);
+};
+

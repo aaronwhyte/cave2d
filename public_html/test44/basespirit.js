@@ -6,6 +6,8 @@ function BaseSpirit(screen) {
   Spirit.call(this);
 
   this.tempBodyPos = new Vec2d();
+  this.scanVec = new Vec2d();
+  this.scanResp = new ScanResponse();
   BaseSpirit.prototype.reset.call(this, screen);
 }
 BaseSpirit.prototype = new Spirit();
@@ -49,6 +51,22 @@ BaseSpirit.prototype.scan = function(group, pos, dir, dist, rad) {
       this.scanVec.setXY(
           Math.sin(dir) * dist,
           Math.cos(dir) * dist),
+      rad,
+      this.scanResp);
+};
+
+/**
+ * @param group
+ * @param pos
+ * @param vel
+ * @param rad
+ * @returns {number} a fraction (0 to 1) of the total scan distance , or -1 if there was no hit
+ */
+BaseSpirit.prototype.scanWithVel = function(group, pos, vel, rad) {
+  return this.screen.scan(
+      group,
+      pos,
+      vel,
       rad,
       this.scanResp);
 };
