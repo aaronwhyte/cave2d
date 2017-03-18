@@ -24,9 +24,12 @@ function PlayerSpirit(screen) {
   this.lastFrictionTime = this.now();
   this.lastInputTime = this.now();
 
-  this.gripBodyId = null;
-  this.gripPos = null;
-  this.gripAim = null;
+  this.targetBodyId = null;
+  // relative to the target body, where did the player grab?
+  this.targetRelPos = new Vec2d();
+  // What was the direction of the beam relative to the target when it struck?
+  this.targetBeamDir = new Vec2d();
+  this.gripWorldPos = new Vec2d();
 
   this.accel = new Vec2d();
   this.slot = null;
@@ -42,8 +45,10 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.SEEKSCAN_DIST = 7;
-PlayerSpirit.SEEKSCAN_RAD = 0.2;
+PlayerSpirit.SEEKSCAN_DIST = 10;
+PlayerSpirit.SEEKSCAN_RAD = 0.01;
+PlayerSpirit.TRACTOR_HOLD_DIST = 3;
+PlayerSpirit.TRACTOR_HOLD_FORCE = 0.8;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -167,16 +172,7 @@ PlayerSpirit.prototype.handleInput = function() {
   if (b1.getVal()) {
   }
   if (b2.getVal()) {
-    var scanPos = this.getBodyPos();
-    var scanVel = this.vec2d.set(this.aim).scaleToLength(PlayerSpirit.SEEKSCAN_DIST);
-    var result = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
-    if (result == -1) {
-      this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, result);
-    } else {
-      this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD * (0.1), result);
-      scanVel.scale(result);
-      this.screen.addScanSplash(scanPos.add(scanVel), Vec2d.ZERO, PlayerSpirit.SEEKSCAN_RAD*3, result);
-    }
+    this.tractorBeamScan();
   }
 
   var aimLocked = false;//b1.getVal() || b2.getVal();
@@ -279,6 +275,34 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
 };
 
 
+PlayerSpirit.prototype.tractorBeamScan = function() {
+  var scanPos = this.getBodyPos();
+  var scanVel = this.vec2d.set(this.aim).scaleToLength(PlayerSpirit.SEEKSCAN_DIST);
+  var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
+  if (resultFraction == -1) {
+    // no hit
+    this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction);
+  } else {
+    // grab that thing!
+    this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD * (10), resultFraction);
+    // scanVel.scale(resultFraction);
+    // this.screen.addScanSplash(scanPos.add(scanVel), Vec2d.ZERO, PlayerSpirit.SEEKSCAN_RAD*3, resultFraction);
+
+    // remember what we've got
+    var targetBody = this.screen.world.getBodyByPathId(this.scanResp.pathId);
+    if (targetBody) {
+      var now = this.now();
+      this.targetBodyId = targetBody.id;
+      var contactPos = Vec2d.alloc().set(scanVel).scale(resultFraction).add(scanPos);
+      var targetPos = targetBody.getPosAtTime(now, Vec2d.alloc());
+      this.targetRelPos.set(contactPos).subtract(targetPos).rot(-targetBody.getAngPosAtTime(now));
+      this.targetBeamDir.set(scanVel).scaleToLength(1).rot(-targetBody.getAngPosAtTime(now));
+      targetPos.free();
+      contactPos.free();
+    }
+  }
+};
+
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
@@ -290,6 +314,18 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
     var body = this.getBody();
     if (body) {
+      // tractor beam force?
+      var targetBody = this.getTargetBody();
+      if (targetBody) {
+        var gripWorldPos = this.getGripWorldPos(targetBody);
+        var playerPos = this.getBodyPos();
+        var playerToTarget = this.vec2d.set(gripWorldPos).subtract(playerPos);
+        var dist = playerToTarget.magnitude();
+        var pullForce = playerToTarget.scale(PlayerSpirit.TRACTOR_HOLD_FORCE * -1 * (dist - PlayerSpirit.TRACTOR_HOLD_DIST) / dist);
+        targetBody.applyForceAtWorldPosAndTime(pullForce, gripWorldPos, now);
+        body.applyForceAtWorldPosAndTime(pullForce.scale(-1), playerPos, now);
+      }
+
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
 
       var friction = Math.pow(this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3, duration);
@@ -319,6 +355,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   if (!body) return;
+  var now = this.now();
   var bodyPos = this.getBodyPos();
   this.camera.follow(bodyPos);
   this.modelMatrix.toIdentity()
@@ -351,6 +388,46 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
   renderer.setModelMatrix2(this.modelMatrix);
   renderer.drawStamp();
+
+  // draw tractor beam
+  if (this.targetBodyId) {
+    var targetBody = this.getTargetBody();
+    if (targetBody) {
+      renderer.setStamp(this.stamps.lineStamp);
+      this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
+      renderer.setColorVector(this.aimColor);
+      var p1 = bodyPos;
+      var p2 = this.getGripWorldPos(targetBody);
+      var rad = body.rad * 0.2;
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+          .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+      renderer.setModelMatrix(this.modelMatrix);
+      this.modelMatrix.toIdentity()
+          .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+          .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+      renderer.setModelMatrix2(this.modelMatrix);
+      renderer.drawStamp();
+    }
+  }
+};
+
+PlayerSpirit.prototype.getTargetBody = function() {
+  var b = null;
+  if (this.targetBodyId) {
+    b = this.screen.getBodyById(this.targetBodyId);
+  } else {
+    this.targetBodyId = 0;
+  }
+  return b;
+};
+
+PlayerSpirit.prototype.getGripWorldPos = function(targetBody) {
+  var now = this.now();
+  var tmp = Vec2d.alloc();
+  this.gripWorldPos.set(this.targetRelPos).rot(targetBody.getAngPosAtTime(now)).add(targetBody.getPosAtTime(now, tmp));
+  tmp.free();
+  return this.gripWorldPos;
 };
 
 PlayerSpirit.prototype.explode = function() {

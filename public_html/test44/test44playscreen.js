@@ -504,7 +504,7 @@ Test44PlayScreen.prototype.onHitEvent = function(e) {
     if (s0 && s1) {
       this.pair[0] = s0;
       this.pair[1] = s1;
-      this.checkPlayerAntHit(this.pair);
+      // this.checkPlayerAntHit(this.pair);
     }
   }
 };
