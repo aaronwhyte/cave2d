@@ -45,10 +45,14 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
+PlayerSpirit.TRACTOR_HOLD_DIST = 2.5;
 PlayerSpirit.SEEKSCAN_DIST = 10;
-PlayerSpirit.SEEKSCAN_RAD = 0.01;
-PlayerSpirit.TRACTOR_HOLD_DIST = 3;
-PlayerSpirit.TRACTOR_HOLD_FORCE = 0.8;
+PlayerSpirit.SEEKSCAN_RAD = 0.1;
+// PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
+
+PlayerSpirit.TRACTOR_HOLD_FORCE = 2;
+
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -170,9 +174,14 @@ PlayerSpirit.prototype.handleInput = function() {
   var b1 = controls.get(ControlName.BUTTON_1);
   var b2 = controls.get(ControlName.BUTTON_2);
   if (b1.getVal()) {
+    if (this.getTargetBody()) {
+      this.releaseTarget();
+    }
   }
   if (b2.getVal()) {
-    this.tractorBeamScan();
+    if (!this.getTargetBody()) {
+      this.tractorBeamScan();
+    }
   }
 
   var aimLocked = false;//b1.getVal() || b2.getVal();
@@ -223,6 +232,10 @@ PlayerSpirit.prototype.handleInput = function() {
       stick.scale(stickScale);
     }
   }
+};
+
+PlayerSpirit.prototype.releaseTarget = function() {
+  this.targetBodyId = 0;
 };
 
 
@@ -284,11 +297,6 @@ PlayerSpirit.prototype.tractorBeamScan = function() {
     this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction);
   } else {
     // grab that thing!
-    this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD * (10), resultFraction);
-    // scanVel.scale(resultFraction);
-    // this.screen.addScanSplash(scanPos.add(scanVel), Vec2d.ZERO, PlayerSpirit.SEEKSCAN_RAD*3, resultFraction);
-
-    // remember what we've got
     var targetBody = this.screen.world.getBodyByPathId(this.scanResp.pathId);
     if (targetBody) {
       var now = this.now();
@@ -321,9 +329,17 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
         var playerPos = this.getBodyPos();
         var playerToTarget = this.vec2d.set(gripWorldPos).subtract(playerPos);
         var dist = playerToTarget.magnitude();
-        var pullForce = playerToTarget.scale(PlayerSpirit.TRACTOR_HOLD_FORCE * -1 * (dist - PlayerSpirit.TRACTOR_HOLD_DIST) / dist);
-        targetBody.applyForceAtWorldPosAndTime(pullForce, gripWorldPos, now);
-        body.applyForceAtWorldPosAndTime(pullForce.scale(-1), playerPos, now);
+        if (dist > PlayerSpirit.TRACTOR_BREAK_DIST) {
+          this.releaseTarget();
+        } else {
+          var distPastRest = dist - PlayerSpirit.TRACTOR_HOLD_DIST;
+          var fracPastRest = distPastRest / (PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.TRACTOR_HOLD_DIST);
+          var distFactor = distPastRest < 0 ? distPastRest : Math.abs(Math.pow(fracPastRest, 4) - fracPastRest) * 1.4;
+          var pullForce = playerToTarget.scale(1 / dist).scale(-PlayerSpirit.TRACTOR_HOLD_FORCE * distFactor);
+          targetBody.applyForceAtWorldPosAndTime(pullForce, gripWorldPos, now);
+          body.applyForceAtWorldPosAndTime(pullForce.scale(-1), playerPos, now);
+          this.tractorForceFrac = Math.abs(pullForce.magnitude()) / PlayerSpirit.TRACTOR_HOLD_FORCE;
+        }
       }
 
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
@@ -369,46 +385,48 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       .setModelMatrix(this.modelMatrix)
       .drawStamp();
 
-  // draw aim guide
-  renderer.setStamp(this.stamps.lineStamp);
-  this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
-  renderer.setColorVector(this.aimColor);
-  var p1 = this.vec2d;
-  var p2 = this.vec2d2;
-  var aimLen = 1.5;
-  var rad = body.rad * 0.2;
-  p1.set(this.aim).scaleToLength(body.rad * 2).add(bodyPos);
-  p2.set(this.aim).scaleToLength(body.rad * 2 + aimLen).add(bodyPos);
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
-      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  renderer.setModelMatrix(this.modelMatrix);
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
-      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  renderer.setModelMatrix2(this.modelMatrix);
-  renderer.drawStamp();
+  var p1, p2, rad;
 
-  // draw tractor beam
-  if (this.targetBodyId) {
-    var targetBody = this.getTargetBody();
-    if (targetBody) {
-      renderer.setStamp(this.stamps.lineStamp);
-      this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
-      renderer.setColorVector(this.aimColor);
-      var p1 = bodyPos;
-      var p2 = this.getGripWorldPos(targetBody);
-      var rad = body.rad * 0.2;
-      this.modelMatrix.toIdentity()
-          .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
-          .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-      renderer.setModelMatrix(this.modelMatrix);
-      this.modelMatrix.toIdentity()
-          .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
-          .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-      renderer.setModelMatrix2(this.modelMatrix);
-      renderer.drawStamp();
-    }
+  // tractor beam
+  var targetBody = this.getTargetBody();
+  if (targetBody) {
+    renderer.setStamp(this.stamps.lineStamp);
+    this.aimColor.set(this.color).scale1(1.5);
+    renderer.setColorVector(this.aimColor);
+    p1 = bodyPos;
+    p2 = this.getGripWorldPos(targetBody);
+    var dist = p1.distance(p2);
+    rad = Math.min(this.tractorForceFrac + 0.1, body.rad * 0.5);
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+    renderer.setModelMatrix(this.modelMatrix);
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+    renderer.setModelMatrix2(this.modelMatrix);
+    renderer.drawStamp();
+  } else {
+    // aim guide
+    renderer.setStamp(this.stamps.lineStamp);
+    this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
+    renderer.setColorVector(this.aimColor);
+    p1 = this.vec2d;
+    p2 = this.vec2d2;
+    var aimDist = PlayerSpirit.SEEKSCAN_DIST;
+    var aimLen = PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.TRACTOR_HOLD_DIST;
+    rad = PlayerSpirit.SEEKSCAN_RAD;
+    p1.set(this.aim).scaleToLength(aimDist).add(bodyPos);
+    p2.set(this.aim).scaleToLength(aimDist - aimLen).add(bodyPos);
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+    renderer.setModelMatrix(this.modelMatrix);
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+    renderer.setModelMatrix2(this.modelMatrix);
+    renderer.drawStamp();
   }
 };
 
