@@ -37,21 +37,24 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
+PlayerSpirit.PLAYER_RAD = 1;
+
 PlayerSpirit.SPEED = 1.5;
 PlayerSpirit.TRACTION = 0.4;
 PlayerSpirit.FRICTION = 0.1;
-PlayerSpirit.FRICTION_TIMEOUT = 1;
+PlayerSpirit.FRICTION_TIMEOUT = 0.2;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.TRACTOR_HOLD_DIST = 2.5;
-PlayerSpirit.SEEKSCAN_DIST = 10;
+// dist from player surface, not from player center
+PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD * 2;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_HOLD_DIST * 3;
 PlayerSpirit.SEEKSCAN_RAD = 0.1;
 // PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
-PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST;
 
-PlayerSpirit.TRACTOR_HOLD_FORCE = 2;
+PlayerSpirit.TRACTOR_HOLD_FORCE = 3;
 
 
 PlayerSpirit.SCHEMA = {
@@ -139,7 +142,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
-  b.rad = 0.9;
+  b.rad = PlayerSpirit.PLAYER_RAD;
   b.hitGroup = this.screen.getHitGroups().PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.grip = 0.5;
@@ -290,7 +293,8 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
 
 PlayerSpirit.prototype.tractorBeamScan = function() {
   var scanPos = this.getBodyPos();
-  var scanVel = this.vec2d.set(this.aim).scaleToLength(PlayerSpirit.SEEKSCAN_DIST);
+  var scanVel = this.vec2d.set(this.aim).scaleToLength(
+      PlayerSpirit.PLAYER_RAD + PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.SEEKSCAN_RAD);
   var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
   if (resultFraction == -1) {
     // no hit
@@ -328,23 +332,29 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
         var gripWorldPos = this.getGripWorldPos(targetBody);
         var playerPos = this.getBodyPos();
         var playerToTarget = this.vec2d.set(gripWorldPos).subtract(playerPos);
-        var dist = playerToTarget.magnitude();
-        if (dist > PlayerSpirit.TRACTOR_BREAK_DIST) {
+        var distFromSurface = playerToTarget.magnitude() - PlayerSpirit.PLAYER_RAD;
+        if (distFromSurface > PlayerSpirit.TRACTOR_BREAK_DIST) {
           this.releaseTarget();
         } else {
-          var distPastRest = dist - PlayerSpirit.TRACTOR_HOLD_DIST;
-          var fracPastRest = distPastRest / (PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.TRACTOR_HOLD_DIST);
-          var distFactor = distPastRest < 0 ? distPastRest : Math.abs(Math.pow(fracPastRest, 4) - fracPastRest) * 1.4;
-          var pullForce = playerToTarget.scale(1 / dist).scale(-PlayerSpirit.TRACTOR_HOLD_FORCE * distFactor);
+          var distPastRest = distFromSurface - PlayerSpirit.TRACTOR_HOLD_DIST;
+          var distFactor;
+          if (distPastRest < 0) {
+            distFactor = distPastRest / PlayerSpirit.TRACTOR_HOLD_DIST;
+          } else {
+            var x = distPastRest / (PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.TRACTOR_HOLD_DIST);
+            distFactor = (x - x*x) * 4;
+            // distFactor = (x*x*x - 2*x*x + x) * 27 / 4;
+          }
+          var pullForce = playerToTarget.scale(-PlayerSpirit.TRACTOR_HOLD_FORCE * distFactor * duration / distFromSurface);
           targetBody.applyForceAtWorldPosAndTime(pullForce, gripWorldPos, now);
           body.applyForceAtWorldPosAndTime(pullForce.scale(-1), playerPos, now);
-          this.tractorForceFrac = Math.abs(pullForce.magnitude()) / PlayerSpirit.TRACTOR_HOLD_FORCE;
+          this.tractorForceFrac = Math.abs(distFactor);
         }
       }
 
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
 
-      var friction = Math.pow(this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3, duration);
+      var friction = (this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3) * duration;
       body.applyLinearFrictionAtTime(friction, now);
       body.applyAngularFrictionAtTime(friction, now);
 
@@ -396,7 +406,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     p1 = bodyPos;
     p2 = this.getGripWorldPos(targetBody);
     var dist = p1.distance(p2);
-    rad = Math.min(this.tractorForceFrac + 0.1, body.rad * 0.5);
+    rad = this.tractorForceFrac * 2/3 + 0.05;
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
@@ -413,11 +423,11 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setColorVector(this.aimColor);
     p1 = this.vec2d;
     p2 = this.vec2d2;
-    var aimDist = PlayerSpirit.SEEKSCAN_DIST;
-    var aimLen = PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.TRACTOR_HOLD_DIST;
+    var p1Dist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD - PlayerSpirit.SEEKSCAN_RAD;
+    var p2Dist = PlayerSpirit.PLAYER_RAD + PlayerSpirit.TRACTOR_HOLD_DIST;
     rad = PlayerSpirit.SEEKSCAN_RAD;
-    p1.set(this.aim).scaleToLength(aimDist).add(bodyPos);
-    p2.set(this.aim).scaleToLength(aimDist - aimLen).add(bodyPos);
+    p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
+    p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));

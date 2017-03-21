@@ -212,32 +212,35 @@ v fix circle array allocation madness
 Test 44: Tractor Beam!
 v test nest - from test 43
 v buttons lock aim (but it's more fun without it)
-- grab part 1
+v grab part 1
   v seeking: no grip, button 2 down
     v rayscan
     v debugging-spark
-  - onGripStart transition
+  v onGripStart transition
     v remember
       v body
       v location relative to body's orientation
       v grab vector relative to body's orientation too - not just straight at center of mass
-  - gripping
+  v gripping
     v draw
     v super dumb spring force at first
-    - no more scanning until grip released
-    - don't draw aim pointer
-- kick part 1
-  - while gripping, button 1 releases.
+    v no more scanning until grip released
+    v don't draw aim pointer
+v kick part 1
+  v while gripping, button 1 releases.
 - grab part 2
-  - break grip if rayscan-clear check hits anything except target
+  - damping
   - torque forces from points left and right of player center (or player surface?), to points left and right of grab location.
   - squeezing
     - forces: same as above, but from two points on player, left and right of center.
-  - damp?
+  - break grip if rayscan-clear check hits anything except target (for more than N checks?) (infinite masses only?)
 - kick part 2
   - when not holding, kick does a little force-jab
   - rev up kick with long-hold
   - long hold too long to cancel?
+- graphics and sound
+  - show torque at both ends of beam
+    - bendy lines! Add 0-1 float value to model vertexes, and uniforms dictating curve "velocity" at endpoints
 - handles & using
 
 Bendy lines
