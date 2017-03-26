@@ -15,7 +15,7 @@ function HitResolver() {
  * @param {Body} b1
  */
 HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
-  if (b0.mass == Infinity && b1.mass == Infinity) return;
+  if (b0.mass === Infinity && b1.mass === Infinity) return;
 
 //  var ke0 = b0.getKineticEnergy();
 //  var ke1 = b1.getKineticEnergy();
@@ -30,9 +30,9 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   accel.scale(-1 - b0.elasticity * b1.elasticity);
   if (!accel.equals(Vec2d.ZERO)) {
     // Use masses to decide which body gets accelerated by how much.
-    if (b0.mass == Infinity) {
+    if (b0.mass === Infinity) {
       b1.setVelAtTime(accel.add(b1.vel), time);
-    } else if (b1.mass == Infinity) {
+    } else if (b1.mass === Infinity) {
       b0.setVelAtTime(accel.scale(-1).add(b0.vel), time);
     } else {
       var work = Vec2d.alloc();
@@ -66,11 +66,11 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
     var vap0 = b0.getVelocityAtWorldPoint(time, hitPos, Vec2d.alloc()).projectOnto(surfaceUnitVec);
     var vap1 = b1.getVelocityAtWorldPoint(time, hitPos, Vec2d.alloc()).projectOnto(surfaceUnitVec);
 
-    var denom0 = b0.getForceDenom(d0);
-    var denom1 = b1.getForceDenom(d1);
-    var denom = denom0 + denom1;
-    if (denom) {
-      var forceScale = grip * (vap1.dot(surfaceUnitVec) - vap0.dot(surfaceUnitVec)) / denom;
+    var reciprocalMass0 = b0.getReciprocalMassAlongTangentAtDistance(d0);
+    var reciprocalMass1 = b1.getReciprocalMassAlongTangentAtDistance(d1);
+    var reciprocalMass = reciprocalMass0 + reciprocalMass1;
+    if (reciprocalMass) {
+      var forceScale = grip * (vap1.dot(surfaceUnitVec) - vap0.dot(surfaceUnitVec)) / reciprocalMass;
       var force = Vec2d.alloc().set(surfaceUnitVec).scaleToLength(forceScale);
       b0.applyForceAtWorldPosAndTime(force, hitPos, time);
       b1.applyForceAtWorldPosAndTime(force.scale(-1), hitPos, time);
@@ -95,14 +95,14 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
 };
 
 HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
-  if (b0.shape == Body.Shape.CIRCLE) {
-    if (b1.shape == Body.Shape.CIRCLE) {
+  if (b0.shape === Body.Shape.CIRCLE) {
+    if (b1.shape === Body.Shape.CIRCLE) {
       return this.getHitPosCircCirc(time, collisionVec, b0, b1, out);
     } else {
       return this.getHitPosCircRect(time, collisionVec, b0, b1, out);
     }
   } else {
-    if (b1.shape == Body.Shape.CIRCLE) {
+    if (b1.shape === Body.Shape.CIRCLE) {
       return this.getHitPosCircRect(time, collisionVec, b1, b0, out);
     } else {
       return this.getHitPosRectRect(time, collisionVec, b1, b0, out);

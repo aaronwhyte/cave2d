@@ -143,9 +143,9 @@ Body.prototype.onBeforeChange = function() {
 Body.prototype.getBoundingRectAtTime = function(t, opt_out) {
   var out = opt_out || new Rect();
   this.getPosAtTime(t, out.pos);
-  if (this.shape == Body.Shape.CIRCLE) {
+  if (this.shape === Body.Shape.CIRCLE) {
     out.setRadXY(this.rad, this.rad);
-  } else if (this.shape == Body.Shape.RECT) {
+  } else if (this.shape === Body.Shape.RECT) {
     out.setRad(this.rectRad);
   }
   return out;
@@ -155,7 +155,7 @@ Body.prototype.getBoundingRectAtTime = function(t, opt_out) {
  * @returns {Number}
  */
 Body.prototype.getArea = function() {
-  if (this.shape == Body.Shape.CIRCLE) {
+  if (this.shape === Body.Shape.CIRCLE) {
     return Math.PI * this.rad * this.rad;
   } else {
     return this.rectRad.x * this.rectRad.y;
@@ -242,7 +242,7 @@ Body.prototype.addVelAtTime = function(vel, t) {
  * @param {number} t
  */
 Body.prototype.setVelXYAtTime = function(x, y, t) {
-  if (this.vel.x == x && this.vel.y == y) return;
+  if (this.vel.x === x && this.vel.y === y) return;
   this.invalidatePath();
   this.onBeforeChange();
   this.moveToTime(t);
@@ -257,7 +257,7 @@ Body.prototype.setVelXYAtTime = function(x, y, t) {
  * @param {number} t
  */
 Body.prototype.addVelXYAtTime = function(x, y, t) {
-  if (this.vel.x == x && this.vel.y == y) return;
+  if (this.vel.x === x && this.vel.y === y) return;
   this.invalidatePath();
   this.onBeforeChange();
   this.moveToTime(t);
@@ -272,7 +272,7 @@ Body.prototype.getPathEndTime = function() {
 };
 
 Body.prototype.isMoving = function() {
-  return this.angVel != 0 || !this.vel.isZero();
+  return this.angVel !== 0 || !this.vel.isZero();
 };
 
 Body.prototype.stopMoving = function(now) {
@@ -306,7 +306,7 @@ Body.prototype.setAngPosAtTime = function(ap, t) {
  * @param {number} t
  */
 Body.prototype.setAngVelAtTime = function(av, t) {
-  if (this.angVel == av) return;
+  if (this.angVel === av) return;
   this.onBeforeChange();
   this.moveToTime(t);
   this.angVel = av;
@@ -354,7 +354,7 @@ Body.prototype.getVelocityAtWorldPoint = function(now, point, out) {
 
 Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now) {
   // angular acceleration
-  if (this.turnable && this.moi && this.moi != Infinity) {
+  if (this.turnable && this.moi && this.moi !== Infinity) {
     var gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
     var torque = gripVec.cross(force);
     this.setAngVelAtTime(this.angVel + torque / this.moi, now);
@@ -362,7 +362,7 @@ Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now) {
   }
 
   // linear acceleration
-  if (this.mass && this.mass != Infinity) {
+  if (this.mass && this.mass !== Infinity) {
     var newVel = Vec2d.alloc()
         .set(force)
         .scale(1 / this.mass)
@@ -411,15 +411,42 @@ Body.prototype.getKineticEnergy = function() {
       ((0.5 * this.moi * this.angVel * this.angVel) || 0);
 };
 
-Body.prototype.getForceDenom = function(forceDist) {
-  var denom = 0;
-  if (this.mass && this.mass != Infinity) {
-    denom += 1 / this.mass;
+/**
+ * If a force is applied at a right angle to a line passing through the center of mass, at a distance
+ * "forceDist" from the center, what's the inverse of the effective mass?
+ * @param forceDist
+ * @returns {number}
+ */
+Body.prototype.getReciprocalMassAlongTangentAtDistance = function(forceDist) {
+  var retval = 0;
+  if (this.mass && this.mass !== Infinity) {
+    retval += 1 / this.mass;
   }
-  if (this.turnable && this.moi && this.moi != Infinity) {
-    denom += forceDist * forceDist / this.moi;
+  if (this.turnable && this.moi && this.moi !== Infinity) {
+    retval += forceDist * forceDist / this.moi;
   }
-  return denom;
+  return retval;
+};
+
+/**
+ *
+ * @param {Vec2d} worldPoint
+ * @param {Vec2d} forceUnitVec
+ * @param {number} now
+ * @returns {number}
+ */
+Body.prototype.getReciprocalMassAtPlaceAndDirAtTime = function(worldPoint, forceUnitVec, now) {
+  var retval = 0;
+  if (this.mass && this.mass !== Infinity) {
+    retval += 1 / this.mass;
+  }
+  if (this.turnable && this.moi && this.moi !== Infinity) {
+    var radial = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
+    var cross = radial.cross(forceUnitVec); // TODO is the sign right?
+    retval += cross / this.moi;
+    radial.free();
+  }
+  return retval;
 };
 
 /**
