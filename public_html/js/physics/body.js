@@ -442,7 +442,7 @@ Body.prototype.getReciprocalMassAtPlaceAndDirAtTime = function(worldPoint, force
   }
   if (this.turnable && this.moi && this.moi !== Infinity) {
     var radial = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
-    var cross = radial.cross(forceUnitVec); // TODO is the sign right?
+    var cross = Math.abs(radial.cross(forceUnitVec));
     retval += cross / this.moi;
     radial.free();
   }

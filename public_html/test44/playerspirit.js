@@ -42,19 +42,21 @@ PlayerSpirit.PLAYER_RAD = 1;
 PlayerSpirit.SPEED = 1.5;
 PlayerSpirit.TRACTION = 0.4;
 PlayerSpirit.FRICTION = 0.1;
-PlayerSpirit.FRICTION_TIMEOUT = 0.2;
+PlayerSpirit.FRICTION_TIMEOUT = 0.3;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface, not from player center
-PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD * 2;
-PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_HOLD_DIST * 3;
+PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD * 1.5;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 4;
 PlayerSpirit.SEEKSCAN_RAD = 0.1;
 // PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
-PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
 
-PlayerSpirit.TRACTOR_HOLD_FORCE = 3;
+PlayerSpirit.TRACTOR_HOLD_FORCE = 1;
+PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.2;
+PlayerSpirit.TRACTOR_MAX_FORCE = 2;
 
 
 PlayerSpirit.SCHEMA = {
@@ -155,7 +157,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
 PlayerSpirit.prototype.handleInput = function() {
   if (!this.slot) return;
   var state = this.slot.stateName;
-  if (state != ControlState.PLAYING) return;
+  if (state !== ControlState.PLAYING) return;
 
   var body = this.getBody();
   if (!body) return;
@@ -163,7 +165,6 @@ PlayerSpirit.prototype.handleInput = function() {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-
   var now = this.now();
   var duration = now - this.lastInputTime;
   this.lastInputTime = now;
@@ -296,7 +297,7 @@ PlayerSpirit.prototype.tractorBeamScan = function() {
   var scanVel = this.vec2d.set(this.aim).scaleToLength(
       PlayerSpirit.PLAYER_RAD + PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.SEEKSCAN_RAD);
   var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
-  if (resultFraction == -1) {
+  if (resultFraction === -1) {
     // no hit
     this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction);
   } else {
@@ -320,7 +321,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     this.changeListener.onBeforeSpiritChange(this);
   }
   var now = this.now();
-  if (timeoutVal == PlayerSpirit.FRICTION_TIMEOUT_ID || timeoutVal == -1) {
+  if (timeoutVal === PlayerSpirit.FRICTION_TIMEOUT_ID || timeoutVal === -1) {
     var duration = now - this.lastFrictionTime;
     this.lastFrictionTime = now;
 
@@ -329,27 +330,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
       // tractor beam force?
       var targetBody = this.getTargetBody();
       if (targetBody) {
-        var gripWorldPos = this.getGripWorldPos(targetBody);
-        var playerPos = this.getBodyPos();
-        var playerToTarget = this.vec2d.set(gripWorldPos).subtract(playerPos);
-        var distFromSurface = playerToTarget.magnitude() - PlayerSpirit.PLAYER_RAD;
-        if (distFromSurface > PlayerSpirit.TRACTOR_BREAK_DIST) {
-          this.releaseTarget();
-        } else {
-          var distPastRest = distFromSurface - PlayerSpirit.TRACTOR_HOLD_DIST;
-          var distFactor;
-          if (distPastRest < 0) {
-            distFactor = distPastRest / PlayerSpirit.TRACTOR_HOLD_DIST;
-          } else {
-            var x = distPastRest / (PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.TRACTOR_HOLD_DIST);
-            distFactor = (x - x*x) * 4;
-            // distFactor = (x*x*x - 2*x*x + x) * 27 / 4;
-          }
-          var pullForce = playerToTarget.scale(-PlayerSpirit.TRACTOR_HOLD_FORCE * distFactor * duration / distFromSurface);
-          targetBody.applyForceAtWorldPosAndTime(pullForce, gripWorldPos, now);
-          body.applyForceAtWorldPosAndTime(pullForce.scale(-1), playerPos, now);
-          this.tractorForceFrac = Math.abs(distFactor);
-        }
+        this.handleTractorBeam(body, targetBody, duration);
       }
 
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
@@ -378,10 +359,54 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
 };
 
+PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody, duration) {
+  var now = this.now();
+  var gripWorldPos = this.getGripWorldPos(targetBody);
+  var playerPos = this.getBodyPos();
+  var playerToTarget = this.vec2d.set(gripWorldPos).subtract(playerPos);
+  var distFromSurface = playerToTarget.magnitude() - PlayerSpirit.PLAYER_RAD;
+  if (distFromSurface > PlayerSpirit.TRACTOR_BREAK_DIST) {
+    this.releaseTarget();
+  } else {
+    var totalForceVec = Vec2d.alloc();
+    var minMass = Math.min(playerBody.mass, targetBody.mass);
+    var x;
+
+    // pull
+    var pullDistFactor = (distFromSurface - PlayerSpirit.TRACTOR_HOLD_DIST) / PlayerSpirit.TRACTOR_HOLD_DIST;
+    var pullForceVec = playerToTarget.scaleToLength(-PlayerSpirit.TRACTOR_HOLD_FORCE * minMass * pullDistFactor);
+    totalForceVec.add(pullForceVec);
+
+    // damping
+    pullForceVec.scaleToLength(1);
+    // var targetReciprocalMass = targetBody.getReciprocalMassAtPlaceAndDirAtTime(gripWorldPos, pullForceVec, now);
+    // var playerReciprocalMass = playerBody.getReciprocalMassAtPlaceAndDirAtTime(playerPos, pullForceVec.scale(-1), now);
+    // var reciprocalMass = Math.max(targetReciprocalMass, playerReciprocalMass);
+    if (minMass && minMass !== Infinity) {
+      var vap0 = playerBody.getVelocityAtWorldPoint(now, playerPos, Vec2d.alloc());
+      var vap1 = targetBody.getVelocityAtWorldPoint(now, gripWorldPos, Vec2d.alloc());
+      var velDiffAlongForceVec = vap1.subtract(vap0).projectOnto(pullForceVec);
+      var dampAccel = velDiffAlongForceVec.scale(-PlayerSpirit.TRACTOR_DAMPING_FRACTION * duration);
+      var dampForceVec = dampAccel.scale(minMass);
+      totalForceVec.add(dampForceVec);
+      vap0.free();
+      vap1.free();
+    }
+
+    // apply forces
+    x = distFromSurface / PlayerSpirit.TRACTOR_BREAK_DIST;
+    totalForceVec.clipToMaxLength(PlayerSpirit.TRACTOR_MAX_FORCE * (1 - x * x));
+    targetBody.applyForceAtWorldPosAndTime(totalForceVec, gripWorldPos, now);
+    playerBody.applyForceAtWorldPosAndTime(totalForceVec.scale(-1), playerPos, now);
+    this.tractorForceFrac = totalForceVec.magnitude() / PlayerSpirit.TRACTOR_MAX_FORCE;
+
+    totalForceVec.free();
+  }
+};
+
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   if (!body) return;
-  var now = this.now();
   var bodyPos = this.getBodyPos();
   this.camera.follow(bodyPos);
   this.modelMatrix.toIdentity()
@@ -405,7 +430,6 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setColorVector(this.aimColor);
     p1 = bodyPos;
     p2 = this.getGripWorldPos(targetBody);
-    var dist = p1.distance(p2);
     rad = this.tractorForceFrac * 2/3 + 0.05;
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
@@ -532,7 +556,6 @@ PlayerSpirit.prototype.explode = function() {
     for (i = 0; i < particles; i++) {
       duration = 20 * (0.5 + Math.random());
       dir = dirOffset + 2 * Math.PI * (i / particles) + Math.random() / 4;
-      var thisRad = explosionRad + (0.5 + Math.random());
       dx = Math.sin(dir) * explosionRad / duration;
       dy = Math.cos(dir) * explosionRad / duration;
       addSplash(x, y, dx, dy, duration, 2);
