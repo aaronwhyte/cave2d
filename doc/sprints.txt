@@ -229,10 +229,22 @@ v grab part 1
 v kick part 1
   v while gripping, button 1 releases.
 - grab part 2
-  - damping
-  - torque forces from points left and right of player center (or player surface?), to points left and right of grab location.
+  v damping
+  v proper player rotation
+    v turnable, moi
+    v separate player aim from player body angpos (no-op?) (yup)
+    v Draw player body angpos somehow
+    v Do rotational accel based on diff between aim and angpos
+    v Make plr react to collisions with grip/rotation
+  - beam torque
+    - factor beam code into separate class
+    - call it 4 times, by specifying two logical endpoint locations, two "forward" unit vectors, and two spread distances?
+    - forces from points left and right of player center (or player surface?), to points left and right of grab location.
   - squeezing
     - forces: same as above, but from two points on player, left and right of center.
+    - aim controls the two player points
+    - works on little things
+    - what about walls?
   - break grip if rayscan-clear check hits anything except target (for more than N checks?) (infinite masses only?)
 - kick part 2
   - when not holding, kick does a little force-jab

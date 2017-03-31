@@ -30,6 +30,7 @@ function PlayerSpirit(screen) {
   // What was the direction of the beam relative to the target when it struck?
   this.targetBeamDir = new Vec2d();
   this.gripWorldPos = new Vec2d();
+  this.hitchWorldPos = new Vec2d();
 
   this.accel = new Vec2d();
   this.slot = null;
@@ -42,6 +43,7 @@ PlayerSpirit.PLAYER_RAD = 1;
 PlayerSpirit.SPEED = 1.5;
 PlayerSpirit.TRACTION = 0.4;
 PlayerSpirit.FRICTION = 0.1;
+PlayerSpirit.ANGULAR_FRICTION = 0.3;
 PlayerSpirit.FRICTION_TIMEOUT = 0.3;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -58,6 +60,7 @@ PlayerSpirit.TRACTOR_HOLD_FORCE = 1;
 PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.2;
 PlayerSpirit.TRACTOR_MAX_FORCE = 2;
 
+PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -147,6 +150,9 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   b.rad = PlayerSpirit.PLAYER_RAD;
   b.hitGroup = this.screen.getHitGroups().PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+
+  b.turnable = true;
+  b.moi = b.mass * b.rad * b.rad / 2;
   b.grip = 0.5;
   b.elasticity = 0.7;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
@@ -267,7 +273,7 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
     if (preciseKeyboard) {
       var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
       dist = correction.magnitude();
-      this.slowAimSpeed += 0.01 * dist;
+      this.slowAimSpeed += 0.04 * dist;
       slowAimFriction = 0.01;
       this.destAim.add(correction.scale(Math.min(1, this.slowAimSpeed)));
     } else {
@@ -335,9 +341,19 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
 
+      var aimAngle = Math.atan2(this.aim.x, this.aim.y);
+      var angleDiff = aimAngle - this.getBodyAngPos();
+      while (angleDiff > Math.PI) {
+        angleDiff -= 2 * Math.PI;
+      }
+      while (angleDiff < -Math.PI) {
+        angleDiff += 2 * Math.PI;
+      }
+      this.addBodyAngVel(duration * PlayerSpirit.AIM_ANGPOS_ACCEL * (angleDiff));
       var friction = (this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3) * duration;
       body.applyLinearFrictionAtTime(friction, now);
-      body.applyAngularFrictionAtTime(friction, now);
+      var angularFriction = (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3) * duration;
+      body.applyAngularFrictionAtTime(angularFriction, now);
 
       var newVel = this.vec2d.set(body.vel);
 
@@ -362,10 +378,10 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody, duration) {
   var now = this.now();
   var gripWorldPos = this.getGripWorldPos(targetBody);
-  var playerPos = this.getBodyPos();
-  var playerToTarget = this.vec2d.set(gripWorldPos).subtract(playerPos);
-  var distFromSurface = playerToTarget.magnitude() - PlayerSpirit.PLAYER_RAD;
-  if (distFromSurface > PlayerSpirit.TRACTOR_BREAK_DIST) {
+  var hitchWorldPos = this.getHitchWorldPos();
+  var hitchToGrip = this.vec2d.set(gripWorldPos).subtract(hitchWorldPos);
+  var beamLength = hitchToGrip.magnitude();
+  if (beamLength > PlayerSpirit.TRACTOR_BREAK_DIST) {
     this.releaseTarget();
   } else {
     var totalForceVec = Vec2d.alloc();
@@ -373,8 +389,8 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody, dura
     var x;
 
     // pull
-    var pullDistFactor = (distFromSurface - PlayerSpirit.TRACTOR_HOLD_DIST) / PlayerSpirit.TRACTOR_HOLD_DIST;
-    var pullForceVec = playerToTarget.scaleToLength(-PlayerSpirit.TRACTOR_HOLD_FORCE * minMass * pullDistFactor);
+    var pullDistFactor = (beamLength - PlayerSpirit.TRACTOR_HOLD_DIST) / PlayerSpirit.TRACTOR_HOLD_DIST;
+    var pullForceVec = hitchToGrip.scaleToLength(-PlayerSpirit.TRACTOR_HOLD_FORCE * minMass * pullDistFactor);
     totalForceVec.add(pullForceVec);
 
     // damping
@@ -383,7 +399,7 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody, dura
     // var playerReciprocalMass = playerBody.getReciprocalMassAtPlaceAndDirAtTime(playerPos, pullForceVec.scale(-1), now);
     // var reciprocalMass = Math.max(targetReciprocalMass, playerReciprocalMass);
     if (minMass && minMass !== Infinity) {
-      var vap0 = playerBody.getVelocityAtWorldPoint(now, playerPos, Vec2d.alloc());
+      var vap0 = playerBody.getVelocityAtWorldPoint(now, hitchWorldPos, Vec2d.alloc());
       var vap1 = targetBody.getVelocityAtWorldPoint(now, gripWorldPos, Vec2d.alloc());
       var velDiffAlongForceVec = vap1.subtract(vap0).projectOnto(pullForceVec);
       var dampAccel = velDiffAlongForceVec.scale(-PlayerSpirit.TRACTOR_DAMPING_FRACTION * duration);
@@ -394,10 +410,10 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody, dura
     }
 
     // apply forces
-    x = distFromSurface / PlayerSpirit.TRACTOR_BREAK_DIST;
+    x = beamLength / PlayerSpirit.TRACTOR_BREAK_DIST;
     totalForceVec.clipToMaxLength(PlayerSpirit.TRACTOR_MAX_FORCE * (1 - x * x));
     targetBody.applyForceAtWorldPosAndTime(totalForceVec, gripWorldPos, now);
-    playerBody.applyForceAtWorldPosAndTime(totalForceVec.scale(-1), playerPos, now);
+    playerBody.applyForceAtWorldPosAndTime(totalForceVec.scale(-1), hitchWorldPos, now);
     this.tractorForceFrac = totalForceVec.magnitude() / PlayerSpirit.TRACTOR_MAX_FORCE;
 
     totalForceVec.free();
@@ -413,7 +429,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
       .multiply(this.mat44.toSheerZOpXY(-this.aim.x, -this.aim.y))
-      .multiply(this.mat44.toRotateZOp(-body.vel.x * 0.2));
+      .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(this.now())));
   renderer
       .setStamp(this.modelStamp)
       .setColorVector(this.color)
@@ -428,7 +444,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setStamp(this.stamps.lineStamp);
     this.aimColor.set(this.color).scale1(1.5);
     renderer.setColorVector(this.aimColor);
-    p1 = bodyPos;
+    p1 = this.getHitchWorldPos();
     p2 = this.getGripWorldPos(targetBody);
     rad = this.tractorForceFrac * 2/3 + 0.05;
     this.modelMatrix.toIdentity()
@@ -480,6 +496,13 @@ PlayerSpirit.prototype.getGripWorldPos = function(targetBody) {
   this.gripWorldPos.set(this.targetRelPos).rot(targetBody.getAngPosAtTime(now)).add(targetBody.getPosAtTime(now, tmp));
   tmp.free();
   return this.gripWorldPos;
+};
+
+PlayerSpirit.prototype.getHitchWorldPos = function() {
+  var tmp = Vec2d.alloc();
+  this.hitchWorldPos.setXY(0, this.getBody().rad).rot(this.getBodyAngPos()).add(this.getBodyPos(tmp));
+  tmp.free();
+  return this.hitchWorldPos;
 };
 
 PlayerSpirit.prototype.explode = function() {

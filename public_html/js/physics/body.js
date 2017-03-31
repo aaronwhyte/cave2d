@@ -431,18 +431,18 @@ Body.prototype.getReciprocalMassAlongTangentAtDistance = function(forceDist) {
 /**
  *
  * @param {Vec2d} worldPoint
- * @param {Vec2d} forceUnitVec
+ * @param {Vec2d} dirUnitVec
  * @param {number} now
  * @returns {number}
  */
-Body.prototype.getReciprocalMassAtPlaceAndDirAtTime = function(worldPoint, forceUnitVec, now) {
+Body.prototype.getReciprocalMassAtPlaceAndDirAtTime = function(worldPoint, dirUnitVec, now) {
   var retval = 0;
   if (this.mass && this.mass !== Infinity) {
     retval += 1 / this.mass;
   }
   if (this.turnable && this.moi && this.moi !== Infinity) {
     var radial = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
-    var cross = Math.abs(radial.cross(forceUnitVec));
+    var cross = Math.abs(radial.cross(dirUnitVec));
     retval += cross / this.moi;
     radial.free();
   }
