@@ -237,7 +237,7 @@ v kick part 1
     v Do rotational accel based on diff between aim and angpos
     v Make plr react to collisions with grip/rotation
   - beam torque
-    - factor beam code into separate class
+    v factor beam code into separate class
     - call it 4 times, by specifying two logical endpoint locations, two "forward" unit vectors, and two spread distances?
     - forces from points left and right of player center (or player surface?), to points left and right of grab location.
   - squeezing
@@ -255,8 +255,6 @@ v kick part 1
     - bendy lines! Add 0-1 float value to model vertexes, and uniforms dictating curve "velocity" at endpoints
 - handles & using
 
-Bendy lines
-Today models have vertex groups, up to two of them. Expand that to about 10, in an array format.
 
 - Critters
   - Critters sleep by default.
@@ -298,14 +296,24 @@ in-bounds, I think.
   - link hover indicators
   - link deletion
 
-Zoomable Editor
+World.processNextEvent fix
+- fix all world.processNextEvent calls to not reference a freed event! Also maybe reset on free, not on alloc.
+
+
+Bézier curves for sparks would be cool
+
+Bendy lines?
+Today models have vertex groups, up to two of them. Expand that to about 10, in an array format.
+
+
+
+EDITOR 3
+
+Zoom
 - two-touch pinch/unpinch?
 - mouse onscroll, like Vorp
 - keys, maybe "[" and "]" or "," and "."
 - Touching the zoom indicator buttons zooms to that level Maybe four: close, medium, wide, far.
-
-World.processNextEvent fix
-- fix all world.processNextEvent calls to not reference a freed event! Also maybe reset on free, not on alloc.
 
 Layers
 Mode switch between Terrain, Objects, and (soon) Snap
@@ -339,18 +347,20 @@ Since snappers often overlap with objects (no collisions!) there needs to be a w
   - maybe shorter arcs too
 - top-level switch to toggle snapping on/off? I can see it getting annoying when you're doing free-form dragging.
 
+Undo/Redo UX polish
+v less crappy undo/redo button models
+  x RigidModelLineDrawer
+- save during a long change edit-gesture, like a digging drag, throttled by wall-time
+- a bunch of stuff with view rectangles? Save it for when it's zoomable?
+
+
+
 Batch rendering?
 - Add vector versions of existing uniforms?
   -
 Add "instanceNum" attrib to each vec?
 ... or extend "group" mechanism to support an array of model matrixes, and make a sweet polyline model with tons of groups??
 
-
-Undo/Redo UX polish
-v less crappy undo/redo button models
-  x RigidModelLineDrawer
-- save during a long change edit-gesture, like a digging drag, throttled by wall-time
-- a bunch of stuff with view rectangles? Save it for when it's zoomable?
 
 Test max RAF rate during pauses, to set max ms-before-bailing.
 * This is to defend against devices that don't operate at 60 FPS.

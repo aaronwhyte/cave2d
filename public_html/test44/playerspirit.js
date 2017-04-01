@@ -56,8 +56,8 @@ PlayerSpirit.SEEKSCAN_RAD = 0.1;
 // PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
 
-PlayerSpirit.TRACTOR_HOLD_FORCE = 1;
-PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.2;
+PlayerSpirit.TRACTOR_HOLD_FORCE = 0.7;
+PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.06;
 PlayerSpirit.TRACTOR_MAX_FORCE = 2;
 
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
@@ -379,44 +379,19 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody, dura
   var now = this.now();
   var gripWorldPos = this.getGripWorldPos(targetBody);
   var hitchWorldPos = this.getHitchWorldPos();
-  var hitchToGrip = this.vec2d.set(gripWorldPos).subtract(hitchWorldPos);
-  var beamLength = hitchToGrip.magnitude();
-  if (beamLength > PlayerSpirit.TRACTOR_BREAK_DIST) {
+  var absForce = Spring.applyDampenedSpring(
+      playerBody, hitchWorldPos,
+      targetBody, gripWorldPos,
+      PlayerSpirit.TRACTOR_HOLD_DIST,
+      PlayerSpirit.TRACTOR_HOLD_FORCE,
+      PlayerSpirit.TRACTOR_DAMPING_FRACTION,
+      PlayerSpirit.TRACTOR_MAX_FORCE,
+      PlayerSpirit.TRACTOR_BREAK_DIST,
+      now);
+  if (absForce < 0) {
     this.releaseTarget();
   } else {
-    var totalForceVec = Vec2d.alloc();
-    var minMass = Math.min(playerBody.mass, targetBody.mass);
-    var x;
-
-    // pull
-    var pullDistFactor = (beamLength - PlayerSpirit.TRACTOR_HOLD_DIST) / PlayerSpirit.TRACTOR_HOLD_DIST;
-    var pullForceVec = hitchToGrip.scaleToLength(-PlayerSpirit.TRACTOR_HOLD_FORCE * minMass * pullDistFactor);
-    totalForceVec.add(pullForceVec);
-
-    // damping
-    pullForceVec.scaleToLength(1);
-    // var targetReciprocalMass = targetBody.getReciprocalMassAtPlaceAndDirAtTime(gripWorldPos, pullForceVec, now);
-    // var playerReciprocalMass = playerBody.getReciprocalMassAtPlaceAndDirAtTime(playerPos, pullForceVec.scale(-1), now);
-    // var reciprocalMass = Math.max(targetReciprocalMass, playerReciprocalMass);
-    if (minMass && minMass !== Infinity) {
-      var vap0 = playerBody.getVelocityAtWorldPoint(now, hitchWorldPos, Vec2d.alloc());
-      var vap1 = targetBody.getVelocityAtWorldPoint(now, gripWorldPos, Vec2d.alloc());
-      var velDiffAlongForceVec = vap1.subtract(vap0).projectOnto(pullForceVec);
-      var dampAccel = velDiffAlongForceVec.scale(-PlayerSpirit.TRACTOR_DAMPING_FRACTION * duration);
-      var dampForceVec = dampAccel.scale(minMass);
-      totalForceVec.add(dampForceVec);
-      vap0.free();
-      vap1.free();
-    }
-
-    // apply forces
-    x = beamLength / PlayerSpirit.TRACTOR_BREAK_DIST;
-    totalForceVec.clipToMaxLength(PlayerSpirit.TRACTOR_MAX_FORCE * (1 - x * x));
-    targetBody.applyForceAtWorldPosAndTime(totalForceVec, gripWorldPos, now);
-    playerBody.applyForceAtWorldPosAndTime(totalForceVec.scale(-1), hitchWorldPos, now);
-    this.tractorForceFrac = totalForceVec.magnitude() / PlayerSpirit.TRACTOR_MAX_FORCE;
-
-    totalForceVec.free();
+    this.tractorForceFrac = absForce / PlayerSpirit.TRACTOR_MAX_FORCE;
   }
 };
 
