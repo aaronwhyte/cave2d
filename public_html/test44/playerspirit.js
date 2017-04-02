@@ -375,24 +375,46 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
 };
 
-PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody, duration) {
+/**
+ * Applies tractor-beam forces to player and target, or breaks the beam if the target is out of range.
+ * Also sets the tractorForceFrac field, for drawing.
+ * @param {Body} playerBody
+ * @param {Body} targetBody
+ */
+PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
   var now = this.now();
-  var gripWorldPos = this.getGripWorldPos(targetBody);
-  var hitchWorldPos = this.getHitchWorldPos();
-  var absForce = Spring.applyDampenedSpring(
-      playerBody, hitchWorldPos,
-      targetBody, gripWorldPos,
-      PlayerSpirit.TRACTOR_HOLD_DIST,
-      PlayerSpirit.TRACTOR_HOLD_FORCE,
-      PlayerSpirit.TRACTOR_DAMPING_FRACTION,
-      PlayerSpirit.TRACTOR_MAX_FORCE,
-      PlayerSpirit.TRACTOR_BREAK_DIST,
-      now);
+  var playerBasePos = this.getHitchWorldPos();
+  var targetBasePos = this.getGripWorldPos(targetBody);
+  var playerOffsetUnit = Vec2d.alloc(0, 1).rot(playerBody.getAngPosAtTime(now));
+  var targetOffsetUnit = Vec2d.alloc().set(this.targetBeamDir).scaleToLength(-1).rot(targetBody.getAngPosAtTime(now));
+  var absForce = -1;
+
+  function tractor(pPos, tPos) {
+    absForce = Spring.applyDampenedSpring(
+        playerBody, pPos,
+        targetBody, tPos,
+        0,
+        PlayerSpirit.TRACTOR_HOLD_FORCE / 2,
+        PlayerSpirit.TRACTOR_DAMPING_FRACTION,
+        PlayerSpirit.TRACTOR_MAX_FORCE / 2,
+        PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.TRACTOR_HOLD_DIST,
+        now);
+  }
+  var pTemp = Vec2d.alloc();
+  var tTemp = Vec2d.alloc();
+  var pinFraction = 0.25;
+  tractor(pTemp.set(playerOffsetUnit).scale(pinFraction).add(playerBasePos), tTemp.set(targetOffsetUnit).scale(1-pinFraction).add(targetBasePos));
+  tractor(pTemp.set(playerOffsetUnit).scale(1-pinFraction).add(playerBasePos), tTemp.set(targetOffsetUnit).scale(pinFraction).add(targetBasePos));
+
   if (absForce < 0) {
     this.releaseTarget();
   } else {
     this.tractorForceFrac = absForce / PlayerSpirit.TRACTOR_MAX_FORCE;
   }
+  tTemp.free();
+  pTemp.free();
+  targetOffsetUnit.free();
+  playerOffsetUnit.free();
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
@@ -421,28 +443,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setColorVector(this.aimColor);
     p1 = this.getHitchWorldPos();
     p2 = this.getGripWorldPos(targetBody);
-    rad = this.tractorForceFrac * 2/3 + 0.05;
-    this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
-        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    renderer.setModelMatrix(this.modelMatrix);
-    this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
-        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    renderer.setModelMatrix2(this.modelMatrix);
-    renderer.drawStamp();
-  } else {
-    // aim guide
-    renderer.setStamp(this.stamps.lineStamp);
-    this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
-    renderer.setColorVector(this.aimColor);
-    p1 = this.vec2d;
-    p2 = this.vec2d2;
-    var p1Dist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD - PlayerSpirit.SEEKSCAN_RAD;
-    var p2Dist = PlayerSpirit.PLAYER_RAD + PlayerSpirit.TRACTOR_HOLD_DIST;
-    rad = PlayerSpirit.SEEKSCAN_RAD;
-    p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
-    p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
+    rad = this.tractorForceFrac * 2 / 3 + body.rad / 10;
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
@@ -453,6 +454,26 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setModelMatrix2(this.modelMatrix);
     renderer.drawStamp();
   }
+  // aim guide
+  renderer.setStamp(this.stamps.lineStamp);
+  this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
+  renderer.setColorVector(this.aimColor);
+  p1 = this.vec2d;
+  p2 = this.vec2d2;
+  var p1Dist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD - PlayerSpirit.SEEKSCAN_RAD;
+  var p2Dist = PlayerSpirit.PLAYER_RAD + PlayerSpirit.TRACTOR_HOLD_DIST;
+  rad = PlayerSpirit.SEEKSCAN_RAD;
+  p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
+  p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  renderer.setModelMatrix(this.modelMatrix);
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  renderer.setModelMatrix2(this.modelMatrix);
+  renderer.drawStamp();
 };
 
 PlayerSpirit.prototype.getTargetBody = function() {

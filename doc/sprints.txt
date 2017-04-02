@@ -236,15 +236,12 @@ v kick part 1
     v Draw player body angpos somehow
     v Do rotational accel based on diff between aim and angpos
     v Make plr react to collisions with grip/rotation
-  - beam torque
+  v beam torque
     v factor beam code into separate class
-    - call it 4 times, by specifying two logical endpoint locations, two "forward" unit vectors, and two spread distances?
-    - forces from points left and right of player center (or player surface?), to points left and right of grab location.
-  - squeezing
-    - forces: same as above, but from two points on player, left and right of center.
-    - aim controls the two player points
-    - works on little things
-    - what about walls?
+    x call it 4 times, by specifying two logical endpoint locations, two "forward" unit vectors, and two spread distances?
+    x forces from points left and right of player center (or player surface?), to points left and right of grab location.
+    v some kinda weird two-pin hybrid approach that can't be stable when bent back. It works.
+  x squeezing?
   - break grip if rayscan-clear check hits anything except target (for more than N checks?) (infinite masses only?)
 - kick part 2
   - when not holding, kick does a little force-jab

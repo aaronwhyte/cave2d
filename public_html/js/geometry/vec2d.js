@@ -7,7 +7,12 @@ function Vec2d(opt_x, opt_y) {
   this.reset(opt_x, opt_y);
 }
 
-/**
+
+Vec2d.prototype.debugIfNaN = function() {
+  if (isNaN(this.x) || isNaN(this.y)) debugger;
+};
+
+  /**
  * @param {=number} opt_x
  * @param {=number} opt_y
  */
@@ -284,8 +289,14 @@ Vec2d.distanceSq = function(x0, y0, x1, y1) {
 
 Vec2d.prototype.projectOnto = function(that) {
   // TODO: is this right? unit test.
-  var coef = this.dot(that) / that.dot(that);
-  return this.set(that).scale(coef);
+  var denom = that.dot(that);
+  var coef;
+  if (denom) {
+    coef = this.dot(that) / denom;
+    return this.set(that).scale(coef);
+  } else {
+    return this;
+  }
 };
 
 Vec2d.prototype.toJSON = function() {

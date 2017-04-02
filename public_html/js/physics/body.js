@@ -90,6 +90,12 @@ Body.prototype.reset = function() {
   return this;
 };
 
+Body.prototype.debugIfNaN = function() {
+  this.vel.debugIfNaN();
+  this.pathStartPos.debugIfNaN();
+  if (isNaN(this.angVel)) debugger;
+};
+
 Body.SCHEMA = {
   0: 'id',
   1: 'spiritId',

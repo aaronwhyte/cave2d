@@ -28,16 +28,14 @@ Spring.applyDampenedSpring = function(
   if (beamLength < maxDist) {
     var totalForceVec = Vec2d.alloc();
     var minMass = Math.min(b0.mass, b1.mass);
-    var x;
 
     // pull
-    var pullDistFactor = (beamLength - restLength) / restLength;
+    var pullDistFactor = restLength ? (beamLength - restLength) / restLength : beamLength;
     var pullForceVec = p0p1.scaleToLength(-pullFactor * minMass * pullDistFactor);
     totalForceVec.add(pullForceVec);
 
     // damping
     pullForceVec.scaleToLength(1);
-    // var reciprocalMass = Math.max(targetReciprocalMass, playerReciprocalMass);
     if (minMass && minMass !== Infinity) {
       var vap0 = b0.getVelocityAtWorldPoint(now, pos0, Vec2d.alloc());
       var vap1 = b1.getVelocityAtWorldPoint(now, pos1, Vec2d.alloc());
@@ -50,11 +48,15 @@ Spring.applyDampenedSpring = function(
     }
 
     // apply forces
-    x = beamLength / maxDist;
-    totalForceVec.clipToMaxLength(maxForce * (1 - x * x));
-    b1.applyForceAtWorldPosAndTime(totalForceVec, pos1, now);
-    b0.applyForceAtWorldPosAndTime(totalForceVec.scale(-1), pos0, now);
-    forceMag = totalForceVec.magnitude();
+    var x = beamLength / maxDist;
+    if (x > 0) {
+      totalForceVec.clipToMaxLength(maxForce * (1 - x * x));
+      b1.applyForceAtWorldPosAndTime(totalForceVec, pos1, now);
+      b0.applyForceAtWorldPosAndTime(totalForceVec.scale(-1), pos0, now);
+      forceMag = totalForceVec.magnitude();
+    } else {
+      forceMag = 0
+    }
     totalForceVec.free();
   }
   p0p1.free();
