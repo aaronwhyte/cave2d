@@ -43,15 +43,15 @@ PlayerSpirit.PLAYER_RAD = 1;
 PlayerSpirit.SPEED = 1.5;
 PlayerSpirit.TRACTION = 0.4;
 PlayerSpirit.FRICTION = 0.1;
-PlayerSpirit.ANGULAR_FRICTION = 0.3;
+PlayerSpirit.ANGULAR_FRICTION = 0.5;
 PlayerSpirit.FRICTION_TIMEOUT = 0.3;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface, not from player center
-PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD * 1.5;
-PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 4;
+PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 3;
 PlayerSpirit.SEEKSCAN_RAD = 0.1;
 // PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
@@ -60,7 +60,7 @@ PlayerSpirit.TRACTOR_HOLD_FORCE = 0.7;
 PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.06;
 PlayerSpirit.TRACTOR_MAX_FORCE = 2;
 
-PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
+PlayerSpirit.AIM_ANGPOS_ACCEL = 0.2;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -194,7 +194,7 @@ PlayerSpirit.prototype.handleInput = function() {
     }
   }
 
-  var aimLocked = false;//b1.getVal() || b2.getVal();
+  var aimLocked = b1.getVal() || b2.getVal();
   var preciseKeyboard = !touchlike && !stick.isSpeedTriggerDown() && !aimLocked;
   stick.getVal(this.vec2d);
   var stickMag = this.vec2d.magnitude();
