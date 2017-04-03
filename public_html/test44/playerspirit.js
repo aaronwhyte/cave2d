@@ -52,7 +52,7 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 // dist from player surface, not from player center
 PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 3;
-PlayerSpirit.SEEKSCAN_RAD = 0.1;
+PlayerSpirit.SEEKSCAN_RAD = 0.01;
 // PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
 
@@ -300,12 +300,13 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
 
 PlayerSpirit.prototype.tractorBeamScan = function() {
   var scanPos = this.getBodyPos();
-  var scanVel = this.vec2d.set(this.aim).scaleToLength(
-      PlayerSpirit.PLAYER_RAD + PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.SEEKSCAN_RAD);
+  var maxScanDist = PlayerSpirit.PLAYER_RAD + PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.SEEKSCAN_RAD;
+  var scanVel = this.vec2d.set(this.aim).scaleToLength(maxScanDist);
   var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
   if (resultFraction === -1) {
     // no hit
-    this.screen.addScanSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction);
+    // TODO: way better graphics
+    this.screen.addScanSplash(scanPos, scanVel, Math.random() * 0.2 + 0.1, resultFraction);
   } else {
     // grab that thing!
     var targetBody = this.screen.world.getBodyByPathId(this.scanResp.pathId);
@@ -466,7 +467,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   p2 = this.vec2d2;
   var p1Dist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD - PlayerSpirit.SEEKSCAN_RAD;
   var p2Dist = PlayerSpirit.PLAYER_RAD + PlayerSpirit.TRACTOR_HOLD_DIST;
-  rad = PlayerSpirit.SEEKSCAN_RAD;
+  rad = 0.15;
   p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
   p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
   this.modelMatrix.toIdentity()
