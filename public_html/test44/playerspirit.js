@@ -50,17 +50,17 @@ PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface, not from player center
-PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
+PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 3;
 PlayerSpirit.SEEKSCAN_RAD = 0.1;
 // PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
 
-PlayerSpirit.TRACTOR_HOLD_FORCE = 0.7;
+PlayerSpirit.TRACTOR_HOLD_FORCE = 0.25;
 PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.06;
 PlayerSpirit.TRACTOR_MAX_FORCE = 2;
 
-PlayerSpirit.AIM_ANGPOS_ACCEL = 0.2;
+PlayerSpirit.AIM_ANGPOS_ACCEL = 0.3;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -194,7 +194,7 @@ PlayerSpirit.prototype.handleInput = function() {
     }
   }
 
-  var aimLocked = b1.getVal() || b2.getVal();
+  var aimLocked = this.getTargetBody() && (b1.getVal() || b2.getVal());
   var preciseKeyboard = !touchlike && !stick.isSpeedTriggerDown() && !aimLocked;
   stick.getVal(this.vec2d);
   var stickMag = this.vec2d.magnitude();
@@ -315,7 +315,11 @@ PlayerSpirit.prototype.tractorBeamScan = function() {
       var contactPos = Vec2d.alloc().set(scanVel).scale(resultFraction).add(scanPos);
       var targetPos = targetBody.getPosAtTime(now, Vec2d.alloc());
       this.targetRelPos.set(contactPos).subtract(targetPos).rot(-targetBody.getAngPosAtTime(now));
-      this.targetBeamDir.set(scanVel).scaleToLength(1).rot(-targetBody.getAngPosAtTime(now));
+      if (targetBody.shape === Body.Shape.RECT) {
+        this.targetBeamDir.set(scanVel).scaleToLength(1).rot(-targetBody.getAngPosAtTime(now));
+      } else {
+        this.targetBeamDir.set(this.targetRelPos).scale(-1);
+      }
       targetPos.free();
       contactPos.free();
     }
@@ -402,9 +406,9 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
   }
   var pTemp = Vec2d.alloc();
   var tTemp = Vec2d.alloc();
-  var pinFraction = 0.25;
-  tractor(pTemp.set(playerOffsetUnit).scale(pinFraction).add(playerBasePos), tTemp.set(targetOffsetUnit).scale(1-pinFraction).add(targetBasePos));
-  tractor(pTemp.set(playerOffsetUnit).scale(1-pinFraction).add(playerBasePos), tTemp.set(targetOffsetUnit).scale(pinFraction).add(targetBasePos));
+  var offsetFactor = PlayerSpirit.TRACTOR_HOLD_DIST;
+  tractor(playerBasePos, tTemp.set(targetOffsetUnit).scale(offsetFactor).add(targetBasePos));
+  tractor(pTemp.set(playerOffsetUnit).scale(offsetFactor).add(playerBasePos), targetBasePos);
 
   if (absForce < 0) {
     this.releaseTarget();
