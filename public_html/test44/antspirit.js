@@ -129,8 +129,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var pos = this.getBodyPos();
   this.stress = this.stress || 0;
 
-  // TODO unhack
-  var friction = 0.05;//this.screen.isPlaying() ? 0.05 : 0.3;
+  var friction = 0.05;
   var traction = 0.4;
 
   var now = this.now();
@@ -152,8 +151,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
     newVel.reset();
   }
 
-  // TODO unhack
-  if (false && this.screen.isPlaying()) {
+  if (this.screen.isPlaying()) {
     if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
       var antennaRotMag = Math.max(Math.PI * 0.15, Math.PI * this.stress);
       // they get faster as they get hurt
