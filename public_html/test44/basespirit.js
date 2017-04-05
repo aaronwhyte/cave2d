@@ -71,6 +71,10 @@ BaseSpirit.prototype.scanWithVel = function(group, pos, vel, rad) {
       this.scanResp);
 };
 
+BaseSpirit.prototype.getScanHitBody = function() {
+  return this.screen.world.getBodyByPathId(this.scanResp.pathId);
+};
+
 BaseSpirit.prototype.getScanHitSpirit = function() {
   var body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
   return this.screen.getSpiritForBody(body);

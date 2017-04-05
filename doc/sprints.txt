@@ -228,7 +228,7 @@ v grab part 1
     v don't draw aim pointer
 v kick part 1
   v while gripping, button 1 releases.
-- grab part 2
+v grab part 2
   v damping
   v proper player rotation
     v turnable, moi
@@ -242,7 +242,7 @@ v kick part 1
     x forces from points left and right of player center (or player surface?), to points left and right of grab location.
     v some kinda weird two-pin hybrid approach that can't be stable when bent back. It works.
   x squeezing?
-  - break grip if rayscan-clear check hits anything except target (for more than N checks?) (infinite masses only?)
+  v break grip if rayscan-clear check hits anything except target for more than N checks
 - kick part 2
   - when not holding, kick does a little force-jab
   - rev up kick with long-hold

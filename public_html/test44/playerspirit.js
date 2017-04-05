@@ -24,6 +24,8 @@ function PlayerSpirit(screen) {
   this.lastFrictionTime = this.now();
   this.lastInputTime = this.now();
 
+  this.obstructionCount = 0;
+
   this.targetBodyId = null;
   // relative to the target body, where did the player grab?
   this.targetRelPos = new Vec2d();
@@ -59,6 +61,9 @@ PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
 PlayerSpirit.TRACTOR_HOLD_FORCE = 0.25;
 PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.06;
 PlayerSpirit.TRACTOR_MAX_FORCE = 2;
+
+// If the tractor beam is obstructed this many times in a row, it will break.
+PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
 
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.3;
 
@@ -309,7 +314,7 @@ PlayerSpirit.prototype.tractorBeamScan = function() {
     this.screen.addScanSplash(scanPos, scanVel, Math.random() * 0.2 + 0.1, resultFraction);
   } else {
     // grab that thing!
-    var targetBody = this.screen.world.getBodyByPathId(this.scanResp.pathId);
+    var targetBody = this.getScanHitBody();
     if (targetBody) {
       var now = this.now();
       this.targetBodyId = targetBody.id;
@@ -390,20 +395,42 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
   var now = this.now();
   var playerBasePos = this.getHitchWorldPos();
   var targetBasePos = this.getGripWorldPos(targetBody);
+
+  // break beam if there's something in the way for a length of time
+  var result = this.scanWithVel(HitGroups.PLAYER_SCAN, playerBasePos,
+      this.vec2d.set(targetBasePos).subtract(playerBasePos), 0.01);
+  if (result >= 0 && result < 0.9) {
+    this.obstructionCount++;
+    if (this.obstructionCount > PlayerSpirit.MAX_OBSTRUCTION_COUNT) {
+      this.releaseTarget();
+      return;
+    }
+  } else {
+    this.obstructionCount = 0;
+  }
+
   var playerOffsetUnit = Vec2d.alloc(0, 1).rot(playerBody.getAngPosAtTime(now));
   var targetOffsetUnit = Vec2d.alloc().set(this.targetBeamDir).scaleToLength(-1).rot(targetBody.getAngPosAtTime(now));
-  var absForce = -1;
+  var forceMagSum = 0;
+  var targetInRange = true;
 
+  // weaken the beam the longer it is obstructed
+  var unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
   function tractor(pPos, tPos) {
-    absForce = Spring.applyDampenedSpring(
+    var forceMag = Spring.applyDampenedSpring(
         playerBody, pPos,
         targetBody, tPos,
         0,
-        PlayerSpirit.TRACTOR_HOLD_FORCE / 2,
+        0.5 * unobstructedness * PlayerSpirit.TRACTOR_HOLD_FORCE,
         PlayerSpirit.TRACTOR_DAMPING_FRACTION,
-        PlayerSpirit.TRACTOR_MAX_FORCE / 2,
+        0.5 * PlayerSpirit.TRACTOR_MAX_FORCE,
         PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.TRACTOR_HOLD_DIST,
         now);
+    if (forceMag < 0) {
+      targetInRange = false;
+    } else {
+      forceMagSum += forceMag;
+    }
   }
   var pTemp = Vec2d.alloc();
   var tTemp = Vec2d.alloc();
@@ -411,10 +438,10 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
   tractor(playerBasePos, tTemp.set(targetOffsetUnit).scale(offsetFactor).add(targetBasePos));
   tractor(pTemp.set(playerOffsetUnit).scale(offsetFactor).add(playerBasePos), targetBasePos);
 
-  if (absForce < 0) {
+  if (!targetInRange) {
     this.releaseTarget();
   } else {
-    this.tractorForceFrac = absForce / PlayerSpirit.TRACTOR_MAX_FORCE;
+    this.tractorForceFrac = forceMagSum / PlayerSpirit.TRACTOR_MAX_FORCE;
   }
   tTemp.free();
   pTemp.free();
@@ -459,6 +486,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setModelMatrix2(this.modelMatrix);
     renderer.drawStamp();
   }
+
   // aim guide
   renderer.setStamp(this.stamps.lineStamp);
   this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
