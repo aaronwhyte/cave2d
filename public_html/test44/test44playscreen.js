@@ -195,7 +195,7 @@ Test44PlayScreen.prototype.configurePlayerSlots = function() {
           for (var i = 0; i < self.slots.length; i++) {
             var otherSlot = self.slots[i];
             var otherCorner = otherSlot.corner;
-            if (otherCorner && otherCorner != myCorner && otherSlot.stateName != ControlState.WAITING) {
+            if (otherCorner && otherCorner !== myCorner && otherSlot.stateName !== ControlState.WAITING) {
               var otherCornerDist = Vec2d.distanceSq(
                   x, y, self.canvas.width * (otherCorner.getX() + 1 / 2), self.canvas.height * (otherCorner.getY() + 1 / 2));
               if (otherCornerDist <= distToMyCorner) {
@@ -205,7 +205,7 @@ Test44PlayScreen.prototype.configurePlayerSlots = function() {
           }
           return true;
         })
-        .setRadius(50);
+        .setRadius(60);
 
     var buttonRad = 45;
     var maxButtonRatio = 1/6;

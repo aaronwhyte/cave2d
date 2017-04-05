@@ -96,7 +96,7 @@ TouchStick.prototype.onTouchMove = function(e) {
   var touches = e.changedTouches;
   for (var i = 0; i < touches.length; i++) {
     var touch = touches[i];
-    if (touch.identifier == this.touchId) {
+    if (touch.identifier === this.touchId) {
       // Keep tracking this one.
       var xDiff = touch.pageX - this.tip.x;
       var yDiff = touch.pageY - this.tip.y;
