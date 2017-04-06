@@ -122,10 +122,19 @@ Test44PlayScreen.prototype.createDefaultWorld = function() {
     this.tileGrid.drawTerrainPill(pos, Vec2d.ZERO, 3, 1);
     if (Math.random() > 0.2) this.tileGrid.drawTerrainPill(pos, pos, 1 + Math.random() * (rad - 5), 0);
   }
-  this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 20, 1);
-  var ants = 10;
+  this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 22, 1);
+  var ants = 8;
   for (var a = 0; a < ants; a++) {
-    this.addItem(Test44BaseScreen.MenuItem.ANT, new Vec2d(0, 15).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+    this.addItem(Test44BaseScreen.MenuItem.ANT, new Vec2d(0, 7).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+  }
+  var balls = 10;
+  for (var b = 1; b < balls; b+= 2) {
+    this.addItem(Test44BaseScreen.MenuItem.BALL, new Vec2d(0, 17).rot(2 * Math.PI * b / balls), 2 * Math.PI * b / balls);
+  }
+
+  var rocks = 10;
+  for (var r = 0; r < rocks; r+= 2) {
+    this.addItem(Test44BaseScreen.MenuItem.ROCK, new Vec2d(0, 13).rot(2 * Math.PI * r / rocks), 2 * Math.PI * r / rocks);
   }
 
   this.configurePlayerSlots();

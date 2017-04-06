@@ -243,6 +243,9 @@ v grab part 2
     v some kinda weird two-pin hybrid approach that can't be stable when bent back. It works.
   x squeezing?
   v break grip if rayscan-clear check hits anything except target for more than N checks
+v loose low-friction objects that aren't ants, to play with
+  v light balls
+  v massive rocks
 - kick part 2
   - when not holding, kick does a little force-jab
   - rev up kick with long-hold
@@ -250,7 +253,18 @@ v grab part 2
 - graphics and sound
   - show torque at both ends of beam
     - bendy lines! Add 0-1 float value to model vertexes, and uniforms dictating curve "velocity" at endpoints
+  - seek
+  - continuous grab
+  - beam break
+  - release
+  - kick rev
+  - kick
 - handles & using
+  - light pistol
+  - heavy laser
+  - booster
+  - shovel
+  - trowel
 
 
 - Critters

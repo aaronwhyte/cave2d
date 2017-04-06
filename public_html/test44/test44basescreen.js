@@ -15,12 +15,16 @@ Test44BaseScreen.prototype.constructor = Test44BaseScreen;
 
 Test44BaseScreen.SpiritType = {
   PLAYER: 1,
-  ANT: 2
+  ANT: 2,
+  BALL: 3,
+  ROCK: 4
 };
 
 Test44BaseScreen.MenuItem = {
   PLAYER: 'player',
-  ANT: 'ant'
+  ANT: 'ant',
+  BALL: 'ball',
+  ROCK: 'rock'
 };
 
 Test44BaseScreen.SplashType = {
@@ -173,8 +177,16 @@ Test44BaseScreen.prototype.createSpiritConfigs = function() {
   var sc = {};
   sc[Test44BaseScreen.SpiritType.ANT] = this.createSpiritConfig(
       Test44BaseScreen.SpiritType.ANT, AntSpirit, Test44BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
+
   sc[Test44BaseScreen.SpiritType.PLAYER] = this.createSpiritConfig(
-      Test44BaseScreen.SpiritType.PLAYER, PlayerSpirit, Test44BaseScreen.MenuItem.PLAYER, 0, 0, PlayerSpirit.factory);
+      Test44BaseScreen.SpiritType.PLAYER, PlayerSpirit, Test44BaseScreen.MenuItem.PLAYER, 0, 1, PlayerSpirit.factory);
+
+  sc[Test44BaseScreen.SpiritType.BALL] = this.createSpiritConfig(
+      Test44BaseScreen.SpiritType.BALL, BallSpirit, Test44BaseScreen.MenuItem.BALL, 1, 0, BallSpirit.factory);
+
+  sc[Test44BaseScreen.SpiritType.ROCK] = this.createSpiritConfig(
+      Test44BaseScreen.SpiritType.ROCK, RockSpirit, Test44BaseScreen.MenuItem.ROCK, 1, 1, RockSpirit.factory);
+
   return sc;
 };
 

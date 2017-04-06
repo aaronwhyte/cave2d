@@ -60,7 +60,7 @@ PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
 
 PlayerSpirit.TRACTOR_HOLD_FORCE = 0.25;
 PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.06;
-PlayerSpirit.TRACTOR_MAX_FORCE = 2;
+PlayerSpirit.TRACTOR_MAX_FORCE = 3;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
