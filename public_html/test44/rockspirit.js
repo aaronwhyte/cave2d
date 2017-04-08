@@ -52,7 +52,8 @@ RockSpirit.createModel = function() {
       .sphereize(Vec4.ZERO, 1);
   for (var i = 0; i < rm.vertexes.length; i++) {
     var v = rm.vertexes[i];
-    v.position.scale1(Math.random() * 0.1 + 0.95);
+    var distort = 0.06;
+    v.position.scale1(Math.random() * 2 * distort + (1 - distort));
     var z = (-v.position.getZ()) * 0.7 + 0.3;
     v.color.setXYZ(z, z, z);
   }
@@ -70,8 +71,8 @@ RockSpirit.factory = function(screen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 0.9;
-  b.elasticity = 0.6;
+  b.grip = 0.8;
+  b.elasticity = 0.4;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.7 + 2 * Math.random();

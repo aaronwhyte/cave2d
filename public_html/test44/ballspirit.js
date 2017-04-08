@@ -72,7 +72,8 @@ BallSpirit.factory = function(screen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 1;
+  b.grip = 0.99;
+  b.elasticity = 0.99;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.rad = 1 + 2 * Math.random();
