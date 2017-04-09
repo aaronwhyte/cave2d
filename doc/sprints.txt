@@ -246,10 +246,26 @@ v grab part 2
 v loose low-friction objects that aren't ants, to play with
   v light balls
   v massive rocks
+v No aim while holding
+  v no aim indicator
+  v no towards-aim accel
+
+- easier grabbing
+  - multiple scans, outward from center, in a fan pattern
+  - separate last-ditch wall-grab scan, short and straight ahead? Otherwise don't grab a wall.
 - kick part 2
   - when not holding, kick does a little force-jab
   - rev up kick with long-hold
-  - long hold too long to cancel?
+- handles & using
+  - spirits expose optional handle direction.
+  - tractor beams seek the handle out? somehow?
+  - when held by handle, objects can be used with the grab button
+    -
+  - light pistol
+  - heavy laser
+  - booster
+  - shovel
+  - trowel
 - graphics and sound
   - show torque at both ends of beam
     - bendy lines! Add 0-1 float value to model vertexes, and uniforms dictating curve "velocity" at endpoints
@@ -259,12 +275,6 @@ v loose low-friction objects that aren't ants, to play with
   - release
   - kick rev
   - kick
-- handles & using
-  - light pistol
-  - heavy laser
-  - booster
-  - shovel
-  - trowel
 
 
 - Critters
