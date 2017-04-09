@@ -346,12 +346,11 @@ WorldScreen.prototype.clock = function(startTimeMs) {
     endTimeMs = Math.max(performance.now() + WorldScreen.MINIMUM_PHYSICS_MS, endTimeMs);
 
     var e = this.world.getNextEvent();
-    var pnow = performance.now();
-    while (e && e.time <= endClock ){//&& pnow <= endTimeMs) {
+    while (e && e.time <= endClock && performance.now() < endTimeMs) {
       this.world.processNextEventWthoutFreeing();
-      if (e.type == WorldEvent.TYPE_HIT) {
+      if (e.type === WorldEvent.TYPE_HIT) {
         this.onHitEvent(e);
-      } else if (e.type == WorldEvent.TYPE_TIMEOUT && !e.spiritId) {
+      } else if (e.type === WorldEvent.TYPE_TIMEOUT && !e.spiritId) {
         this.onTimeout(e);
       }
       e.free();
@@ -361,7 +360,6 @@ WorldScreen.prototype.clock = function(startTimeMs) {
 
       // recompute endClock in case an event changed the timeMultiplier
       endClock = Math.max(this.world.now, startClock + this.getClocksPerFrame() * this.timeMultiplier);
-      pnow = performance.now();
     }
 
     if (!e || e.time > endClock) {
