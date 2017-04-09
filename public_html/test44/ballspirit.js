@@ -76,7 +76,7 @@ BallSpirit.factory = function(screen, stamp, pos, dir) {
   b.elasticity = 0.99;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 1 + 2 * Math.random();
+  b.rad = 0.5 + 1.5 * Math.random();
   b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = 2/3 * b.mass * b.rad * b.rad;
