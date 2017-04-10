@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Vec2d test</title>
+<script src="../../js/strings.js"></script>
+<script src="../../js/testing.js"></script>
+<script src="../../js/geometry/vec2d.js"></script>
+<script>
+
+addTest(function projectOnto() {
+  function check(xa, ya, xb, yb, xe, ye) {
+    var a = new Vec2d(xa, ya);
+    var b = new Vec2d(xb, yb);
+    var actual = a.projectOnto(b);
+    assertStringifyEquals(new Vec2d(xe, ye), actual);
+  }
+  check(5, 6, 10, 0, 5, 0);
+});
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>

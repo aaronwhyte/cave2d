@@ -288,7 +288,6 @@ Vec2d.distanceSq = function(x0, y0, x1, y1) {
 };
 
 Vec2d.prototype.projectOnto = function(that) {
-  // TODO: is this right? unit test.
   var denom = that.dot(that);
   var coef;
   if (denom) {
