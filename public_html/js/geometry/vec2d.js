@@ -12,7 +12,7 @@ Vec2d.prototype.debugIfNaN = function() {
   if (isNaN(this.x) || isNaN(this.y)) debugger;
 };
 
-  /**
+/**
  * @param {=number} opt_x
  * @param {=number} opt_y
  */
