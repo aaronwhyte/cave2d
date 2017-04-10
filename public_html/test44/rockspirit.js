@@ -14,7 +14,7 @@ function RockSpirit(screen) {
 RockSpirit.prototype = new BaseSpirit();
 RockSpirit.prototype.constructor = RockSpirit;
 
-RockSpirit.MEASURE_TIMEOUT = 10;
+RockSpirit.MEASURE_TIMEOUT = 3;
 RockSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 RockSpirit.STOPPING_ANGVEL = 0.01;
 
@@ -98,7 +98,7 @@ RockSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody();
   var pos = this.getBodyPos();
 
-  var friction = 0.001;
+  var friction = 0.01;
   var now = this.now();
   var time = Math.max(0, Math.min(RockSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
   this.lastControlTime = now;
