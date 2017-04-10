@@ -48,8 +48,8 @@ PlayerSpirit.PLAYER_RAD = 1;
 
 PlayerSpirit.SPEED = 1.5;
 PlayerSpirit.TRACTION = 0.4;
-PlayerSpirit.FRICTION = 0.1;
-PlayerSpirit.FRICTION_TIMEOUT = 0.3;
+PlayerSpirit.FRICTION = 0.02;
+PlayerSpirit.FRICTION_TIMEOUT = 0.25;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
@@ -61,8 +61,8 @@ PlayerSpirit.SEEKSCAN_RAD = 0.01;
 // PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
 
-PlayerSpirit.TRACTOR_HOLD_FORCE = 0.25;
-PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.06;
+PlayerSpirit.TRACTOR_HOLD_FORCE = 0.2;
+PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.15;
 
 PlayerSpirit.TRACTOR_MAX_FORCE = 20;
 
@@ -70,7 +70,7 @@ PlayerSpirit.TRACTOR_MAX_FORCE = 20;
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
 
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.04;
-PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.9;
+PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.5;
 PlayerSpirit.ANGULAR_FRICTION = 0.1;
 
 PlayerSpirit.SCHEMA = {
@@ -189,6 +189,7 @@ PlayerSpirit.prototype.handleInput = function() {
   var controls = this.slot.getControlList();
   var stick = controls.get(ControlName.STICK);
   var touchlike = stick.isTouchlike();
+  var oldTargetBody = this.getTargetBody();
 
   ////////////
   // BUTTONS
@@ -198,8 +199,7 @@ PlayerSpirit.prototype.handleInput = function() {
     if (this.getTargetBody()) {
       this.releaseTarget();
     }
-  }
-  if (b2.getVal()) {
+  } else if (b2.getVal()) {
     if (!this.getTargetBody()) {
       this.tractorBeamScan();
     }
@@ -211,9 +211,17 @@ PlayerSpirit.prototype.handleInput = function() {
   var stickMag = this.vec2d.magnitude();
 
   var oldAngleLocked = this.angleLocked;
-  this.angleLocked = this.getTargetBody() && (b1.getVal() || b2.getVal());
+  var targetBody = this.getTargetBody();
+  this.angleLocked = targetBody && b2.getVal();
   if (!oldAngleLocked && this.angleLocked) {
-    this.destAngle = this.getBodyAngPos();
+    // begin angle lock
+    if (this.getTargetBody() === oldTargetBody) {
+      // locked angle with an old target
+      this.destAngle = this.getBodyAngPos();
+    } else {
+      // locked angle on a brand new target
+      this.destAngle = Math.atan2(this.destAim.x, this.destAim.y);
+    }
   }
 
   ////////////
@@ -387,7 +395,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
         this.addBodyAngVel(duration * PlayerSpirit.LOCK_ANGPOS_ACCEL * (angleDiff));
       }
 
-      var angularFriction = (this.screen.isPlaying() ? (PlayerSpirit.ANGULAR_FRICTION * (this.angleLocked ? 3 : 1)) : 0.3) * duration;
+      var angularFriction = (this.screen.isPlaying() ? (PlayerSpirit.ANGULAR_FRICTION * (this.angleLocked ? 5 : 1)) : 0.3) * duration;
       body.applyAngularFrictionAtTime(angularFriction, now);
 
       var linearFriction = (this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3) * duration;
@@ -451,9 +459,9 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
         playerBody, pPos,
         targetBody, tPos,
         0,
-        0.5 * unobstructedness * PlayerSpirit.TRACTOR_HOLD_FORCE,
+        unobstructedness * PlayerSpirit.TRACTOR_HOLD_FORCE,
         PlayerSpirit.TRACTOR_DAMPING_FRACTION,
-        0.5 * PlayerSpirit.TRACTOR_MAX_FORCE,
+        PlayerSpirit.TRACTOR_MAX_FORCE,
         PlayerSpirit.TRACTOR_BREAK_DIST - holdDist,
         now);
     if (forceMag < 0) {
