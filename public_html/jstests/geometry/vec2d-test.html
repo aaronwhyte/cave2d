@@ -14,7 +14,9 @@ addTest(function projectOnto() {
     var actual = a.projectOnto(b);
     assertStringifyEquals(new Vec2d(xe, ye), actual);
   }
-  check(5, 6, 10, 0, 5, 0);
+  check(4, 6, 10, 0, 4, 0);
+  check(4, 6, 2, 0, 4, 0);
+  check(4, 6, -2, 0, 4, 0);
 });
 </script>
 </head>
