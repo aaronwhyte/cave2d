@@ -48,7 +48,7 @@ PlayerSpirit.PLAYER_RAD = 1;
 
 PlayerSpirit.SPEED = 1.5;
 PlayerSpirit.TRACTION = 0.4;
-PlayerSpirit.FRICTION = 0.02;
+PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 0.25;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -56,10 +56,10 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface, not from player center
 PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD;
-PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 3;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 4;
 PlayerSpirit.SEEKSCAN_RAD = 0.01;
 // PlayerSpirit.TRACTOR_BREAK_DIST = 3 + PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.SEEKSCAN_RAD;
-PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.SEEKSCAN_DIST * 2;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 6;
 
 PlayerSpirit.TRACTOR_HOLD_FORCE = 0.2;
 PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.15;
@@ -324,33 +324,60 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
 
 
 PlayerSpirit.prototype.tractorBeamScan = function() {
-  var scanPos = this.getBodyPos();
-  var maxScanDist = PlayerSpirit.PLAYER_RAD + PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.SEEKSCAN_RAD;
-  var scanVel = this.vec2d.set(this.aim).scaleToLength(maxScanDist);
-  var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
-  if (resultFraction === -1) {
-    // no hit
-    // TODO: way better graphics
-    this.screen.addScanSplash(scanPos, scanVel, Math.random() * 0.2 + 0.1, resultFraction);
-  } else {
-    // grab that thing!
-    var targetBody = this.getScanHitBody();
-    if (targetBody) {
-      var now = this.now();
-      this.targetBodyId = targetBody.id;
-      var contactPos = Vec2d.alloc().set(scanVel).scale(resultFraction).add(scanPos);
-      var targetPos = targetBody.getPosAtTime(now, Vec2d.alloc());
-      this.targetRelPos.set(contactPos).subtract(targetPos).rot(-targetBody.getAngPosAtTime(now));
-      if (targetBody.shape === Body.Shape.RECT) {
-        this.targetBeamDir.set(scanVel).scaleToLength(1).rot(-targetBody.getAngPosAtTime(now));
-        // this.targetBeamDir.reset();
-      } else {
-        this.targetBeamDir.set(this.targetRelPos).scale(-1);
+  var bestBody = null;
+  var bestResultFraction = 2;
+  var maxScanDist = PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.SEEKSCAN_RAD;
+
+  var maxFanRad = Math.PI / 4;
+  var fanEdgeFrac = 0.6;
+  var outerCount = 1;
+  var thisRad = this.getBody().rad;
+  var scanPos = Vec2d.alloc();
+  var bestScanPos = Vec2d.alloc();
+  var bestScanVel = Vec2d.alloc();
+  var bestContactPos = Vec2d.alloc();
+  for (var i = -outerCount; i <= outerCount; i++) {
+    var radUnit = ((i + Math.random()-0.5) / outerCount);
+    var centerness = 1-Math.abs(radUnit);
+    // var centerness = Math.cos(radUnit * Math.PI/2);
+    scanPos.set(this.aim)
+        .scaleToLength(thisRad)
+        .add(this.getBodyPos());
+    var scanVel = this.vec2d.set(this.aim)
+        .scaleToLength(centerness * maxScanDist + (1 - centerness) * fanEdgeFrac * maxScanDist)
+        .rot(radUnit * maxFanRad);
+    var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
+    this.screen.addTractorParticleSplash(scanPos, scanVel, 0.2, resultFraction, this.color);
+    if (resultFraction !== -1) {
+      var targetBody = this.getScanHitBody();
+      if (targetBody && resultFraction < bestResultFraction) {
+        bestResultFraction = resultFraction;
+        bestBody = this.getScanHitBody();
+        bestScanPos.set(scanPos);
+        bestScanVel.set(scanVel);
+        bestContactPos.set(scanVel).scale(resultFraction).add(scanPos);
       }
-      targetPos.free();
-      contactPos.free();
     }
   }
+
+  if (bestBody) {
+    // grab that thing!
+    var now = this.now();
+    this.targetBodyId = bestBody.id;
+    var targetPos = bestBody.getPosAtTime(now, Vec2d.alloc());
+    this.targetRelPos.set(bestContactPos).subtract(targetPos).rot(-bestBody.getAngPosAtTime(now));
+    if (bestBody.shape === Body.Shape.RECT) {
+      this.targetBeamDir.set(bestScanVel).scaleToLength(1).rot(-bestBody.getAngPosAtTime(now));
+      // this.targetBeamDir.reset();
+    } else {
+      this.targetBeamDir.set(this.targetRelPos).scale(-1);
+    }
+    targetPos.free();
+  }
+  scanPos.free();
+  bestScanPos.free();
+  bestScanVel.free();
+  bestContactPos.free();
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -533,8 +560,8 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setColorVector(this.aimColor);
     p1 = this.vec2d;
     p2 = this.vec2d2;
-    var p1Dist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD - PlayerSpirit.SEEKSCAN_RAD;
-    var p2Dist = PlayerSpirit.PLAYER_RAD + PlayerSpirit.TRACTOR_HOLD_DIST;
+    var p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
+    var p2Dist = PlayerSpirit.PLAYER_RAD * 2;
     rad = 0.15;
     p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
     p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);

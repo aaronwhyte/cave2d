@@ -327,3 +327,33 @@ Test44BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
   this.splasher.addCopy(s);
 };
 
+Test44BaseScreen.prototype.addTractorParticleSplash = function (pos, vel, rad, dist, color) {
+  var s = this.splash;
+  s.reset(Test44BaseScreen.SplashType.SCAN, this.stamps.circleStamp);
+
+  s.startTime = this.world.now;
+  s.duration = 5 + (Math.random() < 0.1 ? 5 : 0);
+
+  var x = pos.x;
+  var y = pos.y;
+  var hit = dist >= 0;
+  var d = hit ? dist : 1;
+  var dx = vel.x * d;
+  var dy = vel.y * d;
+
+  s.startPose.pos.setXYZ(x + dx, y + dy, 1);
+  var r = Math.random();
+  var b = 0.5 + r * 0.55;
+  s.endPose.pos.setXYZ(x + dx * b, y + dy * b, 0);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad * r, rad * r, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  s.startColor.set(color);
+  s.endColor.set(color);
+
+  this.splasher.addCopy(s);
+};
+

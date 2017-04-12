@@ -250,9 +250,10 @@ v No aim while holding
   v no aim indicator
   v no towards-aim accel
 
-- easier grabbing
-  - multiple scans, outward from center, in a fan pattern
-  - separate last-ditch wall-grab scan, short and straight ahead? Otherwise don't grab a wall.
+v easier grabbing
+  v multiple scans, outward from center, in a fan pattern
+  x separate last-ditch wall-grab scan, short and straight ahead? Otherwise don't grab a wall.
+  v simple splash suitable for debugging and looking kinda cool.
 - kick part 2
   - when not holding, kick does a little force-jab
   - rev up kick with long-hold
