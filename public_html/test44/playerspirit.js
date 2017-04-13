@@ -327,27 +327,26 @@ PlayerSpirit.prototype.tractorBeamScan = function() {
   var bestBody = null;
   var bestResultFraction = 2;
   var maxScanDist = PlayerSpirit.SEEKSCAN_DIST - PlayerSpirit.SEEKSCAN_RAD;
-
-  var maxFanRad = Math.PI / 4;
-  var fanEdgeFrac = 0.6;
-  var outerCount = 1;
+  var maxFanRad = Math.PI/3;
+  var scans = 4;
   var thisRad = this.getBody().rad;
   var scanPos = Vec2d.alloc();
   var bestScanPos = Vec2d.alloc();
   var bestScanVel = Vec2d.alloc();
   var bestContactPos = Vec2d.alloc();
-  for (var i = -outerCount; i <= outerCount; i++) {
-    var radUnit = ((i + Math.random()-0.5) / outerCount);
-    var centerness = 1-Math.abs(radUnit);
-    // var centerness = Math.cos(radUnit * Math.PI/2);
+  var aimAngle = Math.atan2(this.aim.x, this.aim.y);
+
+  for (var i = 0; i < scans; i++) {
+    var radUnit = 2 * ((i + Math.random()-0.5) - (scans - 1)/2) / (scans - 1);
     scanPos.set(this.aim)
         .scaleToLength(thisRad)
         .add(this.getBodyPos());
-    var scanVel = this.vec2d.set(this.aim)
-        .scaleToLength(centerness * maxScanDist + (1 - centerness) * fanEdgeFrac * maxScanDist)
-        .rot(radUnit * maxFanRad);
+    var scanVel = this.vec2d.setXY(0, maxScanDist)
+        .rot(radUnit * maxFanRad)
+        .scaleXY(0.4, 1)
+        .rot(aimAngle);
     var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
-    this.screen.addTractorParticleSplash(scanPos, scanVel, 0.2, resultFraction, this.color);
+    this.screen.addTractorSeekSplash(scanPos, scanVel, 0.2, resultFraction, this.color);
     if (resultFraction !== -1) {
       var targetBody = this.getScanHitBody();
       if (targetBody && resultFraction < bestResultFraction) {
