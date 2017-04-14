@@ -360,3 +360,33 @@ Test44BaseScreen.prototype.addTractorSeekSplash = function (pos, vel, rad, dist,
   this.splasher.addCopy(s);
 };
 
+Test44BaseScreen.prototype.addKickHoldSplash = function(pos, baseVel, addVel, rad, color) {
+  var s = this.splash;
+  s.reset(Test44BaseScreen.SplashType.SCAN, this.stamps.circleStamp);
+
+  s.startTime = this.world.now;
+  s.duration = 4 + Math.random();
+
+  var x = pos.x;
+  var y = pos.y;
+
+  var r = Math.random();
+  var b = (r < 0.06) ? 3 : r;
+  if (r < 0.09) {
+    s.duration *= 2;
+    addVel.scale(1/2);
+  }
+  s.startPose.pos.setXYZ(x, y, 1);
+  s.endPose.pos.setXYZ(x + (baseVel.x + addVel.x * b) * s.duration, y + (baseVel.y + addVel.y * b) * s.duration, 0);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad / 10, rad / 10, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  s.startColor.set(color);
+  s.endColor.set(color);
+
+  this.splasher.addCopy(s);
+};
+

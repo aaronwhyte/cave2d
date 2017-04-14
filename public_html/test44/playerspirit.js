@@ -22,6 +22,7 @@ function PlayerSpirit(screen) {
 
   this.vec2d = new Vec2d();
   this.vec2d2 = new Vec2d();
+  this.vec2d3 = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
@@ -37,6 +38,9 @@ function PlayerSpirit(screen) {
   this.targetBeamDir = new Vec2d();
   this.gripWorldPos = new Vec2d();
   this.hitchWorldPos = new Vec2d();
+
+  // Eorld start time of the kick button being held. Zero means it is released.
+  this.kickHoldStart = 0;
 
   this.accel = new Vec2d();
   this.slot = null;
@@ -64,7 +68,9 @@ PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 6;
 PlayerSpirit.TRACTOR_HOLD_FORCE = 0.2;
 PlayerSpirit.TRACTOR_DAMPING_FRACTION = 0.15;
 
-PlayerSpirit.TRACTOR_MAX_FORCE = 20;
+PlayerSpirit.TRACTOR_MAX_FORCE = 5;
+
+PlayerSpirit.TIME_TO_MAX_KICK = 20;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -176,8 +182,8 @@ PlayerSpirit.prototype.handleInput = function() {
   var state = this.slot.stateName;
   if (state !== ControlState.PLAYING) return;
 
-  var body = this.getBody();
-  if (!body) return;
+  var playeBody = this.getBody();
+  if (!playeBody) return;
 
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
@@ -196,11 +202,30 @@ PlayerSpirit.prototype.handleInput = function() {
   var b1 = controls.get(ControlName.BUTTON_1);
   var b2 = controls.get(ControlName.BUTTON_2);
   if (b1.getVal()) {
-    if (this.getTargetBody()) {
-      this.releaseTarget();
+    if (!this.kickHoldStart) {
+      // just started holding the kick button
+      this.kickHoldStart = now;
+    } else {
+      // this is a continued hold
+      if (oldTargetBody) {
+        var kickFrac = this.getKickFrac();
+        var bodyRad = this.getBody().rad;
+        var rad = 0.2 * kickFrac + 0.2;
+        var addVel = this.vec2d.setXY(0, bodyRad)
+            .rot(this.getBodyAngPos() + 0.5 * (kickFrac + 0.1) * (Math.random() - Math.random()));
+        var pos = this.vec2d2.set(addVel);
+        pos.scaleToLength(bodyRad - rad/2).add(this.getBodyPos());
+        addVel.scale(0.2 / this.getBody().rad);
+        var baseVel = playeBody.getVelocityAtWorldPoint(now, pos, this.vec2d3).scale(0.7);
+
+        this.screen.addKickHoldSplash(pos, baseVel, addVel, rad, this.color);
+      }
     }
+  } else if (this.kickHoldStart) {
+    // just released kick button
+    this.kick();
   } else if (b2.getVal()) {
-    if (!this.getTargetBody()) {
+    if (!oldTargetBody) {
       this.tractorBeamScan();
     }
   }
@@ -236,11 +261,11 @@ PlayerSpirit.prototype.handleInput = function() {
       traction *= Math.max(0, this.vec2d.dot(this.aim)) / stickMag;
     }
     // traction slowdown
-    this.accel.set(body.vel).scale(-traction);
+    this.accel.set(playeBody.vel).scale(-traction);
 
     this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
     this.accel.add(this.vec2d);
-    body.addVelAtTime(this.accel, this.now());
+    playeBody.addVelAtTime(this.accel, this.now());
   }
 
   ////////
@@ -271,6 +296,30 @@ PlayerSpirit.prototype.handleInput = function() {
 
 PlayerSpirit.prototype.releaseTarget = function() {
   this.targetBodyId = 0;
+};
+
+PlayerSpirit.prototype.getKickFrac = function() {
+  if (!this.kickHoldStart) return 0;
+  return Math.pow(Math.max(0, Math.min(1, (this.now() - this.kickHoldStart) / PlayerSpirit.TIME_TO_MAX_KICK)), 2);
+};
+
+PlayerSpirit.prototype.kick = function() {
+  var targetBody = this.getTargetBody();
+  if (targetBody) {
+    var playerBody = this.getBody();
+    var playerBasePos = this.getHitchWorldPos();
+    var targetBasePos = this.getGripWorldPos(targetBody);
+
+    var now = this.now();
+    var p2t = this.vec2d.set(targetBasePos).subtract(playerBasePos);
+    var forceMag = this.getKickFrac() * PlayerSpirit.TRACTOR_MAX_FORCE
+        * (PlayerSpirit.TRACTOR_BREAK_DIST - p2t.magnitude()) / PlayerSpirit.TRACTOR_BREAK_DIST;
+    var force = p2t.scaleToLength(forceMag);
+    targetBody.applyForceAtWorldPosAndTime(force, targetBasePos, now);
+    playerBody.applyForceAtWorldPosAndTime(force.scale(-1), playerBasePos, now);
+    this.releaseTarget();
+  }
+  this.kickHoldStart = 0;
 };
 
 

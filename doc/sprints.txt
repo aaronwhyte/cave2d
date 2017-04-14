@@ -255,18 +255,26 @@ v easier grabbing
   x separate last-ditch wall-grab scan, short and straight ahead? Otherwise don't grab a wall.
   v simple splash suitable for debugging and looking kinda cool.
 - kick part 2
-  - when not holding, kick does a little force-jab
-  - rev up kick with long-hold
-- handles & using
-  - spirits expose optional handle direction.
-  - tractor beams seek the handle out? somehow?
-  - when held by handle, objects can be used with the grab button
-    -
-  - light pistol
-  - heavy laser
-  - booster
-  - shovel
-  - trowel
+  v track kickHoldStart (infinity by default), TIME_TO_MAX_KICK, 0-1 kickFrac = Math.min(now - kickHoldStart, timeToMaxKick)
+  v while holding, kick
+    v rev up kick with long-hold
+      v graphics
+    v kick throws the target obj
+  - when not holding
+    - rev up kick with long-hold
+    - kick does a little force-jab
+
+Test45: Tools and Handles
+- spirits expose optional handle direction.
+- tractor beams seek the handle out? somehow?
+- when held by handle, objects can be used with the grab button
+  -
+- light pistol
+- heavy laser
+- booster
+- shovel
+- trowel
+
 - graphics and sound
   - show torque at both ends of beam
     - bendy lines! Add 0-1 float value to model vertexes, and uniforms dictating curve "velocity" at endpoints

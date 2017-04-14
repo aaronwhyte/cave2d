@@ -35,7 +35,7 @@ Spring.applyDampenedSpring = function(
     totalForceVec.add(pullForceVec);
 
     // damping
-    if (minMass && minMass !== Infinity) {
+    if (dampFraction && minMass && minMass !== Infinity) {
       var vap0 = b0.getVelocityAtWorldPoint(now, pos0, Vec2d.alloc());
       var vap1 = b1.getVelocityAtWorldPoint(now, pos1, Vec2d.alloc());
       var velDiffAlongForceVec = vap1.subtract(vap0).projectOnto(pullForceVec);
