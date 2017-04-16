@@ -249,22 +249,35 @@ v loose low-friction objects that aren't ants, to play with
 v No aim while holding
   v no aim indicator
   v no towards-aim accel
-
 v easier grabbing
   v multiple scans, outward from center, in a fan pattern
   x separate last-ditch wall-grab scan, short and straight ahead? Otherwise don't grab a wall.
   v simple splash suitable for debugging and looking kinda cool.
-- kick part 2
+v kick part 2
   v track kickHoldStart (infinity by default), TIME_TO_MAX_KICK, 0-1 kickFrac = Math.min(now - kickHoldStart, timeToMaxKick)
   v while holding, kick
     v rev up kick with long-hold
       v graphics
     v kick throws the target obj
-  - when not holding
-    - rev up kick with long-hold
-    - kick does a little force-jab
+  x when not holding
+    x rev up kick with long-hold
+    x kick does a little force-jab
 
-Test45: Tools and Handles
+Test45: Tractor Beam 2
+v nest
+- simplify movement
+  - remove "turbo" button
+  - unify top speeds. Not too fast! current keyboard top speed seems OK now.
+- change kick to release & continuous repel
+- make slide-grip work well
+  * repel + grab, lets you slide along walls easily. Maybe a distinct state? distinct grab-scan behavior?
+- make stiff-grip more obvious (and effective)
+- active and passive
+  - passiveness happens if you don't apply input for a second
+  - passive players don't try to re-orient towards aim
+  - visual cue: aim vanishes (just set to 0,0?)
+
+Tools and Handles
 - spirits expose optional handle direction.
 - tractor beams seek the handle out? somehow?
 - when held by handle, objects can be used with the grab button
