@@ -108,7 +108,7 @@ TwoSpeedKeyStick.prototype.getVal = function(out) {
 };
 
 TwoSpeedKeyStick.prototype.isSpeedTriggerDown = function() {
-  return this.speedTrigger.getVal();
+  return this.speedTrigger && this.speedTrigger.getVal();
 };
 
 TwoSpeedKeyStick.prototype.isTouched = function() {
@@ -129,5 +129,5 @@ TwoSpeedKeyStick.prototype.release = function() {
   for (var code in this.codeToState) {
     this.codeToState[code] = false;
   }
-  this.speedTrigger.release();
+  if (this.speedTrigger) this.speedTrigger.release();
 };
