@@ -346,6 +346,8 @@ Test45BaseScreen.prototype.addTractorSeekSplash = function (pos, vel, rad, dist,
   var b = (r < 0.05) ? 0.4 : 1;
   if (r < 0.1) {
     s.duration = 10;
+  } else {
+    rad *= Math.random();
   }
   s.endPose.pos.setXYZ(x + dx * b, y + dy * b, 0);
   s.startPose.scale.setXYZ(rad, rad, 1);
@@ -360,26 +362,37 @@ Test45BaseScreen.prototype.addTractorSeekSplash = function (pos, vel, rad, dist,
   this.splasher.addCopy(s);
 };
 
-Test45BaseScreen.prototype.addKickHoldSplash = function(pos, baseVel, addVel, rad, color) {
+Test45BaseScreen.prototype.addTractorRepelSplash = function (pos, vel, rad, dist, color) {
   var s = this.splash;
   s.reset(Test45BaseScreen.SplashType.SCAN, this.stamps.circleStamp);
 
   s.startTime = this.world.now;
-  s.duration = 4 + Math.random();
 
   var x = pos.x;
   var y = pos.y;
+  var hit = dist >= 0;
+  var d = hit ? dist : 1;
+  var dx = vel.x * d;
+  var dy = vel.y * d;
 
+  var startFrac, endFrac;
   var r = Math.random();
-  var b = (r < 0.06) ? 3 : r;
-  if (r < 0.09) {
-    s.duration *= 2;
-    addVel.scale(1/2);
+  if (r > 0.93) {
+    s.duration = 4;
+    startFrac = Math.random() * 0.4 + 0.2;
+    endFrac = startFrac + 0.4;
+    s.endPose.scale.setXYZ(rad, rad, 1);
+    s.startPose.scale.setXYZ(rad * 0.5, rad * 0.5, 1);
+  } else {
+    s.duration = 3;
+    rad *= Math.random();
+    startFrac = 0.9 + Math.random() * 0.1;
+    endFrac = 1;
+    s.startPose.scale.setXYZ(rad, rad, 1);
+    s.endPose.scale.setXYZ(rad * 0.4, rad * 0.4, 1);
   }
-  s.startPose.pos.setXYZ(x, y, 1);
-  s.endPose.pos.setXYZ(x + (baseVel.x + addVel.x * b) * s.duration, y + (baseVel.y + addVel.y * b) * s.duration, 0);
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad / 10, rad / 10, 1);
+  s.startPose.pos.setXYZ(x + dx * startFrac, y + dy * startFrac, 1);
+  s.endPose.pos.setXYZ(x + dx * endFrac, y + dy * endFrac, 0);
 
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
@@ -389,4 +402,3 @@ Test45BaseScreen.prototype.addKickHoldSplash = function(pos, baseVel, addVel, ra
 
   this.splasher.addCopy(s);
 };
-

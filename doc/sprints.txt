@@ -265,17 +265,11 @@ v kick part 2
 
 Test45: Tractor Beam 2
 v nest
-- simplify movement
-  - remove "turbo" button
-  - unify top speeds. Not too fast! current keyboard top speed seems OK now.
-- change kick to release & continuous repel
-- make slide-grip work well
-  * repel + grab, lets you slide along walls easily. Maybe a distinct state? distinct grab-scan behavior?
-- make stiff-grip more obvious (and effective)
-- active and passive
-  - passiveness happens if you don't apply input for a second
-  - passive players don't try to re-orient towards aim
-  - visual cue: aim vanishes (just set to 0,0?)
+v simplify keyboard controls
+  v remove "turbo" button
+  v unify top speeds. Not too fast! current keyboard top speed seems OK now.
+v change kick to release & continuous repel
+v make stiff-grip more obvious (and effective)
 
 Tools and Handles
 - spirits expose optional handle direction.

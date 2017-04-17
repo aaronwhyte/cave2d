@@ -142,7 +142,7 @@ Test45PlayScreen.prototype.createDefaultWorld = function() {
 
 Test45PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
-  function createKeyboardSlot(up, right, down, left, speed, b1, b2, menuKey) {
+  function createKeyboardSlot(up, right, down, left, b1, b2, menuKey) {
     return new PlayerSlot()
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
@@ -150,7 +150,6 @@ Test45PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(right)
                 .addTriggerKeyByName(down)
                 .addTriggerKeyByName(left)
-                .addTriggerKeyByName(speed)
                 .addTriggerKeyByName(b1)
                 .addTriggerKeyByName(b2)
                 .addTriggerKeyByName(menuKey)
@@ -158,15 +157,11 @@ Test45PlayScreen.prototype.configurePlayerSlots = function() {
         .add(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, new TwoSpeedKeyStick()
                 .setUpRightDownLeftByName(up, right, down, left)
-                .setSpeedTrigger(new KeyTrigger().addTriggerKeyByName(speed))
-                .setDefaultMultiplier(1/2)
-                .setSpeedTwoMultiplier(1))
+                .setDefaultMultiplier(1))
             .add(ControlName.BUTTON_1, new KeyTrigger().addTriggerKeyByName(b1))
             .add(ControlName.BUTTON_2, new KeyTrigger().addTriggerKeyByName(b2))
             .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
-        // .add(PlayerSpirit.STATE_MENU, new ControlMap()
-        //     .add('clickPad', new KeyClickPad().setUpRightDownLeftByName(up, right, down, left)));
   }
 
   function createTouchSlot(angle) {
@@ -266,7 +261,7 @@ Test45PlayScreen.prototype.configurePlayerSlots = function() {
                     .addTriggerKeyByName(b2)
                     .addTriggerKeyByName(menuKey))))
         .add(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(200))
+            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(180))
             .add(ControlName.BUTTON_1, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger().addTriggerKeyByName(b1)))
@@ -278,8 +273,8 @@ Test45PlayScreen.prototype.configurePlayerSlots = function() {
   }
 
   this.slots = [
-    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'm', ',', '.', 'l'),
-    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'x', 'q'),
+    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'n', 'm', 'l'),
+    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'q'),
     createPointerLockSlot('v', 'b', 'g'),
     createTouchSlot(0),
     createTouchSlot(Math.PI / 2),
