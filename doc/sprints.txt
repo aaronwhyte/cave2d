@@ -270,28 +270,56 @@ v simplify keyboard controls
   v unify top speeds. Not too fast! current keyboard top speed seems OK now.
 v change kick to release & continuous repel
 v make stiff-grip more obvious (and effective)
-
-Tools and Handles
-- spirits expose optional handle direction.
-- tractor beams seek the handle out? somehow?
-- when held by handle, objects can be used with the grab button
-  -
-- light pistol
-- heavy laser
-- booster
-- shovel
-- trowel
-
-- graphics and sound
-  - show torque at both ends of beam
-    - bendy lines! Add 0-1 float value to model vertexes, and uniforms dictating curve "velocity" at endpoints
-  - seek
-  - continuous grab
-  - beam break
-  - release
-  - kick rev
-  - kick
-
+- Unified simplified player action tracking
+  - PlayerSpirit fields
+    - kick button down
+    - grab button down
+    - beamState:
+      - FREE (off, seeking, repelling, seeking-to-trigger
+      - GRIPPING (floppy, stiff, using)
+      - EJECTING: player is kicking a gripped target obj.
+        * Instant release but still track the target and check for breaks
+        * if plr holds kick for a bit more then power up a kick
+        * actually do kick when player releases kick button.
+        * max time until involuntary release. short though.
+      - BROKEN
+        * target out of range or beam interrupted for too long
+        * from gripping or ejecting!
+        * player needs to release all buttons, or wait for (short) timeout, before any buttons work again.
+    - start time of current state
+      * used for calcs and graphics
+      * used as token in world timeouts, to make sure the timeout is still valid.
+- repelling in a lengthening, narrowing beam, not long-lived. Timing and aim matter.
+- seeking as a target area
+  - that draws things in until they are caught. Inward splashes. Pulls at quite a distance,
+  - but only catches close.
+- triggering as an electric arc to the target gripped target
+   - or loop back to player to signify seek-to-trigger
+- floppy grip
+  - maintain dist
+  - dist damping
+  - yes try to aim target away from player if aimable
+- stiff grip
+  - maintain relative position/angle too (don't use player edge torque though)
+  - make dist a bit shorter too.
+- broken
+  - start timeout
+  - player can cancel timeout by releasing all keys
+  - when timeout is done then keys work again
+- ejecting
+  - start timeout
+  - remember target
+  - keep scanning for break
+  - floppy force
+  - time between kick-down and kick-up dictates ejection strength
+    - none
+    - light eject
+    - medium eject
+    - stong eject - auto fires at end of window
+    - times are pretty short, like 100ms each
+  - grip-down will cancel ejection and switch to trigger! That's new.
+- triggering
+  - help object gets constant stream of triggerUp, triggerDown events
 
 - Critters
   - Critters sleep by default.
