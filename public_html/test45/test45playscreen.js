@@ -53,7 +53,7 @@ Test45PlayScreen.prototype.initPauseButtons = function() {
       .addDoubleTapListener(this.pauseDownFn)
       .setStamp(this.stamps.pauseStamp);
   var rule = new CuboidRule(this.canvasCuboid, this.pauseTouchWidget.getWidgetCuboid())
-      .setAspectRatio(new Vec4(1, 1), Vec4.ZERO)
+      .setAspectRatio(new Vec4(1, 1))
       .setSourceAnchor(Vec4.ZERO, Vec4.ZERO)
       .setTargetAnchor(Vec4.ZERO, Vec4.ZERO)
       .setSizingMax(new Vec4(0.2, 0.2), new Vec4(50, 50));
@@ -64,7 +64,7 @@ Test45PlayScreen.prototype.initPauseButtons = function() {
 
 
 Test45PlayScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
+  if (listen === this.listening) return;
   var fsb, rb, i;
   Test45BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
@@ -307,7 +307,7 @@ Test45PlayScreen.prototype.playerSpawn = function(slot) {
   this.playerSpirits.push(spirit);
 
   // splash
-  var body = this.getBodyById(spirit.bodyId);
+  var body = spirit.getBody();
   var pos = spirit.getBodyPos();
   this.sounds.playerSpawn(pos);
 
@@ -318,12 +318,12 @@ Test45PlayScreen.prototype.playerSpawn = function(slot) {
   var s = new Splash(1, this.stamps.tubeStamp);
 
   s.startTime = now;
-  s.duration = 10;
+  s.duration = 8;
   var startRad = body.rad * 2;
   var endRad = body.rad * 8;
 
-  s.startPose.pos.setXYZ(x, y, 1);
-  s.endPose.pos.setXYZ(x, y, 1);
+  s.startPose.pos.setXYZ(x, y, 0.5);
+  s.endPose.pos.setXYZ(x, y, 0.5);
   s.startPose.scale.setXYZ(0, 0, 1);
   s.endPose.scale.setXYZ(endRad, endRad, 1);
 
@@ -334,9 +334,10 @@ Test45PlayScreen.prototype.playerSpawn = function(slot) {
 
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
-  s.startColor.setXYZ(r*2, g*2, b*2);
-  s.endColor.setXYZ(0, 0, 0);
+  s.startColor.set(spirit.color);
+  s.endColor.set(spirit.color).scale1(0.5);
 
+  console.log(s);
   this.splasher.addCopy(s);
 };
 
@@ -356,11 +357,11 @@ Test45PlayScreen.prototype.handleInput = function () {
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
     var controls = slot.getControlList();
-    if (slot.stateName == ControlState.PLAYING) {
+    if (slot.stateName === ControlState.PLAYING) {
       if (controls.get(ControlName.MENU).getVal()) {
         this.playerDrop(slot);
       }
-    } else if (slot.stateName == ControlState.WAITING) {
+    } else if (slot.stateName === ControlState.WAITING) {
       if (controls.get(ControlName.JOIN_TRIGGER).getVal()) {
         this.playerJoin(slot);
       }
@@ -385,7 +386,7 @@ Test45PlayScreen.prototype.drawScene = function() {
     count++;
   }
   circles.length = count;
-  if (count == 0) {
+  if (count === 0) {
     this.startingCircle.rad = pad;
     this.circles[0] = this.startingCircle;
   }
@@ -420,7 +421,7 @@ Test45PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
   }
   for (var cellId in cellIdSet.vals) {
     for (var groupNum = 0; groupNum < this.world.getGroupCount(); groupNum++) {
-      if (groupNum == this.getWallHitGroup()) continue;
+      if (groupNum === this.getWallHitGroup()) continue;
       this.world.addSpiritIdsInCellAndGroup(spiritIdSet, cellId, groupNum);
     }
   }
@@ -433,14 +434,14 @@ Test45PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
 };
 
 Test45PlayScreen.prototype.positionCamera = function() {
-  if (this.playerSpirits.length == 0) {
+  if (this.playerSpirits.length === 0) {
     this.viewableWorldRect.setPosXY(0, 0);
   }
   this.viewableWorldRect.rad.reset();
   for (var i = 0; i < this.playerSpirits.length; i++) {
     var spirit = this.playerSpirits[i];
     var playerCamera = spirit.camera;
-    if (i == 0) {
+    if (i === 0) {
       this.viewableWorldRect.setPosXY(playerCamera.getX(), playerCamera.getY());
     } else {
       this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
@@ -515,7 +516,7 @@ Test45PlayScreen.prototype.onHitEvent = function(e) {
 
 Test45PlayScreen.prototype.onTimeout = function(e) {
   var slot = this.getSlotFromRespawnTimeOutVal(e.timeoutVal);
-  if (slot && slot.stateName != ControlState.WAITING) {
+  if (slot && slot.stateName !== ControlState.WAITING) {
     this.playerSpawn(slot);
   }
 };
@@ -534,7 +535,7 @@ Test45PlayScreen.prototype.killPlayerSpirit = function(spirit) {
   this.sounds.playerExplode(spirit.getBodyPos());
   this.removeByBodyId(spirit.bodyId);
   for (var i = 0; i < this.playerSpirits.length; i++) {
-    if (this.playerSpirits[i] == spirit) {
+    if (this.playerSpirits[i] === spirit) {
       this.playerSpirits[i] = this.playerSpirits[this.playerSpirits.length - 1];
       this.playerSpirits.pop();
       break;
@@ -551,13 +552,13 @@ Test45PlayScreen.prototype.getRespawnTimeoutValForSlot = function(slot) {
 };
 
 Test45PlayScreen.prototype.getSlotFromRespawnTimeOutVal = function(timeoutVal) {
-  if (!timeoutVal || 'respawn' != timeoutVal[0]) return null;
+  if (!timeoutVal || 'respawn' !== timeoutVal[0]) return null;
   var slotId = timeoutVal[1];
   var lastSpiritId = timeoutVal[2];
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
     // make sure there wasn't a new spirit created for this slot since the timeout was created
-    if (slot.id == slotId && slot.lastSpiritId == lastSpiritId) {
+    if (slot.id === slotId && slot.lastSpiritId === lastSpiritId) {
       return slot;
     }
   }
