@@ -270,7 +270,7 @@ v simplify keyboard controls
   v unify top speeds. Not too fast! current keyboard top speed seems OK now.
 v change kick to release & continuous repel
 v make stiff-grip more obvious (and effective)
-- Unified simplified player action tracking
+v Unified simplified player action tracking
   v PlayerSpirit fields
     v beamMode:
       v OFF
@@ -292,18 +292,18 @@ v make stiff-grip more obvious (and effective)
     v start time of current state
       * used for calcs and graphics
       * used as token in world timeouts, to make sure the timeout is still valid.
-- ejecting
-  - start timeout
-  - remember target
-  - keep scanning for break
-  - floppy force
-  - time between kick-down and kick-up dictates ejection strength
-    - none
-    - light eject
-    - medium eject
-    - stong eject - auto fires at end of window
-    - times are pretty short, like 100ms each
-  - grip-down will cancel ejection and switch to trigger! That's new.
+v ejecting
+  x start timeout
+  v remember target
+  v keep scanning for break
+  v floppy force
+  v time between kick-down and kick-up dictates ejection strength
+    v none
+    v light eject
+    v medium eject
+    v stong eject - auto fires at end of window
+    v times are pretty short, like 100ms each
+  v grip-down will cancel ejection and switch to trigger! That's new.
 - repelling in a lengthening, narrowing beam, not long-lived. Timing and aim matter.
 - seeking as a target area
   - that draws things in until they are caught. Inward splashes. Pulls at quite a distance,

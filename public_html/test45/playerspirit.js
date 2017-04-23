@@ -20,6 +20,7 @@ function PlayerSpirit(screen) {
   this.beamState = BeamState.FREE;
   // Any changes to state or mode reset this value to now()
   this.beamChangeTime = 0;
+  this.ejectStartTime = 0;
 
   this.angleLocked = false;
   this.destAngle = 0;
@@ -78,8 +79,8 @@ PlayerSpirit.AIM_ANGPOS_ACCEL = 0.05;
 PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.5;
 PlayerSpirit.ANGULAR_FRICTION = 0.2;
 
-PlayerSpirit.MAX_BREAK_TIME = 30;
-PlayerSpirit.MAX_EJECT_TIME = 30;
+PlayerSpirit.MAX_BREAK_TIME = 10;
+PlayerSpirit.MAX_EJECT_TIME = 20;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -224,9 +225,13 @@ PlayerSpirit.prototype.handleInput = function() {
 
   if (this.beamState === BeamState.EJECTING) {
     // done ejecting?
-    if (this.beamMode === BeamMode.OFF || (now - this.beamChangeTime) > PlayerSpirit.MAX_EJECT_TIME) {
-      // TODO: actual eject
-      this.beamState = BeamState.FREE;
+    if (this.beamMode === BeamMode.OFF || (now - this.ejectStartTime) > PlayerSpirit.MAX_EJECT_TIME) {
+      this.finishEjection();
+    } else if (this.beamMode === BeamMode.KICK) {
+      this.continueEjection();
+    } else {
+      // Ejection cancelled. Back to gripping!
+      this.beamState = BeamState.GRIPPING;
       this.beamChangeTime = now;
     }
   }
@@ -355,13 +360,34 @@ PlayerSpirit.prototype.breakBeam = function() {
 
 PlayerSpirit.prototype.beginEjection = function() {
   if (this.getTargetBody()) {
-    // TODO keep target for proper ejection
-    this.targetBodyId = 0;
-    this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
-    this.aim.set(this.destAim);
     this.beamState = BeamState.EJECTING;
     this.beamChangeTime = this.now();
+    this.ejectStartTime = this.now();
   }
+};
+
+PlayerSpirit.prototype.continueEjection = function() {
+  // TODO some graphics or whatnot?
+  this.handleTractorBeam(this.getBody(), this.getTargetBody());
+};
+
+PlayerSpirit.prototype.finishEjection = function() {
+  var targetBody = this.getTargetBody();
+  if (!targetBody) {
+    this.beamState = BeamState.BROKEN;
+  } else {
+    var ejectFraction = (this.now() - this.ejectStartTime) / PlayerSpirit.MAX_EJECT_TIME;
+    ejectFraction = Math.min(1, Math.max(0, ejectFraction * 2 - 0.25));
+    if (ejectFraction) {
+      Spring.applyDampenedSpring(this.getBody(), this.getGripWorldPos(targetBody), targetBody, this.getHitchWorldPos(),
+          PlayerSpirit.TRACTOR_BREAK_DIST, -PlayerSpirit.TRACTOR_REPEL_FORCE * 20 * ejectFraction, 0,
+          PlayerSpirit.TRACTOR_MAX_FORCE * 20, PlayerSpirit.TRACTOR_BREAK_DIST * 10,
+          this.now());
+    }
+    this.beamState = this.beamMode === BeamMode.KICK ? BeamState.BROKEN : BeamState.FREE;
+  }
+  this.beamChangeTime = this.now();
+  this.targetBodyId = 0;
 };
 
 PlayerSpirit.prototype.repel = function() {
