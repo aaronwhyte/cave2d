@@ -271,24 +271,39 @@ v simplify keyboard controls
 v change kick to release & continuous repel
 v make stiff-grip more obvious (and effective)
 - Unified simplified player action tracking
-  - PlayerSpirit fields
-    - kick button down
-    - grab button down
-    - beamState:
-      - FREE (off, seeking, repelling, seeking-to-trigger
-      - GRIPPING (floppy, stiff, using)
-      - EJECTING: player is kicking a gripped target obj.
+  v PlayerSpirit fields
+    v beamMode:
+      v OFF
+      v KICK
+      v USE
+      v GRAB
+    V beamState:
+      v FREE (off, seeking, repelling, seeking-to-trigger)
+      v GRIPPING (floppy, stiff, using)
+      v EJECTING: player is kicking a gripped target obj.
         * Instant release but still track the target and check for breaks
         * if plr holds kick for a bit more then power up a kick
         * actually do kick when player releases kick button.
         * max time until involuntary release. short though.
-      - BROKEN
+      v BROKEN
         * target out of range or beam interrupted for too long
         * from gripping or ejecting!
         * player needs to release all buttons, or wait for (short) timeout, before any buttons work again.
-    - start time of current state
+    v start time of current state
       * used for calcs and graphics
       * used as token in world timeouts, to make sure the timeout is still valid.
+- ejecting
+  - start timeout
+  - remember target
+  - keep scanning for break
+  - floppy force
+  - time between kick-down and kick-up dictates ejection strength
+    - none
+    - light eject
+    - medium eject
+    - stong eject - auto fires at end of window
+    - times are pretty short, like 100ms each
+  - grip-down will cancel ejection and switch to trigger! That's new.
 - repelling in a lengthening, narrowing beam, not long-lived. Timing and aim matter.
 - seeking as a target area
   - that draws things in until they are caught. Inward splashes. Pulls at quite a distance,
@@ -302,22 +317,10 @@ v make stiff-grip more obvious (and effective)
 - stiff grip
   - maintain relative position/angle too (don't use player edge torque though)
   - make dist a bit shorter too.
-- broken
-  - start timeout
-  - player can cancel timeout by releasing all keys
-  - when timeout is done then keys work again
-- ejecting
-  - start timeout
-  - remember target
-  - keep scanning for break
-  - floppy force
-  - time between kick-down and kick-up dictates ejection strength
-    - none
-    - light eject
-    - medium eject
-    - stong eject - auto fires at end of window
-    - times are pretty short, like 100ms each
-  - grip-down will cancel ejection and switch to trigger! That's new.
+v broken
+  v start timeout
+  v player can cancel timeout by releasing all keys
+  v when timeout is done then keys work again
 - triggering
   - help object gets constant stream of triggerUp, triggerDown events
 

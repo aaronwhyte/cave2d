@@ -14,23 +14,18 @@ function PlayerSpirit(screen) {
 
   this.aim = new Vec2d();
   this.destAim = new Vec2d();
-  this.slowAimSpeed = 0;
+  this.aimSpeed = 0;
+
+  this.beamMode = BeamMode.OFF;
+  this.beamState = BeamState.FREE;
+  // Any changes to state or mode reset this value to now()
+  this.beamChangeTime = 0;
 
   this.angleLocked = false;
   this.destAngle = 0;
 
-  this.vec2d = new Vec2d();
-  this.vec2d2 = new Vec2d();
-  this.vec2d3 = new Vec2d();
-  this.vec4 = new Vec4();
-  this.mat44 = new Matrix44();
-  this.modelMatrix = new Matrix44();
-  this.lastFrictionTime = this.now();
-  this.lastInputTime = this.now();
-
-  this.obstructionCount = 0;
-
   this.targetBodyId = null;
+  this.obstructionCount = 0;
   // relative to the target body, where did the player grab?
   this.targetRelPos = new Vec2d();
   // What was the direction of the beam relative to the target when it struck?
@@ -40,6 +35,16 @@ function PlayerSpirit(screen) {
 
   this.accel = new Vec2d();
   this.slot = null;
+
+  this.lastFrictionTime = this.now();
+  this.lastInputTime = this.now();
+
+  this.vec2d = new Vec2d();
+  this.vec2d2 = new Vec2d();
+  this.vec2d3 = new Vec2d();
+  this.vec4 = new Vec4();
+  this.mat44 = new Matrix44();
+  this.modelMatrix = new Matrix44();
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -72,6 +77,9 @@ PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.05;
 PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.5;
 PlayerSpirit.ANGULAR_FRICTION = 0.2;
+
+PlayerSpirit.MAX_BREAK_TIME = 30;
+PlayerSpirit.MAX_EJECT_TIME = 30;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -193,15 +201,47 @@ PlayerSpirit.prototype.handleInput = function() {
 
   ////////////
   // BUTTONS
-  var b1 = controls.get(ControlName.BUTTON_1);
-  var b2 = controls.get(ControlName.BUTTON_2);
-  if (b1.getVal()) {
-    this.repel();
+
+  var oldMode = this.beamMode;
+  var b1 = controls.get(ControlName.BUTTON_1).getVal();
+  var b2 = controls.get(ControlName.BUTTON_2).getVal();
+  if (b1) {
+    this.beamMode = b2 ? BeamMode.USE : BeamMode.KICK;
+  } else {
+    this.beamMode = b2 ? BeamMode.GRAB : BeamMode.OFF;
   }
-  if (b2.getVal() && !b1.getVal()) {
-    if (!this.getTargetBody()) {
-      this.tractorBeamScan();
+  if (oldMode !== this.beamMode) {
+    this.beamChangeTime = now;
+  }
+
+  if (this.beamState === BeamState.BROKEN) {
+    // recover from beam break?
+    if (this.beamMode === BeamMode.OFF || (now - this.beamChangeTime) > PlayerSpirit.MAX_BREAK_TIME) {
+      this.beamState = BeamState.FREE;
+      this.beamChangeTime = now;
     }
+  }
+
+  if (this.beamState === BeamState.EJECTING) {
+    // done ejecting?
+    if (this.beamMode === BeamMode.OFF || (now - this.beamChangeTime) > PlayerSpirit.MAX_EJECT_TIME) {
+      // TODO: actual eject
+      this.beamState = BeamState.FREE;
+      this.beamChangeTime = now;
+    }
+  }
+
+  if (this.beamMode === BeamMode.KICK) {
+    if (this.beamState === BeamState.FREE) {
+      this.repel();
+    } else if (this.beamState === BeamState.GRIPPING) {
+      this.beginEjection();
+    }
+  }
+
+  if ((this.beamMode === BeamMode.GRAB || this.beamMode === BeamMode.USE) &&
+      this.beamState === BeamState.FREE) {
+    this.tractorBeamScan();
   }
 
   stick.getVal(this.vec2d);
@@ -209,7 +249,7 @@ PlayerSpirit.prototype.handleInput = function() {
 
   var oldAngleLocked = this.angleLocked;
   var targetBody = this.getTargetBody();
-  this.angleLocked = targetBody && b2.getVal() && !b1.getVal();
+  this.angleLocked = targetBody && b2 && !b1;
   if (!oldAngleLocked && this.angleLocked) {
     // begin angle lock
     if (this.getTargetBody() === oldTargetBody) {
@@ -280,16 +320,16 @@ PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reversenes
 
 PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness) {
   // up/down/left/right buttons
-  var slowAimFriction = 0.05;
+  var aimFriction = 0.05;
   var dist;
   if (stickMag) {
     var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
     dist = correction.magnitude();
-    this.slowAimSpeed += 0.04 * dist;
-    slowAimFriction = 0.01;
-    this.destAim.add(correction.scale(Math.min(1, this.slowAimSpeed)));
+    this.aimSpeed += 0.04 * dist;
+    aimFriction = 0.01;
+    this.destAim.add(correction.scale(Math.min(1, this.aimSpeed)));
   }
-  this.slowAimSpeed *= (1 - slowAimFriction);
+  this.aimSpeed *= (1 - aimFriction);
   this.destAim.scaleToLength(1);
   if (reverseness > 0.99) {
     // 180 degree flip, precise or not, so set it instantly.
@@ -304,12 +344,27 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
   }
 };
 
-PlayerSpirit.prototype.repel = function() {
+PlayerSpirit.prototype.breakBeam = function() {
+  this.targetBodyId = 0;
+  this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
+  this.aim.set(this.destAim);
+
+  this.beamState = BeamState.BROKEN;
+  this.beamChangeTime = this.now();
+};
+
+PlayerSpirit.prototype.beginEjection = function() {
   if (this.getTargetBody()) {
+    // TODO keep target for proper ejection
     this.targetBodyId = 0;
     this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
     this.aim.set(this.destAim);
+    this.beamState = BeamState.EJECTING;
+    this.beamChangeTime = this.now();
   }
+};
+
+PlayerSpirit.prototype.repel = function() {
   var bestBody = null;
   var bestResultFraction = 2;
   var maxScanDist = PlayerSpirit.SEEKSCAN_DIST;
@@ -378,7 +433,7 @@ PlayerSpirit.prototype.tractorBeamScan = function() {
     this.screen.addTractorSeekSplash(scanPos, scanVel, 0.2, resultFraction, this.color);
     if (resultFraction !== -1) {
       var targetBody = this.getScanHitBody();
-      if (targetBody && resultFraction < bestResultFraction) {
+      if (targetBody && targetBody.shape !== Body.Shape.RECT && resultFraction < bestResultFraction) {
         bestResultFraction = resultFraction;
         bestBody = this.getScanHitBody();
         bestScanPos.set(scanPos);
@@ -401,6 +456,8 @@ PlayerSpirit.prototype.tractorBeamScan = function() {
       this.targetBeamDir.set(this.targetRelPos).scale(-1);
     }
     targetPos.free();
+    this.beamState = BeamState.GRIPPING;
+    this.beamChangeTime = this.now();
   }
   scanPos.free();
   bestScanPos.free();
@@ -495,7 +552,7 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
   if (result >= 0 && result < 0.5) {
     this.obstructionCount++;
     if (this.obstructionCount > PlayerSpirit.MAX_OBSTRUCTION_COUNT) {
-      this.repel();
+      this.breakBeam();
       return;
     }
   } else {
@@ -511,12 +568,13 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
 
   // weaken the beam the longer it is obstructed
   var unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
+  var self = this;
   function tractor(pPos, tPos) {
     var forceMag = Spring.applyDampenedSpring(
         playerBody, pPos,
         targetBody, tPos,
         0,
-        unobstructedness * PlayerSpirit.TRACTOR_HOLD_FORCE * (this.angleLocked ? 2 : 1),
+        unobstructedness * PlayerSpirit.TRACTOR_HOLD_FORCE * (self.angleLocked ? 2 : 1),
         PlayerSpirit.TRACTOR_DAMPING_FRACTION,
         PlayerSpirit.TRACTOR_MAX_FORCE,
         PlayerSpirit.TRACTOR_BREAK_DIST - holdDist,
@@ -534,7 +592,7 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
   tractor(pTemp.set(playerOffsetUnit).scale(offsetFactor).add(playerBasePos), targetBasePos);
 
   if (!targetInRange) {
-    this.repel();
+    this.breakBeam();
   } else {
     this.tractorForceFrac = forceMagSum / PlayerSpirit.TRACTOR_MAX_FORCE;
   }
