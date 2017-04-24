@@ -184,9 +184,9 @@ Matrix44.prototype.set = function(that) {
 
 Matrix44.prototype.setToPose = function(pose) {
   var temp = Matrix44.alloc();
-  var retval =  this.toTranslateOp(pose.pos)
-      .multiply(temp.toScaleOp(pose.scale))
-      .multiply(temp.toRotateZOp(pose.rotZ));
+  var retval = this.toTranslateOp(pose.pos)
+      .multiply(temp.toRotateZOp(pose.rotZ))
+      .multiply(temp.toScaleOp(pose.scale));
   temp.free();
   return retval;
 };
