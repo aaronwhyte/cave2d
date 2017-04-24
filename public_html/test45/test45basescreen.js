@@ -362,40 +362,31 @@ Test45BaseScreen.prototype.addTractorSeekSplash = function (pos, vel, rad, dist,
   this.splasher.addCopy(s);
 };
 
-Test45BaseScreen.prototype.addTractorRepelSplash = function (pos, vel, rad, dist, color) {
+Test45BaseScreen.prototype.addTractorRepelSplash = function (pos, angle, vel, rad, dist, color, timeFrac) {
   var s = this.splash;
+
+  var hit = dist > 0;
   s.reset(Test45BaseScreen.SplashType.SCAN, this.stamps.circleStamp);
 
   s.startTime = this.world.now;
 
   var x = pos.x;
   var y = pos.y;
-  var hit = dist >= 0;
   var d = hit ? dist : 1;
   var dx = vel.x * d;
   var dy = vel.y * d;
 
-  var startFrac, endFrac;
-  var r = Math.random();
-  if (r > 0.93) {
-    s.duration = 4;
-    startFrac = Math.random() * 0.4 + 0.2;
-    endFrac = startFrac + 0.4;
-    s.endPose.scale.setXYZ(rad, rad, 1);
-    s.startPose.scale.setXYZ(rad * 0.5, rad * 0.5, 1);
-  } else {
-    s.duration = 3;
-    rad *= Math.random();
-    startFrac = 0.9 + Math.random() * 0.1;
-    endFrac = 1;
-    s.startPose.scale.setXYZ(rad, rad, 1);
-    s.endPose.scale.setXYZ(rad * 0.4, rad * 0.4, 1);
-  }
-  s.startPose.pos.setXYZ(x + dx * startFrac, y + dy * startFrac, 1);
-  s.endPose.pos.setXYZ(x + dx * endFrac, y + dy * endFrac, 0);
+  s.duration = 4 + 6 * timeFrac;
 
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
+  var r = dist >= 0 ? 1 : 1 + Math.random() * 0.1 + 0.1 * timeFrac;
+  s.startPose.pos.setXYZ(x + dx, y + dy, 1);
+  s.endPose.pos.setXYZ(x + dx*r, y + dy*r, 0);
+
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad * 0.1, rad * 0.1, 1);
+
+  s.startPose.rotZ = -angle;
+  s.endPose.rotZ = -angle;
 
   s.startColor.set(color);
   s.endColor.set(color);
