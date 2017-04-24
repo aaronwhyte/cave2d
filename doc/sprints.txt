@@ -277,7 +277,7 @@ v Unified simplified player action tracking
       v KICK
       v USE
       v GRAB
-    V beamState:
+    v beamState:
       v FREE (off, seeking, repelling, seeking-to-trigger)
       v GRIPPING (floppy, stiff, using)
       v EJECTING: player is kicking a gripped target obj.
@@ -293,7 +293,7 @@ v Unified simplified player action tracking
       * used for calcs and graphics
       * used as token in world timeouts, to make sure the timeout is still valid.
 v ejecting
-  x start timeout
+  v remember start-time
   v remember target
   v keep scanning for break
   v floppy force
@@ -304,12 +304,16 @@ v ejecting
     v stong eject - auto fires at end of window
     v times are pretty short, like 100ms each
   v grip-down will cancel ejection and switch to trigger! That's new.
-- repelling in a lengthening, narrowing beam, not long-lived. Timing and aim matter.
+v broken
+  v remember start-time
+  v player can cancel timeout by releasing all keys
+  v when timeout is done then keys work again
+- repelling
+  - a lengthening, narrowing beam, not long-lived. Timing and aim matter.
+  - better physics code. Don't re-use dampened spring function.
 - seeking as a target area
-  - that draws things in until they are caught. Inward splashes. Pulls at quite a distance,
-  - but only catches close.
-- triggering as an electric arc to the target gripped target
-   - or loop back to player to signify seek-to-trigger
+  - that draws things in until they are caught. Inward splashes. Pulls at quite a distance
+  - but only grips when obj is close
 - floppy grip
   - maintain dist
   - dist damping
@@ -317,10 +321,8 @@ v ejecting
 - stiff grip
   - maintain relative position/angle too (don't use player edge torque though)
   - make dist a bit shorter too.
-v broken
-  v start timeout
-  v player can cancel timeout by releasing all keys
-  v when timeout is done then keys work again
+
+
 - triggering
   - help object gets constant stream of triggerUp, triggerDown events
 
