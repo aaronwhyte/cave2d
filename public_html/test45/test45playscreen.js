@@ -337,7 +337,6 @@ Test45PlayScreen.prototype.playerSpawn = function(slot) {
   s.startColor.set(spirit.color);
   s.endColor.set(spirit.color).scale1(0.5);
 
-  console.log(s);
   this.splasher.addCopy(s);
 };
 
