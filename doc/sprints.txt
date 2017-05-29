@@ -308,20 +308,36 @@ v broken
   v remember start-time
   v player can cancel timeout by releasing all keys
   v when timeout is done then keys work again
-- repelling
-  - a lengthening, narrowing beam, not long-lived. Timing and aim matter.
-  - better physics code. Don't re-use dampened spring function.
-- seeking as a target area
-  - that draws things in until they are caught. Inward splashes. Pulls at quite a distance
-  - but only grips when obj is close
+v repelling
+  v a lengthening, narrowing beam, not long-lived. Timing and aim matter.
+  x better physics code. Don't re-use dampened spring function.
+
+Test45 redo: tractor beams again
+Nigh-perfect acceleration and damping?
+* attractor-bullet stream
+* repulsor-bullet shotgun
+* Math thingy that takes pos diff, vel diff, max accel, and landing softness(?)
+  and returns the right accel, from -maxA to maxA, such that
+  you'd never overshoot or oscillate,
+  and it doesn't bang-bang (alternate between maxA and -maxA) - because "softness".
+* Apply it to radial distance, and to rel angle for stiff grip, and to aim for aimables.
+* held objects are not too big and are enveloped so center-force can be applied.
+
+v math thingy
+  v stick it in Spring
+  v unit test
 - floppy grip
   - maintain dist
   - dist damping
   - yes try to aim target away from player if aimable
 - stiff grip
   - maintain relative position/angle too (don't use player edge torque though)
-  - make dist a bit shorter too.
-
+- seeking
+  - a simple large rayscan for holding
+  -
+- more ejecting
+  - use a stiff grip during eject warmup, for aim (but don't mess up drop)
+  - graphics indicator
 
 - triggering
   - help object gets constant stream of triggerUp, triggerDown events

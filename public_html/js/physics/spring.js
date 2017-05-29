@@ -61,3 +61,57 @@ Spring.applyDampenedSpring = function(
   p0p1.free();
   return forceMag;
 };
+
+/**
+ * Return the 1d pulse acceleration to apply to get one step closer to having a position and velocity of zero.
+ * @param {number} p0  initial position
+ * @param {number} v0  initial velocity
+ * @param {number} maxA  maximum pulse acceleration (not accleration / time)
+ * @param {number} pulsePeriod  period between acceleration pulses, if any. Used to prevent overshooting.
+ * @returns {number}  the acceleration, between -maxA and maxA, to apply at this moment.
+ */
+Spring.getLandingAccel = function(p0, v0, maxA, pulsePeriod) {
+  if (maxA <= 0) return 0;
+  // Normalize so p0 is always positive.
+  var flipped = p0 < 0;
+  if (flipped) {
+    p0 *= -1;
+    v0 *= -1;
+  }
+  var a;
+  if (p0 === 0) {
+    if (Math.abs(v0) <= maxA) {
+      // cancel vel in one step
+      a = -v0;
+    } else {
+      // hit the brakes
+      a = -Math.sign(v0) * maxA;
+    }
+  } else {
+    if (v0 >= 0) {
+      // We're not heading towards the intercept, so
+      // accelerate towards the intercept point.
+      a = -maxA;
+    } else {
+      // v0 < 0 which means we're heading towards intercept already.
+      // When will velocity equal zero if we decelerate hard?
+      var t = -v0 / maxA;
+      // At what pos will vel hit 0?
+      var p = 0.5 * maxA * t * t + v0 * t + p0;
+      if (p < 0) {
+        // We'll pass the intercept point, so got ahead and decelerate hard.
+        a = maxA;
+      } else {
+        // v=0 before hitting intercept, so
+        // accelerate towards the intercept point.
+        a = -maxA;
+      }
+    }
+    // Make sure we don't overshoot due to linear movement between pulses.
+    if (a < 0 && p0 + pulsePeriod * (v0 + a) < 0) {
+      var v1 = -p0 / pulsePeriod;
+      a = Math.max(-maxA, Math.min(maxA, v1 - v0));
+    }
+  }
+  return flipped ? -a : a;
+};

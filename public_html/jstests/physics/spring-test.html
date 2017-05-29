@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>spring test</title>
+<script src="../../js/strings.js"></script>
+<script src="../../js/testing.js"></script>
+<script src="../../js/math.js"></script>
+
+<script src="../../js/physics/spring.js"></script>
+<script>
+
+addTest(function testGetLandingAccelZero() {
+  assertEquals(0, Spring.getLandingAccel(0, 0, 0, 0));
+  assertEquals(0, Spring.getLandingAccel(0, 0, 0, 1));
+  assertEquals(0, Spring.getLandingAccel(1, 0, 0, 1));
+  assertEquals(0, Spring.getLandingAccel(0, 1, 0, 1));
+  assertEquals(0, Spring.getLandingAccel(1, 1, 0, 1));
+
+  // no need to accel
+  assertEquals(0, Spring.getLandingAccel(0, 0, 1, 1));
+});
+
+addTest(function testGetLandingAccelFullAccel() {
+  assertEquals(-2, Spring.getLandingAccel(10, 1, 2, 1));
+  assertEquals(-2, Spring.getLandingAccel(10, -1, 2, 1));
+  assertEquals(-2, Spring.getLandingAccel(1, 10, 2, 1));
+  assertEquals(2, Spring.getLandingAccel(1, -10, 2, 1));
+});
+
+addTest(function testGetLandingAccelFullAccelFlipped() {
+  assertEquals(2, Spring.getLandingAccel(-10, -1, 2, 1));
+  assertEquals(2, Spring.getLandingAccel(-10, 1, 2, 1));
+  assertEquals(2, Spring.getLandingAccel(-1, -10, 2, 1));
+  assertEquals(-2, Spring.getLandingAccel(-1, 10, 2, 1));
+});
+
+addTest(function testGetLandingAccelZeroPosCancelVel() {
+  assertEquals(-1, Spring.getLandingAccel(0, 1, 2, 3));
+  assertEquals(1, Spring.getLandingAccel(0, -1, 2, 3));
+});
+
+addTest(function testGetLandingAccelZeroPosHitTheBrakes() {
+  assertEquals(-2, Spring.getLandingAccel(0, 10, 2, 3));
+  assertEquals(2, Spring.getLandingAccel(0, -10, 2, 3));
+});
+
+addTest(function testGetLandingAccelPreventsOvershoot() {
+  assertEquals(-5, Spring.getLandingAccel(10, 0, 100, 2));
+  assertEquals(5, Spring.getLandingAccel(-10, 0, 100, 2));
+
+  assertEquals(-5.5, Spring.getLandingAccel(11, 0, 100, 2));
+  assertEquals(4.5, Spring.getLandingAccel(-9, 0, 100, 2));
+});
+
+</script>
+</head>
+<body onload="runTests()"></body>
+</html>
