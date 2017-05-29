@@ -22,7 +22,7 @@ void main(void) {
         minDist = min(minDist, distance(vPos, circlePos) / circleRad);
       }
     }
-    if (minDist < 0.85) {
+    if (minDist < 0.87) {
       gl_FragColor = vColor;
     } else if (minDist < 1.0) {
       gl_FragColor = vColor * 0.6;
