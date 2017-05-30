@@ -89,7 +89,7 @@ Spring.getLandingAccel = function(p0, v0, maxA, pulsePeriod) {
     }
   } else {
     if (v0 >= 0) {
-      // We're not heading towards the intercept, so
+      // We're heading away from the intercept, so
       // accelerate towards the intercept point.
       a = -maxA;
     } else {
@@ -97,9 +97,9 @@ Spring.getLandingAccel = function(p0, v0, maxA, pulsePeriod) {
       // When will velocity equal zero if we decelerate hard?
       var t = -v0 / maxA;
       // At what pos will vel hit 0?
-      var p = 0.5 * maxA * t * t + v0 * t + p0;
+      var p = 0.5 * maxA * t * t  + v0 * t + p0;
       if (p < 0) {
-        // We'll pass the intercept point, so got ahead and decelerate hard.
+        // We'll pass the intercept point, so go ahead and decelerate hard.
         a = maxA;
       } else {
         // v=0 before hitting intercept, so

@@ -48,8 +48,22 @@ addTest(function testGetLandingAccelPreventsOvershoot() {
   assertEquals(-5, Spring.getLandingAccel(10, 0, 100, 2));
   assertEquals(5, Spring.getLandingAccel(-10, 0, 100, 2));
 
+  assertEquals(-6, Spring.getLandingAccel(10, 1, 100, 2));
+  assertEquals(6, Spring.getLandingAccel(-10, -1, 100, 2));
+
   assertEquals(-5.5, Spring.getLandingAccel(11, 0, 100, 2));
   assertEquals(4.5, Spring.getLandingAccel(-9, 0, 100, 2));
+});
+
+addTest(function testGetLandingAccelPreventsOvershootFlipped() {
+  assertEquals(5, Spring.getLandingAccel(-10, 0, 100, 2));
+  assertEquals(-5, Spring.getLandingAccel(10, 0, 100, 2));
+
+  assertEquals(6, Spring.getLandingAccel(-10, -1, 100, 2));
+  assertEquals(-6, Spring.getLandingAccel(10, 1, 100, 2));
+
+  assertEquals(5.5, Spring.getLandingAccel(-11, 0, 100, 2));
+  assertEquals(-4.5, Spring.getLandingAccel(9, 0, 100, 2));
 });
 
 </script>

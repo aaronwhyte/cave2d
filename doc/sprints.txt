@@ -326,15 +326,17 @@ Nigh-perfect acceleration and damping?
 v math thingy
   v stick it in Spring
   v unit test
-- floppy grip
-  - maintain dist
-  - dist damping
-  - yes try to aim target away from player if aimable
+v floppy grip
+  v maintain dist
+  x dist damping
 - stiff grip
   - maintain relative position/angle too (don't use player edge torque though)
+- give everything the same basic friction
+- aimables try to aim target away from player if aimable
+
 - seeking
   - a simple large rayscan for holding
-  -
+  - fire stream of attractor orbs
 - more ejecting
   - use a stiff grip during eject warmup, for aim (but don't mess up drop)
   - graphics indicator
