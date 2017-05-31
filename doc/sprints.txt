@@ -312,7 +312,7 @@ v repelling
   v a lengthening, narrowing beam, not long-lived. Timing and aim matter.
   x better physics code. Don't re-use dampened spring function.
 
-Test45 redo: tractor beams again
+Test45 redo: tractor beams II, again
 Nigh-perfect acceleration and damping?
 * attractor-bullet stream
 * repulsor-bullet shotgun
@@ -329,20 +329,18 @@ v math thingy
 v floppy grip
   v maintain dist
   x dist damping
-- stiff grip
-  - maintain relative position/angle too (don't use player edge torque though)
+v stiff grip
+  v remember angle where grip stiffened
+  v maintain it
 - give everything the same basic friction
-- aimables try to aim target away from player if aimable
-
 - seeking
   - a simple large rayscan for holding
   - fire stream of attractor orbs
 - more ejecting
   - use a stiff grip during eject warmup, for aim (but don't mess up drop)
   - graphics indicator
+- aimables try to aim target away from player if aimable
 
-- triggering
-  - help object gets constant stream of triggerUp, triggerDown events
 
 - Critters
   - Critters sleep by default.

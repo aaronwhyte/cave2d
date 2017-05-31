@@ -64,7 +64,7 @@ PlayerSpirit.SEEKSCAN_RAD = 0.01;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 6;
 
 PlayerSpirit.TRACTOR_MAX_ACCEL = 1;
-PlayerSpirit.TRACTOR_MAX_FORCE = 5;
+PlayerSpirit.TRACTOR_MAX_FORCE = 0.5;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -252,14 +252,7 @@ PlayerSpirit.prototype.handleInput = function() {
   var targetBody = this.getTargetBody();
   this.angleLocked = targetBody && b2 && !b1;
   if (!oldAngleLocked && this.angleLocked) {
-    // begin angle lock
-    if (this.getTargetBody() === oldTargetBody) {
-      // locked angle with an old target
-      this.destAngle = this.getBodyAngPos();
-    } else {
-      // locked angle on a brand new target
-      this.destAngle = Math.atan2(this.destAim.x, this.destAim.y);
-    }
+    this.destAngle = this.getAngleToTarget();
   }
 
   ////////////
@@ -300,6 +293,15 @@ PlayerSpirit.prototype.handleInput = function() {
       stick.scale(stickScale);
     }
   }
+};
+
+PlayerSpirit.prototype.getAngleToTarget = function() {
+  var playerPos = this.getBodyPos();
+  var targetPos = this.getTargetBody().getPosAtTime(this.now(), Vec2d.alloc());
+  var p = targetPos.subtract(playerPos);
+  var angle = Math.atan2(p.x, p.y);
+  targetPos.free();
+  return angle;
 };
 
 PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reverseness) {
@@ -506,57 +508,70 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
  */
 PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
   var now = this.now();
-  var playerBasePos = this.getBodyPos();
-  var targetBasePos = targetBody.getPosAtTime(now, Vec2d.alloc());
+  var playerPos = this.getBodyPos();
+  var targetPos = targetBody.getPosAtTime(now, Vec2d.alloc());
   var targetRad = targetBody.shape === Body.Shape.CIRCLE ? targetBody.rad : 1;
 
   // break beam if there's something in the way for a length of time
-  var scanVel = this.vec2d.set(targetBasePos).subtract(playerBasePos);
+  var scanVel = this.vec2d.set(targetPos).subtract(playerPos);
   scanVel.scaleToLength(scanVel.magnitude() - targetRad);
-  var result = this.scanWithVel(HitGroups.PLAYER_SCAN, playerBasePos, scanVel, 0.01);
-  this.screen.addTractorSeekSplash(playerBasePos, scanVel, 0.2 + 0.3 * this.tractorForceFrac, result, this.color);
+  var result = this.scanWithVel(HitGroups.PLAYER_SCAN, playerPos, scanVel, 0.01);
+  this.screen.addTractorSeekSplash(playerPos, scanVel, 0.2 + 0.3 * this.tractorForceFrac, result, this.color);
   if (result >= 0 && result < 0.9) {
     this.obstructionCount++;
     if (this.obstructionCount > PlayerSpirit.MAX_OBSTRUCTION_COUNT) {
       this.breakBeam();
-      targetBasePos.free();
+      targetPos.free();
       return;
     }
   } else {
     this.obstructionCount = 0;
   }
-
-  // var playerOffsetUnit = Vec2d.alloc(0, 1).rot(playerBody.getAngPosAtTime(now));
-  // var targetOffsetUnit = Vec2d.alloc().set(this.targetBeamDir).scaleToLength(-1).rot(targetBody.getAngPosAtTime(now));
   var forceMagSum = 0;
-  var targetInRange = true;
 
   // Weaken obstructed beams.
   // Unobstructedness is from 1 (not obstructed) to 0 (totally obstructed)
   var unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
 
-  var deltaPos = Vec2d.alloc().set(targetBasePos).subtract(playerBasePos);
-  var deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
-
-  var deltaPosUnit = this.vec2d.set(deltaPos).scaleToLength(1);
-  var v0 = this.vec2d2.set(deltaVel).dot(deltaPosUnit);
-
-  var maxA = 0.15 * unobstructedness;
+  var deltaPos = Vec2d.alloc().set(targetPos).subtract(playerPos);
   var surfaceDist = deltaPos.magnitude() - playerBody.rad - targetRad;
   var p0 = surfaceDist - PlayerSpirit.TRACTOR_HOLD_DIST;
-  var pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
-  // var forceMag = Math.min(targetBody.mass * pushAccelMag, PlayerSpirit.TRACTOR_MAX_FORCE);
-  targetBody.addVelAtTime(deltaPos.scaleToLength(pushAccelMag), now);
-  // playerBody.addVelAtTime(deltaPos.scaleToLength(forceMag / playerBody.mass).scale(-0.01), now);
 
-  if (!targetInRange) {
+  var deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
+  var v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(1));
+
+  var maxA = Math.min(PlayerSpirit.TRACTOR_MAX_ACCEL, PlayerSpirit.TRACTOR_MAX_FORCE / targetBody.mass) * unobstructedness;
+  if (p0 >= PlayerSpirit.TRACTOR_BREAK_DIST) {
     this.breakBeam();
   } else {
+    if (p0 > 0) {
+      maxA *= Math.max(0, 1 - p0 / PlayerSpirit.TRACTOR_BREAK_DIST);
+    }
+    var pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+    var forceMag = Math.max(-PlayerSpirit.TRACTOR_MAX_FORCE, Math.min(targetBody.mass * pushAccelMag, PlayerSpirit.TRACTOR_MAX_FORCE));
+    forceMagSum += forceMag;
+    var playerForceProportion = 0.5;
+    targetBody.addVelAtTime(this.vec2d.set(deltaPos).scaleToLength((1 - playerForceProportion) * forceMag / targetBody.mass), now);
+    playerBody.addVelAtTime(this.vec2d.set(deltaPos).scaleToLength(-playerForceProportion * forceMag / playerBody.mass), now);
+
+    if (this.angleLocked) {
+      p0 = Math.atan2(deltaPos.x, deltaPos.y) - this.destAngle;
+      while (p0 < -Math.PI) p0 += 2*Math.PI;
+      while (p0 > Math.PI) p0 -= 2*Math.PI;
+
+      v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(-1).rot90Right());
+
+      var turnAccelMag = -Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+      var turnForceMag = Math.max(-PlayerSpirit.TRACTOR_MAX_FORCE, Math.min(targetBody.mass * turnAccelMag, PlayerSpirit.TRACTOR_MAX_FORCE));
+      targetBody.addVelAtTime(this.vec2d.set(deltaPos).rot90Right().scaleToLength((1 - playerForceProportion) * turnForceMag / targetBody.mass), now);
+      playerBody.addVelAtTime(this.vec2d.set(deltaPos).rot90Right().scaleToLength(-playerForceProportion * turnForceMag / playerBody.mass), now);
+    }
+
     this.tractorForceFrac = forceMagSum / PlayerSpirit.TRACTOR_MAX_FORCE;
   }
   deltaPos.free();
   deltaVel.free();
-  targetBasePos.free();
+  targetPos.free();
 };
 
 
