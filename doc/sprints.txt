@@ -332,6 +332,8 @@ v floppy grip
 v stiff grip
   v remember angle where grip stiffened
   v maintain it
+v draw beam
+- aim towards target object
 - give everything the same basic friction
 - seeking
   - a simple large rayscan for holding
