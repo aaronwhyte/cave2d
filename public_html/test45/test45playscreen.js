@@ -300,9 +300,9 @@ Test45PlayScreen.prototype.playerSpawn = function(slot) {
   slot.lastSpiritId = spiritId;
   var spirit = this.world.spirits[spiritId];
   spirit.setSlot(slot);
-  var r = 1.1 - 0.6 * Math.random();
-  var g = 1 - 0.8 * Math.random();
-  var b = 1 - 0.9 * Math.random();
+  var r = 1 - 0.5 * Math.random();
+  var g = 1 - 0.5 * Math.random();
+  var b = 1 - 0.5 * Math.random();
   spirit.setColorRGB(r, g, b);
   this.playerSpirits.push(spirit);
 
