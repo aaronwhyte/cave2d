@@ -91,7 +91,7 @@ Matrix44.prototype.toTranslateXYZAndScaleXYZOp = function(tx, ty, tz, sx, sy, sz
 };
 
 
-Matrix44.prototype.toSheerZOpXY = function(x, y) {
+Matrix44.prototype.toShearZOpXY = function(x, y) {
   this.toIdentity();
   this.m[2] = x;
   this.m[6] = y;

@@ -570,7 +570,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-      .multiply(this.mat44.toSheerZOpXY(-this.aim.x, -this.aim.y))
+      .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(this.now())));
   renderer
       .setStamp(this.modelStamp)
