@@ -47,7 +47,7 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.PLAYER_RAD = 1;
 
 PlayerSpirit.SPEED = 1;
-PlayerSpirit.TRACTION = 0.2;
+PlayerSpirit.TRACTION = 0.15;
 PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 0.25;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -59,14 +59,14 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 PlayerSpirit.TRACTOR_HOLD_DIST = PlayerSpirit.PLAYER_RAD * 1.2;
 
 // dist from player surface to held obj surface
-PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.TRACTOR_HOLD_DIST * 2;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.TRACTOR_HOLD_DIST * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
 // dist from player surface
-PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_HOLD_DIST;
 
-PlayerSpirit.TRACTOR_MAX_ACCEL = 2;
-PlayerSpirit.TRACTOR_MAX_FORCE = 1;
+PlayerSpirit.TRACTOR_MAX_ACCEL = 0.9;
+PlayerSpirit.TRACTOR_MAX_FORCE = 0.5;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -561,19 +561,18 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
   var deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
   var v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(1));
 
-  var maxA = Math.min(PlayerSpirit.TRACTOR_MAX_ACCEL, PlayerSpirit.TRACTOR_MAX_FORCE / targetBody.mass) * unobstructedness;
+  var maxA = PlayerSpirit.TRACTOR_MAX_ACCEL * unobstructedness;
   if (p0 >= PlayerSpirit.TRACTOR_BREAK_DIST) {
     this.breakBeam();
   } else {
-    if (p0 > 1) {
-      maxA *= 1/Math.pow(p0, 2);
-    }
-    var pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
-    var forceMag = Math.max(-PlayerSpirit.TRACTOR_MAX_FORCE, Math.min(targetBody.mass * pushAccelMag, PlayerSpirit.TRACTOR_MAX_FORCE));
-    forceMagSum += Math.abs(forceMag);
     var playerForceProportion = 0.5;
+    var pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+    var f = targetBody.mass * pushAccelMag;
+    var forceMag = Math.max(-PlayerSpirit.TRACTOR_MAX_FORCE, Math.min(f, PlayerSpirit.TRACTOR_MAX_FORCE));
     targetBody.addVelAtTime(this.vec2d.set(deltaPos).scaleToLength((1 - playerForceProportion) * forceMag / targetBody.mass), now);
     playerBody.addVelAtTime(this.vec2d.set(deltaPos).scaleToLength(-playerForceProportion * forceMag / playerBody.mass), now);
+
+    forceMagSum += Math.abs(forceMag);
 
     // Angle lock?
     if (this.angleLocked) {
@@ -583,8 +582,9 @@ PlayerSpirit.prototype.handleTractorBeam = function(playerBody, targetBody) {
 
       v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(-1).rot90Right());
 
-      var turnAccelMag = -Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
-      var turnForceMag = Math.max(-PlayerSpirit.TRACTOR_MAX_FORCE, Math.min(targetBody.mass * turnAccelMag, PlayerSpirit.TRACTOR_MAX_FORCE));
+      var turnAccelMag = -Spring.getLandingAccel(p0, v0, maxA/2, PlayerSpirit.FRICTION_TIMEOUT);
+      var f = Math.min(targetBody.mass, playerBody.mass) * turnAccelMag;
+      var turnForceMag = Math.max(-PlayerSpirit.TRACTOR_MAX_FORCE, Math.min(f, PlayerSpirit.TRACTOR_MAX_FORCE));
       forceMagSum += Math.abs(turnForceMag);
       targetBody.addVelAtTime(this.vec2d.set(deltaPos).rot90Right().scaleToLength((1 - playerForceProportion) * turnForceMag / targetBody.mass), now);
       playerBody.addVelAtTime(this.vec2d.set(deltaPos).rot90Right().scaleToLength(-playerForceProportion * turnForceMag / playerBody.mass), now);

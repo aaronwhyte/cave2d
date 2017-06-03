@@ -66,7 +66,7 @@ RockSpirit.factory = function(screen, stamp, pos, dir) {
   var spirit = new RockSpirit(screen);
   spirit.setModelStamp(stamp);
   spirit.setColorRGB(0.7, 0.7, 0.8);
-  var density = 8;
+  var density = 3;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;

@@ -67,7 +67,7 @@ BallSpirit.factory = function(screen, stamp, pos, dir) {
 
   var spirit = new BallSpirit(screen);
   spirit.setModelStamp(stamp);
-  var density = 0.5;
+  var density = 0.2;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
