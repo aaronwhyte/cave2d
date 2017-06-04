@@ -63,7 +63,7 @@ PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.TRACTOR_HOLD_DIST * 4;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
 // dist from player surface
-PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_HOLD_DIST;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_HOLD_DIST * 2;
 
 PlayerSpirit.TRACTOR_MAX_ACCEL = 1;
 PlayerSpirit.TRACTOR_MAX_FORCE = 1;
