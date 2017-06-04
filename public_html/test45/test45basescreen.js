@@ -332,7 +332,7 @@ Test45BaseScreen.prototype.addTractorSeekSplash = function (pos, vel, rad, dist,
   s.reset(Test45BaseScreen.SplashType.SCAN, this.stamps.circleStamp);
 
   s.startTime = this.world.now;
-  s.duration = 2;
+  s.duration = 1 + Math.random();
 
   var x = pos.x;
   var y = pos.y;
