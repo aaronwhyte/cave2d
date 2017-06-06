@@ -28,7 +28,8 @@ Test45PlayScreen.prototype.constructor = Test45PlayScreen;
 Test45PlayScreen.ANT_RAD = 1.2;
 
 Test45PlayScreen.RESPAWN_TIMEOUT = 30;
-Test45PlayScreen.PLAYER_VIEW_RADIUS = 30;
+Test45PlayScreen.PLAYER_VIEW_RADIUS = 40;
+Test45PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
 
 Test45PlayScreen.prototype.updateHudLayout = function() {
   this.canvasCuboid.setToCanvas(this.canvas);
@@ -446,7 +447,7 @@ Test45PlayScreen.prototype.positionCamera = function() {
       this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
     }
   }
-  var pad = Test45PlayScreen.PLAYER_VIEW_RADIUS * 0.7;
+  var pad = Test45PlayScreen.PLAYER_VIEW_RADIUS * Test45PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC;
   this.viewableWorldRect.padXY(pad, pad);
 
   var destPixelsPerMeter = Math.min(

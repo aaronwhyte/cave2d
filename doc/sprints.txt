@@ -333,15 +333,14 @@ v stiff grip
   v remember angle where grip stiffened
   v maintain it
 v draw beam
-- aim towards target object
-- give everything the same basic friction
-- seeking
-  - a simple large rayscan for holding
-  - fire stream of attractor orbs
-- more ejecting
-  - use a stiff grip during eject warmup, for aim (but don't mess up drop)
-  - graphics indicator
-- aimables try to aim target away from player if aimable
+x aim towards target object
+x give everything the same basic friction
+v seeking
+  v a simple large rayscan for holding
+  x fire stream of attractor orbs
+x repelling
+  x fire blast of repeller orbs
+x aimables try to aim target away from player if aimable
 
 
 - Critters
