@@ -46,8 +46,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 1;
 
-PlayerSpirit.SPEED = 0.7;
-PlayerSpirit.TRACTION = 0.2;
+PlayerSpirit.SPEED = 1;
+PlayerSpirit.TRACTION = 0.3;
 PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 0.25;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -66,7 +66,7 @@ PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_HOLD_DIST * 2;
 
 PlayerSpirit.TRACTOR_MAX_ACCEL = 1;
-PlayerSpirit.TRACTOR_MAX_FORCE = 1;
+PlayerSpirit.TRACTOR_MAX_FORCE = 1.7;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
