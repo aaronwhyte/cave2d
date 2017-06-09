@@ -333,14 +333,36 @@ v stiff grip
   v remember angle where grip stiffened
   v maintain it
 v draw beam
-x aim towards target object
-x give everything the same basic friction
-v seeking
-  v a simple large rayscan for holding
-  x fire stream of attractor orbs
-x repelling
-  x fire blast of repeller orbs
-x aimables try to aim target away from player if aimable
+v seeking- a simple large rayscan for holding
+v auto-aim in player movement direction in nice stable way
+
+WHOA, GREAT NEW IDEA
+- new BeamState vals - states that occupy time - not just events
+  v off
+  v seeking - trying to get to 'dragging'
+  v dragging - next steps are 'off' or 'wielding'
+  v wielding
+  - activating
+  - ejecting - going from wielding to either dragging or a throw, depending on length of hold?
+               Clever because the hold is always present, since a "drop" requires a key-up and a second key-down.
+v events
+  v startSeek: off b2d
+  v stopSeek: seeking b2u
+  v capture: seeking caught! dragging
+  v drop: dragging b1d
+  v wield: dragging b2d
+  v beginEject: (wielding|activating) b1d
+    v unwield b1u quickly
+    - throw b1u slowly
+    x cancel b2d -> wield
+  - activate: wield b2d
+  - deactivate: activating b2u
+  v beam break: (drag|wield|eject|activate) obstructed! off
+
+
+
+
+
 
 
 - Critters
