@@ -431,33 +431,6 @@ PlayerSpirit.prototype.breakBeam = function() {
   this.beamState = BeamState.OFF;
 };
 
-PlayerSpirit.prototype.handleEjecting = function() {
-  this.handleWielding();
-};
-
-PlayerSpirit.prototype.eject = function() {
-  var targetBody = this.getTargetBody();
-  if (targetBody) {
-    // TODO: ejection force
-    // this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
-    // this.aim.set(this.destAim);
-
-    // var ejectFraction = (this.now() - this.ejectStartTime) / PlayerSpirit.EJECT_TIME;
-    // ejectFraction = Math.min(1, Math.max(0, ejectFraction * 2 - 1));
-    // // if (ejectFraction) {
-    //   Spring.applyDampenedSpring(this.getBody(), this.getGripWorldPos(targetBody), targetBody, this.getHitchWorldPos(),
-    //       PlayerSpirit.TRACTOR_BREAK_DIST, -PlayerSpirit.TRACTOR_EJECT_FORCE * ejectFraction, 0,
-    //       PlayerSpirit.TRACTOR_MAX_FORCE * 20, PlayerSpirit.TRACTOR_BREAK_DIST * 10,
-    //       this.now());
-    // }
-  }
-  this.beamState = BeamState.OFF;
-  this.targetBodyId = 0;
-};
-
-PlayerSpirit.prototype.repel = function() {
-};
-
 PlayerSpirit.prototype.handleSeeking = function() {
   var bestBody = null;
   var bestResultFraction = 2;
@@ -509,6 +482,20 @@ PlayerSpirit.prototype.handleDragging = function() {
 PlayerSpirit.prototype.handleWielding = function() {
   this.handleBeamForce(PlayerSpirit.TRACTOR_WIELD_DIST, PlayerSpirit.TRACTOR_MAX_ACCEL, PlayerSpirit.TRACTOR_MAX_FORCE,
       true, this.destAim.angle());
+};
+
+PlayerSpirit.prototype.handleEjecting = function() {
+  this.handleWielding();
+};
+
+PlayerSpirit.prototype.eject = function() {
+  var targetBody = this.getTargetBody();
+  if (targetBody) {
+    this.handleBeamForce(PlayerSpirit.TRACTOR_BREAK_DIST, PlayerSpirit.EJECT_MAX_ACCEL, PlayerSpirit.EJECT_MAX_FORCE,
+        false);
+  }
+  this.beamState = BeamState.OFF;
+  this.targetBodyId = 0;
 };
 
 PlayerSpirit.prototype.handleBeamForce = function(targetDist, maxAccel, maxForce, isAngular, targetAngle) {

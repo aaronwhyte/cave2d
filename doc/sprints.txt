@@ -342,9 +342,11 @@ WHOA, GREAT NEW IDEA
   v seeking - trying to get to 'dragging'
   v dragging - next steps are 'off' or 'wielding'
   v wielding
-  - activating
-  - ejecting - going from wielding to either dragging or a throw, depending on length of hold?
+  v ejecting - going from wielding to either dragging or a throw, depending on length of hold?
                Clever because the hold is always present, since a "drop" requires a key-up and a second key-down.
+  - activating
+    - lasergun
+    - shotgun
 v events
   v startSeek: off b2d
   v stopSeek: seeking b2u
