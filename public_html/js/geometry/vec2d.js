@@ -133,6 +133,13 @@ Vec2d.prototype.sign = function() {
   return this;
 };
 
+/**
+ * @returns {number} up is 0, right is PI/2
+ */
+Vec2d.prototype.angle = function() {
+  return Math.atan2(this.x, this.y);
+};
+
 Vec2d.prototype.rot90Right = function() {
   var tmp = this.x;
   this.x = -this.y;
