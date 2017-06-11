@@ -98,7 +98,7 @@ RockSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody();
   var pos = this.getBodyPos();
 
-  var friction = 0.01;
+  var friction = 0.05;
   var now = this.now();
   var time = Math.max(0, Math.min(RockSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
   this.lastControlTime = now;

@@ -44,7 +44,7 @@ PlayerSpirit.PLAYER_RAD = 1;
 
 PlayerSpirit.SPEED = 1.3;
 PlayerSpirit.TRACTION = 0.1;
-PlayerSpirit.FRICTION = 0.1;
+PlayerSpirit.FRICTION = 0.03;
 PlayerSpirit.FRICTION_TIMEOUT = 0.25;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
@@ -56,14 +56,14 @@ PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD;
 PlayerSpirit.TRACTOR_WIELD_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
 
 // dist from player surface to held obj surface
-PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 8;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
 // dist from player surface
 PlayerSpirit.SEEKSCAN_DIST = (PlayerSpirit.TRACTOR_DRAG_DIST + PlayerSpirit.TRACTOR_BREAK_DIST) / 2;
 
 PlayerSpirit.TRACTOR_MAX_ACCEL = 1;
-PlayerSpirit.TRACTOR_MAX_FORCE = 1.5;
+PlayerSpirit.TRACTOR_MAX_FORCE = 0.5;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -314,7 +314,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
       } else if (this.beamState === BeamState.WIELDING) {
         this.handleWielding();
       } else if (this.beamState === BeamState.ACTIVATING) {
-        //this.handleActivating();
+        this.handleActivating();
       } else if (this.beamState === BeamState.EJECTING) {
         this.handleEjecting();
       }
@@ -498,7 +498,7 @@ PlayerSpirit.prototype.eject = function() {
   this.targetBodyId = 0;
 };
 
-PlayerSpirit.prototype.handleBeamForce = function(targetDist, maxAccel, maxForce, isAngular, targetAngle) {
+PlayerSpirit.prototype.handleBeamForce = function(restingDist, maxAccel, maxForce, isAngular, restingAngle) {
   var playerBody = this.getBody();
   var targetBody = this.getTargetBody();
   var now = this.now();
@@ -529,12 +529,12 @@ PlayerSpirit.prototype.handleBeamForce = function(targetDist, maxAccel, maxForce
 
   var deltaPos = Vec2d.alloc().set(targetPos).subtract(playerPos);
   var surfaceDist = deltaPos.magnitude() - playerBody.rad - targetRad;
-  var p0 = surfaceDist - targetDist;
+  var p0 = surfaceDist - restingDist;
 
   var deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
   var v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(1));
 
-  var maxA = maxAccel * unobstructedness * Math.abs(p0);
+  var maxA = maxAccel * unobstructedness * Math.abs(p0/restingDist);
   var forceMagSum = 0;
   if (p0 >= PlayerSpirit.TRACTOR_BREAK_DIST) {
     this.breakBeam();
@@ -548,7 +548,7 @@ PlayerSpirit.prototype.handleBeamForce = function(targetDist, maxAccel, maxForce
     playerForce.set(deltaPos).scaleToLength((-playerForceProportion) * forceMag);
 
     if (isAngular) {
-      p0 = deltaPos.angle() - targetAngle;
+      p0 = deltaPos.angle() - restingAngle;
       maxA = maxAccel * unobstructedness * (Math.min(Math.abs(p0), Math.PI / 4));
       while (p0 < -Math.PI) p0 += 2 * Math.PI;
       while (p0 > Math.PI) p0 -= 2 * Math.PI;

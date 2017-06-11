@@ -337,16 +337,32 @@ v seeking- a simple large rayscan for holding
 v auto-aim in player movement direction in nice stable way
 
 WHOA, GREAT NEW IDEA
-- new BeamState vals - states that occupy time - not just events
+v new BeamState vals - states that occupy time - not just events
   v off
   v seeking - trying to get to 'dragging'
   v dragging - next steps are 'off' or 'wielding'
   v wielding
   v ejecting - going from wielding to either dragging or a throw, depending on length of hold?
                Clever because the hold is always present, since a "drop" requires a key-up and a second key-down.
-  - activating
-    - lasergun
-    - shotgun
+  v activating
+
+- test tools
+  * swinging in a circle is an important gesture!
+  * dragging vs wielding vs activating: distinct tool behaviors
+  - mining tool
+  - shield & beam
+  - flail & shotgun
+  - gas & spark
+  - speed beast - runs in circles (dragging) or pulls player (wielding). Activate spurs it.
+  - "activate" to toggle robot's modes?
+
+
+- wearables!
+  - activate to don
+    - if already wearing, swap old wearable with wielded one.
+      - or stack if stackable?
+  - empty kick to doff
+
 v events
   v startSeek: off b2d
   v stopSeek: seeking b2u
@@ -355,7 +371,7 @@ v events
   v wield: dragging b2d
   v beginEject: (wielding|activating) b1d
     v unwield b1u quickly
-    - throw b1u slowly
+    v throw b1u slowly
     x cancel b2d -> wield
   - activate: wield b2d
   - deactivate: activating b2u
