@@ -52,18 +52,19 @@ PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface to held obj surface
+PlayerSpirit.TRACTOR_MAX_ACCEL = 1.8;
+PlayerSpirit.TRACTOR_MAX_FORCE = 0.4;
 PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD;
-PlayerSpirit.TRACTOR_WIELD_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
-
-// dist from player surface to held obj surface
-PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 8;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 12;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
 // dist from player surface
-PlayerSpirit.SEEKSCAN_DIST = (PlayerSpirit.TRACTOR_DRAG_DIST + PlayerSpirit.TRACTOR_BREAK_DIST) / 2;
+PlayerSpirit.SEEKSCAN_DIST = Math.min(PlayerSpirit.TRACTOR_DRAG_DIST * 3, PlayerSpirit.TRACTOR_BREAK_DIST);
 
-PlayerSpirit.TRACTOR_MAX_ACCEL = 1;
-PlayerSpirit.TRACTOR_MAX_FORCE = 0.5;
+PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL;
+PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
+PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -74,7 +75,7 @@ PlayerSpirit.ANGULAR_FRICTION = 0.4;
 
 PlayerSpirit.EJECT_TIME = 5;
 PlayerSpirit.EJECT_MAX_ACCEL = 3;
-PlayerSpirit.EJECT_MAX_FORCE = 6;
+PlayerSpirit.EJECT_MAX_FORCE = 8;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -471,7 +472,8 @@ PlayerSpirit.prototype.handleSeeking = function() {
  * Also sets the tractorForceFrac field, for drawing.
  */
 PlayerSpirit.prototype.handleDragging = function() {
-  this.handleBeamForce(PlayerSpirit.TRACTOR_DRAG_DIST, PlayerSpirit.TRACTOR_MAX_ACCEL, PlayerSpirit.TRACTOR_MAX_FORCE,
+  this.handleBeamForce(PlayerSpirit.TRACTOR_DRAG_DIST, PlayerSpirit.TRACTOR_BREAK_DIST,
+      PlayerSpirit.TRACTOR_MAX_ACCEL, PlayerSpirit.TRACTOR_MAX_FORCE,
       false);
 };
 
@@ -480,7 +482,8 @@ PlayerSpirit.prototype.handleDragging = function() {
  * Also sets the tractorForceFrac field, for drawing.
  */
 PlayerSpirit.prototype.handleWielding = function() {
-  this.handleBeamForce(PlayerSpirit.TRACTOR_WIELD_DIST, PlayerSpirit.TRACTOR_MAX_ACCEL, PlayerSpirit.TRACTOR_MAX_FORCE,
+  this.handleBeamForce(PlayerSpirit.WIELD_REST_DIST, PlayerSpirit.WIELD_BREAK_DIST,
+      PlayerSpirit.WIELD_MAX_ACCEL, PlayerSpirit.WIELD_MAX_FORCE,
       true, this.destAim.angle());
 };
 
@@ -491,14 +494,15 @@ PlayerSpirit.prototype.handleEjecting = function() {
 PlayerSpirit.prototype.eject = function() {
   var targetBody = this.getTargetBody();
   if (targetBody) {
-    this.handleBeamForce(PlayerSpirit.TRACTOR_BREAK_DIST, PlayerSpirit.EJECT_MAX_ACCEL, PlayerSpirit.EJECT_MAX_FORCE,
+    this.handleBeamForce(PlayerSpirit.TRACTOR_BREAK_DIST, PlayerSpirit.TRACTOR_BREAK_DIST,
+        PlayerSpirit.EJECT_MAX_ACCEL, PlayerSpirit.EJECT_MAX_FORCE,
         false);
   }
   this.beamState = BeamState.OFF;
   this.targetBodyId = 0;
 };
 
-PlayerSpirit.prototype.handleBeamForce = function(restingDist, maxAccel, maxForce, isAngular, restingAngle) {
+PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAccel, maxForce, isAngular, restingAngle) {
   var playerBody = this.getBody();
   var targetBody = this.getTargetBody();
   var now = this.now();
@@ -534,9 +538,9 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, maxAccel, maxForc
   var deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
   var v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(1));
 
-  var maxA = maxAccel * unobstructedness * Math.abs(p0/restingDist);
+  var maxA = maxAccel * unobstructedness * Math.abs(p0 * p0 / (restingDist * restingDist));
   var forceMagSum = 0;
-  if (p0 >= PlayerSpirit.TRACTOR_BREAK_DIST) {
+  if (p0 >= breakDist) {
     this.breakBeam();
   } else {
     var playerForce = Vec2d.alloc();
@@ -549,7 +553,7 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, maxAccel, maxForc
 
     if (isAngular) {
       p0 = deltaPos.angle() - restingAngle;
-      maxA = maxAccel * unobstructedness * (Math.min(Math.abs(p0), Math.PI / 4));
+      maxA = maxAccel * (Math.min(Math.abs(p0), Math.PI / 4)) * 0.5;
       while (p0 < -Math.PI) p0 += 2 * Math.PI;
       while (p0 > Math.PI) p0 -= 2 * Math.PI;
 
