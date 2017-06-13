@@ -220,6 +220,7 @@ PlayerSpirit.prototype.handleInput = function() {
     if (kickDown) {
       this.breakBeam();
     } else if (grabDown) {
+      this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
       this.beamState = BeamState.WIELDING;
     }
   } else if (this.beamState === BeamState.WIELDING) {
