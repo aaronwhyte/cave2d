@@ -505,7 +505,7 @@ PlayerSpirit.prototype.respawn = function() {
   var startRad = body.rad * 2;
   var endRad = body.rad * 8;
 
-  s.startPose.pos.setXYZ(x, y, 1);
+  s.startPose.pos.setXYZ(x, y, -0.5);
   s.endPose.pos.setXYZ(x, y, 1);
   s.startPose.scale.setXYZ(0, 0, 1);
   s.endPose.scale.setXYZ(endRad, endRad, 1);
