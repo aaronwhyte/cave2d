@@ -1,0 +1,113 @@
+
+More refactoring...
+- Inject collider info into baseScreen from pages, instead of using "createXXX" overrides?
+- World API
+  - move body/spirit query stuff from basescreens to World
+  - give Editor access to World, to remove a lot of editor->screen->world call routing??
+
+chain constraints
+Simple distance between two body positions - no offset from center, because rotation would make that harder...
+Or allow off-center chain points, but only for short chains that never bend more than 90 degrees. Then
+approximate angular motion as linear motion and solve for constraint-violation time that way. Guaranteed to remain
+in-bounds, I think.
+- jack data
+- jack rendering
+- link data
+- link rendering
+- editor
+  - jack hover indicators
+  - link-creation button
+    - link type determined by jack type
+  - link hover indicators
+  - link deletion
+
+World.processNextEvent fix
+- fix all world.processNextEvent calls to not reference a freed event! Also maybe reset on free, not on alloc.
+
+
+Bézier curves for sparks would be cool
+
+Bendy lines?
+Today models have vertex groups, up to two of them. Expand that to about 10, in an array format.
+
+
+
+EDITOR 3
+
+Zoom
+- two-touch pinch/unpinch?
+- mouse onscroll, like Vorp
+- keys, maybe "[" and "]" or "," and "."
+- Touching the zoom indicator buttons zooms to that level Maybe four: close, medium, wide, far.
+
+Layers
+Mode switch between Terrain, Objects, and (soon) Snap
+Things in common:
+* add/fill and remove/dig
+* position/clear pin (soon)
+* menu for add
+* cursor helps preview stuff
+This'll simplify keyboard and touch button logiclayout
+
+Pin
+One button will position pin at the cursor, or clear it if you're close enough to it. So if you're not close,
+double-tap will end up clearing it. The presence and position of the pin changes many actions you do,
+like a shift key with coordinates.
+Dig-line, fill-line, add (orientation), scale scalable objects, spin unscalable objects about a fixed point...
+Later it can be used for creating links and chains
+
+Snap
+All objects can have snap-points that snap the cursor to them when close enough.
+- Give all objects a snap-point in their centers, to make dragging w/o rotation easy.
+- make snap points snap things, duh.
+Snappers are world objects that only appear when editing, that are studded with snap points.
+Since snappers often overlap with objects (no collisions!) there needs to be a way to separate grab-targets...
+* separate "grab" for snappers and other objects?
+* move overlapping points apart when the cursor is near more than one? Maybe with Z-shear effect?
+  * I don't like targets that move when you hover.
+  * so maybe make a deliberate z-shear
+- snap menu
+  - maybe a triangle of square grids, from 1x1 to 1x9 to 9x9
+  - also some circles with a stud in the middle and studs at the edge: 3, 5, 6 (hex grid?!), 7, 9, 12, 16, 32, 64?
+  - maybe shorter arcs too
+- top-level switch to toggle snapping on/off? I can see it getting annoying when you're doing free-form dragging.
+
+Undo/Redo UX polish
+v less crappy undo/redo button models
+  x RigidModelLineDrawer
+- save during a long change edit-gesture, like a digging drag, throttled by wall-time
+- a bunch of stuff with view rectangles? Save it for when it's zoomable?
+
+
+
+Batch rendering?
+- Add vector versions of existing uniforms?
+  -
+Add "instanceNum" attrib to each vec?
+... or extend "group" mechanism to support an array of model matrixes, and make a sweet polyline model with tons of groups??
+
+
+Test max RAF rate during pauses, to set max ms-before-bailing.
+* This is to defend against devices that don't operate at 60 FPS.
+* I can't base it on in-game performance because if code takes too long to do work, it can't tell that it should
+  have used a shorter cutoff. It just looks like the correct cutoff is one frame longer than it really is.
+
+Polygons (this will wreck my world so do at own risk)
+- physics
+  - represent segment
+  - primitive static segment vs circle collision detection
+  - represent concave polygon as complex body, lists of primitives with postion offsets
+    - segments
+    - corners
+  - util for collapsing corners and segments of multiple convex into concave polys.
+    - cull in-pointing corners
+    - cull inner segments
+- rendering
+  - divide concave poly into convex chunks
+- editing - polygrid, each tile containing N convex polys
+  - bisect op
+  - cut corner op
+  - add - leave no overlap
+  - subtract - use cut and bisect
+
+
