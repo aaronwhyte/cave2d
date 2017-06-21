@@ -260,8 +260,11 @@ WorldScreen.prototype.getResizeFn = function() {
   }
 };
 
+/**
+ * @param {boolean} listen
+ */
 WorldScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
+  if (listen === this.listening) return;
   if (listen) {
     window.addEventListener('resize', this.resizeFn);
   } else {
@@ -276,7 +279,7 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
     console.warn('drawing destroyed screen - ignoring');
     return;
   }
-  if (visibility == 1) {
+  if (visibility === 1) {
     if (this.handleInput) {
       this.handleInput();
     }

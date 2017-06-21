@@ -58,6 +58,27 @@ Events.addListenerToEvents = function(element, eventNames, fn) {
   }
 };
 
+/**
+ * Listen or unlisten, based on a boolean
+ * @param {boolean} listen
+ * @param {Element} element
+ * @param {String | Array.<String>} eventName one or more event names. Please, no arrays that contain themselves!
+ * @param {function} fn
+ */
+Events.setListening = function(listen, element, eventName, fn) {
+  if (Array.isArray(eventName)) {
+    for (var i = 0; i < eventName.length; i++) {
+      Events.setListening(listen, element, eventName[i], fn);
+    }
+  } else {
+    if (listen) {
+      element.addEventListener(eventName, fn);
+    } else {
+      element.removeEventListener(eventName, fn);
+    }
+  }
+};
+
 
 /**
  * Removes an event listener.
