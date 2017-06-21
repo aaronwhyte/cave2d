@@ -265,6 +265,14 @@ WorldScreen.prototype.getResizeFn = function() {
  */
 WorldScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
+  var list = this.listeners.getValues();
+  for (var i = 0; i < list.length; i++) {
+    if (listen) {
+      list[i].startListening();
+    } else {
+      list[i].stopListening();
+    }
+  }
   if (listen) {
     window.addEventListener('resize', this.resizeFn);
   } else {

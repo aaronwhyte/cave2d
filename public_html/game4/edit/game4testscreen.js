@@ -32,20 +32,11 @@ Game4TestScreen.prototype.updateHudLayout = function() {
 Game4TestScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
   Game4BaseScreen.prototype.setScreenListening.call(this, listen);
-
-  var list = this.listeners.getValues();
-  for (var i = 0; i < list.length; i++) {
-    if (listen) {
-      list[i].startListening();
-    } else {
-      list[i].stopListening();
-    }
-  }
-  Events.setListening(listen, document.querySelector('#fullScreenButton'), ['click', 'touchEnd'], this.fullScreenFn);
-  Events.setListening(listen, document.querySelector('#resumeButton'), ['click', 'touchEnd'], this.pauseDownFn);
+  var buttonEvents = ['click', 'touchEnd'];
+  Events.setListening(listen, document.querySelector('#fullScreenButton'), buttonEvents, this.fullScreenFn);
+  Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
   Events.setListening(listen, this.canvas, 'mousemove', this.keyTipRevealer);
   Events.setListening(listen, window, 'keydown', this.keyTipRevealer);
-  this.listening = listen;
 };
 
 Game4TestScreen.prototype.initWidgets = function() {

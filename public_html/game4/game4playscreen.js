@@ -34,54 +34,14 @@ Game4PlayScreen.prototype.updateHudLayout = function() {
 };
 
 Game4PlayScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
-  var fullScreenButton, restartButton, resumeButton, i;
+  if (listen === this.listening) return;
   Game4BaseScreen.prototype.setScreenListening.call(this, listen);
-  if (listen) {
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].startListening();
-    }
-
-    fullScreenButton = document.querySelector('#fullScreenButton');
-    fullScreenButton.addEventListener('click', this.fullScreenFn);
-    fullScreenButton.addEventListener('touchend', this.fullScreenFn);
-
-    restartButton = document.querySelector('#restartButton');
-    restartButton.addEventListener('click', this.restartFn);
-    restartButton.addEventListener('touchend', this.restartFn);
-
-    resumeButton = document.querySelector('#resumeButton');
-    resumeButton.addEventListener('click', this.pauseDownFn);
-    resumeButton.addEventListener('touchend', this.pauseDownFn);
-
-    this.canvas.addEventListener('mousemove', this.keyTipRevealer);
-    window.addEventListener('keydown', this.keyTipRevealer);
-    window.addEventListener('keydown', this.spacebarFn);
-
-  } else {
-    // TODO use ListenerTracker
-
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].stopListening();
-    }
-
-    fullScreenButton = document.querySelector('#fullScreenButton');
-    fullScreenButton.removeEventListener('click', this.fullScreenFn);
-    fullScreenButton.removeEventListener('touchend', this.fullScreenFn);
-
-    restartButton = document.querySelector('#restartButton');
-    restartButton.removeEventListener('click', this.pauseDownFn);
-    restartButton.removeEventListener('touchend', this.pauseDownFn);
-
-    resumeButton = document.querySelector('#resumeButton');
-    resumeButton.removeEventListener('click', this.pauseDownFn);
-    resumeButton.removeEventListener('touchend', this.pauseDownFn);
-
-    this.canvas.removeEventListener('mousemove', this.keyTipRevealer);
-    window.removeEventListener('keydown', this.keyTipRevealer);
-    window.removeEventListener('keydown', this.spacebarFn);
-  }
-  this.listening = listen;
+  var buttonEvents = ['click', 'touchEnd'];
+  Events.setListening(listen, document.querySelector('#fullScreenButton'), buttonEvents, this.fullScreenFn);
+  Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
+  Events.setListening(listen, document.querySelector('#restartButton'), buttonEvents, this.restartFn);
+  Events.setListening(listen, this.canvas, 'mousemove', this.keyTipRevealer);
+  Events.setListening(listen, window, 'keydown', this.keyTipRevealer);
 };
 
 Game4PlayScreen.prototype.startExit = function(x, y) {
