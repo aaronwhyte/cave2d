@@ -156,6 +156,7 @@ Test45Page.prototype.onShaderTextChange = function(vertexShaderText, fragmentSha
   this.screen = new Test45PlayScreen(this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx);
   this.screen.initWorld();
   this.screen.createDefaultWorld();
+  this.screen.configurePlayerSlots();
 
   this.requestAnimation();
 };

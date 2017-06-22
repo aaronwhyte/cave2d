@@ -66,41 +66,12 @@ Test45PlayScreen.prototype.initPauseButtons = function() {
 
 Test45PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
-  var fsb, rb, i;
   Test45BaseScreen.prototype.setScreenListening.call(this, listen);
-  if (listen) {
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].startListening();
-    }
-
-    fsb = document.querySelector('#fullScreenButton');
-    fsb.addEventListener('click', this.fullScreenFn);
-    fsb.addEventListener('touchend', this.fullScreenFn);
-
-    rb = document.querySelector('#resumeButton');
-    rb.addEventListener('click', this.pauseDownFn);
-    rb.addEventListener('touchend', this.pauseDownFn);
-
-    this.canvas.addEventListener('mousemove', this.keyTipRevealer);
-    window.addEventListener('keydown', this.keyTipRevealer);
-
-  } else {
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].stopListening();
-    }
-
-    fsb = document.querySelector('#fullScreenButton');
-    fsb.removeEventListener('click', this.fullScreenFn);
-    fsb.removeEventListener('touchend', this.fullScreenFn);
-
-    rb = document.querySelector('#resumeButton');
-    rb.removeEventListener('click', this.pauseDownFn);
-    rb.removeEventListener('touchend', this.pauseDownFn);
-
-    this.canvas.removeEventListener('mousemove', this.keyTipRevealer);
-    window.removeEventListener('keydown', this.keyTipRevealer);
-  }
-  this.listening = listen;
+  var buttonEvents = ['click', 'touchEnd'];
+  Events.setListening(listen, document.querySelector('#fullScreenButton'), buttonEvents, this.fullScreenFn);
+  Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
+  Events.setListening(listen, this.canvas, 'mousemove', this.keyTipRevealer);
+  Events.setListening(listen, window, 'keydown', this.keyTipRevealer);
 };
 
 Test45PlayScreen.prototype.createDefaultWorld = function() {
@@ -137,8 +108,6 @@ Test45PlayScreen.prototype.createDefaultWorld = function() {
   for (var r = 0; r < rocks; r+= 2) {
     this.addItem(Test45BaseScreen.MenuItem.ROCK, new Vec2d(0, 13).rot(2 * Math.PI * r / rocks), 2 * Math.PI * r / rocks);
   }
-
-  this.configurePlayerSlots();
 };
 
 Test45PlayScreen.prototype.configurePlayerSlots = function() {
@@ -530,7 +499,6 @@ Test45PlayScreen.prototype.checkPlayerAntHit = function(pair) {
 };
 
 Test45PlayScreen.prototype.killPlayerSpirit = function(spirit) {
-  var slot = spirit.slot;
   spirit.explode();
   this.sounds.playerExplode(spirit.getBodyPos());
   this.removeByBodyId(spirit.bodyId);

@@ -10,6 +10,8 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.levelName = levelName;
 
   this.camera = new Camera(0.05, 0.17, Game4BaseScreen.CAMERA_VIEW_DIST);
+  this.viewableWorldRect = new Rect();
+  this.pixelsPerMeter = 100;
 
   this.exitStartTime = 0;
   this.exitEndTime = 0;
@@ -397,14 +399,6 @@ Game4BaseScreen.prototype.addPlayer = function() {
     }
   }
   this.players.push(p);
-};
-
-Game4BaseScreen.prototype.getWallHitGroup = function() {
-  return this.getHitGroups().WALL;
-};
-
-Game4BaseScreen.prototype.getCursorHitGroup = function() {
-  return this.getHitGroups().CURSOR;
 };
 
 Game4BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {

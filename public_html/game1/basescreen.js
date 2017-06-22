@@ -78,7 +78,7 @@ BaseScreen.prototype.getResizeFn = function() {
 };
 
 BaseScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
+  if (listen === this.listening) return;
   if (listen) {
     document.body.addEventListener('mousedown', this.mouseDownFn);
     document.body.addEventListener('touchstart', this.touchStartFn);

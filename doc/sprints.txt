@@ -5,7 +5,17 @@ Game 4
 Nest
 v take over old game4
 
-- play basics
+Reduce setScreenListening redundancy
+v shrink testscreen's setScreenListening()
+v ditto for playscreen
+v repeat for all the play/test code that could use it throughout cave2d
 
+Slots
 
+Rendering
+- zoom
+- selective tile draw
+- selective spirit draw
+- shader for circle mask
 
+Entrance and Exit

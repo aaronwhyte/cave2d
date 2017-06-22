@@ -48,44 +48,13 @@ Game2EditScreen.prototype.updateHudLayout = function() {
 };
 
 Game2EditScreen.prototype.setScreenListening = function(listen) {
-  if (listen == this.listening) return;
-  var fsb, rb, i;
+  if (listen === this.listening) return;
   Game2BaseScreen.prototype.setScreenListening.call(this, listen);
-  if (listen) {
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].startListening();
-    }
-    this.testTriggerWidget.startListening();
-
-    fsb = document.querySelector('#fullScreenButton');
-    fsb.addEventListener('click', this.fullScreenFn);
-    fsb.addEventListener('touchend', this.fullScreenFn);
-
-    rb = document.querySelector('#resumeButton');
-    rb.addEventListener('click', this.pauseDownFn);
-    rb.addEventListener('touchend', this.pauseDownFn);
-
-    this.canvas.addEventListener('mousemove', this.keyTipRevealer);
-    window.addEventListener('keydown', this.keyTipRevealer);
-
-  } else {
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].stopListening();
-    }
-    this.testTriggerWidget.stopListening();
-
-    fsb = document.querySelector('#fullScreenButton');
-    fsb.removeEventListener('click', this.fullScreenFn);
-    fsb.removeEventListener('touchend', this.fullScreenFn);
-
-    rb = document.querySelector('#resumeButton');
-    rb.removeEventListener('click', this.pauseDownFn);
-    rb.removeEventListener('touchend', this.pauseDownFn);
-
-    this.canvas.removeEventListener('mousemove', this.keyTipRevealer);
-    window.removeEventListener('keydown', this.keyTipRevealer);
-  }
-  this.listening = listen;
+  var buttonEvents = ['click', 'touchEnd'];
+  Events.setListening(listen, document.querySelector('#fullScreenButton'), buttonEvents, this.fullScreenFn);
+  Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
+  Events.setListening(listen, this.canvas, 'mousemove', this.keyTipRevealer);
+  Events.setListening(listen, window, 'keydown', this.keyTipRevealer);
 };
 
 Game2EditScreen.prototype.initWidgets = function() {
@@ -109,6 +78,7 @@ Game2EditScreen.prototype.initWidgets = function() {
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.testStamp)
       .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
+  this.addListener(this.testTriggerWidget);
 };
 
 Game2EditScreen.prototype.createDefaultWorld = function() {

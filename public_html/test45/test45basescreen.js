@@ -236,22 +236,6 @@ Test45BaseScreen.prototype.getCursorHitGroup = function() {
   return this.getHitGroups().CURSOR;
 };
 
-Test45BaseScreen.prototype.createTrackball = function() {
-  var trackball = new MultiTrackball()
-      .addTrackball(new TouchTrackball(this.getWorldEventTarget())
-          .setStartZoneFunction(function(x, y) { return true; }))
-      .addTrackball(
-          new KeyTrackball(
-              new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT),
-              new KeyTrigger().addTriggerKeyByName(Key.Name.SHIFT))
-          .setAccel(0.8)
-          .setTraction(0.25)
-  );
-  trackball.setFriction(0.05);
-  this.addListener(trackball);
-  return trackball;
-};
-
 Test45BaseScreen.prototype.onHitEvent = function(e) {
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
