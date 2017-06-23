@@ -15,7 +15,7 @@ function Test45PlayScreen(controller, canvas, renderer, stamps, sfx) {
 
   this.playerSpirits = [];
   this.viewCircles = [];
-  this.startingCircle = new Circle();
+  this.defaultViewCircle = new Circle();
 
   this.bitSize = 0.5;
   this.levelColorVector = new Vec4(0.8, 0.8, 0.8);
@@ -356,8 +356,8 @@ Test45PlayScreen.prototype.drawScene = function() {
   }
   circles.length = count;
   if (count === 0) {
-    this.startingCircle.rad = pad;
-    this.viewCircles[0] = this.startingCircle;
+    this.defaultViewCircle.rad = pad;
+    this.viewCircles[0] = this.defaultViewCircle;
   }
 
   this.positionCamera();
