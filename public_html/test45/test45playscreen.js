@@ -14,7 +14,7 @@ function Test45PlayScreen(controller, canvas, renderer, stamps, sfx) {
   this.hudViewMatrix = new Matrix44();
 
   this.playerSpirits = [];
-  this.circles = [];
+  this.viewCircles = [];
   this.startingCircle = new Circle();
 
   this.bitSize = 0.5;
@@ -343,7 +343,7 @@ Test45PlayScreen.prototype.drawScene = function() {
 
   // update this.circles to match all the player cameras, or the starting area if there are no players now.
   var pad = Test45PlayScreen.PLAYER_VIEW_RADIUS;
-  var circles = this.circles;
+  var circles = this.viewCircles;
   var count = 0;
   for (var i = 0; i < this.playerSpirits.length; i++) {
     var spirit = this.playerSpirits[i];
@@ -357,13 +357,13 @@ Test45PlayScreen.prototype.drawScene = function() {
   circles.length = count;
   if (count === 0) {
     this.startingCircle.rad = pad;
-    this.circles[0] = this.startingCircle;
+    this.viewCircles[0] = this.startingCircle;
   }
 
   this.positionCamera();
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
-  this.renderer.setCircleMode(this.circles);
+  this.renderer.setCircleMode(this.viewCircles);
 
   this.drawSpiritsOverlappingCircles(circles);
   stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
