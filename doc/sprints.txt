@@ -1,18 +1,29 @@
 2017-06-18
 
-Game 4
-
-Nest
+game4 nest
 v take over old game4
 
-Reduce setScreenListening redundancy
+reduce setScreenListening redundancy
 v shrink testscreen's setScreenListening()
 v ditto for playscreen
 v repeat for all the play/test code that could use it throughout cave2d
 
-Slots
+game4 multiplayer controls
+v controlName, controlState files
+- create the 7 slots
+  * study test45
+  - see the rendering of the controls for touch players
+- join
+- quit
+- move
+- buttons
 
-Rendering
+standardize metrics, graphing
+* it's all copies of itself today, and lots of it
+
+pull game4's splashes into a new file?
+
+game4 multiplayer rendering
 - zoom
 - selective tile draw
 - selective spirit draw
