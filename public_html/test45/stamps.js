@@ -22,8 +22,6 @@ Stamps.create = function(renderer) {
 
   // HUD icons
   stamps.pauseStamp = stamp(models.getPause());
-  stamps.playerPauseStamp = stamp(models.getPlayerPause());
-
   stamps.joinButton = stamp(models.getJoinButton());
   stamps.button1 = stamp(models.getButton1());
   stamps.button2 = stamp(models.getButton2());
