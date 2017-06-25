@@ -82,7 +82,9 @@ Test45PlayScreen.prototype.createDefaultWorld = function() {
   for (var r = 0; r < rooms; r++) {
     var rad = 4 + Math.random() * 10;
     pos.setXY(0, rad + 20 + 40 * Math.random()).rot(2 * Math.PI * (r / rooms)).rot(0.3 * (Math.random() - 0.5));
-    this.tileGrid.drawTerrainPill(pos, pos2.reset().addXY(0, (rad + Math.random() * rad * 3)).rot(Math.random() * Math.PI * 2).add(pos), rad, 1);
+    this.tileGrid.drawTerrainPill(pos,
+        pos2.reset().addXY(0, (rad + Math.random() * rad * 3))
+            .rot(Math.random() * Math.PI * 2).add(pos), rad, 1);
     this.tileGrid.drawTerrainPill(pos, Vec2d.ZERO, 2, 1);
     if (Math.random() > 0.4) this.tileGrid.drawTerrainPill(pos, pos, 1 + Math.random() * (rad - 4), 0);
   }
@@ -97,16 +99,19 @@ Test45PlayScreen.prototype.createDefaultWorld = function() {
   this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 22, 1);
   var ants = 8;
   for (var a = 0; a < ants; a++) {
-    this.addItem(Test45BaseScreen.MenuItem.ANT, new Vec2d(0, 7).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
+    this.addItem(Test45BaseScreen.MenuItem.ANT,
+        new Vec2d(0, 7).rot(2 * Math.PI * a / ants), 2 * Math.PI * a / ants);
   }
   var balls = 10;
   for (var b = 1; b < balls; b+= 2) {
-    this.addItem(Test45BaseScreen.MenuItem.BALL, new Vec2d(0, 17).rot(2 * Math.PI * b / balls), 2 * Math.PI * b / balls);
+    this.addItem(Test45BaseScreen.MenuItem.BALL,
+        new Vec2d(0, 17).rot(2 * Math.PI * b / balls), 2 * Math.PI * b / balls);
   }
 
   var rocks = 10;
   for (var r = 0; r < rocks; r+= 2) {
-    this.addItem(Test45BaseScreen.MenuItem.ROCK, new Vec2d(0, 13).rot(2 * Math.PI * r / rocks), 2 * Math.PI * r / rocks);
+    this.addItem(Test45BaseScreen.MenuItem.ROCK,
+        new Vec2d(0, 13).rot(2 * Math.PI * r / rocks), 2 * Math.PI * r / rocks);
   }
 };
 
@@ -171,7 +176,9 @@ Test45PlayScreen.prototype.configurePlayerSlots = function() {
             var otherCorner = otherSlot.corner;
             if (otherCorner && otherCorner !== myCorner && otherSlot.stateName !== ControlState.WAITING) {
               var otherCornerDist = Vec2d.distanceSq(
-                  x, y, self.canvas.width * (otherCorner.getX() + 1 / 2), self.canvas.height * (otherCorner.getY() + 1 / 2));
+                  x, y,
+                  self.canvas.width * (otherCorner.getX() + 1 / 2),
+                  self.canvas.height * (otherCorner.getY() + 1 / 2));
               if (otherCornerDist <= distToMyCorner) {
                 return false;
               }
