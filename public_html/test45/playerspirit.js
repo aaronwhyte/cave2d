@@ -180,8 +180,8 @@ PlayerSpirit.prototype.handleInput = function() {
   var state = this.slot.stateName;
   if (state !== ControlState.PLAYING) return;
 
-  var playeBody = this.getBody();
-  if (!playeBody) return;
+  var playerBody = this.getBody();
+  if (!playerBody) return;
 
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
@@ -270,11 +270,11 @@ PlayerSpirit.prototype.handleInput = function() {
       traction *= Math.max(0, this.vec2d.dot(this.aim)) / stickMag;
     }
     // traction slowdown
-    this.accel.set(playeBody.vel).scale(-traction);
+    this.accel.set(playerBody.vel).scale(-traction);
 
     this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
     this.accel.add(this.vec2d);
-    playeBody.addVelAtTime(this.accel, this.now());
+    playerBody.addVelAtTime(this.accel, this.now());
   }
 
   ////////
