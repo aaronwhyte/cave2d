@@ -367,10 +367,10 @@ Game4BaseScreen.prototype.onHitEvent = function(e) {
       if (!otherSpirit) {
         // wall?
         bulletSpirit.onHitWall(mag, pos);
-      } else if (otherSpirit.type == Game4BaseScreen.SpiritType.ANT) {
+      } else if (otherSpirit.type === Game4BaseScreen.SpiritType.ANT) {
         otherSpirit.onPlayerBulletHit(bulletSpirit.damage);
         bulletSpirit.onHitEnemy(mag, pos);
-      } else if (otherSpirit.type == Game4BaseScreen.SpiritType.BULLET) {
+      } else if (otherSpirit.type === Game4BaseScreen.SpiritType.BULLET) {
         bulletSpirit.onHitOther(mag, pos);
         otherSpirit.onHitOther(mag);
       } else {
@@ -394,7 +394,7 @@ Game4BaseScreen.prototype.addPlayer = function() {
   p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
-    if (spirit.type == Game4BaseScreen.SpiritType.PLAYER) {
+    if (spirit.type === Game4BaseScreen.SpiritType.PLAYER) {
       p.addSpirit(spirit);
     }
   }
@@ -443,10 +443,10 @@ Game4BaseScreen.prototype.getAveragePlayerPos = function() {
   var playerCount = 0;
   for (var id in this.world.spirits) {
     var spirit = this.world.spirits[id];
-    if (spirit.type == Game4BaseScreen.SpiritType.PLAYER) {
+    if (spirit.type === Game4BaseScreen.SpiritType.PLAYER) {
       var body = spirit.getBody(this.world);
       if (body) {
-        if (playerCount == 0) {
+        if (playerCount === 0) {
           this.playerAveragePos.reset();
         }
         this.playerAveragePos.add(this.getBodyPos(body, this.vec2d));
@@ -454,7 +454,7 @@ Game4BaseScreen.prototype.getAveragePlayerPos = function() {
       }
     }
   }
-  if (playerCount != 0) {
+  if (playerCount !== 0) {
     this.playerAveragePos.scale(1 / playerCount);
   }
   return this.playerAveragePos;
