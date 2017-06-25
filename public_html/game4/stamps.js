@@ -7,7 +7,9 @@ function Stamps() {
 
 Stamps.create = function(renderer) {
   var stamps = new Stamps();
-  var models = new Models();
+  var glyphs = new Glyphs(new GlyphMaker(0.4, 1.2));
+  glyphs.initModels();
+  var models = new Models(glyphs);
   function stamp(model) {
     return model.createModelStamp(renderer.gl);
   }
@@ -18,7 +20,10 @@ Stamps.create = function(renderer) {
   stamps.lineStamp = stamp(RigidModel.createCylinder(9));
 
   // HUD icons
-  stamps.playerPauseStamp = stamp(models.getPlayerPause());
+  stamps.joinButton = stamp(models.getJoinButton());
+  stamps.button1 = stamp(models.getButton1());
+  stamps.button2 = stamp(models.getButton2());
+  stamps.menuButton = stamp(models.getMenuButton());
   stamps.testStamp = stamp(models.getTest());
   stamps.untestStamp = stamp(models.getUntest());
 

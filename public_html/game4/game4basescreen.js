@@ -283,53 +283,6 @@ Game4BaseScreen.prototype.getCamera = function() {
   return this.camera;
 };
 
-Game4BaseScreen.prototype.createTrackball = function() {
-  var trackball = new MultiTrackball()
-      .addTrackball(new TouchTrackball(this.getWorldEventTarget())
-          .setStartZoneFunction(function(x, y) { return true; }))
-      .addTrackball(
-          new KeyTrackball(
-              new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT),
-              new KeyTrigger().addTriggerKeyByName(Key.Name.SHIFT))
-          .setAccel(0.8)
-          .setTraction(0.25)
-  );
-  trackball.setFriction(0.05);
-  this.addListener(trackball);
-  return trackball;
-};
-
-Game4BaseScreen.prototype.createButtonWidgets = function() {
-  var glyphStamps = this.glyphs.initStamps(this.renderer.gl);
-  var widgets = [
-    new TriggerWidget(this.getHudEventTarget())
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.stamps.circleStamp)
-        .listenToTouch()
-        .addTriggerKeyByName('z')
-        .setKeyboardTipStamp(glyphStamps['Z']),
-    new TriggerWidget(this.getHudEventTarget())
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.stamps.circleStamp)
-        .listenToTouch()
-        .addTriggerKeyByName('x')
-        .setKeyboardTipStamp(glyphStamps['X']),
-    new TriggerWidget(this.getHudEventTarget())
-        .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
-        .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
-        .setStamp(this.stamps.playerPauseStamp)
-        .addTriggerDownListener(this.pauseDownFn)
-        .listenToTouch()
-        .listenToMousePointer()
-        .addTriggerKeyByName(Key.Name.SPACE)];
-  for (var i = 0; i < widgets.length; i++) {
-    this.addListener(widgets[i]);
-  }
-  return widgets;
-};
-
 Game4BaseScreen.prototype.onHitEvent = function(e) {
   if (!this.isPlaying()) return;
 
@@ -379,26 +332,6 @@ Game4BaseScreen.prototype.onHitEvent = function(e) {
     }
     vec.free();
   }
-};
-
-Game4BaseScreen.prototype.handleInput = function() {
-  for (var i = 0; i < this.players.length; i++) {
-    this.players[i].handleInput();
-  }
-};
-
-Game4BaseScreen.prototype.addPlayer = function() {
-  var p = new Player();
-  var trackball = this.createTrackball();
-  var buttons = this.createButtonWidgets();
-  p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    if (spirit.type === Game4BaseScreen.SpiritType.PLAYER) {
-      p.addSpirit(spirit);
-    }
-  }
-  this.players.push(p);
 };
 
 Game4BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {

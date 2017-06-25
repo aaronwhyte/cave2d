@@ -56,6 +56,158 @@ Game4PlayScreen.prototype.setScreenListening = function(listen) {
   Events.setListening(listen, window, 'keydown', this.keyTipRevealer);
 };
 
+Game4PlayScreen.prototype.configurePlayerSlots = function() {
+  var self = this;
+  function createKeyboardSlot(up, right, down, left, b1, b2, menuKey) {
+    return new PlayerSlot()
+        .add(ControlState.WAITING, new ControlMap()
+            .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
+                .addTriggerKeyByName(up)
+                .addTriggerKeyByName(right)
+                .addTriggerKeyByName(down)
+                .addTriggerKeyByName(left)
+                .addTriggerKeyByName(b1)
+                .addTriggerKeyByName(b2)
+                .addTriggerKeyByName(menuKey)
+            ))
+        .add(ControlState.PLAYING, new ControlMap()
+            .add(ControlName.STICK, new KeyStick()
+                .setUpRightDownLeftByName(up, right, down, left))
+            .add(ControlName.BUTTON_1, new KeyTrigger().addTriggerKeyByName(b1))
+            .add(ControlName.BUTTON_2, new KeyTrigger().addTriggerKeyByName(b2))
+            .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
+        );
+  }
+
+  function createTouchSlot(angle) {
+    var buttonAngle = angle + Math.PI / 4;
+    var releasedColor = new Vec4(1, 1, 1, 0.2);
+    var pressedColor = new Vec4(1, 1, 1, 0.5);
+    var matrix = new Matrix44().toRotateZOp(angle);
+
+    function button(stamp) {
+      return new TriggerWidget(self.getHudEventTarget())
+          .setStamp(stamp)
+          .setAngle(buttonAngle)
+          .listenToTouch()
+          .setPressedColorVec4(pressedColor)
+          .setReleasedColorVec4(releasedColor);
+    }
+
+    var joinTrigger = button(self.stamps.joinButton);
+    var n = Math.sqrt(0.5);
+    var rule = new CuboidRule(self.canvasCuboid, joinTrigger.getWidgetCuboid())
+        .setAspectRatio(new Vec4(1, 1))
+        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-n, n).transform(matrix), Vec4.ZERO)
+        .setSizingMax(new Vec4(0.12, 0.12, 0.99), new Vec4(30, 30));
+    self.cuboidRules.push(rule);
+
+    var stick = new TouchStick(self.getWorldEventTarget())
+        .setStartZoneFunction(function(x, y) {
+          // If this touch is closer to the player's corner than it is to any other
+          // active player's corner, then the player can have it.
+          // That way inactive waiting-to-join slots don't detract from the other touch players.
+          var myCorner = slot.corner;
+          var distToMyCorner = Vec2d.distanceSq(
+              x, y, self.canvas.width * (myCorner.getX() + 1 / 2), self.canvas.height * (myCorner.getY() + 1 / 2));
+          for (var i = 0; i < self.slots.length; i++) {
+            var otherSlot = self.slots[i];
+            var otherCorner = otherSlot.corner;
+            if (otherCorner && otherCorner !== myCorner && otherSlot.stateName !== ControlState.WAITING) {
+              var otherCornerDist = Vec2d.distanceSq(
+                  x, y,
+                  self.canvas.width * (otherCorner.getX() + 1 / 2),
+                  self.canvas.height * (otherCorner.getY() + 1 / 2));
+              if (otherCornerDist <= distToMyCorner) {
+                return false;
+              }
+            }
+          }
+          return true;
+        })
+        .setRadius(60);
+
+    var buttonRad = 45;
+    var maxButtonRatio = 1/6;
+    var button1 = button(self.stamps.button1);
+    var rule1 = new CuboidRule(self.canvasCuboid, button1.getWidgetCuboid())
+        .setAspectRatio(new Vec4(1, 1))
+        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-1, 2.6).transform(matrix), new Vec4(-2, 0).transform(matrix))
+        .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
+    self.cuboidRules.push(rule1);
+
+    var button2 = button(self.stamps.button2);
+    var rule2 = new CuboidRule(self.canvasCuboid, button2.getWidgetCuboid())
+        .setAspectRatio(new Vec4(1, 1))
+        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-2.6, 1).transform(matrix), new Vec4(0, 2).transform(matrix))
+        .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
+    self.cuboidRules.push(rule2);
+
+    var menuTrigger = button(self.stamps.menuButton);
+    var menuRule = new CuboidRule(self.canvasCuboid, menuTrigger.getWidgetCuboid())
+        .setAspectRatio(new Vec4(1, 1))
+        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-n, n).transform(matrix), Vec4.ZERO)
+        .setSizingMax(new Vec4(0.12, 0.12, 0.99), new Vec4(30, 30));
+    self.cuboidRules.push(menuRule);
+
+    var slot = new PlayerSlot()
+        .add(ControlState.WAITING, new ControlMap()
+            .add(ControlName.JOIN_TRIGGER, joinTrigger))
+        .add(ControlState.PLAYING, new ControlMap()
+            .add(ControlName.STICK, stick)
+            .add(ControlName.BUTTON_1, button1)
+            .add(ControlName.BUTTON_2, button2)
+            .add(ControlName.MENU, menuTrigger));
+    slot.corner = new Vec4(-1, 1).transform(matrix);
+    return slot;
+  }
+
+  function createPointerLockSlot(b1, b2, menuKey) {
+    // Only join on mouse-click, since that's a good indication you have a mouse in hand,
+    // and it starts the Pointer Lock process.
+    return new PlayerSlot()
+        .add(ControlState.WAITING, new ControlMap()
+            .add(ControlName.JOIN_TRIGGER, new MultiTrigger()
+                .addTrigger(new MouseButtonTrigger(self.canvas))
+                .addTrigger(new KeyTrigger()
+                    .addTriggerKeyByName(b1)
+                    .addTriggerKeyByName(b2)
+                    .addTriggerKeyByName(menuKey))))
+        .add(ControlState.PLAYING, new ControlMap()
+            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(180))
+            .add(ControlName.BUTTON_1, new MultiTrigger()
+                .addTrigger(new MouseButtonTrigger(self.canvas))
+                .addTrigger(new KeyTrigger().addTriggerKeyByName(b1)))
+            .add(ControlName.BUTTON_2, new MultiTrigger()
+                .addTrigger(new MouseButtonTrigger(self.canvas).setListenToLeftButton(false))
+                .addTrigger(new KeyTrigger().addTriggerKeyByName(b2)))
+            .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
+        );
+  }
+
+  this.slots = [
+    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'n', 'm', 'l'),
+    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'q'),
+    createPointerLockSlot('v', 'b', 'g'),
+    createTouchSlot(0),
+    createTouchSlot(Math.PI / 2),
+    createTouchSlot(Math.PI),
+    createTouchSlot(3 * Math.PI / 2)
+  ];
+
+  for (var i = 0; i < this.slots.length; i++) {
+    var slot = this.slots[i];
+    slot.id = this.world.newId();
+    slot.setState(ControlState.WAITING);
+  }
+};
+
+
+
 Game4PlayScreen.prototype.startExit = function(x, y) {
   this.exitStartTime = this.now();
   this.exitEndTime = this.exitStartTime + Game4PlayScreen.EXIT_DURATION;
@@ -99,15 +251,7 @@ Game4PlayScreen.prototype.snapCameraToPlayers = function() {
 };
 
 Game4PlayScreen.prototype.drawScene = function() {
-  if (!this.players.length) {
-    this.addPlayer();
-  }
   this.renderer.setViewMatrix(this.viewMatrix);
-
-  var averagePlayerPos = this.getAveragePlayerPos();
-  if (averagePlayerPos) {
-    this.camera.follow(this.playerAveragePos);
-  }
 
   this.drawSpirits();
   this.drawTiles();
@@ -131,9 +275,8 @@ Game4PlayScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-
-  for (var i = 0; i < this.players.length; i++) {
-    this.players[i].drawHud(this.renderer);
+  for (var i = 0; i < this.slots.length; i++) {
+    this.slots[i].getControlList().draw(this.renderer);
   }
   for (var i = 0; i < this.widgets.length; i++) {
     this.widgets[i].draw(this.renderer);

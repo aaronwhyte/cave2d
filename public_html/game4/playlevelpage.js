@@ -48,6 +48,7 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
   this.screen.updateHudLayout();
   this.screen.initWorld();
   this.screen.loadWorldFromJson(this.jsonObj);
+  this.screen.configurePlayerSlots();
   this.screen.setPaused(this.paused);
   this.screen.snapCameraToPlayers();
 

@@ -16,20 +16,21 @@ game4 multiplayer controls
 v controlName, controlState files
 - create the 7 slots
   v study test45
-  - page calls configurePlayerSlots() near initializing the world
-  - screen
-    - configurePlayerSlots()
-    - handleInput()
-      - playerSpirits
-        - PlayerSpirit.handleInput
-          - unpack and use controls
-      - slots
-        - join
-          - playerJoin(slot)
-            - playerSpawn(slot)
-        - drop
-          - playerDrop()
-- Render the hud
+  v page calls configurePlayerSlots() near initializing the world
+  v screen.configurePlayerSlots()
+    v models and stamps
+      v models.glyphs
+  - screen.handleInput()
+    - playerSpirits
+    - slots
+      - join
+        - playerJoin(slot)
+          - playerSpawn(slot)
+      - drop
+        - playerDrop()
+      - PlayerSpirit.handleInput
+        - unpack and use controls
+v Render the hud
 - Add the mid-screen pause widget
 
 game4 multi-camera
