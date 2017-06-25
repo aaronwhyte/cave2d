@@ -78,6 +78,7 @@ Game4EditScreen.prototype.initWidgets = function() {
       .addTriggerKeyByName('t')
       .setStamp(this.stamps.testStamp)
       .setKeyboardTipStamp(this.glyphs.initStamps(this.renderer.gl)['T']);
+  this.addListener(this.testTriggerWidget);
 };
 
 Game4EditScreen.prototype.createDefaultWorld = function() {

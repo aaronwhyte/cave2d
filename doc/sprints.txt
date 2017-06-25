@@ -8,15 +8,32 @@ v shrink testscreen's setScreenListening()
 v ditto for playscreen
 v repeat for all the play/test code that could use it throughout cave2d
 
+2017-06-24
+
+v testScreen inherits from playScreen, to de-dupe a lot of code.
+
 game4 multiplayer controls
 v controlName, controlState files
 - create the 7 slots
-  * study test45
-  - see the rendering of the controls for touch players
-- join
-- quit
-- move
-- buttons
+  v study test45
+  - page calls configurePlayerSlots() near initializing the world
+  - screen
+    - configurePlayerSlots()
+    - handleInput()
+      - playerSpirits
+        - PlayerSpirit.handleInput
+          - unpack and use controls
+      - slots
+        - join
+          - playerJoin(slot)
+            - playerSpawn(slot)
+        - drop
+          - playerDrop()
+- Render the hud
+- Add the mid-screen pause widget
+
+game4 multi-camera
+
 
 standardize metrics, graphing
 * it's all copies of itself today, and lots of it

@@ -3,11 +3,15 @@
  * @extends {Game4BaseScreen}
  */
 function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  // Is this being used as a prototype?
+  if (!controller) return;
+
   Game4BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.updateViewMatrix();
 
   this.players = [];
+  this.widgets = [];
 
   var self = this;
 
@@ -15,6 +19,9 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
     var ms = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
     for (var i = 0; i < self.players.length; i++) {
       self.players[i].setKeyboardTipTimeoutMs(ms);
+    }
+    for (var i = 0; i < self.widgets.length; i++) {
+      self.widgets[i].setKeyboardTipTimeoutMs(ms);
     }
   };
 
@@ -35,9 +42,14 @@ Game4PlayScreen.prototype.updateHudLayout = function() {
 
 Game4PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
+
+  // This iterates through addListener(foo) registered listeners,
+  // so test screen's untestWidget listening is taken care of here.
   Game4BaseScreen.prototype.setScreenListening.call(this, listen);
+
   var buttonEvents = ['click', 'touchEnd'];
   Events.setListening(listen, document.querySelector('#fullScreenButton'), buttonEvents, this.fullScreenFn);
+  // TODO: resumeButton is ignored in testscreen - this is sloppy
   Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
   Events.setListening(listen, document.querySelector('#restartButton'), buttonEvents, this.restartFn);
   Events.setListening(listen, this.canvas, 'mousemove', this.keyTipRevealer);
@@ -119,8 +131,12 @@ Game4PlayScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
+
   for (var i = 0; i < this.players.length; i++) {
     this.players[i].drawHud(this.renderer);
+  }
+  for (var i = 0; i < this.widgets.length; i++) {
+    this.widgets[i].draw(this.renderer);
   }
   this.renderer.setBlendingEnabled(false);
 };
