@@ -21,17 +21,17 @@ v controlName, controlState files
     v models and stamps
       v models.glyphs
   - screen.handleInput()
-    - playerSpirits
-    - slots
-      - join
-        - playerJoin(slot)
-          - playerSpawn(slot)
-      - drop
-        - playerDrop()
-      - PlayerSpirit.handleInput
-        - unpack and use controls
+    v slots
+      v join
+        v playerJoin(slot)
+          v playerSpawn(slot)
+      v drop
+        v playerDrop()
+    - PlayerSpirit.handleInput
+      - unpack and use controls
 v Render the hud
 - Add the mid-screen pause widget
+
 
 game4 multi-camera
 
