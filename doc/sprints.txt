@@ -14,37 +14,37 @@ v testScreen inherits from playScreen, to de-dupe a lot of code.
 
 game4 multiplayer controls
 v controlName, controlState files
-- create the 7 slots
+v create the 7 slots
   v study test45
   v page calls configurePlayerSlots() near initializing the world
   v screen.configurePlayerSlots()
     v models and stamps
       v models.glyphs
-  - screen.handleInput()
+  v screen.handleInput()
     v slots
       v join
         v playerJoin(slot)
           v playerSpawn(slot)
       v drop
         v playerDrop()
-    - PlayerSpirit.handleInput
-      - unpack and use controls
+    v PlayerSpirit.handleInput
+      v unpack and use controls
+      v make tractor beams work like test45
 v Render the hud
 - Add the mid-screen pause widget
-
-
-game4 multi-camera
-
-
-standardize metrics, graphing
-* it's all copies of itself today, and lots of it
-
-pull game4's splashes into a new file?
+- for fun: join/drop effects - use existing spawn and death for now
 
 game4 multiplayer rendering
 - zoom
 - selective tile draw
 - selective spirit draw
 - shader for circle mask
+
+- ant logic - don't aim for average player position any more (but I'll probably remove the ants)
+
+standardize metrics, graphing
+* it's all copies of itself today, and lots of it
+
+pull game4's splashes into a new file?
 
 Entrance and Exit

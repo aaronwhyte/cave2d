@@ -285,8 +285,7 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
   slot.lastSpiritId = spiritId;
   var spirit = this.world.spirits[spiritId];
 
-  // TODO: slot-aware PlayerSpirit
-  // spirit.setSlot(slot);
+  spirit.setSlot(slot);
   var r = 1 - 0.5 * Math.random();
   var g = 1 - 0.5 * Math.random();
   var b = 1 - 0.5 * Math.random();

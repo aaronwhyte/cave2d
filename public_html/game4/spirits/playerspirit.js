@@ -7,74 +7,83 @@ function PlayerSpirit(screen) {
 
   this.type = Game4BaseScreen.SpiritType.PLAYER;
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
-  // 0 is up, PI/2 is right
-  this.dir = 0;//Math.random() * Math.PI * 2;
-  this.angVel = 0;
+  this.aimColor = new Vec4();
 
-  this.isFireReady = true;
-  this.currAimVec = new Vec2d(0, 1);
-  this.destAimVec = new Vec2d(0, 1);
+  this.camera = new Camera(0.1, 0.4, 7);
+  this.circle = new Circle();
+
+  this.aim = new Vec2d();
+  this.destAim = new Vec2d();
+  this.aimSpeed = 0;
+
+  this.beamState = BeamState.OFF;
+  this.ejectStartTime = 0;
+  this.targetBodyId = null;
+  this.obstructionCount = 0;
+
+  this.accel = new Vec2d();
+  this.slot = null;
+
+  this.oldKick = false;
+  this.oldGrab = false;
+
+  this.lastFrictionTime = this.now();
+  this.lastInputTime = this.now();
 
   this.vec2d = new Vec2d();
-  this.accel = new Vec2d();
-  this.newVel = new Vec2d();
-  this.scanVec = new Vec2d();
+  this.vec2d2 = new Vec2d();
+  this.vec2d3 = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
-  this.lastFrictionTime = this.now();
-  this.lastInputTime = this.now();
-  this.bang = new BangVal(PlayerSpirit.BANG_DECAY, PlayerSpirit.MAX_BANG);
-
-  this.maxHealth = PlayerSpirit.STARTING_HEALTH;
-  this.health = this.maxHealth;
-
-  this.lastFireTime =-Infinity;
-
-  this.shotgun = new ShotgunWeapon(screen, this, screen.getHitGroups().PLAYER_FIRE, PlayerSpirit.SHOTGUN_TIMEOUT_ID);
-  this.laser = new LaserWeapon(screen, this, screen.getHitGroups().PLAYER_FIRE, PlayerSpirit.LASER_TIMEOUT_ID);
-  this.weapon = this.shotgun;
-  this.oldb1 = false;
-
-  this.shieldEndTime = 0;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.STARTING_HEALTH = 1;
+PlayerSpirit.PLAYER_RAD = 1;
 
-PlayerSpirit.BANG_DECAY = 0.2;
-PlayerSpirit.MAX_BANG = 1.5;
-
-PlayerSpirit.TRACKBALL_ACCEL = 1;
-PlayerSpirit.TRACKBALL_TRACTION = 0.3;
-PlayerSpirit.TRACKBALL_MAX_ACCEL = 5;
-PlayerSpirit.AIM_SENSITIVITY = 2;
-
-PlayerSpirit.FRICTION = 0.1;
-PlayerSpirit.FRICTION_TIMEOUT = 1;
+PlayerSpirit.SPEED = 1.3;
+PlayerSpirit.TRACTION = 0.1;
+PlayerSpirit.FRICTION = 0.03;
+PlayerSpirit.FRICTION_TIMEOUT = 0.25;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
-PlayerSpirit.STOPPING_SPEED_SQUARED = 0.05 * 0.05;
 
+PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
+PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.SHOTGUN_TIMEOUT_ID = 20;
-PlayerSpirit.LASER_TIMEOUT_ID = 21;
+// dist from player surface to held obj surface
+PlayerSpirit.TRACTOR_MAX_ACCEL = 1.8;
+PlayerSpirit.TRACTOR_MAX_FORCE = 0.4;
+PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 12;
 
-PlayerSpirit.RESPAWN_TIMEOUT = 70;
-PlayerSpirit.RESPAWN_TIMEOUT_ID = 30;
+PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
+// dist from player surface
+PlayerSpirit.SEEKSCAN_DIST = Math.min(PlayerSpirit.TRACTOR_DRAG_DIST * 3, PlayerSpirit.TRACTOR_BREAK_DIST);
 
-PlayerSpirit.SHIELD_TIMEOUT = 50;
+PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL;
+PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
+PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
+
+// If the tractor beam is obstructed this many times in a row, it will break.
+PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
+
+PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
+PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.4;
+PlayerSpirit.ANGULAR_FRICTION = 0.4;
+
+PlayerSpirit.EJECT_TIME = 5;
+PlayerSpirit.EJECT_MAX_ACCEL = 3;
+PlayerSpirit.EJECT_MAX_FORCE = 8;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
   1: "id",
   2: "bodyId",
   3: "color",
-  4: "dir",
-  5: "angVel",
-  6: "maxHealth",
-  7: "health",
-  8: "lastFrictionTime"
+  4: "lastFrictionTime",
+  5: "aim"
 };
 
 PlayerSpirit.getJsoner = function() {
@@ -90,19 +99,35 @@ PlayerSpirit.prototype.toJSON = function() {
 
 PlayerSpirit.prototype.setFromJSON = function(json) {
   PlayerSpirit.getJsoner().setFromJSON(json, this);
+  return this;
 };
 
+/**
+ * @param {ModelStamp} modelStamp
+ * @returns {PlayerSpirit}
+ */
 PlayerSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
+  return this;
 };
 
-PlayerSpirit.prototype.setTrackball = function(trackball) {
-  this.trackball = trackball;
+/**
+ * @param {PlayerSlot} slot
+ * @returns {PlayerSpirit}
+ */
+PlayerSpirit.prototype.setSlot = function(slot) {
+  this.slot = slot;
+  return this;
+};
+
+PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
+  this.color.setXYZ(r, g, b);
+  return this;
 };
 
 PlayerSpirit.createModel = function() {
   return RigidModel.createCircle(24)
-      .setColorRGB(1, 0.3, 0.6)
+      .setColorRGB(1, 1, 1)
       .addRigidModel(RigidModel.createCircle(12)
           .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
           .transformPositions(new Matrix44().toTranslateOpXYZ(-0.32, 0.23, -0.25))
@@ -137,83 +162,142 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
-  b.rad = 0.9;
+  b.rad = PlayerSpirit.PLAYER_RAD;
   b.hitGroup = this.screen.getHitGroups().PLAYER;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+
+  b.turnable = true;
+  b.moi = b.mass * b.rad * b.rad / 2;
+  b.grip = 0.5;
+  b.elasticity = 0.7;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
   b.spiritId = this.id;
   return b;
 };
 
-PlayerSpirit.prototype.onBang = function(accel, now) {
-  this.bang.addValAtTime(accel, now);
-};
+PlayerSpirit.prototype.handleInput = function() {
+  if (!this.slot) return;
+  var state = this.slot.stateName;
+  if (state !== ControlState.PLAYING) return;
 
-PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
-};
+  var playerBody = this.getBody();
+  if (!playerBody) return;
 
-/**
- *
- * @param {number} tx trackball x movement since last time
- * @param {number} ty trackball y movement since last time
- * @param {boolean} tt whether the trackball is touched (works good for touchscreens, otherwise meh
- * @param {number} tContrib bitflags indicating whether key, touch, or mouse were contributors to the trackball
- * @param {boolean} b1 button one down?
- * @param {boolean} b2 button two down?
- */
-PlayerSpirit.prototype.handleInput = function(tx, ty, tt, tContrib, b1, b2) {
+  if (this.changeListener) {
+    this.changeListener.onBeforeSpiritChange(this);
+  }
   var now = this.now();
-  var time = now - this.lastInputTime;
+  var duration = now - this.lastInputTime;
   this.lastInputTime = now;
 
-  // If stun is one or higher, ignore input!
-  var stun = this.bang.getValAtTime(now);
-  var stunned = stun >= 1;
-  if (tt && !stunned) {
-    var body = this.getBody();
-    if (body) {
-      this.newVel.set(body.vel);
-      this.accel.set(this.newVel).scale(-PlayerSpirit.TRACKBALL_TRACTION);
-      this.newVel.add(this.accel.scale(time / this.screen.timeMultiplier));
+  var controls = this.slot.getControlList();
+  var stick = controls.get(ControlName.STICK);
+  var touchlike = stick.isTouchlike();
 
-      this.accel.setXY(tx, -ty).scale(PlayerSpirit.TRACKBALL_ACCEL * PlayerSpirit.TRACKBALL_TRACTION)
-          .clipToMaxLength(PlayerSpirit.TRACKBALL_MAX_ACCEL);
-      // stun decreases control responsiveness
-      this.accel.scale(1 - stun);
-      this.newVel.add(this.accel.scale(time / this.screen.timeMultiplier));
-      body.setVelAtTime(this.newVel, now);
+  ////////////
+  // BUTTONS
+
+  var newKick = controls.get(ControlName.BUTTON_1).getVal();
+  var newGrab = controls.get(ControlName.BUTTON_2).getVal();
+  var kickDown = !this.oldKick && newKick;
+  var kickUp = this.oldKick && !newKick;
+  var grabDown = !this.oldGrab && newGrab;
+  var grabUp = this.oldGrab && !newGrab;
+  this.oldKick = newKick;
+  this.oldGrab = newGrab;
+
+  // Settle on a new beamState
+  if (this.beamState === BeamState.OFF) {
+    // TODO: free kick
+    if (grabDown) {
+      this.beamState = BeamState.SEEKING;
+    }
+  } else if (this.beamState === BeamState.SEEKING) {
+    if (grabUp) {
+      this.breakBeam();
+    }
+  } else if (this.beamState === BeamState.DRAGGING) {
+    if (kickDown) {
+      this.breakBeam();
+    } else if (grabDown) {
+      this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
+      this.beamState = BeamState.WIELDING;
+    }
+  } else if (this.beamState === BeamState.WIELDING) {
+    if (kickDown) {
+      this.beamState = BeamState.EJECTING;
+      this.ejectStartTime = now;
+    } else if (grabDown) {
+      this.beamState = BeamState.ACTIVATING;
+    }
+  } else if (this.beamState === BeamState.ACTIVATING) {
+    if (grabUp) {
+      this.beamState = BeamState.WIELDING;
+    }
+  } else if (this.beamState === BeamState.EJECTING) {
+    if (kickUp) {
+      this.beamState = BeamState.DRAGGING;
+    } else if (now - this.ejectStartTime > PlayerSpirit.EJECT_TIME) {
+      this.eject();
+      this.beamState = BeamState.OFF;
     }
   }
 
-  // Weapon stuff
-  if (b1 && !this.oldb1) {
-    // switch weapons
-    this.weapon.buttonDown = false;
-    if (this.weapon == this.shotgun) {
-      this.weapon = this.laser;
+  if (this.beamState === BeamState.SEEKING) {
+    this.handleSeeking();
+  } else if (this.beamState === BeamState.DRAGGING) {
+    this.handleDragging();
+  } else if (this.beamState === BeamState.WIELDING) {
+    this.handleWielding();
+  } else if (this.beamState === BeamState.ACTIVATING) {
+    this.handleActivating();
+  } else if (this.beamState === BeamState.EJECTING) {
+    this.handleEjecting();
+  }
+  stick.getVal(this.vec2d);
+  var stickMag = this.vec2d.magnitude();
+  var targetBody = this.getTargetBody();
+
+  ////////////
+  // MOVEMENT
+  var speed = PlayerSpirit.SPEED;
+  var traction = PlayerSpirit.TRACTION;
+
+  if (stick.isTouched()) {
+    if (!targetBody && stickMag) { // TODO remove target check?
+      // When in keyboard precise-aiming mode, accelerate less
+      // when the stick and the aim point in different directions.
+      traction *= Math.max(0, this.vec2d.dot(this.aim)) / stickMag;
+    }
+    // traction slowdown
+    this.accel.set(playerBody.vel).scale(-traction);
+
+    this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
+    this.accel.add(this.vec2d);
+    playerBody.addVelAtTime(this.accel, this.now());
+  }
+
+  ////////
+  // AIM
+  if (this.beamState !== BeamState.ACTIVATING) {
+    var stickDotAim = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
+    var reverseness = Math.max(0, -stickDotAim);
+    if (touchlike) {
+      this.handleTouchlikeAim(stick, stickMag, reverseness);
     } else {
-      this.weapon = this.shotgun;
+      this.handleKeyboardAim(stick, stickMag, reverseness);
     }
   }
-  this.oldb1 = b1;
-  var aimLock = b2;
-  if ((tx || ty) && !aimLock) {
-    this.vec2d.setXY(tx, -ty);
-    if (tContrib & (Trackball.CONTRIB_TOUCH | Trackball.CONTRIB_MOUSE)) {
-      // It's touch or mouse, which get very quantized at low speed. Square contribution and smooth it.
-      this.vec2d.scale(this.vec2d.magnitude() * PlayerSpirit.AIM_SENSITIVITY);
-      this.destAimVec.add(this.vec2d);
-    } else if (tContrib & Trackball.CONTRIB_KEY) {
-      // It's keyboard.
-      this.destAimVec.setXY(tx, -ty);
-    } else if (tContrib) {
-      console.warn("unexpected trackball contribution: " + tContrib);
+
+  //////////////////
+  // STICK SCALING
+  if (touchlike && stickMag) {
+    var unshrinkingMag = 0.9;
+    if (stickMag < unshrinkingMag) {
+      var stickScale = 0.93 + 0.07 * stickMag / unshrinkingMag;
+      stick.scale(stickScale);
     }
-    // Player aim is always a unit vector.
-    this.destAimVec.scaleToLength(1);
   }
-  this.weapon.handleInput(this.destAimVec.x, this.destAimVec.y, b2);
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -221,122 +305,363 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     this.changeListener.onBeforeSpiritChange(this);
   }
   var now = this.now();
-  if (timeoutVal == PlayerSpirit.FRICTION_TIMEOUT_ID || timeoutVal == -1) {
-    var time = now - this.lastFrictionTime;
+  if (timeoutVal === PlayerSpirit.FRICTION_TIMEOUT_ID || timeoutVal === -1) {
+    var duration = now - this.lastFrictionTime;
     this.lastFrictionTime = now;
 
     var body = this.getBody();
     if (body) {
-      this.newVel.set(body.vel);
-      var friction = this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3;
-
-      this.accel.set(this.newVel).scale(-friction);
-      this.newVel.add(this.accel.scale(time));
-
-      // Reset the body's pathDurationMax because it gets changed at compile-time,
-      // but it is serialized at level-save-time, so old saved values might not
-      // match the new compiled-in values. Hm.
-      body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
-
-      if (!this.screen.isPlaying() && this.newVel.magnitudeSquared() < PlayerSpirit.STOPPING_SPEED_SQUARED) {
-        this.newVel.reset();
+      if (this.beamState === BeamState.DRAGGING) {
+        this.handleDragging();
+      } else if (this.beamState === BeamState.WIELDING) {
+        this.handleWielding();
+      } else if (this.beamState === BeamState.ACTIVATING) {
+        this.handleActivating();
+      } else if (this.beamState === BeamState.EJECTING) {
+        this.handleEjecting();
       }
-      body.setVelAtTime(this.newVel, now);
+      var targetBody = this.getTargetBody();
+      body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
+
+      if (!targetBody) {
+        // Angle towards aim.
+        var aimAngle = this.destAim.angle();
+        var angleDiff = aimAngle - this.getBodyAngPos();
+        while (angleDiff > Math.PI) {
+          angleDiff -= 2 * Math.PI;
+        }
+        while (angleDiff < -Math.PI) {
+          angleDiff += 2 * Math.PI;
+        }
+        this.addBodyAngVel(duration * PlayerSpirit.AIM_ANGPOS_ACCEL * angleDiff);
+      } else {
+        // Angle towards target.
+        var angleDiff = this.getAngleToTarget() - this.getBodyAngPos();
+        while (angleDiff > Math.PI) {
+          angleDiff -= 2 * Math.PI;
+        }
+        while (angleDiff < -Math.PI) {
+          angleDiff += 2 * Math.PI;
+        }
+        this.addBodyAngVel(duration * PlayerSpirit.LOCK_ANGPOS_ACCEL * angleDiff);
+      }
+
+      var angularFriction = (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3) * duration;
+      body.applyAngularFrictionAtTime(angularFriction, now);
+
+      var linearFriction = (this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3) * duration;
+      body.applyLinearFrictionAtTime(linearFriction, now);
+
+      var newVel = this.vec2d.set(body.vel);
+
+      if (!this.screen.isPlaying()) {
+        var oldAngVelMag = Math.abs(this.getBodyAngVel());
+        if (oldAngVelMag && oldAngVelMag < PlayerSpirit.STOPPING_ANGVEL) {
+          this.setBodyAngVel(0);
+        }
+        var oldVelMagSq = newVel.magnitudeSquared();
+        if (oldVelMagSq && oldVelMagSq < PlayerSpirit.STOPPING_SPEED_SQUARED) {
+          newVel.reset();
+        }
+      }
+
+      body.setVelAtTime(newVel, now);
       body.invalidatePath();
     }
-    // TODO: put addTimeout in screen, remove spirit's world access
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
-  } else if (timeoutVal == PlayerSpirit.SHOTGUN_TIMEOUT_ID) {
-    this.shotgun.onTimeout();
-    if (this.shotgun == this.weapon) {
-      this.shotgun.fire();
-    }
-  } else if (timeoutVal == PlayerSpirit.LASER_TIMEOUT_ID) {
-    this.laser.onTimeout();
-    if (this.laser == this.weapon) {
-      this.laser.fire();
-    }
-  } else if (timeoutVal == PlayerSpirit.RESPAWN_TIMEOUT_ID) {
-    this.respawn();
   }
+};
+
+PlayerSpirit.prototype.getAngleToTarget = function() {
+  var playerPos = this.getBodyPos();
+  var targetPos = this.getTargetBody().getPosAtTime(this.now(), Vec2d.alloc());
+  var p = targetPos.subtract(playerPos);
+  var angle = p.angle();
+  targetPos.free();
+  return angle;
+};
+
+PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reverseness) {
+  // touch or pointer-lock
+  if (stickMag && stick.isTouched()) {
+    // Any stick vector more than 90 degrees away from the aim vector is somewhat reverse:
+    // 0 for 90 degreees, 1 for 180 degrees.
+    // The more reverse the stick is, the less the old aim's contribution to the new aim.
+    // That makes it easier to flip the aim nearly 180 degrees quickly.
+    // Without that, the player ends up facing gliding backwards instead of aiming.
+    this.destAim.scale(0.5 * (1 - reverseness * 0.9)).add(stick.getVal(this.vec2d).scale(Math.min(1.5, 1 + 1 * stickMag)));
+    this.destAim.scaleToLength(1);
+    var dist = stick.getVal(this.vec2d).distance(this.destAim);
+    this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
+  }
+  this.aim.slideByFraction(this.destAim, 0.5);
+};
+
+
+PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness) {
+  // up/down/left/right buttons
+  var aimFriction = 0.05;
+  var dist;
+  if (stickMag) {
+    var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
+    dist = correction.magnitude();
+    this.aimSpeed += 0.04 * dist;
+    aimFriction = 0.01;
+    this.destAim.add(correction.scale(Math.min(1, this.aimSpeed)));
+  }
+  this.aimSpeed *= (1 - aimFriction);
+  this.destAim.scaleToLength(1);
+  if (reverseness > 0.99) {
+    // 180 degree flip, precise or not, so set it instantly.
+    this.destAim.set(stick.getVal(this.vec2d)).scaleToLength(1);
+    this.aim.set(this.destAim);
+  } else {
+    dist = this.aim.distance(this.destAim);
+    var distContrib = dist * 0.25;
+    var smoothContrib = 0.1 / (dist + 0.1);
+    this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
+    this.aim.scaleToLength(1);
+  }
+};
+
+PlayerSpirit.prototype.breakBeam = function() {
+  // if (this.getTargetBody()) {
+  //   this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
+  //   this.aim.set(this.destAim);
+  // }
+  this.targetBodyId = 0;
+  this.beamState = BeamState.OFF;
+};
+
+PlayerSpirit.prototype.handleSeeking = function() {
+  var bestBody = null;
+  var bestResultFraction = 2;
+  var maxScanDist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD;
+  var maxFanRad = Math.PI / 6;
+  var scans = 2;
+  var thisRad = this.getBody().rad;
+  var scanPos = Vec2d.alloc();
+  var aimAngle = this.aim.angle();
+  scanPos.set(this.getBodyPos());
+  for (var i = 0; i < scans; i++) {
+    var radUnit = 2 * (Math.random()-0.5);
+    var scanVel = this.vec2d.setXY(0, maxScanDist + thisRad)
+        .rot(radUnit * maxFanRad)
+        .scaleXY(0.5, 1)
+        .rot(aimAngle);
+    var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
+    this.screen.addTractorSeekSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD * 1.5, resultFraction, this.color);
+    if (resultFraction !== -1) {
+      var targetBody = this.getScanHitBody();
+      if (targetBody && targetBody.shape !== Body.Shape.RECT && resultFraction < bestResultFraction) {
+        bestResultFraction = resultFraction;
+        bestBody = this.getScanHitBody();
+      }
+    }
+  }
+
+  if (bestBody) {
+    // grab that thing!
+    this.targetBodyId = bestBody.id;
+    this.beamState = BeamState.DRAGGING;
+  }
+  scanPos.free();
+};
+
+/**
+ * Applies tractor-beam forces to player and target, or breaks the beam if the target is out of range.
+ * Also sets the tractorForceFrac field, for drawing.
+ */
+PlayerSpirit.prototype.handleDragging = function() {
+  this.handleBeamForce(PlayerSpirit.TRACTOR_DRAG_DIST, PlayerSpirit.TRACTOR_BREAK_DIST,
+      PlayerSpirit.TRACTOR_MAX_ACCEL, PlayerSpirit.TRACTOR_MAX_FORCE,
+      false);
+};
+
+/**
+ * Applies tractor-beam forces to player and target, or breaks the beam if the target is out of range.
+ * Also sets the tractorForceFrac field, for drawing.
+ */
+PlayerSpirit.prototype.handleWielding = function() {
+  this.handleBeamForce(PlayerSpirit.WIELD_REST_DIST, PlayerSpirit.WIELD_BREAK_DIST,
+      PlayerSpirit.WIELD_MAX_ACCEL, PlayerSpirit.WIELD_MAX_FORCE,
+      true, this.destAim.angle());
+};
+
+PlayerSpirit.prototype.handleEjecting = function() {
+  this.handleWielding();
+};
+
+PlayerSpirit.prototype.eject = function() {
+  var targetBody = this.getTargetBody();
+  if (targetBody) {
+    this.handleBeamForce(PlayerSpirit.TRACTOR_BREAK_DIST, PlayerSpirit.TRACTOR_BREAK_DIST,
+        PlayerSpirit.EJECT_MAX_ACCEL, PlayerSpirit.EJECT_MAX_FORCE,
+        false);
+  }
+  this.beamState = BeamState.OFF;
+  this.targetBodyId = 0;
+};
+
+PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAccel, maxForce, isAngular, restingAngle) {
+  var playerBody = this.getBody();
+  var targetBody = this.getTargetBody();
+  var now = this.now();
+  var playerPos = this.getBodyPos();
+  var targetPos = targetBody.getPosAtTime(now, Vec2d.alloc());
+  var targetRad = targetBody.shape === Body.Shape.CIRCLE ? targetBody.rad : 1;
+
+  // break beam if there's something in the way for a length of time
+  var scanVel = this.vec2d.set(targetPos).subtract(playerPos);
+  var obstructionScanRad = 0.01;
+  scanVel.scaleToLength(scanVel.magnitude() - targetRad - obstructionScanRad);
+  var result = this.scanWithVel(HitGroups.PLAYER_SCAN, playerPos, scanVel, obstructionScanRad);
+  this.screen.addTractorSeekSplash(playerPos, scanVel, 0.2 + 0.3 * this.tractorForceFrac, result > 0 ? result : 1, this.color);
+  if (result >= 0 && result < 0.9) {
+    this.obstructionCount++;
+    if (this.obstructionCount > PlayerSpirit.MAX_OBSTRUCTION_COUNT) {
+      this.breakBeam();
+      targetPos.free();
+      return;
+    }
+  } else {
+    this.obstructionCount = 0;
+  }
+
+  // Weaken obstructed beams.
+  // Unobstructedness is from 1 (not obstructed) to 0 (totally obstructed)
+  var unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
+
+  var deltaPos = Vec2d.alloc().set(targetPos).subtract(playerPos);
+  var surfaceDist = deltaPos.magnitude() - playerBody.rad - targetRad;
+  var p0 = surfaceDist - restingDist;
+
+  var deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
+  var v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(1));
+
+  var maxA = maxAccel * unobstructedness * Math.abs(p0 * p0 / (restingDist * restingDist));
+  var forceMagSum = 0;
+  if (p0 >= breakDist) {
+    this.breakBeam();
+  } else {
+    var playerForce = Vec2d.alloc();
+    var targetForce = Vec2d.alloc();
+    var playerForceProportion = 0.5;
+    var pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+    var forceMag = targetBody.mass * pushAccelMag;
+    targetForce.set(deltaPos).scaleToLength((1 - playerForceProportion) * forceMag);
+    playerForce.set(deltaPos).scaleToLength((-playerForceProportion) * forceMag);
+
+    if (isAngular) {
+      p0 = deltaPos.angle() - restingAngle;
+      maxA = maxAccel * (Math.min(Math.abs(p0), Math.PI / 4)) * 0.5;
+      while (p0 < -Math.PI) p0 += 2 * Math.PI;
+      while (p0 > Math.PI) p0 -= 2 * Math.PI;
+
+      v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(-1).rot90Right());
+
+      var turnAccelMag = -Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+      var turnForceMag = Math.min(targetBody.mass, playerBody.mass) * turnAccelMag;
+      targetForce.add(this.vec2d.set(deltaPos).rot90Right().scaleToLength((1 - playerForceProportion) * turnForceMag));
+      playerForce.add(this.vec2d.set(deltaPos).rot90Right().scaleToLength(-playerForceProportion * turnForceMag));
+    }
+    forceMagSum = targetForce.magnitude() + playerForce.magnitude();
+    if (forceMagSum > maxForce) {
+      var scaleFactor = maxForce / forceMagSum;
+      targetForce.scale(scaleFactor);
+      playerForce.scale(scaleFactor);
+      forceMagSum = maxForce;
+    }
+    playerBody.addVelAtTime(playerForce.scale(1 / playerBody.mass), now);
+    targetBody.addVelAtTime(targetForce.scale(1 / targetBody.mass), now);
+    playerForce.free();
+    targetForce.free();
+  }
+
+  this.tractorForceFrac = forceMagSum / maxForce;
+  deltaPos.free();
+  deltaVel.free();
+  targetPos.free();
+};
+
+PlayerSpirit.prototype.handleActivating = function() {
+  this.handleWielding();
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
-  // TODO: replace world access with screen API?
   var body = this.getBody();
-  if (body) {
-    var bodyPos = this.getBodyPos();
-    var alertness = 1 - 0.7 * (this.bang.getValAtTime(this.now()) / PlayerSpirit.MAX_BANG);
-    renderer
-        .setStamp(this.modelStamp)
-        .setColorVector(this.vec4.set(this.color).scale1(alertness));
-    this.vec2d.set(this.weapon.currAimVec).scaleToLength(-1.2 * Math.max(0.5, Math.min(1, body.vel.magnitude())));
+  if (!body) return;
+  var bodyPos = this.getBodyPos();
+  this.camera.follow(bodyPos);
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+      .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
+      .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(this.now())));
+  renderer
+      .setStamp(this.modelStamp)
+      .setColorVector(this.color)
+      .setModelMatrix(this.modelMatrix)
+      .drawStamp();
+
+  var p1, p2, rad;
+
+  // tractor beam
+  var targetBody = this.getTargetBody();
+  if (targetBody) {
+    var unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
+    renderer.setStamp(this.stamps.lineStamp);
+    this.aimColor.set(this.color).scale1(0.75);
+    renderer.setColorVector(this.aimColor);
+    p1 = bodyPos;
+    p2 = targetBody.getPosAtTime(this.now(), this.vec2d);
+    rad = unobstructedness * (0.5 + 0.5*this.tractorForceFrac) * body.rad * 0.4;
     this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-        .multiply(this.mat44.toShearZOpXY(this.vec2d.x, this.vec2d.y))
-        .multiply(this.mat44.toRotateZOp(-body.vel.x * 0.2));
+        .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
     renderer.setModelMatrix(this.modelMatrix);
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+    renderer.setModelMatrix2(this.modelMatrix);
     renderer.drawStamp();
+  }
 
-    // draw aim guide
-    this.screen.renderer.setStamp(this.stamps.cylinderStamp);
-    var shotgun = this.weapon == this.shotgun;
-    if (shotgun) {
-      this.screen.renderer.setColorVector(this.vec4.setXYZ(1, 1, 0.5).scale1(Math.random() * 0.2 + 0.5));
-    } else {
-      this.screen.renderer.setColorVector(this.vec4.setXYZ(0.5, 1, 1).scale1(Math.random() * 0.2 + 0.5));
-    }
-    var p1 = Vec2d.alloc();
-    var p2 = Vec2d.alloc();
-    var aimLen = body.rad * (shotgun ? 1.5 : 2.5);
-    var rad = shotgun ? 0.32 : 0.18;
-    p1.set(this.weapon.currAimVec).scaleToLength(body.rad * 2).add(bodyPos);
-    p2.set(this.weapon.currAimVec).scaleToLength(body.rad * (2 + aimLen)).add(bodyPos);
+  // aim guide
+  if (!targetBody) {
+    renderer.setStamp(this.stamps.lineStamp);
+    this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
+    renderer.setColorVector(this.aimColor);
+    p1 = this.vec2d;
+    p2 = this.vec2d2;
+    var p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
+    var p2Dist = PlayerSpirit.PLAYER_RAD * 2;
+    rad = 0.15;
+    p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
+    p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
     this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0))
+        .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    this.screen.renderer.setModelMatrix(this.modelMatrix);
+    renderer.setModelMatrix(this.modelMatrix);
     this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0))
+        .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    this.screen.renderer.setModelMatrix2(this.modelMatrix);
-    this.screen.renderer.drawStamp();
-    p1.free();
-    p2.free();
-
-    if (this.isShielded()) {
-      var howShielded = (this.shieldEndTime - this.now()) / PlayerSpirit.SHIELD_TIMEOUT;
-      renderer
-          .setStamp(this.stamps.circleStamp)
-          .setColorVector(this.vec4.setXYZ(0, 1, 1));
-      this.modelMatrix.toIdentity()
-          .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.01))
-          .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-          .multiply(this.mat44.toScaleOpXYZ(1.05 + 0.1 * howShielded, 1.05 + 0.1 * howShielded, 1));
-      renderer.setModelMatrix(this.modelMatrix);
-      renderer.drawStamp();
-    }
+    renderer.setModelMatrix2(this.modelMatrix);
+    renderer.drawStamp();
   }
 };
 
-PlayerSpirit.prototype.hitAnt = function(mag) {
-  if (this.isShielded()) {
-    this.sounds.shieldThump(this.getBodyPos(), mag);
+PlayerSpirit.prototype.getTargetBody = function() {
+  var b = null;
+  if (this.targetBodyId) {
+    b = this.screen.getBodyById(this.targetBodyId);
   } else {
-    this.addHealth(-1);
+    this.targetBodyId = 0;
   }
+  return b;
 };
 
-PlayerSpirit.prototype.addHealth = function(h) {
-  this.health += h;
-  if (this.health <= 0) {
-    this.die();
-  }
-};
-
-PlayerSpirit.prototype.die = function() {
-  this.screen.playerChasePolarity = -0.03;
+PlayerSpirit.prototype.explode = function() {
   var body = this.getBody();
   if (body) {
     var now = this.now();
@@ -344,17 +669,14 @@ PlayerSpirit.prototype.die = function() {
     var x = pos.x;
     var y = pos.y;
 
-    this.screen.drawTerrainPill(pos, pos, body.rad * 4, 1);
-
     // giant tube explosion
     var s = this.screen.splash;
-    s.reset(Game4BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
+    s.reset(1, this.stamps.tubeStamp);
 
     s.startTime = now;
-    s.duration = 20;
-    var rad = 30;
-
-    var endRad = rad * 2;
+    s.duration = 10;
+    var rad = 10;
+    var endRad = 0;
 
     s.startPose.pos.setXYZ(x, y, -0.5);
     s.endPose.pos.setXYZ(x, y, 0);
@@ -368,7 +690,7 @@ PlayerSpirit.prototype.die = function() {
 
     s.startPose.rotZ = 0;
     s.endPose.rotZ = 0;
-    s.startColor.setXYZ(1, 0.3, 0.6);
+    s.startColor.set(this.color);
     s.endColor.setXYZ(0, 0, 0);
 
     this.screen.splasher.addCopy(s);
@@ -379,7 +701,7 @@ PlayerSpirit.prototype.die = function() {
     var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
     function addSplash(x, y, dx, dy, duration, sizeFactor) {
-      s.reset(Game4BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
+      s.reset(1, self.stamps.circleStamp);
       s.startTime = now;
       s.duration = duration;
 
@@ -389,22 +711,22 @@ PlayerSpirit.prototype.die = function() {
       s.startPose.scale.setXYZ(startRad, startRad, 1);
       s.endPose.scale.setXYZ(0, 0, 1);
 
-      s.startColor.setXYZ(1, 0.3, 0.6);
-      s.endColor.setXYZ(1/2, 0.3/2, 0.6/2);
+      s.startColor.set(self.color);
+      s.endColor.set(self.color).scale1(0.5);
       self.screen.splasher.addCopy(s);
     }
 
-//    // fast outer particles
-//    particles = Math.ceil(15 * (1 + 0.5 * Math.random()));
-//    explosionRad = 20;
-//    dirOffset = 2 * Math.PI * Math.random();
-//    for (i = 0; i < particles; i++) {
-//      duration = 15 * (1 + Math.random());
-//      dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
-//      dx = Math.sin(dir) * explosionRad / duration;
-//      dy = Math.cos(dir) * explosionRad / duration;
-//      addSplash(x, y, dx, dy, duration, 1);
-//    }
+    // fast outer particles
+    particles = Math.ceil(15 * (1 + 0.5 * Math.random()));
+    explosionRad = 20;
+    dirOffset = 2 * Math.PI * Math.random();
+    for (i = 0; i < particles; i++) {
+      duration = 15 * (1 + Math.random());
+      dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
+      dx = Math.sin(dir) * explosionRad / duration;
+      dy = Math.cos(dir) * explosionRad / duration;
+      addSplash(x, y, dx, dy, duration, 1);
+    }
 
     // inner smoke ring
     particles = Math.ceil(20 * (1 + 0.5 * Math.random()));
@@ -412,123 +734,10 @@ PlayerSpirit.prototype.die = function() {
     dirOffset = 2 * Math.PI * Math.random();
     for (i = 0; i < particles; i++) {
       duration = 20 * (0.5 + Math.random());
-      dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-      var thisRad = explosionRad + (0.5 + Math.random());
+      dir = dirOffset + 2 * Math.PI * (i / particles) + Math.random() / 4;
       dx = Math.sin(dir) * explosionRad / duration;
       dy = Math.cos(dir) * explosionRad / duration;
       addSplash(x, y, dx, dy, duration, 2);
     }
-
-    var craterRad = body.rad * 10;
-    this.bulletBurst(pos, body.rad * 0.5, 0, craterRad);
-
-    // delete body
-    this.screen.world.removeBodyId(this.bodyId);
-    this.bodyId = null;
-
-    this.sounds.playerExplode(pos);
-
-    // prep to respawn
-    this.screen.world.addTimeout(now + PlayerSpirit.RESPAWN_TIMEOUT,
-        this.id, PlayerSpirit.RESPAWN_TIMEOUT_ID);
   }
-};
-
-PlayerSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
-  var p = Vec2d.alloc();
-  var v = Vec2d.alloc();
-  var bulletCount = Math.floor(12 + 3 * Math.random());
-  var a = Math.random() * Math.PI;
-  for (var i = 0; i < bulletCount; i++) {
-    var duration = 10 + 5 * Math.random();
-    var speed = (endRad - startRad) / duration;
-    a += 2 * Math.PI / bulletCount;
-    v.setXY(0, 1).rot(a + Math.random() * 0.1);
-    p.set(v).scale(startRad).add(pos);
-    v.scale(speed);
-    this.addExplosionBullet(p, v, bulletRad, duration);
-  }
-  v.free();
-  p.free();
-};
-
-PlayerSpirit.prototype.addExplosionBullet = function(pos, vel, rad, duration) {
-  var now = this.now();
-  var spirit = BulletSpirit.alloc(this.screen);
-  spirit.setModelStamp(this.stamps.circleStamp);
-  spirit.setColorRGB(1, 0.3, 0.6);
-  var density = 5;
-
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, now);
-  b.setVelAtTime(vel, now);
-  b.rad = rad;
-  b.hitGroup = this.screen.getHitGroups().PLAYER_FIRE;
-  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = duration;
-  spirit.bodyId = this.screen.world.addBody(b);
-
-  var spiritId = this.screen.world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  spirit.addTrailSegment();
-  spirit.digChance = 999;
-  spirit.bounceChance = 0;
-  spirit.damage = 0;
-  spirit.wallDamageMultiplier = 1.6;
-
-  // bullet self-destruct timeout
-  this.screen.world.addTimeout(now + duration, spiritId, 0);
-
-  return spiritId;
-};
-
-PlayerSpirit.prototype.respawn = function() {
-  this.screen.playerChasePolarity = 1;
-  var body = this.createBody(this.tempBodyPos, this.dir);
-  var now = this.now();
-  this.health = this.maxHealth;
-  this.bodyId = this.screen.world.addBody(body);
-  var pos = this.tempBodyPos;
-
-  this.sounds.playerSpawn(pos);
-
-  // splash
-  var x = pos.x;
-  var y = pos.y;
-
-  var s = this.screen.splash;
-  s.reset(Game4BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
-
-  s.startTime = now;
-  s.duration = 10;
-  var startRad = body.rad * 2;
-  var endRad = body.rad * 8;
-
-  s.startPose.pos.setXYZ(x, y, 0);
-  s.endPose.pos.setXYZ(x, y, 1);
-  s.startPose.scale.setXYZ(0, 0, 1);
-  s.endPose.scale.setXYZ(endRad, endRad, 1);
-
-  s.startPose2.pos.setXYZ(x, y, 1);
-  s.endPose2.pos.setXYZ(x, y, 1);
-  s.startPose2.scale.setXYZ(startRad, startRad, 1);
-  s.endPose2.scale.setXYZ(endRad, endRad, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-  s.startColor.setXYZ(0, 1, 1);
-  s.endColor.setXYZ(0, 0, 0);
-
-  this.screen.splasher.addCopy(s);
-
-  this.shieldsUp();
-};
-
-PlayerSpirit.prototype.shieldsUp = function() {
-  this.shieldEndTime = this.now() + PlayerSpirit.SHIELD_TIMEOUT;
-};
-
-PlayerSpirit.prototype.isShielded = function() {
-  return this.now() < this.shieldEndTime;
 };
