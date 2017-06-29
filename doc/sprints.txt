@@ -31,8 +31,7 @@ v create the 7 slots
       v unpack and use controls
       v make tractor beams work like test45
 v Render the hud
-- Add the mid-screen pause widget
-- for fun: join/drop effects - use existing spawn and death for now
+v Add the mid-screen pause widget
 
 game4 multiplayer rendering
 - zoom
@@ -42,9 +41,15 @@ game4 multiplayer rendering
 
 - ant logic - don't aim for average player position any more (but I'll probably remove the ants)
 
+- join/drop effects - use existing spawn and death for now
+
 standardize metrics, graphing
 * it's all copies of itself today, and lots of it
 
 pull game4's splashes into a new file?
 
 Entrance and Exit
+Weapons
+Critters
+Hats
+Legs and arms

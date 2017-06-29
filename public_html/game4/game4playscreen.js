@@ -31,6 +31,8 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
     self.controller.restartLevel();
     e.preventDefault();
   };
+
+  this.initPauseButtons();
 }
 Game4PlayScreen.prototype = new Game4BaseScreen();
 Game4PlayScreen.prototype.constructor = Game4PlayScreen;
@@ -58,6 +60,28 @@ Game4PlayScreen.prototype.setScreenListening = function(listen) {
   Events.setListening(listen, this.canvas, 'mousemove', this.keyTipRevealer);
   Events.setListening(listen, window, 'keydown', this.keyTipRevealer);
 };
+
+Game4PlayScreen.prototype.initPauseButtons = function() {
+  this.pauseKeyTrigger = new KeyTrigger();
+  this.pauseKeyTrigger
+      .addTriggerKeyByName(Key.Name.SPACE)
+      .addTriggerDownListener(this.pauseDownFn);
+  this.addListener(this.pauseKeyTrigger);
+
+  this.pauseTouchWidget = new ClearDoubleTapWidget(this.getHudEventTarget());
+  this.pauseTouchWidget
+      .addDoubleTapListener(this.pauseDownFn)
+      .setStamp(this.stamps.pauseStamp);
+  var rule = new CuboidRule(this.canvasCuboid, this.pauseTouchWidget.getWidgetCuboid())
+      .setAspectRatio(new Vec4(1, 1))
+      .setSourceAnchor(Vec4.ZERO, Vec4.ZERO)
+      .setTargetAnchor(Vec4.ZERO, Vec4.ZERO)
+      .setSizingMax(new Vec4(0.2, 0.2), new Vec4(50, 50));
+  this.cuboidRules.push(rule);
+
+  this.addListener(this.pauseTouchWidget);
+};
+
 
 Game4PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
@@ -365,6 +389,7 @@ Game4PlayScreen.prototype.drawHud = function() {
   for (var i = 0; i < this.widgets.length; i++) {
     this.widgets[i].draw(this.renderer);
   }
+  this.pauseTouchWidget.draw(this.renderer);
   this.renderer.setBlendingEnabled(false);
 };
 

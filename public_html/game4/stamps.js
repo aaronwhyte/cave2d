@@ -20,6 +20,7 @@ Stamps.create = function(renderer) {
   stamps.lineStamp = stamp(RigidModel.createCylinder(9));
 
   // HUD icons
+  stamps.pauseStamp = stamp(models.getPause());
   stamps.joinButton = stamp(models.getJoinButton());
   stamps.button1 = stamp(models.getButton1());
   stamps.button2 = stamp(models.getButton2());
