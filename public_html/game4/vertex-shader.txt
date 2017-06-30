@@ -5,15 +5,18 @@ uniform vec4 uModelColor;
 
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
-attribute float aVertexGroup;
+attribute lowp float aVertexGroup;
 
 varying lowp vec4 vColor;
+varying lowp vec2 vPos;
 
 void main(void) {
   if (aVertexGroup == 0.0) {
     gl_Position = aVertexPosition * uModelMatrix * uViewMatrix;
+    vPos = (aVertexPosition * uModelMatrix).xy;
   } else {
     gl_Position = aVertexPosition * uModelMatrix2 * uViewMatrix;
+    vPos = (aVertexPosition * uModelMatrix2).xy;
   }
   vColor = aVertexColor * uModelColor;
 }

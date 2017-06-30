@@ -10,8 +10,11 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.updateViewMatrix();
 
-  this.players = [];
+  this.playerSpirits = [];
   this.widgets = [];
+
+  this.viewCircles = [];
+  this.defaultViewCircle = new Circle();
 
   var self = this;
 
@@ -39,6 +42,10 @@ Game4PlayScreen.prototype.constructor = Game4PlayScreen;
 
 Game4PlayScreen.EXIT_DURATION = 3;
 Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
+
+Game4PlayScreen.RESPAWN_TIMEOUT = 30;
+Game4PlayScreen.PLAYER_VIEW_RADIUS = 40;
+Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
 
 Game4PlayScreen.RESPAWN_TIMEOUT = 30;
 
@@ -278,8 +285,8 @@ Game4PlayScreen.prototype.snapCameraToPlayers = function() {
 };
 
 Game4PlayScreen.prototype.handleInput = function () {
-  for (var i = 0; i < this.players.length; i++) {
-    this.players[i].handleInput();
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    this.playerSpirits[i].handleInput();
   }
   for (var i = 0; i < this.slots.length; i++) {
     var slot = this.slots[i];
@@ -314,7 +321,7 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
   var g = 1 - 0.5 * Math.random();
   var b = 1 - 0.5 * Math.random();
   spirit.setColorRGB(r, g, b);
-  this.players.push(spirit);
+  this.playerSpirits.push(spirit);
 
   // splash
   var body = spirit.getBody();
@@ -359,11 +366,40 @@ Game4PlayScreen.prototype.playerDrop = function(slot) {
 };
 
 Game4PlayScreen.prototype.drawScene = function() {
-  this.renderer.setViewMatrix(this.viewMatrix);
+  var startTime = performance.now();
 
-  this.drawSpirits();
-  this.drawTiles();
+  // update this.circles to match all the player cameras, or the starting area if there are no players now.
+  var pad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
+  var circles = this.viewCircles;
+  var count = 0;
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    var spirit = this.playerSpirits[i];
+    var cam = spirit.camera;
+    var circle = spirit.circle;
+    circle.pos.set(cam.cameraPos);
+    circle.rad = pad;
+    circles[i] = circle;
+    count++;
+  }
+  circles.length = count;
+  if (count === 0) {
+    this.defaultViewCircle.rad = pad;
+    this.viewCircles[0] = this.defaultViewCircle;
+  }
+
+  this.positionCamera();
+  this.updateViewMatrix();
+  this.renderer.setViewMatrix(this.viewMatrix);
+  this.renderer.setCircleMode(this.viewCircles);
+
+  this.drawSpiritsOverlappingCircles(circles);
+  stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
+
+  this.drawTilesOverlappingCircles(circles);
+
   this.splasher.draw(this.renderer, this.world.now);
+
+  this.renderer.setNormalMode();
   this.drawHud();
 
   // Animate whenever this thing draws.
@@ -372,11 +408,68 @@ Game4PlayScreen.prototype.drawScene = function() {
   }
 };
 
+Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
+  var cellIdSet = ObjSet.alloc();
+  var spiritIdSet = ObjSet.alloc();
+  var i;
+  for (i = 0; i < circles.length; i++) {
+    this.world.addCellIdsOverlappingCircle(cellIdSet, circles[i]);
+  }
+  for (var cellId in cellIdSet.vals) {
+    for (var groupNum = 0; groupNum < this.world.getGroupCount(); groupNum++) {
+      if (groupNum === this.getWallHitGroup()) continue;
+      this.world.addSpiritIdsInCellAndGroup(spiritIdSet, cellId, groupNum);
+    }
+  }
+  for (var spiritId in spiritIdSet.vals) {
+    var spirit = this.world.spirits[spiritId];
+    if (spirit) spirit.onDraw(this.world, this.renderer);
+  }
+  spiritIdSet.free();
+  cellIdSet.free();
+};
+
+Game4PlayScreen.prototype.positionCamera = function() {
+  if (this.playerSpirits.length === 0) {
+    this.viewableWorldRect.setPosXY(0, 0);
+  }
+  this.viewableWorldRect.rad.reset();
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    var spirit = this.playerSpirits[i];
+    var playerCamera = spirit.camera;
+    if (i === 0) {
+      this.viewableWorldRect.setPosXY(playerCamera.getX(), playerCamera.getY());
+    } else {
+      this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
+    }
+  }
+  var pad = Game4PlayScreen.PLAYER_VIEW_RADIUS * Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC;
+  this.viewableWorldRect.padXY(pad, pad);
+
+  var destPixelsPerMeter = Math.min(
+      2 * this.canvas.width / this.viewableWorldRect.getWidth(),
+      2 * this.canvas.height / this.viewableWorldRect.getHeight());
+  if (destPixelsPerMeter < this.pixelsPerMeter) {
+    // zoom out quickly
+    this.pixelsPerMeter = destPixelsPerMeter;
+  } else {
+    // zoom in slowly
+    this.pixelsPerMeter = (this.pixelsPerMeter * 29 + destPixelsPerMeter) / 30;
+  }
+
+  // gently update the camera position
+  this.camera.cameraPos.scale(4).add(this.viewableWorldRect.pos).scale(1/5);
+};
+
+Game4PlayScreen.prototype.getPixelsPerMeter = function() {
+  return this.pixelsPerMeter;
+};
+
 Game4PlayScreen.prototype.drawHud = function() {
   this.hudViewMatrix.toIdentity()
       .multiply(this.mat44.toScaleOpXYZ(
-              2 / this.canvas.width,
-              -2 / this.canvas.height,
+          2 / this.canvas.width,
+          -2 / this.canvas.height,
           1))
       .multiply(this.mat44.toTranslateOpXYZ(-this.canvas.width/2, -this.canvas.height/2, 0));
   this.renderer.setViewMatrix(this.hudViewMatrix);
@@ -392,7 +485,6 @@ Game4PlayScreen.prototype.drawHud = function() {
   this.pauseTouchWidget.draw(this.renderer);
   this.renderer.setBlendingEnabled(false);
 };
-
 Game4PlayScreen.prototype.isPlaying = function() {
   return true;
 };
@@ -402,10 +494,10 @@ Game4PlayScreen.prototype.killPlayerSpirit = function(spirit) {
   // spirit.explode();
   // this.sounds.playerExplode(spirit.getBodyPos());
   this.removeByBodyId(spirit.bodyId);
-  for (var i = 0; i < this.players.length; i++) {
-    if (this.players[i] === spirit) {
-      this.players[i] = this.players[this.players.length - 1];
-      this.players.pop();
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    if (this.playerSpirits[i] === spirit) {
+      this.playerSpirits[i] = this.playerSpirits[this.playerSpirits.length - 1];
+      this.playerSpirits.pop();
       break;
     }
   }
