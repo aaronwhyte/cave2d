@@ -42,7 +42,7 @@ v selective spirit draw
 v shader for circle mask
 
 Refactoring
-- pull renderer up out of test44-45 and game4 and replace the main renderer
+v pull renderer up out of test44-45 and game4 and replace the main renderer
 - standardize metrics, graphing code chunks
   * it's all copies of itself today, and lots of it
 - pull game4's splashes into a new file, like I did for "sounds"
@@ -50,11 +50,12 @@ Refactoring
 
 - join/drop effects - use existing spawn and death for now
 
-Basic Props v1
+Game4 Basic Mechanics
 - Entrance
+- Critters
+- Death
 - Exit
 - Weapons
-- Critters
 - Outfits
 
 Player Graphics

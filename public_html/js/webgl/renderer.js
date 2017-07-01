@@ -14,6 +14,8 @@ function Renderer(canvas, gl, program) {
   this.initAttributesAndUniforms();
   this.modelStamp = null;
   this.oldColor = new Vec4(-1, -1, -1);
+
+  this.circleArray = [];
 }
 
 Renderer.prototype.initAttributesAndUniforms = function() {
@@ -24,6 +26,10 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   this.createUniform('uModelMatrix');
   this.createUniform('uModelMatrix2');
   this.createUniform('uModelColor');
+
+  this.createUniform('uType');
+  this.createUniform('uCircles');
+  this.createUniform('uCircleCount');
 };
 
 Renderer.prototype.createVertexAttribute = function(name) {
@@ -41,8 +47,8 @@ Renderer.COLOR_WHITE = new Vec4(1, 1, 1, 1);
  * @return {Renderer}
  */
 Renderer.prototype.resize = function() {
-  if (this.canvas.width != this.canvas.clientWidth ||
-      this.canvas.height != this.canvas.clientHeight) {
+  if (this.canvas.width !== this.canvas.clientWidth ||
+      this.canvas.height !== this.canvas.clientHeight) {
     this.canvas.width = this.canvas.clientWidth;
     this.canvas.height = this.canvas.clientHeight;
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -135,13 +141,32 @@ Renderer.prototype.setColorVector = function(color) {
   return this;
 };
 
+Renderer.prototype.setCircleMode = function(circles) {
+  if (circles.length * 3 !== this.circleArray.length) {
+    this.circleArray.length = circles.length * 3;
+  }
+  for (var i = 0; i < circles.length; i++) {
+    var c = circles[i];
+    this.circleArray[i * 3] = c.pos.x;
+    this.circleArray[i * 3 + 1] = c.pos.y;
+    this.circleArray[i * 3 + 2] = c.rad;
+  }
+  this.gl.uniform1i(this.uType, 1);
+  this.gl.uniform1i(this.uCircleCount, circles.length);
+  this.gl.uniform3fv(this.uCircles, this.circleArray);
+};
+
+Renderer.prototype.setNormalMode = function() {
+  this.gl.uniform1i(this.uType, 0);
+};
+
 /**
  * Prepares for stamp() calls.
  * @param {ModelStamp} stamp
  * @return {Renderer}
  */
 Renderer.prototype.setStamp = function(stamp) {
-  if (this.modelStamp == null || this.modelStamp.id !== stamp.id) {
+  if (this.modelStamp === null || this.modelStamp.id !== stamp.id) {
     this.modelStamp = stamp;
     stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor, this.aVertexGroup);
   }
