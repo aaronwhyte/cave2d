@@ -67,7 +67,7 @@ StatMon.prototype.setGraphColor = function(v) {
 
 StatMon.prototype.sample = function() {
   this.sampleCalls++;
-  if (this.sampleCalls % this.sampleInterval == 0) {
+  if (this.sampleCalls % this.sampleInterval === 0) {
     this.sampleNum++;
     // really sample
     this.trail.sample(this.sampleCalls);
@@ -75,7 +75,7 @@ StatMon.prototype.sample = function() {
 };
 
 StatMon.prototype.draw = function(width, height) {
-  if (width != this.canvasWidth || height != this.canvasHeight) {
+  if (width !== this.canvasWidth || height !== this.canvasHeight) {
     // recalculate viewMatrix
     this.canvasWidth = width;
     this.canvasHeight = height;
@@ -84,7 +84,7 @@ StatMon.prototype.draw = function(width, height) {
         .multiply(this.mat44.toTranslateOpXYZ(-1, 1, 0))
         .multiply(this.mat44.toScaleOpXYZ(2 / width, -2 / height, -1));
   }
-  this.renderer.setViewMatrix(this.viewMatrix)
+  this.renderer.setViewMatrix(this.viewMatrix);
 
   // border
   if (this.borderWidth) {

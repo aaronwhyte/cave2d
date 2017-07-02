@@ -17,9 +17,9 @@ StatRateTrail.prototype.constructor = StatRateTrail;
 
 StatRateTrail.prototype.sample = function(newTime) {
   var newVal = this.stats.get(this.statName);
-  if (this.lastTime != null) {
+  if (this.lastTime !== null) {
     var timeDiff = newTime - this.lastTime;
-    if (timeDiff != 0) {
+    if (timeDiff !== 0) {
       var rate = (newVal - this.lastVal) / timeDiff;
       this.vals.enqueue(rate);
       this.times.enqueue(newTime);

@@ -228,7 +228,7 @@ WorldScreen.prototype.isDirty = function() {
  * @param {boolean} d
  */
 WorldScreen.prototype.setDirty = function(d) {
-  if (this.dirty != d) {
+  if (this.dirty !== d) {
     this.dirty = d;
   }
 };
@@ -292,6 +292,14 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
       this.handleInput();
     }
   }
+
+  // update cuboids
+  this.canvasCuboid.pos.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0);
+  this.canvasCuboid.rad.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0.99);
+  for (var i = 0; i < this.cuboidRules.length; i++) {
+    this.cuboidRules[i].apply();
+  }
+
   this.drawStats();
   stats && stats.add(STAT_NAMES.STAT_DRAWING_MS, performance.now() - startTimeMs);
 
@@ -299,7 +307,7 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
   this.drawScene();
   stats && stats.add(STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS, performance.now() - startTimeMs);
 
-  if (visibility == 1) {
+  if (visibility === 1) {
     this.clock(startTimeMs);
   }
   this.onFrameEnd(startTimeMs);
@@ -390,14 +398,14 @@ WorldScreen.prototype.onTimeout = function(e) {
 };
 
 WorldScreen.prototype.bodyIfInGroup = function(group, b0, b1) {
-  if (b0 && b0.hitGroup == group) return b0;
-  if (b1 && b1.hitGroup == group) return b1;
+  if (b0 && b0.hitGroup === group) return b0;
+  if (b1 && b1.hitGroup === group) return b1;
   return null;
 };
 
 WorldScreen.prototype.otherBody = function(thisBody, b0, b1) {
-  if (thisBody != b0) return b0;
-  if (thisBody != b1) return b1;
+  if (thisBody !== b0) return b0;
+  if (thisBody !== b1) return b1;
   return null;
 };
 
@@ -407,10 +415,10 @@ WorldScreen.prototype.getSpiritForBody = function(b) {
 
 WorldScreen.prototype.bodyIfSpiritType = function(type, b0, opt_b1) {
   var s0 = this.getSpiritForBody(b0);
-  if (s0 && s0.type == type) return b0;
+  if (s0 && s0.type === type) return b0;
   if (opt_b1) {
     var s1 = this.getSpiritForBody(opt_b1);
-    if (s1 && s1.type == type) return opt_b1;
+    if (s1 && s1.type === type) return opt_b1;
   }
   return null;
 };
@@ -525,10 +533,10 @@ WorldScreen.prototype.getSpiritPairMatchingTypes = function(pair, spiritType0, s
   if (!pair[0] || !pair[1]) {
     return null;
   }
-  if (pair[0].type == spiritType0 && pair[1].type == spiritType1) {
+  if (pair[0].type === spiritType0 && pair[1].type === spiritType1) {
     return pair;
   }
-  if (pair[0].type == spiritType1 && pair[1].type == spiritType0) {
+  if (pair[0].type === spiritType1 && pair[1].type === spiritType0) {
     var temp = pair[0];
     pair[0] = pair[1];
     pair[1] = temp;
@@ -636,7 +644,7 @@ WorldScreen.prototype.worldToJson = function() {
   var worldJsoner = new WorldJsoner();
   var self = this;
   worldJsoner.setIsBodySerializableFn(function(body) {
-    return body.hitGroup != self.getWallHitGroup();
+    return body.hitGroup !== self.getWallHitGroup();
   });
   worldJsoner.roundBodyVelocities(this.world, WorldScreen.ROUND_VELOCITY_TO_NEAREST);
   var json = worldJsoner.worldToJson(this.world);
@@ -677,7 +685,7 @@ WorldScreen.prototype.addItem = function(name, pos, dir) {
   var configs = this.getSpiritConfigs();
   for (var t in configs) {
     var config = configs[t];
-    if (config.menuItemConfig && config.menuItemConfig.itemName == name) {
+    if (config.menuItemConfig && config.menuItemConfig.itemName === name) {
       var spiritId = config.menuItemConfig.factory(this, config.stamp, pos, dir);
       this.setDirty(true);
       return spiritId;
@@ -865,21 +873,13 @@ WorldScreen.prototype.sampleStats = function() {
 };
 
 WorldScreen.prototype.drawStats = function() {
-  // TODO: why are cuboid rules applied in drawStats. Fix that!
-  var i;
-  this.canvasCuboid.pos.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0);
-  this.canvasCuboid.rad.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0.99);
-  for (i = 0; i < this.cuboidRules.length; i++) {
-    this.cuboidRules[i].apply();
-  }
-
   if (this.drawLeftGraphs && this.leftStatMons) {
-    for (i = 0; i < this.leftStatMons.length; i++) {
+    for (var i = 0; i < this.leftStatMons.length; i++) {
       this.leftStatMons[i].draw(this.canvas.width, this.canvas.height);
     }
   }
   if (this.drawRightGraphs && this.rightStatMons) {
-    for (i = 0; i < this.rightStatMons.length; i++) {
+    for (var i = 0; i < this.rightStatMons.length; i++) {
       this.rightStatMons[i].draw(this.canvas.width, this.canvas.height);
     }
   }
