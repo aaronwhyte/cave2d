@@ -43,10 +43,27 @@ v shader for circle mask
 
 Refactoring
 v pull renderer up out of test44-45 and game4 and replace the main renderer
-- standardize metrics, graphing code chunks
-  * it's all copies of itself today, and lots of it
+v standardize metrics, graphing code chunks
+  v initStatMons
+  v fields
+    v statMons
+      v leftStatMons
+      v rightStatMons
+      v drawLeftGraphs
+      v drawRightGraphs
+    v cuboids
+      * add to CuboidRules
+      v bottomRight
+      v topRight
+      v bottomLeft
+      v topLeft
+      v graphsCuboid
+  v sampleStats - overridden from WorldScreen, called from page.animateFrame()
+  v drawStats
+
 - pull game4's splashes into a new file, like I did for "sounds"
 
+- delete game4.getAveragePlayerPos and everything that uses it
 
 - join/drop effects - use existing spawn and death for now
 
