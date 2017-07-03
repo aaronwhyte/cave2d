@@ -24,14 +24,15 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.sounds.setMasterGain(0.5);
 
+  this.splashes = new Splashes(this.splasher, this.stamps);
 
-  this.playerAveragePos = new Vec2d();
   this.levelColorVector.setRGBA(0.2, 0.3, 0.8, 1);
   this.timeMultiplier = 1;
-  this.drawScans = false;
   this.playerChasePolarity = 1;
 
   this.initStatMons();
+
+  this.drawScans = false;
   this.drawLeftGraphs = false;
   this.drawRightGraphs = false;
 }
@@ -52,13 +53,6 @@ Game4BaseScreen.MenuItem = {
   RED_ANT: 'red_ant',
   PLAYER: 'player',
   EXIT: 'exit'
-};
-
-Game4BaseScreen.SplashType = {
-  NOTE: 1,
-  SCAN: 2,
-  WALL_DAMAGE: 3,
-  ERROR: 4
 };
 
 Game4BaseScreen.prototype.createSpiritConfigs = function() {
@@ -159,8 +153,9 @@ Game4BaseScreen.prototype.onHitEvent = function(e) {
       var playerSpirit = this.getSpiritForBody(playerBody);
       var exitBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody && !this.exitStartTime) {
-        this.sounds.exit(this.getAveragePlayerPos());
-        this.startExit(exitBody.pathStartPos.x, exitBody.pathStartPos.y);
+        var exitPos = exitBody.getPosAtTime(this.now(), this.vec2d);
+        this.sounds.exit(exitPos);
+        this.startExit(exitPos.x, exitPos.y);
       }
       var antBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ANT, b0, b1);
       if (antBody) {
@@ -193,166 +188,15 @@ Game4BaseScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-Game4BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
-  var s = this.splash;
-  s.reset(Game4BaseScreen.SplashType.SCAN, this.stamps.cylinderStamp);
-
-  s.startTime = this.world.now;
-  s.duration = 20;
-
-  var x = pos.x;
-  var y = pos.y;
-  var hit = dist >= 0;
-  var d = hit ? dist : 1;
-  var dx = vel.x * d;
-  var dy = vel.y * d;
-
-  s.startPose.pos.setXYZ(x, y, 0);
-  s.endPose.pos.setXYZ(x, y, 1);
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad, rad, 1);
-
-  s.startPose2.pos.setXYZ(x + dx, y + dy, 0);
-  s.endPose2.pos.setXYZ(x + dx, y + dy, 1);
-  s.startPose2.scale.setXYZ(rad, rad, 1);
-  s.endPose2.scale.setXYZ(rad, rad, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-
-  if (dist < 0) {
-    s.startColor.setXYZ(0.2, 0.5, 0.2);
-    s.endColor.setXYZ(0.02, 0.05, 0.02);
-  } else {
-    s.startColor.setXYZ(0.8, 0.2, 0.2);
-    s.endColor.setXYZ(0.08, 0.02, 0.02);
-  }
-
-  this.splasher.addCopy(s);
+Game4BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
+  this.splashes.addScanSplash(this.world.now, pos, vel, rad, dist);
 };
 
-Game4BaseScreen.prototype.getAveragePlayerPos = function() {
-  var playerCount = 0;
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
-    if (spirit.type === Game4BaseScreen.SpiritType.PLAYER) {
-      var body = spirit.getBody(this.world);
-      if (body) {
-        if (playerCount === 0) {
-          this.playerAveragePos.reset();
-        }
-        this.playerAveragePos.add(this.getBodyPos(body, this.vec2d));
-        playerCount++;
-      }
-    }
-  }
-  if (playerCount !== 0) {
-    this.playerAveragePos.scale(1 / playerCount);
-  }
-  return this.playerAveragePos;
+Game4BaseScreen.prototype.addTractorSeekSplash = function(pos, vel, rad, dist, color) {
+  this.splashes.addTractorSeekSplash(this.world.now, pos, vel, rad, dist, color);
 };
 
-Game4BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
-  var s = this.splash;
-  s.reset(Game4BaseScreen.SplashType.SCAN, this.stamps.cylinderStamp);
-
-  s.startTime = this.world.now;
-  s.duration = 3;
-
-  var x = pos.x;
-  var y = pos.y;
-  var hit = dist >= 0;
-  var d = hit ? dist : 1;
-  var dx = vel.x * d;
-  var dy = vel.y * d;
-
-  s.startPose.pos.setXYZ(x, y, 0);
-  s.endPose.pos.setXYZ(x, y, 1);
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad, rad, 1);
-
-  s.startPose2.pos.setXYZ(x + dx, y + dy, 0);
-  s.endPose2.pos.setXYZ(x + dx, y + dy, 1);
-  s.startPose2.scale.setXYZ(rad, rad, 1);
-  s.endPose2.scale.setXYZ(rad, rad, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-
-  if (dist < 0) {
-    s.startColor.setXYZ(0.2, 0.5, 0.2);
-    s.endColor.setXYZ(0.02, 0.05, 0.02);
-  } else {
-    s.startColor.setXYZ(0.8, 0.2, 0.2);
-    s.endColor.setXYZ(0.08, 0.02, 0.02);
-  }
-
-  this.splasher.addCopy(s);
+Game4BaseScreen.prototype.addTractorRepelSplash = function(pos, angle, vel, rad, dist, color, timeFrac) {
+  this.splashes.addTractorRepelSplash(this.world.now, pos, angle, vel, rad, dist, color, timeFrac);
 };
 
-Game4BaseScreen.prototype.addTractorSeekSplash = function (pos, vel, rad, dist, color) {
-  var s = this.splash;
-  s.reset(Game4BaseScreen.SplashType.SCAN, this.stamps.circleStamp);
-
-  s.startTime = this.world.now;
-  s.duration = 1 + Math.random();
-
-  var x = pos.x;
-  var y = pos.y;
-  var hit = dist >= 0;
-  var d = hit ? dist : 1;
-  var dx = vel.x * d;
-  var dy = vel.y * d;
-
-  s.startPose.pos.setXYZ(x + dx, y + dy, 1);
-  var r = Math.random();
-  var b = (r < 0.05) ? 0.4 : 1;
-  if (r < 0.1) {
-    s.duration = 10;
-  } else {
-    rad *= Math.random();
-  }
-  s.endPose.pos.setXYZ(x + dx * b, y + dy * b, 0);
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad * (r*0.8 + 0.2), rad * (r*0.8 + 0.2), 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-
-  s.startColor.set(color);
-  s.endColor.set(color);
-
-  this.splasher.addCopy(s);
-};
-
-Game4BaseScreen.prototype.addTractorRepelSplash = function (pos, angle, vel, rad, dist, color, timeFrac) {
-  var s = this.splash;
-
-  var hit = dist > 0;
-  s.reset(Game4BaseScreen.SplashType.SCAN, this.stamps.circleStamp);
-
-  s.startTime = this.world.now;
-
-  var x = pos.x;
-  var y = pos.y;
-  var d = hit ? dist : 1;
-  var dx = vel.x * d;
-  var dy = vel.y * d;
-
-  s.duration = 4 + 6 * timeFrac;
-
-  var r = dist >= 0 ? 1 : 1 + Math.random() * 0.1 + 0.1 * timeFrac;
-  s.startPose.pos.setXYZ(x + dx, y + dy, 1);
-  s.endPose.pos.setXYZ(x + dx*r, y + dy*r, 0);
-
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad * 0.1, rad * 0.1, 1);
-
-  s.startPose.rotZ = -angle;
-  s.endPose.rotZ = -angle;
-
-  s.startColor.set(color);
-  s.endColor.set(color);
-
-  this.splasher.addCopy(s);
-};

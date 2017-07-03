@@ -50,7 +50,7 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
   this.screen.loadWorldFromJson(this.jsonObj);
   this.screen.configurePlayerSlots();
   this.screen.setPaused(this.paused);
-  this.screen.snapCameraToPlayers();
+  this.screen.snapCameraToEntrance();
 
   this.requestAnimation();
 };

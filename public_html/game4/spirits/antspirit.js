@@ -121,11 +121,11 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       this.scanResp);
 };
 
-AntSpirit.prototype.turnToPlayer = function() {
-  var toPlayer = this.vecToPlayer.set(this.screen.playerAveragePos).subtract(this.getBodyPos());
-  var playerDist = toPlayer.magnitude();
+AntSpirit.prototype.turnToPos = function(pos) {
+  var toPos = this.vecToPlayer.set(pos).subtract(this.getBodyPos());
+  var playerDist = toPos.magnitude();
   var right = this.vec2d2.setXY(1, 0).rot(this.getBodyAngPos());
-  var dot = right.dot(toPlayer);
+  var dot = right.dot(toPos);
   var dotUnit = dot / playerDist;
 
   this.addBodyAngVel(this.screen.playerChasePolarity * dotUnit / (0.5 * playerDist + 4));
@@ -191,8 +191,6 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
         // turn towards the scan
         angAccel = 0.2 * scanRot;
         this.stress = 0;
-        // and turn towards the player
-        this.turnToPlayer();
       }
       this.stress = Math.min(1, Math.max(0, this.stress));
 
@@ -317,6 +315,7 @@ AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
 
 
 AntSpirit.prototype.explosionSplash = function(pos, rad) {
+  // TODO: Once ants start exploding again, move this up to Splashes
   var now = this.now();
   // cloud particles
   var s = this.screen.splash;

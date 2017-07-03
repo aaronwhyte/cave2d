@@ -664,6 +664,7 @@ PlayerSpirit.prototype.getTargetBody = function() {
 PlayerSpirit.prototype.explode = function() {
   var body = this.getBody();
   if (body) {
+    // TODO: Once players start exploding again, move player explosion splash up into Splashes.
     var now = this.now();
     var pos = this.getBodyPos();
     var x = pos.x;

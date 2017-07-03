@@ -61,19 +61,33 @@ v standardize metrics, graphing code chunks
   v sampleStats - overridden from WorldScreen, called from page.animateFrame()
   v drawStats
 
-- pull game4's splashes into a new file, like I did for "sounds"
+v pull game4's splashes into a new file, like I did for "sounds" (done except for unused explosion biz)
 
-- delete game4.getAveragePlayerPos and everything that uses it
+v delete game4.getAveragePlayerPos and everything that uses it
 
 - join/drop effects - use existing spawn and death for now
 
+
 Game4 Basic Mechanics
-- Entrance
-- Critters
-- Death
-- Exit
-- Weapons
-- Outfits
+- entrance 1
+  - zero players
+  - add player
+  - respawn after death
+    - death by critter
+- exit
+  - draws players in and spins them around
+  - but players can leave exit zone if not all players are in it
+  - when all players are in it, proper exiting begins and cannot be reversed
+- entrance 2
+  - continuation of player slots - don't make players re-add themselves
+- weapons
+- outfits
+- entrance 3
+  - continuation of player equipment
+    (this is the real motive for making it to the exit, instead of dying and respawning. Plus honor I guess.)
 
 Player Graphics
-- Legs and arms
+- legs
+  - one
+- arms
+- body remains upright when on the ground - no more rotating constantly

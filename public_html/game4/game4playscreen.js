@@ -14,6 +14,8 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.widgets = [];
 
   this.viewCircles = [];
+
+  // TODO Set this using the level entrance position.
   this.defaultViewCircle = new Circle();
 
   var self = this;
@@ -277,8 +279,10 @@ Game4PlayScreen.prototype.exitLevel = function() {
   this.controller.exitLevel();
 };
 
-Game4PlayScreen.prototype.snapCameraToPlayers = function() {
-  var pos = this.getAveragePlayerPos();
+Game4PlayScreen.prototype.snapCameraToEntrance = function() {
+  this.updateViewCircles();
+  // TODO: this should snap the camera to the entrance, at the beginning of the level.
+  var pos = this.defaultViewCircle.pos;
   if (pos) {
     this.camera.set(pos);
   }
@@ -323,38 +327,10 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
   spirit.setColorRGB(r, g, b);
   this.playerSpirits.push(spirit);
 
-  // splash
   var body = spirit.getBody();
   var pos = spirit.getBodyPos();
   this.sounds.playerSpawn(pos);
-
-  var now = this.now();
-  var x = pos.x;
-  var y = pos.y;
-
-  var s = new Splash(1, this.stamps.tubeStamp);
-
-  s.startTime = now;
-  s.duration = 8;
-  var startRad = body.rad * 2;
-  var endRad = body.rad * 8;
-
-  s.startPose.pos.setXYZ(x, y, 0.5);
-  s.endPose.pos.setXYZ(x, y, 0.5);
-  s.startPose.scale.setXYZ(0, 0, 1);
-  s.endPose.scale.setXYZ(endRad, endRad, 1);
-
-  s.startPose2.pos.setXYZ(x, y, 1);
-  s.endPose2.pos.setXYZ(x, y, 1);
-  s.startPose2.scale.setXYZ(startRad, startRad, 1);
-  s.endPose2.scale.setXYZ(endRad, endRad, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-  s.startColor.set(spirit.color);
-  s.endColor.set(spirit.color).scale1(0.5);
-
-  this.splasher.addCopy(s);
+  this.splashes.addPlayerSpawnSplash(this.now(), pos, body.rad, spirit.color);
 };
 
 Game4PlayScreen.prototype.playerDrop = function(slot) {
@@ -368,34 +344,16 @@ Game4PlayScreen.prototype.playerDrop = function(slot) {
 Game4PlayScreen.prototype.drawScene = function() {
   var startTime = performance.now();
 
-  // update this.circles to match all the player cameras, or the starting area if there are no players now.
-  var pad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
-  var circles = this.viewCircles;
-  var count = 0;
-  for (var i = 0; i < this.playerSpirits.length; i++) {
-    var spirit = this.playerSpirits[i];
-    var cam = spirit.camera;
-    var circle = spirit.circle;
-    circle.pos.set(cam.cameraPos);
-    circle.rad = pad;
-    circles[i] = circle;
-    count++;
-  }
-  circles.length = count;
-  if (count === 0) {
-    this.defaultViewCircle.rad = pad;
-    this.viewCircles[0] = this.defaultViewCircle;
-  }
-
+  this.updateViewCircles();
   this.positionCamera();
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
   this.renderer.setCircleMode(this.viewCircles);
 
-  this.drawSpiritsOverlappingCircles(circles);
+  this.drawSpiritsOverlappingCircles(this.viewCircles);
   stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
-  this.drawTilesOverlappingCircles(circles);
+  this.drawTilesOverlappingCircles(this.viewCircles);
 
   this.splasher.draw(this.renderer, this.world.now);
 
@@ -405,6 +363,23 @@ Game4PlayScreen.prototype.drawScene = function() {
   // Animate whenever this thing draws.
   if (!this.paused) {
     this.controller.requestAnimation();
+  }
+};
+
+Game4PlayScreen.prototype.updateViewCircles = function() {
+  // update this.viewCircles to match all the player cameras, or the starting area if there are no players now.
+  var count = 0;
+  for (var i = 0; i < this.playerSpirits.length; i++) {
+    var spirit = this.playerSpirits[i];
+    spirit.circle.pos.set(spirit.camera.cameraPos);
+    spirit.circle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
+    this.viewCircles[i] = spirit.circle;
+    count++;
+  }
+  this.viewCircles.length = count;
+  if (count === 0) {
+    this.defaultViewCircle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
+    this.viewCircles[0] = this.defaultViewCircle;
   }
 };
 
