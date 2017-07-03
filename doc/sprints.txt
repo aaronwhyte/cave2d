@@ -65,12 +65,17 @@ v pull game4's splashes into a new file, like I did for "sounds" (done except fo
 
 v delete game4.getAveragePlayerPos and everything that uses it
 
-- join/drop effects - use existing spawn and death for now
-
+- player death
+  - explosion
+    v at all
+    - move to Splashes
+  v respawn timeout start
+  v respawn
 
 Game4 Basic Mechanics
 - entrance 1
   - zero players
+    - camera at entrance
   - add player
   - respawn after death
     - death by critter

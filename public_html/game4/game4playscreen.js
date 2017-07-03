@@ -242,14 +242,13 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
   }
 };
 
-
-
 Game4PlayScreen.prototype.startExit = function(x, y) {
   this.exitStartTime = this.now();
   this.exitEndTime = this.exitStartTime + Game4PlayScreen.EXIT_DURATION;
   this.setTimeWarp(Game4PlayScreen.EXIT_WARP_MULTIPLIER);
 
   // giant tube implosion
+  // TODO totally redo this biz later
   var s = this.splash;
   s.reset(Game4BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
 
@@ -339,6 +338,64 @@ Game4PlayScreen.prototype.playerDrop = function(slot) {
     this.killPlayerSpirit(playerSpirit);
   }
   slot.setState(ControlState.WAITING);
+};
+
+Game4PlayScreen.prototype.onTimeout = function(e) {
+  var slot = this.getSlotFromRespawnTimeOutVal(e.timeoutVal);
+  if (slot && slot.stateName !== ControlState.WAITING) {
+    this.playerSpawn(slot);
+  }
+};
+
+Game4PlayScreen.prototype.onHitEvent = function(e) {
+  var b0 = this.world.getBodyByPathId(e.pathId0);
+  var b1 = this.world.getBodyByPathId(e.pathId1);
+
+  if (b0 && b1) {
+    this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
+    var vec = Vec2d.alloc();
+    var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
+    var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
+
+    var playerBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.PLAYER, b0, b1);
+    if (playerBody) {
+      var playerSpirit = this.getSpiritForBody(playerBody);
+      var exitBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.EXIT, b0, b1);
+      if (exitBody && !this.exitStartTime) {
+        var exitPos = exitBody.getPosAtTime(this.now(), this.vec2d);
+        this.sounds.exit(exitPos);
+        this.startExit(exitPos.x, exitPos.y);
+      }
+      var antBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ANT, b0, b1);
+      if (antBody) {
+        this.schedulePlayerRespawn(playerSpirit.slot);
+        this.killPlayerSpirit(playerSpirit);
+      }
+      if (!exitBody && !antBody) {
+        this.sounds.wallThump(pos, mag * 10);
+      }
+    }
+
+    var bulletBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.BULLET, b0, b1);
+    if (bulletBody) {
+      var bulletSpirit = this.getSpiritForBody(bulletBody);
+      var otherBody = this.otherBody(bulletBody, b0, b1);
+      var otherSpirit = this.getSpiritForBody(otherBody);
+      if (!otherSpirit) {
+        // wall?
+        bulletSpirit.onHitWall(mag, pos);
+      } else if (otherSpirit.type === Game4BaseScreen.SpiritType.ANT) {
+        otherSpirit.onPlayerBulletHit(bulletSpirit.damage);
+        bulletSpirit.onHitEnemy(mag, pos);
+      } else if (otherSpirit.type === Game4BaseScreen.SpiritType.BULLET) {
+        bulletSpirit.onHitOther(mag, pos);
+        otherSpirit.onHitOther(mag);
+      } else {
+        bulletSpirit.onHitOther(mag, pos);
+      }
+    }
+    vec.free();
+  }
 };
 
 Game4PlayScreen.prototype.drawScene = function() {
@@ -465,9 +522,8 @@ Game4PlayScreen.prototype.isPlaying = function() {
 };
 
 Game4PlayScreen.prototype.killPlayerSpirit = function(spirit) {
-  // TODO: player death effects
-  // spirit.explode();
-  // this.sounds.playerExplode(spirit.getBodyPos());
+  spirit.explode();
+  this.sounds.playerExplode(spirit.getBodyPos());
   this.removeByBodyId(spirit.bodyId);
   for (var i = 0; i < this.playerSpirits.length; i++) {
     if (this.playerSpirits[i] === spirit) {
