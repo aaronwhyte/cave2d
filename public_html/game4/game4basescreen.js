@@ -46,12 +46,14 @@ Game4BaseScreen.SpiritType = {
   ANT: 3,
   PLAYER: 4,
   EXIT: 5,
-  BULLET: 6
+  BULLET: 6,
+  ENTRANCE: 7
 };
 
 Game4BaseScreen.MenuItem = {
   RED_ANT: 'red_ant',
   PLAYER: 'player',
+  ENTRANCE: 'entrance',
   EXIT: 'exit'
 };
 
@@ -59,9 +61,10 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
   var st = Game4BaseScreen.SpiritType;
   var mi = Game4BaseScreen.MenuItem;
   var a  = [
-      [st.ANT, AntSpirit, mi.RED_ANT, 0, 0],
-      [st.PLAYER, PlayerSpirit, mi.PLAYER, 1, 0],
-      [st.EXIT, ExitSpirit, mi.EXIT, 1, 1],
+      [st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, 0, 0],
+      [st.EXIT, ExitSpirit, mi.EXIT, 0, 1],
+      [st.ANT, AntSpirit, mi.RED_ANT, 1, 0],
+      [st.PLAYER, PlayerSpirit, mi.PLAYER],
       [st.BULLET, BulletSpirit]
   ];
   var sc = {};
@@ -137,7 +140,7 @@ Game4BaseScreen.prototype.getCamera = function() {
 };
 
 Game4BaseScreen.prototype.onHitEvent = function(e) {
-}
+};
 
 Game4BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
   this.splashes.addScanSplash(this.world.now, pos, vel, rad, dist);
@@ -151,3 +154,6 @@ Game4BaseScreen.prototype.addTractorRepelSplash = function(pos, angle, vel, rad,
   this.splashes.addTractorRepelSplash(this.world.now, pos, angle, vel, rad, dist, color, timeFrac);
 };
 
+Game4BaseScreen.prototype.addPlayerExplosionSplash = function(pos, color) {
+  this.splashes.addPlayerExplosionSplash(this.world.now, pos, color);
+};

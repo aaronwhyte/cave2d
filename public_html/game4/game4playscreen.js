@@ -15,7 +15,6 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.viewCircles = [];
 
-  // TODO Set this using the level entrance position.
   this.defaultViewCircle = new Circle();
 
   var self = this;
@@ -279,8 +278,16 @@ Game4PlayScreen.prototype.exitLevel = function() {
 };
 
 Game4PlayScreen.prototype.snapCameraToEntrance = function() {
-  this.updateViewCircles();
-  // TODO: this should snap the camera to the entrance, at the beginning of the level.
+  for (var spiritId in this.world.spirits) {
+    var spirit = this.world.spirits[spiritId];
+    if (spirit.type === Game4BaseScreen.SpiritType.ENTRANCE) {
+      this.entranceSpirit = spirit;
+      break;
+    }
+  }
+  if (this.entranceSpirit) {
+    this.defaultViewCircle.pos.set(this.entranceSpirit.getBodyPos());
+  }
   var pos = this.defaultViewCircle.pos;
   if (pos) {
     this.camera.set(pos);
@@ -314,8 +321,8 @@ Game4PlayScreen.prototype.playerJoin = function(slot) {
 Game4PlayScreen.prototype.playerSpawn = function(slot) {
   slot.releaseControls();
 
-  // TODO: position spawning players correctly with the power of Game Logic
-  var spiritId = this.addItem(Game4BaseScreen.MenuItem.PLAYER, new Vec2d(Math.random() * 8 - 4, Math.random() * 8 - 4), 0);
+  var pos = new Vec2d(0, 2).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
+  var spiritId = this.addItem(Game4BaseScreen.MenuItem.PLAYER, pos, 0);
   slot.lastSpiritId = spiritId;
   var spirit = this.world.spirits[spiritId];
 
@@ -327,7 +334,6 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
   this.playerSpirits.push(spirit);
 
   var body = spirit.getBody();
-  var pos = spirit.getBodyPos();
   this.sounds.playerSpawn(pos);
   this.splashes.addPlayerSpawnSplash(this.now(), pos, body.rad, spirit.color);
 };
@@ -462,17 +468,18 @@ Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
 };
 
 Game4PlayScreen.prototype.positionCamera = function() {
-  if (this.playerSpirits.length === 0) {
-    this.viewableWorldRect.setPosXY(0, 0);
-  }
   this.viewableWorldRect.rad.reset();
-  for (var i = 0; i < this.playerSpirits.length; i++) {
-    var spirit = this.playerSpirits[i];
-    var playerCamera = spirit.camera;
-    if (i === 0) {
-      this.viewableWorldRect.setPosXY(playerCamera.getX(), playerCamera.getY());
-    } else {
-      this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
+  if (this.playerSpirits.length === 0) {
+    this.viewableWorldRect.setPos(this.defaultViewCircle.pos);
+  } else {
+    for (var i = 0; i < this.playerSpirits.length; i++) {
+      var spirit = this.playerSpirits[i];
+      var playerCamera = spirit.camera;
+      if (i === 0) {
+        this.viewableWorldRect.setPosXY(playerCamera.getX(), playerCamera.getY());
+      } else {
+        this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
+      }
     }
   }
   var pad = Game4PlayScreen.PLAYER_VIEW_RADIUS * Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC;

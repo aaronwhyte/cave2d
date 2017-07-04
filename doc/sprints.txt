@@ -65,20 +65,24 @@ v pull game4's splashes into a new file, like I did for "sounds" (done except fo
 
 v delete game4.getAveragePlayerPos and everything that uses it
 
-- player death
-  - explosion
+v player death
+  v explosion
     v at all
-    - move to Splashes
+    v move to Splashes
   v respawn timeout start
   v respawn
 
 Game4 Basic Mechanics
-- entrance 1
-  - zero players
-    - camera at entrance
-  - add player
-  - respawn after death
-    - death by critter
+v entrance 1
+  v entrance spirit
+    v config
+    v editor-able
+    v remove player from editor menu
+  v zero players
+    v camera at entrance
+  v add player at entrance
+  v respawn after death
+    v death by critter
 - exit
   - draws players in and spins them around
   - but players can leave exit zone if not all players are in it
