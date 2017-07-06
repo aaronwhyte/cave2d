@@ -54,7 +54,7 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 // dist from player surface to held obj surface
 PlayerSpirit.TRACTOR_MAX_ACCEL = 1.8;
 PlayerSpirit.TRACTOR_MAX_FORCE = 0.4;
-PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD;
+PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 1.25;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 12;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
