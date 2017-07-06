@@ -457,7 +457,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
     this.screen.addTractorSeekSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD * 1.5, resultFraction, this.color);
     if (resultFraction !== -1) {
       var targetBody = this.getScanHitBody();
-      if (targetBody && targetBody.shape !== Body.Shape.RECT && resultFraction < bestResultFraction) {
+      if (targetBody && targetBody.mass < Infinity && resultFraction < bestResultFraction) {
         bestResultFraction = resultFraction;
         bestBody = this.getScanHitBody();
       }
