@@ -245,32 +245,7 @@ Game4PlayScreen.prototype.startExit = function(x, y) {
   this.exitStartTime = this.now();
   this.exitEndTime = this.exitStartTime + Game4PlayScreen.EXIT_DURATION;
   this.setTimeWarp(Game4PlayScreen.EXIT_WARP_MULTIPLIER);
-
-  // giant tube implosion
-  // TODO totally redo this biz later
-  var s = this.splash;
-  s.reset(Game4BaseScreen.SplashType.WALL_DAMAGE, this.stamps.tubeStamp);
-
-  s.startTime = this.exitStartTime;
-  s.duration = Game4PlayScreen.EXIT_DURATION;
-  var rad = 80;
-
-  s.startPose.pos.setXYZ(x, y, -0.9999);
-  s.endPose.pos.setXYZ(x, y, -0.9999);
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad, rad, 1);
-
-  s.startPose2.pos.setXYZ(x, y, -0.9999);
-  s.endPose2.pos.setXYZ(x, y, -0.9999);
-  s.startPose2.scale.setXYZ(rad/2, rad/2, 1);
-  s.endPose2.scale.setXYZ(-rad/6, -rad/6, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-  s.startColor.setXYZ(0, 0, 0);
-  s.endColor.setXYZ(0, 0, 0);
-
-  this.splasher.addCopy(s);
+  this.splashes.addExitSplash(x, y, this.exitStartTime, Game4PlayScreen.EXIT_DURATION);
 };
 
 Game4PlayScreen.prototype.exitLevel = function() {

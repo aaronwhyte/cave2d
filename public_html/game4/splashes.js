@@ -226,3 +226,31 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
     addSplash(x, y, dx, dy, duration, 2);
   }
 };
+
+Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
+  // giant tube implosion
+  var s = this.splash;
+  s.reset(Splashes.Type.WALL_DAMAGE, this.stamps.tubeStamp);
+
+  s.startTime = startTime;
+  s.duration = Game4PlayScreen.EXIT_DURATION;
+  var rad = 80;
+
+  s.startPose.pos.setXYZ(x, y, -0.9999);
+  s.endPose.pos.setXYZ(x, y, -0.9999);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad, rad, 1);
+
+  s.startPose2.pos.setXYZ(x, y, -0.9999);
+  s.endPose2.pos.setXYZ(x, y, -0.9999);
+  s.startPose2.scale.setXYZ(rad/2, rad/2, 1);
+  s.endPose2.scale.setXYZ(-rad/6, -rad/6, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+  s.startColor.setXYZ(0, 0, 0);
+  s.endColor.setXYZ(0, 0, 0);
+
+  this.splasher.addCopy(s);
+
+}
