@@ -246,18 +246,9 @@ PlayerSpirit.prototype.handleInput = function() {
       this.beamState = BeamState.OFF;
     }
   }
+  this.breakBeamIfTargetMissing();
+  this.handleBeamState();
 
-  if (this.beamState === BeamState.SEEKING) {
-    this.handleSeeking();
-  } else if (this.beamState === BeamState.DRAGGING) {
-    this.handleDragging();
-  } else if (this.beamState === BeamState.WIELDING) {
-    this.handleWielding();
-  } else if (this.beamState === BeamState.ACTIVATING) {
-    this.handleActivating();
-  } else if (this.beamState === BeamState.EJECTING) {
-    this.handleEjecting();
-  }
   stick.getVal(this.vec2d);
   var stickMag = this.vec2d.magnitude();
   var targetBody = this.getTargetBody();
@@ -304,6 +295,32 @@ PlayerSpirit.prototype.handleInput = function() {
   }
 };
 
+PlayerSpirit.prototype.breakBeamIfTargetMissing = function() {
+  switch (this.beamState) {
+    case BeamState.DRAGGING:
+    case BeamState.WIELDING:
+    case BeamState.ACTIVATING:
+    case BeamState.EJECTING:
+      if (!this.getTargetBody()) {
+        this.breakBeam();
+      }
+  }
+};
+
+PlayerSpirit.prototype.handleBeamState = function() {
+  if (this.beamState === BeamState.SEEKING) {
+    this.handleSeeking();
+  } else if (this.beamState === BeamState.DRAGGING) {
+    this.handleDragging();
+  } else if (this.beamState === BeamState.WIELDING) {
+    this.handleWielding();
+  } else if (this.beamState === BeamState.ACTIVATING) {
+    this.handleActivating();
+  } else if (this.beamState === BeamState.EJECTING) {
+    this.handleEjecting();
+  }
+};
+
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
@@ -315,15 +332,8 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
     var body = this.getBody();
     if (body) {
-      if (this.beamState === BeamState.DRAGGING) {
-        this.handleDragging();
-      } else if (this.beamState === BeamState.WIELDING) {
-        this.handleWielding();
-      } else if (this.beamState === BeamState.ACTIVATING) {
-        this.handleActivating();
-      } else if (this.beamState === BeamState.EJECTING) {
-        this.handleEjecting();
-      }
+      this.breakBeamIfTargetMissing();
+      this.handleBeamState();
       var targetBody = this.getTargetBody();
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
 

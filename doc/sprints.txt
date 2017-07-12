@@ -72,6 +72,8 @@ v player death
   v respawn timeout start
   v respawn
 
+v fix crash when beam target body vanishes
+
 Game4 Basic Mechanics
 v entrance 1
   v entrance spirit
@@ -83,13 +85,14 @@ v entrance 1
   v add player at entrance
   v respawn after death
     v death by critter
-- exit
-  - draws players in and spins them around
-  - but players can leave exit zone if not all players are in it
-  - when all players are in it, proper exiting begins and cannot be reversed
+v exit 1: basic game2 biz
 - entrance 2
   - continuation of player slots - don't make players re-add themselves
-- weapons
+- exit 2
+  - players near exit are "exiting" - drawn in and spun around a bit
+  - but players can leave exit zone if not all players are in it
+  - when all players are in, actual exit process happens
+- useful objects
 - outfits
 - entrance 3
   - continuation of player equipment
