@@ -52,8 +52,8 @@ PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface to held obj surface
-PlayerSpirit.TRACTOR_MAX_ACCEL = 1.8;
-PlayerSpirit.TRACTOR_MAX_FORCE = 0.4;
+PlayerSpirit.TRACTOR_MAX_ACCEL = 0.25;
+PlayerSpirit.TRACTOR_MAX_FORCE = 0.5;
 PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 12;
 
@@ -61,10 +61,10 @@ PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
 // dist from player surface
 PlayerSpirit.SEEKSCAN_DIST = Math.min(PlayerSpirit.TRACTOR_DRAG_DIST * 3, PlayerSpirit.TRACTOR_BREAK_DIST);
 
-PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL;
-PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE;
-PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
-PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
+PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL * 2;
+PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE * 2;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.25;
+PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 2;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -539,7 +539,7 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAcc
   var deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
   var v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(1));
 
-  var maxA = maxAccel * unobstructedness * Math.abs(p0 * p0 / (restingDist * restingDist));
+  var maxA = maxAccel * unobstructedness * Math.abs(p0 / restingDist);
   var forceMagSum = 0;
   if (p0 >= breakDist) {
     this.breakBeam();
