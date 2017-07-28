@@ -8,6 +8,16 @@ function BaseSpirit(screen) {
   this.tempBodyPos = new Vec2d();
   this.scanVec = new Vec2d();
   this.scanResp = new ScanResponse();
+
+  // activation input/output...
+
+  // Source maintains map from target spirit IDs to output values to those targets, in case source gets polled.
+  this.outputIdsToVals = {};
+  // Target maintains set of source spirit IDs, for polling.
+  this.inputIds = {};
+  // Target also maintains map from pulse input end time to pulse input value.
+  this.pulseEndToVal = {};
+
   BaseSpirit.prototype.reset.call(this, screen);
 }
 BaseSpirit.prototype = new Spirit();
@@ -132,4 +142,69 @@ BaseSpirit.prototype.addBodyAngVel = function(av) {
 
 BaseSpirit.prototype.now = function() {
   return this.screen.now();
+};
+
+
+/**
+ * Adds an output source spirit to this target spirit, so this target can poll it.
+ * @param sourceSpiritId
+ */
+BaseSpirit.prototype.addInputSource = function(sourceSpiritId) {
+  this.inputIds[sourceSpiritId] = true;
+};
+
+/**
+ * Removes an output source spirit from this target spirit.
+ * @param sourceSpiritId
+ */
+BaseSpirit.prototype.removeInputSource = function(sourceSpiritId) {
+  delete this.inputIds[sourceSpiritId];
+};
+
+/**
+ * Tells this target spirit that a source's input value has changed.
+ * Override this to do something useful.
+ * @param sourceSpiritId
+ * @param val
+ */
+BaseSpirit.prototype.onInputChanged = function(sourceSpiritId, val) {
+  // Usually the impl will re-evaluate all inputs to decide what to do,
+  // but I'm including the actual new val too in case.
+};
+
+/**
+ * @param targetId
+ * @returns {*|number} this spirit's output to the target
+ */
+BaseSpirit.prototype.getOutputToTarget = function(targetId) {
+  return this.outputIdsToVals[targetId];
+};
+
+BaseSpirit.prototype.addInputPulse = function(endTime, val) {
+  if(this.pulseEndToVal[endTime]) {
+    this.pulseEndToVal[endTime] += val;
+  } else {
+    this.pulseEndToVal[endTime] = val;
+  }
+};
+
+BaseSpirit.prototype.sumOfInputs = function() {
+  var sum = 0;
+  for (var sourceId in this.inputIds) {
+    var sourceSpirit = this.world.spirits[sourceId];
+    if (sourceSpirit) {
+      sum += sourceSpirit.getOutputToTarget[this.id] || 0;
+    } else {
+      delete this.inputIds[sourceId];
+    }
+  }
+  var now = this.now();
+  for (var endTime in this.pulseEndToVal) {
+    if (endTime >= now) {
+      sum += this.pulseEndToVal[endTime];
+    } else {
+      delete this.pulseEndToVal[endTime];
+    }
+  }
+  return sum;
 };

@@ -86,16 +86,46 @@ v entrance 1
   v respawn after death
     v death by critter
 v exit 1: basic game2 biz
+- useful objects & activation
+  * based on "Vehicles" basic neuron model
+  * Each target has one input port that accepts any number of simultaneous connections.
+  * Input values are steady values that change discontinuously, in sudden steps.
+  v data structures
+    v Source maintains map from target spirit IDs to output values to those targets, in case source gets polled.
+    v Target maintains set of source spirit IDs, for polling.
+    v Target also maintains map from pulse input end time to pulse input value.
+  v activation by linked spirit
+    v api
+      v targetSpirit.addInputSource(sourceSpiritId) // set output value first in case target reads it
+      v targetSpirit.removeInputSource(sourceSpiritId)
+      v targetSpirit.onInputChanged(sourceSpiritId, val)
+      v sourceSpirit.getOutputToTarget(targetId)
+      x world.isOutputInputPair(sourceId, targetId) // debugging only?
+  v activation by pulse or ray
+    v targetSpirit.addInputPulse(duration)
+  v target polls inputs on events and timeouts (anything that could change values)
+    v targetSpirit.sumOfInputs()
+    v iterate through pulses, culling obsolete ones and adding valued from active ones
+    v iterate through sources, culling or adding
+  - exercise the system
+    - player activates indicator light
+      - indicator light spirit that just shows whether there's any input or not
+      - player tractor beam in "wield" mode can activate target
+      - indicator light works
+    - activator raygun that serves 2 purposes:
+      - it is an activation target, like the light
+      - it fires activation bullets that can activate stuff like lights and other activation rayguns
+      - activation bullet spirit
+
 - entrance 2
   - continuation of player slots - don't make players re-add themselves
 - exit 2
   - players near exit are "exiting" - drawn in and spun around a bit
   - but players can leave exit zone if not all players are in it
   - when all players are in, actual exit process happens
-- useful objects
 - outfits
 - entrance 3
-  - continuation of player equipment
+  - continuation of player equipment (?)
     (this is the real motive for making it to the exit, instead of dying and respawning. Plus honor I guess.)
 
 Player Graphics
