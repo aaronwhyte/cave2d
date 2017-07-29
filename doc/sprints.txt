@@ -110,8 +110,11 @@ v exit 1: basic game2 biz
   - exercise the system
     - player activates indicator light
       - indicator light spirit that just shows whether there's any input or not
+        v basic spirit
+        v add to editor menu
+        - polls for activation during rendering
       - player tractor beam in "wield" mode can activate target
-      - indicator light works
+      - whole thing works
     - activator raygun that serves 2 purposes:
       - it is an activation target, like the light
       - it fires activation bullets that can activate stuff like lights and other activation rayguns

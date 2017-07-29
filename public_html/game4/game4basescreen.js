@@ -47,14 +47,16 @@ Game4BaseScreen.SpiritType = {
   PLAYER: 4,
   EXIT: 5,
   BULLET: 6,
-  ENTRANCE: 7
+  ENTRANCE: 7,
+  INDICATOR: 8
 };
 
 Game4BaseScreen.MenuItem = {
   RED_ANT: 'red_ant',
   PLAYER: 'player',
   ENTRANCE: 'entrance',
-  EXIT: 'exit'
+  EXIT: 'exit',
+  INDICATOR: 'indicator'
 };
 
 Game4BaseScreen.prototype.createSpiritConfigs = function() {
@@ -64,6 +66,8 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
       [st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, 0, 0],
       [st.EXIT, ExitSpirit, mi.EXIT, 0, 1],
       [st.ANT, AntSpirit, mi.RED_ANT, 1, 0],
+      [st.INDICATOR, IndicatorSpirit, mi.INDICATOR, 2, 0],
+
       [st.PLAYER, PlayerSpirit, mi.PLAYER],
       [st.BULLET, BulletSpirit]
   ];
