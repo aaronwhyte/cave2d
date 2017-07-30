@@ -26,6 +26,14 @@ IndicatorSpirit.SCHEMA = {
   2: "bodyId"
 };
 
+/**
+ * @override
+ * @returns {boolean}
+ */
+IndicatorSpirit.prototype.isActivatable = function() {
+  return true;
+};
+
 IndicatorSpirit.getJsoner = function() {
   if (!IndicatorSpirit.jsoner) {
     IndicatorSpirit.jsoner = new Jsoner(IndicatorSpirit.SCHEMA);
@@ -47,7 +55,7 @@ IndicatorSpirit.prototype.setModelStamp = function(modelStamp) {
 
 IndicatorSpirit.createModel = function() {
   return RigidModel.createCircle(17)
-      .setColorRGB(0.9, 0.9, 0.9);
+      .setColorRGB(0.5, 0.5, 0.4);
 };
 
 IndicatorSpirit.factory = function(screen, stamp, pos, dir) {
@@ -126,9 +134,14 @@ IndicatorSpirit.prototype.onDraw = function(world, renderer) {
   var pos = this.getBodyPos();
   this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
   if (!IndicatorSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
+    var lit = this.sumOfInputs() > 0;
+    this.vec4.set(this.color);
+    if (lit) {
+      this.vec4.scale1(1.5 + 5 * Math.random());
+    }
     renderer
         .setStamp(this.modelStamp)
-        .setColorVector(this.vec4.set(this.color));
+        .setColorVector(this.vec4);
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))

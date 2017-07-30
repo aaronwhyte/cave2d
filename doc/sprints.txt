@@ -108,13 +108,17 @@ v exit 1: basic game2 biz
     v iterate through pulses, culling obsolete ones and adding valued from active ones
     v iterate through sources, culling or adding
   - exercise the system
-    - player activates indicator light
-      - indicator light spirit that just shows whether there's any input or not
+    v player activates indicator light
+      v indicator light spirit that just shows whether there's any input or not
         v basic spirit
         v add to editor menu
-        - polls for activation during rendering
-      - player tractor beam in "wield" mode can activate target
-      - whole thing works
+        v polls for activation during rendering
+      v player tractor beam can activate target
+        v wield adds source
+        v unwield detaches it
+        v activate sets val to 1
+        v deactivate 0
+      v whole thing works
     - activator raygun that serves 2 purposes:
       - it is an activation target, like the light
       - it fires activation bullets that can activate stuff like lights and other activation rayguns

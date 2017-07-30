@@ -409,6 +409,10 @@ WorldScreen.prototype.otherBody = function(thisBody, b0, b1) {
   return null;
 };
 
+WorldScreen.prototype.getSpiritById = function(id) {
+  return this.world.spirits[id];
+};
+
 WorldScreen.prototype.getSpiritForBody = function(b) {
   return b ? this.world.spirits[b.spiritId] : null;
 };

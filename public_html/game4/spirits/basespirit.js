@@ -145,12 +145,27 @@ BaseSpirit.prototype.now = function() {
 };
 
 
+//////////////////////////
+// Input/Output
+//////////////////////////
+
+BaseSpirit.prototype.isActivatable = function() {
+  return false;
+};
+
 /**
  * Adds an output source spirit to this target spirit, so this target can poll it.
  * @param sourceSpiritId
  */
 BaseSpirit.prototype.addInputSource = function(sourceSpiritId) {
   this.inputIds[sourceSpiritId] = true;
+};
+
+/**
+ * @param sourceSpiritId
+ */
+BaseSpirit.prototype.isInputSource = function(sourceSpiritId) {
+  return !!this.inputIds[sourceSpiritId];
 };
 
 /**
@@ -191,9 +206,9 @@ BaseSpirit.prototype.addInputPulse = function(endTime, val) {
 BaseSpirit.prototype.sumOfInputs = function() {
   var sum = 0;
   for (var sourceId in this.inputIds) {
-    var sourceSpirit = this.world.spirits[sourceId];
+    var sourceSpirit = this.screen.getSpiritById(sourceId);
     if (sourceSpirit) {
-      sum += sourceSpirit.getOutputToTarget[this.id] || 0;
+      sum += sourceSpirit.getOutputToTarget(this.id) || 0;
     } else {
       delete this.inputIds[sourceId];
     }

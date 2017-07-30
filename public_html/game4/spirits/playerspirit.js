@@ -214,7 +214,7 @@ PlayerSpirit.prototype.handleInput = function() {
   if (this.beamState === BeamState.OFF) {
     // TODO: free kick
     if (grabDown) {
-      this.beamState = BeamState.SEEKING;
+      this.setBeamState(BeamState.SEEKING);
     }
   } else if (this.beamState === BeamState.SEEKING) {
     if (grabUp) {
@@ -225,25 +225,24 @@ PlayerSpirit.prototype.handleInput = function() {
       this.breakBeam();
     } else if (grabDown) {
       this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
-      this.beamState = BeamState.WIELDING;
+      this.setBeamState(BeamState.WIELDING);
     }
   } else if (this.beamState === BeamState.WIELDING) {
     if (kickDown) {
-      this.beamState = BeamState.EJECTING;
+      this.setBeamState(BeamState.EJECTING);
       this.ejectStartTime = now;
     } else if (grabDown) {
-      this.beamState = BeamState.ACTIVATING;
+      this.setBeamState(BeamState.ACTIVATING);
     }
   } else if (this.beamState === BeamState.ACTIVATING) {
     if (grabUp) {
-      this.beamState = BeamState.WIELDING;
+      this.setBeamState(BeamState.WIELDING);
     }
   } else if (this.beamState === BeamState.EJECTING) {
     if (kickUp) {
-      this.beamState = BeamState.DRAGGING;
+      this.setBeamState(BeamState.DRAGGING);
     } else if (now - this.ejectStartTime > PlayerSpirit.EJECT_TIME) {
       this.eject();
-      this.beamState = BeamState.OFF;
     }
   }
   this.breakBeamIfTargetMissing();
@@ -443,8 +442,7 @@ PlayerSpirit.prototype.breakBeam = function() {
   //   this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
   //   this.aim.set(this.destAim);
   // }
-  this.targetBodyId = 0;
-  this.beamState = BeamState.OFF;
+  this.setBeamState(BeamState.OFF);
 };
 
 PlayerSpirit.prototype.handleSeeking = function() {
@@ -477,10 +475,48 @@ PlayerSpirit.prototype.handleSeeking = function() {
   if (bestBody) {
     // grab that thing!
     this.targetBodyId = bestBody.id;
-    this.beamState = BeamState.DRAGGING;
+    this.setBeamState(BeamState.DRAGGING);
   }
   scanPos.free();
 };
+
+PlayerSpirit.prototype.setBeamState = function(newState) {
+  var target = this.getTargetSpirit();
+  if (target && target.isActivatable()) {
+    // connect or disconnect?
+    if (BeamState.isOutputish(newState)) {
+      if (!target.isInputSource(this.id)) {
+        target.addInputSource(this.id);
+      }
+    } else {
+      if (target.isInputSource(this.id)) {
+        target.removeInputSource(this.id);
+        delete this.outputIdsToVals[target.id];
+      }
+    }
+    if (target.isInputSource(this.id)) {
+      // set new val?
+      var newVal = newState === BeamState.ACTIVATING ? 1 : 0;
+      if (newVal !== this.outputIdsToVals[target.id]) {
+        this.outputIdsToVals[target.id] = newVal;
+        target.onInputChanged(this.id, newVal);
+      }
+    }
+  }
+  this.beamState = newState;
+  if (this.beamState === BeamState.OFF) {
+    this.targetBodyId = 0;
+  }
+};
+
+PlayerSpirit.prototype.setOutputToTarget = function(val) {
+  var target = this.getTargetSpirit();
+  if (target && target.isActivatable() && target.isInputSource(this.id) && val !== this.outputIdsToVals[target.id]) {
+    this.outputIdsToVals[target.id] = val;
+    target.onInputChanged(this.id, val);
+  }
+};
+
 
 /**
  * Applies tractor-beam forces to player and target, or breaks the beam if the target is out of range.
@@ -494,9 +530,10 @@ PlayerSpirit.prototype.handleDragging = function() {
 
 /**
  * Applies tractor-beam forces to player and target, or breaks the beam if the target is out of range.
- * Also sets the tractorForceFrac field, for drawing.
+ * Sets the tractorForceFrac field, for drawing.
  */
 PlayerSpirit.prototype.handleWielding = function() {
+  // physics
   this.handleBeamForce(PlayerSpirit.WIELD_REST_DIST, PlayerSpirit.WIELD_BREAK_DIST,
       PlayerSpirit.WIELD_MAX_ACCEL, PlayerSpirit.WIELD_MAX_FORCE,
       true, this.destAim.angle());
@@ -513,8 +550,7 @@ PlayerSpirit.prototype.eject = function() {
         PlayerSpirit.EJECT_MAX_ACCEL, PlayerSpirit.EJECT_MAX_FORCE,
         false);
   }
-  this.beamState = BeamState.OFF;
-  this.targetBodyId = 0;
+  this.setBeamState(BeamState.OFF);
 };
 
 PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAccel, maxForce, isAngular, restingAngle) {
@@ -672,6 +708,10 @@ PlayerSpirit.prototype.getTargetBody = function() {
     this.targetBodyId = 0;
   }
   return b;
+};
+
+PlayerSpirit.prototype.getTargetSpirit = function() {
+  return this.screen.getSpiritForBody(this.getTargetBody());
 };
 
 PlayerSpirit.prototype.explode = function() {
