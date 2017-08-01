@@ -48,7 +48,8 @@ Game4BaseScreen.SpiritType = {
   EXIT: 5,
   BULLET: 6,
   ENTRANCE: 7,
-  INDICATOR: 8
+  INDICATOR: 8,
+  ACTIVATOR_GUN: 9
 };
 
 Game4BaseScreen.MenuItem = {
@@ -56,20 +57,22 @@ Game4BaseScreen.MenuItem = {
   PLAYER: 'player',
   ENTRANCE: 'entrance',
   EXIT: 'exit',
-  INDICATOR: 'indicator'
+  INDICATOR: 'indicator',
+  ACTIVATOR_GUN: 'activator_gun'
 };
 
 Game4BaseScreen.prototype.createSpiritConfigs = function() {
   var st = Game4BaseScreen.SpiritType;
   var mi = Game4BaseScreen.MenuItem;
   var a  = [
-      [st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, 0, 0],
-      [st.EXIT, ExitSpirit, mi.EXIT, 0, 1],
-      [st.ANT, AntSpirit, mi.RED_ANT, 1, 0],
-      [st.INDICATOR, IndicatorSpirit, mi.INDICATOR, 2, 0],
+    [st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, 0, 0],
+    [st.EXIT, ExitSpirit, mi.EXIT, 0, 1],
+    [st.ANT, AntSpirit, mi.RED_ANT, 1, 0],
+    [st.INDICATOR, IndicatorSpirit, mi.INDICATOR, 2, 0],
+    [st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, 2, 1],
 
-      [st.PLAYER, PlayerSpirit, mi.PLAYER],
-      [st.BULLET, BulletSpirit]
+    [st.PLAYER, PlayerSpirit, mi.PLAYER],
+    [st.BULLET, BulletSpirit]
   ];
   var sc = {};
   for (var i = 0; i < a.length; i++) {

@@ -119,10 +119,12 @@ v exit 1: basic game2 biz
         v activate sets val to 1
         v deactivate 0
       v whole thing works
+    v player wielding/activating/ejecting twists things to point along wield vector
     - activator raygun that serves 2 purposes:
-      - it is an activation target, like the light
-      - it fires activation bullets that can activate stuff like lights and other activation rayguns
-      - activation bullet spirit
+      v it is activation target, like the light
+      - When activated, it fires activation bullets that can activate stuff like lights and other rayguns
+        - activation bullet spirit
+          - collision triggers activation pulse
 
 - entrance 2
   - continuation of player slots - don't make players re-add themselves

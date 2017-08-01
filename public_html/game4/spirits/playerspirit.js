@@ -537,6 +537,8 @@ PlayerSpirit.prototype.handleWielding = function() {
   this.handleBeamForce(PlayerSpirit.WIELD_REST_DIST, PlayerSpirit.WIELD_BREAK_DIST,
       PlayerSpirit.WIELD_MAX_ACCEL, PlayerSpirit.WIELD_MAX_FORCE,
       true, this.destAim.angle());
+  // this.handleBeamTorque(this.destAim.angle());
+  this.handleBeamTorque(this.getAngleToTarget(), 0.1);
 };
 
 PlayerSpirit.prototype.handleEjecting = function() {
@@ -632,6 +634,23 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAcc
   deltaPos.free();
   deltaVel.free();
   targetPos.free();
+};
+
+PlayerSpirit.prototype.handleBeamTorque = function(restingAngle, maxA) {
+  var playerBody = this.getBody();
+  var targetBody = this.getTargetBody();
+  var now = this.now();
+
+  var p0 = targetBody.getAngPosAtTime(now) - restingAngle;
+  while (p0 < -Math.PI) p0 += 2 * Math.PI;
+  while (p0 > Math.PI) p0 -= 2 * Math.PI;
+
+  // TODO actual target angular vel has to do with target/player pair orbit
+  var v0 = targetBody.angVel - playerBody.angVel;
+
+  var angPulse = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+  // console.log(p0, v0, angPulse);
+  targetBody.addAngVelAtTime(angPulse, now);
 };
 
 PlayerSpirit.prototype.handleActivating = function() {

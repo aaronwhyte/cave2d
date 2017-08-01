@@ -66,9 +66,9 @@ Spring.applyDampenedSpring = function(
  * Return the 1d pulse acceleration to apply to get one step closer to having a position and velocity of zero.
  * @param {number} p0  initial position
  * @param {number} v0  initial velocity
- * @param {number} maxA  maximum pulse acceleration (not accleration / time)
+ * @param {number} maxA  maximum pulse acceleration (not acceleration / time)
  * @param {number} pulsePeriod  period between acceleration pulses, if any. Used to prevent overshooting.
- * @returns {number}  the acceleration, between -maxA and maxA, to apply at this moment.
+ * @returns {number} the acceleration, between -maxA and maxA, to apply at this moment.
  */
 Spring.getLandingAccel = function(p0, v0, maxA, pulsePeriod) {
   if (maxA <= 0) return 0;
