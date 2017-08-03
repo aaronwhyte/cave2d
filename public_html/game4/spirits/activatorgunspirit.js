@@ -86,7 +86,7 @@ ActivatorGunSpirit.factory = function(screen, stamp, pos, dir) {
   b.grip = 0.9;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 0.8;
+  b.rad = 0.6;
   b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
@@ -133,14 +133,17 @@ ActivatorGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
   // Reset the body's pathDurationMax because it gets changed at compile-time,
   // but it is serialized at level-save-time, so old saved values might not
   // match the new compiled-in values. Hm.
-  var timeoutDuration;
-  timeoutDuration = Math.min(
+  var timeoutDuration = Math.min(
       ActivatorGunSpirit.MAX_TIMEOUT,
       ActivatorGunSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
   body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, now);
   body.invalidatePath();
   world.addTimeout(now + timeoutDuration, this.id, -1);
+
+  if (this.sumOfInputs() > 0) {
+    this.fire();
+  }
 };
 
 ActivatorGunSpirit.prototype.onDraw = function(world, renderer) {
@@ -164,3 +167,45 @@ ActivatorGunSpirit.prototype.onDraw = function(world, renderer) {
     renderer.drawStamp();
   }
 };
+
+ActivatorGunSpirit.prototype.fire = function() {
+  var pos = this.getBodyPos();
+  if (!pos) return;
+  var angPos = this.getBodyAngPos();
+  this.addBullet(
+      pos,
+      this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(4),
+      0.3,
+      6 + Math.random() * 2);
+  // var now = this.now();
+  // this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);
+  // this.timeoutRunning = true;
+  // this.screen.sounds.pew(pos, now);
+};
+
+ActivatorGunSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
+  var now = this.now();
+  var spirit = ActivatorBulletSpirit.alloc(this.screen);
+  spirit.setColorRGB(1, 1, 1);
+  var density = 0;
+
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, now);
+  b.setVelAtTime(vel, now);
+  b.rad = rad;
+  b.hitGroup = this.screen.getHitGroups().BEAM;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = duration * 1.01;
+  spirit.bodyId = this.screen.world.addBody(b);
+
+  var spiritId = this.screen.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  spirit.addTrailSegment();
+
+  // bullet self-destruct timeout
+  this.screen.world.addTimeout(now + duration, spiritId, 0);
+
+  return spiritId;
+};
+

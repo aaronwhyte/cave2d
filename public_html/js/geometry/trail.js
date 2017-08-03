@@ -22,7 +22,7 @@ Trail.prototype.getSegmentStartTime = function(i) {
 };
 
 Trail.prototype.getSegmentEndTime = function(i) {
-  return i == 0 ? this.endTime : this.queue.getFromHead(i - 1).startTime;
+  return i === 0 ? this.endTime : this.queue.getFromHead(i - 1).startTime;
 };
 
 Trail.prototype.getSegmentPosAtTime = function(i, time, out) {

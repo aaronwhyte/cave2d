@@ -49,7 +49,8 @@ Game4BaseScreen.SpiritType = {
   BULLET: 6,
   ENTRANCE: 7,
   INDICATOR: 8,
-  ACTIVATOR_GUN: 9
+  ACTIVATOR_GUN: 9,
+  ACTIVATOR_BULLET: 10
 };
 
 Game4BaseScreen.MenuItem = {
@@ -72,7 +73,8 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
     [st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, 2, 1],
 
     [st.PLAYER, PlayerSpirit, mi.PLAYER],
-    [st.BULLET, BulletSpirit]
+    [st.BULLET, BulletSpirit],
+    [st.ACTIVATOR_BULLET, ActivatorBulletSpirit]
   ];
   var sc = {};
   for (var i = 0; i < a.length; i++) {
@@ -124,7 +126,14 @@ Game4BaseScreen.prototype.createHitPairs = function() {
     [g.ENEMY_SCAN, g.WALL],
     [g.ENEMY_SCAN, g.NEUTRAL],
     [g.ENEMY_SCAN, g.PLAYER],
-    [g.ENEMY_SCAN, g.ENEMY]
+    [g.ENEMY_SCAN, g.ENEMY],
+
+    [g.BEAM, g.WALL],
+    [g.BEAM, g.NEUTRAL],
+    [g.BEAM, g.PLAYER],
+    [g.BEAM, g.PLAYER_FIRE],
+    [g.BEAM, g.ENEMY],
+    [g.BEAM, g.ENEMY_FIRE]
   ];
 };
 

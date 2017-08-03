@@ -538,7 +538,9 @@ PlayerSpirit.prototype.handleWielding = function() {
       PlayerSpirit.WIELD_MAX_ACCEL, PlayerSpirit.WIELD_MAX_FORCE,
       true, this.destAim.angle());
   // this.handleBeamTorque(this.destAim.angle());
-  this.handleBeamTorque(this.getAngleToTarget(), 0.1);
+  if (this.getTargetBody()) {
+    this.handleBeamTorque(this.getAngleToTarget(), 0.1);
+  }
 };
 
 PlayerSpirit.prototype.handleEjecting = function() {

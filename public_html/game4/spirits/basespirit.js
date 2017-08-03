@@ -196,7 +196,7 @@ BaseSpirit.prototype.getOutputToTarget = function(targetId) {
 };
 
 BaseSpirit.prototype.addInputPulse = function(endTime, val) {
-  if(this.pulseEndToVal[endTime]) {
+  if (this.pulseEndToVal[endTime]) {
     this.pulseEndToVal[endTime] += val;
   } else {
     this.pulseEndToVal[endTime] = val;

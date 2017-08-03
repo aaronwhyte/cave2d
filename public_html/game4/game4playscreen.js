@@ -375,6 +375,19 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
         bulletSpirit.onHitOther(mag, pos);
       }
     }
+
+    var abb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ACTIVATOR_BULLET, b0, b1);
+    if (abb) {
+      var abbs = this.getSpiritForBody(abb);
+      var otherBody = this.otherBody(abb, b0, b1);
+      var otherSpirit = this.getSpiritForBody(otherBody);
+      if (otherSpirit && otherSpirit.isActivatable()) {
+        abbs.onHitActivatable(otherSpirit, pos);
+      } else {
+        abbs.onHitOther(pos);
+      }
+    }
+
     vec.free();
   }
 };
@@ -438,6 +451,13 @@ Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
     var spirit = this.world.spirits[spiritId];
     if (spirit) spirit.onDraw(this.world, this.renderer);
   }
+
+  // HACKish: draw disembodied spirits too, like dead bullets that are still leaving trails
+  for (var spiritId in this.world.spirits) {
+    var spirit = this.world.spirits[spiritId];
+    if (!spirit.bodyId) spirit.onDraw(this.world, this.renderer);
+  }
+
   spiritIdSet.free();
   cellIdSet.free();
 };

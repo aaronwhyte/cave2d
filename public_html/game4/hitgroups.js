@@ -12,5 +12,6 @@ HitGroups = {
   ENEMY: 6,
   ENEMY_FIRE: 7,
   ENEMY_SCAN: 8,
-  PLAYER_SCAN: 9
+  PLAYER_SCAN: 9,
+  BEAM: 10
 };
