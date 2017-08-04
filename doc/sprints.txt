@@ -86,7 +86,7 @@ v entrance 1
   v respawn after death
     v death by critter
 v exit 1: basic game2 biz
-- useful objects & activation
+v useful objects & activation
   * based on "Vehicles" basic neuron model
   * Each target has one input port that accepts any number of simultaneous connections.
   * Input values are steady values that change discontinuously, in sudden steps.
@@ -107,7 +107,7 @@ v exit 1: basic game2 biz
     v targetSpirit.sumOfInputs()
     v iterate through pulses, culling obsolete ones and adding valued from active ones
     v iterate through sources, culling or adding
-  - exercise the system
+  v exercise the system
     v player activates indicator light
       v indicator light spirit that just shows whether there's any input or not
         v basic spirit
@@ -120,11 +120,23 @@ v exit 1: basic game2 biz
         v deactivate 0
       v whole thing works
     v player wielding/activating/ejecting twists things to point along wield vector
-    - activator raygun that serves 2 purposes:
+    v activator raygun that serves 2 purposes:
       v it is activation target, like the light
-      - When activated, it fires activation bullets that can activate stuff like lights and other rayguns
-        - activation bullet spirit
-          - collision triggers activation pulse
+      v When activated, it fires activation bullets that can activate stuff like lights and other rayguns
+        v activation bullet spirit
+          v collision triggers activation pulse
+
+Movement again...
+Precise with short taps, hold for less friction and high speeds...?
+
+- death 2
+  - circle shrinks to nothing in-place
+    * no dying to get extra info!
+    * no dying to get extra info!
+  - player gets ghost body, which can be controlled a teeny bit so you know it's you.
+  - ghost pan/zoom camera circle doesn't affect shader during normal draw.
+  - ghosts are drawn always - separate pass with different shader params
+  - touching spawn point restores solid player body, back to normal.
 
 - entrance 2
   - continuation of player slots - don't make players re-add themselves
