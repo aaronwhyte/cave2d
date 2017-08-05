@@ -128,11 +128,13 @@ v useful objects & activation
 
 Movement again...
 Precise with short taps, hold for less friction and high speeds...?
+Or more pure accel controls...
+- displacement is scaled and then applied as force
+- keyboard applied as force too
 
 - death 2
-  - circle shrinks to nothing in-place
-    * no dying to get extra info!
-    * no dying to get extra info!
+  - fragment-view circle shrinks to nothing in-place
+    * don't encourage dying to get extra info
   - player gets ghost body, which can be controlled a teeny bit so you know it's you.
   - ghost pan/zoom camera circle doesn't affect shader during normal draw.
   - ghosts are drawn always - separate pass with different shader params

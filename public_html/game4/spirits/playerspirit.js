@@ -14,7 +14,6 @@ function PlayerSpirit(screen) {
 
   this.aim = new Vec2d();
   this.destAim = new Vec2d();
-  this.aimSpeed = 0;
 
   this.beamState = BeamState.OFF;
   this.ejectStartTime = 0;
@@ -22,6 +21,7 @@ function PlayerSpirit(screen) {
   this.obstructionCount = 0;
 
   this.accel = new Vec2d();
+  this.keyMult = 0.25;
   this.slot = null;
 
   this.oldKick = false;
@@ -42,9 +42,10 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 1;
 
-PlayerSpirit.SPEED = 2;
-PlayerSpirit.TRACTION = 0.05;
-PlayerSpirit.FRICTION = 0.2;
+PlayerSpirit.SPEED = 1.5;
+PlayerSpirit.TRACTION = 0.12;
+PlayerSpirit.KEY_MULT_ADJUST = 0.05;
+PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 0.25;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
@@ -52,10 +53,10 @@ PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface to held obj surface
-PlayerSpirit.TRACTOR_MAX_ACCEL = 1.8;
-PlayerSpirit.TRACTOR_MAX_FORCE = 0.4;
+PlayerSpirit.TRACTOR_MAX_ACCEL = 2;
+PlayerSpirit.TRACTOR_MAX_FORCE = 0.6;
 PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 1.25;
-PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 12;
+PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
 // dist from player surface
@@ -63,8 +64,8 @@ PlayerSpirit.SEEKSCAN_DIST = Math.min(PlayerSpirit.TRACTOR_DRAG_DIST * 3, Player
 
 PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL;
 PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE;
-PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
-PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.TRACTOR_DRAG_DIST * 0.5;
+PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.TRACTOR_BREAK_DIST;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -255,21 +256,17 @@ PlayerSpirit.prototype.handleInput = function() {
   ////////////
   // MOVEMENT
   var speed = PlayerSpirit.SPEED;
-  var traction = PlayerSpirit.TRACTION;
-
-  if (stick.isTouched()) {
-    if (!targetBody && stickMag) { // TODO remove target check?
-      // When in keyboard precise-aiming mode, accelerate less
-      // when the stick and the aim point in different directions.
-      traction *= Math.max(0, this.vec2d.dot(this.aim)) / stickMag;
-    }
-    // traction slowdown
-    this.accel.set(playerBody.vel).scale(-traction);
-
-    this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
-    this.accel.add(this.vec2d);
-    playerBody.addVelAtTime(this.accel, this.now());
+  if (!touchlike) {
+    this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
+    this.keyMult = Math.max(0.25, Math.min(1, this.keyMult));
+    speed *= this.keyMult;
   }
+  var traction = PlayerSpirit.TRACTION;
+  this.accel.set(playerBody.vel).scale(-traction);
+
+  this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
+  this.accel.add(this.vec2d);
+  playerBody.addVelAtTime(this.accel, this.now());
 
   ////////
   // AIM
@@ -413,16 +410,12 @@ PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reversenes
 
 PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness) {
   // up/down/left/right buttons
-  var aimFriction = 0.05;
-  var dist;
+  var dist = 0;
   if (stickMag) {
     var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
     dist = correction.magnitude();
-    this.aimSpeed += 0.04 * dist;
-    aimFriction = 0.01;
-    this.destAim.add(correction.scale(Math.min(1, this.aimSpeed)));
+    this.destAim.add(correction.scale(Math.min(1, this.keyMult * this.keyMult)));
   }
-  this.aimSpeed *= (1 - aimFriction);
   this.destAim.scaleToLength(1);
   if (reverseness > 0.99) {
     // 180 degree flip, precise or not, so set it instantly.
