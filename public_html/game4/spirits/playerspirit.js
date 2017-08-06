@@ -44,7 +44,7 @@ PlayerSpirit.PLAYER_RAD = 1;
 
 PlayerSpirit.SPEED = 1.2;
 PlayerSpirit.TRACTION = 0.3;
-PlayerSpirit.KEY_MULT_ADJUST = 0.05;
+PlayerSpirit.KEY_MULT_ADJUST = 0.075;
 PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 0.25;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -261,7 +261,7 @@ PlayerSpirit.prototype.handleInput = function() {
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
     this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
-    this.keyMult = Math.max(0.25, Math.min(1, this.keyMult));
+    this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
     speed *= this.keyMult;
   }
 
