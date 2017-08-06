@@ -41,6 +41,8 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 Game4PlayScreen.prototype = new Game4BaseScreen();
 Game4PlayScreen.prototype.constructor = Game4PlayScreen;
 
+Game4PlayScreen.TOUCH_STICK_RADIUS = 45;
+
 Game4PlayScreen.EXIT_DURATION = 3;
 Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 
@@ -161,10 +163,10 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
           }
           return true;
         })
-        .setRadius(60);
+        .setRadius(Game4PlayScreen.TOUCH_STICK_RADIUS);
 
-    var buttonRad = 45;
-    var maxButtonRatio = 1/6;
+    var buttonRad = 50;
+    var maxButtonRatio = 1/5;
     var button1 = button(self.stamps.button1);
     var rule1 = new CuboidRule(self.canvasCuboid, button1.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))

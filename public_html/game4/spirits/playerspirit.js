@@ -43,7 +43,7 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.PLAYER_RAD = 1;
 
 PlayerSpirit.SPEED = 1.5;
-PlayerSpirit.TRACTION = 0.12;
+PlayerSpirit.TRACTION = 0.2;
 PlayerSpirit.KEY_MULT_ADJUST = 0.05;
 PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 0.25;
@@ -285,7 +285,7 @@ PlayerSpirit.prototype.handleInput = function() {
   if (touchlike && stickMag) {
     var unshrinkingMag = 0.8;
     if (stickMag < unshrinkingMag) {
-      var stickScale = 0.93 + 0.07 * stickMag / unshrinkingMag;
+      var stickScale = 0.9 + 0.1 * stickMag / unshrinkingMag;
       stick.scale(stickScale);
     }
   }
