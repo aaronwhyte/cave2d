@@ -41,7 +41,7 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 Game4PlayScreen.prototype = new Game4BaseScreen();
 Game4PlayScreen.prototype.constructor = Game4PlayScreen;
 
-Game4PlayScreen.TOUCH_STICK_RADIUS = 45;
+Game4PlayScreen.TOUCH_STICK_RADIUS = 60;
 
 Game4PlayScreen.EXIT_DURATION = 3;
 Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
@@ -215,7 +215,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
                     .addTriggerKeyByName(b2)
                     .addTriggerKeyByName(menuKey))))
         .add(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(180))
+            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(100))
             .add(ControlName.BUTTON_1, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger().addTriggerKeyByName(b1)))

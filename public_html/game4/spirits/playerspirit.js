@@ -42,8 +42,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 1;
 
-PlayerSpirit.SPEED = 1.5;
-PlayerSpirit.TRACTION = 0.2;
+PlayerSpirit.SPEED = 1.2;
+PlayerSpirit.TRACTION = 0.3;
 PlayerSpirit.KEY_MULT_ADJUST = 0.05;
 PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 0.25;
@@ -60,7 +60,7 @@ PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
 // dist from player surface
-PlayerSpirit.SEEKSCAN_DIST = Math.min(PlayerSpirit.TRACTOR_DRAG_DIST * 3, PlayerSpirit.TRACTOR_BREAK_DIST);
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
 
 PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL;
 PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE;
@@ -251,27 +251,33 @@ PlayerSpirit.prototype.handleInput = function() {
 
   stick.getVal(this.vec2d);
   var stickMag = this.vec2d.magnitude();
-  var targetBody = this.getTargetBody();
+  var stickDotAim = stickMag ? this.vec2d.dot(this.aim) / stickMag : 0; // aim is always length 1
+  var aimLocked = BeamState.isAimLocked(this.beamState);
 
   ////////////
   // MOVEMENT
   var speed = PlayerSpirit.SPEED;
+
+  // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
     this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
     this.keyMult = Math.max(0.25, Math.min(1, this.keyMult));
     speed *= this.keyMult;
   }
+
   var traction = PlayerSpirit.TRACTION;
+  // Half of traction's job is to stop you from sliding in the direction you're already going.
   this.accel.set(playerBody.vel).scale(-traction);
 
-  this.vec2d.scale(speed * traction).clipToMaxLength(speed * traction);
+  // The other half of traction's job is to get you going where you want.
+  // vec2d is the stick input right now.
+  this.vec2d.scale(speed * traction * (aimLocked ? 1 : Math.abs(stickDotAim)));
   this.accel.add(this.vec2d);
   playerBody.addVelAtTime(this.accel, this.now());
 
   ////////
   // AIM
-  if (this.beamState !== BeamState.ACTIVATING) {
-    var stickDotAim = stick.getVal(this.vec2d).scaleToLength(1).dot(this.aim);
+  if (!aimLocked) {
     var reverseness = Math.max(0, -stickDotAim);
     if (touchlike) {
       this.handleTouchlikeAim(stick, stickMag, reverseness);
@@ -285,7 +291,7 @@ PlayerSpirit.prototype.handleInput = function() {
   if (touchlike && stickMag) {
     var unshrinkingMag = 0.8;
     if (stickMag < unshrinkingMag) {
-      var stickScale = 0.9 + 0.1 * stickMag / unshrinkingMag;
+      var stickScale = 0.95 + 0.05 * stickMag / unshrinkingMag;
       stick.scale(stickScale);
     }
   }
@@ -395,16 +401,17 @@ PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reversenes
   // touch or pointer-lock
   if (stickMag && stick.isTouched()) {
     // Any stick vector more than 90 degrees away from the aim vector is somewhat reverse:
-    // 0 for 90 degreees, 1 for 180 degrees.
+    // 0 for 90 degrees, 1 for 180 degrees.
     // The more reverse the stick is, the less the old aim's contribution to the new aim.
     // That makes it easier to flip the aim nearly 180 degrees quickly.
-    // Without that, the player ends up facing gliding backwards instead of aiming.
-    this.destAim.scale(0.5 * (1 - reverseness * 0.9)).add(stick.getVal(this.vec2d).scale(Math.min(1.5, 1 + 1 * stickMag)));
+    // Without that, the player ends up facing the same way and gliding backwards instead of aiming.
+    this.destAim.scale(0.5 * (1 - reverseness * 0.9))
+        .add(stick.getVal(this.vec2d).scale(0.5 + 0.5 * stickMag));
     this.destAim.scaleToLength(1);
     var dist = stick.getVal(this.vec2d).distance(this.destAim);
     this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
   }
-  this.aim.slideByFraction(this.destAim, 0.5);
+  this.aim.slideByFraction(this.destAim, 0.5).scaleToLength(1);
 };
 
 
@@ -431,10 +438,6 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
 };
 
 PlayerSpirit.prototype.breakBeam = function() {
-  // if (this.getTargetBody()) {
-  //   this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
-  //   this.aim.set(this.destAim);
-  // }
   this.setBeamState(BeamState.OFF);
 };
 

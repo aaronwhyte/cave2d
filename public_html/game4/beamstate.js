@@ -10,3 +10,7 @@ BeamState = {
 BeamState.isOutputish = function(state) {
   return state === BeamState.WIELDING || state === BeamState.ACTIVATING || state === BeamState.EJECTING;
 };
+
+BeamState.isAimLocked = function(state) {
+  return state === BeamState.ACTIVATING;
+};
