@@ -97,18 +97,12 @@ PointerLockStick.prototype.getVal = function(out) {
 };
 
 PointerLockStick.prototype.requestLock = function() {
-  this.elem.requestPointerLock = this.elem.requestPointerLock ||
-      this.elem.mozRequestPointerLock ||
-      this.elem.webkitRequestPointerLock;
   if (this.elem.requestPointerLock) {
     this.elem.requestPointerLock();
   }
 };
 
 PointerLockStick.prototype.exitPointerLock = function() {
-  document.exitPointerLock = document.exitPointerLock ||
-      document.mozExitPointerLock ||
-      document.webkitExitPointerLock;
   if (document.exitPointerLock) {
     document.exitPointerLock();
   }

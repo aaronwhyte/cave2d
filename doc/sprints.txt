@@ -127,10 +127,23 @@ v useful objects & activation
           v collision triggers activation pulse
 
 Movement again...
-Precise with short taps, hold for less friction and high speeds...?
-Or more pure accel controls...
-- displacement is scaled and then applied as force
-- keyboard applied as force too
+v traction or responsive movement
+v good slow aim precision
+
+Bugs and cleaning
+v Unlock mouse pointer when paused, relock on resume
+- fix weird noise when activator bullet hits player
+- Activator gun fire schedule
+  - use new timeout (don't re-use friction)
+- higher friction/traction on all manipulable objects
+
+beam splashes
+- muzzle-flash when firing
+- 3-5 splash particles on wasted hit
+- cleaner flash on activation hit - circle? arrowhead? sparkles?
+
+player kick
+-
 
 - death 2
   - fragment-view circle shrinks to nothing in-place
@@ -142,11 +155,13 @@ Or more pure accel controls...
 
 - entrance 2
   - continuation of player slots - don't make players re-add themselves
+
 - exit 2
   - players near exit are "exiting" - drawn in and spun around a bit
   - but players can leave exit zone if not all players are in it
   - when all players are in, actual exit process happens
-- outfits
+
+- outfits?
 - entrance 3
   - continuation of player equipment (?)
     (this is the real motive for making it to the exit, instead of dying and respawning. Plus honor I guess.)

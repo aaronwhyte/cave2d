@@ -322,11 +322,22 @@ WorldScreen.prototype.destroyScreen = function() {
 WorldScreen.prototype.showPauseMenu = function() {
   document.querySelector('#pauseMenu').style.display = 'block';
   this.canvas.style.cursor = "auto";
+
+  if (document.pointerLockElement) {
+    this.oldPointerLockElement = document.pointerLockElement;
+    if (document.exitPointerLock) {
+      document.exitPointerLock();
+    }
+  }
 };
 
 WorldScreen.prototype.hidePauseMenu = function() {
   document.querySelector('#pauseMenu').style.display = 'none';
   this.canvas.style.cursor = "";
+  if (this.oldPointerLockElement && this.oldPointerLockElement.requestPointerLock) {
+    this.oldPointerLockElement.requestPointerLock();
+    this.oldPointerLockElement = null;
+  }
 };
 
 WorldScreen.prototype.clock = function(startTimeMs) {
