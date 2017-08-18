@@ -43,19 +43,19 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.PLAYER_RAD = 1;
 
 PlayerSpirit.SPEED = 1.2;
-PlayerSpirit.TRACTION = 0.3;
+PlayerSpirit.TRACTION = 0.25;
 PlayerSpirit.KEY_MULT_ADJUST = 0.075;
 PlayerSpirit.FRICTION = 0.05;
-PlayerSpirit.FRICTION_TIMEOUT = 0.25;
+PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface to held obj surface
-PlayerSpirit.TRACTOR_MAX_ACCEL = 2;
-PlayerSpirit.TRACTOR_MAX_FORCE = 0.6;
-PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 1.25;
+PlayerSpirit.TRACTOR_MAX_ACCEL = 6;
+PlayerSpirit.TRACTOR_MAX_FORCE = 1.8;
+PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 0.95;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
@@ -64,7 +64,7 @@ PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.SEEK
 
 PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL;
 PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE;
-PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.TRACTOR_DRAG_DIST * 0.5;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.TRACTOR_DRAG_DIST * 0.75;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.TRACTOR_BREAK_DIST;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
@@ -334,11 +334,8 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
     var body = this.getBody();
     if (body) {
-      this.breakBeamIfTargetMissing();
-      this.handleBeamState();
-      var targetBody = this.getTargetBody();
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
-
+      var targetBody = this.getTargetBody();
       if (!targetBody) {
         // Angle towards aim.
         var aimAngle = this.destAim.angle();
@@ -362,10 +359,10 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
         this.addBodyAngVel(duration * PlayerSpirit.LOCK_ANGPOS_ACCEL * angleDiff);
       }
 
-      var angularFriction = (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3) * duration;
+      var angularFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3), duration);
       body.applyAngularFrictionAtTime(angularFriction, now);
 
-      var linearFriction = (this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3) * duration;
+      var linearFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3), duration);
       body.applyLinearFrictionAtTime(linearFriction, now);
 
       var newVel = this.vec2d.set(body.vel);

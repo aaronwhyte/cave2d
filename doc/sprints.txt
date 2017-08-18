@@ -132,10 +132,11 @@ v good slow aim precision
 
 Bugs and cleaning
 v Unlock mouse pointer when paused, relock on resume
-- fix weird noise when activator bullet hits player
 - Activator gun fire schedule
   - use new timeout (don't re-use friction)
+  - don't stop firing when off-screen
 - higher friction/traction on all manipulable objects
+- fix weird noise when activator bullet hits player
 
 beam splashes
 - muzzle-flash when firing
