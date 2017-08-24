@@ -7,6 +7,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 
+<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
+<script src="main.js"></script>
+
+
+<link rel="stylesheet" type="text/css" href="main.css">
+</head>
+<body>
 <script id="shader-fs" type="x-shader/x-fragment">
     precision mediump float;
 
@@ -26,13 +33,6 @@
     }
 </script>
 
-<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
-<script src="main.js"></script>
-
-
-<link rel="stylesheet" type="text/css" href="main.css">
-</head>
-<body>
 <canvas id="canvas"></canvas>
 <script>
 function pd(event) {
