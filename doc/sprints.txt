@@ -132,10 +132,10 @@ v good slow aim precision
 
 Bugs and cleaning
 v Unlock mouse pointer when paused, relock on resume
-- Activator gun fire schedule
-  - use new timeout (don't re-use friction)
-  - don't stop firing when off-screen
-- higher friction/traction on all manipulable objects
+v Activator gun fire schedule
+  v use new timeout (don't re-use friction)
+  v don't stop firing when off-screen
+v higher friction/traction on all manipulable objects
 - fix weird noise when activator bullet hits player
 
 beam splashes
@@ -144,7 +144,7 @@ beam splashes
 - cleaner flash on activation hit - circle? arrowhead? sparkles?
 
 player kick
--
+- instant, not sustained
 
 - death 2
   - fragment-view circle shrinks to nothing in-place

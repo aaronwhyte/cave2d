@@ -159,6 +159,7 @@ BaseSpirit.prototype.isActivatable = function() {
  */
 BaseSpirit.prototype.addInputSource = function(sourceSpiritId) {
   this.inputIds[sourceSpiritId] = true;
+  this.onInputSumUpdate();
 };
 
 /**
@@ -174,6 +175,7 @@ BaseSpirit.prototype.isInputSource = function(sourceSpiritId) {
  */
 BaseSpirit.prototype.removeInputSource = function(sourceSpiritId) {
   delete this.inputIds[sourceSpiritId];
+  this.onInputSumUpdate();
 };
 
 /**
@@ -185,6 +187,7 @@ BaseSpirit.prototype.removeInputSource = function(sourceSpiritId) {
 BaseSpirit.prototype.onInputChanged = function(sourceSpiritId, val) {
   // Usually the impl will re-evaluate all inputs to decide what to do,
   // but I'm including the actual new val too in case.
+  this.onInputSumUpdate();
 };
 
 /**
@@ -201,6 +204,11 @@ BaseSpirit.prototype.addInputPulse = function(endTime, val) {
   } else {
     this.pulseEndToVal[endTime] = val;
   }
+  this.onInputSumUpdate();
+};
+
+BaseSpirit.prototype.onInputSumUpdate = function() {
+  // maybe something changed?
 };
 
 BaseSpirit.prototype.sumOfInputs = function() {

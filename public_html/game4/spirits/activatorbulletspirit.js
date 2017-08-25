@@ -13,7 +13,7 @@ function ActivatorBulletSpirit(screen) {
   this.modelMatrix = new Matrix44();
 
   // trail stuff
-  this.trail = new Trail(4);
+  this.trail = new Trail(2);
   this.segStartVec = new Vec2d();
   this.segEndVec = new Vec2d();
 
@@ -22,7 +22,7 @@ function ActivatorBulletSpirit(screen) {
 ActivatorBulletSpirit.prototype = new BaseSpirit();
 ActivatorBulletSpirit.prototype.constructor = ActivatorBulletSpirit;
 
-ActivatorBulletSpirit.INPUT_DURATION = 1.2 * 1.5;
+ActivatorBulletSpirit.INPUT_DURATION = 1.42; // just under the gun's timeout time
 
 ActivatorBulletSpirit.prototype.reset = function(screen) {
   BaseSpirit.prototype.reset.call(this, screen);

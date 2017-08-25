@@ -15,20 +15,25 @@ function ActivatorGunSpirit(screen) {
   this.viewportsFromCamera = 0;
 
   this.lastFireTime = 0;
+  this.waitingForFireTimeout = false;
 }
 ActivatorGunSpirit.prototype = new BaseSpirit();
 ActivatorGunSpirit.prototype.constructor = ActivatorGunSpirit;
 
-ActivatorGunSpirit.MEASURE_TIMEOUT = 1.2;
+ActivatorGunSpirit.FRICTION_TIMEOUT_ID = 1;
+ActivatorGunSpirit.FIRE_TIMEOUT_ID = 2;
+
+ActivatorGunSpirit.FRICTION_TIMEOUT = 1.2;
 ActivatorGunSpirit.MAX_TIMEOUT = 10;
 
-ActivatorGunSpirit.FIRE_TIMEOUT = 1.2;
+ActivatorGunSpirit.FIRE_TIMEOUT = 1.425;
 
 ActivatorGunSpirit.SCHEMA = {
   0: "type",
   1: "id",
   2: "bodyId",
-  3: "lastFireTime"
+  3: "lastFireTime",
+  4: "waitingForFireTimeout"
 };
 
 /**
@@ -94,7 +99,7 @@ ActivatorGunSpirit.factory = function(screen, stamp, pos, dir) {
 
   var spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, -1);
+  world.addTimeout(screen.now(), spiritId, ActivatorGunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
 };
 
@@ -106,43 +111,47 @@ ActivatorGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-  var body = this.getBody();
-  var pos = this.getBodyPos();
-  this.stress = this.stress || 0;
-
-  var friction = this.screen.isPlaying() ? 0.05 : 0.3;
-
   var now = this.now();
-  var time = ActivatorGunSpirit.MEASURE_TIMEOUT;
 
-  // friction
-  body.applyLinearFrictionAtTime(friction * time, now);
-  body.applyAngularFrictionAtTime(friction * time, now);
+  if (timeoutVal === ActivatorGunSpirit.FRICTION_TIMEOUT_ID) {
+    var body = this.getBody();
+    var friction = this.screen.isPlaying() ? 0.15 : 0.3;
+    var time = ActivatorGunSpirit.FRICTION_TIMEOUT;
 
-  var newVel = this.vec2d.set(body.vel);
+    // friction
+    body.applyLinearFrictionAtTime(friction * time, now);
+    body.applyAngularFrictionAtTime(friction * time, now);
 
-  var oldAngVelMag = Math.abs(this.getBodyAngVel());
-  if (oldAngVelMag && oldAngVelMag < ActivatorGunSpirit.STOPPING_ANGVEL) {
-    this.setBodyAngVel(0);
-  }
-  var oldVelMagSq = newVel.magnitudeSquared();
-  if (oldVelMagSq && oldVelMagSq < ActivatorGunSpirit.STOPPING_SPEED_SQUARED) {
-    newVel.reset();
-  }
+    var newVel = this.vec2d.set(body.vel);
 
-  // Reset the body's pathDurationMax because it gets changed at compile-time,
-  // but it is serialized at level-save-time, so old saved values might not
-  // match the new compiled-in values. Hm.
-  var timeoutDuration = Math.min(
-      ActivatorGunSpirit.MAX_TIMEOUT,
-      ActivatorGunSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
-  body.pathDurationMax = timeoutDuration * 1.1;
-  body.setVelAtTime(newVel, now);
-  body.invalidatePath();
-  world.addTimeout(now + timeoutDuration, this.id, -1);
+    var oldAngVelMag = Math.abs(this.getBodyAngVel());
+    if (oldAngVelMag && oldAngVelMag < ActivatorGunSpirit.STOPPING_ANGVEL) {
+      this.setBodyAngVel(0);
+    }
+    var oldVelMagSq = newVel.magnitudeSquared();
+    if (oldVelMagSq && oldVelMagSq < ActivatorGunSpirit.STOPPING_SPEED_SQUARED) {
+      newVel.reset();
+    }
 
-  if (this.sumOfInputs() > 0) {
-    this.fire();
+    // Reset the body's pathDurationMax because it gets changed at compile-time,
+    // but it is serialized at level-save-time, so old saved values might not
+    // match the new compiled-in values. Hm.
+    var timeoutDuration = Math.min(
+        ActivatorGunSpirit.MAX_TIMEOUT,
+        ActivatorGunSpirit.FRICTION_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
+    body.pathDurationMax = timeoutDuration * 1.1;
+    body.setVelAtTime(newVel, now);
+    body.invalidatePath();
+    world.addTimeout(now + timeoutDuration, this.id, ActivatorGunSpirit.FRICTION_TIMEOUT_ID);
+
+  } else if (timeoutVal === ActivatorGunSpirit.FIRE_TIMEOUT_ID) {
+    if (this.sumOfInputs() > 0) {
+      this.fire();
+      this.screen.world.addTimeout(this.lastFireTime + ActivatorGunSpirit.FIRE_TIMEOUT, this.id, ActivatorGunSpirit.FIRE_TIMEOUT_ID);
+      this.waitingForFireTimeout = true; // no-op since it must already be true
+    } else {
+      this.waitingForFireTimeout = false;
+    }
   }
 };
 
@@ -168,6 +177,19 @@ ActivatorGunSpirit.prototype.onDraw = function(world, renderer) {
   }
 };
 
+ActivatorGunSpirit.prototype.onInputSumUpdate = function() {
+  if (this.sumOfInputs() > 0) {
+    var now = this.now();
+    if (this.lastFireTime + ActivatorGunSpirit.FIRE_TIMEOUT <= now) {
+      this.fire();
+    }
+    if (!this.waitingForFireTimeout) {
+      this.screen.world.addTimeout(this.lastFireTime + ActivatorGunSpirit.FIRE_TIMEOUT, this.id, ActivatorGunSpirit.FIRE_TIMEOUT_ID);
+      this.waitingForFireTimeout = true;
+    }
+  }
+};
+
 ActivatorGunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
@@ -177,9 +199,8 @@ ActivatorGunSpirit.prototype.fire = function() {
       this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(4),
       0.3,
       6 + Math.random() * 2);
-  // var now = this.now();
-  // this.screen.world.addTimeout(now + this.firePeriod, this.spirit.id, this.fireTimeoutId);
-  // this.timeoutRunning = true;
+
+  this.lastFireTime = this.now();
   // this.screen.sounds.pew(pos, now);
 };
 

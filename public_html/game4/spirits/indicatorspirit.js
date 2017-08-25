@@ -93,10 +93,8 @@ IndicatorSpirit.prototype.onTimeout = function(world, timeoutVal) {
     this.changeListener.onBeforeSpiritChange(this);
   }
   var body = this.getBody();
-  var pos = this.getBodyPos();
-  this.stress = this.stress || 0;
 
-  var friction = this.screen.isPlaying() ? 0.05 : 0.3;
+  var friction = this.screen.isPlaying() ? 0.15 : 0.3;
 
   var now = this.now();
   var time = IndicatorSpirit.MEASURE_TIMEOUT;
