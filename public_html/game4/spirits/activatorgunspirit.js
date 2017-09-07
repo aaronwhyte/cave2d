@@ -194,11 +194,13 @@ ActivatorGunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   var angPos = this.getBodyAngPos();
+  var speed = 3;
+  var dist = 25 + Math.random() * 5;
   this.addBullet(
       pos,
-      this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(4),
+      this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed),
       0.3,
-      6 + Math.random() * 2);
+      dist / speed);
 
   this.lastFireTime = this.now();
   // this.screen.sounds.pew(pos, now);

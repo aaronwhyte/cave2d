@@ -96,13 +96,14 @@ ActivatorBulletSpirit.prototype.onDraw = function(world, renderer) {
 
 ActivatorBulletSpirit.prototype.addTrailSegment = function() {
   var body = this.getBody();
-  this.rad = body.rad;
+  this.headRad = body.rad;
+  this.tailRad = 0;
   this.trail.append(this.now(), this.getBodyPos(), body.vel);
 };
 
 ActivatorBulletSpirit.prototype.drawTrail = function() {
   var maxTime = this.now();
-  var duration = 2;
+  var duration = 3;
   var minTime = maxTime - duration;
   var trailWarm = false;
   this.screen.renderer
@@ -119,13 +120,13 @@ ActivatorBulletSpirit.prototype.drawTrail = function() {
       this.trail.getSegmentPosAtTime(i, drawStartTime, this.segStartVec);
       this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
 
-      var startRad = this.rad * (drawStartTime - minTime) / (maxTime - minTime);
+      var startRad = this.tailRad + (this.headRad - this.tailRad) * (drawStartTime - minTime) / duration;
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
       this.screen.renderer.setModelMatrix(this.modelMatrix);
 
-      var endRad = this.rad * (drawEndTime - minTime) / (maxTime - minTime);
+      var endRad = this.tailRad + (this.headRad - this.tailRad) * (drawEndTime - minTime) / duration;
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
