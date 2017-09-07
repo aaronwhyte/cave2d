@@ -27,8 +27,8 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.splashes = new Splashes(this.splasher, this.stamps);
 
   this.levelColorVector.setRGBA(0.2, 0.3, 0.8, 1);
+
   this.timeMultiplier = 1;
-  this.playerChasePolarity = 1;
 
   this.initStatMons();
 
