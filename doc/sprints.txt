@@ -139,7 +139,7 @@ v higher friction/traction on all manipulable objects
 
 x change Wield physics? (what did I have in mind??)
 
-- entrance 2
+v entrance 2: done 2017-09-17
   * continuation of player slots - don't make players re-add themselves
   * "gameState"
   v app/PlayApp
@@ -159,8 +159,8 @@ x change Wield physics? (what did I have in mind??)
       v game4PlayScreen.createGameState()
     v pass old value to this.app.restartLevel
     v use in maybeCreateScreen()
-      v pass to Game4PlayScreen ctor I guess!
-        Let the screen do what it will at each stage
+      x pass to Game4PlayScreen ctor I guess!
+      v page explicitly restores state with Game4PlayScreen call
   v game4/Game4PlayScreen
     v createGameState() called from PlayLevelPage
       v list of players
@@ -174,7 +174,7 @@ x change Wield physics? (what did I have in mind??)
   v Slots
     * need permanent serializable IDs
     v replace random slot.id with real names
-  - Maintain pointerlock across levels
+  v Maintain pointerlock across levels
 
 - death 2
   - fragment-view circle shrinks to nothing in-place
