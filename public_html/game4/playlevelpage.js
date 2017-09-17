@@ -6,11 +6,12 @@
  * @param {FileTree} fileTree
  * @param {String} adventureName
  * @param {String} levelName
+ * @param {*} startingGameState
  * @constructor
  * @extends (Page)
  */
-function PlayLevelPage(app, gameTitle, basePath, fileTree, adventureName, levelName) {
-  ScreenPage.call(this, app, gameTitle, basePath, fileTree, adventureName, levelName);
+function PlayLevelPage(app, gameTitle, basePath, fileTree, adventureName, levelName, startingGameState) {
+  ScreenPage.call(this, app, gameTitle, basePath, fileTree, adventureName, levelName, startingGameState);
 }
 PlayLevelPage.prototype = new ScreenPage();
 PlayLevelPage.prototype.constructor = PlayLevelPage;
@@ -44,25 +45,27 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
   }
 
   this.screen = new Game4PlayScreen(
-      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx, this.adventureName, this.levelName);
+      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx,
+      this.adventureName, this.levelName);
   this.screen.updateHudLayout();
   this.screen.initWorld();
   this.screen.loadWorldFromJson(this.jsonObj);
   this.screen.configurePlayerSlots();
   this.screen.setPaused(this.paused);
   this.screen.snapCameraToEntrance();
+  this.screen.restoreGameState(this.startingGameState);
 
   this.requestAnimation();
 };
 
-PlayLevelPage.prototype.exitLevel = function() {
+PlayLevelPage.prototype.exitLevel = function(exitGameState) {
   this.screen.destroyScreen();
   this.screen = null;
-  this.app.exitLevel(this.adventureName, this.levelName);
+  this.app.exitLevel(this.adventureName, this.levelName, exitGameState);
 };
 
 PlayLevelPage.prototype.restartLevel = function() {
   this.screen.destroyScreen();
   this.screen = null;
-  this.app.restartLevel();
+  this.app.restartLevel(this.startingGameState);
 };

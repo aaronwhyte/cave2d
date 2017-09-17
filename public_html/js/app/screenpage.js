@@ -6,12 +6,14 @@
  * @param {FileTree} fileTree
  * @param {String} adventureName
  * @param {String} levelName
+ * @param {*} startingGameState  Whatever state the game wants to preserve when changing levels.
+ *      Child classes might use it.
  * @constructor
  * @extends (Page)
  */
-function ScreenPage(app, gameTitle, basePath, fileTree, adventureName, levelName) {
+function ScreenPage(app, gameTitle, basePath, fileTree, adventureName, levelName, startingGameState) {
   Page.call(this);
-  if (gameTitle == null) {
+  if (!app) {
     // probably making a prototype
     return;
   }
@@ -21,6 +23,7 @@ function ScreenPage(app, gameTitle, basePath, fileTree, adventureName, levelName
   this.fileTree = fileTree;
   this.adventureName = adventureName;
   this.levelName = levelName;
+  this.startingGameState = startingGameState;
   this.levelDataPath = BaseApp.path(this.basePath, this.adventureName, this.levelName)
       .concat(BaseApp.PATH_LEVEL_JSON);
 

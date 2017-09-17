@@ -51,33 +51,35 @@ PlayApp.prototype.getDataFileText = function() {
   return this.dataFileLoader.getTextByPath(this.dataFilePath);
 };
 
-PlayApp.prototype.createPlayLevelPage = function() {
-  return new this.playLevelPageCtor(this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName);
+PlayApp.prototype.createPlayLevelPage = function(startingGameState) {
+  return new this.playLevelPageCtor(
+      this, this.gameTitle, this.basePath, this.fileTree, this.adventureName, this.levelName,
+      startingGameState);
 };
 
-PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName) {
+PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName, gameState) {
   var levelNames = this.fileTree.listChildren(BaseApp.path(this.basePath, fromAdventureName).concat(BaseApp.PATH_LEVELS));
   levelNames.sort();
   for (var i = 0; i < levelNames.length; i++) {
-    if (levelNames[i] == fromLevelName) {
+    if (levelNames[i] === fromLevelName) {
       break;
     }
   }
   this.page.exitDoc();
-  if (i == levelNames.length - 1) {
-    this.page = new VictoryPage(this);
+  if (i === levelNames.length - 1) {
+    this.page = new VictoryPage(this, gameState);
     this.page.enterDoc();
   } else {
     this.levelName = levelNames[i + 1];
-    this.page = this.createPlayLevelPage();
+    this.page = this.createPlayLevelPage(gameState);
     this.page.enterDoc();
     this.maybeForwardShaderTexts();
   }
 };
 
-PlayApp.prototype.restartLevel = function() {
+PlayApp.prototype.restartLevel = function(gameState) {
   this.page.exitDoc();
-  this.page = this.createPlayLevelPage();
+  this.page = this.createPlayLevelPage(gameState);
   this.page.enterDoc();
   this.maybeForwardShaderTexts();
 };

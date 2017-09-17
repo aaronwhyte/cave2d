@@ -136,28 +136,88 @@ v Activator gun fire schedule
   v use new timeout (don't re-use friction)
   v don't stop firing when off-screen
 v higher friction/traction on all manipulable objects
-- fix weird noise when activator bullet hits player
 
-beam splashes
-- muzzle-flash when firing
-- 3-5 splash particles on wasted hit
-- cleaner flash on activation hit - circle? arrowhead? sparkles?
+x change Wield physics? (what did I have in mind??)
 
-player kick
-- instant, not sustained
+- entrance 2
+  * continuation of player slots - don't make players re-add themselves
+  * "gameState"
+  v app/PlayApp
+    v exitLevel param
+    v VictoryPage ctor param (not that it matters)
+    v createPlayLevelPage param
+    v playLevelPageCtor call param
+    v restartLevel param
+      v createPlayLevelPage param
+  v app/ScreenPage
+    v ctor param
+    v field
+  v game4/PlayLevelPage
+    v ctor param
+    v pass fresh value to this.app.exitLevel
+      * have a way to create a fresh one!
+      v game4PlayScreen.createGameState()
+    v pass old value to this.app.restartLevel
+    v use in maybeCreateScreen()
+      v pass to Game4PlayScreen ctor I guess!
+        Let the screen do what it will at each stage
+  v game4/Game4PlayScreen
+    v createGameState() called from PlayLevelPage
+      v list of players
+        v slot names or whatever
+        x color?
+        x position relative to exit?
+        x velocity relative to exit?
+        x equipment (later!)
+    v Populate slotNames when creating slots.
+    v method for adding a player by slotName
+  v Slots
+    * need permanent serializable IDs
+    v replace random slot.id with real names
+  - Maintain pointerlock across levels
 
 - death 2
   - fragment-view circle shrinks to nothing in-place
     * don't encourage dying to get extra info
-  - player gets ghost body, which can be controlled a teeny bit so you know it's you.
-  - ghost pan/zoom camera circle doesn't affect shader during normal draw.
-  - ghosts are drawn always - separate pass with different shader params
-  - touching spawn point restores solid player body, back to normal.
+    * slow enough to see how you died, fast enough to not be totally annoying.
+  - ghost returns to spawn point
+    - player gets ghost body? Maybe totally invisible non-body would be fine.
+    - ghost pan/zoom camera circle doesn't affect shader during normal draw.
+    - ghosts are drawn always - separate pass with different shader params so they don't get clipped out
+    - touching spawn point restores solid player body, back to normal.
 
-- entrance 2
-  - continuation of player slots - don't make players re-add themselves
+- beam shader
+  - 2d mesh
+  - params
+    - endpoint positions
+    - endpoint sizes
+    - squash/stretch
+    - wave magnitude, offset, and frequency
+
+player kick
+- control
+  - instant, not sustained
+  - some frequency limit
+- physics
+  - rayscan shotgun
+  - mutual spring push
+  or
+  - actual repulsor shotgun
+  - because then I can have repulsor turrents weee
+- graphics
+  - instant fan of overlapping splashes?
+  - fast decay to pos slightly out of range
+  - special splashes for hits
+
+Effects
+- pulse splashes
+  - muzzle-flash when firing
+  - 3-5 splash particles on wasted hit
+  - cleaner flash on activation hit - circle? arrowhead? sparkles?
+- fix weird noise when activator bullet hits player
 
 - exit 2
+  * all players must be present and relaxed to exit
   - players near exit are "exiting" - drawn in and spun around a bit
   - but players can leave exit zone if not all players are in it
   - when all players are in, actual exit process happens
@@ -167,8 +227,3 @@ player kick
   - continuation of player equipment (?)
     (this is the real motive for making it to the exit, instead of dying and respawning. Plus honor I guess.)
 
-Player Graphics
-- legs
-  - one
-- arms
-- body remains upright when on the ground - no more rotating constantly

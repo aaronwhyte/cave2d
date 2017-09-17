@@ -1,8 +1,10 @@
 /**
  * Simple object that keeps track of slot state and turns listeners on and off for state transitions.
+ * @param {String} name Unique slot name, which should be stable across levels.
  * @constructor
  */
-function PlayerSlot() {
+function PlayerSlot(name) {
+  this.name = name;
   this.stateMap = {};
   this.stateName = null;
 
@@ -25,7 +27,7 @@ PlayerSlot.prototype.add = function(stateName, controlList) {
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.setState = function(newStateName) {
-  if (this.stateName == newStateName) return;
+  if (this.stateName === newStateName) return;
   var oldControls = this.stateMap[this.stateName];
   if (oldControls) oldControls.stopListening();
 

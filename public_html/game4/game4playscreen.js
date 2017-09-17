@@ -95,8 +95,8 @@ Game4PlayScreen.prototype.initPauseButtons = function() {
 
 Game4PlayScreen.prototype.configurePlayerSlots = function() {
   var self = this;
-  function createKeyboardSlot(up, right, down, left, b1, b2, menuKey) {
-    return new PlayerSlot()
+  function createKeyboardSlot(name, up, right, down, left, b1, b2, menuKey) {
+    return new PlayerSlot(name)
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
                 .addTriggerKeyByName(up)
@@ -116,7 +116,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
         );
   }
 
-  function createTouchSlot(angle) {
+  function createTouchSlot(name, angle) {
     var buttonAngle = angle + Math.PI / 4;
     var releasedColor = new Vec4(1, 1, 1, 0.2);
     var pressedColor = new Vec4(1, 1, 1, 0.5);
@@ -191,7 +191,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
         .setSizingMax(new Vec4(0.12, 0.12, 0.99), new Vec4(30, 30));
     self.cuboidRules.push(menuRule);
 
-    var slot = new PlayerSlot()
+    var slot = new PlayerSlot(name)
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, joinTrigger))
         .add(ControlState.PLAYING, new ControlMap()
@@ -203,10 +203,10 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
     return slot;
   }
 
-  function createPointerLockSlot(b1, b2, menuKey) {
+  function createPointerLockSlot(name, b1, b2, menuKey) {
     // Only join on mouse-click, since that's a good indication you have a mouse in hand,
     // and it starts the Pointer Lock process.
-    return new PlayerSlot()
+    return new PlayerSlot(name)
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
@@ -226,32 +226,34 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
         );
   }
 
-  this.slots = [
-    createKeyboardSlot(Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'n', 'm', 'l'),
-    createKeyboardSlot('w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'q'),
-    createPointerLockSlot('v', 'b', 'g'),
-    createTouchSlot(0),
-    createTouchSlot(Math.PI / 2),
-    createTouchSlot(Math.PI),
-    createTouchSlot(3 * Math.PI / 2)
+  var slotList = [
+    createKeyboardSlot('k1', Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'n', 'm', 'l'),
+    createKeyboardSlot('k2', 'w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'q'),
+    createPointerLockSlot('pl', 'v', 'b', 'g'),
+    createTouchSlot('t1', 0),
+    createTouchSlot('t2', Math.PI / 2),
+    createTouchSlot('t3', Math.PI),
+    createTouchSlot('t4', 3 * Math.PI / 2)
   ];
 
-  for (var i = 0; i < this.slots.length; i++) {
-    var slot = this.slots[i];
-    slot.id = this.world.newId();
+  this.slots = {};
+  for (var i = 0; i < slotList.length; i++) {
+    var slot = slotList[i];
     slot.setState(ControlState.WAITING);
+    this.slots[slot.name] = slot;
   }
 };
 
 Game4PlayScreen.prototype.startExit = function(x, y) {
   this.exitStartTime = this.now();
   this.exitEndTime = this.exitStartTime + Game4PlayScreen.EXIT_DURATION;
+  this.exitEndTime = this.exitStartTime + Game4PlayScreen.EXIT_DURATION;
   this.setTimeWarp(Game4PlayScreen.EXIT_WARP_MULTIPLIER);
   this.splashes.addExitSplash(x, y, this.exitStartTime, Game4PlayScreen.EXIT_DURATION);
 };
 
 Game4PlayScreen.prototype.exitLevel = function() {
-  this.controller.exitLevel();
+  this.controller.exitLevel(this.createGameState());
 };
 
 Game4PlayScreen.prototype.snapCameraToEntrance = function() {
@@ -275,8 +277,8 @@ Game4PlayScreen.prototype.handleInput = function () {
   for (var i = 0; i < this.playerSpirits.length; i++) {
     this.playerSpirits[i].handleInput();
   }
-  for (var i = 0; i < this.slots.length; i++) {
-    var slot = this.slots[i];
+  for (var slotName in this.slots) {
+    var slot = this.slots[slotName];
     var controls = slot.getControlList();
     if (slot.stateName === ControlState.PLAYING) {
       if (controls.get(ControlName.MENU).getVal()) {
@@ -512,8 +514,8 @@ Game4PlayScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-  for (var i = 0; i < this.slots.length; i++) {
-    this.slots[i].getControlList().draw(this.renderer);
+  for (var slotName in this.slots) {
+    this.slots[slotName].getControlList().draw(this.renderer);
   }
   for (var i = 0; i < this.widgets.length; i++) {
     this.widgets[i].draw(this.renderer);
@@ -543,19 +545,54 @@ Game4PlayScreen.prototype.schedulePlayerRespawn = function(slot) {
 };
 
 Game4PlayScreen.prototype.getRespawnTimeoutValForSlot = function(slot) {
-  return ['respawn', slot.id, slot.lastSpiritId];
+  return ['respawn', slot.name, slot.lastSpiritId];
 };
 
 Game4PlayScreen.prototype.getSlotFromRespawnTimeOutVal = function(timeoutVal) {
   if (!timeoutVal || 'respawn' !== timeoutVal[0]) return null;
-  var slotId = timeoutVal[1];
+  var slotName = timeoutVal[1];
   var lastSpiritId = timeoutVal[2];
-  for (var i = 0; i < this.slots.length; i++) {
-    var slot = this.slots[i];
-    // make sure there wasn't a new spirit created for this slot since the timeout was created
-    if (slot.id === slotId && slot.lastSpiritId === lastSpiritId) {
-      return slot;
-    }
+  var slot = this.slots[slotName];
+  // make sure there wasn't a new spirit created for this slot since the timeout was created
+  if (slot && slot.lastSpiritId === lastSpiritId) {
+    return slot;
   }
   return null;
+};
+
+/**
+ * Returns a JSON object like
+ * <code>
+ * {
+ *   players: [
+ *     { slotName: k1 },
+ *     { slotName: k2 }
+ *   ]
+ * }
+ * </code>
+ */
+Game4PlayScreen.prototype.createGameState = function() {
+  var players = [];
+  for (var name in this.slots) {
+    var slot = this.slots[name];
+    if (slot.stateName !== ControlState.WAITING) {
+      players.push({
+        slotName: name
+      });
+    }
+  }
+  return {
+    players: players
+  }
+};
+
+Game4PlayScreen.prototype.restoreGameState = function(state) {
+  if (!state) {
+    return;
+  }
+  var players = state.players;
+  for (var i = 0; i < players.length; i++) {
+    var player = players[i];
+    this.playerJoin(this.slots[player.slotName]);
+  }
 };
