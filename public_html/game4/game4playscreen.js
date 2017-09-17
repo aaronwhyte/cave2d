@@ -148,8 +148,8 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
           var myCorner = slot.corner;
           var distToMyCorner = Vec2d.distanceSq(
               x, y, self.canvas.width * (myCorner.getX() + 1 / 2), self.canvas.height * (myCorner.getY() + 1 / 2));
-          for (var i = 0; i < self.slots.length; i++) {
-            var otherSlot = self.slots[i];
+          for (var slotName in self.slots) {
+            var otherSlot = self.slots[slotName];
             var otherCorner = otherSlot.corner;
             if (otherCorner && otherCorner !== myCorner && otherSlot.stateName !== ControlState.WAITING) {
               var otherCornerDist = Vec2d.distanceSq(
