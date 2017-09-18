@@ -63,7 +63,8 @@ Game4PlayScreen.prototype.setScreenListening = function(listen) {
   Game4BaseScreen.prototype.setScreenListening.call(this, listen);
 
   var buttonEvents = ['click', 'touchEnd'];
-  Events.setListening(listen, document.querySelector('#fullScreenButton'), buttonEvents, this.fullScreenFn);
+  Events.setListening(listen, document.querySelector('#fullScreenButton'),
+      buttonEvents, this.fullScreenFn);
   // TODO: resumeButton is ignored in testscreen - this is sloppy
   Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
   Events.setListening(listen, document.querySelector('#restartButton'), buttonEvents, this.restartFn);
@@ -147,11 +148,14 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
           // That way inactive waiting-to-join slots don't detract from the other touch players.
           var myCorner = slot.corner;
           var distToMyCorner = Vec2d.distanceSq(
-              x, y, self.canvas.width * (myCorner.getX() + 1 / 2), self.canvas.height * (myCorner.getY() + 1 / 2));
+              x, y,
+              self.canvas.width * (myCorner.getX() + 1 / 2),
+              self.canvas.height * (myCorner.getY() + 1 / 2));
           for (var slotName in self.slots) {
             var otherSlot = self.slots[slotName];
             var otherCorner = otherSlot.corner;
-            if (otherCorner && otherCorner !== myCorner && otherSlot.stateName !== ControlState.WAITING) {
+            if (otherCorner && otherCorner !== myCorner &&
+                otherSlot.stateName !== ControlState.WAITING) {
               var otherCornerDist = Vec2d.distanceSq(
                   x, y,
                   self.canvas.width * (otherCorner.getX() + 1 / 2),
@@ -422,7 +426,8 @@ Game4PlayScreen.prototype.drawScene = function() {
 };
 
 Game4PlayScreen.prototype.updateViewCircles = function() {
-  // update this.viewCircles to match all the player cameras, or the starting area if there are no players now.
+  // update this.viewCircles to match all the player cameras,
+  // or the starting area if there are no players now.
   var count = 0;
   for (var i = 0; i < this.playerSpirits.length; i++) {
     var spirit = this.playerSpirits[i];
@@ -541,7 +546,8 @@ Game4PlayScreen.prototype.killPlayerSpirit = function(spirit) {
 };
 
 Game4PlayScreen.prototype.schedulePlayerRespawn = function(slot) {
-  this.world.addTimeout(this.now() + Game4PlayScreen.RESPAWN_TIMEOUT, null, this.getRespawnTimeoutValForSlot(slot));
+  this.world.addTimeout(this.now() + Game4PlayScreen.RESPAWN_TIMEOUT, null,
+      this.getRespawnTimeoutValForSlot(slot));
 };
 
 Game4PlayScreen.prototype.getRespawnTimeoutValForSlot = function(slot) {
