@@ -9,9 +9,6 @@ function PlayerSpirit(screen) {
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   this.aimColor = new Vec4();
 
-  this.camera = new Camera(0.1, 0.4, 7);
-  this.circle = new Circle();
-
   this.aim = new Vec2d();
   this.destAim = new Vec2d();
 
@@ -22,7 +19,6 @@ function PlayerSpirit(screen) {
 
   this.accel = new Vec2d();
   this.keyMult = 0.25;
-  this.slot = null;
 
   this.oldKick = false;
   this.oldGrab = false;
@@ -112,15 +108,6 @@ PlayerSpirit.prototype.setModelStamp = function(modelStamp) {
   return this;
 };
 
-/**
- * @param {PlayerSlot} slot
- * @returns {PlayerSpirit}
- */
-PlayerSpirit.prototype.setSlot = function(slot) {
-  this.slot = slot;
-  return this;
-};
-
 PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
   return this;
@@ -153,7 +140,6 @@ PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
   var spiritId = world.addSpirit(spirit);
   var b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
-  spirit.camera.set(pos);
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
@@ -177,16 +163,9 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   return b;
 };
 
-PlayerSpirit.prototype.handleInput = function() {
-  if (!this.slot) return;
-
-  var state = this.slot.stateName;
-  if (state !== ControlState.PLAYING) return;
-
+PlayerSpirit.prototype.handleInput = function(controls) {
   var playerBody = this.getBody();
   if (!playerBody) return;
-
-  this.camera.follow(this.getBodyPos());
 
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
@@ -195,7 +174,6 @@ PlayerSpirit.prototype.handleInput = function() {
   var duration = now - this.lastInputTime;
   this.lastInputTime = now;
 
-  var controls = this.slot.getControlList();
   var stick = controls.get(ControlName.STICK);
   var touchlike = stick.isTouchlike();
 
@@ -738,5 +716,6 @@ PlayerSpirit.prototype.explode = function() {
 
     this.sounds.playerExplode(pos);
     this.screen.addPlayerExplosionSplash(pos, this.color);
+    this.screen.removeByBodyId(this.bodyId);
   }
 };

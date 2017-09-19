@@ -10,7 +10,7 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.updateViewMatrix();
 
-  this.playerSpirits = [];
+  this.slots = {};
   this.widgets = [];
 
   this.viewCircles = [];
@@ -46,11 +46,8 @@ Game4PlayScreen.TOUCH_STICK_RADIUS = 60;
 Game4PlayScreen.EXIT_DURATION = 3;
 Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 
-Game4PlayScreen.RESPAWN_TIMEOUT = 30;
 Game4PlayScreen.PLAYER_VIEW_RADIUS = 40;
 Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
-
-Game4PlayScreen.RESPAWN_TIMEOUT = 30;
 
 Game4PlayScreen.prototype.updateHudLayout = function() {
 };
@@ -154,8 +151,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
           for (var slotName in self.slots) {
             var otherSlot = self.slots[slotName];
             var otherCorner = otherSlot.corner;
-            if (otherCorner && otherCorner !== myCorner &&
-                otherSlot.stateName !== ControlState.WAITING) {
+            if (otherCorner && otherCorner !== myCorner && otherSlot.isPlaying()) {
               var otherCornerDist = Vec2d.distanceSq(
                   x, y,
                   self.canvas.width * (otherCorner.getX() + 1 / 2),
@@ -240,7 +236,6 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
     createTouchSlot('t4', 3 * Math.PI / 2)
   ];
 
-  this.slots = {};
   for (var i = 0; i < slotList.length; i++) {
     var slot = slotList[i];
     slot.setState(ControlState.WAITING);
@@ -278,15 +273,18 @@ Game4PlayScreen.prototype.snapCameraToEntrance = function() {
 };
 
 Game4PlayScreen.prototype.handleInput = function () {
-  for (var i = 0; i < this.playerSpirits.length; i++) {
-    this.playerSpirits[i].handleInput();
-  }
   for (var slotName in this.slots) {
     var slot = this.slots[slotName];
     var controls = slot.getControlList();
     if (slot.stateName === ControlState.PLAYING) {
       if (controls.get(ControlName.MENU).getVal()) {
+        // TODO: Don't make the menu instantly drop players
         this.playerDrop(slot);
+      } else {
+        var playerSpirit = slot.spirit;
+        if (playerSpirit) {
+          playerSpirit.handleInput(controls);
+        }
       }
     } else if (slot.stateName === ControlState.WAITING) {
       if (controls.get(ControlName.JOIN_TRIGGER).getVal()) {
@@ -306,34 +304,41 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
 
   var pos = new Vec2d(0, 2).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
   var spiritId = this.addItem(Game4BaseScreen.MenuItem.PLAYER, pos, 0);
-  slot.lastSpiritId = spiritId;
   var spirit = this.world.spirits[spiritId];
 
-  spirit.setSlot(slot);
+  slot.setSpirit(spirit);
   var r = 1 - 0.5 * Math.random();
   var g = 1 - 0.5 * Math.random();
   var b = 1 - 0.5 * Math.random();
   spirit.setColorRGB(r, g, b);
-  this.playerSpirits.push(spirit);
 
   var body = spirit.getBody();
   this.sounds.playerSpawn(pos);
   this.splashes.addPlayerSpawnSplash(this.now(), pos, body.rad, spirit.color);
 };
 
-Game4PlayScreen.prototype.playerDrop = function(slot) {
-  var playerSpirit = this.world.spirits[slot.lastSpiritId];
-  if (playerSpirit) {
-    this.killPlayerSpirit(playerSpirit);
-  }
-  slot.setState(ControlState.WAITING);
+Game4PlayScreen.prototype.killPlayerSpirit = function(spirit) {
+  var slot = this.getSlotForPlayerSpirit(spirit);
+  slot.killPlayerWithRespawn();
 };
 
-Game4PlayScreen.prototype.onTimeout = function(e) {
-  var slot = this.getSlotFromRespawnTimeOutVal(e.timeoutVal);
-  if (slot && slot.stateName !== ControlState.WAITING) {
-    this.playerSpawn(slot);
+Game4PlayScreen.prototype.getSlotForPlayerSpirit = function(spirit) {
+  for (var slotName in this.slots) {
+    var slot = this.slots[slotName];
+    if (slot.spirit === spirit) {
+      return slot;
+    }
   }
+  return null;
+};
+
+Game4PlayScreen.prototype.playerDrop = function(slot) {
+  var spirit = slot.spirit;
+  if (spirit) {
+    spirit.explode();
+  }
+  slot.setSpirit(null);
+  slot.setState(ControlState.WAITING);
 };
 
 Game4PlayScreen.prototype.onHitEvent = function(e) {
@@ -357,7 +362,6 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
       }
       var antBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ANT, b0, b1);
       if (antBody) {
-        this.schedulePlayerRespawn(playerSpirit.slot);
         this.killPlayerSpirit(playerSpirit);
       }
       if (!exitBody && !antBody) {
@@ -429,17 +433,18 @@ Game4PlayScreen.prototype.updateViewCircles = function() {
   // update this.viewCircles to match all the player cameras,
   // or the starting area if there are no players now.
   var count = 0;
-  for (var i = 0; i < this.playerSpirits.length; i++) {
-    var spirit = this.playerSpirits[i];
-    spirit.circle.pos.set(spirit.camera.cameraPos);
-    spirit.circle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
-    this.viewCircles[i] = spirit.circle;
-    count++;
+  for (var slotName in this.slots) {
+    var slot = this.slots[slotName];
+    if (slot.updateViewCircle()) {
+      this.viewCircles[count] = slot.circle;
+      count++;
+    }
   }
-  this.viewCircles.length = count;
   if (count === 0) {
     this.defaultViewCircle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
     this.viewCircles[0] = this.defaultViewCircle;
+  } else {
+    this.viewCircles.length = count;
   }
 };
 
@@ -473,19 +478,26 @@ Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
 
 Game4PlayScreen.prototype.positionCamera = function() {
   this.viewableWorldRect.rad.reset();
-  if (this.playerSpirits.length === 0) {
-    this.viewableWorldRect.setPos(this.defaultViewCircle.pos);
-  } else {
-    for (var i = 0; i < this.playerSpirits.length; i++) {
-      var spirit = this.playerSpirits[i];
-      var playerCamera = spirit.camera;
-      if (i === 0) {
+  var players = 0;
+
+  for (var name in this.slots) {
+    var slot = this.slots[name];
+    var spirit = slot.spirit;
+    if (slot.isPlaying() && spirit) {
+      players++;
+      var playerCamera = slot.camera;
+      if (players === 1) {
         this.viewableWorldRect.setPosXY(playerCamera.getX(), playerCamera.getY());
       } else {
         this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
       }
     }
   }
+
+  if (players === 0) {
+    this.viewableWorldRect.setPos(this.defaultViewCircle.pos);
+  }
+
   var pad = Game4PlayScreen.PLAYER_VIEW_RADIUS * Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC;
   this.viewableWorldRect.padXY(pad, pad);
 
@@ -532,40 +544,6 @@ Game4PlayScreen.prototype.isPlaying = function() {
   return true;
 };
 
-Game4PlayScreen.prototype.killPlayerSpirit = function(spirit) {
-  spirit.explode();
-  this.sounds.playerExplode(spirit.getBodyPos());
-  this.removeByBodyId(spirit.bodyId);
-  for (var i = 0; i < this.playerSpirits.length; i++) {
-    if (this.playerSpirits[i] === spirit) {
-      this.playerSpirits[i] = this.playerSpirits[this.playerSpirits.length - 1];
-      this.playerSpirits.pop();
-      break;
-    }
-  }
-};
-
-Game4PlayScreen.prototype.schedulePlayerRespawn = function(slot) {
-  this.world.addTimeout(this.now() + Game4PlayScreen.RESPAWN_TIMEOUT, null,
-      this.getRespawnTimeoutValForSlot(slot));
-};
-
-Game4PlayScreen.prototype.getRespawnTimeoutValForSlot = function(slot) {
-  return ['respawn', slot.name, slot.lastSpiritId];
-};
-
-Game4PlayScreen.prototype.getSlotFromRespawnTimeOutVal = function(timeoutVal) {
-  if (!timeoutVal || 'respawn' !== timeoutVal[0]) return null;
-  var slotName = timeoutVal[1];
-  var lastSpiritId = timeoutVal[2];
-  var slot = this.slots[slotName];
-  // make sure there wasn't a new spirit created for this slot since the timeout was created
-  if (slot && slot.lastSpiritId === lastSpiritId) {
-    return slot;
-  }
-  return null;
-};
-
 /**
  * Returns a JSON object like
  * <code>
@@ -581,7 +559,7 @@ Game4PlayScreen.prototype.createGameState = function() {
   var players = [];
   for (var name in this.slots) {
     var slot = this.slots[name];
-    if (slot.stateName !== ControlState.WAITING) {
+    if (slot.isPlaying()) {
       players.push({
         slotName: name
       });
