@@ -110,7 +110,7 @@ PlayerSlot.prototype.updateViewCircle = function(now) {
     var deathFraction = this.getDeathFraction(now);
     this.circle.rad *= Math.sin(Math.max(0, deathFraction * 1.2 - 0.2) * Math.PI / 2);
     if (deathFraction < 0.19) {
-      var camWeight = 10 * deathFraction / 0.2;
+      var camWeight = 5 * deathFraction / 0.2;
       this.camera.cameraPos.scale(camWeight).add(this.respawnPos).scale(1 / (1 + camWeight));
     }
   } else {

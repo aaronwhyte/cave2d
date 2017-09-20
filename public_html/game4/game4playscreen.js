@@ -310,7 +310,7 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
   slot.releaseControls();
   slot.setRespawnPos(this.defaultViewCircle.pos);
 
-  var pos = new Vec2d(0, 1).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
+  var pos = new Vec2d(0, 0.5).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
   var spiritId = this.addItem(Game4BaseScreen.MenuItem.PLAYER, pos, 0);
   var spirit = this.world.spirits[spiritId];
 
