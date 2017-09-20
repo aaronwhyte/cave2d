@@ -24,9 +24,9 @@ Splashes.prototype.addPlayerSpawnSplash = function(now, pos, bodyRad, color) {
   var y = pos.y;
 
   s.startTime = now;
-  s.duration = 8;
-  var startRad = bodyRad * 2;
-  var endRad = bodyRad * 8;
+  s.duration = 16;
+  var startRad = bodyRad * 3;
+  var endRad = bodyRad * 9 ;
 
   s.startPose.pos.setXYZ(x, y, 0.5);
   s.endPose.pos.setXYZ(x, y, 0.5);
@@ -41,7 +41,7 @@ Splashes.prototype.addPlayerSpawnSplash = function(now, pos, bodyRad, color) {
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
   s.startColor.set(color);
-  s.endColor.set(color).scale1(0.5);
+  s.endColor.set(color).scale1(0.1);
 
   this.splasher.addCopy(s);
 };

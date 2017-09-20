@@ -176,7 +176,7 @@ v entrance 2: done 2017-09-17
     v replace random slot.id with real names
   v Maintain pointerlock across levels
 
-- Increase "slot" responsibility
+v Increase "slot" responsibility
   v player spirit in slot
   v remove list of player spirits from playScreen
     v use slots instead
@@ -187,27 +187,27 @@ v entrance 2: done 2017-09-17
     v slot calls follow each frame
   v player camera (from spirit)
   v remove lastSpiritId
-  - death
+  v death
     v when player spirit dies, find its slot (scan?) to update state
-    - know player death time
-    - remember death position
-    - nuke player spirit immediately because slot knows all
-  - know respawn world position
-  - respawn
-    - do it on first frame after death time is up. No timeout.
-    - and only if player is still playing
-    - free: prevents player from dropping and respawning super fast
+    v know player death time
+    v remember death position
+    v nuke player spirit immediately because slot knows all
+  v know respawn world position
+  v respawn
+    v do it on first frame after death time is up. No timeout.
+    v and only if player is still playing
+    v free: prevents player from dropping and respawning super fast
 
-- death 2
-  - fragment-view circle shrinks to nothing in-place
+v death 2
+  v fragment-view circle shrinks to nothing in-place
     * don't encourage dying to get extra info
     * slow enough to see how you died, fast enough to not be totally annoying.
 
-  - ghost returns to spawn point
-    - player gets ghost body? Maybe totally invisible non-body would be fine.
-    - ghost pan/zoom camera circle doesn't affect shader during normal draw.
-    - ghosts are drawn always - separate pass with different shader params so they don't get clipped out
-    - touching spawn point restores solid player body, back to normal.
+  v ghost returns to spawn point
+    x player gets ghost body? Maybe totally invisible non-body would be fine.
+    x ghost pan/zoom camera circle doesn't affect shader during normal draw.
+    x ghosts are drawn always - separate pass with different shader params so they don't get clipped out
+    x touching spawn point restores solid player body, back to normal.
 
 - exit 2
   * all players must be present and relaxed to exit

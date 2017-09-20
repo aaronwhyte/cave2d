@@ -10,7 +10,12 @@ function PlayerSlot(name) {
   this.spirit = null;
   this.circle = new Circle();
   this.camera = new Camera(0.1, 0.4, 7);
+  this.respawnPos = new Vec2d();
+  this.timeOfSpawn = -Infinity;
+  this.timeOfDeath = -PlayerSlot.RESPAWN_TIME;
 }
+
+PlayerSlot.RESPAWN_TIME = 45;
 
 PlayerSlot.prototype.isPlaying = function() {
   return this.stateName !== ControlState.WAITING;
@@ -30,7 +35,12 @@ PlayerSlot.prototype.setSpirit = function(spirit) {
   this.spirit = spirit;
   if (spirit) {
     this.camera.set(this.spirit.getBodyPos());
+    this.timeOfSpawn = spirit.now();
   }
+};
+
+PlayerSlot.prototype.setRespawnPos = function(pos) {
+  this.respawnPos.set(pos);
 };
 
 /**
@@ -85,18 +95,43 @@ PlayerSlot.prototype.releaseControls = function() {
  * Call this about once a frame to make the circle follow the camera which follows the spirit
  * @returns {boolean} true if there's a view circle to draw
  */
-PlayerSlot.prototype.updateViewCircle = function() {
-  if (!this.isPlaying() || !this.spirit) {
+PlayerSlot.prototype.updateViewCircle = function(now) {
+  if (!this.isPlaying()) {
     // TODO: keep circle for a short while after a player drops
-    // TODO: fancy circle shrink-n-slide right after player dies
     return false;
   }
-  this.camera.follow(this.spirit.getBodyPos());
+
+  if (this.spirit) {
+    this.camera.follow(this.spirit.getBodyPos());
+  }
   this.circle.pos.set(this.camera.cameraPos);
   this.circle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
+  if (!this.spirit) {
+    var deathFraction = this.getDeathFraction(now);
+    this.circle.rad *= Math.sin(Math.max(0, deathFraction * 1.2 - 0.2) * Math.PI / 2);
+    if (deathFraction < 0.19) {
+      var camWeight = 10 * deathFraction / 0.2;
+      this.camera.cameraPos.scale(camWeight).add(this.respawnPos).scale(1 / (1 + camWeight));
+    }
+  } else {
+    var spawnFraction = this.getSpawnFraction(now);
+    this.circle.rad *=
+        (1 - Game4PlayScreen.STARTING_VIEW_FRACTION) * Math.sin(spawnFraction * Math.PI /2) +
+            Game4PlayScreen.STARTING_VIEW_FRACTION;
+  }
   return true;
 };
 
-PlayerSlot.prototype.killPlayerWithRespawn = function() {
-  console.log('IMPLEMENT killPlayerWithRespawn');
+PlayerSlot.prototype.getDeathFraction = function(now) {
+  return Math.max(0, Math.min(1, 1 - (now - this.timeOfDeath)  / PlayerSlot.RESPAWN_TIME));
+};
+
+PlayerSlot.prototype.getSpawnFraction = function(now) {
+  return Math.max(0, Math.min(1, (now - this.timeOfSpawn)  / PlayerSlot.RESPAWN_TIME));
+};
+
+PlayerSlot.prototype.killPlayerAtTime = function(now) {
+  this.timeOfDeath = now;
+  this.spirit.explode();
+  this.spirit = null;
 };

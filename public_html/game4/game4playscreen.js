@@ -47,6 +47,7 @@ Game4PlayScreen.EXIT_DURATION = 3;
 Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 
 Game4PlayScreen.PLAYER_VIEW_RADIUS = 40;
+Game4PlayScreen.STARTING_VIEW_FRACTION = 0.3;
 Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
 
 Game4PlayScreen.prototype.updateHudLayout = function() {
@@ -284,6 +285,10 @@ Game4PlayScreen.prototype.handleInput = function () {
         var playerSpirit = slot.spirit;
         if (playerSpirit) {
           playerSpirit.handleInput(controls);
+        } else {
+          if (slot.getDeathFraction(this.now()) <= 0) {
+            this.playerSpawn(slot);
+          }
         }
       }
     } else if (slot.stateName === ControlState.WAITING) {
@@ -295,14 +300,17 @@ Game4PlayScreen.prototype.handleInput = function () {
 };
 
 Game4PlayScreen.prototype.playerJoin = function(slot) {
-  slot.setState(ControlState.PLAYING);
-  this.playerSpawn(slot);
+  if (slot.getDeathFraction(this.now()) <= 0) {
+    slot.setState(ControlState.PLAYING);
+    this.playerSpawn(slot);
+  }
 };
 
 Game4PlayScreen.prototype.playerSpawn = function(slot) {
   slot.releaseControls();
+  slot.setRespawnPos(this.defaultViewCircle.pos);
 
-  var pos = new Vec2d(0, 2).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
+  var pos = new Vec2d(0, 1).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
   var spiritId = this.addItem(Game4BaseScreen.MenuItem.PLAYER, pos, 0);
   var spirit = this.world.spirits[spiritId];
 
@@ -319,7 +327,7 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
 
 Game4PlayScreen.prototype.killPlayerSpirit = function(spirit) {
   var slot = this.getSlotForPlayerSpirit(spirit);
-  slot.killPlayerWithRespawn();
+  slot.killPlayerAtTime(this.now());
 };
 
 Game4PlayScreen.prototype.getSlotForPlayerSpirit = function(spirit) {
@@ -433,15 +441,16 @@ Game4PlayScreen.prototype.updateViewCircles = function() {
   // update this.viewCircles to match all the player cameras,
   // or the starting area if there are no players now.
   var count = 0;
+  var now = this.now();
   for (var slotName in this.slots) {
     var slot = this.slots[slotName];
-    if (slot.updateViewCircle()) {
+    if (slot.updateViewCircle(now)) {
       this.viewCircles[count] = slot.circle;
       count++;
     }
   }
   if (count === 0) {
-    this.defaultViewCircle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
+    this.defaultViewCircle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS * Game4PlayScreen.STARTING_VIEW_FRACTION;
     this.viewCircles[0] = this.defaultViewCircle;
   } else {
     this.viewCircles.length = count;
@@ -482,8 +491,7 @@ Game4PlayScreen.prototype.positionCamera = function() {
 
   for (var name in this.slots) {
     var slot = this.slots[name];
-    var spirit = slot.spirit;
-    if (slot.isPlaying() && spirit) {
+    if (slot.isPlaying()) {
       players++;
       var playerCamera = slot.camera;
       if (players === 1) {
