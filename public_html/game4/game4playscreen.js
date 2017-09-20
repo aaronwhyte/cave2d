@@ -493,11 +493,11 @@ Game4PlayScreen.prototype.positionCamera = function() {
     var slot = this.slots[name];
     if (slot.isPlaying()) {
       players++;
-      var playerCamera = slot.camera;
+      var cam = slot.camera;
       if (players === 1) {
-        this.viewableWorldRect.setPosXY(playerCamera.getX(), playerCamera.getY());
+        this.viewableWorldRect.setPosXY(cam.getX(), cam.getY());
       } else {
-        this.viewableWorldRect.coverXY(playerCamera.getX(), playerCamera.getY());
+        this.viewableWorldRect.coverXY(cam.getX(), cam.getY());
       }
     }
   }
@@ -521,7 +521,7 @@ Game4PlayScreen.prototype.positionCamera = function() {
   }
 
   // gently update the camera position
-  this.camera.cameraPos.scale(4).add(this.viewableWorldRect.pos).scale(1/5);
+  this.camera.follow(this.viewableWorldRect.pos);
 };
 
 Game4PlayScreen.prototype.getPixelsPerMeter = function() {
