@@ -344,6 +344,7 @@ Game4PlayScreen.prototype.getSlotForPlayerSpirit = function(spirit) {
 };
 
 Game4PlayScreen.prototype.playerDrop = function(slot) {
+  slot.setRespawnPos(slot.camera.cameraPos);
   slot.killPlayerAtTime(this.now());
   slot.setState(ControlState.WAITING);
   this.defaultViewCircle.rad = 0.01;
