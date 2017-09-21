@@ -202,7 +202,6 @@ v death 2
   v fragment-view circle shrinks to nothing in-place
     * don't encourage dying to get extra info
     * slow enough to see how you died, fast enough to not be totally annoying.
-
   v ghost returns to spawn point
     x player gets ghost body? Maybe totally invisible non-body would be fine.
     x ghost pan/zoom camera circle doesn't affect shader during normal draw.

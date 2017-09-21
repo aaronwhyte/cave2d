@@ -10,13 +10,19 @@ function PlayerSlot(name) {
   this.spirit = null;
   this.circle = new Circle();
   this.camera = new Camera(0.1, 0.4, 7);
+  this.deathPos = new Vec2d();
   this.respawnPos = new Vec2d();
+  this.vec2d = new Vec2d();
   this.timeOfSpawn = -Infinity;
-  this.timeOfDeath = -PlayerSlot.RESPAWN_TIME;
+  this.timeOfDeath = -PlayerSlot.DEATH_TIME;
 }
 
-PlayerSlot.RESPAWN_TIME = 45;
+PlayerSlot.DEATH_TIME = 50;
+PlayerSlot.SPAWN_TIME = 5;
 
+/**
+ * @returns {boolean}
+ */
 PlayerSlot.prototype.isPlaying = function() {
   return this.stateName !== ControlState.WAITING;
 };
@@ -96,42 +102,54 @@ PlayerSlot.prototype.releaseControls = function() {
  * @returns {boolean} true if there's a view circle to draw
  */
 PlayerSlot.prototype.updateViewCircle = function(now) {
-  if (!this.isPlaying()) {
-    // TODO: keep circle for a short while after a player drops
-    return false;
-  }
-
   if (this.spirit) {
     this.camera.follow(this.spirit.getBodyPos());
   }
-  this.circle.pos.set(this.camera.cameraPos);
   this.circle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
+  var deathFraction = this.getDeathFraction(now);
+  var spawnFraction = this.getSpawnFraction(now);
   if (!this.spirit) {
-    var deathFraction = this.getDeathFraction(now);
-    this.circle.rad *= Math.sin(Math.max(0, deathFraction * 1.2 - 0.2) * Math.PI / 2);
-    if (deathFraction < 0.19) {
-      var camWeight = 20 * deathFraction / 0.2;
-      this.camera.cameraPos.scale(camWeight).add(this.respawnPos).scale(1 / (1 + camWeight));
-    }
+    var eyeShut = 0.75;
+    this.circle.rad *= Math.sin(
+        Math.max(0, deathFraction * (2 - eyeShut) - (1 - eyeShut))
+        * Math.PI / 2);
+
+    // Use a sinusoid ease-out ease-in slide, but cube it to make the ease-out slower.
+    var camSlideFraction = Math.pow(0.5 - Math.cos((1-deathFraction) * Math.PI) / 2, 3);
+    this.camera.cameraPos.set(this.deathPos).scale(1 - camSlideFraction)
+        .add(this.vec2d.set(this.respawnPos).scale(camSlideFraction));
   } else {
-    var spawnFraction = this.getSpawnFraction(now);
+    this.circle.pos.set(this.camera.cameraPos);
     this.circle.rad *=
         (1 - Game4PlayScreen.STARTING_VIEW_FRACTION) * Math.sin(spawnFraction * Math.PI /2) +
             Game4PlayScreen.STARTING_VIEW_FRACTION;
   }
-  return true;
+  return this.isPlaying() || deathFraction;
 };
 
+/**
+ * Returns 1 when you die, to 0 when it's time to respawn
+ * @param now
+ * @returns {number}
+ */
 PlayerSlot.prototype.getDeathFraction = function(now) {
-  return Math.max(0, Math.min(1, 1 - (now - this.timeOfDeath)  / PlayerSlot.RESPAWN_TIME));
+  return Math.max(0, Math.min(1, 1 - (now - this.timeOfDeath)  / PlayerSlot.DEATH_TIME));
 };
 
+/**
+ * Returns 0 when you respawn, to 1 some time after.
+ * @param now
+ * @returns {number}
+ */
 PlayerSlot.prototype.getSpawnFraction = function(now) {
-  return Math.max(0, Math.min(1, (now - this.timeOfSpawn)  / PlayerSlot.RESPAWN_TIME));
+  return Math.max(0, Math.min(1, (now - this.timeOfSpawn)  / PlayerSlot.SPAWN_TIME));
 };
 
 PlayerSlot.prototype.killPlayerAtTime = function(now) {
-  this.timeOfDeath = now;
-  this.spirit.explode();
-  this.spirit = null;
+  if (this.spirit) {
+    this.timeOfDeath = now;
+    this.deathPos.set(this.camera.cameraPos);
+    this.spirit.explode();
+    this.spirit = null;
+  }
 };

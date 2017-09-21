@@ -16,6 +16,9 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.viewCircles = [];
 
   this.defaultViewCircle = new Circle();
+  this.defaultViewCircle.rad =
+      Game4PlayScreen.PLAYER_VIEW_RADIUS
+      * Game4PlayScreen.STARTING_VIEW_FRACTION;
 
   var self = this;
 
@@ -47,7 +50,7 @@ Game4PlayScreen.EXIT_DURATION = 3;
 Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 
 Game4PlayScreen.PLAYER_VIEW_RADIUS = 40;
-Game4PlayScreen.STARTING_VIEW_FRACTION = 0.3;
+Game4PlayScreen.STARTING_VIEW_FRACTION = 0.5;
 Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
 
 Game4PlayScreen.prototype.updateHudLayout = function() {
@@ -341,12 +344,9 @@ Game4PlayScreen.prototype.getSlotForPlayerSpirit = function(spirit) {
 };
 
 Game4PlayScreen.prototype.playerDrop = function(slot) {
-  var spirit = slot.spirit;
-  if (spirit) {
-    spirit.explode();
-  }
-  slot.setSpirit(null);
+  slot.killPlayerAtTime(this.now());
   slot.setState(ControlState.WAITING);
+  this.defaultViewCircle.rad = 0.01;
 };
 
 Game4PlayScreen.prototype.onHitEvent = function(e) {
@@ -450,7 +450,12 @@ Game4PlayScreen.prototype.updateViewCircles = function() {
     }
   }
   if (count === 0) {
-    this.defaultViewCircle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS * Game4PlayScreen.STARTING_VIEW_FRACTION;
+    // Everyone left. Expand the default view circle from near-zero
+    // so there's something to look at.
+    this.defaultViewCircle.rad =
+        0.97 * this.defaultViewCircle.rad +
+        0.03 * Game4PlayScreen.PLAYER_VIEW_RADIUS
+          * Game4PlayScreen.STARTING_VIEW_FRACTION;
     this.viewCircles[0] = this.defaultViewCircle;
   } else {
     this.viewCircles.length = count;
@@ -491,7 +496,7 @@ Game4PlayScreen.prototype.positionCamera = function() {
 
   for (var name in this.slots) {
     var slot = this.slots[name];
-    if (slot.isPlaying()) {
+    if (slot.isPlaying() || slot.getDeathFraction(this.now())) {
       players++;
       var cam = slot.camera;
       if (players === 1) {

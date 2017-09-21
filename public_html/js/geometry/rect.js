@@ -101,6 +101,12 @@ Rect.prototype.coverRect = function(that) {
   return this;
 };
 
+Rect.prototype.coverCircle = function(c) {
+  this.coverXY(c.pos.x - c.rad, c.pos.y - c.rad);
+  this.coverXY(c.pos.x + c.rad, c.pos.y + c.rad);
+  return this;
+};
+
 Rect.prototype.coverVec = function(v) {
   return this.coverXY(v.x, v.y);
 };
