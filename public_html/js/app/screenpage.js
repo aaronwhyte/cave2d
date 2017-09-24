@@ -13,7 +13,7 @@
  */
 function ScreenPage(app, gameTitle, basePath, fileTree, adventureName, levelName, startingGameState) {
   Page.call(this);
-  if (!app) {
+  if (!gameTitle) {
     // probably making a prototype
     return;
   }
