@@ -30,6 +30,14 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   this.createUniform('uType');
   this.createUniform('uCircles');
   this.createUniform('uCircleCount');
+
+  this.createUniform('uWarpType');
+  this.createUniform('uWarpData');
+};
+
+Renderer.prototype.setWarps = function(type, data) {
+  this.gl.uniform1iv(this.uWarpType, type);
+  this.gl.uniform4fv(this.uWarpData, data);
 };
 
 Renderer.prototype.createVertexAttribute = function(name) {
