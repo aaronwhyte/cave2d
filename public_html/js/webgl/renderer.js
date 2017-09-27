@@ -18,6 +18,20 @@ function Renderer(canvas, gl, program) {
   this.circleArray = [];
 }
 
+Renderer.EMPTY_WARP_TYPES = [
+    0, 0, 0, 0,
+    0, 0, 0, 0];
+
+Renderer.EMPTY_WARP_DATA = [
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0];
+
 Renderer.prototype.initAttributesAndUniforms = function() {
   this.createVertexAttribute('aVertexPosition');
   this.createVertexAttribute('aVertexColor');
@@ -38,6 +52,11 @@ Renderer.prototype.initAttributesAndUniforms = function() {
 Renderer.prototype.setWarps = function(type, data) {
   this.gl.uniform1iv(this.uWarpType, type);
   this.gl.uniform4fv(this.uWarpData, data);
+};
+
+Renderer.prototype.clearWarps = function() {
+  this.gl.uniform1iv(this.uWarpType, Renderer.EMPTY_WARP_TYPES);
+  this.gl.uniform4fv(this.uWarpData, Renderer.EMPTY_WARP_DATA);
 };
 
 Renderer.prototype.createVertexAttribute = function(name) {

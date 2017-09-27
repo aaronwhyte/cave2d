@@ -15,6 +15,8 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.viewCircles = [];
 
+  this.exitViewCircle = new Circle();
+  this.exitViewCircle.rad = Game4PlayScreen.EXIT_VIEW_RADIUS;
   this.defaultViewCircle = new Circle();
   this.defaultViewCircle.rad =
       Game4PlayScreen.PLAYER_VIEW_RADIUS
@@ -52,6 +54,8 @@ Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 Game4PlayScreen.PLAYER_VIEW_RADIUS = 40;
 Game4PlayScreen.STARTING_VIEW_FRACTION = 0.5;
 Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
+
+Game4PlayScreen.EXIT_VIEW_RADIUS = Game4PlayScreen.PLAYER_VIEW_RADIUS * 2;
 
 Game4PlayScreen.prototype.updateHudLayout = function() {
 };
@@ -414,48 +418,48 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
 };
 
 Game4PlayScreen.prototype.updateWarps = function() {
-  var time = Date.now() / 3000;// + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
-  var maxRepulsorRad = 7;
-  var repulsorProgress = ((time*4) % 2) / 2;
-  repulsorProgress = repulsorProgress > 1 ? 0 : repulsorProgress;
-  var repulsorRad = Math.sqrt(maxRepulsorRad * maxRepulsorRad * Math.sin(repulsorProgress * Math.PI));
-  var repulsorStrength = (1 - repulsorProgress) * (0.8 - repulsorProgress);
-
-  var flowerMag = 5;
-  var flowerAngle = -time * 2;
-
-  this.renderer.setWarps(
-      [1, 2, 3, 1, 0, 0, 0, 0],
-      [
-        // explodey-repulsor
-        -5 + 5 * Math.sin(time*1.2),
-        -5 + 5 * Math.sin(time*1.3),
-        repulsorRad,
-        repulsorStrength,
-
-        // quantizer
-        -5 + 5 * Math.sin(time),
-        5 + 5 * Math.cos(time),
-        6,
-        4 + 2 * Math.sin(time*2),
-
-        // flower
-        5 + 4 * Math.sin(time*1.9),
-        -5 + 4 * Math.cos(time*1.1),
-        flowerMag*Math.sin(flowerAngle),
-        flowerMag*Math.cos(flowerAngle),
-
-        // vacuum repulsor
-        5 + 3*Math.sin(time),
-        5 + 3*Math.cos(time * 1.123),
-        5,
-        2 * (Math.sin(time*10) - 0.95),
-
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0
-      ]
-  );
+  // var time = Date.now() / 3000;// + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
+  // var maxRepulsorRad = 7;
+  // var repulsorProgress = ((time*4) % 2) / 2;
+  // repulsorProgress = repulsorProgress > 1 ? 0 : repulsorProgress;
+  // var repulsorRad = Math.sqrt(maxRepulsorRad * maxRepulsorRad * Math.sin(repulsorProgress * Math.PI));
+  // var repulsorStrength = (1 - repulsorProgress) * (0.8 - repulsorProgress);
+  //
+  // var flowerMag = 5;
+  // var flowerAngle = -time * 2;
+  //
+  // this.renderer.setWarps(
+  //     [1, 2, 3, 1, 0, 0, 0, 0],
+  //     [
+  //       // explodey-repulsor
+  //       -5 + 5 * Math.sin(time*1.2),
+  //       -5 + 5 * Math.sin(time*1.3),
+  //       repulsorRad,
+  //       repulsorStrength,
+  //
+  //       // quantizer
+  //       -5 + 5 * Math.sin(time),
+  //       5 + 5 * Math.cos(time),
+  //       6,
+  //       4 + 2 * Math.sin(time*2),
+  //
+  //       // flower
+  //       5 + 4 * Math.sin(time*1.9),
+  //       -5 + 4 * Math.cos(time*1.1),
+  //       flowerMag*Math.sin(flowerAngle),
+  //       flowerMag*Math.cos(flowerAngle),
+  //
+  //       // vacuum repulsor
+  //       5 + 3*Math.sin(time),
+  //       5 + 3*Math.cos(time * 1.123),
+  //       5,
+  //       2 * (Math.sin(time*10) - 0.95),
+  //
+  //       0, 0, 0, 0,
+  //       0, 0, 0, 0,
+  //       0, 0, 0, 0
+  //     ]
+  // );
 };
 
 
@@ -465,7 +469,7 @@ Game4PlayScreen.prototype.drawScene = function() {
   this.updateViewCircles();
   this.positionCamera();
   this.updateViewMatrix();
-  this.updateWarps();
+  //this.updateWarps();
   this.renderer.setViewMatrix(this.viewMatrix);
   this.renderer.setCircleMode(this.viewCircles);
 
@@ -476,6 +480,39 @@ Game4PlayScreen.prototype.drawScene = function() {
 
   this.splasher.draw(this.renderer, this.world.now);
 
+  var exitSpirit = this.getSpiritById(this.exitSpiritId);
+  if (exitSpirit && exitSpirit.lastDrawTime === this.now()) {
+    var body = exitSpirit.getBody();
+    var bodyPos = exitSpirit.getBodyPos();
+
+    // TODO: cache arrays
+    this.renderer.setWarps(
+        [
+          4, 0, 0, 0,
+          0, 0, 0, 0
+        ],
+        [
+          // invert circle
+          bodyPos.x, bodyPos.y, body.rad, 0,
+
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0
+        ]
+    );
+    for (var name in this.slots) {
+      var slot = this.slots[name];
+      if (slot.spirit && slot.spirit.drawForExit) {
+        slot.spirit.drawForExit(exitSpirit, this.renderer);
+      }
+    }
+    this.renderer.clearWarps();
+  }
   this.renderer.setNormalMode();
   this.drawHud();
 

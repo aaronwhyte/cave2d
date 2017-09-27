@@ -630,6 +630,30 @@ PlayerSpirit.prototype.handleActivating = function() {
   this.handleWielding();
 };
 
+PlayerSpirit.prototype.drawForExit = function(exitSpirit, renderer) {
+  var body = this.getBody();
+  if (!body) return;
+  var bodyPos = this.getBodyPos();
+  var exitPos = exitSpirit.getBodyPos();
+  var exitRad = exitSpirit.getBody().rad;
+  var scaleUp = 1;
+  var dist = exitPos.distance(bodyPos);
+  var threshold = exitRad * 2;
+  if (dist > threshold) {
+    scaleUp = Math.pow(dist / threshold, 1.6);
+  }
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+      .multiply(this.mat44.toScaleOpXYZ(body.rad * scaleUp, body.rad * scaleUp, 1))
+      .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
+      .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(this.now())));
+  renderer
+      .setStamp(this.modelStamp)
+      .setColorVector(this.color)
+      .setModelMatrix(this.modelMatrix)
+      .drawStamp();
+};
+
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   if (!body) return;

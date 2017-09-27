@@ -25,7 +25,9 @@ ExitSpirit.SCHEMA = {
 };
 
 ExitSpirit.createModel = function() {
-  return RigidModel.createSquare().setColorRGB(0.3, 1, 0.3);
+  return RigidModel.createRingMesh(5, 0.95)
+      .setColorRGB(0.2, 0.2, 0.2)
+      .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0.9));
 };
 
 ExitSpirit.factory = function(screen, stamp, pos) {
@@ -36,9 +38,9 @@ ExitSpirit.factory = function(screen, stamp, pos) {
   var density = 1;
 
   var b = Body.alloc();
-  b.shape = Body.Shape.RECT;
+  b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, screen.now());
-  b.rectRad.setXY(1.5, 1.5);
+  b.rad = 4;
   b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
@@ -85,10 +87,14 @@ ExitSpirit.prototype.onDraw = function(world, renderer) {
   // TODO: standardize Z
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.5))
-      .multiply(this.mat44.toScaleOpXYZ(body.rectRad.x, body.rectRad.y, 1));
+      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
 
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
+
+  // hack
+  this.screen.exitSpiritId = this.id;
+  this.lastDrawTime = this.now();
 };
 
 ExitSpirit.prototype.toJSON = function() {

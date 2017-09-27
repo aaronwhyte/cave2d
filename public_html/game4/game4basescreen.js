@@ -96,6 +96,7 @@ Game4BaseScreen.prototype.createHitPairs = function() {
     [g.NEUTRAL, g.WALL],
     [g.NEUTRAL, g.NEUTRAL],
 
+    [g.CURSOR, g.EMPTY],
     [g.CURSOR, g.WALL],
     [g.CURSOR, g.NEUTRAL],
 
