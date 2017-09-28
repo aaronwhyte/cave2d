@@ -65,15 +65,18 @@ void main(void) {
       float vertDistFrac = distance(gl_Position.xy, warpPos) / circleSize;
       vec2 relPos = gl_Position.xy - warpPos;
       if (vertDistFrac > 0.0) {
-        vec2 newRelPos = relPos / (vertDistFrac * vertDistFrac);
+        vec2 newRelPos;
+        if (vertDistFrac < 1.0) {
+          newRelPos = circleSize * relPos / length(relPos);
+        } else {
+          newRelPos = relPos / (vertDistFrac * vertDistFrac);
+        }
         distort += newRelPos - relPos;
       }
     }
   }
   gl_Position.xy += distort;
   gl_Position *= uViewMatrix;
-
-  vPos.xy += distort;
 
   vColor = aVertexColor * uModelColor;
 }

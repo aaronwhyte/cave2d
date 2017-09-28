@@ -210,10 +210,19 @@ v death 2
 
 - exit 2
   * all players must be present and relaxed to exit
-  - players near exit are "exiting" - drawn in and spun around a bit
-    - exit is a live thing that grabs players?
-  - but players can leave exit zone if not all players are in it
-  - when all players are in, actual exit process happens
+  v exit has circle body
+    v new test level
+  v 1/distfrac shader
+    v add shader fork
+      v borrow from test32
+    v make existing weird shader near exit work first
+    v draw exit as every player but using the weird shader
+    v then try 1/distfrac shader
+    v make players visible in exit mirror even when very far away
+  x cache exit warp arrays
+  x allow multiple exits to draw mirror
+  - when all players are close to exit, actual exit process happens
+
 
 - beam shader
   - 2d mesh

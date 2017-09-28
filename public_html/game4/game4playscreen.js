@@ -15,8 +15,6 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.viewCircles = [];
 
-  this.exitViewCircle = new Circle();
-  this.exitViewCircle.rad = Game4PlayScreen.EXIT_VIEW_RADIUS;
   this.defaultViewCircle = new Circle();
   this.defaultViewCircle.rad =
       Game4PlayScreen.PLAYER_VIEW_RADIUS
@@ -54,8 +52,6 @@ Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 Game4PlayScreen.PLAYER_VIEW_RADIUS = 40;
 Game4PlayScreen.STARTING_VIEW_FRACTION = 0.5;
 Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
-
-Game4PlayScreen.EXIT_VIEW_RADIUS = Game4PlayScreen.PLAYER_VIEW_RADIUS * 2;
 
 Game4PlayScreen.prototype.updateHudLayout = function() {
 };
@@ -477,42 +473,8 @@ Game4PlayScreen.prototype.drawScene = function() {
   stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
   this.drawTilesOverlappingCircles(this.viewCircles);
-
   this.splasher.draw(this.renderer, this.world.now);
 
-  var exitSpirit = this.getSpiritById(this.exitSpiritId);
-  if (exitSpirit && exitSpirit.lastDrawTime === this.now()) {
-    var body = exitSpirit.getBody();
-    var bodyPos = exitSpirit.getBodyPos();
-
-    // TODO: cache arrays
-    this.renderer.setWarps(
-        [
-          4, 0, 0, 0,
-          0, 0, 0, 0
-        ],
-        [
-          // invert circle
-          bodyPos.x, bodyPos.y, body.rad, 0,
-
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0
-        ]
-    );
-    for (var name in this.slots) {
-      var slot = this.slots[name];
-      if (slot.spirit && slot.spirit.drawForExit) {
-        slot.spirit.drawForExit(exitSpirit, this.renderer);
-      }
-    }
-    this.renderer.clearWarps();
-  }
   this.renderer.setNormalMode();
   this.drawHud();
 
