@@ -23,6 +23,18 @@ Game4TestScreen.prototype.initWidgets = function() {
     query[EditorApp.PARAM_LEVEL_NAME] = self.levelName;
     query[EditorApp.PARAM_MODE] = EditorApp.MODE_EDIT;
     Url.setFragment(Url.encodeQuery(query));
+
+    // Drop all the players, so their controls will unlisten.
+    for (var slotName in self.slots) {
+      var slot = self.slots[slotName];
+      if (slot.isPlaying()) {
+        slot.setState(PlayerSlot.STATE_WAITING);
+      }
+    }
+    // Always release pointerlock when exiting the test page.
+    if (document.exitPointerLock) {
+      document.exitPointerLock();
+    }
     e.preventDefault();
   };
 

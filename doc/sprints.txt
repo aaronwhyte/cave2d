@@ -223,6 +223,8 @@ v death 2
   x allow multiple exits to draw mirror
   - when all players are close to exit, actual exit process happens
 
+v Bug! I need to disable screen-lock in edit mode.
+  Something about transition from test to edit?
 
 - beam shader
   - 2d mesh
