@@ -51,6 +51,9 @@ EntranceSpirit.factory = function(screen, stamp, pos) {
 };
 
 EntranceSpirit.prototype.onTimeout = function(world, timeoutVal) {
+  if (this.changeListener) {
+    this.changeListener.onBeforeSpiritChange(this);
+  }
   var body = this.getBody();
   body.pathDurationMax = Infinity;
   // If the body is being moved (because it's in the editor), slow it to a stop.
