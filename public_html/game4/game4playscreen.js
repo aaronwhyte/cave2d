@@ -46,8 +46,8 @@ Game4PlayScreen.prototype.constructor = Game4PlayScreen;
 
 Game4PlayScreen.TOUCH_STICK_RADIUS = 60;
 
-Game4PlayScreen.EXIT_DURATION = 3;
-Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
+Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.001;
+Game4PlayScreen.EXIT_DURATION = 60 * Game4PlayScreen.EXIT_WARP_MULTIPLIER;
 
 Game4PlayScreen.PLAYER_VIEW_RADIUS = 40;
 Game4PlayScreen.STARTING_VIEW_FRACTION = 0.5;
@@ -247,12 +247,13 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
   }
 };
 
-Game4PlayScreen.prototype.startExit = function(x, y) {
+Game4PlayScreen.prototype.startExit = function(pos) {
+  if (this.exitStartTime) return;
+  this.sounds.exit(pos);
   this.exitStartTime = this.now();
   this.exitEndTime = this.exitStartTime + Game4PlayScreen.EXIT_DURATION;
-  this.exitEndTime = this.exitStartTime + Game4PlayScreen.EXIT_DURATION;
   this.setTimeWarp(Game4PlayScreen.EXIT_WARP_MULTIPLIER);
-  this.splashes.addExitSplash(x, y, this.exitStartTime, Game4PlayScreen.EXIT_DURATION);
+  this.splashes.addExitSplash(pos.x, pos.y, this.exitStartTime, Game4PlayScreen.EXIT_DURATION);
 };
 
 Game4PlayScreen.prototype.exitLevel = function() {
@@ -363,17 +364,12 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
     var playerBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.PLAYER, b0, b1);
     if (playerBody) {
       var playerSpirit = this.getSpiritForBody(playerBody);
-      var exitBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.EXIT, b0, b1);
-      if (exitBody && !this.exitStartTime) {
-        var exitPos = exitBody.getPosAtTime(this.now(), this.vec2d);
-        this.sounds.exit(exitPos);
-        this.startExit(exitPos.x, exitPos.y);
-      }
       var antBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ANT, b0, b1);
       if (antBody) {
         this.killPlayerSpirit(playerSpirit);
       }
-      if (!exitBody && !antBody) {
+      if (!antBody) {
+        // TODO: thump on wall hit, not on "else"
         this.sounds.wallThump(pos, mag * 10);
       }
     }

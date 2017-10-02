@@ -25,7 +25,8 @@ EntranceSpirit.SCHEMA = {
 };
 
 EntranceSpirit.createModel = function() {
-  return RigidModel.createCircle(32).setColorRGB(0.8, 0.3, 0.8);
+  return RigidModel.createRingMesh(5, 0.8)
+      .setColorRGB(0.8, 0.3, 0.8);
 };
 
 EntranceSpirit.factory = function(screen, stamp, pos) {
@@ -38,7 +39,7 @@ EntranceSpirit.factory = function(screen, stamp, pos) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, screen.now());
-  b.rad = 2;
+  b.rad = 4;
   b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;

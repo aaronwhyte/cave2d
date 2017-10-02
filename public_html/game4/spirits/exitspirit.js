@@ -18,6 +18,8 @@ ExitSpirit.prototype.constructor = ExitSpirit;
 
 ExitSpirit.TIMEOUT = 2;
 
+ExitSpirit.EXIT_DISTANCE = 1;
+
 ExitSpirit.SCHEMA = {
   0: "type",
   1: "id",
@@ -25,7 +27,7 @@ ExitSpirit.SCHEMA = {
 };
 
 ExitSpirit.createModel = function() {
-  return RigidModel.createCircle(30)
+  return RigidModel.createRingMesh(5, 0.8)
       .setColorRGB(0.2, 1, 0.2);
 };
 
@@ -39,7 +41,7 @@ ExitSpirit.factory = function(screen, stamp, pos) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, screen.now());
-  b.rad = 2;
+  b.rad = 4;
   b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = Infinity;
   b.pathDurationMax = Infinity;
@@ -66,6 +68,34 @@ ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
     }
     body.setVelAtTime(newVel, world.now);
   }
+
+  if (this.screen.isPlaying()) {
+    var closeCount = 0;
+    var playerCount = 0;
+    var rad = body.rad;
+    var bodyPos = this.getBodyPos();
+    for (var slotName in this.screen.slots) {
+      var slot = this.screen.slots[slotName];
+      if (slot.isPlaying()) {
+        playerCount++;
+        var spirit = slot.spirit;
+        if (spirit) {
+          var playerPos = spirit.getBodyPos();
+          var playerRad = spirit.getBody().rad;
+          if (playerPos) {
+            var dist = playerPos.distance(bodyPos);
+            if (dist <= rad + playerRad + ExitSpirit.EXIT_DISTANCE) {
+              closeCount++;
+            }
+          }
+        }
+      }
+    }
+    if (closeCount && closeCount === playerCount) {
+      this.screen.startExit(bodyPos);
+    }
+  }
+
   world.addTimeout(world.now + ExitSpirit.TIMEOUT, this.id, -1);
 };
 
