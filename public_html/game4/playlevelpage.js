@@ -21,10 +21,12 @@ PlayLevelPage.prototype.refreshPauseMenu = function() {
   var e;
   this.appendTitle(df);
   this.appendFullScreenButton(df);
-  Dom.ce('br', df);
-  e = Dom.ce('button', df, 'smallButton');
-  e.id = 'restartButton';
-  e.innerHTML = Strings.textToHtml('restart level');
+
+  // Dom.ce('br', df);
+  // e = Dom.ce('button', df, 'smallButton');
+  // e.id = 'restartButton';
+  // e.innerHTML = Strings.textToHtml('restart level');
+
   Dom.ce('br', df);
   this.appendResumeButton(df, 'play');
   this.setPauseMenuContent(df);
@@ -64,8 +66,8 @@ PlayLevelPage.prototype.exitLevel = function(exitGameState) {
   this.app.exitLevel(this.adventureName, this.levelName, exitGameState);
 };
 
-PlayLevelPage.prototype.restartLevel = function() {
-  this.screen.destroyScreen();
-  this.screen = null;
-  this.app.restartLevel(this.startingGameState);
-};
+// PlayLevelPage.prototype.restartLevel = function() {
+//   this.screen.destroyScreen();
+//   this.screen = null;
+//   this.app.restartLevel(this.startingGameState);
+// };
