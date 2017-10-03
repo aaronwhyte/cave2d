@@ -28,5 +28,8 @@ Stamps.create = function(renderer) {
   stamps.testStamp = stamp(models.getTest());
   stamps.untestStamp = stamp(models.getUntest());
 
+  // Game stuff?
+  stamps.arrow = stamp(models.getArrow());
+
   return stamps;
 };

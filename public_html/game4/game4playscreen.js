@@ -47,7 +47,7 @@ Game4PlayScreen.prototype.constructor = Game4PlayScreen;
 Game4PlayScreen.TOUCH_STICK_RADIUS = 60;
 
 Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.001;
-Game4PlayScreen.EXIT_DURATION = 60 * Game4PlayScreen.EXIT_WARP_MULTIPLIER;
+Game4PlayScreen.EXIT_DURATION = 30 * Game4PlayScreen.EXIT_WARP_MULTIPLIER;
 
 Game4PlayScreen.PLAYER_VIEW_RADIUS = 40;
 Game4PlayScreen.STARTING_VIEW_FRACTION = 0.5;

@@ -12,13 +12,15 @@ function ExitSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+  this.color = new Vec4(0.2, 1, 0.2);
+  this.arrowColor = new Vec4(0.1, 0.5, 0.1);
 }
 ExitSpirit.prototype = new BaseSpirit();
 ExitSpirit.prototype.constructor = ExitSpirit;
 
 ExitSpirit.TIMEOUT = 2;
 
-ExitSpirit.EXIT_DISTANCE = 1;
+ExitSpirit.EXIT_DISTANCE = 0.75;
 
 ExitSpirit.SCHEMA = {
   0: "type",
@@ -28,7 +30,7 @@ ExitSpirit.SCHEMA = {
 
 ExitSpirit.createModel = function() {
   return RigidModel.createRingMesh(5, 0.8)
-      .setColorRGB(0.2, 1, 0.2);
+      .setColorRGB(1, 1, 1);
 };
 
 ExitSpirit.factory = function(screen, stamp, pos) {
@@ -115,7 +117,7 @@ ExitSpirit.prototype.onDraw = function(world, renderer) {
   var bodyPos = this.getBodyPos();
   renderer
       .setStamp(this.modelStamp)
-      .setColorVector(Renderer.COLOR_WHITE);
+      .setColorVector(this.color);
   // TODO: standardize Z
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.5))
@@ -123,6 +125,43 @@ ExitSpirit.prototype.onDraw = function(world, renderer) {
 
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
+
+  // arrows and stars
+  renderer.setStamp(this.stamps.arrow)
+      .setColorVector(this.arrowColor);
+  if (this.screen.isPlaying()) {
+    var rad = body.rad;
+    for (var slotName in this.screen.slots) {
+      var slot = this.screen.slots[slotName];
+      if (slot.isPlaying()) {
+        var spirit = slot.spirit;
+        if (spirit) {
+          var playerPos = spirit.getBodyPos();
+          var playerRad = spirit.getBody().rad;
+          if (playerPos) {
+            var dist = playerPos.distance(bodyPos);
+            var toSign = this.vec2d.set(playerPos).subtract(bodyPos).scaleToLength(rad + ExitSpirit.EXIT_DISTANCE);
+
+            if (dist > rad + playerRad + ExitSpirit.EXIT_DISTANCE) {
+              var arrowSize = Math.min(playerRad*2.7, dist - rad - playerRad*3, Math.max(playerRad * 1.7, 100 / dist));
+              if (arrowSize > 0) {
+                // draw arrow
+                // TODO: standardize Z
+                this.modelMatrix.toIdentity()
+                    .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x + toSign.x, bodyPos.y + toSign.y, 0.5))
+                    .multiply(this.mat44.toScaleOpXYZ(arrowSize, arrowSize, 1))
+                    .multiply(this.mat44.toRotateZOp(-toSign.angle() + Math.PI));
+
+                renderer.setModelMatrix(this.modelMatrix);
+                renderer.drawStamp();
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
 };
 
 ExitSpirit.prototype.toJSON = function() {

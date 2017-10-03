@@ -226,14 +226,14 @@ v death 2
     v exit tracks player distances
   - arrow & star
     - models
-      - arrow - tip is 0,0
+      b arrow - tip is 0,0
       - star - center is 0,0
     - for each player
-      - if too far, draw arrow between player and exit
-        - scale and position based on dist:
-          - small and far if far
-          - big and close to exit when plr is close
-          - smaller as plr gets really close
+      v if too far, draw arrow between player and exit
+        v scale and position based on dist:
+          v small and far if far
+          v big and close to exit when plr is close
+          v smaller as plr gets really close
       - if close enough, draw star over player's head
         - grow with proximity to exit
         - pull player into exit orbit?
