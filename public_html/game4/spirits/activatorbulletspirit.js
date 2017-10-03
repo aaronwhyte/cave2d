@@ -11,6 +11,7 @@ function ActivatorBulletSpirit(screen) {
   // temps
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+  this.vec4 = new Vec4();
 
   // trail stuff
   this.trail = new Trail(2);
@@ -32,6 +33,7 @@ ActivatorBulletSpirit.prototype.reset = function(screen) {
   // temps
   this.mat44.reset();
   this.modelMatrix.reset();
+  this.vec4.reset();
 
   // trail stuff
   this.trail.reset();
@@ -91,6 +93,22 @@ ActivatorBulletSpirit.prototype.onHitOther = function(pos) {
 };
 
 ActivatorBulletSpirit.prototype.onDraw = function(world, renderer) {
+  // var body = this.getBody();
+  // if (body && this.modelStamp) {
+  //   var pos = this.getBodyPos();
+  //   this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
+  //   if (this.viewportsFromCamera < 1.1) {
+  //     renderer
+  //         .setStamp(this.modelStamp)
+  //         .setColorVector(this.vec4.set(this.color));
+  //     this.modelMatrix.toIdentity()
+  //         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
+  //         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+  //         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
+  //     renderer.setModelMatrix(this.modelMatrix);
+  //     renderer.drawStamp();
+  //   }
+  // }
   this.drawTrail();
 };
 

@@ -197,7 +197,7 @@ ActivatorGunSpirit.prototype.fire = function() {
   var speed = 3;
   var dist = 25 + Math.random() * 5;
   this.addBullet(
-      pos,
+      pos, angPos,
       this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed),
       0.3,
       dist / speed);
@@ -206,15 +206,17 @@ ActivatorGunSpirit.prototype.fire = function() {
   // this.screen.sounds.pew(pos, now);
 };
 
-ActivatorGunSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
+ActivatorGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = ActivatorBulletSpirit.alloc(this.screen);
+  //spirit.setModelStamp(this.stamps.arrow);
   spirit.setColorRGB(1, 1, 1);
   var density = 0;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, now);
+  b.setAngPosAtTime(angPos, now);
   b.setVelAtTime(vel, now);
   b.rad = rad;
   b.hitGroup = this.screen.getHitGroups().BEAM;
