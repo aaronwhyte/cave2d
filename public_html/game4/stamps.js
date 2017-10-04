@@ -30,6 +30,7 @@ Stamps.create = function(renderer) {
 
   // Game stuff?
   stamps.arrow = stamp(models.getArrow());
+  stamps.star = stamp(models.getStar());
 
   return stamps;
 };

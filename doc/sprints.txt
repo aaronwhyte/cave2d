@@ -208,7 +208,7 @@ v death 2
     x ghosts are drawn always - separate pass with different shader params so they don't get clipped out
     x touching spawn point restores solid player body, back to normal.
 
-- exit 2
+v exit 2
   * all players must be present and relaxed to exit
   v exit has circle body
     v new test level
@@ -224,19 +224,19 @@ v death 2
   ... OK, the 1/dist shader is cool but the idea for the exit was a bust.
   v start exit when all players are close
     v exit tracks player distances
-  - arrow & star
-    - models
+  v arrow & star
+    v models
       b arrow - tip is 0,0
-      - star - center is 0,0
-    - for each player
+      v star - center is 0,0
+    v for each player
       v if too far, draw arrow between player and exit
         v scale and position based on dist:
           v small and far if far
           v big and close to exit when plr is close
           v smaller as plr gets really close
-      - if close enough, draw star over player's head
-        - grow with proximity to exit
-        - pull player into exit orbit?
+      v if close enough, draw star over player's head
+        v grow with proximity to exit
+        x pull player into exit orbit?
 
 v Bug! I need to disable screen-lock in edit mode.
   Something about transition from test to edit?
