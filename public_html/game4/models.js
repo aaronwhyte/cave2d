@@ -70,7 +70,7 @@ Models.prototype.getArrow = function() {
 
 Models.prototype.getStar = function() {
   var model = RigidModel.createCircle(10);
-  var inRad = 0.5;
+  var inRad = 0.4;
   for (var i = 1; i < 10; i += 2) {
     model.vertexes[i].position.scale1(inRad);
   }

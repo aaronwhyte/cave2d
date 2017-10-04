@@ -139,7 +139,7 @@ ExitSpirit.prototype.onDraw = function(world, renderer) {
           if (playerPos) {
             var surfaceDist = playerPos.distance(bodyPos) - rad - playerRad;
             if (surfaceDist > ExitSpirit.EXIT_DISTANCE) {
-              var arrowSize = Math.min(playerRad*2.7, surfaceDist - ExitSpirit.EXIT_DISTANCE / 2);//, Math.max(playerRad * 1.7, 100 / surfaceDist));
+              var arrowSize = Math.min(playerRad*2.7, surfaceDist - ExitSpirit.EXIT_DISTANCE / 2, Math.max(playerRad, 100 / surfaceDist));
               if (arrowSize > 0) {
                 // draw arrow
                 var toSign = this.vec2d.set(playerPos).subtract(bodyPos)
@@ -161,10 +161,12 @@ ExitSpirit.prototype.onDraw = function(world, renderer) {
               var toSign = this.vec2d.set(playerPos).subtract(bodyPos)
                   .scaleToLength(rad + ExitSpirit.EXIT_DISTANCE + 3.5 * playerRad);
               renderer.setStamp(this.stamps.star)
-                  .setColorVector(this.vec4.set(spirit.color).scale1(1 + Math.sin(this.now() / 6)/4));
+                  .setColorVector(this.vec4.set(spirit.color)
+                      // .scale1(0.5 + 0.2 * ((this.now() / 24) % 1)));
+                      .scale1(0.9 + 0.2 * Math.sin(this.now() / 6)));
               var starSize = playerRad * 2 * (0.7 + 0.3 * (ExitSpirit.EXIT_DISTANCE - surfaceDist) / ExitSpirit.EXIT_DISTANCE);
               this.modelMatrix.toIdentity()
-                  .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x + toSign.x, bodyPos.y + toSign.y, -0.1))
+                  .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x + toSign.x, bodyPos.y + toSign.y, 0.1))
                   .multiply(this.mat44.toScaleOpXYZ(starSize, starSize, 1))
                   .multiply(this.mat44.toRotateZOp(-toSign.angle()));
 
