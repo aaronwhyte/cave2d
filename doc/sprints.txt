@@ -236,11 +236,34 @@ v exit 2
           v smaller as plr gets really close
       v if close enough, draw star over player's head
         v grow with proximity to exit
-        x pull player into exit orbit?
+        v pull player into exit orbit?
+
 
 v Bug! I need to disable screen-lock in edit mode.
   Something about transition from test to edit?
 v Bug in undo/redo for exit/entrance spirits.
+
+player kick
+- control
+  - instant, not sustained
+  - some frequency limit
+- physics
+  - rayscan shotgun
+  - mutual spring push
+  or
+  - actual repulsor shotgun
+  - because then I can have repulsor turrents weee
+- graphics
+  - instant fan of overlapping splashes?
+  - fast decay to pos slightly out of range
+  - special splashes for hits
+
+Effects
+- pulse splashes
+  - muzzle-flash when firing
+  - 3-5 splash particles on wasted hit
+  - cleaner flash on activation hit - circle? arrowhead? sparkles?
+- fix weird noise when activator bullet hits player
 
 - new exit sequence
   - freeze time(?)
@@ -274,28 +297,4 @@ v Bug in undo/redo for exit/entrance spirits.
     - endpoint sizes
     - squash/stretch
     - wave magnitude, offset, and frequency
-
-player kick
-- control
-  - instant, not sustained
-  - some frequency limit
-- physics
-  - rayscan shotgun
-  - mutual spring push
-  or
-  - actual repulsor shotgun
-  - because then I can have repulsor turrents weee
-- graphics
-  - instant fan of overlapping splashes?
-  - fast decay to pos slightly out of range
-  - special splashes for hits
-
-Effects
-- pulse splashes
-  - muzzle-flash when firing
-  - 3-5 splash particles on wasted hit
-  - cleaner flash on activation hit - circle? arrowhead? sparkles?
-- fix weird noise when activator bullet hits player
-
-
 

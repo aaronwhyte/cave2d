@@ -106,7 +106,7 @@ BaseSpirit.prototype.setBodyVel = function(v) {
 
 BaseSpirit.prototype.addBodyVel = function(v) {
   var body = this.getBody();
-  return body ? body.setVelAtTime(v, this.now()) : null;
+  return body ? body.addVelAtTime(v, this.now()) : null;
 };
 
 BaseSpirit.prototype.getBodyAngPos = function() {
