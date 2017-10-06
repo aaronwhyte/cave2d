@@ -26,7 +26,7 @@ EntranceSpirit.SCHEMA = {
 
 EntranceSpirit.createModel = function() {
   return RigidModel.createRingMesh(5, 0.8)
-      .setColorRGB(0.8, 0.3, 0.8);
+      .setColorRGB(0.7, 0.3, 0.7);
 };
 
 EntranceSpirit.factory = function(screen, stamp, pos) {

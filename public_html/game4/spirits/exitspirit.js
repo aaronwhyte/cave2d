@@ -12,14 +12,16 @@ function ExitSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
-  this.color = new Vec4(0.2, 1, 0.2);
+  this.color = new Vec4(1, 1, 1);
+
+  this.toSign = new Vec2d();
 }
 ExitSpirit.prototype = new BaseSpirit();
 ExitSpirit.prototype.constructor = ExitSpirit;
 
 ExitSpirit.TIMEOUT = 1;
 
-ExitSpirit.EXIT_DISTANCE = 1.5;
+ExitSpirit.EXIT_DISTANCE = 2;
 
 ExitSpirit.SCHEMA = {
   0: "type",
@@ -29,7 +31,7 @@ ExitSpirit.SCHEMA = {
 
 ExitSpirit.createModel = function() {
   return RigidModel.createRingMesh(5, 0.8)
-      .setColorRGB(1, 1, 1);
+      .setColorRGB(0.2, 0.8, 0.2);
 };
 
 ExitSpirit.factory = function(screen, stamp, pos) {
@@ -37,7 +39,6 @@ ExitSpirit.factory = function(screen, stamp, pos) {
 
   var spirit = new ExitSpirit(screen);
   spirit.setModelStamp(stamp);
-  var density = 1;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -125,66 +126,73 @@ ExitSpirit.prototype.onDraw = function(world, renderer) {
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
 
-  // arrows and stars
+  // arrows and stars and orbits
   if (this.screen.isPlaying()) {
-    var toSign = Vec2d.alloc();
-    var rad = body.rad;
     for (var slotName in this.screen.slots) {
       var slot = this.screen.slots[slotName];
       if (slot.isPlaying()) {
         var spirit = slot.spirit;
         if (spirit) {
-          var playerPos = spirit.getBodyPos();
-          var playerRad = spirit.getBody().rad;
-          if (playerPos) {
-            var surfaceDist = playerPos.distance(bodyPos) - rad - playerRad;
-            if (surfaceDist > ExitSpirit.EXIT_DISTANCE) {
-              // draw arrow
-              toSign.set(playerPos).subtract(bodyPos).scaleToLength(rad + ExitSpirit.EXIT_DISTANCE/3);
-              var arrowSize = ExitSpirit.EXIT_DISTANCE * 1.5;
-              renderer.setStamp(this.stamps.arrow)
-                  .setColorVector(this.vec4.set(spirit.color).scale1(0.7));//.scale1(1.2 - 0.4 * ((this.now() / 48) % 1)));
-              // TODO: standardize Z
-              this.modelMatrix.toIdentity()
-                  .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x + toSign.x, bodyPos.y + toSign.y,
-                      0.9 + Math.min(0.1, 0.001 * surfaceDist)))
-                  .multiply(this.mat44.toScaleOpXYZ(arrowSize, arrowSize, 1))
-                  .multiply(this.mat44.toRotateZOp(-toSign.angle() + Math.PI));
-
-              renderer.setModelMatrix(this.modelMatrix);
-              renderer.drawStamp();
-            } else {
-              // draw star
-              toSign.set(playerPos).subtract(bodyPos)
-                  .scaleToLength(rad + surfaceDist + 3.7 * playerRad);
-              renderer.setStamp(this.stamps.star)
-                  .setColorVector(this.vec4.set(spirit.color)
-                      .scale1(0.7));// + 0.5 * Math.max(0, Math.sin(this.now() / 6))));
-              var starSize = playerRad * 1.5;
-              this.modelMatrix.toIdentity()
-                  .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x + toSign.x, bodyPos.y + toSign.y, 0.1))
-                  .multiply(this.mat44.toScaleOpXYZ(starSize, starSize, 1))
-                  .multiply(this.mat44.toRotateZOp(-toSign.angle()));
-
-              renderer.setModelMatrix(this.modelMatrix);
-              renderer.drawStamp();
-            }
-
-            // pull player into orbit?
-            if (surfaceDist < ExitSpirit.EXIT_DISTANCE * 2) {
-              var p0 = surfaceDist - ExitSpirit.EXIT_DISTANCE / 3;
-              var v0 = 0;//this.vec2d.set(spirit.getBody().vel).rot(-toSign.angle()).y;
-              var maxA = 0.1;
-              var pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, 3);
-              spirit.addBodyVel(toSign.scaleToLength(1).scale(pushAccelMag));
-            }
-          }
+          this.handlePlayerSpirit(world, renderer, spirit);
         }
       }
     }
-    toSign.free();
+  }
+};
+
+ExitSpirit.prototype.handlePlayerSpirit = function(world, renderer, playerSpirit) {
+  var playerPos = playerSpirit.getBodyPos();
+  if (!playerPos) return;
+
+  var exitBody = this.getBody();
+  var exitPos = this.getBodyPos();
+  var exitRad = exitBody.rad;
+
+  var playerRad = playerSpirit.getBody().rad;
+  var surfaceDist = playerPos.distance(exitPos) - exitRad - playerRad;
+
+  var toSign = this.toSign.set(playerPos).subtract(exitPos);
+
+  if (surfaceDist > ExitSpirit.EXIT_DISTANCE) {
+    // Player is too far - draw arrow
+    var arrowSize = playerRad * 2.2;
+    toSign.scaleToLength(
+        Math.min(exitRad + ExitSpirit.EXIT_DISTANCE/2, exitRad + surfaceDist - arrowSize * 1.5));
+    renderer.setStamp(this.stamps.arrow).setColorVector(this.vec4.set(playerSpirit.color));
+    // TODO: standardize Z
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(exitPos.x + toSign.x, exitPos.y + toSign.y,
+            0.9 + Math.min(0.1, 0.001 * surfaceDist)))
+        .multiply(this.mat44.toScaleOpXYZ(arrowSize, arrowSize, 1))
+        .multiply(this.mat44.toRotateZOp(-toSign.angle() + Math.PI));
+
+    renderer.setModelMatrix(this.modelMatrix);
+    renderer.drawStamp();
+
+  } else {
+    // Player is ready to go! draw star
+    toSign.set(playerPos).subtract(exitPos)
+        .scaleToLength(exitRad + surfaceDist + 3.7 * playerRad);
+    renderer.setStamp(this.stamps.star)
+        .setColorVector(this.vec4.set(playerSpirit.color).scale1(0.7));
+    var starSize = playerRad * 1.3;
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(exitPos.x + toSign.x, exitPos.y + toSign.y, 0.1))
+        .multiply(this.mat44.toScaleOpXYZ(starSize, starSize, 1))
+        .multiply(this.mat44.toRotateZOp(-toSign.angle()));
+
+    renderer.setModelMatrix(this.modelMatrix);
+    renderer.drawStamp();
   }
 
+  // pull player into orbit?
+  if (surfaceDist < ExitSpirit.EXIT_DISTANCE * 2) {
+    var p0 = surfaceDist - ExitSpirit.EXIT_DISTANCE / 2;
+    var v0 = this.vec2d.set(playerSpirit.getBody().vel).rot(-toSign.angle()).y / 10;
+    var maxA = 0.1;
+    var pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, ExitSpirit.TIMEOUT * 2);
+    playerSpirit.addBodyVel(toSign.scaleToLength(1).scale(pushAccelMag));
+  }
 };
 
 ExitSpirit.prototype.toJSON = function() {
