@@ -15,6 +15,7 @@ Stamps.create = function(renderer) {
   }
   // basic geometry
   stamps.circleStamp = stamp(RigidModel.createCircle(32));
+  stamps.squareStamp = stamp(RigidModel.createSquare());
   stamps.tubeStamp = stamp(RigidModel.createTube(32));
   stamps.cylinderStamp = stamp(RigidModel.createCylinder(32));
   stamps.lineStamp = stamp(RigidModel.createCylinder(9));

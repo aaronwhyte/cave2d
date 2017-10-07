@@ -124,7 +124,7 @@ Test44BaseScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-Test44BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
+Test44BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
   var s = this.splash;
   s.reset(Test44BaseScreen.SplashType.SCAN, this.stamps.cylinderStamp);
 
@@ -162,7 +162,7 @@ Test44BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
   this.splasher.addCopy(s);
 };
 
-Test44BaseScreen.prototype.addTractorSeekSplash = function (pos, vel, rad, dist, color) {
+Test44BaseScreen.prototype.addTractorSeekSplash = function(pos, vel, rad, dist, color) {
   var s = this.splash;
   s.reset(Test44BaseScreen.SplashType.SCAN, this.stamps.circleStamp);
 
@@ -224,4 +224,3 @@ Test44BaseScreen.prototype.addKickHoldSplash = function(pos, baseVel, addVel, ra
 
   this.splasher.addCopy(s);
 };
-

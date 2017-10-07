@@ -67,6 +67,10 @@ EntranceSpirit.prototype.onTimeout = function(world, timeoutVal) {
     body.setVelAtTime(newVel, world.now);
   }
   world.addTimeout(world.now + EntranceSpirit.TIMEOUT, this.id, -1);
+
+  if (Math.random() < 1) {
+    this.screen.addPortalMoteSplash(this.getBodyPos(), 0, body.rad * 0.9);
+  }
 };
 
 EntranceSpirit.getJsoner = function() {

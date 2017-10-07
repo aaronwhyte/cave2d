@@ -252,5 +252,36 @@ Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
   s.endColor.setXYZ(0, 0, 0);
 
   this.splasher.addCopy(s);
+};
 
-}
+
+Splashes.prototype.addPortalMoteSplash = function(now, portalPos, startRad, endRad) {
+  var v = Vec2d.alloc();
+  var s = this.splash;
+  s.reset(Splashes.Type, this.stamps.circleStamp);
+
+  s.startTime = now;
+  var speed = (0.05 * Math.random() + 0.03);
+  s.duration = Math.abs(startRad - endRad) / speed;
+
+  var size = speed;
+
+  var angle = Math.random() * Math.PI * 2;
+  v.setXY(0, 1).rot(angle);
+  s.startPose.pos.setXYZ(portalPos.x + v.x * startRad, portalPos.y + v.y * startRad, 0.9);
+  s.startPose.scale.setXYZ(size*startRad, size*startRad, 1);
+  s.startPose.rotZ = 0;
+
+  var angle = Math.random() * Math.PI * 2;
+  v.setXY(0, 1).rot(angle);
+  s.endPose.pos.setXYZ(portalPos.x + v.x * endRad, portalPos.y + v.y * endRad, 0.9);
+  s.endPose.scale.setXYZ(size*endRad, size*endRad, 1);
+  s.endPose.rotZ = 0;
+
+  s.startColor.setXYZ(1,1,1);
+  s.endColor.setXYZ(1,1,1);
+
+  this.splasher.addCopy(s);
+  v.free();
+};
+

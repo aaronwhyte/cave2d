@@ -99,6 +99,10 @@ ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
 
   world.addTimeout(world.now + ExitSpirit.TIMEOUT, this.id, -1);
+
+  if (Math.random() < 0.5) {
+    this.screen.addPortalMoteSplash(bodyPos, body.rad * 0.9, 0);
+  }
 };
 
 ExitSpirit.getJsoner = function() {
@@ -153,12 +157,14 @@ ExitSpirit.prototype.handlePlayerSpirit = function(world, renderer, playerSpirit
 
   var toSign = this.toSign.set(playerPos).subtract(exitPos);
 
+  renderer.setColorVector(this.vec4.set(playerSpirit.color).scale1(0.8 - Math.random() * 0.2));
+
   if (surfaceDist > ExitSpirit.EXIT_DISTANCE) {
     // Player is too far - draw arrow
     var arrowSize = playerRad * 2.2;
     toSign.scaleToLength(
         Math.min(exitRad + ExitSpirit.EXIT_DISTANCE/2, exitRad + surfaceDist - arrowSize * 1.5));
-    renderer.setStamp(this.stamps.arrow).setColorVector(this.vec4.set(playerSpirit.color));
+    renderer.setStamp(this.stamps.arrow);
     // TODO: standardize Z
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(exitPos.x + toSign.x, exitPos.y + toSign.y,
@@ -173,8 +179,7 @@ ExitSpirit.prototype.handlePlayerSpirit = function(world, renderer, playerSpirit
     // Player is ready to go! draw star
     toSign.set(playerPos).subtract(exitPos)
         .scaleToLength(exitRad + surfaceDist + 3.7 * playerRad);
-    renderer.setStamp(this.stamps.star)
-        .setColorVector(this.vec4.set(playerSpirit.color).scale1(0.7));
+    renderer.setStamp(this.stamps.star);
     var starSize = playerRad * 1.3;
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(exitPos.x + toSign.x, exitPos.y + toSign.y, 0.1))

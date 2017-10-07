@@ -174,3 +174,7 @@ Game4BaseScreen.prototype.addTractorRepelSplash = function(pos, angle, vel, rad,
 Game4BaseScreen.prototype.addPlayerExplosionSplash = function(pos, color) {
   this.splashes.addPlayerExplosionSplash(this.world.now, pos, color);
 };
+
+Game4BaseScreen.prototype.addPortalMoteSplash = function(portalCenter, stamp, startRad, endRad) {
+  this.splashes.addPortalMoteSplash(this.world.now, portalCenter, stamp, startRad, endRad);
+};
