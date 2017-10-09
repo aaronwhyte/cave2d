@@ -96,13 +96,13 @@ ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
     if (closeCount && closeCount === playerCount) {
       this.screen.startExit(bodyPos);
     }
+    // if (Math.random() < 0.5) {
+    //   this.screen.addPortalMoteSplash(bodyPos, body.rad, 0);
+    // }
   }
 
   world.addTimeout(world.now + ExitSpirit.TIMEOUT, this.id, -1);
 
-  if (Math.random() < 0.5) {
-    this.screen.addPortalMoteSplash(bodyPos, body.rad * 0.9, 0);
-  }
 };
 
 ExitSpirit.getJsoner = function() {

@@ -256,15 +256,20 @@ Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
 
 
 Splashes.prototype.addPortalMoteSplash = function(now, portalPos, startRad, endRad) {
+  var maxSpeed = 0.03;
+  if (Math.random() > maxSpeed * 20) return;
+  var maxSize = Math.max(startRad, endRad) * 0.9 * 0.025;
   var v = Vec2d.alloc();
   var s = this.splash;
   s.reset(Splashes.Type, this.stamps.circleStamp);
 
   s.startTime = now;
-  var speed = (0.05 * Math.random() + 0.03);
+  startRad *= 0.9;
+  endRad *= 0.9;
+  var frac = (0.3 + 0.7 * Math.random());
+  var speed = maxSpeed * frac;
+  var size = maxSize * frac;
   s.duration = Math.abs(startRad - endRad) / speed;
-
-  var size = speed;
 
   var angle = Math.random() * Math.PI * 2;
   v.setXY(0, 1).rot(angle);
