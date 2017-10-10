@@ -106,7 +106,12 @@ BitRect.prototype.createWorldFan = function(cell, color, cwx, cwy, bws) {
     // right
     x = this.x1;
     for (y = this.y0; y < this.y1; y++) {
-      verts.push(new Vec4(cwx + (x + 0.5) * bws, cwy + (y + 0.5) * bws));
+      if (x === BitGrid.BITS - 1 ||
+          y % CHUNK === 0 ||
+          ((cell[y] >> (x + 1)) & 1) !== color ||
+          ((cell[y + 1] >> (x + 1)) & 1) !== color) {
+        verts.push(new Vec4(cwx + (x + 0.5) * bws, cwy + (y + 0.5) * bws));
+      }
     }
 
     // top-right
@@ -129,7 +134,12 @@ BitRect.prototype.createWorldFan = function(cell, color, cwx, cwy, bws) {
     // left
     x = this.x0;
     for (y = this.y1 - 1; y >= this.y0; y--) {
-      verts.push(new Vec4(cwx + (x - 0.5) * bws, cwy + (y + 0.5) * bws));
+      if (x === 0 ||
+          y % CHUNK === 0 ||
+          ((cell[y] >> (x - 1)) & 1) !== color ||
+          ((cell[y + 1] >> (x - 1)) & 1) !== color) {
+        verts.push(new Vec4(cwx + (x - 0.5) * bws, cwy + (y + 0.5) * bws));
+      }
     }
 
     // finally, bottom-left again

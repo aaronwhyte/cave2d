@@ -264,6 +264,9 @@ v eliminate wall T-junctions and make edges meshy
       x create 16 different solid tile models, for each "is-neighbor-detailed" value, 2^4
       x live draw the right one based on the 4 neighbors - don't even bother caching?
 
+- fix long midpoint-to-corner triangle edges by breaking up rects
+  - chop fan rects every 8 bits! Then midpoints and chunks will be every 4, nice and even.
+
 - Fix fragment shader interaction with distortion. Pass new x/y in, not original x/y.
 
 - Re-use solid wall models
