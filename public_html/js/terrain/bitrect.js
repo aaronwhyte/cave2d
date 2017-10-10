@@ -87,13 +87,13 @@ BitRect.prototype.createWorldFan = function(cell, color, cwx, cwy, bws) {
     // TODO: lots of other verts but lets test the basics first
 
     // top-right
-    verts.push(new Vec4(cwx + (this.x0 + 0.5) * bws, cwy + (this.y0 - 0.5) * bws));
+    verts.push(new Vec4(cwx + (this.x1 + 0.5) * bws, cwy + (this.y0 - 0.5) * bws));
 
     // bottom-right
-    verts.push(new Vec4(cwx + (this.x0 + 0.5) * bws, cwy + (this.y0 + 0.5) * bws));
+    verts.push(new Vec4(cwx + (this.x1 + 0.5) * bws, cwy + (this.y1 + 0.5) * bws));
 
     // bottom-left
-    verts.push(new Vec4(cwx + (this.x0 - 0.5) * bws, cwy + (this.y0 + 0.5) * bws));
+    verts.push(new Vec4(cwx + (this.x0 - 0.5) * bws, cwy + (this.y1 + 0.5) * bws));
 
     // finally, top-left again
     verts.push(new Vec4().set(verts[1]));

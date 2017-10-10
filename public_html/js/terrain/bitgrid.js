@@ -127,14 +127,14 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
 };
 
 /**
- * Gets a minimal number of rects that cover the bits of a certain color. Horizontally adjacent bits are merged into
+ * Gets a minimal number of fan that cover the bits of a certain color. Horizontally adjacent bits are merged into
  * rows. Vertically adjacent rows covering the same horizontal range are merged into taller blocks.
  * These rect are new'ed, not alloc'ed, so don't free them; just let them get garbage collected.
  * @param color
  * @param cellId
  * @returns {Array}
  */
-BitGrid.prototype.getRectFansOfColorForCellId = function(color, cellId) {
+BitGrid.prototype.getFansOfColorForCellId = function(color, cellId) {
   var brs = this.allocBitRectsOfColorForCellId(color, cellId);
   var cellWorldX = this.getCellWorldX(cellId);
   var cellWorldY = this.getCellWorldY(cellId);

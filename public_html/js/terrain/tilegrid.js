@@ -257,20 +257,34 @@ TileGrid.prototype.createWallBody = function(rect) {
  * @returns {ModelStamp}
  */
 TileGrid.prototype.createTileStampForCellId = function(cellId) {
-  //var rects = this.bitGrid.getTinyRectsOfColorForCellId(0, cellId);
-  var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+  var tileModel = new RigidModel();
 
-  var model = new RigidModel();
-  for (var i = 0; i < rects.length; i++) {
-    var r = Math.random() * 0.3 + 0.7;
-    model.addRigidModel(this.createWallModel(rects[i]).setColorRGB(r, r, r));
-    //model.addRigidModel(this.createWallModel(rects[i]));
+  if (false) {
+    var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    for (var i = 0; i < rects.length; i++) {
+      var r = Math.random() * 0.3 + 0.7;
+      tileModel.addRigidModel(this.createWallModel(rects[i]).setColorRGB(r, r, r));
+      //tileModel.addRigidModel(this.createWallModel(rects[i]));
+    }
+  } else {
+    var fans = this.bitGrid.getFansOfColorForCellId(0, cellId);
+    for (var i = 0; i < fans.length; i++) {
+      var r = Math.random() * 0.3 + 0.7;
+      var fanModel = RigidModel.createFromFanVecs(fans[i]).setColorRGB(r, r, r);
+
+      // TODO: REMOVE DEBUG COLOR
+      fanModel.vertexes[0].setColorRGB(3, 3, 0);
+
+
+      tileModel.addRigidModel(fanModel);
+      //tileModel.addRigidModel(this.createWallModel(rects[i]));
+    }
   }
   var cy = Math.floor(cellId / BitGrid.COLUMNS);
   var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
 
-  model.addRigidModel(this.createFloorModelForCellXY(cx, cy));
-  return model.createModelStamp(this.renderer.gl);
+  tileModel.addRigidModel(this.createFloorModelForCellXY(cx, cy));
+  return tileModel.createModelStamp(this.renderer.gl);
 };
 
 TileGrid.prototype.createWallModel = function(rect) {
@@ -278,11 +292,6 @@ TileGrid.prototype.createWallModel = function(rect) {
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   var wallModel = RigidModel.createSquare().transformPositions(transformation);
-  // TODO: color options? I guess this method could be overridden in a pinch.
-  // wallModel.setColorRGB(
-  //     Math.sin(rect.pos.y * rect.pos.x * 0.1 + 1) < -0.999 ? 0.8 : 1,
-  //     Math.sin(rect.pos.y * rect.pos.x * 0.13 + 2) < -0.999 ? 0.8 : 1,
-  //     Math.sin(rect.pos.y * rect.pos.x * 0.17 + 3) < -0.999 ? 0.8 : 1);
   wallModel.setColorRGB(1, 1, 1);
   return wallModel;
 };

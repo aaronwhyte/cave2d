@@ -342,6 +342,24 @@ RigidModel.createCircle = function(corners) {
 };
 
 /**
+ * Creates a model from a list of Vec4s where the first is the common root of a fan,
+ * and the rest are fan edge verts.
+ * @param {Array.<Vec4>} vecs
+ */
+RigidModel.createFromFanVecs = function(vecs) {
+  var m = new RigidModel();
+  for (var i = 0; i < vecs.length; i++) {
+    var v = new Vertex();
+    v.position.set(vecs[i]);
+    m.addVertex(v.setColorRGB(1, 1, 1).setGroup(0));
+    if (i >= 2) {
+      m.addTriangle(0, i, i - 1);
+    }
+  }
+  return m;
+};
+
+/**
  * Creates a model for an open unit circle on the XY plane, where there are two vertexes at each position,
  * one in group 0 and one in group 1. Group 0 and Group 1 are opposite ends of this open dimensionless tube.
  * @param corners
