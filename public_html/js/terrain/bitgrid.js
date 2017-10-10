@@ -17,7 +17,7 @@ function BitGrid(pixelSize) {
   this.changedCells = {};
 
   // Map from changed cellIds to their old values, when changes are being recorded. Otherwise it's null.
-  // It's scope is longer than changedCells - changeOps's scope is a undoable/redoable gesture. And it is optional,
+  // Its scope is longer than changedCells - changeOps's scope is a undoable/redoable gesture. And it is optional,
   // since it's only important when editing, and therefore undoing, is happening.
   this.changeOpBefores = null;
 }
@@ -97,7 +97,7 @@ BitGrid.prototype.flushChangedCellIds = function() {
   var changedIds = [];
   for (var id in this.changedCells) {
     // TODO: Arrays are never equal. Is this just optimization for primitive cells?
-    if (this.changedCells[id] != this.cells[id]) {
+    if (this.changedCells[id] !== this.cells[id]) {
       changedIds.push(id);
     }
   }
@@ -114,81 +114,36 @@ BitGrid.prototype.flushChangedCellIds = function() {
  * @returns {Array}
  */
 BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
-  var bx, by;
-  var self = this;
-  function createRect(bx0, by0, bx1, by1) {
-    var wx0 = cx * self.cellWorldSize + (bx0 - 0.5) * self.bitWorldSize;
-    var wy0 = cy * self.cellWorldSize + (by0 - 0.5) * self.bitWorldSize;
-    var wx1 = cx * self.cellWorldSize + (bx1 + 0.5) * self.bitWorldSize;
-    var wy1 = cy * self.cellWorldSize + (by1 + 0.5) * self.bitWorldSize;
-    return new Rect(
-        (wx0 + wx1)/2, (wy0 + wy1)/2, (wx1 - wx0)/2, (wy1 - wy0)/2);
-  }
-
-  var cy = Math.floor(cellId / BitGrid.COLUMNS);
-  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  var brs = this.allocBitRectsOfColorForCellId(color, cellId);
+  var cellWorldX = this.getCellWorldX(cellId);
+  var cellWorldY = this.getCellWorldY(cellId);
   var rects = [];
-  var cell = this.cells[cellId];
-  if (this.cellEqualsColor(cell, color)) {
-    rects.push(new Rect(
-        (cx + 0.5) * this.cellWorldSize - this.bitWorldSize/2,
-        (cy + 0.5) * this.cellWorldSize - this.bitWorldSize/2,
-        this.cellWorldSize / 2,
-        this.cellWorldSize / 2));
-  } else if (Array.isArray(cell)) {
+  for (var i = 0; i < brs.length; i++) {
+    var br = brs[i];
+    rects.push(br.createWorldRect(cellWorldX, cellWorldY, this.bitWorldSize));
+    br.free();
+  }
+  return rects;
+};
 
-    var oldRects = {};
-    for (by = 0; by < BitGrid.BITS; by++) {
-      var newRects = {};
-      var runStartX = -1;
-      // Record newRects in this row.
-      for (bx = 0; bx < BitGrid.BITS; bx++) {
-        var bit = (cell[by] >> bx) & 1;
-        if (bit == color) {
-          // Color match.
-          if (runStartX < 0) {
-            // First bit on the row.
-            runStartX = bx;
-            newRects[runStartX] = {startY: by, endX: bx};
-          } else {
-            // Continue run
-            newRects[runStartX].endX = bx;
-          }
-        } else {
-          // Not a color match.
-          runStartX = -1;
-        }
-      }
-      var isLastRow = by == BitGrid.BITS - 1;
-      for (bx = 0; bx < BitGrid.BITS; bx++) {
-        var oldRect = oldRects[bx];
-        var newRect = newRects[bx];
-        // Harvest unmatched old ones.
-        if (oldRect && newRect && oldRect.endX == newRect.endX) {
-          // This is a merge, unless we're on the last row, in which case we harvest.
-          if (isLastRow) {
-            // last row harvest
-            rects.push(createRect(bx, oldRect.startY, oldRect.endX, by));
-          }
-        } else {
-          // old and new are not equal start/end (or maybe not existent)
-          if (oldRect) {
-            // harvest and delete
-            rects.push(createRect(bx, oldRect.startY, oldRect.endX, by - 1));
-            delete oldRects[bx];
-          }
-          if (newRect) {
-            if (isLastRow) {
-              // make rect on this row
-              rects.push(createRect(bx, newRect.startY, newRect.endX, by));
-            } else {
-              // graduate
-              oldRects[bx] = newRects[bx];
-            }
-          }
-        }
-      }
-    }
+/**
+ * Gets a minimal number of rects that cover the bits of a certain color. Horizontally adjacent bits are merged into
+ * rows. Vertically adjacent rows covering the same horizontal range are merged into taller blocks.
+ * These rect are new'ed, not alloc'ed, so don't free them; just let them get garbage collected.
+ * @param color
+ * @param cellId
+ * @returns {Array}
+ */
+BitGrid.prototype.getRectFansOfColorForCellId = function(color, cellId) {
+  var brs = this.allocBitRectsOfColorForCellId(color, cellId);
+  var cellWorldX = this.getCellWorldX(cellId);
+  var cellWorldY = this.getCellWorldY(cellId);
+  var cell = this.cells[cellId];
+  var rects = [];
+  for (var i = 0; i < brs.length; i++) {
+    var br = brs[i];
+    rects.push(br.createWorldFan(cell, color, cellWorldX, cellWorldY, this.bitWorldSize));
+    br.free();
   }
   return rects;
 };
@@ -216,7 +171,7 @@ BitGrid.prototype.getTinyRectsOfColorForCellId = function(color, cellId) {
     for (var bx = 0; bx < BitGrid.BITS; bx++) {
       if (isArray) {
         var bit = (cell[by] >> bx) & 1;
-        if (bit == color) {
+        if (bit === color) {
           rects.push(createRect(bx, by))
         }
       } else if (this.cellEqualsColor(cell, color)) {
@@ -225,6 +180,81 @@ BitGrid.prototype.getTinyRectsOfColorForCellId = function(color, cellId) {
     }
   }
   return rects;
+};
+
+/**
+ * Gets a minimal number of BitRects that cover the bits of a certain color. Horizontally adjacent bits are merged into
+ * rows. Vertically adjacent rows covering the same horizontal range are merged into taller blocks.
+ * These rects *are* alloced, so be sure to free() them!
+ * @param color
+ * @param cellId
+ * @returns {Array.<BitRect>} array of BitRects, of course.
+ */
+BitGrid.prototype.allocBitRectsOfColorForCellId = function(color, cellId) {
+  var bx, by;
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  var bitRects = [];
+  var cell = this.cells[cellId];
+  if (this.cellEqualsColor(cell, color)) {
+    bitRects.push(BitRect.alloc(0, 0, BitGrid.BITS - 1, BitGrid.BITS - 1));
+  } else if (Array.isArray(cell)) {
+
+    // key: starting X bit position. Value: {startY, endX}
+    var oldRects = {};
+    for (by = 0; by < BitGrid.BITS; by++) {
+      var newRects = {};
+      var runStartX = -1;
+      // Record newRects in this row.
+      for (bx = 0; bx < BitGrid.BITS; bx++) {
+        var bit = (cell[by] >> bx) & 1;
+        if (bit === color) {
+          // Color match.
+          if (runStartX < 0) {
+            // First bit on the row.
+            runStartX = bx;
+            newRects[runStartX] = {startY: by, endX: bx};
+          } else {
+            // Continue run
+            newRects[runStartX].endX = bx;
+          }
+        } else {
+          // Not a color match.
+          runStartX = -1;
+        }
+      }
+      var isLastRow = by === BitGrid.BITS - 1;
+      for (bx = 0; bx < BitGrid.BITS; bx++) {
+        var oldRect = oldRects[bx];
+        var newRect = newRects[bx];
+        // Harvest unmatched old ones.
+        if (oldRect && newRect && oldRect.endX === newRect.endX) {
+          // This is a merge, unless we're on the last row, in which case we harvest.
+          if (isLastRow) {
+            // last row harvest
+            bitRects.push(BitRect.alloc(bx, oldRect.startY, oldRect.endX, by));
+          }
+        } else {
+          // old and new are not equal start/end (or maybe not existent)
+          if (oldRect) {
+            // harvest and delete
+            bitRects.push(BitRect.alloc(bx, oldRect.startY, oldRect.endX, by - 1));
+            delete oldRects[bx];
+          }
+          if (newRect) {
+            if (isLastRow) {
+              // make rect on this row
+              bitRects.push(BitRect.alloc(bx, newRect.startY, newRect.endX, by));
+            } else {
+              // graduate
+              oldRects[bx] = newRects[bx];
+            }
+          }
+        }
+      }
+    }
+  }
+  return bitRects;
 };
 
 /**
@@ -259,6 +289,25 @@ BitGrid.prototype.deleteCellAtIndexXY = function(cx, cy) {
 
 BitGrid.prototype.cellEqualsColor = function(cell, color) {
   return !Array.isArray(cell) && ((color == 0 && !cell) || (color == 1 && cell === 1));
+};
+
+/**
+ * @param cellId
+ * @returns {number} the world position of the left edge (?) of the cell.
+ */
+BitGrid.prototype.getCellWorldX = function(cellId) {
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  return this.cellWorldSize * cx;
+};
+
+/**
+ * @param cellId
+ * @returns {number} the world position of the top edge (?) of the cell.
+ */
+BitGrid.prototype.getCellWorldY = function(cellId) {
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  return this.cellWorldSize * cy;
 };
 
 BitGrid.prototype.drawPill = function(seg, rad, color) {

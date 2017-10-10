@@ -417,7 +417,7 @@ Game4PlayScreen.prototype.updateWarps = function() {
   var repulsorRad = Math.sqrt(maxRepulsorRad * maxRepulsorRad * Math.sin(repulsorProgress * Math.PI));
   var repulsorStrength = (1 - repulsorProgress) * (0.8 - repulsorProgress);
 
-  var flowerMag = 5;
+  var flowerMag = 8;
   var flowerAngle = -time * 2;
 
   this.renderer.setWarps(
@@ -432,7 +432,7 @@ Game4PlayScreen.prototype.updateWarps = function() {
         // quantizer
         -5 + 5 * Math.sin(time),
         5 + 5 * Math.cos(time),
-        10,
+        6,
         4 + 2 * Math.sin(time*2),
 
         // flower

@@ -243,20 +243,53 @@ v Bug! I need to disable screen-lock in edit mode.
   Something about transition from test to edit?
 v Bug in undo/redo for exit/entrance spirits.
 
+- eliminate wall T-junctions and make edges meshy
+  v start new BitRect to hold data and logic for bit rect conversions
+    v without breaking everything
+      v update every bitgrid user
+      v createWorldRect() to do what BitGrid did
+    v refactor BitGrid to use BitRect's createWorldRect
+      v pull bitrect creation out into something the fan method can use later
+  - fan basics
+    v for now, just an array of Vec4
+    - BitGrid can return a pile of fans
+    - TileGrid can create models and stamps from said pile. Triangles for now since I don't really use GL fans.
+      - Model.createFanFromVec4Array(list of v4s)
+      - sanity-test by randomizing vertex colors?
+  - optimize
+    - detailed
+      - don't add vertex at top/bottom if the opposite cell pair is solid+solid
+    - solid
+      - create 16 different solid tile models, for each "is-neighbor-detailed" value, 2^4
+      - live draw the right one based on the 4 neighbors - don't even bother caching?
+
+
 player kick
 - control
   - instant, not sustained
   - some frequency limit
-- physics
-  - rayscan shotgun
-  - mutual spring push
-  or
   - actual repulsor shotgun
-  - because then I can have repulsor turrents weee
-- graphics
-  - instant fan of overlapping splashes?
-  - fast decay to pos slightly out of range
-  - special splashes for hits
+    - red repulsor bullet pushes things in direction it flies
+- special splashes for hits
+
+tractor revisited *again* ?
+- green attractor bullet pulls things in opposite direction of it's flight
+- fire one if tractor beam scan fails
+
+slime berries
+- slime bullet
+- slime effect
+  -
+- big monster eats slime-covered things
+- pinball bumper fun when slimed!
+
+fire
+- blind periodic turret
+- immovable explosive
+
+Vertex shaders
+- pulse ring
+- limit circle
 
 Effects
 - pulse splashes
@@ -266,14 +299,13 @@ Effects
 - fix weird noise when activator bullet hits player
 
 - new exit sequence
-  - freeze time(?)
-    - need a new way of tracking time.
-  - create set of all player and equipment spirits - whatever is traveling
-  - animate vacuum distortion on players and equipment into center of exit
-  - animate accelerating zoom into exit and centering camera on exit
-  - to black
-  - load next level, with camera zoomed WAY out
-  - queue players up to enter
+  - when players in exit position, increase exit-ness
+    - exit vacuum distortion
+    - player-shaped splashes drifting towards exit center
+  - actual exitness is on a spring
+  - dest exitness increases with continuous duration of player exit readyness
+  - dest exitness resets to 0 if anyone leaves exit readyness
+  - when dest exitness reaches threshold, then do final exit
 
 - equipment continuity
   - remember equipment on exit

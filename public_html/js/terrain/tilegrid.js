@@ -21,6 +21,7 @@ function TileGrid(bitGrid, renderer, world, hitGroup) {
   this.v0 = new Vec2d();
   this.v1 = new Vec2d();
   this.rect = new Rect();
+  this.mat44 = new Matrix44();
 }
 
 TileGrid.prototype.setWallGrip = function(grip) {
@@ -256,12 +257,14 @@ TileGrid.prototype.createWallBody = function(rect) {
  * @returns {ModelStamp}
  */
 TileGrid.prototype.createTileStampForCellId = function(cellId) {
-  // var rects = this.bitGrid.getTinyRectsOfColorForCellId(0, cellId);
+  //var rects = this.bitGrid.getTinyRectsOfColorForCellId(0, cellId);
   var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
 
   var model = new RigidModel();
   for (var i = 0; i < rects.length; i++) {
-    model.addRigidModel(this.createWallModel(rects[i]));
+    var r = Math.random() * 0.3 + 0.7;
+    model.addRigidModel(this.createWallModel(rects[i]).setColorRGB(r, r, r));
+    //model.addRigidModel(this.createWallModel(rects[i]));
   }
   var cy = Math.floor(cellId / BitGrid.COLUMNS);
   var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
@@ -271,7 +274,7 @@ TileGrid.prototype.createTileStampForCellId = function(cellId) {
 };
 
 TileGrid.prototype.createWallModel = function(rect) {
-  var transformation = new Matrix44()
+  var transformation = this.mat44
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
   var wallModel = RigidModel.createSquare().transformPositions(transformation);
