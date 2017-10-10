@@ -3,7 +3,7 @@
  * @constructor
  * @extends Screen
  */
-function WorldScreen(controller, canvas, renderer, stamps, sfx) {
+function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   if (!controller) return; // generating prototype
   Screen.call(this);
 
@@ -16,6 +16,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx) {
   this.mat44 = new Matrix44();
 
   this.sounds = new Sounds(sfx, this.viewMatrix);
+  this.useFans = !!opt_useFans;
 
   this.listening = false;
   this.paused = false;
@@ -250,7 +251,7 @@ WorldScreen.prototype.initWorld = function() {
   this.world = new World(this.bitSize * BitGrid.BITS, groupCount, this.getHitPairs(), this.getSpiritFactory());
   this.resolver = new HitResolver();
   this.bitGrid = new BitGrid(this.bitSize);
-  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
+  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
 };
 
 WorldScreen.prototype.getResizeFn = function() {
@@ -680,7 +681,7 @@ WorldScreen.prototype.loadWorldFromJson = function(json) {
   var worldJsoner = new WorldJsoner();
   worldJsoner.loadWorldFromJson(this.world, json);
   this.bitGrid = BitGrid.fromJSON(json.terrain);
-  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup());
+  this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
   this.tileGrid.flushTerrainChanges();
   if (this.editor) {
     this.editor.onLoadWorldFromJson(json);

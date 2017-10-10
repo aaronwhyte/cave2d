@@ -3,11 +3,12 @@
  * 0 is solid wall and 1 is the void.
  * @constructor
  */
-function TileGrid(bitGrid, renderer, world, hitGroup) {
+function TileGrid(bitGrid, renderer, world, hitGroup, opt_useFans) {
   this.bitGrid = bitGrid;
   this.renderer = renderer;
   this.world = world;
   this.hitGroup = hitGroup;
+  this.useFans = !!opt_useFans;
 
   this.tiles = {};
   this.segment = new Segment(new Vec2d(), new Vec2d());
@@ -259,25 +260,18 @@ TileGrid.prototype.createWallBody = function(rect) {
 TileGrid.prototype.createTileStampForCellId = function(cellId) {
   var tileModel = new RigidModel();
 
-  if (false) {
+  if (!this.useFans) {
     var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
     for (var i = 0; i < rects.length; i++) {
-      var r = Math.random() * 0.3 + 0.7;
-      tileModel.addRigidModel(this.createWallModel(rects[i]).setColorRGB(r, r, r));
-      //tileModel.addRigidModel(this.createWallModel(rects[i]));
+      tileModel.addRigidModel(this.createWallModel(rects[i]));
     }
   } else {
     var fans = this.bitGrid.getFansOfColorForCellId(0, cellId);
     for (var i = 0; i < fans.length; i++) {
-      var r = Math.random() * 0.3 + 0.7;
-      var fanModel = RigidModel.createFromFanVecs(fans[i]).setColorRGB(r, r, r);
-
-      // TODO: REMOVE DEBUG COLOR
-      fanModel.vertexes[0].setColorRGB(3, 3, 0);
-
-
+      var r = Math.random() * 0.5 + 0.5;
+      var fanModel = RigidModel.createFromFanVecs(fans[i]).setColorRGB(Math.random() + 3, Math.random() * 3, r);
+      // var fanModel = RigidModel.createFromFanVecs(fans[i]);
       tileModel.addRigidModel(fanModel);
-      //tileModel.addRigidModel(this.createWallModel(rects[i]));
     }
   }
   var cy = Math.floor(cellId / BitGrid.COLUMNS);

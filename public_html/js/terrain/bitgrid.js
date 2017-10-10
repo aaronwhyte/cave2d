@@ -148,6 +148,23 @@ BitGrid.prototype.getFansOfColorForCellId = function(color, cellId) {
   return rects;
 };
 
+// BitGrid.prototype.splitBitRectsOverRatio = function(brs, r) {
+//   var loops = 0;
+//   for (var i = 0; i < brs.length;) {
+//     var br = brs[i];
+//     var w = br.getWidth();
+//     var h = br.getHeight();
+//     if (w > h * r) {
+//       brs.push(br.cutOffRightHalf(r));
+//     } else if (h > w * r) {
+//       brs.push(br.cutOffTopHalf(r));
+//     } else {
+//       i++;
+//     }
+//     if (++loops >= 2000) throw Error('uh oh');
+//   }
+// };
+//
 /**
  * Gets one freshly allocated Rect for each bit of the target color. Up to 32x32 = 1024 of them!
  * This is a bad idea. Don't use this.

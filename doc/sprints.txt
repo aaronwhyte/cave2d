@@ -243,26 +243,30 @@ v Bug! I need to disable screen-lock in edit mode.
   Something about transition from test to edit?
 v Bug in undo/redo for exit/entrance spirits.
 
-- eliminate wall T-junctions and make edges meshy
+v eliminate wall T-junctions and make edges meshy
   v start new BitRect to hold data and logic for bit rect conversions
     v without breaking everything
       v update every bitgrid user
       v createWorldRect() to do what BitGrid did
     v refactor BitGrid to use BitRect's createWorldRect
       v pull bitrect creation out into something the fan method can use later
-  - fan basics
+  v fan basics
     v for now, just an array of Vec4
-    - BitGrid can return a pile of fans
-    - TileGrid can create models and stamps from said pile. Triangles for now since I don't really use GL fans.
-      - Model.createFanFromVec4Array(list of v4s)
-      - sanity-test by randomizing vertex colors?
-  - optimize
-    - detailed
-      - don't add vertex at top/bottom if the opposite cell pair is solid+solid
-    - solid
-      - create 16 different solid tile models, for each "is-neighbor-detailed" value, 2^4
-      - live draw the right one based on the 4 neighbors - don't even bother caching?
+    v BitGrid can return a pile of fans
+    v TileGrid can create models and stamps from said pile. Triangles for now since I don't really use GL fans.
+      v Model.createFanFromVec4Array(list of v4s)
+      v sanity-test by randomizing vertex colors?
+  v optimize
+    v detailed
+      v don't add vertex at top/bottom if the opposite cell pair is solid+solid
+        v but do add 'em every so often... every 4?
+    x solid
+      x create 16 different solid tile models, for each "is-neighbor-detailed" value, 2^4
+      x live draw the right one based on the 4 neighbors - don't even bother caching?
 
+- Fix fragment shader interaction with distortion. Pass new x/y in, not original x/y.
+
+- Re-use solid wall models
 
 player kick
 - control

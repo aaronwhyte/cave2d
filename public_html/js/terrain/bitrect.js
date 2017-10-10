@@ -18,6 +18,8 @@ function BitRect(x0, y0, x1, y1) {
  * @param {number} y1 bottom-right y
  */
 BitRect.prototype.reset = function(x0, y0, x1, y1) {
+  if (x0 > x1) throw Error(["x0 > x1:", x0, x1].join(' '));
+  if (y0 > y1) throw Error(["y0 > y1:", y0, y1].join(' '));
   this.x0 = x0;
   this.y0 = y0;
   this.x1 = x1;
@@ -66,37 +68,111 @@ BitRect.prototype.createWorldRect = function(cellWorldX, cellWorldY, bitWorldSiz
  * @param cwx cellWorldX
  * @param cwy cellWorldY
  * @param bws bitWorldSize
- * @return an array of Vec4 objs, where the 0th is the start of a fan, and the rest are the edge points,
+ * @return {Array.<Vec4>} an array of Vec4 objs, where the 0th is the start of a fan, and the rest are the edge points,
  * sometimes including a repeated 1st point. In the case of 1x1 cells, the fan will be an unclosed 2-tri fan.
  */
 BitRect.prototype.createWorldFan = function(cell, color, cwx, cwy, bws) {
+  var CHUNK = 4;
   var verts = [];
   if (this.x0 === this.x1 && this.y0 === this.y1) {
     // special case 1x1
-    // start at top-left, then go clockwise to other 3 points
+    // start at bottom-left, then go counter-clockwise to other 3 points
     verts.push(new Vec4(cwx + (this.x0 - 0.5) * bws, cwy + (this.y0 - 0.5) * bws));
     verts.push(new Vec4(cwx + (this.x0 + 0.5) * bws, cwy + (this.y0 - 0.5) * bws));
     verts.push(new Vec4(cwx + (this.x0 + 0.5) * bws, cwy + (this.y0 + 0.5) * bws));
     verts.push(new Vec4(cwx + (this.x0 - 0.5) * bws, cwy + (this.y0 + 0.5) * bws));
   } else {
     // start with a point in the center of the rect
+    var x, y;
     verts.push(new Vec4(cwx + (this.x0 + this.x1) * bws / 2, cwy + (this.y0 + this.y1) * bws / 2));
 
-    // top-left
+    // bottom-left
     verts.push(new Vec4(cwx + (this.x0 - 0.5) * bws, cwy + (this.y0 - 0.5) * bws));
-    // TODO: lots of other verts but lets test the basics first
 
-    // top-right
-    verts.push(new Vec4(cwx + (this.x1 + 0.5) * bws, cwy + (this.y0 - 0.5) * bws));
+    // bottom
+    y = this.y0;
+    for (x = this.x0; x < this.x1; x++) {
+      if (y === 0 ||
+          x % CHUNK === 0 ||
+          ((cell[y - 1] >> x) & 1) !== color ||
+          ((cell[y - 1] >> (x + 1)) & 1) !== color) {
+        verts.push(new Vec4(cwx + (x + 0.5) * bws, cwy + (y - 0.5) * bws));
+      }
+    }
 
     // bottom-right
+    verts.push(new Vec4(cwx + (this.x1 + 0.5) * bws, cwy + (this.y0 - 0.5) * bws));
+
+    // right
+    x = this.x1;
+    for (y = this.y0; y < this.y1; y++) {
+      verts.push(new Vec4(cwx + (x + 0.5) * bws, cwy + (y + 0.5) * bws));
+    }
+
+    // top-right
     verts.push(new Vec4(cwx + (this.x1 + 0.5) * bws, cwy + (this.y1 + 0.5) * bws));
 
-    // bottom-left
+    // top
+    y = this.y1;
+    for (x = this.x1 - 1; x >= this.x0; x--) {
+      if (y === BitGrid.BITS - 1 ||
+          x % CHUNK === 0 ||
+          ((cell[y+1] >> x) & 1) !== color ||
+          ((cell[y+1] >> (x + 1)) & 1) !== color) {
+        verts.push(new Vec4(cwx + (x + 0.5) * bws, cwy + (y + 0.5) * bws));
+      }
+    }
+
+    // top-left
     verts.push(new Vec4(cwx + (this.x0 - 0.5) * bws, cwy + (this.y1 + 0.5) * bws));
 
-    // finally, top-left again
+    // left
+    x = this.x0;
+    for (y = this.y1 - 1; y >= this.y0; y--) {
+      verts.push(new Vec4(cwx + (x - 0.5) * bws, cwy + (y + 0.5) * bws));
+    }
+
+    // finally, bottom-left again
     verts.push(new Vec4().set(verts[1]));
   }
   return verts;
 };
+
+BitRect.prototype.getWidth = function() {
+  return this.x1 - this.x0 + 1;
+};
+
+BitRect.prototype.getHeight = function() {
+  return this.y1 - this.y0 + 1;
+};
+
+// /**
+//  * Mutates this rect and allocates and returns a new rect, such that this rect's width is no greater than
+//  * r * height.
+//  * @param {number} r
+//  * @return {BitRect} freshly allocated bitrect
+//  */
+// BitRect.prototype.cutOffRightHalf = function(r) {
+//   var w = this.getWidth();
+//   var h = this.getHeight();
+//   var newX1 = this.x0 + Math.floor(Math.min(h * r, w / 2));
+//   if (newX1 < this.x0) debugger;
+//   var otherHalf = BitRect.alloc(newX1 + 1, this.y0, this.x1, this.y1);
+//   this.x1 = newX1;
+//   return otherHalf;
+// };
+//
+// /**
+//  * Mutates this rect and allocates and returns a new rect, such that this rect's height is no greater than
+//  * r * width.
+//  * @param {number} r
+//  * @return {BitRect} freshly allocated bitrect
+//  */
+// BitRect.prototype.cutOffTopHalf = function(r) {
+//   var w = this.getWidth();
+//   var h = this.getHeight();
+//   var newY1 = this.y0 + Math.floor(Math.min(w * r, h / 2));
+//   var otherHalf = BitRect.alloc(this.x0, newY1 + 1, this.x1, this.y1);
+//   this.y1 = newY1;
+//   return otherHalf;
+// };

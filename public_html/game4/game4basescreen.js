@@ -3,7 +3,7 @@
  * @extends {WorldScreen}
  */
 function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  WorldScreen.call(this, controller, canvas, renderer, stamps, sfx);
+  WorldScreen.call(this, controller, canvas, renderer, stamps, sfx, true);
   if (!controller) return; // generating prototype
 
   this.adventureName = adventureName;
