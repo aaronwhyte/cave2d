@@ -41,6 +41,9 @@ BitGrid.ROW_OF_ONES = (function() {
   return row;
 })();
 
+// In detailed cells, fan rects will never be wider/taller than this.
+BitGrid.MAX_FAN_RECT_BITS = 4;
+
 BitGrid.CHANGE_TYPE = 'bg';
 
 BitGrid.prototype.startRecordingChanges = function() {
@@ -135,10 +138,16 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
  * @returns {Array}
  */
 BitGrid.prototype.getFansOfColorForCellId = function(color, cellId) {
+  var cell = this.cells[cellId];
   var brs = this.allocBitRectsOfColorForCellId(color, cellId);
+  if (Array.isArray(cell)) {
+    // Detailed cell.
+    // Subdivide the inside, to avoid long midpoint-to-corner triangle edges.
+    // Make the slices at regular x/y values, so the corner vertexes line up.
+    this.splitEveryNBits(brs, BitGrid.MAX_FAN_RECT_BITS);
+  }
   var cellWorldX = this.getCellWorldX(cellId);
   var cellWorldY = this.getCellWorldY(cellId);
-  var cell = this.cells[cellId];
   var rects = [];
   for (var i = 0; i < brs.length; i++) {
     var br = brs[i];
@@ -148,23 +157,29 @@ BitGrid.prototype.getFansOfColorForCellId = function(color, cellId) {
   return rects;
 };
 
-// BitGrid.prototype.splitBitRectsOverRatio = function(brs, r) {
-//   var loops = 0;
-//   for (var i = 0; i < brs.length;) {
-//     var br = brs[i];
-//     var w = br.getWidth();
-//     var h = br.getHeight();
-//     if (w > h * r) {
-//       brs.push(br.cutOffRightHalf(r));
-//     } else if (h > w * r) {
-//       brs.push(br.cutOffTopHalf(r));
-//     } else {
-//       i++;
-//     }
-//     if (++loops >= 2000) throw Error('uh oh');
-//   }
-// };
-//
+/**
+ * @param {Array.<BitRect>} brs
+ * @param n
+ */
+BitGrid.prototype.splitEveryNBits = function(brs, n) {
+  var loops = 0;
+  for (var i = 0; i < brs.length;) {
+    var br = brs[i];
+    if (Math.floor(br.x0 / n) !== Math.floor(br.x1 / n)) {
+      var newX0 = br.x0 - (br.x0 % n) + n;
+      brs.push(BitRect.alloc(newX0, br.y0, br.x1, br.y1));
+      br.x1 = newX0 - 1;
+    } else if (Math.floor(br.y0 / n) !== Math.floor(br.y1 / n)) {
+      var newY0 = br.y0 - (br.y0 % n) + n;
+      brs.push(BitRect.alloc(br.x0, newY0, br.x1, br.y1));
+      br.y1 = newY0 - 1;
+    } else {
+      i++;
+    }
+    if (++loops >= 2000) throw Error('uh oh');
+  }
+};
+
 /**
  * Gets one freshly allocated Rect for each bit of the target color. Up to 32x32 = 1024 of them!
  * This is a bad idea. Don't use this.

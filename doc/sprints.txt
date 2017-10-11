@@ -264,12 +264,23 @@ v eliminate wall T-junctions and make edges meshy
       x create 16 different solid tile models, for each "is-neighbor-detailed" value, 2^4
       x live draw the right one based on the 4 neighbors - don't even bother caching?
 
-- fix long midpoint-to-corner triangle edges by breaking up rects
-  - chop fan rects every 8 bits! Then midpoints and chunks will be every 4, nice and even.
+v fix long midpoint-to-corner triangle edges by breaking up rects
+  v chop fan rects every 8 bits! Then midpoints and chunks will be every 4, nice and even.
+    v or every 4!
 
 - Fix fragment shader interaction with distortion. Pass new x/y in, not original x/y.
 
 - Re-use solid wall models
+
+- new exit sequence
+  - when players in exit position, increase exit-ness
+    - exit vacuum distortion
+    - zoom in?
+    - player-shaped splashes drifting towards exit center?
+  - actual exitness is on a spring
+  - dest exitness increases with continuous duration of player exit readyness
+  - dest exitness resets to 0 if anyone leaves exit readyness
+  - when dest exitness reaches threshold, then do final real no-effects exit
 
 player kick
 - control
@@ -304,15 +315,6 @@ Effects
   - 3-5 splash particles on wasted hit
   - cleaner flash on activation hit - circle? arrowhead? sparkles?
 - fix weird noise when activator bullet hits player
-
-- new exit sequence
-  - when players in exit position, increase exit-ness
-    - exit vacuum distortion
-    - player-shaped splashes drifting towards exit center
-  - actual exitness is on a spring
-  - dest exitness increases with continuous duration of player exit readyness
-  - dest exitness resets to 0 if anyone leaves exit readyness
-  - when dest exitness reaches threshold, then do final exit
 
 - equipment continuity
   - remember equipment on exit

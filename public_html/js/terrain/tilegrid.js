@@ -261,16 +261,16 @@ TileGrid.prototype.createTileStampForCellId = function(cellId) {
   var tileModel = new RigidModel();
 
   if (!this.useFans) {
+    // Use minimal rects, just like the bodies
     var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
     for (var i = 0; i < rects.length; i++) {
       tileModel.addRigidModel(this.createWallModel(rects[i]));
     }
   } else {
+    // Create more rects and a lot more edge vertexes - more of a mesh.
     var fans = this.bitGrid.getFansOfColorForCellId(0, cellId);
     for (var i = 0; i < fans.length; i++) {
-      var r = Math.random() * 0.5 + 0.5;
-      var fanModel = RigidModel.createFromFanVecs(fans[i]).setColorRGB(Math.random() + 3, Math.random() * 3, r);
-      // var fanModel = RigidModel.createFromFanVecs(fans[i]);
+      var fanModel = RigidModel.createFromFanVecs(fans[i]);
       tileModel.addRigidModel(fanModel);
     }
   }

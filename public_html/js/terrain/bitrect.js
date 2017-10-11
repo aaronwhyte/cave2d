@@ -155,34 +155,3 @@ BitRect.prototype.getWidth = function() {
 BitRect.prototype.getHeight = function() {
   return this.y1 - this.y0 + 1;
 };
-
-// /**
-//  * Mutates this rect and allocates and returns a new rect, such that this rect's width is no greater than
-//  * r * height.
-//  * @param {number} r
-//  * @return {BitRect} freshly allocated bitrect
-//  */
-// BitRect.prototype.cutOffRightHalf = function(r) {
-//   var w = this.getWidth();
-//   var h = this.getHeight();
-//   var newX1 = this.x0 + Math.floor(Math.min(h * r, w / 2));
-//   if (newX1 < this.x0) debugger;
-//   var otherHalf = BitRect.alloc(newX1 + 1, this.y0, this.x1, this.y1);
-//   this.x1 = newX1;
-//   return otherHalf;
-// };
-//
-// /**
-//  * Mutates this rect and allocates and returns a new rect, such that this rect's height is no greater than
-//  * r * width.
-//  * @param {number} r
-//  * @return {BitRect} freshly allocated bitrect
-//  */
-// BitRect.prototype.cutOffTopHalf = function(r) {
-//   var w = this.getWidth();
-//   var h = this.getHeight();
-//   var newY1 = this.y0 + Math.floor(Math.min(w * r, h / 2));
-//   var otherHalf = BitRect.alloc(this.x0, newY1 + 1, this.x1, this.y1);
-//   this.y1 = newY1;
-//   return otherHalf;
-// };
