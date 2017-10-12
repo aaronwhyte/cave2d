@@ -277,7 +277,7 @@ TileGrid.prototype.createTileStampForCellId = function(cellId) {
   var cy = Math.floor(cellId / BitGrid.COLUMNS);
   var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
 
-  tileModel.addRigidModel(this.createFloorModelForCellXY(cx, cy));
+  //tileModel.addRigidModel(this.createFloorModelForCellXY(cx, cy));
   return tileModel.createModelStamp(this.renderer.gl);
 };
 

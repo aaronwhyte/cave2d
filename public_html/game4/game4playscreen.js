@@ -464,6 +464,7 @@ Game4PlayScreen.prototype.drawScene = function() {
   this.updateWarps();
   this.renderer.setViewMatrix(this.viewMatrix);
   this.renderer.setCircleMode(this.viewCircles);
+  this.renderer.setTime(this.now());
 
   this.drawSpiritsOverlappingCircles(this.viewCircles);
   stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);

@@ -32,6 +32,9 @@ Renderer.EMPTY_WARP_DATA = [
     0, 0, 0, 0,
     0, 0, 0, 0];
 
+Renderer.TEXTURE_NONE = 0;
+Renderer.TEXTURE_WALL = 1;
+
 Renderer.prototype.initAttributesAndUniforms = function() {
   this.createVertexAttribute('aVertexPosition');
   this.createVertexAttribute('aVertexColor');
@@ -47,6 +50,9 @@ Renderer.prototype.initAttributesAndUniforms = function() {
 
   this.createUniform('uWarpType');
   this.createUniform('uWarpData');
+
+  this.createUniform('uTexture');
+  this.createUniform('uTime');
 };
 
 Renderer.prototype.setWarps = function(type, data) {
@@ -58,6 +64,11 @@ Renderer.prototype.clearWarps = function() {
   this.gl.uniform1iv(this.uWarpType, Renderer.EMPTY_WARP_TYPES);
   this.gl.uniform4fv(this.uWarpData, Renderer.EMPTY_WARP_DATA);
 };
+
+Renderer.prototype.setTexture = function(texture) {
+  this.gl.uniform1i(this.uTexture, texture);
+};
+
 
 Renderer.prototype.createVertexAttribute = function(name) {
   this[name] = this.gl.getAttribLocation(this.program, name);
@@ -186,6 +197,12 @@ Renderer.prototype.setCircleMode = function(circles) {
 Renderer.prototype.setNormalMode = function() {
   this.gl.uniform1i(this.uType, 0);
 };
+
+Renderer.prototype.setTime = function(t) {
+  this.gl.uniform1f(this.uTime, t);
+};
+
+
 
 /**
  * Prepares for stamp() calls.

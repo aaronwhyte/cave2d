@@ -270,7 +270,7 @@ v fix long midpoint-to-corner triangle edges by breaking up rects
 
 v Fix fragment shader interaction with distortion. Pass new x/y in, not original x/y.
 
-- Add fragment shader wall rendering texture biz and make sure it distorts well
+v Add fragment shader wall rendering texture biz and make sure it distorts well
 
 - Re-use solid wall models
 
