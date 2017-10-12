@@ -7,7 +7,8 @@ uniform lowp int uCircleCount; // 1 to 8
 uniform lowp vec3 uCircles[8];
 
 varying lowp vec4 vColor;
-varying lowp vec2 vPos;
+varying lowp vec2 vPosReal;
+varying lowp vec2 vPosWarped;
 
 void main(void) {
   if (uType == 0) {
@@ -19,7 +20,7 @@ void main(void) {
         lowp vec3 circle = uCircles[i];
         lowp vec2 circlePos = circle.xy;
         lowp float circleRad = circle.z;
-        minDist = min(minDist, distance(vPos, circlePos) / circleRad);
+        minDist = min(minDist, distance(vPosWarped, circlePos) / circleRad);
       }
     }
     if (minDist < 0.87) {

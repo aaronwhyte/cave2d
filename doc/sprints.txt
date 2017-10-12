@@ -268,7 +268,9 @@ v fix long midpoint-to-corner triangle edges by breaking up rects
   v chop fan rects every 8 bits! Then midpoints and chunks will be every 4, nice and even.
     v or every 4!
 
-- Fix fragment shader interaction with distortion. Pass new x/y in, not original x/y.
+v Fix fragment shader interaction with distortion. Pass new x/y in, not original x/y.
+
+- Add fragment shader wall rendering texture biz and make sure it distorts well
 
 - Re-use solid wall models
 
