@@ -40,16 +40,15 @@ void main(void) {
 
   if (uTexture == TEXTURE_WALL) {
     lowp float s = 0.5;
-    lowp vec2 fc = vec2(
+    lowp vec2 c = vec2(
         floor((vPosReal.x) / s + 0.5) * s,
-        floor((vPosReal.y) / s + 0.5) * s);
-    lowp float t = 0.1;
-    lowp float meh = sin(uTime / 2000.1 + fc.x * fc.y * 1000.0)
-               + cos(sin(uTime / 1000.0 + (fc.x * fc.y - 20.0 * fc.y) * 110.0)) - (2.0 - t);
-    if (meh > 0.0) {
-      //gl_FragColor.x += meh / t;
-      gl_FragColor.y += meh / t;
-      gl_FragColor.z += meh / t;
+        floor((vPosReal.y) / s + 0.5) * s
+        );
+
+    if (mod(c.y, 2.0) > 1.0 && mod(c.x + c.y / 2.0, 2.0) > 1.5) {
+      lowp float merp = 0.1;
+      gl_FragColor.y += merp;
+      gl_FragColor.z += merp;
     }
   }
 }
