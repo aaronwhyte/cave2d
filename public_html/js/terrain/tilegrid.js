@@ -14,7 +14,7 @@ function TileGrid(bitGrid, renderer, world, hitGroup, opt_useFans) {
   this.segment = new Segment(new Vec2d(), new Vec2d());
   this.wallGrip = 0.9;
 
-  // array accumuating changes while recording, or null if not recording.
+  // array accumulating changes while recording, or null if not recording.
   this.changes = null;
 
   // temp cache

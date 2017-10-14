@@ -410,9 +410,9 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
 };
 
 Game4PlayScreen.prototype.updateWarps = function() {
-  var time = Date.now() / 3000;// + Math.sin(Date.now() / 3000)*Math.sin(Date.now() / 3000);
+  var time = Date.now() / 3000;
   var maxRepulsorRad = 10;
-  var repulsorProgress = ((time*4) % 2) / 2;
+  var repulsorProgress = ((time / 5) % 2) / 2;
   repulsorProgress = repulsorProgress > 1 ? 0 : repulsorProgress;
   var repulsorRad = Math.sqrt(maxRepulsorRad * maxRepulsorRad * Math.sin(repulsorProgress * Math.PI));
   var repulsorStrength = (1 - repulsorProgress) * (0.8 - repulsorProgress);
