@@ -43,7 +43,7 @@ function createProgram(gl, vertexShader, fragmentShader) {
   gl.attachShader(program, fragmentShader);
   gl.linkProgram(program);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    throw 'program filed to link:' + gl.getProgramInfoLog(program);
+    throw 'program failed to link:' + gl.getProgramInfoLog(program);
   }
   return program;
 }
