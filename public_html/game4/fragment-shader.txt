@@ -50,9 +50,9 @@ void main(void) {
         floor((vPosReal.y) / s + 0.5) * s);
 
     highp float x = dot(c, vec2(13.987, 73.123)) + uTime / 321.;
-    highp float i = floor(x);
-    highp float f = fract(x);
-    highp float n = mix(rand(i), rand(i + 1.0), smoothstep(0.,1.,f));
+    lowp float i = floor(x);
+    lowp float f = fract(x);
+    lowp float n = mix(rand(i), rand(i + 1.0), smoothstep(0.,1.,f));
 
     lowp float density = 0.05;
     lowp float brightness = 0.5;

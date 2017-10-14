@@ -3,7 +3,7 @@
  * @extends {WorldScreen}
  */
 function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  WorldScreen.call(this, controller, canvas, renderer, stamps, sfx, true);
+  WorldScreen.call(this, controller, canvas, renderer, stamps, sfx, Game4BaseScreen.USE_FANS);
   if (!controller) return; // generating prototype
 
   this.adventureName = adventureName;
@@ -42,6 +42,9 @@ Game4BaseScreen.prototype.constructor = Game4BaseScreen;
 Game4BaseScreen.WIDGET_RADIUS = 30;
 Game4BaseScreen.CAMERA_VIEW_DIST = 25;
 
+// Makes distortions smooth by eliminating T-junctions and making tile models more detailed.
+Game4BaseScreen.USE_FANS = true;
+
 Game4BaseScreen.SpiritType = {
   ANT: 3,
   PLAYER: 4,
@@ -50,7 +53,8 @@ Game4BaseScreen.SpiritType = {
   ENTRANCE: 7,
   INDICATOR: 8,
   ACTIVATOR_GUN: 9,
-  ACTIVATOR_BULLET: 10
+  ACTIVATOR_BULLET: 10,
+  TRACTOR_BULLET: 11
 };
 
 Game4BaseScreen.MenuItem = {
