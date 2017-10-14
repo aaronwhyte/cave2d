@@ -8,8 +8,8 @@ uniform lowp int uCircleCount; // 1 to 8
 uniform lowp vec3 uCircles[8];
 
 varying lowp vec4 vColor;
-varying lowp vec2 vPosReal;
-varying lowp vec2 vPosWarped;
+varying highp vec2 vPosReal;
+varying highp vec2 vPosWarped;
 
 uniform lowp int uTexture;
 
@@ -39,16 +39,16 @@ void main(void) {
   }
 
   if (uTexture == TEXTURE_WALL) {
-    lowp float s = 0.5;
+    lowp float s = 2.5;
     lowp vec2 c = vec2(
         floor((vPosReal.x) / s + 0.5) * s,
-        floor((vPosReal.y) / s + 0.5) * s
-        );
+        floor((vPosReal.y) / s + 0.5) * s);
+    lowp float n = fract(sin(dot(c, vec2(123.987, 973.123))) * 9754.312);
 
-    if (mod(c.y, 2.0) > 1.0 && mod(c.x + c.y / 2.0, 2.0) > 1.5) {
-      lowp float merp = 0.1;
-      gl_FragColor.y += merp;
-      gl_FragColor.z += merp;
-    }
+    lowp float density = 1.1;
+    lowp float brightness = 0.05;
+    lowp float merp = smoothstep(0.0, 1.0, abs(n / density - 0.5) * 2.0) * brightness;
+    gl_FragColor.y += brightness - merp;
+    gl_FragColor.z += brightness - merp;
   }
 }

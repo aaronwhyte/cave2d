@@ -104,7 +104,10 @@ Game4EditScreen.prototype.drawScene = function() {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 
+  this.renderer.setTexture(Renderer.TEXTURE_WALL);
   this.drawTiles();
+  this.renderer.setTexture(Renderer.TEXTURE_NONE);
+
   this.splasher.draw(this.renderer, this.world.now);
   this.editor.drawScene();
   this.drawHud();

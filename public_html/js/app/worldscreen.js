@@ -641,7 +641,7 @@ WorldScreen.prototype.drawTilesOverlappingCircles = function(circles) {
   if (this.tileGrid) {
     this.renderer.setTexture(Renderer.TEXTURE_WALL);
     this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
-    this.tileGrid.drawTilesOverlappingCircles(circles)
+    this.tileGrid.drawTilesOverlappingCircles(circles);
     this.renderer.setTexture(Renderer.TEXTURE_NONE);
   }
 };

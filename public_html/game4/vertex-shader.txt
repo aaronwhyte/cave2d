@@ -11,8 +11,8 @@ attribute vec4 aVertexColor;
 attribute lowp float aVertexGroup;
 
 varying lowp vec4 vColor;
-varying lowp vec2 vPosReal;
-varying lowp vec2 vPosWarped;
+varying highp vec2 vPosReal;
+varying highp vec2 vPosWarped;
 
 void main(void) {
   if (aVertexGroup == 0.0) {
