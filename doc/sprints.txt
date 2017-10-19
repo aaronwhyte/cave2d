@@ -272,17 +272,8 @@ v Fix fragment shader interaction with distortion. Pass new x/y in, not original
 
 v Add fragment shader wall rendering texture biz and make sure it distorts well
 
-- Re-use solid wall models
 
-- new exit sequence
-  - when players in exit position, increase exit-ness
-    - exit vacuum distortion
-    - zoom in?
-    - player-shaped splashes drifting towards exit center?
-  - actual exitness is on a spring
-  - dest exitness increases with continuous duration of player exit readyness
-  - dest exitness resets to 0 if anyone leaves exit readyness
-  - when dest exitness reaches threshold, then do final real no-effects exit
+CONTROLS
 
 player kick
 - control
@@ -296,6 +287,9 @@ tractor revisited *again* ?
 - green attractor bullet pulls things in opposite direction of it's flight
 - fire one if tractor beam scan fails
 
+
+PROPS & ITEMS
+
 slime berries
 - slime bullet
 - slime effect
@@ -307,9 +301,29 @@ fire
 - blind periodic turret
 - immovable explosive
 
+
+
+OPTIMIZATION
+
+- Re-use solid wall models
+
+
+
+DECORATION
+
 Vertex shaders
 - pulse ring
 - limit circle
+
+- new exit sequence
+  - when players in exit position, increase exit-ness
+    - exit vacuum distortion
+    - zoom in?
+    - player-shaped splashes drifting towards exit center?
+  - actual exitness is on a spring
+  - dest exitness increases with continuous duration of player exit readyness
+  - dest exitness resets to 0 if anyone leaves exit readyness
+  - when dest exitness reaches threshold, then do final real no-effects exit
 
 Effects
 - pulse splashes
@@ -318,7 +332,7 @@ Effects
   - cleaner flash on activation hit - circle? arrowhead? sparkles?
 - fix weird noise when activator bullet hits player
 
-- equipment continuity
+- equipment continuity?
   - remember equipment on exit
   - restore equipment on entrance (but not on respawn!)
 
