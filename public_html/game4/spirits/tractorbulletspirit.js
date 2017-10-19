@@ -8,6 +8,7 @@ function TractorBulletSpirit(screen) {
 
   this.color = new Vec4();
 
+  // negative values are repulsion
   this.attraction = 1;
 
   // temps
@@ -76,8 +77,8 @@ TractorBulletSpirit.prototype.setModelStamp = function(modelStamp) {
 };
 
 TractorBulletSpirit.createModel = function() {
-  return RigidModel.createCircle(9)
-      .setColorRGB(0, 1, 0);
+  return RigidModel.createCircle(11)
+      .setColorRGB(1, 1, 1);
 };
 
 TractorBulletSpirit.prototype.setColorRGB = function(r, g, b) {
@@ -106,7 +107,7 @@ TractorBulletSpirit.prototype.onDraw = function(world, renderer) {
   //     renderer.drawStamp();
   //   }
   // }
-  this.drawTrail();
+  //this.drawTrail();
 };
 
 TractorBulletSpirit.prototype.addTrailSegment = function() {
@@ -118,7 +119,7 @@ TractorBulletSpirit.prototype.addTrailSegment = function() {
 
 TractorBulletSpirit.prototype.drawTrail = function() {
   var maxTime = this.now();
-  var duration = 1;
+  var duration = 1.7;
   var minTime = maxTime - duration;
   var trailWarm = false;
   this.screen.renderer

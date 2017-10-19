@@ -405,6 +405,12 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
       }
     }
 
+    var tbb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.TRACTOR_BULLET, b0, b1);
+    if (tbb) {
+      var tbbs = this.getSpiritForBody(tbb);
+      tbbs.onHitOther(pos);
+    }
+
     vec.free();
   }
 };

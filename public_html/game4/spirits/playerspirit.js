@@ -191,13 +191,18 @@ PlayerSpirit.prototype.handleInput = function(controls) {
 
   // Settle on a new beamState
   if (this.beamState === BeamState.OFF) {
-    // TODO: free kick
+    if (kickDown) {
+      this.freeKick();
+    }
     if (grabDown) {
       this.setBeamState(BeamState.SEEKING);
+      this.freePull();
     }
   } else if (this.beamState === BeamState.SEEKING) {
     if (grabUp) {
       this.breakBeam();
+    } else {
+      this.freePull();
     }
   } else if (this.beamState === BeamState.DRAGGING) {
     if (kickDown) {
@@ -719,3 +724,91 @@ PlayerSpirit.prototype.explode = function() {
     this.screen.removeByBodyId(this.bodyId);
   }
 };
+
+/**
+ * Fire a shotgun blast of repulsor particles, when the player presses
+ * the kick button while not holding anything.
+ */
+PlayerSpirit.prototype.freeKick = function() {
+  var pos = this.getBodyPos();
+  if (!pos) return;
+  var body = this.getBody();
+  var angPos = this.destAim.angle();
+  var speed = 10;
+  var dist = PlayerSpirit.PLAYER_RAD * 11 * (0.9 + Math.random() * 0.1);
+  var shots = 8;
+  var spread = Math.PI / 4;
+  var bPos = Vec2d.alloc();
+  var bulletRad = PlayerSpirit.PLAYER_RAD;
+  for (var i = 0; i < shots; i++) {
+    var angle = angPos + spread * (i + 0.5) / shots - spread / 2;
+    this.vec2d.setXY(0, 1).rot(angle);
+    bPos.set(this.vec2d).scaleToLength(body.rad - bulletRad).add(pos);
+    this.addTractorBullet(
+        bPos, angPos,
+        this.vec2d.scaleToLength(speed).add(body.vel),
+        bulletRad,
+        dist / speed,
+        -0.02); // negative attraction is repulsion
+  }
+  bPos.free();
+};
+
+/**
+ * Fire a tight group of attractor-bullets.
+ */
+PlayerSpirit.prototype.freePull = function() {
+  var pos = this.getBodyPos();
+  if (!pos) return;
+  var body = this.getBody();
+  var angPos = this.destAim.angle();
+  var speed = 10;
+  var dist = PlayerSpirit.PLAYER_RAD * 20 * (0.9 + 0.1 * Math.random());
+  var shots = 1;
+  var spread = Math.PI / 16;
+  var bPos = Vec2d.alloc();
+  var bulletRad = PlayerSpirit.PLAYER_RAD / 2;
+  for (var i = 0; i < shots; i++) {
+    var angle = angPos + spread * (i + 0.5) / shots - spread / 2 + (Math.random() - 0.5) * spread;
+    this.vec2d.setXY(0, 1).rot(angle);
+    bPos.set(this.vec2d).scaleToLength(PlayerSpirit.PLAYER_RAD - bulletRad).add(pos);
+    this.addTractorBullet(
+        bPos, angPos,
+        this.vec2d.scaleToLength(speed).add(body.vel),
+        bulletRad,
+        dist / speed,
+        0.005); // positive attraction
+  }
+  bPos.free();
+};
+
+PlayerSpirit.prototype.addTractorBullet = function(pos, angPos, vel, rad, duration, attraction) {
+  var now = this.now();
+  var spirit = TractorBulletSpirit.alloc(this.screen);
+  if (attraction > 0) {
+    spirit.setColorRGB(0, 1, 0);
+  } else {
+    spirit.setColorRGB(1, 0, 0);
+  }
+
+  var b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, now);
+  b.setAngPosAtTime(angPos, now);
+  b.setVelAtTime(vel, now);
+  b.rad = rad;
+  b.hitGroup = this.screen.getHitGroups().BEAM;
+  b.mass = -attraction; //(Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = duration * 1.01;
+  spirit.bodyId = this.screen.world.addBody(b);
+
+  var spiritId = this.screen.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  spirit.addTrailSegment();
+
+  // bullet self-destruct timeout
+  this.screen.world.addTimeout(now + duration, spiritId, 0);
+
+  return spiritId;
+};
+

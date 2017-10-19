@@ -276,13 +276,13 @@ AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
     v.setXY(0, 1).rot(a + Math.random() * Math.PI * 0.15);
     p.set(v).scale(startRad).add(pos);
     v.scale(speed);
-    this.addBullet(p, v, bulletRad, duration);
+    this.addTractorBullet(p, v, bulletRad, duration);
   }
   v.free();
   p.free();
 };
 
-AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
+AntSpirit.prototype.addTractorBullet = function(pos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.setModelStamp(this.stamps.circleStamp);

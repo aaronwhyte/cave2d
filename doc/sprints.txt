@@ -277,15 +277,15 @@ CONTROLS
 
 player kick
 - control
-  - instant, not sustained
+  v instant, not sustained
   - some frequency limit
-  - actual repulsor shotgun
-    - red repulsor bullet pushes things in direction it flies
-- special splashes for hits
+  v actual repulsor shotgun
+    x red repulsor bullet pushes things in direction it flies
+x special splashes for hits
 
 tractor revisited *again* ?
-- green attractor bullet pulls things in opposite direction of it's flight
-- fire one if tractor beam scan fails
+v attractor bullet pulls things in opposite direction of it's flight
+x fire one if tractor beam scan fails
 
 
 PROPS & ITEMS
