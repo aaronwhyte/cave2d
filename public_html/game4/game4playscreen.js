@@ -515,7 +515,10 @@ Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
   }
   for (var cellId in cellIdSet.vals) {
     for (var groupNum = 0; groupNum < this.world.getGroupCount(); groupNum++) {
-      if (groupNum === this.getWallHitGroup()) continue;
+      if (groupNum === this.getWallHitGroup()) {
+        // Walls are drawn in a separate tile-drawing pass.
+        continue;
+      }
       this.world.addSpiritIdsInCellAndGroup(spiritIdSet, cellId, groupNum);
     }
   }

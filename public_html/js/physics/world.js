@@ -746,7 +746,7 @@ World.prototype.getBodyOverlaps = function(body) {
 
 /**
  * Finds all the cells overlapping the circle, and adds their IDs to the objSet.
- * @param {ObjSet} objSet
+ * @param {ObjSet} objSet The set that accumulates cell IDs
  * @param {Circle} circle
  * @return {ObjSet}
  */
@@ -768,7 +768,7 @@ World.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
 };
 
 /**
- * Adds all the spirit IDs that are in a given cell and collison groupNum. This does not call validateBodies,
+ * Adds all the spirit IDs that are in a given cell and collision groupNum. This does not call validateBodies,
  * because that wrecks performance...?
  * @param {ObjSet} spiritIdSet
  * @param cellId
@@ -783,7 +783,7 @@ World.prototype.addSpiritIdsInCellAndGroup = function(spiritIdSet, cellId, group
     for (var pi = 0; pi < pathIdArray.length;) {
       var pathId = pathIdArray[pi];
       var body = this.paths[pathId];
-      if (body && body.pathId == pathId) {
+      if (body && body.pathId === pathId) {
         var spirit = this.spirits[body.spiritId];
         if (spirit) {
           spiritIdSet.put(spirit.id);
