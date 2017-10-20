@@ -275,17 +275,19 @@ v Add fragment shader wall rendering texture biz and make sure it distorts well
 
 CONTROLS
 
-player kick
-- control
+empty-handed kick and grab
+- kick
   v instant, not sustained
-  - some frequency limit
   v actual repulsor shotgun
-    x red repulsor bullet pushes things in direction it flies
-x special splashes for hits
-
-tractor revisited *again* ?
-v attractor bullet pulls things in opposite direction of it's flight
-x fire one if tractor beam scan fails
+  - rayscans instead of bullets
+  - splashes
+  - frequency limit
+  - sound
+- grab
+  v rayscans instead of bullets
+  v splashes
+  x frequency limit
+  - sound
 
 
 PROPS & ITEMS

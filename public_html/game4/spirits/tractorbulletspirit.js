@@ -107,7 +107,7 @@ TractorBulletSpirit.prototype.onDraw = function(world, renderer) {
   //     renderer.drawStamp();
   //   }
   // }
-  //this.drawTrail();
+  this.drawTrail();
 };
 
 TractorBulletSpirit.prototype.addTrailSegment = function() {

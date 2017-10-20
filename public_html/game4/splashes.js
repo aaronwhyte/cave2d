@@ -84,37 +84,43 @@ Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
   this.splasher.addCopy(s);
 };
 
-Splashes.prototype.addTractorSeekSplash = function(now, pos, vel, rad, dist, color) {
+Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, resultFraction, color) {
+  if (!pulling && Math.random() < 0.4) return;
   var s = this.splash;
   s.reset(Splashes.Type, this.stamps.circleStamp);
 
   s.startTime = now;
-  s.duration = 1 + Math.random();
 
   var x = pos.x;
   var y = pos.y;
-  var hit = dist >= 0;
-  var d = hit ? dist : 1;
+  var hit = resultFraction >= 0;
+  var d = hit ? resultFraction : 1;
   var dx = vel.x * d;
   var dy = vel.y * d;
 
-  s.startPose.pos.setXYZ(x + dx, y + dy, 1);
-  var r = Math.random();
-  var b = (r < 0.05) ? 0.4 : 1;
-  if (r < 0.1) {
-    s.duration = 10;
+  s.duration = 8;
+  var startDistFrac = 1;
+  if (pulling) {
+    var endDistFrac = 0.9 - (1-resultFraction)*0.6;
+    s.duration = 4;
+  } else if (hit && Math.random() < 0.9) {
+    var endDistFrac = 1;
   } else {
-    rad *= Math.random();
+    startDistFrac = Math.random() * 0.5 + 0.5;
+    var endDistFrac = startDistFrac - 0.1;
   }
-  s.endPose.pos.setXYZ(x + dx * b, y + dy * b, 0);
+  s.startPose.pos.setXYZ(x + dx * startDistFrac, y + dy * startDistFrac, 1);
+  s.endPose.pos.setXYZ(x + dx * endDistFrac, y + dy * endDistFrac, 0);
   s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad * (r*0.8 + 0.2), rad * (r*0.8 + 0.2), 1);
+  s.endPose.scale.setXYZ(rad / 2, rad / 2, 1);
 
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
 
-  s.startColor.set(color);
-  s.endColor.set(color);
+  s.startColor.setXYZ(0, 1, 0);
+  s.endColor.setXYZ(0, 1, 0);
+  // s.startColor.set(color).scaleXYZ(0.5, 0.5, 0.5);
+  // s.endColor.set(color).scaleXYZ(0.5, 0.5, 0.5);
 
   this.splasher.addCopy(s);
 };

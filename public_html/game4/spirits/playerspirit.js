@@ -54,9 +54,10 @@ PlayerSpirit.TRACTOR_MAX_FORCE = 1.8;
 PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 0.95;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
-PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/3;
+PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/4;
 // dist from player surface
-PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
+PlayerSpirit.GRAB_DIST = PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
 
 PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL;
 PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE;
@@ -71,8 +72,6 @@ PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.4;
 PlayerSpirit.ANGULAR_FRICTION = 0.4;
 
 PlayerSpirit.EJECT_TIME = 5;
-PlayerSpirit.EJECT_MAX_ACCEL = 3;
-PlayerSpirit.EJECT_MAX_FORCE = 8;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -196,13 +195,10 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     }
     if (grabDown) {
       this.setBeamState(BeamState.SEEKING);
-      this.freePull();
     }
   } else if (this.beamState === BeamState.SEEKING) {
     if (grabUp) {
       this.breakBeam();
-    } else {
-      this.freePull();
     }
   } else if (this.beamState === BeamState.DRAGGING) {
     if (kickDown) {
@@ -425,12 +421,13 @@ PlayerSpirit.prototype.handleSeeking = function() {
   var bestBody = null;
   var bestResultFraction = 2;
   var maxScanDist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD;
-  var maxFanRad = Math.PI / 6;
-  var scans = 2;
+  var maxFanRad = Math.PI / 8;
+  var scans = 1;
   var thisRad = this.getBody().rad;
-  var scanPos = Vec2d.alloc();
+  var scanPos = Vec2d.alloc().set(this.getBodyPos());
   var aimAngle = this.aim.angle();
-  scanPos.set(this.getBodyPos());
+  var forceVec = Vec2d.alloc();
+  var forcePos = Vec2d.alloc();
   for (var i = 0; i < scans; i++) {
     var radUnit = 2 * (Math.random()-0.5);
     var scanVel = this.vec2d.setXY(0, maxScanDist + thisRad)
@@ -438,13 +435,26 @@ PlayerSpirit.prototype.handleSeeking = function() {
         .scaleXY(0.5, 1)
         .rot(aimAngle);
     var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
-    this.screen.addTractorSeekSplash(scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD * 1.5, resultFraction, this.color);
+    var splashed = false;
     if (resultFraction !== -1) {
-      var targetBody = this.getScanHitBody();
-      if (targetBody && targetBody.mass < Infinity && resultFraction < bestResultFraction) {
-        bestResultFraction = resultFraction;
-        bestBody = this.getScanHitBody();
+      var foundBody = this.getScanHitBody();
+      if (foundBody && foundBody.mass < Infinity) {
+        // pull it closer
+        forcePos.set(scanVel).scale(resultFraction).add(scanPos);
+        foundBody.getPosAtTime(this.now(), forceVec).subtract(forcePos).scaleToLength(-(1 - resultFraction) * 0.2);
+        foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, this.now());
+        this.screen.addTractorSeekSplash(true, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
+        splashed = true;
+        if (resultFraction < bestResultFraction &&
+            resultFraction * maxScanDist <= PlayerSpirit.GRAB_DIST) {
+          // prepare to grab that thing, unless something better comes along
+          bestResultFraction = resultFraction;
+          bestBody = foundBody;
+        }
       }
+    }
+    if (!splashed)  {
+      this.screen.addTractorSeekSplash(false, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
     }
   }
 
@@ -454,6 +464,8 @@ PlayerSpirit.prototype.handleSeeking = function() {
     this.setBeamState(BeamState.DRAGGING);
   }
   scanPos.free();
+  forceVec.free();
+  forcePos.free();
 };
 
 PlayerSpirit.prototype.setBeamState = function(newState) {
@@ -524,13 +536,8 @@ PlayerSpirit.prototype.handleEjecting = function() {
 };
 
 PlayerSpirit.prototype.eject = function() {
-  var targetBody = this.getTargetBody();
-  if (targetBody) {
-    this.handleBeamForce(PlayerSpirit.TRACTOR_BREAK_DIST, PlayerSpirit.TRACTOR_BREAK_DIST,
-        PlayerSpirit.EJECT_MAX_ACCEL, PlayerSpirit.EJECT_MAX_FORCE,
-        false);
-  }
-  this.setBeamState(BeamState.OFF);
+  this.breakBeam();
+  this.freeKick();
 };
 
 PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAccel, maxForce, isAngular, restingAngle) {
@@ -546,7 +553,7 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAcc
   var obstructionScanRad = 0.01;
   scanVel.scaleToLength(scanVel.magnitude() - targetRad - obstructionScanRad);
   var result = this.scanWithVel(HitGroups.PLAYER_SCAN, playerPos, scanVel, obstructionScanRad);
-  this.screen.addTractorSeekSplash(playerPos, scanVel, 0.2 + 0.3 * this.tractorForceFrac, result > 0 ? result : 1, this.color);
+  // this.screen.addTractorSeekSplash(playerPos, scanVel, 0.2 + 0.3 * this.tractorForceFrac, result > 0 ? result : 1, this.color);
   if (result >= 0 && result < 0.9) {
     this.obstructionCount++;
     if (this.obstructionCount > PlayerSpirit.MAX_OBSTRUCTION_COUNT) {
@@ -734,12 +741,12 @@ PlayerSpirit.prototype.freeKick = function() {
   if (!pos) return;
   var body = this.getBody();
   var angPos = this.destAim.angle();
-  var speed = 10;
+  var speed = 2;
   var dist = PlayerSpirit.PLAYER_RAD * 11 * (0.9 + Math.random() * 0.1);
-  var shots = 8;
-  var spread = Math.PI / 4;
+  var shots = 5;
+  var spread = Math.PI / 5;
   var bPos = Vec2d.alloc();
-  var bulletRad = PlayerSpirit.PLAYER_RAD;
+  var bulletRad = PlayerSpirit.PLAYER_RAD / 2;
   for (var i = 0; i < shots; i++) {
     var angle = angPos + spread * (i + 0.5) / shots - spread / 2;
     this.vec2d.setXY(0, 1).rot(angle);
@@ -749,7 +756,7 @@ PlayerSpirit.prototype.freeKick = function() {
         this.vec2d.scaleToLength(speed).add(body.vel),
         bulletRad,
         dist / speed,
-        -0.02); // negative attraction is repulsion
+        -0.2); // negative attraction is repulsion
   }
   bPos.free();
 };
@@ -788,7 +795,7 @@ PlayerSpirit.prototype.addTractorBullet = function(pos, angPos, vel, rad, durati
   if (attraction > 0) {
     spirit.setColorRGB(0, 1, 0);
   } else {
-    spirit.setColorRGB(1, 0, 0);
+    spirit.setColorRGB(0, 1, 0);
   }
 
   var b = Body.alloc();

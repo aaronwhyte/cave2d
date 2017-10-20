@@ -167,8 +167,8 @@ Game4BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
   this.splashes.addScanSplash(this.world.now, pos, vel, rad, dist);
 };
 
-Game4BaseScreen.prototype.addTractorSeekSplash = function(pos, vel, rad, dist, color) {
-  this.splashes.addTractorSeekSplash(this.world.now, pos, vel, rad, dist, color);
+Game4BaseScreen.prototype.addTractorSeekSplash = function(pulling, pos, vel, rad, dist, color) {
+  this.splashes.addTractorSeekSplash(this.world.now, pulling, pos, vel, rad, dist, color);
 };
 
 Game4BaseScreen.prototype.addTractorRepelSplash = function(pos, angle, vel, rad, dist, color, timeFrac) {
