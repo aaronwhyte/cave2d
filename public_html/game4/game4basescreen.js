@@ -171,14 +171,14 @@ Game4BaseScreen.prototype.addTractorSeekSplash = function(pulling, pos, vel, rad
   this.splashes.addTractorSeekSplash(this.world.now, pulling, pos, vel, rad, dist, color);
 };
 
-Game4BaseScreen.prototype.addTractorRepelSplash = function(pos, angle, vel, rad, dist, color, timeFrac) {
-  this.splashes.addTractorRepelSplash(this.world.now, pos, angle, vel, rad, dist, color, timeFrac);
+Game4BaseScreen.prototype.addKickHitSplash = function(scanPos, scanVel, resultFraction) {
+  this.splashes.addKickHitSplash(this.world.now, scanPos, scanVel, resultFraction);
+};
+
+Game4BaseScreen.prototype.addKickMissSplash = function(scanPos, scanVel) {
+  this.splashes.addKickMissSplash(this.world.now, scanPos, scanVel);
 };
 
 Game4BaseScreen.prototype.addPlayerExplosionSplash = function(pos, color) {
   this.splashes.addPlayerExplosionSplash(this.world.now, pos, color);
-};
-
-Game4BaseScreen.prototype.addPortalMoteSplash = function(portalCenter, stamp, startRad, endRad) {
-  this.splashes.addPortalMoteSplash(this.world.now, portalCenter, stamp, startRad, endRad);
 };

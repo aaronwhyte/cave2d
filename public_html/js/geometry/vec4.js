@@ -110,6 +110,12 @@ Vec4.prototype.setRGBA = function(r, g, b, a) {
   return this;
 };
 
+Vec4.prototype.setXYFromVec2d = function(vec2d) {
+  this.v[0] = vec2d.x;
+  this.v[1] = vec2d.y;
+  return this;
+};
+
 Vec4.prototype.getIndex = function(i) {
   return this.v[i];
 };

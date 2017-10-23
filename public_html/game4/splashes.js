@@ -87,7 +87,7 @@ Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
 Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, resultFraction, color) {
   if (!pulling && Math.random() < 0.4) return;
   var s = this.splash;
-  s.reset(Splashes.Type, this.stamps.circleStamp);
+  s.reset(Splashes.Type.SCAN, this.stamps.circleStamp);
 
   s.startTime = now;
 
@@ -98,63 +98,95 @@ Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, 
   var dx = vel.x * d;
   var dy = vel.y * d;
 
-  s.duration = 8;
+  s.duration = 6;
   var startDistFrac = 1;
+  var endRad = rad;
+  var startRad = rad;
+  var endDistFrac;
   if (pulling) {
-    var endDistFrac = 0.9 - (1-resultFraction)*0.6;
-    s.duration = 4;
+    // fast pulling splashes
+    endDistFrac = resultFraction * resultFraction;
+    s.duration = 8;
   } else if (hit && Math.random() < 0.9) {
-    var endDistFrac = 1;
+    // hit but not pulling - boring surface glitter
+    endDistFrac = 1 - 0.1 * Math.random();
   } else {
+    // miss, and some non-hit-pulls. glitter field particle drifting towards player
     startDistFrac = Math.random() * 0.5 + 0.5;
-    var endDistFrac = startDistFrac - 0.1;
+    endDistFrac = startDistFrac - 0.1;
+    endRad *= 0.8;
   }
   s.startPose.pos.setXYZ(x + dx * startDistFrac, y + dy * startDistFrac, 1);
   s.endPose.pos.setXYZ(x + dx * endDistFrac, y + dy * endDistFrac, 0);
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad / 2, rad / 2, 1);
+  s.startPose.scale.setXYZ(startRad, startRad, 1);
+  s.endPose.scale.setXYZ(endRad, endRad, 1);
 
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
 
   s.startColor.setXYZ(0, 1, 0);
   s.endColor.setXYZ(0, 1, 0);
-  // s.startColor.set(color).scaleXYZ(0.5, 0.5, 0.5);
-  // s.endColor.set(color).scaleXYZ(0.5, 0.5, 0.5);
 
   this.splasher.addCopy(s);
 };
 
-Splashes.prototype.addTractorRepelSplash = function(now, pos, angle, vel, rad, dist, color, timeFrac) {
-  var s = this.splash;
+Splashes.prototype.addKickHitSplash = function(now, scanPos, scanVel, resultFraction) {
+  //scanVel.scale(resultFraction);
+  var scanMag = scanVel.magnitude();
+  var v = Vec2d.alloc();
+  var color = Vec4.alloc(0, 1, 0, 0);
+  var r = PlayerSpirit.SEEKSCAN_RAD;
+  var dur = (1.75 + Math.random()) * resultFraction;
+  var p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(Math.min(0.2, resultFraction)).add(scanPos));
+  var p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
+  var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
+  var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
+  this.addMovingLine(now, dur, p0t0, p1t0, r, p0t1, p1t1, r, color);
 
-  var hit = dist > 0;
-  s.reset(Splashes.Type, this.stamps.circleStamp);
+  var lineCount = 1 + Math.floor(Math.random() * 2);
+  p0t0.set(p1t1);
+  scanVel.scaleToLength(1); // re-use
+  for (var i = 0; i < lineCount; i++) {
+    dur = 8 * (1 + Math.random());
+    var burstRad = 8 * r * (0.5 + Math.random());
+    var relAngle = 0;//0.25 * Math.PI * (i / (lineCount - 1) - 0.5);
+    v.set(scanVel).rot(relAngle + (Math.random() - 0.5));
+    p1t0.setXYFromVec2d(v).scale1(burstRad * 0.25).add(p0t0);
+    p0t1.setXYFromVec2d(v).scale1(burstRad * 0.9).add(p0t0);
+    p1t1.set(p0t1);
+    this.addMovingLine(now, dur, p0t0, p1t0, r, p0t1, p1t1, r * 0.5, color);
+  }
+  this.addMovingLine(now, dur * (1 + Math.random()), p0t0, p0t0, r * (1 + Math.random()), p0t0, p0t0, 0, color);
 
-  s.startTime = now;
+  v.free();
+  color.free();
+  p0t0.free();
+  p1t0.free();
+  p0t1.free();
+  p1t1.free();
+};
 
-  var x = pos.x;
-  var y = pos.y;
-  var d = hit ? dist : 1;
-  var dx = vel.x * d;
-  var dy = vel.y * d;
-
-  s.duration = 4 + 6 * timeFrac;
-
-  var r = dist >= 0 ? 1 : 1 + Math.random() * 0.1 + 0.1 * timeFrac;
-  s.startPose.pos.setXYZ(x + dx, y + dy, 1);
-  s.endPose.pos.setXYZ(x + dx*r, y + dy*r, 0);
-
-  s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(rad * 0.1, rad * 0.1, 1);
-
-  s.startPose.rotZ = -angle;
-  s.endPose.rotZ = -angle;
-
-  s.startColor.set(color);
-  s.endColor.set(color);
-
-  this.splasher.addCopy(s);
+Splashes.prototype.addKickMissSplash = function(now, scanPos, scanVel) {
+  var v = Vec2d.alloc();
+  var color = Vec4.alloc(0, 1, 0, 0);
+  var r = PlayerSpirit.SEEKSCAN_RAD;
+  var baseDur = 1.75 + Math.random();
+  var p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.2).add(scanPos));
+  var p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.3).add(scanPos));
+  var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.7).add(scanPos));
+  var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
+  this.addMovingLine(now, baseDur, p0t0, p1t0, r, p0t1, p1t1, r, color);
+  var p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.7).add(scanPos));
+  var p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
+  var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(1).add(scanPos));
+  var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(1).add(scanPos));
+  this.addMovingLine(now + baseDur, 10, p0t0, p1t0, r, p0t1, p1t1, r / 3, color);
+  v.free();
+  color.free();
+  p0t0.free();
+  p1t0.free();
+  p0t1.free();
+  p1t1.free();
 };
 
 Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
@@ -260,39 +292,48 @@ Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
   this.splasher.addCopy(s);
 };
 
-
-Splashes.prototype.addPortalMoteSplash = function(now, portalPos, startRad, endRad) {
-  var maxSpeed = 0.03;
-  if (Math.random() > maxSpeed * 20) return;
-  var maxSize = Math.max(startRad, endRad) * 0.9 * 0.025;
-  var v = Vec2d.alloc();
+/**
+ * @param {number} now
+ * @param {number} duration
+ *
+ * @param {Vec4} p0t0
+ * @param {Vec4} p1t0
+ * @param {number} rt0
+ *
+ * @param {Vec4} p0t1
+ * @param {Vec4} p1t1
+ * @param {number} rt1
+ *
+ * @param {Vec4} color
+ */
+Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1, p1t1, rt1, color) {
   var s = this.splash;
-  s.reset(Splashes.Type, this.stamps.circleStamp);
+  s.reset(Splashes.Type.SCAN, this.stamps.cylinderStamp);
 
   s.startTime = now;
-  startRad *= 0.9;
-  endRad *= 0.9;
-  var frac = (0.3 + 0.7 * Math.random());
-  var speed = maxSpeed * frac;
-  var size = maxSize * frac;
-  s.duration = Math.abs(startRad - endRad) / speed;
+  s.duration = duration;
 
-  var angle = Math.random() * Math.PI * 2;
-  v.setXY(0, 1).rot(angle);
-  s.startPose.pos.setXYZ(portalPos.x + v.x * startRad, portalPos.y + v.y * startRad, 0.9);
-  s.startPose.scale.setXYZ(size*startRad, size*startRad, 1);
-  s.startPose.rotZ = 0;
+  s.startPose.pos.set(p0t0);
+  s.endPose.pos.set(p0t1);
+  s.startPose.scale.setXYZ(rt0, rt0, 1);
+  s.endPose.scale.setXYZ(rt1, rt1, 1);
 
-  var angle = Math.random() * Math.PI * 2;
-  v.setXY(0, 1).rot(angle);
-  s.endPose.pos.setXYZ(portalPos.x + v.x * endRad, portalPos.y + v.y * endRad, 0.9);
-  s.endPose.scale.setXYZ(size*endRad, size*endRad, 1);
-  s.endPose.rotZ = 0;
+  s.startPose2.pos.set(p1t0);
+  s.endPose2.pos.set(p1t1);
+  s.startPose2.scale.setXYZ(rt0, rt0, 1);
+  s.endPose2.scale.setXYZ(rt1, rt1, 1);
 
-  s.startColor.setXYZ(1,1,1);
-  s.endColor.setXYZ(1,1,1);
+  s.startColor.set(color);
+  s.endColor.set(color);
 
   this.splasher.addCopy(s);
-  v.free();
 };
 
+Splashes.prototype.addLineBurst = function(now, duration, center, r, color) {
+  var lineCount = 3 + Math.floor(Math.random() * 2);
+  var angle = Math.random() * 2 * Math.PI;
+  for (var i = 0; i < lineCount; i++) {
+    angle += 2 * Math.PI / lineCount;
+    this.addMovingLine
+  }
+};

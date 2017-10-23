@@ -54,7 +54,7 @@ PlayerSpirit.TRACTOR_MAX_FORCE = 1.8;
 PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 0.95;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
-PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/4;
+PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/6;
 // dist from player surface
 PlayerSpirit.GRAB_DIST = PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
@@ -191,7 +191,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   // Settle on a new beamState
   if (this.beamState === BeamState.OFF) {
     if (kickDown) {
-      this.freeKick();
+      this.freeKick(Math.PI / 5);
     }
     if (grabDown) {
       this.setBeamState(BeamState.SEEKING);
@@ -425,12 +425,13 @@ PlayerSpirit.prototype.handleSeeking = function() {
   var scans = 1;
   var thisRad = this.getBody().rad;
   var scanPos = Vec2d.alloc().set(this.getBodyPos());
+  var scanVel = Vec2d.alloc();
   var aimAngle = this.aim.angle();
   var forceVec = Vec2d.alloc();
   var forcePos = Vec2d.alloc();
   for (var i = 0; i < scans; i++) {
     var radUnit = 2 * (Math.random()-0.5);
-    var scanVel = this.vec2d.setXY(0, maxScanDist + thisRad)
+    scanVel.setXY(0, maxScanDist + thisRad)
         .rot(radUnit * maxFanRad)
         .scaleXY(0.5, 1)
         .rot(aimAngle);
@@ -440,8 +441,9 @@ PlayerSpirit.prototype.handleSeeking = function() {
       var foundBody = this.getScanHitBody();
       if (foundBody && foundBody.mass < Infinity) {
         // pull it closer
-        forcePos.set(scanVel).scale(resultFraction).add(scanPos);
-        foundBody.getPosAtTime(this.now(), forceVec).subtract(forcePos).scaleToLength(-(1 - resultFraction) * 0.2);
+        forcePos.set(scanVel).scale(resultFraction).add(scanPos).scale(0.1)
+            .add(foundBody.getPosAtTime(this.now(), this.vec2d)).scale(1 / (1 + 0.1));
+        forceVec.set(scanVel).scaleToLength(-(1 - resultFraction * 0.9) * 0.2);
         foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, this.now());
         this.screen.addTractorSeekSplash(true, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
         splashed = true;
@@ -464,6 +466,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
     this.setBeamState(BeamState.DRAGGING);
   }
   scanPos.free();
+  scanVel.free();
   forceVec.free();
   forcePos.free();
 };
@@ -536,8 +539,9 @@ PlayerSpirit.prototype.handleEjecting = function() {
 };
 
 PlayerSpirit.prototype.eject = function() {
+  this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
   this.breakBeam();
-  this.freeKick();
+  this.freeKick(Math.PI / 10);
 };
 
 PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAccel, maxForce, isAngular, restingAngle) {
@@ -664,7 +668,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   if (targetBody) {
     var unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
     renderer.setStamp(this.stamps.lineStamp);
-    this.aimColor.set(this.color).scale1(0.75);
+    this.aimColor.setRGBA(0, 1, 0);
     renderer.setColorVector(this.aimColor);
     p1 = bodyPos;
     p2 = targetBody.getPosAtTime(this.now(), this.vec2d);
@@ -733,89 +737,44 @@ PlayerSpirit.prototype.explode = function() {
 };
 
 /**
- * Fire a shotgun blast of repulsor particles, when the player presses
+ * Fire shotgun-like repulsor force, when the player presses
  * the kick button while not holding anything.
  */
-PlayerSpirit.prototype.freeKick = function() {
-  var pos = this.getBodyPos();
-  if (!pos) return;
-  var body = this.getBody();
-  var angPos = this.destAim.angle();
-  var speed = 2;
-  var dist = PlayerSpirit.PLAYER_RAD * 11 * (0.9 + Math.random() * 0.1);
+PlayerSpirit.prototype.freeKick = function(spread) {
   var shots = 5;
-  var spread = Math.PI / 5;
-  var bPos = Vec2d.alloc();
-  var bulletRad = PlayerSpirit.PLAYER_RAD / 2;
+  var angPos = this.destAim.angle();
+  var scanPos = Vec2d.alloc().set(this.getBodyPos());
+  var scanVel = Vec2d.alloc();
+  var forceVec = Vec2d.alloc();
+  var forcePos = Vec2d.alloc();
   for (var i = 0; i < shots; i++) {
     var angle = angPos + spread * (i + 0.5) / shots - spread / 2;
-    this.vec2d.setXY(0, 1).rot(angle);
-    bPos.set(this.vec2d).scaleToLength(body.rad - bulletRad).add(pos);
-    this.addTractorBullet(
-        bPos, angPos,
-        this.vec2d.scaleToLength(speed).add(body.vel),
-        bulletRad,
-        dist / speed,
-        -0.2); // negative attraction is repulsion
+    var dist = PlayerSpirit.PLAYER_RAD * 11;
+    scanVel.setXY(0, dist).rot(angle);
+    var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
+    var splashed = false;
+    if (resultFraction !== -1) {
+      var foundBody = this.getScanHitBody();
+      if (foundBody) {
+        // Apply force at a mix of the contact point and the center of mass.
+        var contactPointMix = 0.2;
+        forcePos.set(scanVel).scale(resultFraction).scale(contactPointMix)
+            .add(foundBody.getPosAtTime(this.now(), this.vec2d)).subtract(scanPos)
+            .scale(1 / (1 + contactPointMix))
+            .add(scanPos);
+        // Force in the direction of the scan.
+        forceVec.set(scanVel).scaleToLength(0.5);
+        foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, this.now());
+        this.screen.addKickHitSplash(scanPos, scanVel, resultFraction);
+        splashed = true;
+      }
+    }
+    if (!splashed)  {
+      this.screen.addKickMissSplash(scanPos, scanVel);
+    }
   }
-  bPos.free();
+  scanVel.free();
+  scanPos.free();
+  forceVec.free();
+  forcePos.free();
 };
-
-/**
- * Fire a tight group of attractor-bullets.
- */
-PlayerSpirit.prototype.freePull = function() {
-  var pos = this.getBodyPos();
-  if (!pos) return;
-  var body = this.getBody();
-  var angPos = this.destAim.angle();
-  var speed = 10;
-  var dist = PlayerSpirit.PLAYER_RAD * 20 * (0.9 + 0.1 * Math.random());
-  var shots = 1;
-  var spread = Math.PI / 16;
-  var bPos = Vec2d.alloc();
-  var bulletRad = PlayerSpirit.PLAYER_RAD / 2;
-  for (var i = 0; i < shots; i++) {
-    var angle = angPos + spread * (i + 0.5) / shots - spread / 2 + (Math.random() - 0.5) * spread;
-    this.vec2d.setXY(0, 1).rot(angle);
-    bPos.set(this.vec2d).scaleToLength(PlayerSpirit.PLAYER_RAD - bulletRad).add(pos);
-    this.addTractorBullet(
-        bPos, angPos,
-        this.vec2d.scaleToLength(speed).add(body.vel),
-        bulletRad,
-        dist / speed,
-        0.005); // positive attraction
-  }
-  bPos.free();
-};
-
-PlayerSpirit.prototype.addTractorBullet = function(pos, angPos, vel, rad, duration, attraction) {
-  var now = this.now();
-  var spirit = TractorBulletSpirit.alloc(this.screen);
-  if (attraction > 0) {
-    spirit.setColorRGB(0, 1, 0);
-  } else {
-    spirit.setColorRGB(0, 1, 0);
-  }
-
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, now);
-  b.setAngPosAtTime(angPos, now);
-  b.setVelAtTime(vel, now);
-  b.rad = rad;
-  b.hitGroup = this.screen.getHitGroups().BEAM;
-  b.mass = -attraction; //(Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
-  b.pathDurationMax = duration * 1.01;
-  spirit.bodyId = this.screen.world.addBody(b);
-
-  var spiritId = this.screen.world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  spirit.addTrailSegment();
-
-  // bullet self-destruct timeout
-  this.screen.world.addTimeout(now + duration, spiritId, 0);
-
-  return spiritId;
-};
-
