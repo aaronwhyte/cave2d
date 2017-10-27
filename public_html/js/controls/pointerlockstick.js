@@ -29,6 +29,8 @@ function PointerLockStick(elem) {
   this.clickListener = function(e) {
     self.onClick(e);
   };
+
+  this.pointerLockAllowed = true;
 }
 
 PointerLockStick.prototype = new Stick();
@@ -79,6 +81,10 @@ PointerLockStick.prototype.stopListening = function() {
   return this;
 };
 
+PointerLockStick.prototype.setPointerLockAllowed = function(allowed) {
+  this.pointerLockAllowed = allowed;
+};
+
 PointerLockStick.prototype.getVal = function(out) {
   var now = performance.now();
   if (!this.isTouched()) {
@@ -97,7 +103,7 @@ PointerLockStick.prototype.getVal = function(out) {
 };
 
 PointerLockStick.prototype.requestLock = function() {
-  if (this.elem.requestPointerLock) {
+  if (this.elem.requestPointerLock && this.pointerLockAllowed) {
     this.elem.requestPointerLock();
   }
 };

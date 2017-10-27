@@ -54,16 +54,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
 
   this.pauseDownFn = function(e) {
     e = e || window.event;
-    self.paused = !self.paused;
-    if (self.paused) {
-      // pause
-      self.showPauseMenu();
-    } else {
-      // resume
-      self.hidePauseMenu();
-      self.controller.requestAnimation();
-      // TODO: clear the pause button's val
-    }
+    self.setPaused(!self.paused);
     // Stop the flow of mouse-emulation events on touchscreens, so the
     // mouse events don't cause weird cursors teleports.
     // See http://www.html5rocks.com/en/mobile/touchandmouse/#toc-together
@@ -236,6 +227,9 @@ WorldScreen.prototype.setDirty = function(d) {
 
 WorldScreen.prototype.setPaused = function(paused) {
   this.paused = paused;
+
+  this.setPointerLockAllowed(!paused);
+
   if (this.paused) {
     // pause
     this.showPauseMenu();
@@ -244,6 +238,10 @@ WorldScreen.prototype.setPaused = function(paused) {
     this.hidePauseMenu();
     this.controller.requestAnimation();
   }
+};
+
+WorldScreen.prototype.setPointerLockAllowed = function(allowed) {
+  // override me.
 };
 
 WorldScreen.prototype.initWorld = function() {

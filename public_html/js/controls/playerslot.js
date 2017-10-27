@@ -67,3 +67,7 @@ PlayerSlot.prototype.releaseControls = function() {
   if (c) c.releaseControls();
   return this;
 };
+
+PlayerSlot.prototype.setPointerLockAllowed = function(allowed) {
+  this.getControlList().setPointerLockAllowed(allowed);
+};

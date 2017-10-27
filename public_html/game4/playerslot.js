@@ -153,3 +153,7 @@ PlayerSlot.prototype.killPlayerAtTime = function(now) {
     this.spirit = null;
   }
 };
+
+PlayerSlot.prototype.setPointerLockAllowed = function(allowed) {
+  this.getControlList().setPointerLockAllowed(allowed);
+};

@@ -49,4 +49,12 @@ ControlMap.prototype.releaseControls = function() {
   return this;
 };
 
-
+ControlMap.prototype.setPointerLockAllowed = function(allowed) {
+  for (var i in this.map) {
+    var control = this.map[i];
+    if (control.setPointerLockAllowed) {
+      control.setPointerLockAllowed(allowed);
+    }
+  }
+  return this;
+};

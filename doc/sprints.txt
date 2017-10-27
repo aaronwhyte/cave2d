@@ -272,7 +272,6 @@ v Fix fragment shader interaction with distortion. Pass new x/y in, not original
 
 v Add fragment shader wall rendering texture biz and make sure it distorts well
 
-
 CONTROLS
 
 empty-handed kick and grab
@@ -291,6 +290,8 @@ empty-handed kick and grab
   - frequency limit
   - sound
 
+v Fix bug where clicking stuff in pause mode triggers screen-lock
+
 ENERGY AND ACTIVATION
 Separate activation, which can trigger a device's power, from energy, which is a resource.
 The player can activate a tool, and a sensor can activate a tool.
@@ -302,7 +303,7 @@ But "activation bullets" are no more.
     - addEnergy, so the collider can call into energy-savvy spirits?
     - standard buffer, decay, and overflow logic?
 - EnergyPulse
-  - basically today's activation bullet, but it doesn't activate things.
+  - basically today's activation bullet, but it doesn't activate things, it powers them.
 - EnergyWellSpirit
   - fires slow short-range energy pulses constantly
   - not portable!

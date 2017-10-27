@@ -247,6 +247,10 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
   }
 };
 
+Game4PlayScreen.prototype.setPointerLockAllowed = function(allowed) {
+  this.slots['pl'].setPointerLockAllowed(allowed);
+};
+
 Game4PlayScreen.prototype.startExit = function(pos) {
   if (this.exitStartTime) return;
   this.sounds.exit(pos);
