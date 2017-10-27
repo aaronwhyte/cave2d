@@ -98,7 +98,7 @@ Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, 
   var dx = vel.x * d;
   var dy = vel.y * d;
 
-  s.duration = 6;
+  s.duration = 4;
   var startDistFrac = 1;
   var endRad = rad;
   var startRad = rad;
@@ -112,8 +112,8 @@ Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, 
     endDistFrac = 1 - 0.1 * Math.random();
   } else {
     // miss, and some non-hit-pulls. glitter field particle drifting towards player
-    startDistFrac = Math.random() * 0.5 + 0.5;
-    endDistFrac = startDistFrac - 0.1;
+    startDistFrac = Math.random() * 0.7 + 0.3;
+    endDistFrac = startDistFrac - 0.05;
     endRad *= 0.8;
   }
   s.startPose.pos.setXYZ(x + dx * startDistFrac, y + dy * startDistFrac, 1);
@@ -182,7 +182,7 @@ Splashes.prototype.addKickMissSplash = function(now, scanPos, scanVel) {
   var p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
   var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(1).add(scanPos));
   var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(1).add(scanPos));
-  this.addMovingLine(now + baseDur, 8, p0t0, p1t0, r, p0t1, p1t1, r / 3, color);
+  this.addMovingLine(now + baseDur, 4, p0t0, p1t0, r, p0t1, p1t1, r / 3, color);
   v.free();
   color.free();
   p0t0.free();
