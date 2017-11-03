@@ -18,6 +18,10 @@ function BaseSpirit(screen) {
   // Target also maintains map from pulse input end time to pulse input value.
   this.pulseEndToVal = {};
 
+  // energy
+  this.energyCapacity = 0;
+  this.energy = 0;
+
   BaseSpirit.prototype.reset.call(this, screen);
 }
 BaseSpirit.prototype = new Spirit();
@@ -230,4 +234,48 @@ BaseSpirit.prototype.sumOfInputs = function() {
     }
   }
   return sum;
+};
+
+/**
+ * This might cause the amount of energy in the spirit to decrease, if it's higher
+ * than the new capacity.
+ * @param {number} newCapacity
+ * @returns {number} The amount of energy lost due to overflow.
+ */
+BaseSpirit.prototype.setEnergyCapacity = function(newCapacity) {
+  this.energyCapacity = newCapacity;
+  return this.setEnergy(this.energy);
+};
+
+BaseSpirit.prototype.getEnergyCapacity = function() {
+  return this.energyCapacity;
+};
+
+/**
+ * @param {number} e
+ * @returns {number} the amount of requested energy that was *not* added.
+ * If the energy added would have caused the spirit to go over capacity,
+ * then this will be positive. If it was cause energy to go below zero, this will
+ * be negative. Otherwise this will be zero.
+ */
+BaseSpirit.prototype.setEnergy = function(e) {
+  var newEnergy = Math.max(0, Math.min(this.energyCapacity, e));
+  var overflow = e - newEnergy;
+  this.energy = newEnergy;
+  return overflow;
+};
+
+BaseSpirit.prototype.getEnergy = function() {
+  return this.energy;
+};
+
+/**
+ * @param {number} e
+ * @returns {number} the amount of requested energy that was *not* added.
+ * If the energy added would have caused the spirit to go over capacity,
+ * then this will be positive. If it was cause energy to go below zero, this will
+ * be negative. Otherwise this will be zero.
+ */
+BaseSpirit.prototype.addEnergy = function(e) {
+  return this.setEnergy(this.energy + e);
 };

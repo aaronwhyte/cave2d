@@ -297,13 +297,18 @@ Separate activation, which can trigger a device's power, from energy, which is a
 The player can activate a tool, and a sensor can activate a tool.
 But "activation bullets" are no more.
 
-- BaseSpirit
+v BaseSpirit
   * keep existing input/output/pulse biz for activation, but I doubt I'll need the pulses.
-  - energy
-    - addEnergy, so the collider can call into energy-savvy spirits?
-    - standard buffer, decay, and overflow logic?
-- EnergyPulse
-  - basically today's activation bullet, but it doesn't activate things, it powers them.
+  v energy
+    v setEnergy()
+    v getEnergy()
+    v setEnergyCapacity()
+    v getEnergyCapacity()
+    v addEnergy(), so the collider can call into energy-savvy spirits?
+      v return overflow, negative for underflow, 0 for acceptance.
+    x setEnergyDrainRate? Timer-based discrete addEnergy calls would be fine
+- EnergyBullet
+  - copy activation bullet, but it doesn't activate things, it powers them.
 - EnergyWellSpirit
   - fires slow short-range energy pulses constantly
   - not portable!
@@ -311,8 +316,8 @@ But "activation bullets" are no more.
   - Holds up to $capacity of energy
   - when triggered, fires short-range energy pulse from energy reserve, unless empty
 - EnergyRedirectorSpirit
-  - Small capacity
-  - Constantly tries to fire long-range energy pulse from reserve, with some loss
+  * Small capacity
+  * Constantly tries to fire long-range energy pulse from reserve, with some loss
 
 - TickTockTrigger
   - alternately triggers and doesn't trigger the thing it's pointed at
