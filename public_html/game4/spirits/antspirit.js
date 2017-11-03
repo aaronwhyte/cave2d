@@ -140,7 +140,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   this.stress = this.stress || 0;
 
   var friction = this.screen.isPlaying() ? 0.05 : 0.3;
-  var traction = 0.4;
+  var traction = 0.1;
 
   var now = this.now();
   var time = Math.max(0, Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
