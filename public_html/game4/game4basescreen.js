@@ -54,7 +54,8 @@ Game4BaseScreen.SpiritType = {
   INDICATOR: 8,
   ACTIVATOR_GUN: 9,
   ACTIVATOR_BULLET: 10,
-  TRACTOR_BULLET: 11
+  TRACTOR_BULLET: 11,
+  ENERGY_BULLET: 12
 };
 
 Game4BaseScreen.MenuItem = {

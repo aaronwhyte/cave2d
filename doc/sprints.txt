@@ -307,25 +307,38 @@ v BaseSpirit
     v addEnergy(), so the collider can call into energy-savvy spirits?
       v return overflow, negative for underflow, 0 for acceptance.
     x setEnergyDrainRate? Timer-based discrete addEnergy calls would be fine
-- EnergyBullet
-  - copy activation bullet, but it doesn't activate things, it powers them.
+v EnergyBullet
+  v copy activation bullet, but it doesn't activate things, it powers them.
 - EnergyWellSpirit
   - fires slow short-range energy pulses constantly
   - not portable!
 - BatterySpirit
   - Holds up to $capacity of energy
+  - Displays energy vs capacity
   - when triggered, fires short-range energy pulse from energy reserve, unless empty
 - EnergyRedirectorSpirit
   * Small capacity
   * Constantly tries to fire long-range energy pulse from reserve, with some loss
+- OpenerGun
+  * feed it power to cut through a wall. Kind of a key/lock thing but different
+  - immobile?
+  - While powered it melts the wall it is pointed at? Limited range.
+    - OpenerBullet? Or just rayscans and digging.
+  - Uses a lot of power so you need to keep delivering power to cut through a thick wall.
+
+
+- Pull drawTrail up to BaseSpirit.
 
 - TickTockTrigger
-  - alternately triggers and doesn't trigger the thing it's pointed at
+  - alternately triggers and doesn't trigger the thing it's pointed at. Square-wave.
+  - program it with a one-time run of triggering, from start to stop, which sets its interval
+  * that way you can program one to match another one! Synchronize!
 
 - Integration test
   - well feeds battery
   - tick-tock triggers battery
   - battery fuels redirector
+
 
 - PlasmaSpirit
   - a fast flying projectile

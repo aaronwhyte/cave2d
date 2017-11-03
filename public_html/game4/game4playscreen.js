@@ -415,6 +415,18 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
       tbbs.onHitOther(pos);
     }
 
+    var ebb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ENERGY_BULLET, b0, b1);
+    if (ebb) {
+      var ebbs = this.getSpiritForBody(ebb);
+      var otherBody = this.otherBody(ebb, b0, b1);
+      var otherSpirit = this.getSpiritForBody(otherBody);
+      if (otherSpirit && otherSpirit.getEnergyCapacity()) {
+        ebbs.onHitEnergizable(otherSpirit, pos);
+      } else {
+        ebbs.onHitOther(pos);
+      }
+    }
+
     vec.free();
   }
 };
