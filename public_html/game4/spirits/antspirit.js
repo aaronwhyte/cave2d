@@ -139,7 +139,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var pos = this.getBodyPos();
   this.stress = this.stress || 0;
 
-  var friction = this.screen.isPlaying() ? 0.05 : 0.3;
+  var friction = this.getFriction();
   var traction = 0.1;
 
   var now = this.now();
@@ -175,7 +175,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
       if (distFrac >= 0) {
         // rayscan hit
         var otherSpirit = this.getScanHitSpirit();
-        if (otherSpirit && otherSpirit.type == Game4BaseScreen.SpiritType.PLAYER) {
+        if (otherSpirit && otherSpirit.type === Game4BaseScreen.SpiritType.PLAYER) {
           // attack player!
           this.stress = 0;
           angAccel = 0.4 * scanRot;

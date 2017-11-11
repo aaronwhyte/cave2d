@@ -115,7 +115,7 @@ ActivatorGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   if (timeoutVal === ActivatorGunSpirit.FRICTION_TIMEOUT_ID) {
     var body = this.getBody();
-    var friction = this.screen.isPlaying() ? 0.15 : 0.3;
+    var friction = this.getFriction();
     var time = ActivatorGunSpirit.FRICTION_TIMEOUT;
 
     // friction

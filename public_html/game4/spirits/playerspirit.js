@@ -19,6 +19,7 @@ function PlayerSpirit(screen) {
 
   this.accel = new Vec2d();
   this.keyMult = 0.25;
+  this.tractionMult = 0;
 
   this.oldKick = false;
   this.oldGrab = false;
@@ -41,7 +42,6 @@ PlayerSpirit.PLAYER_RAD = 1;
 PlayerSpirit.SPEED = 1.2;
 PlayerSpirit.TRACTION = 0.1;
 PlayerSpirit.KEY_MULT_ADJUST = 0.075;
-PlayerSpirit.FRICTION = 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
@@ -49,9 +49,9 @@ PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 // dist from player surface to held obj surface
-PlayerSpirit.TRACTOR_MAX_ACCEL = 6;
-PlayerSpirit.TRACTOR_MAX_FORCE = 1.8;
-PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 0.95;
+PlayerSpirit.TRACTOR_MAX_ACCEL = 6 * 0.3;
+PlayerSpirit.TRACTOR_MAX_FORCE = 1.8 * 0.3;
+PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 1.25;
 PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/5;
@@ -59,9 +59,9 @@ PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/5;
 PlayerSpirit.GRAB_DIST = PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
 
-PlayerSpirit.WIELD_MAX_ACCEL = PlayerSpirit.TRACTOR_MAX_ACCEL;
-PlayerSpirit.WIELD_MAX_FORCE = PlayerSpirit.TRACTOR_MAX_FORCE;
-PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.TRACTOR_DRAG_DIST * 0.75;
+PlayerSpirit.WIELD_MAX_ACCEL = 6;
+PlayerSpirit.WIELD_MAX_FORCE = 1.8;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.75;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.TRACTOR_BREAK_DIST;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
@@ -239,12 +239,26 @@ PlayerSpirit.prototype.handleInput = function(controls) {
 
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
-    this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
+    // if (BeamState.isOutputish(this.beamState)) {
+      this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
+    // } else {
+    //   this.keyMult = 1;
+    // }
     this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
     speed *= this.keyMult;
   }
 
-  var traction = PlayerSpirit.TRACTION;
+  // While wielding, speed is greatly decreased.
+  if (BeamState.isOutputish(this.beamState)) {
+    speed *= 0.5;
+  }
+
+  if (stickMag > 0.01) {
+    this.tractionMult = 1;
+  } else {
+    this.tractionMult = Math.max(0, this.tractionMult - 0.01);
+  }
+  var traction = PlayerSpirit.TRACTION * this.tractionMult;
   // Half of traction's job is to stop you from sliding in the direction you're already going.
   this.accel.set(playerBody.vel).scale(-traction);
 
@@ -341,7 +355,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
       var angularFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3), duration);
       body.applyAngularFrictionAtTime(angularFriction, now);
 
-      var linearFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.FRICTION : 0.3), duration);
+      var linearFriction = 1 - Math.pow(1 - (this.getFriction()), duration);
       body.applyLinearFrictionAtTime(linearFriction, now);
 
       var newVel = this.vec2d.set(body.vel);
@@ -371,6 +385,12 @@ PlayerSpirit.prototype.getAngleToTarget = function() {
   var angle = p.angle();
   targetPos.free();
   return angle;
+};
+
+PlayerSpirit.prototype.getSurfaceDistToTarget = function() {
+  var playerPos = this.getBodyPos();
+  var targetPos = this.getTargetBody().getPosAtTime(this.now(), Vec2d.alloc());
+  return targetPos.distance(playerPos) - this.getBody().rad - this.getTargetBody().rad;
 };
 
 PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reverseness) {
@@ -672,7 +692,8 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setColorVector(this.aimColor);
     p1 = bodyPos;
     p2 = targetBody.getPosAtTime(this.now(), this.vec2d);
-    rad = unobstructedness * (0.5 + 0.5*this.tractorForceFrac) * body.rad * 0.4;
+    var volume = 0.5;
+    rad = Math.min(targetBody.rad, unobstructedness * volume / (this.getSurfaceDistToTarget() + body.rad/2));
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));

@@ -236,6 +236,10 @@ BaseSpirit.prototype.sumOfInputs = function() {
   return sum;
 };
 
+BaseSpirit.prototype.getFriction = function() {
+  return this.screen.isPlaying() ? Game4PlayScreen.FRICTION : 0.3;
+};
+
 /**
  * This might cause the amount of energy in the spirit to decrease, if it's higher
  * than the new capacity.

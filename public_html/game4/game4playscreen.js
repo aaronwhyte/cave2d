@@ -44,6 +44,8 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 Game4PlayScreen.prototype = new Game4BaseScreen();
 Game4PlayScreen.prototype.constructor = Game4PlayScreen;
 
+Game4PlayScreen.FRICTION = 0.09;
+
 Game4PlayScreen.TOUCH_STICK_RADIUS = 60;
 
 Game4PlayScreen.EXIT_WARP_MULTIPLIER = 0.001;
