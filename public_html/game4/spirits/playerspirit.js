@@ -13,7 +13,6 @@ function PlayerSpirit(screen) {
   this.destAim = new Vec2d();
 
   this.beamState = BeamState.OFF;
-  this.ejectStartTime = 0;
   this.targetBodyId = null;
   this.obstructionCount = 0;
 
@@ -48,21 +47,15 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-// dist from player surface to held obj surface
-PlayerSpirit.TRACTOR_MAX_ACCEL = 6 * 0.3;
-PlayerSpirit.TRACTOR_MAX_FORCE = 1.8 * 0.3;
-PlayerSpirit.TRACTOR_DRAG_DIST = PlayerSpirit.PLAYER_RAD * 1.25;
-PlayerSpirit.TRACTOR_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
+PlayerSpirit.WIELD_MAX_ACCEL = 6 * 0.7;
+PlayerSpirit.WIELD_MAX_FORCE = 1.8 * 0.7;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD;
+PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/5;
 // dist from player surface
-PlayerSpirit.GRAB_DIST = PlayerSpirit.TRACTOR_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
+PlayerSpirit.GRAB_DIST = PlayerSpirit.WIELD_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
-
-PlayerSpirit.WIELD_MAX_ACCEL = 6;
-PlayerSpirit.WIELD_MAX_FORCE = 1.8;
-PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.75;
-PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.TRACTOR_BREAK_DIST;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -70,8 +63,6 @@ PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
 PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.4;
 PlayerSpirit.ANGULAR_FRICTION = 0.4;
-
-PlayerSpirit.EJECT_TIME = 5;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -200,29 +191,15 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     if (grabUp) {
       this.breakBeam();
     }
-  } else if (this.beamState === BeamState.DRAGGING) {
-    if (kickDown) {
-      this.breakBeam();
-    } else if (grabDown) {
-      this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
-      this.setBeamState(BeamState.WIELDING);
-    }
   } else if (this.beamState === BeamState.WIELDING) {
     if (kickDown) {
-      this.setBeamState(BeamState.EJECTING);
-      this.ejectStartTime = now;
+      this.breakBeam();
     } else if (grabDown) {
       this.setBeamState(BeamState.ACTIVATING);
     }
   } else if (this.beamState === BeamState.ACTIVATING) {
     if (grabUp) {
       this.setBeamState(BeamState.WIELDING);
-    }
-  } else if (this.beamState === BeamState.EJECTING) {
-    if (kickUp) {
-      this.setBeamState(BeamState.DRAGGING);
-    } else if (now - this.ejectStartTime > PlayerSpirit.EJECT_TIME) {
-      this.eject();
     }
   }
   this.breakBeamIfTargetMissing();
@@ -239,18 +216,9 @@ PlayerSpirit.prototype.handleInput = function(controls) {
 
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
-    // if (BeamState.isOutputish(this.beamState)) {
-      this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
-    // } else {
-    //   this.keyMult = 1;
-    // }
+    this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
     this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
     speed *= this.keyMult;
-  }
-
-  // While wielding, speed is greatly decreased.
-  if (BeamState.isOutputish(this.beamState)) {
-    speed *= 0.5;
   }
 
   if (stickMag > 0.01) {
@@ -305,14 +273,10 @@ PlayerSpirit.prototype.breakBeamIfTargetMissing = function() {
 PlayerSpirit.prototype.handleBeamState = function() {
   if (this.beamState === BeamState.SEEKING) {
     this.handleSeeking();
-  } else if (this.beamState === BeamState.DRAGGING) {
-    this.handleDragging();
   } else if (this.beamState === BeamState.WIELDING) {
     this.handleWielding();
   } else if (this.beamState === BeamState.ACTIVATING) {
     this.handleActivating();
-  } else if (this.beamState === BeamState.EJECTING) {
-    this.handleEjecting();
   }
 };
 
@@ -483,7 +447,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
   if (bestBody) {
     // grab that thing!
     this.targetBodyId = bestBody.id;
-    this.setBeamState(BeamState.DRAGGING);
+    this.setBeamState(BeamState.WIELDING);
   }
   scanPos.free();
   scanVel.free();
@@ -531,16 +495,6 @@ PlayerSpirit.prototype.setOutputToTarget = function(val) {
 
 /**
  * Applies tractor-beam forces to player and target, or breaks the beam if the target is out of range.
- * Also sets the tractorForceFrac field, for drawing.
- */
-PlayerSpirit.prototype.handleDragging = function() {
-  this.handleBeamForce(PlayerSpirit.TRACTOR_DRAG_DIST, PlayerSpirit.TRACTOR_BREAK_DIST,
-      PlayerSpirit.TRACTOR_MAX_ACCEL, PlayerSpirit.TRACTOR_MAX_FORCE,
-      false);
-};
-
-/**
- * Applies tractor-beam forces to player and target, or breaks the beam if the target is out of range.
  * Sets the tractorForceFrac field, for drawing.
  */
 PlayerSpirit.prototype.handleWielding = function() {
@@ -552,16 +506,6 @@ PlayerSpirit.prototype.handleWielding = function() {
   if (this.getTargetBody()) {
     this.handleBeamTorque(this.getAngleToTarget(), 0.1);
   }
-};
-
-PlayerSpirit.prototype.handleEjecting = function() {
-  this.handleWielding();
-};
-
-PlayerSpirit.prototype.eject = function() {
-  this.destAim.setXY(0, 1).rot(this.getAngleToTarget());
-  this.breakBeam();
-  this.freeKick(Math.PI / 10);
 };
 
 PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAccel, maxForce, isAngular, restingAngle) {

@@ -272,6 +272,14 @@ v Fix fragment shader interaction with distortion. Pass new x/y in, not original
 
 v Add fragment shader wall rendering texture biz and make sure it distorts well
 
+
+SIMPLER CONTROLS
+Always wield
+v remove drag. Go straight to wield.
+v remove eject. Go straight to drop.
+v restore speed while wielding.
+
+
 CONTROLS
 
 empty-handed kick and grab
