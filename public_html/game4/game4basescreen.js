@@ -55,11 +55,13 @@ Game4BaseScreen.SpiritType = {
   ACTIVATOR_GUN: 9,
   ACTIVATOR_BULLET: 10,
   TRACTOR_BULLET: 11,
-  ENERGY_BULLET: 12
+  ENERGY_BULLET: 12,
+  CENTIPEDE: 13
 };
 
 Game4BaseScreen.MenuItem = {
   RED_ANT: 'red_ant',
+  CENTIPEDE: 'centipede',
   PLAYER: 'player',
   ENTRANCE: 'entrance',
   EXIT: 'exit',
@@ -74,6 +76,7 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
     [st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, 0, 0],
     [st.EXIT, ExitSpirit, mi.EXIT, 0, 1],
     [st.ANT, AntSpirit, mi.RED_ANT, 1, 0],
+    [st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE, 1, 1],
     [st.INDICATOR, IndicatorSpirit, mi.INDICATOR, 2, 0],
     [st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, 2, 1],
 

@@ -279,6 +279,18 @@ v remove drag. Go straight to wield.
 v remove eject. Go straight to drop.
 v restore speed while wielding.
 
+- centipede
+  - head spirit - copy of ant, basically
+  - body segment
+    - knows headward spitiy
+
+- simple combat system
+  - health
+  - damage
+  - death
+- bullet
+  - causes damage
+
 
 CONTROLS
 

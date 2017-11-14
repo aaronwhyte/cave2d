@@ -148,6 +148,30 @@ BaseSpirit.prototype.now = function() {
   return this.screen.now();
 };
 
+BaseSpirit.prototype.getFriction = function() {
+  return this.screen.isPlaying() ? Game4PlayScreen.FRICTION : 0.3;
+};
+
+BaseSpirit.prototype.getAngleToBody = function(body) {
+  var thisPos = this.getBodyPos();
+  var thatPos = body.getPosAtTime(this.now(), Vec2d.alloc());
+  var p = thatPos.subtract(thisPos);
+  var angle = p.angle();
+  thatPos.free();
+  return angle;
+};
+
+BaseSpirit.prototype.getAngleDiff = function(toAngle) {
+  var angleDiff = toAngle - this.getBodyAngPos();
+  while (angleDiff > Math.PI) {
+    angleDiff -= 2 * Math.PI;
+  }
+  while (angleDiff < -Math.PI) {
+    angleDiff += 2 * Math.PI;
+  }
+  return angleDiff;
+};
+
 
 //////////////////////////
 // Input/Output
@@ -236,9 +260,10 @@ BaseSpirit.prototype.sumOfInputs = function() {
   return sum;
 };
 
-BaseSpirit.prototype.getFriction = function() {
-  return this.screen.isPlaying() ? Game4PlayScreen.FRICTION : 0.3;
-};
+
+///////////
+// ENERGY
+///////////
 
 /**
  * This might cause the amount of energy in the spirit to decrease, if it's higher

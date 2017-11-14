@@ -121,16 +121,6 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       this.scanResp);
 };
 
-AntSpirit.prototype.turnToPos = function(pos) {
-  var toPos = this.vecToPlayer.set(pos).subtract(this.getBodyPos());
-  var playerDist = toPos.magnitude();
-  var right = this.vec2d2.setXY(1, 0).rot(this.getBodyAngPos());
-  var dot = right.dot(toPos);
-  var dotUnit = dot / playerDist;
-
-  this.addBodyAngVel(this.screen.playerChasePolarity * dotUnit / (0.5 * playerDist + 4));
-};
-
 AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);

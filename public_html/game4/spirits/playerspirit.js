@@ -343,12 +343,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 };
 
 PlayerSpirit.prototype.getAngleToTarget = function() {
-  var playerPos = this.getBodyPos();
-  var targetPos = this.getTargetBody().getPosAtTime(this.now(), Vec2d.alloc());
-  var p = targetPos.subtract(playerPos);
-  var angle = p.angle();
-  targetPos.free();
-  return angle;
+  return this.getAngleToBody(this.getTargetBody());
 };
 
 PlayerSpirit.prototype.getSurfaceDistToTarget = function() {
@@ -502,7 +497,6 @@ PlayerSpirit.prototype.handleWielding = function() {
   this.handleBeamForce(PlayerSpirit.WIELD_REST_DIST, PlayerSpirit.WIELD_BREAK_DIST,
       PlayerSpirit.WIELD_MAX_ACCEL, PlayerSpirit.WIELD_MAX_FORCE,
       true, this.destAim.angle());
-  // this.handleBeamTorque(this.destAim.angle());
   if (this.getTargetBody()) {
     this.handleBeamTorque(this.getAngleToTarget(), 0.1);
   }
@@ -602,7 +596,6 @@ PlayerSpirit.prototype.handleBeamTorque = function(restingAngle, maxA) {
   var v0 = targetBody.angVel - playerBody.angVel;
 
   var angPulse = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
-  // console.log(p0, v0, angPulse);
   targetBody.addAngVelAtTime(angPulse, now);
 };
 
