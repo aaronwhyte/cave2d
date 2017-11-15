@@ -31,8 +31,8 @@ CentipedeSpirit.prototype = new BaseSpirit();
 CentipedeSpirit.prototype.constructor = CentipedeSpirit;
 
 CentipedeSpirit.MEASURE_TIMEOUT = 0.9;
-CentipedeSpirit.THRUST = 0.5;
-CentipedeSpirit.TRACTION = 0.25;
+CentipedeSpirit.THRUST = 3;
+CentipedeSpirit.TRACTION = 0.2;
 CentipedeSpirit.MAX_TIMEOUT = 10;
 CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 CentipedeSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -162,7 +162,7 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   // friction
   body.applyLinearFrictionAtTime(friction * time, now);
-  body.applyAngularFrictionAtTime(friction * time, now);
+  // body.applyAngularFrictionAtTime(friction * time, now);
 
   var newVel = this.vec2d.set(body.vel);
 
@@ -205,39 +205,35 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
 };
 
 CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
-  var body = this.getBody();
+  var thisBody = this.getBody();
   var now = this.now();
   var traction = CentipedeSpirit.TRACTION;
   this.stress = 0;
 
   // Follow the headward spirit.
-  // TODO: break off if separated
-  var headwardBody = headward.getBody();
-  var destAngle = this.getAngleToBody(headwardBody);
+  var thatBody = headward.getBody();
+  var destAngle = this.getAngleToBody(thatBody);
   var angAccel = this.getAngleDiff(destAngle) * 0.5;
   var thisPos = this.getBodyPos();
-  var thatPos = headwardBody.getPosAtTime(this.now(), Vec2d.alloc());
+  var thatPos = thatBody.getPosAtTime(this.now(), Vec2d.alloc());
 
-  var dist = thatPos.distance(thisPos) - body.rad - headwardBody.rad;
-  var targetDist = body.rad;
-  if (dist > targetDist * 6) {
+  var dist = thatPos.distance(thisPos);
+  if (dist > thisBody.rad * 6) {
     // break!
-    this.getHeadwardSpirit().tailwardId = 0;
+    headward.tailwardId = 0;
     this.headwardId = 0;
-
   } else {
-    var thrust = 1.3 * CentipedeSpirit.THRUST * Math.min(targetDist, dist - targetDist) / targetDist;
-    body.addAngVelAtTime(angAccel, now);
-    body.applyAngularFrictionAtTime(0.4, now);
+    var deltaPos = Vec2d.alloc().set(thatPos).subtract(thisPos);
+    var p0 = dist - thisBody.rad * 1.2 - thatBody.rad;
 
-    var dir = this.getBodyAngPos();
+    var maxA = 1;
+    this.accel.set(deltaPos).scaleToLength(Math.min(maxA, Math.max(-maxA, p0 * 0.8)));
+    newVel.scale(1 - traction).add(this.accel.scale(traction));
 
-    this.accel
-        .set(body.vel).scale(-traction * time)
-        .addXY(
-            Math.sin(dir) * thrust * traction * time,
-            Math.cos(dir) * thrust * traction * time);
-    newVel.add(this.accel);
+    thisBody.addAngVelAtTime(angAccel, now);
+    thisBody.applyAngularFrictionAtTime(0.4, now);
+
+    deltaPos.free();
   }
   thatPos.free();
 };
@@ -251,7 +247,7 @@ CentipedeSpirit.prototype.handleLeader = function(newVel, time) {
   // Run forward and avoid obstacles
   var antennaRotMag = Math.max(Math.PI * 0.15, Math.PI * this.stress);
   var thrust = CentipedeSpirit.THRUST;
-  var scanDist = 3 * (2 - this.stress) * CentipedeSpirit.THRUST;
+  var scanDist = 2 * body.rad * (2 - this.stress);
   var scanRot = 2 * antennaRotMag * (Math.random() - 0.5) + this.getBodyAngVel();
   var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
   var closeness = 1 - distFrac;
@@ -260,8 +256,8 @@ CentipedeSpirit.prototype.handleLeader = function(newVel, time) {
     // rayscan hit
     var otherSpirit = this.getScanHitSpirit();
     // avoid obstruction
-    angAccel = -scanRot * (0.2 * this.stress + 1) * closeness;
-    this.stress += 0.06 * closeness;
+    angAccel = -scanRot * (0.3 * this.stress + 1) * closeness;
+    this.stress += 0.02 * closeness;
     thrust *= distFrac * distFrac;
   } else {
     // clear path
@@ -270,7 +266,7 @@ CentipedeSpirit.prototype.handleLeader = function(newVel, time) {
     this.stress = 0;
   }
   this.stress = Math.min(1, Math.max(0, this.stress));
-  if (this.stress === 1) {
+  if (this.stress >= 1) {
     // break the chain!
     this.getTailwardSpirit().headwardId = 0;
     this.tailwardId = 0;
@@ -286,7 +282,7 @@ CentipedeSpirit.prototype.handleLeader = function(newVel, time) {
       .addXY(
           Math.sin(dir) * thrust * traction * time,
           Math.cos(dir) * thrust * traction * time);
-  newVel.add(this.accel);
+  newVel.scale(1 - traction).add(this.accel.scale(traction));
 };
 
 CentipedeSpirit.prototype.handleLoner = function(newVel, time) {
@@ -298,7 +294,7 @@ CentipedeSpirit.prototype.handleLoner = function(newVel, time) {
   // Run around looking for someone to follow.
   var antennaRotMag = Math.max(Math.PI * 0.15, Math.PI * this.stress);
   var thrust = 1.5 * CentipedeSpirit.THRUST;
-  var scanDist = 3 * (2 - this.stress) * CentipedeSpirit.THRUST;
+  var scanDist = 2 * body.rad * (2 - this.stress);
   var scanRot = 2 * antennaRotMag * (Math.random() - 0.5) + this.getBodyAngVel();
   var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
   var closeness = 1 - distFrac;
@@ -341,7 +337,7 @@ CentipedeSpirit.prototype.handleLoner = function(newVel, time) {
       .addXY(
           Math.sin(dir) * thrust * traction * time,
           Math.cos(dir) * thrust * traction * time);
-  newVel.add(this.accel);
+  newVel.scale(1 - traction).add(this.accel.scale(traction));
 };
 
 CentipedeSpirit.prototype.onDraw = function(world, renderer) {
