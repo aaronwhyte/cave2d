@@ -268,7 +268,7 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
   // Run forward and avoid obstacles
   var antennaRotMag = 0.25 * Math.PI * (this.stress * 0.75 + 0.25);
   var thrust = CentipedeSpirit.THRUST;
-  var scanDist = 4 * body.rad * (1 - 0.5 * this.stress);
+  var scanDist = 3 * body.rad * (1 - 0.5 * this.stress);
   var angVel = this.getBodyAngVel();
   var scanRot = 4 * antennaRotMag * (Math.random() - 0.5) + angVel;
   if (this.stress && angVel) {
@@ -282,8 +282,7 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
     // rayscan hit
     var closeness = 1 - distFrac;
     var otherSpirit = this.getScanHitSpirit();
-    if (//!hasTail &&
-        !this.stress &&
+    if (!this.stress &&
         otherSpirit &&
         otherSpirit.type === Game4BaseScreen.SpiritType.CENTIPEDE &&
         !otherSpirit.getTailwardSpirit() &&
@@ -297,7 +296,7 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
       angAccel = 0.4 * scanRot;
     } else {
       // avoid obstruction
-      angAccel = -0.4 * scanRot * (distFrac * 0.5 + 0.5);
+      angAccel = -0.35 * scanRot * (distFrac * 0.3 + 0.7);
       this.stress += 0.05 * closeness * closeness;
       thrust *= distFrac;
       body.applyAngularFrictionAtTime(0.4, now);
@@ -313,7 +312,7 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
     // Leader, break free!
     var tailwardSpirit = this.getTailwardSpirit();
     tailwardSpirit.headwardId = 0;
-    tailwardSpirit.stress = 0.7;
+    tailwardSpirit.stress = 0.5;
     this.tailwardId = 0;
   }
 
@@ -335,7 +334,7 @@ CentipedeSpirit.prototype.onDraw = function(world, renderer) {
   if (!CentipedeSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
     renderer
         .setStamp(this.modelStamp)
-        .setColorVector(this.vec4.set(this.color));
+        .setColorVector(this.vec4.set(this.color).scale1(!this.headwardId ? 3 : 0.7));
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
