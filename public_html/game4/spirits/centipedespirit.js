@@ -32,7 +32,7 @@ CentipedeSpirit.prototype.constructor = CentipedeSpirit;
 
 CentipedeSpirit.MEASURE_TIMEOUT = 0.9;
 CentipedeSpirit.THRUST = 3;
-CentipedeSpirit.TRACTION = 0.25;
+CentipedeSpirit.TRACTION = 0.3;
 CentipedeSpirit.MAX_TIMEOUT = 10;
 CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 CentipedeSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -93,7 +93,7 @@ CentipedeSpirit.factory = function(screen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 0.9;
+  b.grip = 0.3;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.rad = 1;
@@ -213,27 +213,31 @@ CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
   // Follow the headward spirit.
   var thatBody = headward.getBody();
   var destAngle = this.getAngleToBody(thatBody);
-  var angAccel = this.getAngleDiff(destAngle) * 0.5;
+  var angAccel = this.getAngleDiff(destAngle) * 0.4;
   var thisPos = this.getBodyPos();
   var thatPos = thatBody.getPosAtTime(this.now(), Vec2d.alloc());
 
   var dist = thatPos.distance(thisPos);
-  if (dist > thisBody.rad * 6) {
+  if (dist > thisBody.rad * 5) {
     // break!
     headward.tailwardId = 0;
     this.headwardId = 0;
   } else {
-    var deltaPos = Vec2d.alloc().set(thatPos).subtract(thisPos);
     var p0 = dist - thisBody.rad * 1.2 - thatBody.rad;
-
-    var maxA = 1;
-    this.accel.set(deltaPos).scaleToLength(Math.min(maxA, Math.max(-maxA, p0 * 0.8)));
+    var deltaPos = Vec2d.alloc().set(thatPos).subtract(thisPos);
+    var deltaVel = Vec2d.alloc().set(thatBody.vel).subtract(thisBody.vel);
+    var v0 = deltaVel.dot(deltaPos.scaleToLength(1));
+    var maxA = 2;
+    var accelMag = -Spring.getLandingAccel(p0, v0, maxA, CentipedeSpirit.MEASURE_TIMEOUT * 2);
+    accelMag = Math.min(accelMag, CentipedeSpirit.THRUST);
+    this.accel.setXY(0, 1).rot(this.getBodyAngPos()).scaleToLength(1).scale(accelMag);
     newVel.scale(1 - traction).add(this.accel.scale(traction));
 
     thisBody.addAngVelAtTime(angAccel, now);
-    thisBody.applyAngularFrictionAtTime(0.4, now);
+    thisBody.applyAngularFrictionAtTime(0.3, now);
 
     deltaPos.free();
+    deltaVel.free();
   }
   thatPos.free();
 };
@@ -262,10 +266,16 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
   var traction = CentipedeSpirit.TRACTION;
 
   // Run forward and avoid obstacles
-  var antennaRotMag = 0.5 * Math.PI * (this.stress * 0.85 + 0.15);
+  var antennaRotMag = 0.25 * Math.PI * (this.stress * 0.75 + 0.25);
   var thrust = CentipedeSpirit.THRUST;
-  var scanDist = 3 * body.rad;
-  var scanRot = 4 * antennaRotMag * (Math.random() - 0.5) + this.getBodyAngVel();
+  var scanDist = 4 * body.rad * (1 - 0.5 * this.stress);
+  var angVel = this.getBodyAngVel();
+  var scanRot = 4 * antennaRotMag * (Math.random() - 0.5) + angVel;
+  if (this.stress && angVel) {
+    // keep turning in the same direction
+    scanRot = -Math.abs(scanRot) * Math.sign(angVel);
+
+  }
   var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
   var angAccel = 0;
   if (distFrac >= 0) {
@@ -273,7 +283,7 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
     var closeness = 1 - distFrac;
     var otherSpirit = this.getScanHitSpirit();
     if (//!hasTail &&
-        //!this.stress &&
+        !this.stress &&
         otherSpirit &&
         otherSpirit.type === Game4BaseScreen.SpiritType.CENTIPEDE &&
         !otherSpirit.getTailwardSpirit() &&
@@ -287,29 +297,23 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
       angAccel = 0.4 * scanRot;
     } else {
       // avoid obstruction
-      angAccel = -0.3 * closeness * (0.5 * Math.PI * Math.sign(scanRot) - scanRot);
-      this.stress += 0.04 * closeness;
-      thrust *= distFrac * distFrac;
-      body.applyAngularFrictionAtTime(0.4 + 0.6 * this.stress, now);
+      angAccel = -0.4 * scanRot * (distFrac * 0.5 + 0.5);
+      this.stress += 0.05 * closeness * closeness;
+      thrust *= distFrac;
+      body.applyAngularFrictionAtTime(0.4, now);
     }
   } else {
     // clear path
-    if (!this.stress) {
-      // slight turn towards the scan
-      angAccel = 0.1 * scanRot;
-      body.applyAngularFrictionAtTime(0.4, now);
-    } else {
-      // There was stress!
-      // point directly at the scan and cancel angular velocity
-      angAccel = scanRot * this.stress;
-      body.applyAngularFrictionAtTime(0.4 + 0.6 * this.stress, now);
-    }
+    angAccel = scanRot * (0.1 + this.stress * 0.9);
+    body.applyAngularFrictionAtTime(0.5 + this.stress * 0.5, now);
     this.stress = 0;
   }
   this.stress = Math.min(1, Math.max(0, this.stress));
   if (hasTail && this.stress >= 1) {
     // Leader, break free!
-    this.getTailwardSpirit().headwardId = 0;
+    var tailwardSpirit = this.getTailwardSpirit();
+    tailwardSpirit.headwardId = 0;
+    tailwardSpirit.stress = 0.7;
     this.tailwardId = 0;
   }
 

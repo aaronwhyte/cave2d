@@ -231,11 +231,11 @@ Vec2d.prototype.slideByFraction = function(towardsPoint, fraction) {
 
 
 Vec2d.prototype.equals = function(v) {
-  return (this.x == v.x && this.y == v.y);
+  return (this.x === v.x && this.y === v.y);
 };
 
 Vec2d.prototype.isZero = function() {
-  return this.x == 0 && this.y == 0;
+  return this.x === 0 && this.y === 0;
 };
 
 Vec2d.prototype.toString = function() {
