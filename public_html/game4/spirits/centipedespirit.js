@@ -17,6 +17,9 @@ function CentipedeSpirit(screen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
   this.accel = new Vec2d();
+
+  // Between 0 and 1.
+  // When it hits 1, a leader's head will pop off.
   this.stress = 0;
 
   this.lastControlTime = this.now();
@@ -30,7 +33,7 @@ function CentipedeSpirit(screen) {
 CentipedeSpirit.prototype = new BaseSpirit();
 CentipedeSpirit.prototype.constructor = CentipedeSpirit;
 
-CentipedeSpirit.MEASURE_TIMEOUT = 0.9;
+CentipedeSpirit.MEASURE_TIMEOUT = 1;
 CentipedeSpirit.THRUST = 3;
 CentipedeSpirit.TRACTION = 0.3;
 CentipedeSpirit.MAX_TIMEOUT = 10;
@@ -96,7 +99,7 @@ CentipedeSpirit.factory = function(screen, stamp, pos, dir) {
   b.grip = 0.3;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 1;
+  b.rad = 1.2;
   b.hitGroup = screen.getHitGroups().ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
@@ -223,13 +226,12 @@ CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
     headward.tailwardId = 0;
     this.headwardId = 0;
   } else {
-    var p0 = dist - thisBody.rad * 1.2 - thatBody.rad;
+    var p0 = dist - thisBody.rad * 1.05 - thatBody.rad;
     var deltaPos = Vec2d.alloc().set(thatPos).subtract(thisPos);
     var deltaVel = Vec2d.alloc().set(thatBody.vel).subtract(thisBody.vel);
     var v0 = deltaVel.dot(deltaPos.scaleToLength(1));
-    var maxA = 2;
+    var maxA = CentipedeSpirit.THRUST;
     var accelMag = -Spring.getLandingAccel(p0, v0, maxA, CentipedeSpirit.MEASURE_TIMEOUT * 2);
-    accelMag = Math.min(accelMag, CentipedeSpirit.THRUST);
     this.accel.setXY(0, 1).rot(this.getBodyAngPos()).scaleToLength(1).scale(accelMag);
     newVel.scale(1 - traction).add(this.accel.scale(traction));
 
@@ -264,60 +266,68 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
   var pos = this.getBodyPos();
   var now = this.now();
   var traction = CentipedeSpirit.TRACTION;
+  var scanDist = 2.5 * body.rad;
+  var distFrac, scanRot;
 
-  // Run forward and avoid obstacles
-  var antennaRotMag = 0.25 * Math.PI * (this.stress * 0.75 + 0.25);
-  var thrust = CentipedeSpirit.THRUST;
-  var scanDist = 3 * body.rad * (1 - 0.5 * this.stress);
-  var angVel = this.getBodyAngVel();
-  var scanRot = 4 * antennaRotMag * (Math.random() - 0.5) + angVel;
-  if (this.stress && angVel) {
-    // keep turning in the same direction
-    scanRot = -Math.abs(scanRot) * Math.sign(angVel);
+  var bestFrac = 0; // lowest possible value
+  var bestRot = 0;
 
+  var maxIterations = 8;
+  if (this.stress >= 1 && !this.tailwardId && Math.random() > 0.1) {
+    // This stressed-out loner doesn't get any extra scan cycles
+    maxIterations = 0;
+    // freak out a little instead
+    body.addAngVelAtTime(0.2 * (Math.random() - 0.5), now);
   }
-  var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
-  var angAccel = 0;
-  if (distFrac >= 0) {
-    // rayscan hit
-    var closeness = 1 - distFrac;
-    var otherSpirit = this.getScanHitSpirit();
-    if (!this.stress &&
-        otherSpirit &&
-        otherSpirit.type === Game4BaseScreen.SpiritType.CENTIPEDE &&
-        !otherSpirit.getTailwardSpirit() &&
-        !otherSpirit.stress &&
-        otherSpirit.getHeadId() !== this.id) {
-      // Loner found a relaxed segment with out a tail. Join up!
-      this.headwardId = otherSpirit.id;
-      otherSpirit.tailwardId = this.id;
-      this.stress = 0;
-      body.applyAngularFrictionAtTime(0.4, now);
-      angAccel = 0.4 * scanRot;
+  // How far (to either side) to look for a way out.
+  var maxScanRotation = Math.PI * 0.9;
+
+  // Randomly pick a starting side for every pair of side-scans.
+  var lastSign = Math.sign(Math.random() - 0.5);
+  for (var i = 0; i <= maxIterations; i++) {
+    if (i === 0) {
+      distFrac = this.scan(pos, 0, scanDist, body.rad);
+      if (distFrac < 0) {
+        bestFrac = 1;
+      } else {
+        // hit something
+        bestFrac = distFrac;
+        this.maybeJoin();
+      }
     } else {
-      // avoid obstruction
-      angAccel = -0.35 * scanRot * (distFrac * 0.3 + 0.7);
-      this.stress += 0.05 * closeness * closeness;
-      thrust *= distFrac;
-      body.applyAngularFrictionAtTime(0.4, now);
+      // Do a pair of scans to either side, in random order
+      for (var signMult = -1; signMult <= 1; signMult += 2) {
+        scanRot = signMult * lastSign * maxScanRotation * i / maxIterations;
+        distFrac = this.scan(pos, scanRot, scanDist, body.rad);
+        if (distFrac < 0) {
+          bestFrac = 1;
+          bestRot = scanRot;
+        } else {
+          // hit something
+          this.maybeJoin();
+          if (distFrac > bestFrac) {
+            // This is the longest scan so far. Remember it!
+            bestFrac = distFrac;
+            bestRot = scanRot;
+          }
+          // keep looking...
+        }
+      }
     }
-  } else {
-    // clear path
-    angAccel = scanRot * (0.1 + this.stress * 0.9);
-    body.applyAngularFrictionAtTime(0.5 + this.stress * 0.5, now);
-    this.stress = 0;
+    if (bestFrac === 1) {
+      // A clear path is definitely the best path.
+      break;
+    }
   }
-  this.stress = Math.min(1, Math.max(0, this.stress));
-  if (hasTail && this.stress >= 1) {
-    // Leader, break free!
-    var tailwardSpirit = this.getTailwardSpirit();
-    tailwardSpirit.headwardId = 0;
-    tailwardSpirit.stress = 0.5;
-    this.tailwardId = 0;
+  // turn
+  body.applyAngularFrictionAtTime(0.5, now);
+  body.addAngVelAtTime(bestRot * 0.5, now);
+  if (!this.stress) {
+    body.addAngVelAtTime(0.1 * (Math.random() - 0.5), now);
   }
 
-  body.addAngVelAtTime(angAccel, now);
-
+  // and push
+  var thrust = CentipedeSpirit.THRUST * bestFrac;
   var dir = this.getBodyAngPos();
   this.accel
       .set(body.vel).scale(-traction * time)
@@ -325,6 +335,36 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
           Math.sin(dir) * thrust * traction * time,
           Math.cos(dir) * thrust * traction * time);
   newVel.scale(1 - traction).add(this.accel.scale(traction));
+
+  if (bestFrac === 1) {
+    // relax!
+    this.stress = 0;
+  } else {
+    // get stressed
+    this.stress = Math.min(1, this.stress + 0.05);
+  }
+  if (hasTail && this.stress >= 1) {
+    // Leader, break free!
+    var tailwardSpirit = this.getTailwardSpirit();
+    tailwardSpirit.headwardId = 0;
+    tailwardSpirit.stress = 0.7;
+    this.tailwardId = 0;
+  }
+};
+
+CentipedeSpirit.prototype.maybeJoin = function() {
+  if (!this.stress && !this.headwardId) {
+    var otherSpirit = this.getScanHitSpirit();
+    if (otherSpirit &&
+        otherSpirit.type === Game4BaseScreen.SpiritType.CENTIPEDE &&
+        !otherSpirit.getTailwardSpirit() &&
+        !otherSpirit.stress &&
+        otherSpirit.getHeadId() !== this.id) {
+      // Found a relaxed segment with out a tail. Join up!
+      this.headwardId = otherSpirit.id;
+      otherSpirit.tailwardId = this.id;
+    }
+  }
 };
 
 CentipedeSpirit.prototype.onDraw = function(world, renderer) {
