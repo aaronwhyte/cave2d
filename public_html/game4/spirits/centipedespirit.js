@@ -223,14 +223,13 @@ CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
   var dist = thatPos.distance(thisPos);
   if (dist > thisBody.rad * 5) {
     // break!
-    headward.tailwardId = 0;
-    this.headwardId = 0;
+    this.getHeadwardSpirit().breakOffTail();
   } else {
     var p0 = dist - thisBody.rad * 1.05 - thatBody.rad;
     var deltaPos = Vec2d.alloc().set(thatPos).subtract(thisPos);
     var deltaVel = Vec2d.alloc().set(thatBody.vel).subtract(thisBody.vel);
     var v0 = deltaVel.dot(deltaPos.scaleToLength(1));
-    var maxA = CentipedeSpirit.THRUST;
+    var maxA = CentipedeSpirit.THRUST * 1.5;
     var accelMag = -Spring.getLandingAccel(p0, v0, maxA, CentipedeSpirit.MEASURE_TIMEOUT * 2);
     this.accel.setXY(0, 1).rot(this.getBodyAngPos()).scaleToLength(1).scale(accelMag);
     newVel.scale(1 - traction).add(this.accel.scale(traction));
@@ -268,6 +267,7 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
   var traction = CentipedeSpirit.TRACTION;
   var scanDist = 2.5 * body.rad;
   var distFrac, scanRot;
+  var moreStress = 0.05;
 
   var bestFrac = 0; // lowest possible value
   var bestRot = 0;
@@ -338,16 +338,21 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
 
   if (bestFrac === 1) {
     // relax!
-    this.stress = 0;
+    this.stress = Math.max(0, this.stress - moreStress);
   } else {
     // get stressed
-    this.stress = Math.min(1, this.stress + 0.05);
+    this.stress = Math.min(1, this.stress + moreStress);
   }
   if (hasTail && this.stress >= 1) {
-    // Leader, break free!
-    var tailwardSpirit = this.getTailwardSpirit();
+    this.breakOffTail();
+  }
+};
+
+CentipedeSpirit.prototype.breakOffTail = function() {
+  var tailwardSpirit = this.getTailwardSpirit();
+  if (tailwardSpirit) {
     tailwardSpirit.headwardId = 0;
-    tailwardSpirit.stress = 0.7;
+    tailwardSpirit.stress = 1;
     this.tailwardId = 0;
   }
 };
