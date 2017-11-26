@@ -485,7 +485,7 @@ Game4PlayScreen.prototype.drawScene = function() {
   this.updateViewCircles();
   this.positionCamera();
   this.updateViewMatrix();
-  this.updateWarps();
+  // this.updateWarps();
   this.renderer.setViewMatrix(this.viewMatrix);
   this.renderer.setCircleMode(this.viewCircles);
   this.renderer.setTime(this.now());
