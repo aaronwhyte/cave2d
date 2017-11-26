@@ -50,7 +50,9 @@ CentipedeSpirit.SCHEMA = {
   3: "color",
   4: "stress",
   5: "health",
-  6: "lastControlTime"
+  6: "lastControlTime",
+  7: "headwardId",
+  8: "tailwardId"
 };
 
 CentipedeSpirit.getJsoner = function() {
