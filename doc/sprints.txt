@@ -279,10 +279,10 @@ v remove drag. Go straight to wield.
 v remove eject. Go straight to drop.
 v restore speed while wielding.
 
-- centipede
-  - head spirit - copy of ant, basically
-  - body segment
-    - knows headward spitiy
+v centipede
+  v awesome tunnel navigation
+  v get unstuck by breaking apart
+  v get unstuck by reversing?
 
 - simple combat system
   - health
