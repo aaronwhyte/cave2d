@@ -88,7 +88,7 @@ ActivatorGunSpirit.factory = function(screen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 0.9;
+  b.grip = 0.25;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.6;
