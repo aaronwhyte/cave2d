@@ -49,7 +49,7 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 PlayerSpirit.WIELD_MAX_ACCEL = 6 * 0.7;
 PlayerSpirit.WIELD_MAX_FORCE = 1.8 * 0.7;
-PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/5;
@@ -60,9 +60,10 @@ PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
 
-PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
+PlayerSpirit.AIM_ANGPOS_ACCEL = 0.4;
 PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.4;
 PlayerSpirit.ANGULAR_FRICTION = 0.4;
+PlayerSpirit.BEAM_ANGULAR_ACCEL = 0.3;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -498,7 +499,7 @@ PlayerSpirit.prototype.handleWielding = function() {
       PlayerSpirit.WIELD_MAX_ACCEL, PlayerSpirit.WIELD_MAX_FORCE,
       true, this.destAim.angle());
   if (this.getTargetBody()) {
-    this.handleBeamTorque(this.getAngleToTarget(), 0.1);
+    this.handleBeamTorque(this.getAngleToTarget(), PlayerSpirit.BEAM_ANGULAR_ACCEL);
   }
 };
 
@@ -629,8 +630,8 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setColorVector(this.aimColor);
     p1 = bodyPos;
     p2 = targetBody.getPosAtTime(this.now(), this.vec2d);
-    var volume = 0.5;
-    rad = Math.min(targetBody.rad, unobstructedness * volume / (this.getSurfaceDistToTarget() + body.rad/2));
+    var volume = 1/3 * PlayerSpirit.PLAYER_RAD * PlayerSpirit.WIELD_REST_DIST;
+    rad = Math.min(body.rad * 0.5, targetBody.rad, unobstructedness * volume / this.getSurfaceDistToTarget());
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
