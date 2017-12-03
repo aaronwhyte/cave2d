@@ -157,14 +157,15 @@ Game4BaseScreen.prototype.getCursorHitGroup = function() {
 Game4BaseScreen.prototype.initWorld = function() {
   WorldScreen.prototype.initWorld.call(this);
   this.lastPathRefreshTime = -Infinity;
-  this.resolver.defaultElasticity = 0.95;
+
+  // Wrap the default resolver in one that knows how to do awesome game stuff.
+  var bouncer = this.resolver;
+  bouncer.defaultElasticity = 0.95;
+  this.resolver = new Game4HitResolver(this, bouncer);
 };
 
 Game4BaseScreen.prototype.getCamera = function() {
   return this.camera;
-};
-
-Game4BaseScreen.prototype.onHitEvent = function(e) {
 };
 
 Game4BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {

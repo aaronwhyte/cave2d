@@ -358,79 +358,82 @@ Game4PlayScreen.prototype.playerDrop = function(slot) {
 };
 
 Game4PlayScreen.prototype.onHitEvent = function(e) {
+  if (e.time !== this.now()) {
+    console.error('onHitEvent e.time !== this.now()', e.time, this.now());
+  }
+
   var b0 = this.world.getBodyByPathId(e.pathId0);
   var b1 = this.world.getBodyByPathId(e.pathId1);
+  if (!(b0 && b1)) return;
 
-  if (b0 && b1) {
-    this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-    var vec = Vec2d.alloc();
-    var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
-    var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
+  this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
+  var vec = Vec2d.alloc();
+  var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
+  var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
 
-    var playerBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.PLAYER, b0, b1);
-    if (playerBody) {
-      var playerSpirit = this.getSpiritForBody(playerBody);
-      var antBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ANT, b0, b1);
-      if (antBody) {
-        this.killPlayerSpirit(playerSpirit);
-      }
-      if (!antBody) {
-        // TODO: thump on wall hit, not on "else"
-        this.sounds.wallThump(pos, mag * 10);
-      }
+  var playerBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.PLAYER, b0, b1);
+  if (playerBody) {
+    var playerSpirit = this.getSpiritForBody(playerBody);
+    var antBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ANT, b0, b1);
+    if (antBody) {
+      this.killPlayerSpirit(playerSpirit);
     }
-
-    var bulletBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.BULLET, b0, b1);
-    if (bulletBody) {
-      var bulletSpirit = this.getSpiritForBody(bulletBody);
-      var otherBody = this.otherBody(bulletBody, b0, b1);
-      var otherSpirit = this.getSpiritForBody(otherBody);
-      if (!otherSpirit) {
-        // wall?
-        bulletSpirit.onHitWall(mag, pos);
-      } else if (otherSpirit.type === Game4BaseScreen.SpiritType.ANT) {
-        otherSpirit.onPlayerBulletHit(bulletSpirit.damage);
-        bulletSpirit.onHitEnemy(mag, pos);
-      } else if (otherSpirit.type === Game4BaseScreen.SpiritType.BULLET) {
-        bulletSpirit.onHitOther(mag, pos);
-        otherSpirit.onHitOther(mag);
-      } else {
-        bulletSpirit.onHitOther(mag, pos);
-      }
+    if (!antBody) {
+      // TODO: thump on wall hit, not on "else"
+      this.sounds.wallThump(pos, mag * 10);
     }
-
-    var abb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ACTIVATOR_BULLET, b0, b1);
-    if (abb) {
-      var abbs = this.getSpiritForBody(abb);
-      var otherBody = this.otherBody(abb, b0, b1);
-      var otherSpirit = this.getSpiritForBody(otherBody);
-      if (otherSpirit && otherSpirit.isActivatable()) {
-        abbs.onHitActivatable(otherSpirit, pos);
-      } else {
-        abbs.onHitOther(pos);
-      }
-    }
-
-    var tbb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.TRACTOR_BULLET, b0, b1);
-    if (tbb) {
-      var tbbs = this.getSpiritForBody(tbb);
-      tbbs.onHitOther(pos);
-    }
-
-    var ebb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ENERGY_BULLET, b0, b1);
-    if (ebb) {
-      var ebbs = this.getSpiritForBody(ebb);
-      var otherBody = this.otherBody(ebb, b0, b1);
-      var otherSpirit = this.getSpiritForBody(otherBody);
-      if (otherSpirit && otherSpirit.getEnergyCapacity()) {
-        ebbs.onHitEnergizable(otherSpirit, pos);
-      } else {
-        ebbs.onHitOther(pos);
-      }
-    }
-
-    vec.free();
   }
+
+  var bulletBody = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.BULLET, b0, b1);
+  if (bulletBody) {
+    var bulletSpirit = this.getSpiritForBody(bulletBody);
+    var otherBody = this.otherBody(bulletBody, b0, b1);
+    var otherSpirit = this.getSpiritForBody(otherBody);
+    if (!otherSpirit) {
+      // wall?
+      bulletSpirit.onHitWall(mag, pos);
+    } else if (otherSpirit.type === Game4BaseScreen.SpiritType.ANT) {
+      otherSpirit.onPlayerBulletHit(bulletSpirit.damage);
+      bulletSpirit.onHitEnemy(mag, pos);
+    } else if (otherSpirit.type === Game4BaseScreen.SpiritType.BULLET) {
+      bulletSpirit.onHitOther(mag, pos);
+      otherSpirit.onHitOther(mag);
+    } else {
+      bulletSpirit.onHitOther(mag, pos);
+    }
+  }
+
+  var abb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ACTIVATOR_BULLET, b0, b1);
+  if (abb) {
+    var abbs = this.getSpiritForBody(abb);
+    var otherBody = this.otherBody(abb, b0, b1);
+    var otherSpirit = this.getSpiritForBody(otherBody);
+    if (otherSpirit && otherSpirit.isActivatable()) {
+      abbs.onHitActivatable(otherSpirit, pos);
+    } else {
+      abbs.onHitOther(pos);
+    }
+  }
+
+  var tbb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.TRACTOR_BULLET, b0, b1);
+  if (tbb) {
+    var tbbs = this.getSpiritForBody(tbb);
+    tbbs.onHitOther(pos);
+  }
+
+  var ebb = this.bodyIfSpiritType(Game4BaseScreen.SpiritType.ENERGY_BULLET, b0, b1);
+  if (ebb) {
+    var ebbs = this.getSpiritForBody(ebb);
+    var otherBody = this.otherBody(ebb, b0, b1);
+    var otherSpirit = this.getSpiritForBody(otherBody);
+    if (otherSpirit && otherSpirit.getEnergyCapacity()) {
+      ebbs.onHitEnergizable(otherSpirit, pos);
+    } else {
+      ebbs.onHitOther(pos);
+    }
+  }
+
+  vec.free();
 };
 
 Game4PlayScreen.prototype.updateWarps = function() {

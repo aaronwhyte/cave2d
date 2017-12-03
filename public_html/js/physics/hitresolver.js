@@ -8,7 +8,12 @@ function HitResolver() {
   this.v2 = new Vec2d();
 }
 
+HitResolver.VERIFY_KINETIC_ENERGY_PRESERVED = false;
+
 /**
+ * Performs all the physics mutations on two colliding bodies, based on the
+ * contact point, masses, linear and angular velocities, elasticity, surface grip,
+ * and whatever else I forgot.
  * @param {number} time
  * @param {Vec2d} collisionVec
  * @param {Body} b0
@@ -17,8 +22,10 @@ function HitResolver() {
 HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   if (b0.mass === Infinity && b1.mass === Infinity) return;
 
-//  var ke0 = b0.getKineticEnergy();
-//  var ke1 = b1.getKineticEnergy();
+  if (HitResolver.VERIFY_KINETIC_ENERGY_PRESERVED) {
+    var ke0 = b0.getKineticEnergy();
+    var ke1 = b1.getKineticEnergy();
+  }
 
   // Shift b0 to the origin, holding still.
   var vel = Vec2d.alloc().set(b1.vel).subtract(b0.vel);
@@ -84,16 +91,25 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
     hitPos.free();
   }
 
-//  var ke0b = b0.getKineticEnergy();
-//  var ke1b = b1.getKineticEnergy();
-//  var diff = (ke0b + ke1b) - (ke0 + ke1);
-//  if (diff > 0) {
-//    console.log("before:", ke0, ke1, "after:", ke0b, ke1b);
-//    console.log("diff:", diff);
-//  }
-
+  if (HitResolver.VERIFY_KINETIC_ENERGY_PRESERVED) {
+    var ke0b = b0.getKineticEnergy();
+    var ke1b = b1.getKineticEnergy();
+    var diff = (ke0b + ke1b) - (ke0 + ke1);
+    if (diff > 0) {
+      console.log("before:", ke0, ke1, "after:", ke0b, ke1b);
+      console.log("diff:", diff);
+    }
+  }
 };
 
+/**
+ * Calculates the world position of a collision contact point.
+ * @param {number} time
+ * @param {Vec2d} collisionVec
+ * @param {Body} b0
+ * @param {Body} b1
+ * @param {Vec2d} out where the output goes.
+ */
 HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
   if (b0.shape === Body.Shape.CIRCLE) {
     if (b1.shape === Body.Shape.CIRCLE) {
