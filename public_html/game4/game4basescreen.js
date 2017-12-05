@@ -56,7 +56,8 @@ Game4BaseScreen.SpiritType = {
   ACTIVATOR_BULLET: 10,
   TRACTOR_BULLET: 11,
   ENERGY_BULLET: 12,
-  CENTIPEDE: 13
+  CENTIPEDE: 13,
+  MACHINE_GUN: 14
 };
 
 Game4BaseScreen.MenuItem = {
@@ -66,24 +67,48 @@ Game4BaseScreen.MenuItem = {
   ENTRANCE: 'entrance',
   EXIT: 'exit',
   INDICATOR: 'indicator',
-  ACTIVATOR_GUN: 'activator_gun'
+  ACTIVATOR_GUN: 'activator_gun',
+  MACHINE_GUN: 'machine_gun'
 };
 
 Game4BaseScreen.prototype.createSpiritConfigs = function() {
+  var column = 0;
+  var row = 0;
+
+  function nextColumn() {
+    column++;
+    row = 0;
+  }
+
+  function addToMenu(spiritType, ctor, menuItem) {
+    a.push([spiritType, ctor, menuItem, column, row++]);
+  }
+
+  function addOffMenu(spiritType, ctor, menuItem) {
+    a.push([spiritType, ctor, menuItem]);
+  }
+
   var st = Game4BaseScreen.SpiritType;
   var mi = Game4BaseScreen.MenuItem;
-  var a  = [
-    [st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, 0, 0],
-    [st.EXIT, ExitSpirit, mi.EXIT, 0, 1],
-    [st.ANT, AntSpirit, mi.RED_ANT, 1, 0],
-    [st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE, 1, 1],
-    [st.INDICATOR, IndicatorSpirit, mi.INDICATOR, 2, 0],
-    [st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, 2, 1],
+  var a = [];
 
-    [st.PLAYER, PlayerSpirit, mi.PLAYER],
-    [st.BULLET, BulletSpirit],
-    [st.ACTIVATOR_BULLET, ActivatorBulletSpirit]
-  ];
+  addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE);
+  addToMenu(st.EXIT, ExitSpirit, mi.EXIT);
+  nextColumn();
+
+  addToMenu(st.ANT, AntSpirit, mi.RED_ANT);
+  addToMenu(st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE);
+  nextColumn();
+
+  addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN);
+  addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR);
+  addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN);
+  nextColumn();
+
+  addOffMenu(st.PLAYER, PlayerSpirit, mi.PLAYER);
+  addOffMenu(st.BULLET, BulletSpirit);
+  addOffMenu(st.ACTIVATOR_BULLET, ActivatorBulletSpirit);
+
   var sc = {};
   for (var i = 0; i < a.length; i++) {
     var p = a[i];
