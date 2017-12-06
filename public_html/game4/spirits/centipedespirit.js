@@ -34,10 +34,10 @@ function CentipedeSpirit(screen) {
 CentipedeSpirit.prototype = new BaseSpirit();
 CentipedeSpirit.prototype.constructor = CentipedeSpirit;
 
-CentipedeSpirit.MEASURE_TIMEOUT = 1;
+CentipedeSpirit.MEASURE_TIMEOUT = 2.1;
 CentipedeSpirit.REJOIN_TIMEOUT = 50;
-CentipedeSpirit.THRUST = 3;
-CentipedeSpirit.TRACTION = 0.3;
+CentipedeSpirit.THRUST = 0.8;
+CentipedeSpirit.TRACTION = 0.5;
 CentipedeSpirit.MAX_TIMEOUT = 10;
 CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 CentipedeSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -277,8 +277,8 @@ CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
     var deltaPos = Vec2d.alloc().set(thatPos).subtract(thisPos);
     var deltaVel = Vec2d.alloc().set(thatBody.vel).subtract(thisBody.vel);
     var v0 = deltaVel.dot(deltaPos.scaleToLength(1));
-    var maxA = CentipedeSpirit.THRUST * 1.5;
-    var accelMag = -Spring.getLandingAccel(p0, v0, maxA, CentipedeSpirit.MEASURE_TIMEOUT * 2);
+    var maxA = CentipedeSpirit.THRUST * 2;
+    var accelMag = -Spring.getLandingAccel(p0, v0, maxA, CentipedeSpirit.MEASURE_TIMEOUT * 1.5);
     this.accel.setXY(0, 1).rot(this.getBodyAngPos()).scaleToLength(1).scale(accelMag);
     newVel.scale(1 - traction).add(this.accel.scale(traction));
     deltaPos.free();
@@ -286,8 +286,8 @@ CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
 
     // angular accel
     var destAngle = this.getAngleToBody(thatBody);
-    var angAccel = this.getAngleDiff(destAngle) * 0.4;
     thisBody.applyAngularFrictionAtTime(0.5, now);
+    var angAccel = this.getAngleDiff(destAngle) * 0.3;
     thisBody.addAngVelAtTime(angAccel, now);
   }
   thatPos.free();
@@ -371,7 +371,8 @@ CentipedeSpirit.prototype.handleFront = function(newVel, time, hasTail) {
   }
   // turn
   body.applyAngularFrictionAtTime(0.5, now);
-  body.addAngVelAtTime(bestRot * bestFrac * (1 - this.stress) * 0.5, now);
+  var angAccel = Math.clip(bestRot * bestFrac * (1 - this.stress) * 0.3, -0.2, 0.2);
+  body.addAngVelAtTime(angAccel, now);
   if (!this.stress) {
     body.addAngVelAtTime(0.1 * (Math.random() - 0.5), now);
   }
