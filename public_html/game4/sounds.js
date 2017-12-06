@@ -49,10 +49,9 @@ Sounds.prototype.pew = function(worldPos, now) {
       - Math.abs((now % 8) - 4) * 10
       - Math.abs((now % 100) - 50) * 0.1;
   var attack = 0.2/60;
-  var sustain = 4/60;
-  var decay = 6/60;
-  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq/10, 'square');
-  this.sfx.sound(x, y, 0, 0.1, attack, sustain, decay, freq, freq/100, 'square');
+  var sustain = 2/60;
+  var decay = 4/60;
+  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'square');
 };
 
 Sounds.prototype.shotgun = function(worldPos) {

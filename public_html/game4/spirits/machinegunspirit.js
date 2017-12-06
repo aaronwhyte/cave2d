@@ -26,7 +26,7 @@ MachineGunSpirit.FIRE_TIMEOUT_ID = 2;
 MachineGunSpirit.FRICTION_TIMEOUT = 1.2;
 MachineGunSpirit.MAX_TIMEOUT = 10;
 
-MachineGunSpirit.FIRE_TIMEOUT = 3.141;
+MachineGunSpirit.FIRE_TIMEOUT = 5;
 
 MachineGunSpirit.SCHEMA = {
   0: "type",
@@ -194,15 +194,18 @@ MachineGunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   var angPos = this.getBodyAngPos();
-  var speed = 4;
+  var speed = 3;
   var dist = 50 * (1 + Math.random() * 0.2);
-  this.addBullet(
+  var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.01 * (Math.random() - 0.5)).scaleToLength(speed);
+  var bulletSpiritId = this.addBullet(
       pos, angPos,
-      this.vec2d.setXY(0, 1).rot(angPos + 0.01 * (Math.random() - 0.5)).scaleToLength(speed),
+      vel,
       0.5,
       dist / speed);
 
+  var bullet = this.screen.getSpiritById(bulletSpiritId);
   this.lastFireTime = this.now();
+  this.addBodyVel(vel.scaleToLength(-1 * bullet.getBody().mass / this.getBody().mass));
   this.screen.sounds.pew(pos, this.lastFireTime);
 };
 
