@@ -159,7 +159,7 @@ ActivatorGunSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   var pos = this.getBodyPos();
   this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  if (!ActivatorGunSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
+  if (this.viewportsFromCamera < 1.1) {
     var lit = this.sumOfInputs() > 0;
     this.vec4.set(this.color);
     if (lit) {
