@@ -368,52 +368,6 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-Game4PlayScreen.prototype.updateWarps = function() {
-  var time = this.now() / 100;
-  var maxRepulsorRad = 10;
-  var repulsorProgress = ((time / 5) % 2) / 2;
-  repulsorProgress = repulsorProgress > 1 ? 0 : repulsorProgress;
-  var repulsorRad = Math.sqrt(maxRepulsorRad * maxRepulsorRad * Math.sin(repulsorProgress * Math.PI));
-  var repulsorStrength = (1 - repulsorProgress) * (0.8 - repulsorProgress);
-
-  var flowerMag = 8;
-  var flowerAngle = -time * 2;
-
-  this.renderer.setWarps(
-      [1, 2, 3, 1, 0, 0, 0, 0],
-      [
-        // explodey-repulsor
-        -5 + 5 * Math.sin(time*1.2),
-        -5 + 5 * Math.sin(time*1.3),
-        repulsorRad,
-        repulsorStrength,
-
-        // quantizer
-        -5 + 5 * Math.sin(time),
-        5 + 5 * Math.cos(time),
-        6,
-        4 + 2 * Math.sin(time*2),
-
-        // flower
-        5 + 4 * Math.sin(time*1.9),
-        -5 + 4 * Math.cos(time*1.1),
-        flowerMag*Math.sin(flowerAngle),
-        flowerMag*Math.cos(flowerAngle),
-
-        // vacuum repulsor
-        5 + 3*Math.sin(time),
-        5 + 3*Math.cos(time * 1.123),
-        10 - repulsorRad,
-        2 * (Math.sin(time*10) - 0.95),
-
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0
-      ]
-  );
-};
-
-
 Game4PlayScreen.prototype.drawScene = function() {
   var startTime = performance.now();
 
