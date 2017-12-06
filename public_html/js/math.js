@@ -7,3 +7,7 @@ if (!Math.sign) {
     return x > 0 ? 1 : -1
   }
 }
+
+Math.clip = function(val, min, max) {
+  return Math.min(max, Math.max(min, val));
+};
