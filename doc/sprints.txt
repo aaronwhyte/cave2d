@@ -282,14 +282,35 @@ v restore speed while wielding.
 v centipede
   v awesome tunnel navigation
   v get unstuck by breaking apart
-  v get unstuck by reversing?
+  v get unstuck by reversing and bisecting
+
 
 - simple combat system
-  - health
-  - damage
-  - death
-- bullet
-  - causes damage
+  - collision system
+    v pull out collision resolution class
+    v teams
+    v get damages based on other spirit teams
+    v do damages
+      v handle deaths with generic explosion
+    v do bounce physics regardless?
+    - bullets could die after hitting a thing, even if not damaged
+      - onHitOther() gives bullets a chance to die after hitting something
+        - die after doing damage
+        - check to see if bouncing is OK and die if not
+  - enemy explosion splashes
+- bullet-gun for player
+  v shoots
+  v physical recoil
+  v shot sound
+  - muzzle flash
+- bullet details
+  - at range timeout
+  - at hit
+  - on bounce?
+  - hit noise
+  - bounce noise
+
+
 
 
 CONTROLS

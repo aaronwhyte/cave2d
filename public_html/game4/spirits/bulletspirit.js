@@ -40,7 +40,10 @@ BulletSpirit.prototype.reset = function(screen) {
   this.health = 1;
   this.digChance = 0.1;
   this.bounceChance = 0.1;
+
+  this.toughness = Infinity;
   this.damage = 1;
+
   this.wallDamageMultiplier = 1;
 
   return this;
@@ -86,54 +89,46 @@ BulletSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
-BulletSpirit.prototype.onHitWall = function(mag, pos) {
-  var body = this.getBody();
-  if (!body) return;
+// BulletSpirit.prototype.onHitWall = function(mag, pos) {
+//   var body = this.getBody();
+//   if (!body) return;
+//
+//   // TODO add digging back??
+//   if (this.digChance * mag > Math.random()) {
+//     var pillRad = this.wallDamageMultiplier * body.rad + 0.3;
+//     this.screen.drawTerrainPill(pos, pos, pillRad, 1);
+//     this.wallDamageSplash(pos, pillRad);
+//     this.sounds.wallDamage(pos);
+//     this.destroyBody();
+//   } else {
+//     // bounce or vanish?
+//     this.health -= mag;
+//     if (this.bounceChance - mag > Math.random()) {
+//       // bounce
+//       this.addTrailSegment();
+//     } else {
+//       // vanish
+//       this.wallDamageSplash(pos, body.rad);
+//       this.destroyBody();
+//     }
+//     this.sounds.wallThump(pos, mag * body.mass);
+//   }
+// };
 
-  // TODO add digging back??
-  if (false && this.digChance * mag > Math.random()) {
-    var pillRad = this.wallDamageMultiplier * body.rad + 0.3;
-    this.screen.drawTerrainPill(pos, pos, pillRad, 1);
-    this.wallDamageSplash(pos, pillRad);
-    this.sounds.wallDamage(pos);
-    this.destroyBody();
-  } else {
-    // bounce or vanish?
-    this.health -= mag;
-    if (this.bounceChance - mag > Math.random()) {
-      // bounce
-      this.addTrailSegment();
-    } else {
-      // vanish
-      this.wallDamageSplash(pos, body.rad);
-      this.destroyBody();
-    }
-    this.sounds.wallThump(pos, mag * body.mass);
-  }
-};
-
-BulletSpirit.prototype.onHitEnemy = function(mag, pos) {
-  var body = this.getBody();
-  if (!body) return;
-  this.sounds.wallThump(pos, mag);
-  this.wallDamageSplash(pos, mag/5);
-  this.destroyBody();
-};
-
-BulletSpirit.prototype.onHitOther = function(mag, pos) {
-  var body = this.getBody();
-  if (!body) return;
-  // bounce or vanish?
-  this.health -= mag / 5;
-  if (this.health <= 0) {
-    // vanish
-    this.destroyBody();
-  } else {
-    // bounce
-    this.addTrailSegment();
-    this.wallDamageSplash(pos, body.rad);
-  }
-};
+// BulletSpirit.prototype.onHitOther = function(mag, pos) {
+//   var body = this.getBody();
+//   if (!body) return;
+//   // bounce or vanish?
+//   this.health -= mag / 5;
+//   if (this.health <= 0) {
+//     // vanish
+//     this.destroyBody();
+//   } else {
+//     // bounce
+//     this.addTrailSegment();
+//     this.wallDamageSplash(pos, body.rad);
+//   }
+// };
 
 BulletSpirit.prototype.onDraw = function(world, renderer) {
   this.drawTrail();
@@ -236,7 +231,7 @@ BulletSpirit.prototype.wallDamageSplash = function(pos, rad) {
 };
 
 BulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  this.destroyBody();
+  this.die();
 };
 
 BulletSpirit.prototype.destroyBody = function() {
@@ -255,3 +250,6 @@ BulletSpirit.prototype.setFromJSON = function(json) {
   BulletSpirit.getJsoner().setFromJSON(json, this);
 };
 
+BulletSpirit.prototype.die = function() {
+  this.destroyBody();
+};

@@ -18,10 +18,6 @@ function BaseSpirit(screen) {
   // Target also maintains map from pulse input end time to pulse input value.
   this.pulseEndToVal = {};
 
-  // energy
-  this.energyCapacity = 0;
-  this.energy = 0;
-
   BaseSpirit.prototype.reset.call(this, screen);
 }
 BaseSpirit.prototype = new Spirit();
@@ -40,6 +36,18 @@ BaseSpirit.prototype.reset = function(screen) {
   this.id = -1;
   this.modelStamp = null;
   this.tempBodyPos.reset();
+
+  // energy
+  this.energyCapacity = 0;
+  this.energy = 0;
+
+  // combat
+  this.team = Team.NEUTRAL;
+  this.health = 1;
+
+  // harmless and invulnerable
+  this.toughness = Infinity;
+  this.damage = 0;
 };
 
 BaseSpirit.prototype.setModelStamp = function(modelStamp) {
@@ -307,4 +315,18 @@ BaseSpirit.prototype.getEnergy = function() {
  */
 BaseSpirit.prototype.addEnergy = function(e) {
   return this.setEnergy(this.energy + e);
+};
+
+BaseSpirit.prototype.damagesTeam = function(otherTeam) {
+  if (!this.damage) return false;
+  return (this.team === Team.PLAYER && otherTeam === Team.ENEMY) ||
+      (this.team === Team.ENEMY && otherTeam === Team.PLAYER) ||
+      (this.team === Team.NEUTRAL);
+};
+
+BaseSpirit.prototype.applyDamage = function(damage) {
+  this.health -= damage / this.toughness;
+  if (this.health <= 0) {
+    this.die();
+  }
 };

@@ -6,6 +6,8 @@ function PlayerSpirit(screen) {
   BaseSpirit.call(this, screen);
 
   this.type = Game4BaseScreen.SpiritType.PLAYER;
+  this.team = Team.PLAYER;
+
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   this.aimColor = new Vec4();
 
@@ -32,6 +34,10 @@ function PlayerSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+
+  // combat
+  this.toughness = 1;
+  this.damage = 0;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -736,4 +742,8 @@ PlayerSpirit.prototype.freeKick = function(spread) {
   scanPos.free();
   forceVec.free();
   forcePos.free();
+};
+
+PlayerSpirit.prototype.die = function() {
+  this.screen.killPlayerSpirit(this);
 };

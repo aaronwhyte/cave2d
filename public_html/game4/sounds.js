@@ -41,7 +41,7 @@ Sounds.prototype.bwip = function(worldPos, now) {
   this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq/4, 10 * freq/4, 'triangle');
 };
 
-Sounds.prototype.pew = function(worldPos, now) {
+Sounds.prototype.bew = function(worldPos, now) {
   var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
@@ -51,7 +51,7 @@ Sounds.prototype.pew = function(worldPos, now) {
   var attack = 0.2/60;
   var sustain = 2/60;
   var decay = 4/60;
-  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'square');
+  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'square');
 };
 
 Sounds.prototype.shotgun = function(worldPos) {

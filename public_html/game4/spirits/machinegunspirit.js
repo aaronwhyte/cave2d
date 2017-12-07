@@ -197,16 +197,15 @@ MachineGunSpirit.prototype.fire = function() {
   var speed = 3;
   var dist = 50 * (1 + Math.random() * 0.2);
   var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.01 * (Math.random() - 0.5)).scaleToLength(speed);
-  var bulletSpiritId = this.addBullet(
-      pos, angPos,
-      vel,
-      0.5,
-      dist / speed);
+  var rad = 0.5;
+  var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos, vel, rad, dist / speed));
 
-  var bullet = this.screen.getSpiritById(bulletSpiritId);
+  // For now, only players can fire weapons.
+  bullet.team = Team.PLAYER;
+
   this.lastFireTime = this.now();
-  this.addBodyVel(vel.scaleToLength(-1 * bullet.getBody().mass / this.getBody().mass));
-  this.screen.sounds.pew(pos, this.lastFireTime);
+  this.addBodyVel(vel.scale(-1 * 0.25 * bullet.getBody().mass / this.getBody().mass));
+  this.screen.sounds.bew(pos, this.lastFireTime);
 };
 
 MachineGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {

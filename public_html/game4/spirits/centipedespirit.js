@@ -6,6 +6,8 @@
 function CentipedeSpirit(screen) {
   BaseSpirit.call(this, screen);
   this.type = Game4BaseScreen.SpiritType.CENTIPEDE;
+  this.team = Team.ENEMY;
+
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
 
   this.vecToPlayer = new Vec2d();
@@ -26,10 +28,11 @@ function CentipedeSpirit(screen) {
   this.lastControlTime = this.now();
   this.viewportsFromCamera = 0;
 
-  this.healthFraction = 1;
-
   this.headwardId = 0;
   this.tailwardId = 0;
+
+  this.toughness = 2;
+  this.damage = 1;
 }
 CentipedeSpirit.prototype = new BaseSpirit();
 CentipedeSpirit.prototype.constructor = CentipedeSpirit;
@@ -450,47 +453,22 @@ CentipedeSpirit.prototype.onDraw = function(world, renderer) {
   }
 };
 
-CentipedeSpirit.prototype.onPlayerBulletHit = function(damage) {
-  var rad = this.getBody().rad;
-  this.healthFraction -= damage / (CentipedeSpirit.MAX_HEALTH * rad * rad * rad);
-  if (this.healthFraction <= 0) {
-    this.explode();
-  }
-};
-
 CentipedeSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
   var craterRad = body.rad * 3;
-  this.explosionSplash(pos, craterRad);
-  var bulletRad = body.rad / 2;
-  this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad * 1.75);
-  this.screen.drawTerrainPill(pos, pos, body.rad * 0.7, 0);
+  //this.explosionSplash(pos, craterRad);
+  //var bulletRad = body.rad / 2;
+  //this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad * 1.75);
+  // this.screen.drawTerrainPill(pos, pos, body.rad * 0.7, 0);
   this.screen.sounds.antExplode(pos);
 
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
 };
 
-CentipedeSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
-  var p = Vec2d.alloc();
-  var v = Vec2d.alloc();
-  var bulletCount = Math.floor(3 + bulletRad*5);
-  var a = Math.random() * Math.PI;
-  for (var i = 0; i < bulletCount; i++) {
-    var duration = (6 + 2 * Math.random());
-    var speed = (endRad - startRad) / duration;
-    a += 2 * Math.PI / bulletCount;
-    v.setXY(0, 1).rot(a + Math.random() * Math.PI * 0.15);
-    p.set(v).scale(startRad).add(pos);
-    v.scale(speed);
-    this.addTractorBullet(p, v, bulletRad, duration);
-  }
-  v.free();
-  p.free();
-};
-
 CentipedeSpirit.prototype.explosionSplash = function(pos, rad) {
+  return;
   // TODO: Once ants start exploding again, move this up to Splashes
   var now = this.now();
   // cloud particles
@@ -526,4 +504,8 @@ CentipedeSpirit.prototype.explosionSplash = function(pos, rad) {
     dy = 2 * Math.cos(dir) * explosionRad / duration;
     addSplash(x, y, dx, dy, duration, 0.3 + Math.random() * 0.1);
   }
+};
+
+CentipedeSpirit.prototype.die = function() {
+  this.explode();
 };
