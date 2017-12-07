@@ -1,0 +1,55 @@
+Collisions can have many results.
+Basic:
+- wall is damaged
+- object bounces
+- object is destroyed
+- new things are created
+- splashes
+- sounds
+- object is altered
+  - damaged
+  - healed
+  - signalled
+  - energized
+  - slimed
+  - iced
+  - stunned
+  - blinded
+- arbitrary code!
+Depends on...
+- contact point
+- mass
+- relative velocity, spin
+- angle of strike
+- elasticity, grip
+- health, damage
+- team membership? Or try not to worry about that?
+- damage type and immunities?
+  - kinetic
+  - fire
+
+* fundamental rules:
+  1) Exactly two objects collide.
+  2) Collision effects are simultaneous. Execution order must not matter.
+ - small number of re-usable collision-resolution spirit labels?
+   - wall (special because digging and stuff)
+   - neutral
+   - neutral fire - in the best world all fire would be neutral. Worth trying?
+   - player - hurt by enemy+neutral fire
+   - player fire
+   - enemy - hurt by player+neutral fire. Includes slow enemy missiles
+   - enemy fire
+ - reduce to just "being" and "fire", and team?
+ - centralized rules for resolving collisions among these.
+
+* common spirit system for all combat so I don't have an n^2 problem
+- spirit API
+  - defender
+    - takesDamage() boolean
+    - applyDamage(float)
+      - die()
+  - attacker
+    - getCollisionDamage(collision) float
+- health
+- damage
+- death

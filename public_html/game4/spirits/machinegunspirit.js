@@ -195,7 +195,7 @@ MachineGunSpirit.prototype.fire = function() {
   if (!pos) return;
   var angPos = this.getBodyAngPos();
   var speed = 3;
-  var dist = 50 * (1 + Math.random() * 0.2);
+  var dist = 30 * (1 + Math.random() * 0.2);
   var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.01 * (Math.random() - 0.5)).scaleToLength(speed);
   var rad = 0.5;
   var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos, vel, rad, dist / speed));
