@@ -330,3 +330,13 @@ BaseSpirit.prototype.applyDamage = function(damage) {
     this.die();
   }
 };
+
+/**
+ * Called after bouncing and damage exchange are done.
+ * @param collisionVec
+ * @param otherBody
+ * @param otherSpirit
+ */
+BaseSpirit.prototype.onHitOther = function(collisionVec, otherBody, otherSpirit) {
+  // override me!
+};

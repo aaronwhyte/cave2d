@@ -83,12 +83,10 @@ ActivatorBulletSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
-ActivatorBulletSpirit.prototype.onHitActivatable = function(otherSpirit, pos) {
-  otherSpirit.addInputPulse(this.now() + ActivatorBulletSpirit.INPUT_DURATION, 1);
-  this.destroyBody();
-};
-
-ActivatorBulletSpirit.prototype.onHitOther = function(pos) {
+ActivatorBulletSpirit.prototype.onHitOther = function(collisionVeg, mag, otherBody, otherSpirit) {
+  if (otherSpirit && otherSpirit.isActivatable()) {
+    otherSpirit.addInputPulse(this.now() + ActivatorBulletSpirit.INPUT_DURATION, 1);
+  }
   this.destroyBody();
 };
 

@@ -7,8 +7,17 @@
 function Game4HitResolver(screen, bouncer) {
   this.screen = screen;
   this.bouncer = bouncer;
+  this.vec = new Vec2d();
 }
 
+/**
+ * @param {number} time
+ * @param {Vec2d} collisionVec   Vector along which collision acceleration should be applied,
+ * for default elastic collision resolution.
+ * Its magnitude doesn't signify.
+ * @param {Body} b0
+ * @param {Body} b1
+ */
 Game4HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   // To prevent object interpenetration, do this.
   // To encourage it, don't do this. :-p
@@ -31,10 +40,11 @@ Game4HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
       s1 = this.screen.getSpiritForBody(b1);
     }
   }
-
-  // TODO: some other kind of onBounce handler
-  if (s0 && s0.addTrailSegment) s0.addTrailSegment();
-  if (s1 && s1.addTrailSegment) s1.addTrailSegment();
+  if (s0 || s1) {
+    var mag = this.getHitMagnitude(collisionVec, b0, b1);
+    if (s0) s0.onHitOther(collisionVec, mag, b1, s1);
+    if (s1) s1.onHitOther(collisionVec, mag, b0, s0);
+  }
 
 
   // Mutate each simultaneously:
@@ -47,47 +57,10 @@ Game4HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   var pos = this.getHitPos(time, collisionVec, b0, b1, vec);
   var otherBody, otherSpirit;
 
-  // var playerBody = this.screen.bodyIfSpiritType(Game4BaseScreen.SpiritType.PLAYER, b0, b1);
-  // if (playerBody) {
-  //   var playerSpirit = this.screen.getSpiritForBody(playerBody);
-  //   var antBody = this.screen.bodyIfSpiritType(Game4BaseScreen.SpiritType.ANT, b0, b1);
-  //   if (antBody) {
-  //     this.screen.killPlayerSpirit(playerSpirit);
-  //   }
   //   if (!antBody) {
   //     // TODO: thump on wall hit, not on "else"
   //     this.screen.sounds.wallThump(pos, mag * 10);
   //   }
-  // }
-  //
-  // var bulletBody = this.screen.bodyIfSpiritType(Game4BaseScreen.SpiritType.BULLET, b0, b1);
-  // if (bulletBody) {
-  //   var bulletSpirit = this.screen.getSpiritForBody(bulletBody);
-  //   otherBody = this.screen.otherBody(bulletBody, b0, b1);
-  //   otherSpirit = this.screen.getSpiritForBody(otherBody);
-  //   if (!otherSpirit) {
-  //     // wall?
-  //     bulletSpirit.onHitWall(mag, pos);
-  //   } else if (otherSpirit.type === Game4BaseScreen.SpiritType.ANT) {
-  //     otherSpirit.onPlayerBulletHit(bulletSpirit.damage);
-  //     bulletSpirit.onHitEnemy(mag, pos);
-  //   } else if (otherSpirit.type === Game4BaseScreen.SpiritType.BULLET) {
-  //     bulletSpirit.onHitOther(mag, pos);
-  //     otherSpirit.onHitOther(mag);
-  //   } else {
-  //     bulletSpirit.onHitOther(mag, pos);
-  //   }
-  // }
-
-  var abb = this.screen.bodyIfSpiritType(Game4BaseScreen.SpiritType.ACTIVATOR_BULLET, b0, b1);
-  if (abb) {
-    var abbs = this.screen.getSpiritForBody(abb);
-    otherBody = this.screen.otherBody(abb, b0, b1);
-    otherSpirit = this.screen.getSpiritForBody(otherBody);
-    if (otherSpirit && otherSpirit.isActivatable()) {
-      abbs.onHitActivatable(otherSpirit, pos);
-    }
-  }
 
   var ebb = this.screen.bodyIfSpiritType(Game4BaseScreen.SpiritType.ENERGY_BULLET, b0, b1);
   if (ebb) {
@@ -99,9 +72,12 @@ Game4HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
     }
   }
   vec.free();
-
 };
 
 Game4HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
   return this.bouncer.getHitPos(time, collisionVec, b0, b1, out);
+};
+
+Game4HitResolver.prototype.getHitMagnitude = function(collisionVec, b0, b1) {
+  return  mag = this.vec.set(b1.vel).subtract(b0.vel).projectOnto(collisionVec).magnitude();
 };

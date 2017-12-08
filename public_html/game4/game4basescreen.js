@@ -212,3 +212,7 @@ Game4BaseScreen.prototype.addKickMissSplash = function(scanPos, scanVel) {
 Game4BaseScreen.prototype.addPlayerExplosionSplash = function(pos, color) {
   this.splashes.addPlayerExplosionSplash(this.world.now, pos, color);
 };
+
+Game4BaseScreen.prototype.addEnemyExplosion = function(pos, rad, color) {
+  this.splashes.addEnemyExplosion(this.world.now, pos, rad, color);
+};

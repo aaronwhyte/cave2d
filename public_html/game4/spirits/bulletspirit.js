@@ -37,11 +37,7 @@ BulletSpirit.prototype.reset = function(screen) {
   this.segStartVec.reset();
   this.segEndVec.reset();
 
-  this.health = 1;
-  this.digChance = 0.1;
-  this.bounceChance = 0.1;
-
-  this.toughness = Infinity;
+  this.toughness = 1;
   this.damage = 1;
 
   this.wallDamageMultiplier = 1;
@@ -112,21 +108,6 @@ BulletSpirit.prototype.setColorRGB = function(r, g, b) {
 //       this.destroyBody();
 //     }
 //     this.sounds.wallThump(pos, mag * body.mass);
-//   }
-// };
-
-// BulletSpirit.prototype.onHitOther = function(mag, pos) {
-//   var body = this.getBody();
-//   if (!body) return;
-//   // bounce or vanish?
-//   this.health -= mag / 5;
-//   if (this.health <= 0) {
-//     // vanish
-//     this.destroyBody();
-//   } else {
-//     // bounce
-//     this.addTrailSegment();
-//     this.wallDamageSplash(pos, body.rad);
 //   }
 // };
 
@@ -252,4 +233,16 @@ BulletSpirit.prototype.setFromJSON = function(json) {
 
 BulletSpirit.prototype.die = function() {
   this.destroyBody();
+};
+
+BulletSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+  var body = this.getBody();
+  if (!body) return;
+
+  // bounce or vanish?
+  this.applyDamage(mag * 0.4);
+  if (this.health > 0) {
+    // bounce
+    this.addTrailSegment();
+  }
 };

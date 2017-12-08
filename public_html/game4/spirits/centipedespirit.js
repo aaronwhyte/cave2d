@@ -45,7 +45,6 @@ CentipedeSpirit.MAX_TIMEOUT = 10;
 CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
 CentipedeSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 CentipedeSpirit.STOPPING_ANGVEL = 0.01;
-CentipedeSpirit.MAX_HEALTH = 3;
 CentipedeSpirit.OPTIMIZE = true;
 
 CentipedeSpirit.SCHEMA = {
@@ -456,54 +455,12 @@ CentipedeSpirit.prototype.onDraw = function(world, renderer) {
 CentipedeSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  var craterRad = body.rad * 3;
-  //this.explosionSplash(pos, craterRad);
-  //var bulletRad = body.rad / 2;
-  //this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad * 1.75);
-  // this.screen.drawTerrainPill(pos, pos, body.rad * 0.7, 0);
+  var craterRad = body.rad * 5;
+  this.screen.addEnemyExplosion(pos, craterRad, this.vec4.setXYZ(1, 0.1, 0.1));
   this.screen.sounds.antExplode(pos);
 
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
-};
-
-CentipedeSpirit.prototype.explosionSplash = function(pos, rad) {
-  return;
-  // TODO: Once ants start exploding again, move this up to Splashes
-  var now = this.now();
-  // cloud particles
-  var s = this.screen.splash;
-  var x = pos.x;
-  var y = pos.y;
-  var self = this;
-  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
-
-  function addSplash(x, y, dx, dy, duration, sizeFactor) {
-    s.reset(Game4BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
-    s.startTime = now;
-    s.duration = duration;
-
-    s.startPose.pos.setXYZ(x, y, -0.9);
-    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0.9);
-    var startRad = sizeFactor * rad;
-    s.startPose.scale.setXYZ(startRad, startRad, 1);
-    s.endPose.scale.setXYZ(0, 0, 1);
-    s.startColor.setXYZ(0, 1, 0); // ant-ish color
-    s.endColor.setXYZ(0, 0.4, 0);
-    // s.endColor.setXYZ(0.2, 0.3, 0.6); // wall color
-    self.screen.splasher.addCopy(s);
-  }
-
-  particles = Math.ceil(5 * (1 + 0.5 * Math.random()));
-  explosionRad = rad/2;
-  dirOffset = 2 * Math.PI * Math.random();
-  for (i = 0; i < particles; i++) {
-    duration = 10 * Math.random() + 6;
-    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = 2 * Math.sin(dir) * explosionRad / duration;
-    dy = 2 * Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.3 + Math.random() * 0.1);
-  }
 };
 
 CentipedeSpirit.prototype.die = function() {

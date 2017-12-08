@@ -15,7 +15,8 @@ Splashes.Type = {
   NOTE: 1,
   SCAN: 2,
   WALL_DAMAGE: 3,
-  ERROR: 4
+  ENEMY_EXPLOSION: 4,
+  ERROR: 5
 };
 
 Splashes.prototype.addPlayerSpawnSplash = function(now, pos, bodyRad, color) {
@@ -45,6 +46,44 @@ Splashes.prototype.addPlayerSpawnSplash = function(now, pos, bodyRad, color) {
 
   this.splasher.addCopy(s);
 };
+
+Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
+  // cloud particles
+  var s = this.splash;
+  var x = pos.x;
+  var y = pos.y;
+  var self = this;
+
+  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+
+  function addSplash(x, y, dx, dy, duration, sizeFactor) {
+    s.reset(Splashes.ENEMY_EXPLOSION, self.stamps.circleStamp);
+    s.startTime = now;
+    s.duration = duration;
+
+    s.startPose.pos.setXYZ(x, y, -0.9);
+    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0.9);
+    var startRad = sizeFactor * rad;
+    s.startPose.scale.setXYZ(startRad, startRad, 1);
+    s.endPose.scale.setXYZ(0, 0, 1);
+    s.startColor.set(color);
+    s.endColor.set(color).scale1(0.25);
+    self.splasher.addCopy(s);
+  }
+
+  particles = Math.ceil(5 * (1 + 0.5 * Math.random()));
+  explosionRad = rad/2;
+  dirOffset = 2 * Math.PI * Math.random();
+  for (i = 0; i < particles; i++) {
+    duration = 10 * Math.random() + 6;
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
+    dx = 2 * Math.sin(dir) * explosionRad / duration;
+    dy = 2 * Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 0.3 + Math.random() * 0.1);
+  }
+};
+
+
 
 Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
   var s = this.splash;
