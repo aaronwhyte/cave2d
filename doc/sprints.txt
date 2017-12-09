@@ -285,24 +285,27 @@ v centipede
   v get unstuck by reversing and bisecting
 
 
-- simple combat system
-  - collision system
+done 2017-12-08
+v simple combat system
+  v collision system
     v pull out collision resolution class
     v teams
     v get damages based on other spirit teams
     v do damages
       v handle deaths with generic explosion
     v do bounce physics regardless?
-    - bullets could die after hitting a thing, even if not damaged
-      - onHitOther() gives bullets a chance to die after hitting something
-        - die after doing damage
-        - check to see if bouncing is OK and die if not
-  - enemy explosion splashes
+    v bullets could die after hitting a thing, even if not damaged
+      v onHitOther() gives bullets a chance to die after hitting something
+        v die after doing damage
+        v check to see if bouncing is OK and die if not
+  v enemy explosion splashes
+
 - bullet-gun for player
   v shoots
   v physical recoil
   v shot sound
   - muzzle flash
+
 - bullet details
   - at range timeout
   - at hit
