@@ -64,26 +64,33 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
     s.startPose.pos.setXYZ(x, y, -0.9);
     s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0.9);
     var startRad = sizeFactor * rad;
+    var endRad = 0;//startRad / 10;
     s.startPose.scale.setXYZ(startRad, startRad, 1);
-    s.endPose.scale.setXYZ(0, 0, 1);
+    s.endPose.scale.setXYZ(endRad, endRad, 1);
     s.startColor.set(color);
     s.endColor.set(color).scale1(0.25);
     self.splasher.addCopy(s);
   }
 
-  particles = Math.ceil(5 * (1 + 0.5 * Math.random()));
-  explosionRad = rad/2;
+  particles = Math.ceil(4 * (1 + Math.random()));
+  explosionRad = rad;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    duration = 10 * Math.random() + 6;
+    duration = 8 * (1 + Math.random());
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/2;
+    dx = 1.5 * Math.sin(dir) * explosionRad / duration;
+    dy = 1.5 * Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 0.1);
+  }
+  particles = Math.ceil(5 * (1 + 0.5 * Math.random()));
+  for (i = 0; i < particles; i++) {
+    duration = 12 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = 2 * Math.sin(dir) * explosionRad / duration;
-    dy = 2 * Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.3 + Math.random() * 0.1);
+    dx = 0.3 * Math.sin(dir) * explosionRad / duration;
+    dy = 0.3 * Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 0.3);
   }
 };
-
-
 
 Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
   var s = this.splash;
@@ -370,11 +377,15 @@ Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1
   this.splasher.addCopy(s);
 };
 
-Splashes.prototype.addLineBurst = function(now, duration, center, r, color) {
-  var lineCount = 3 + Math.floor(Math.random() * 2);
-  var angle = Math.random() * 2 * Math.PI;
-  for (var i = 0; i < lineCount; i++) {
-    angle += 2 * Math.PI / lineCount;
-    this.addMovingLine
-  }
+// Splashes.prototype.addLineBurst = function(now, duration, center, r, color) {
+//   var lineCount = 3 + Math.floor(Math.random() * 2);
+//   var angle = Math.random() * 2 * Math.PI;
+//   for (var i = 0; i < lineCount; i++) {
+//     angle += 2 * Math.PI / lineCount;
+//     this.addMovingLine
+//   }
+// };
+
+Splashes.prototype.addBulletMuzzleFlash = function(now, pos, angPos) {
+
 };
