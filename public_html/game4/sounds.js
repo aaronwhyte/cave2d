@@ -51,7 +51,7 @@ Sounds.prototype.bew = function(worldPos, now) {
   var attack = 0.2/60;
   var sustain = 2/60;
   var decay = 4/60;
-  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'square');
+  this.sfx.sound(x, y, 0, 0.7 + 0.2 * Math.random(), attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'square');
 };
 
 Sounds.prototype.shotgun = function(worldPos) {
