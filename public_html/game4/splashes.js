@@ -392,3 +392,25 @@ Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1
 Splashes.prototype.addBulletMuzzleFlash = function(now, pos, angPos) {
 
 };
+
+Splashes.prototype.addDotSplash = function(now, pos, r, g, b) {
+  var s = this.splash;
+  s.reset(Splashes.Type.NOTE, this.stamps.circleStamp);
+  s.startTime = now;
+  var x = pos.x;
+  var y = pos.y;
+  var rad = 0.2;
+  s.duration = 4;
+  s.startPose.pos.setXYZ(x, y, -0.99);
+  s.endPose.pos.setXYZ(x, y, -0.99);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(0, 0, 1);
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  s.startColor.setXYZ(r, g, b);
+  s.endColor.setXYZ(r, g, b);
+
+  this.splasher.addCopy(s);
+};
+

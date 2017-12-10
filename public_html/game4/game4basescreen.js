@@ -40,7 +40,9 @@ Game4BaseScreen.prototype = new WorldScreen();
 Game4BaseScreen.prototype.constructor = Game4BaseScreen;
 
 Game4BaseScreen.WIDGET_RADIUS = 30;
-Game4BaseScreen.CAMERA_VIEW_DIST = 25;
+
+// This only matters for the editor.
+Game4BaseScreen.CAMERA_VIEW_DIST = 50;
 
 // Makes distortions smooth by eliminating T-junctions and making tile models more detailed.
 Game4BaseScreen.USE_FANS = true;
@@ -215,4 +217,8 @@ Game4BaseScreen.prototype.addPlayerExplosionSplash = function(pos, color) {
 
 Game4BaseScreen.prototype.addEnemyExplosion = function(pos, rad, color) {
   this.splashes.addEnemyExplosion(this.world.now, pos, rad, color);
+};
+
+Game4BaseScreen.prototype.addBulletMuzzleFlash = function(pos, angPos) {
+  this.splashes.addBulletMuzzleFlash(this.world.now, pos, angPos);
 };

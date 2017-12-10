@@ -206,6 +206,7 @@ MachineGunSpirit.prototype.fire = function() {
   this.lastFireTime = this.now();
   this.addBodyVel(vel.scale(-1 * 0.25 * bullet.getBody().mass / this.getBody().mass));
   this.screen.sounds.bew(pos, this.lastFireTime);
+  this.screen.addBulletMuzzleFlash(vel.scaleToLength(this.getBody().rad).add(pos), angPos);
 };
 
 MachineGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
