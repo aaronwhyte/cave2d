@@ -9,7 +9,9 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.adventureName = adventureName;
   this.levelName = levelName;
 
-  this.camera = new Camera(0.05, Infinity, Game4BaseScreen.CAMERA_VIEW_DIST);
+  this.camera = new Camera(0.02, Infinity, Game4BaseScreen.CAMERA_VIEW_DIST);
+  this.camera.followFraction = 0.25;
+
   this.viewableWorldRect = new Rect();
   this.pixelsPerMeter = 100;
 

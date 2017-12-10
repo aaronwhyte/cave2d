@@ -72,26 +72,27 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
     self.splasher.addCopy(s);
   }
 
-  particles = Math.ceil(6 * (1 + Math.random()));
+  particles = Math.ceil(4 * (1 + Math.random()));
   explosionRad = rad;
   dirOffset = 2 * Math.PI * Math.random();
   // fast ones
   for (i = 0; i < particles; i++) {
-    duration = 14 * (0.5 + Math.random());
-    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/2;
+    duration = 10 * (1 + 0.4 * Math.random());
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random() * 1.5;
     var r = (2 + Math.random()) * 0.5;
     dx = r * Math.sin(dir) * explosionRad / duration;
     dy = r * Math.cos(dir) * explosionRad / duration;
     addSplash(x, y, dx, dy, duration, 0.1);
   }
-  // slow cloud
+  // middle cloud
   particles = Math.ceil(4 * (1 + Math.random()));
   for (i = 0; i < particles; i++) {
-    duration = 15 * (1 + Math.random());
+    duration = 10 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    dx = 0.5 * Math.sin(dir) * explosionRad / duration;
-    dy = 0.5 * Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.23);
+    var r = 0.5 * Math.random();
+    dx = r * Math.sin(dir) * explosionRad / duration;
+    dy = r * Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 0.3);
   }
 };
 

@@ -455,7 +455,7 @@ CentipedeSpirit.prototype.onDraw = function(world, renderer) {
 CentipedeSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  var craterRad = body.rad * 5;
+  var craterRad = body.rad * 6;
   this.screen.addEnemyExplosion(pos, craterRad, this.vec4.setXYZ(1, 1, 1));
   this.screen.sounds.antExplode(pos);
 
