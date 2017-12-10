@@ -44,8 +44,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 1;
 
-PlayerSpirit.SPEED = 2;
-PlayerSpirit.TRACTION = 0.07;
+PlayerSpirit.SPEED = 5;
+PlayerSpirit.TRACTION = 0.02;
 PlayerSpirit.KEY_MULT_ADJUST = 0.075;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -53,15 +53,18 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.WIELD_MAX_ACCEL = 6 * 0.7;
-PlayerSpirit.WIELD_MAX_FORCE = 1.8 * 0.7;
+PlayerSpirit.WIELD_MAX_ACCEL = 6 * 1.2;
+PlayerSpirit.WIELD_MAX_FORCE = 1.8 * 1.2;
 PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
-PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/5;
+PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/4;
+PlayerSpirit.SEEKSCAN_FAN_ANGLE = Math.PI / 2;
+PlayerSpirit.SEEKSCAN_FORCE = 0.3;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
+
 // dist from player surface
 PlayerSpirit.GRAB_DIST = PlayerSpirit.WIELD_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
-PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
 
 // If the tractor beam is obstructed this many times in a row, it will break.
 PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
@@ -153,11 +156,15 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
 
   b.turnable = true;
   b.moi = b.mass * b.rad * b.rad / 2;
-  b.grip = 0.5;
-  b.elasticity = 0.7;
+  b.grip = 0.3;
+  b.elasticity = 0.25;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
   b.spiritId = this.id;
   return b;
+};
+
+PlayerSpirit.prototype.getCameraFocusPos = function() {
+  return this.vec2d.set(this.aim).scaleToLength(PlayerSpirit.PLAYER_RAD * 3).add(this.getBodyPos());
 };
 
 PlayerSpirit.prototype.handleInput = function(controls) {
@@ -407,7 +414,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
   var bestBody = null;
   var bestResultFraction = 2;
   var maxScanDist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD;
-  var maxFanRad = Math.PI / 8;
+  var maxFanRad = PlayerSpirit.SEEKSCAN_FAN_ANGLE;
   var scans = 1;
   var thisRad = this.getBody().rad;
   var scanPos = Vec2d.alloc().set(this.getBodyPos());
@@ -416,7 +423,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
   var forceVec = Vec2d.alloc();
   var forcePos = Vec2d.alloc();
   for (var i = 0; i < scans; i++) {
-    var radUnit = 2 * (Math.random()-0.5);
+    var radUnit = Math.random()-0.5;
     scanVel.setXY(0, maxScanDist + thisRad)
         .rot(radUnit * maxFanRad)
         .scaleXY(0.5, 1)
@@ -429,7 +436,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
         // pull it closer
         forcePos.set(scanVel).scale(resultFraction).add(scanPos).scale(0.1)
             .add(foundBody.getPosAtTime(this.now(), this.vec2d)).scale(1 / (1 + 0.1));
-        forceVec.set(scanVel).scaleToLength(-(1 - resultFraction * 0.9) * 0.2);
+        forceVec.set(scanVel).scaleToLength(-(1 - resultFraction * 0.9) * PlayerSpirit.SEEKSCAN_FORCE);
         foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, this.now());
         this.screen.addTractorSeekSplash(true, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
         splashed = true;
@@ -560,9 +567,10 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAcc
 
     if (isAngular) {
       p0 = deltaPos.angle() - restingAngle;
-      maxA = maxAccel * (Math.min(Math.abs(p0), Math.PI / 4)) * 0.5;
       while (p0 < -Math.PI) p0 += 2 * Math.PI;
       while (p0 > Math.PI) p0 -= 2 * Math.PI;
+      maxA = maxAccel;
+      p0 = Math.clip(p0, -Math.PI / 2, Math.PI / 2);
 
       v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(-1).rot90Right());
 

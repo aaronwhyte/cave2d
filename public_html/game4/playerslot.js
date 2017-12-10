@@ -103,7 +103,7 @@ PlayerSlot.prototype.releaseControls = function() {
  */
 PlayerSlot.prototype.updateViewCircle = function(now) {
   if (this.spirit) {
-    this.camera.follow(this.spirit.getBodyPos());
+    this.camera.follow(this.spirit.getCameraFocusPos());
   }
   this.circle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
   var deathFraction = this.getDeathFraction(now);
@@ -119,7 +119,7 @@ PlayerSlot.prototype.updateViewCircle = function(now) {
     this.camera.cameraPos.set(this.deathPos).scale(1 - camSlideFraction)
         .add(this.vec2d.set(this.respawnPos).scale(camSlideFraction));
   } else {
-    this.circle.pos.set(this.camera.cameraPos);
+    this.circle.pos.set(this.spirit.getBodyPos());
     this.circle.rad *=
         (1 - Game4PlayScreen.STARTING_VIEW_FRACTION) * Math.sin(spawnFraction * Math.PI /2) +
             Game4PlayScreen.STARTING_VIEW_FRACTION;
