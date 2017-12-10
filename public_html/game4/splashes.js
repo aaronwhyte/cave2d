@@ -77,22 +77,22 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
   dirOffset = 2 * Math.PI * Math.random();
   // fast ones
   for (i = 0; i < particles; i++) {
-    duration = 10 * (1 + 0.4 * Math.random());
+    duration = 10 * (0.7 + 0.3 * Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random() * 1.5;
-    var r = (2 + Math.random()) * 0.5;
+    var r = (1.7 + Math.random()) * 0.5;
     dx = r * Math.sin(dir) * explosionRad / duration;
     dy = r * Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.1);
+    addSplash(x, y, dx, dy, duration, 0.12);
   }
   // middle cloud
   particles = Math.ceil(4 * (1 + Math.random()));
   for (i = 0; i < particles; i++) {
-    duration = 10 * (1 + Math.random());
+    duration = 20 * (0.5 + 0.5 * Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    var r = 0.5 * Math.random();
-    dx = r * Math.sin(dir) * explosionRad / duration;
-    dy = r * Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.3);
+    var r = 0.2 + 0.4 * Math.random();
+    dx = 0.8 * r * Math.sin(dir) * explosionRad / duration;
+    dy = 0.8 * r * Math.cos(dir) * explosionRad / duration;
+    addSplash(x, y, dx, dy, duration, 0.28);
   }
 };
 
