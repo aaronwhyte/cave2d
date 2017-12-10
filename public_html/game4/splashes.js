@@ -72,14 +72,14 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
     self.splasher.addCopy(s);
   }
 
-  particles = Math.ceil(3 * (1 + Math.random()));
+  particles = Math.ceil(6 * (1 + Math.random()));
   explosionRad = rad;
   dirOffset = 2 * Math.PI * Math.random();
   // fast ones
   for (i = 0; i < particles; i++) {
-    duration = 12 * (0.5 + Math.random());
+    duration = 14 * (0.5 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/2;
-    var r = (2 + Math.random()) / 1.7;
+    var r = (2 + Math.random()) * 0.5;
     dx = r * Math.sin(dir) * explosionRad / duration;
     dy = r * Math.cos(dir) * explosionRad / duration;
     addSplash(x, y, dx, dy, duration, 0.1);
@@ -87,7 +87,7 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
   // slow cloud
   particles = Math.ceil(4 * (1 + Math.random()));
   for (i = 0; i < particles; i++) {
-    duration = 14 * (1 + Math.random() + Math.abs(i - particles / 2) / particles);
+    duration = 15 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
     dx = 0.5 * Math.sin(dir) * explosionRad / duration;
     dy = 0.5 * Math.cos(dir) * explosionRad / duration;
@@ -389,18 +389,13 @@ Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1
 //   }
 // };
 
-Splashes.prototype.addBulletMuzzleFlash = function(now, pos, angPos) {
-
-};
-
-Splashes.prototype.addDotSplash = function(now, pos, r, g, b) {
+Splashes.prototype.addDotSplash = function(now, pos, rad, duration, r, g, b) {
   var s = this.splash;
   s.reset(Splashes.Type.NOTE, this.stamps.circleStamp);
   s.startTime = now;
   var x = pos.x;
   var y = pos.y;
-  var rad = 0.2;
-  s.duration = 4;
+  s.duration = duration;
   s.startPose.pos.setXYZ(x, y, -0.99);
   s.endPose.pos.setXYZ(x, y, -0.99);
   s.startPose.scale.setXYZ(rad, rad, 1);

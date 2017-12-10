@@ -204,9 +204,13 @@ MachineGunSpirit.prototype.fire = function() {
   bullet.team = Team.PLAYER;
 
   this.lastFireTime = this.now();
-  this.addBodyVel(vel.scale(-1 * 0.25 * bullet.getBody().mass / this.getBody().mass));
   this.screen.sounds.bew(pos, this.lastFireTime);
-  this.screen.addBulletMuzzleFlash(vel.scaleToLength(this.getBody().rad).add(pos), angPos);
+  this.screen.splashes.addDotSplash(this.now(),
+      this.vec2d2.set(vel).scaleToLength(this.getBody().rad * 1.5).add(pos),
+      rad * 2.5, 0.7,
+      1, 0.5, 0.5);
+
+  this.addBodyVel(vel.scale(-1 * 0.25 * bullet.getBody().mass / this.getBody().mass));
 };
 
 MachineGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {

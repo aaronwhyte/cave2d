@@ -44,8 +44,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 1;
 
-PlayerSpirit.SPEED = 5;
-PlayerSpirit.TRACTION = 0.02;
+PlayerSpirit.SPEED = 10;
+PlayerSpirit.TRACTION = 0.01;
 PlayerSpirit.KEY_MULT_ADJUST = 0.075;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -53,8 +53,8 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.WIELD_MAX_ACCEL = 6 * 1.2;
-PlayerSpirit.WIELD_MAX_FORCE = 1.8 * 1.2;
+PlayerSpirit.WIELD_MAX_ACCEL = 3;
+PlayerSpirit.WIELD_MAX_FORCE = 1.5;
 PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 

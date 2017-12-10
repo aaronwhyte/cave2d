@@ -300,17 +300,17 @@ v simple combat system
         v check to see if bouncing is OK and die if not
   v enemy explosion splashes
 
-- bullet-gun for player
+v bullet-gun for player
   v shoots
   v physical recoil
   v shot sound
-  - muzzle flash
+  v muzzle flash
 
 - bullet details
-  - at range timeout
-  - at hit
-  - on bounce?
-  - hit noise
+  v splash at range timeout
+  v at hit
+  x on bounce?
+  v hit noise
   - bounce noise
 
 
