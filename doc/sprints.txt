@@ -306,14 +306,13 @@ v bullet-gun for player
   v shot sound
   v muzzle flash
 
-- bullet details
+done 2017-12-09
+v bullet details
   v splash at range timeout
   v at hit
   x on bounce?
   v hit noise
-  - bounce noise
-
-
+  x bounce noise
 
 
 CONTROLS
@@ -326,144 +325,42 @@ empty-handed kick and grab
   v rayscans instead of bullets! More efficient, faster, better graphics possibilities
   v splashes
     v splash-lines!
-  - frequency limit
+  x frequency limit
   - sound
+    - non hit
+    - hit
 - grab
   v rayscans instead of bullets
   v splashes
-  - frequency limit
+  x frequency limit
   - sound
+    - no hit
+    - some hit - closeness
+    - grab!
+- release sound
 
-v Fix bug where clicking stuff in pause mode triggers screen-lock
+WEAPONS & ENEMIES
+- shotgun
+- swarm
 
-ENERGY AND ACTIVATION
-Separate activation, which can trigger a device's power, from energy, which is a resource.
-The player can activate a tool, and a sensor can activate a tool.
-But "activation bullets" are no more.
+v rapid-fire
+  - change to laser?
+- centipede
 
-v BaseSpirit
-  * keep existing input/output/pulse biz for activation, but I doubt I'll need the pulses.
-  v energy
-    v setEnergy()
-    v getEnergy()
-    v setEnergyCapacity()
-    v getEnergyCapacity()
-    v addEnergy(), so the collider can call into energy-savvy spirits?
-      v return overflow, negative for underflow, 0 for acceptance.
-    x setEnergyDrainRate? Timer-based discrete addEnergy calls would be fine
-v EnergyBullet
-  v copy activation bullet, but it doesn't activate things, it powers them.
-- EnergyWellSpirit
-  - fires slow short-range energy pulses constantly
-  - not portable!
-- BatterySpirit
-  - Holds up to $capacity of energy
-  - Displays energy vs capacity
-  - when triggered, fires short-range energy pulse from energy reserve, unless empty
-- EnergyRedirectorSpirit
-  * Small capacity
-  * Constantly tries to fire long-range energy pulse from reserve, with some loss
-- OpenerGun
-  * feed it power to cut through a wall. Kind of a key/lock thing but different
-  - immobile?
-  - While powered it melts the wall it is pointed at? Limited range.
-    - OpenerBullet? Or just rayscans and digging.
-  - Uses a lot of power so you need to keep delivering power to cut through a thick wall.
+- wall-hugger missile
+- tunnel lurker
 
+- rail gun
+- summoner
+- turret
 
-- Pull drawTrail up to BaseSpirit.
+- grenade launcher
+- sniper
 
-- TickTockTrigger
-  - alternately triggers and doesn't trigger the thing it's pointed at. Square-wave.
-  - program it with a one-time run of triggering, from start to stop, which sets its interval
-  * that way you can program one to match another one! Synchronize!
+- rocket launcher
 
-- Integration test
-  - well feeds battery
-  - tick-tock triggers battery
-  - battery fuels redirector
+- ice beam
 
+- slime splaasher
 
-- PlasmaSpirit
-  - a fast flying projectile
-  - kills player
-  - kills enemies
-
-- AntiPlayerPlasmaTurretSpirit
-  - covers limited angle and range
-  - scans for players (efficiently, cheating) and fires at 'em
-  - requires energy - a little to scan, a lot to fire
-
-- VanishingDoorSpirit
-  - When powered all the way up, the door opens permanently
-
-- WallEraserSpirit
-  - When powered and triggered, it
-
-PROPS & ITEMS
-
-slime berries
-- slime bullet
-- slime effect
-  -
-- big monster eats slime-covered things
-- pinball bumper fun when slimed!
-
-fire
-- blind periodic turret
-- immovable explosive
-
-
-
-OPTIMIZATION
-
-- Re-use solid wall models
-
-
-
-DECORATION
-
-Vertex shaders
-- pulse ring
-- limit circle
-
-- new exit sequence
-  - when players in exit position, increase exit-ness
-    - exit vacuum distortion
-    - zoom in?
-    - player-shaped splashes drifting towards exit center?
-  - actual exitness is on a spring
-  - dest exitness increases with continuous duration of player exit readyness
-  - dest exitness resets to 0 if anyone leaves exit readyness
-  - when dest exitness reaches threshold, then do final real no-effects exit
-
-Effects
-- pulse splashes
-  - muzzle-flash when firing
-  - 3-5 splash particles on wasted hit
-  - cleaner flash on activation hit - circle? arrowhead? sparkles?
-- fix weird noise when activator bullet hits player
-
-- equipment continuity?
-  - remember equipment on exit
-  - restore equipment on entrance (but not on respawn!)
-
-- entrance 3
-  - continuation of player equipment
-    (this is the real motive for making it to the exit, instead of dying and respawning. Plus honor I guess.)
-
-  - warp in one player at a time, with queue
-  - if players enqueued,
-    - randomly pick rotation
-    - rayscan for room for equipment and player
-    - if room, place them both with quick diminishing-vacuum distort (mark both and only draw them with distortion)
-    - else apply force to whatever the scan hit to try to make room
-
-- beam shader
-  - 2d mesh
-  - params
-    - endpoint positions
-    - endpoint sizes
-    - squash/stretch
-    - wave magnitude, offset, and frequency
 
