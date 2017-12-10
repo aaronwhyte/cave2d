@@ -28,7 +28,7 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.splashes = new Splashes(this.splasher, this.stamps);
 
-  this.levelColorVector.setRGBA(0.2, 0.3, 0.8, 1);
+  this.levelColorVector.setRGBA(0.2, 0.3, 0.9, 1);
 
   this.timeMultiplier = 1;
 
@@ -44,7 +44,7 @@ Game4BaseScreen.prototype.constructor = Game4BaseScreen;
 Game4BaseScreen.WIDGET_RADIUS = 30;
 
 // This only matters for the editor.
-Game4BaseScreen.CAMERA_VIEW_DIST = 50;
+Game4BaseScreen.CAMERA_VIEW_DIST = 40;
 
 // Makes distortions smooth by eliminating T-junctions and making tile models more detailed.
 Game4BaseScreen.USE_FANS = true;
