@@ -188,19 +188,19 @@ Splashes.prototype.addKickHitSplash = function(now, scanPos, scanVel, resultFrac
   var v = Vec2d.alloc();
   var color = Vec4.alloc(0, 1, 0, 0);
   var r = PlayerSpirit.SEEKSCAN_RAD;
-  var dur = (Splashes.KICK_START_DUR_BASE + Math.random()) * resultFraction;
   var p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanPos));
   var p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(Math.min(0.3, resultFraction)).add(scanPos));
   var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
   var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
+  var dur = (Splashes.KICK_START_DUR_BASE + Math.random()) * resultFraction;
   this.addMovingLine(now, dur, p0t0, p1t0, r, p0t1, p1t1, r, color);
 
   var lineCount = 1 + Math.floor(Math.random() * 2);
   p0t0.set(p1t1);
   scanVel.scaleToLength(1); // re-use
   for (var i = 0; i < lineCount; i++) {
-    dur = 6 * (1 + Math.random());
-    var burstRad = 16 * r * (Math.random() + 0.1);
+    dur = 3 * (1 + Math.random());
+    var burstRad = 8 * r * (Math.random() + 0.1);
     v.set(scanVel).rot(Math.PI * (1 - resultFraction) * (Math.random() - 0.5));
     p1t0.setXYFromVec2d(v).scale1(burstRad * 0.25).add(p0t0);
     p0t1.setXYFromVec2d(v).scale1(burstRad * 0.9).add(p0t0);
