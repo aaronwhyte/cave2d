@@ -44,8 +44,14 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 1;
 
+// floaty!
 PlayerSpirit.SPEED = 8;
 PlayerSpirit.TRACTION = 0.015;
+
+// // tight
+// PlayerSpirit.SPEED = 0.7;
+// PlayerSpirit.TRACTION = 0.7;
+
 PlayerSpirit.KEY_MULT_ADJUST = 0.075;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
@@ -62,6 +68,8 @@ PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/4;
 PlayerSpirit.SEEKSCAN_FAN_ANGLE = Math.PI / 2;
 PlayerSpirit.SEEKSCAN_FORCE = 0.3;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
+
+PlayerSpirit.KICK_FORCE = 0.7;
 
 // dist from player surface
 PlayerSpirit.GRAB_DIST = PlayerSpirit.WIELD_BREAK_DIST - PlayerSpirit.SEEKSCAN_RAD;
@@ -447,6 +455,9 @@ PlayerSpirit.prototype.handleSeeking = function() {
           bestBody = foundBody;
         }
       }
+      this.screen.sounds.playerSeekHum(scanPos, resultFraction);
+    } else {
+      //this.screen.sounds.playerSeekHum(scanPos, 1);
     }
     if (!splashed)  {
       this.screen.addTractorSeekSplash(false, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
@@ -721,6 +732,7 @@ PlayerSpirit.prototype.freeKick = function(spread) {
   var forceVec = Vec2d.alloc();
   var forcePos = Vec2d.alloc();
   for (var i = 0; i < shots; i++) {
+    var forceMag = 0;
     var angle = angPos + spread * (i + 0.5) / shots - spread / 2;
     var dist = PlayerSpirit.PLAYER_RAD * 11;
     scanVel.setXY(0, dist).rot(angle);
@@ -736,13 +748,17 @@ PlayerSpirit.prototype.freeKick = function(spread) {
             .scale(1 / (1 + contactPointMix))
             .add(scanPos);
         // Force in the direction of the scan.
-        forceVec.set(scanVel).scaleToLength(0.5);
+        forceVec.set(scanVel).scaleToLength(PlayerSpirit.KICK_FORCE);
         foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, this.now());
         this.screen.addKickHitSplash(scanPos, scanVel, resultFraction);
         splashed = true;
+        forceMag += forceVec.magnitude();
       }
     }
-    if (!splashed)  {
+    this.screen.sounds.playerKickHum(scanPos);
+    if (forceMag) {
+      this.screen.sounds.wallThump(forcePos, forceMag * 3);
+    } else {
       this.screen.addKickMissSplash(scanPos, scanVel);
     }
   }

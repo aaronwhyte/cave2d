@@ -18,10 +18,14 @@ function BaseSpirit(screen) {
   // Target also maintains map from pulse input end time to pulse input value.
   this.pulseEndToVal = {};
 
+  this.lastThumpSoundTime = 0;
+
   BaseSpirit.prototype.reset.call(this, screen);
 }
 BaseSpirit.prototype = new Spirit();
 BaseSpirit.prototype.constructor = BaseSpirit;
+
+BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME = 1;
 
 BaseSpirit.prototype.reset = function(screen) {
   this.screen = screen;
@@ -333,10 +337,18 @@ BaseSpirit.prototype.applyDamage = function(damage) {
 
 /**
  * Called after bouncing and damage exchange are done.
- * @param collisionVec
- * @param otherBody
- * @param otherSpirit
+ * @param {Vec2d} collisionVec
+ * @param {Number} mag the magnitude of the collision, kinda?
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
  */
-BaseSpirit.prototype.onHitOther = function(collisionVec, otherBody, otherSpirit) {
-  // override me!
+BaseSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+  // Override me!
+  var body = this.getBody();
+  if (!body) return;
+  var now = this.now();
+  if (this.lastThumpSoundTime + BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME < this.now()) {
+    this.screen.sounds.wallThump(this.getBodyPos(), mag);
+  }
+  this.lastThumpSoundTime = now;
 };

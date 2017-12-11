@@ -312,13 +312,13 @@ v bullet details
   v at hit
   x on bounce?
   v hit noise
-  x bounce noise
+  v bounce noise
 
 
 CONTROLS
 
 empty-handed kick and grab
-- kick
+v kick
   v instant, not sustained
   x actual repulsor shotgun
     * tried it but didn't like it
@@ -326,14 +326,15 @@ empty-handed kick and grab
   v splashes
     v splash-lines!
   x frequency limit
-  - sound
-    - non hit
-    - hit
+  v sound
+    v non hit
+    v hit
 - grab
   v rayscans instead of bullets
   v splashes
   x frequency limit
   - sound
+    - continuous sound object!
     - no hit
     - some hit - closeness
     - grab!

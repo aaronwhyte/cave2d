@@ -18,9 +18,14 @@ HitResolver.VERIFY_KINETIC_ENERGY_PRESERVED = false;
  * @param {Vec2d} collisionVec
  * @param {Body} b0
  * @param {Body} b1
+ * @param {Vec2d} linearForceOut Optional output vec for recording center-to-center force applied to b0, or -f to b1
+ * @param {Vec2d} rubForceOut Optional output vec for recording rotational force applied to b0, or -f to b1
+ * @return true if this resolved the hit, or false if it was ignored, either because both masses were infinite,
+ * or because at lease one mass was zero.
  */
-HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
-  if (b0.mass === Infinity && b1.mass === Infinity) return;
+HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1, linearForceOut, rubForceOut) {
+  if (b0.mass === Infinity && b1.mass === Infinity) return false;
+  if (b0.mass === 0 || b1.mass === 0) return false;
 
   if (HitResolver.VERIFY_KINETIC_ENERGY_PRESERVED) {
     var ke0 = b0.getKineticEnergy();
@@ -38,20 +43,23 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   if (!accel.equals(Vec2d.ZERO)) {
     // Use masses to decide which body gets accelerated by how much.
     if (b0.mass === Infinity) {
-      b1.setVelAtTime(accel.add(b1.vel), time);
+      b1.addVelAtTime(accel, time);
+      if (linearForceOut) linearForceOut.set(accel).scale(-b1.mass);
     } else if (b1.mass === Infinity) {
-      b0.setVelAtTime(accel.scale(-1).add(b0.vel), time);
+      b0.addVelAtTime(accel.scale(-1), time);
+      if (linearForceOut) linearForceOut.set(accel).scale(b0.mass);
     } else {
       var work = Vec2d.alloc();
       var massTotal = b0.mass + b1.mass;
 
       var frac0 = b1.mass / massTotal;
-      work.set(accel).scale(-frac0).add(b0.vel);
-      b0.setVelAtTime(work, time);
+      work.set(accel).scale(-frac0);
+      if (linearForceOut) linearForceOut.set(work).scale(b0.mass);
+      b0.addVelAtTime(work, time);
 
       var frac1 = b0.mass / massTotal;
-      work.set(accel).scale(frac1).add(b1.vel);
-      b1.setVelAtTime(work, time);
+      work.set(accel).scale(frac1);
+      b1.addVelAtTime(work, time);
       work.free();
     }
   }
@@ -81,6 +89,7 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
       var force = Vec2d.alloc().set(surfaceUnitVec).scaleToLength(forceScale);
       b0.applyForceAtWorldPosAndTime(force, hitPos, time);
       b1.applyForceAtWorldPosAndTime(force.scale(-1), hitPos, time);
+      if (rubForceOut) rubForceOut.set(force);
       force.free();
     }
     vap1.free();
@@ -100,6 +109,7 @@ HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
       console.log("diff:", diff);
     }
   }
+  return true;
 };
 
 /**

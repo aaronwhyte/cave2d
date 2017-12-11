@@ -466,3 +466,17 @@ CentipedeSpirit.prototype.explode = function() {
 CentipedeSpirit.prototype.die = function() {
   this.explode();
 };
+
+/**
+ * Called after bouncing and damage exchange are done.
+ * @param {Vec2d} collisionVec
+ * @param {Number} mag the magnitude of the collision, kinda?
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
+ */
+CentipedeSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+  // Override me!
+  var body = this.getBody();
+  if (!body) return;
+  //this.screen.sounds.wallThump(this.getBodyPos(), mag / body.mass);
+};

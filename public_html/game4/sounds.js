@@ -92,10 +92,10 @@ Sounds.prototype.wallThump = function(worldPos, mag) {
   var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
-  var vol = Math.min(1, mag * 0.05);
-  if (vol > 0.01) {
-    var dur = Math.min(0.1, 0.01 * mag*mag);
-    var freq = mag + 200 + 5 * Math.random();
+  var vol = Math.min(1, mag * 0.1);
+  if (vol > 0.1) {
+    var dur = Math.clip(0.01 * mag*mag, 0.03, 0.1);
+    var freq = Math.max(50, mag + 200 + 5 * Math.random());
     var freq2 = 1;
     this.sfx.sound(x, y, 0, vol, 0, 0, dur, freq, freq2, 'square');
   }
@@ -170,4 +170,29 @@ Sounds.prototype.playerSpawn = function(worldPos) {
     this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.05);
     this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.05);
   }
+};
+
+Sounds.prototype.playerKickHum = function(worldPos) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
+  var x = screenPos.x;
+  var y = screenPos.y;
+  var freq = 100 + (Math.random() - 0.5) * 2;
+  var attack = 0.07;
+  var sustain = 0;
+  var decay = 0.05;
+  var freq2 = freq + (Math.random() - 0.5) * 10;
+  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, freq2, 'square');
+};
+
+Sounds.prototype.playerSeekHum = function(worldPos, distFrac) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
+  var closeness = 1 - distFrac;
+  var x = screenPos.x;
+  var y = screenPos.y;
+  var freq = 100 + 10 * closeness;
+  var attack = 0.04;
+  var sustain = 0.01;
+  var decay = 0.00;
+  var freq2 = freq + (Math.random()) * 12;
+  this.sfx.sound(x, y, 0, 0.1 + 0.2 * closeness, attack, sustain, decay, freq, freq2, 'square');
 };

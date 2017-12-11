@@ -8,6 +8,9 @@ function Game4HitResolver(screen, bouncer) {
   this.screen = screen;
   this.bouncer = bouncer;
   this.vec = new Vec2d();
+
+  this.linearForce = new Vec2d();
+  this.rubForce = new Vec2d();
 }
 
 /**
@@ -21,7 +24,12 @@ function Game4HitResolver(screen, bouncer) {
 Game4HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   // To prevent object interpenetration, do this.
   // To encourage it, don't do this. :-p
-  this.bouncer.resolveHit(time, collisionVec, b0, b1);
+  var bounced = this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
+  if (!bounced) {
+    this.linearForce.reset();
+    this.rubForce.reset();
+  }
+  var mag;
 
   // Plan effects on "the other":
   // damage, healing, activation, ice, slime, acceleration, teleport, etc.
@@ -41,7 +49,7 @@ Game4HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
     }
   }
   if (s0 || s1) {
-    var mag = this.getHitMagnitude(collisionVec, b0, b1);
+    mag = this.linearForce.magnitude() + this.rubForce.magnitude();
     if (s0) s0.onHitOther(collisionVec, mag, b1, s1);
     if (s1) s1.onHitOther(collisionVec, mag, b0, s0);
   }
@@ -53,14 +61,9 @@ Game4HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   // apply special effects
 
   var vec = Vec2d.alloc();
-  var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(collisionVec).magnitude();
+  mag = this.linearForce.magnitude() + this.rubForce.magnitude();
   var pos = this.getHitPos(time, collisionVec, b0, b1, vec);
   var otherBody, otherSpirit;
-
-  //   if (!antBody) {
-  //     // TODO: thump on wall hit, not on "else"
-  //     this.screen.sounds.wallThump(pos, mag * 10);
-  //   }
 
   var ebb = this.screen.bodyIfSpiritType(Game4BaseScreen.SpiritType.ENERGY_BULLET, b0, b1);
   if (ebb) {
@@ -76,8 +79,4 @@ Game4HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
 
 Game4HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {
   return this.bouncer.getHitPos(time, collisionVec, b0, b1, out);
-};
-
-Game4HitResolver.prototype.getHitMagnitude = function(collisionVec, b0, b1) {
-  return  mag = this.vec.set(b1.vel).subtract(b0.vel).projectOnto(collisionVec).magnitude();
 };
