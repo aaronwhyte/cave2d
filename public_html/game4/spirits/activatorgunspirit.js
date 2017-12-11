@@ -196,7 +196,7 @@ ActivatorGunSpirit.prototype.fire = function() {
   var angPos = this.getBodyAngPos();
   var speed = 3;
   var dist = 25 + Math.random() * 5;
-  this.addTractorBullet(
+  this.addBullet(
       pos, angPos,
       this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed),
       0.3,
@@ -206,7 +206,7 @@ ActivatorGunSpirit.prototype.fire = function() {
   // this.screen.sounds.pew(pos, now);
 };
 
-ActivatorGunSpirit.prototype.addTractorBullet = function(pos, angPos, vel, rad, duration) {
+ActivatorGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = ActivatorBulletSpirit.alloc(this.screen);
   //spirit.setModelStamp(this.stamps.arrow);
