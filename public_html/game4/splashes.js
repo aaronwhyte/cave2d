@@ -75,7 +75,7 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
     self.splasher.addCopy(s);
   }
 
-  particles = 7;
+  particles = 15;
   explosionRad = rad * 10;
   dirOffset = 2 * Math.PI * Math.random();
   // fast ones
