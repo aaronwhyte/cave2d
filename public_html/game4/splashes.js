@@ -1,7 +1,7 @@
 /**
  * Dumping ground for splash effects, to keep the Screen class smaller.
- * @param splasher
- * @param stamps
+ * @param {Splasher} splasher
+ * @param {Stamps} stamps
  * @constructor
  */
 function Splashes(splasher, stamps) {
@@ -56,44 +56,39 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
 
   var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
-  function addSplash(x, y, dx, dy, duration, sizeFactor) {
+  function addSplash(x, y, dx, dy, duration, rad) {
     s.reset(Splashes.ENEMY_EXPLOSION, self.stamps.circleStamp);
     s.startTime = now;
     s.duration = duration;
 
     s.startPose.pos.setXYZ(x, y, -0.9);
-    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0.9);
-    var startRad = sizeFactor * rad;
-    var endRad = 0;//startRad / 10;
-    s.startPose.scale.setXYZ(startRad, startRad, 1);
-    s.endPose.scale.setXYZ(endRad, endRad, 1);
+    s.endPose.pos.setXYZ(x + dx, y + dy, 0.9);
+    var startRad = rad;
+    var endRad = rad / 4;
+    s.startPose.scale.setXYZ(startRad, startRad, startRad);
+    var startRot = Math.random() * Math.PI * 2;
+    s.startPose.rotZ = startRot;
+    s.endPose.rotZ = startRot + (Math.random() - 0.5) * 2 * Math.PI;
+    s.endPose.scale.setXYZ(endRad, endRad, endRad);
     s.startColor.set(color);
     s.endColor.set(color).scale1(0.25);
     self.splasher.addCopy(s);
   }
 
-  particles = Math.ceil(4 * (1 + Math.random()));
-  explosionRad = rad;
+  particles = 7;
+  explosionRad = rad * 10;
   dirOffset = 2 * Math.PI * Math.random();
   // fast ones
   for (i = 0; i < particles; i++) {
-    duration = 10 * (0.7 + 0.3 * Math.random());
-    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random() * 1.5;
-    var r = (1.7 + Math.random()) * 0.5;
-    dx = r * Math.sin(dir) * explosionRad / duration;
-    dy = r * Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.12);
+    duration = 18;
+    dir = dirOffset + 2 * Math.PI * (i/particles);
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    addSplash(x, y, dx, dy, duration, rad * 0.5);
   }
   // middle cloud
-  particles = Math.ceil(4 * (1 + Math.random()));
-  for (i = 0; i < particles; i++) {
-    duration = 20 * (0.5 + 0.5 * Math.random());
-    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-    var r = 0.2 + 0.4 * Math.random();
-    dx = 0.8 * r * Math.sin(dir) * explosionRad / duration;
-    dy = 0.8 * r * Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 0.28);
-  }
+  duration = 8;
+  addSplash(x, y, 0, 0, duration, rad * 3);
 };
 
 Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
@@ -251,17 +246,17 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
 
   s.startTime = now;
   s.duration = 10;
-  var rad = 10;
-  var endRad = 0;
+  var startRad = 10;
+  var endRad = 20;
 
   s.startPose.pos.setXYZ(x, y, -0.5);
   s.endPose.pos.setXYZ(x, y, 0);
-  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.startPose.scale.setXYZ(startRad, startRad, 1);
   s.endPose.scale.setXYZ(endRad, endRad, 1);
 
   s.startPose2.pos.setXYZ(x, y, 1);
   s.endPose2.pos.setXYZ(x, y, 1);
-  s.startPose2.scale.setXYZ(-rad, -rad, 1);
+  s.startPose2.scale.setXYZ(-startRad, -startRad, 1);
   s.endPose2.scale.setXYZ(endRad, endRad, 1);
 
   s.startPose.rotZ = 0;
@@ -272,20 +267,20 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   this.splasher.addCopy(s);
 
   // cloud particles
-
   var self = this;
   var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
-  function addSplash(x, y, dx, dy, duration, sizeFactor) {
+  function addSplash(x, y, dx, dy, duration, sizeFactor, delay) {
     s.reset(1, self.stamps.circleStamp);
-    s.startTime = now;
+    s.startTime = now + (delay || 0);
     s.duration = duration;
 
     s.startPose.pos.setXYZ(x, y, -Math.random());
-    s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 1);
+    s.endPose.pos.setXYZ(x + dx, y + dy, 1);
     var startRad = sizeFactor;
+    var endRad = sizeFactor / 4;
     s.startPose.scale.setXYZ(startRad, startRad, 1);
-    s.endPose.scale.setXYZ(0, 0, 1);
+    s.endPose.scale.setXYZ(endRad, endRad, 1);
 
     s.startColor.set(color);
     s.endColor.set(color).scale1(0.5);
@@ -293,27 +288,39 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   }
 
   // fast outer particles
-  particles = Math.ceil(15 * (1 + 0.5 * Math.random()));
+  particles = 15;
   explosionRad = 20;
   dirOffset = 2 * Math.PI * Math.random();
+  var f2 = Math.ceil(Math.random() * 3) * 2 + 3;
+  var r = 0;//(Math.random() - 0.5) * explosionRad * 2;
   for (i = 0; i < particles; i++) {
-    duration = 15 * (1 + Math.random());
-    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random();
-    dx = Math.sin(dir) * explosionRad / duration;
-    dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 1);
+    duration = 40;
+    dir = dirOffset + 2 * Math.PI * i / particles;
+    var dir2 = 2 * Math.PI * f2 * i / particles;
+    dx = Math.sin(dir) * explosionRad + r * Math.cos(dir2);
+    dy = Math.cos(dir) * explosionRad + r * Math.sin(dir2);
+    addSplash(x, y, dx, dy, duration, 0.7);
+  }
+  for (i = 0; i < particles; i++) {
+    duration = 30;
+    dir = dirOffset + 2 * Math.PI * i / particles;
+    var dir2 = 2 * Math.PI * f2 * i / particles;
+    dx = Math.sin(dir) * explosionRad + r * Math.cos(dir2);
+    dy = Math.cos(dir) * explosionRad + r * Math.sin(dir2);
+    addSplash(x, y, dx, dy, duration, 0.7);
   }
 
   // inner smoke ring
-  particles = Math.ceil(20 * (1 + 0.5 * Math.random()));
-  explosionRad = 4;
+  particles = Math.ceil(10 * (1 + 0.5 * Math.random()));
+  explosionRad = 1.5;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    duration = 20 * (0.5 + Math.random());
-    dir = dirOffset + 2 * Math.PI * (i / particles) + Math.random() / 4;
-    dx = Math.sin(dir) * explosionRad / duration;
-    dy = Math.cos(dir) * explosionRad / duration;
-    addSplash(x, y, dx, dy, duration, 2);
+    var r = Math.random() + 0.5;
+    duration = r * 20;
+    dir = dirOffset + 2 * Math.PI * i / particles;
+    dx = (2 - r) * Math.sin(dir) * explosionRad;
+    dy = (2 - r) * Math.cos(dir) * explosionRad;
+    addSplash(x + dx, y + dy, dx, dy, duration, 1 + r);
   }
 };
 

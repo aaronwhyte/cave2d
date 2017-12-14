@@ -314,6 +314,8 @@ v bullet details
   v hit noise
   v bounce noise
 
+- change "mag" to be acceleration, not force?
+- Give each spirit its own sound characteristics for collisions??
 
 CONTROLS
 
@@ -329,7 +331,7 @@ v kick
   v sound
     v non hit
     v hit
-- grab
+- seek
   v rayscans instead of bullets
   v splashes
   x frequency limit
@@ -337,8 +339,29 @@ v kick
     - continuous sound object!
     - no hit
     - some hit - closeness
-    - grab!
-- release sound
+- grab
+  - sound
+  - splash?
+- release
+  - sound
+  - splash?
+
+EXPLOSION THOUGHTS
+* Splashy everything like I have today
+* Physics-y everything like N++. Nice if you can afford it! Mostly only hits walls
+* Blend physics-y shrapnel and splashy clouds?
+* shader tricks
+  * fat fragment shader, simply geometry (circle?)
+  * fancy vertex shader with numbered objects and parameterized explosions
+
+How about explosions that
+AWESOME EXPLOSIONS IN JUST A FEW GL CALLS
+ALSO AWESOME POLYLINE DRAWING USING THE SAME TECHNIQUE
+- Long list of models, all pretty much the same  tiny thing, maybe tetrahedrons? but that's not important now.
+- Each vertex has a model number, a float from 0 to 1, to make this easy to scale to different counts.
+- Vertex shaders reposition and recolor each model independently based on an array of params, and time.
+- params are things like... The transformation for position 0
+-
 
 WEAPONS & ENEMIES
 - shotgun

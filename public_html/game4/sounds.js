@@ -45,13 +45,16 @@ Sounds.prototype.bew = function(worldPos, now) {
   var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
-  var freq = 280
+  var freq = 380
       - Math.abs((now % 8) - 4) * 10
       - Math.abs((now % 100) - 50) * 0.1;
+  var freq2 = (5 + 5 * Math.random()) * freq;
   var attack = 0.2/60;
   var sustain = 2/60;
   var decay = 4/60;
-  this.sfx.sound(x, y, 0, 0.7 + 0.2 * Math.random(), attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'square');
+  this.sfx.sound(x, y, 0, 0.5 + 0.2 * Math.random(), attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'sawtooth');
+  //this.sfx.sound(x, y, 0, 0.2 + 0.2 * Math.random(), attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'square', Math.random() * 3 / 60);
+  this.sfx.sound(x, y, 0, 0.2 + 0.1 * Math.random(), attack, sustain, decay, freq2, freq2/(20 + 20 * Math.random()), 'triangle');
 };
 
 Sounds.prototype.shotgun = function(worldPos) {
