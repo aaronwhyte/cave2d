@@ -469,13 +469,13 @@ PlayerSpirit.prototype.handleSeeking = function() {
 
   this.seekHum.setWorldPos(this.getBodyPos());
   if (minResultFrac === 2) {
-    this.seekHum.setPitchFreq(100);
+    this.seekHum.setPitchFreq(200 - Math.random() * 20);
     this.seekHum.setWubFreq(4);
-    this.seekHum.setGain(0.1);
+    this.seekHum.setGain(0.3);
   } else {
-    this.seekHum.setPitchFreq(200 + 10 * (1 - minResultFrac) + (pulled ? 100 : 0));
-    this.seekHum.setWubFreq(8 + 4 * (1 - minResultFrac)  + (pulled ? 20 : 0));
-    this.seekHum.setGain(0.2 + 0.1 * (1 - minResultFrac));
+    this.seekHum.setPitchFreq(200 + (pulled ? 240 * (1 - minResultFrac) : 0) - Math.random() * 20);
+    this.seekHum.setWubFreq((4 + 8 * (1 - minResultFrac)) * (pulled ?  2 : 1));
+    this.seekHum.setGain(0.3 + 0.3 * (1 - minResultFrac));
   }
   if (bestBody) {
     // grab that thing!
