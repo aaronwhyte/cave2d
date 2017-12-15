@@ -60,6 +60,7 @@ SoundFx.prototype.getMasterGain = function() {
  * @param {number} freq1
  * @param {number} freq2
  * @param {String} type Wave type string (square, sine, etc)
+ * @param {!number} opt_delay optional delay value, before attack
  */
 SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, freq2, type, opt_delay) {
   if (!this.ctx) return;
@@ -80,20 +81,12 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
     gain.gain.exponentialRampToValueAtTime(0.01, t0 + attack + sustain + decay);
   }
 
-  var osc = c.createOscillator();
+  var osc = this.createOscillator();
   osc.frequency.setValueAtTime(freq1, t0);
   osc.frequency.exponentialRampToValueAtTime(freq2, t0 + attack + sustain + decay);
   osc.type = type;
-  if (osc.start) {
-    osc.start(t0);
-  } else if (osc.noteOn) {
-    osc.noteOn(t0);
-  }
-  if (osc.stop) {
-    osc.stop(t1);
-  } else if (osc.noteOff) {
-    osc.noteOff(t1);
-  }
+  osc.start(t0);
+  osc.stop(t1);
 
   var panner = c.createPanner();
   panner.setPosition(x, y, z);
@@ -101,6 +94,29 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
   osc.connect(gain);
   gain.connect(panner);
   panner.connect(this.masterGain);
+};
+
+SoundFx.prototype.createOscillator = function() {
+  var osc = this.ctx.createOscillator();
+  if (!osc.start) osc.start = osc.noteOn;
+  if (!osc.stop) osc.start = osc.noteOff;
+  return osc;
+};
+
+/**
+ * Returns gain and panner nodes, connected to each other and to the master gain like
+ * gain -> panner -> master.
+ * @returns {*} an object with "gain" and "panner" fields, or null
+ */
+SoundFx.prototype.createGainAndPanner = function() {
+  if (!this.ctx) return null;
+  var c = this.ctx;
+  var r = {};
+  r.gain = this.createGain();
+  r.panner = c.createPanner();
+  r.gain.connect(r.panner);
+  r.panner.connect(this.masterGain);
+  return r;
 };
 
 /**
@@ -116,7 +132,7 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
 SoundFx.prototype.note = function(x, y, z, vol, sustain, freq, opt_type) {
   var type = opt_type || 'sine';
   this.sound(x, y, z, vol, 0, sustain, 0, freq, freq, type);
-}
+};
 
 SoundFx.prototype.disconnect = function() {
   if (this.masterGain) {

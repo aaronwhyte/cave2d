@@ -331,14 +331,14 @@ v kick
   v sound
     v non hit
     v hit
-- seek
+v seek
   v rayscans instead of bullets
   v splashes
   x frequency limit
-  - sound
-    - continuous sound object!
-    - no hit
-    - some hit - closeness
+  v sound
+    v continuous sound object!
+    v no hit
+    v some hit - closeness
 - grab
   - sound
   - splash?
@@ -361,7 +361,6 @@ ALSO AWESOME POLYLINE DRAWING USING THE SAME TECHNIQUE
 - Each vertex has a model number, a float from 0 to 1, to make this easy to scale to different counts.
 - Vertex shaders reposition and recolor each model independently based on an array of params, and time.
 - params are things like... The transformation for position 0
--
 
 WEAPONS & ENEMIES
 - shotgun
@@ -388,3 +387,12 @@ v rapid-fire
 - slime splaasher
 
 
+
+SOUND 2
+More modular, flexible composition and builders, but limited to what I want to do. Virtual nodes.
+Like...
+A gain->panner->MASTER_GAIN setup for a single "soundPoint".
+Tools for constructing a sound, like a collection of oscillators that can be attached, as if one, to another node.
+
+An oscillator->gain
+create pan

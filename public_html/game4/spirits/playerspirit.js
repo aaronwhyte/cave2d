@@ -64,7 +64,7 @@ PlayerSpirit.WIELD_MAX_FORCE = 1.5;
 PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
-PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD/4;
+PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD * 0.25;
 PlayerSpirit.SEEKSCAN_FAN_ANGLE = Math.PI / 2;
 PlayerSpirit.SEEKSCAN_FORCE = 0.3;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
@@ -421,7 +421,9 @@ PlayerSpirit.prototype.breakBeam = function() {
 PlayerSpirit.prototype.handleSeeking = function() {
   var bestBody = null;
   var bestResultFraction = 2;
+  var minResultFrac = 2;
   var maxScanDist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD;
+  var pulled = false;
   var maxFanRad = PlayerSpirit.SEEKSCAN_FAN_ANGLE;
   var scans = 1;
   var thisRad = this.getBody().rad;
@@ -439,6 +441,9 @@ PlayerSpirit.prototype.handleSeeking = function() {
     var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
     var splashed = false;
     if (resultFraction !== -1) {
+      if (resultFraction < minResultFrac) {
+        minResultFrac = resultFraction;
+      }
       var foundBody = this.getScanHitBody();
       if (foundBody && foundBody.mass < Infinity) {
         // pull it closer
@@ -447,6 +452,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
         forceVec.set(scanVel).scaleToLength(-(1 - resultFraction * 0.9) * PlayerSpirit.SEEKSCAN_FORCE);
         foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, this.now());
         this.screen.addTractorSeekSplash(true, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
+        pulled = true;
         splashed = true;
         if (resultFraction < bestResultFraction &&
             resultFraction * maxScanDist <= PlayerSpirit.GRAB_DIST) {
@@ -455,15 +461,22 @@ PlayerSpirit.prototype.handleSeeking = function() {
           bestBody = foundBody;
         }
       }
-      this.screen.sounds.playerSeekHum(scanPos, resultFraction);
-    } else {
-      //this.screen.sounds.playerSeekHum(scanPos, 1);
     }
-    if (!splashed)  {
+    if (!splashed) {
       this.screen.addTractorSeekSplash(false, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
     }
   }
 
+  this.seekHum.setWorldPos(this.getBodyPos());
+  if (minResultFrac === 2) {
+    this.seekHum.setPitchFreq(100);
+    this.seekHum.setWubFreq(4);
+    this.seekHum.setGain(0.1);
+  } else {
+    this.seekHum.setPitchFreq(200 + 10 * (1 - minResultFrac) + (pulled ? 100 : 0));
+    this.seekHum.setWubFreq(8 + 4 * (1 - minResultFrac)  + (pulled ? 20 : 0));
+    this.seekHum.setGain(0.2 + 0.1 * (1 - minResultFrac));
+  }
   if (bestBody) {
     // grab that thing!
     this.targetBodyId = bestBody.id;
@@ -476,6 +489,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
 };
 
 PlayerSpirit.prototype.setBeamState = function(newState) {
+  if (this.beamState === newState) return;
   var target = this.getTargetSpirit();
   if (target && target.isActivatable()) {
     // connect or disconnect?
@@ -498,10 +512,20 @@ PlayerSpirit.prototype.setBeamState = function(newState) {
       }
     }
   }
+
+  if (newState === BeamState.SEEKING) {
+    this.seekHum = new Sounds.PlayerSeekHum(this.sounds);
+    this.seekHum.start();
+  } else if (this.seekHum) {
+    this.seekHum.stop();
+    this.seekHum = null;
+  }
+
   this.beamState = newState;
   if (this.beamState === BeamState.OFF) {
     this.targetBodyId = 0;
   }
+
 };
 
 PlayerSpirit.prototype.setOutputToTarget = function(val) {
@@ -769,5 +793,9 @@ PlayerSpirit.prototype.freeKick = function(spread) {
 };
 
 PlayerSpirit.prototype.die = function() {
+  if (this.seekHum) {
+    this.seekHum.stop();
+    this.seekHum = null;
+  }
   this.screen.killPlayerSpirit(this);
 };

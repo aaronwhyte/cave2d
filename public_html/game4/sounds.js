@@ -53,7 +53,6 @@ Sounds.prototype.bew = function(worldPos, now) {
   var sustain = 2/60;
   var decay = 4/60;
   this.sfx.sound(x, y, 0, 0.5 + 0.2 * Math.random(), attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'sawtooth');
-  //this.sfx.sound(x, y, 0, 0.2 + 0.2 * Math.random(), attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'square', Math.random() * 3 / 60);
   this.sfx.sound(x, y, 0, 0.2 + 0.1 * Math.random(), attack, sustain, decay, freq2, freq2/(20 + 20 * Math.random()), 'triangle');
 };
 
@@ -184,7 +183,7 @@ Sounds.prototype.playerKickHum = function(worldPos) {
   var sustain = 0;
   var decay = 0.05;
   var freq2 = freq + (Math.random() - 0.5) * 10;
-  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, freq2, 'square');
+  this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay, freq, freq2, 'square');
 };
 
 Sounds.prototype.playerSeekHum = function(worldPos, distFrac) {
@@ -198,4 +197,73 @@ Sounds.prototype.playerSeekHum = function(worldPos, distFrac) {
   var decay = 0.00;
   var freq2 = freq + (Math.random()) * 12;
   this.sfx.sound(x, y, 0, 0.1 + 0.2 * closeness, attack, sustain, decay, freq, freq2, 'square');
+};
+
+Sounds.prototype.createTractorSeekHum = function() {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
+  var closeness = 1 - distFrac;
+  var x = screenPos.x;
+  var y = screenPos.y;
+  var freq = 100 + 10 * closeness;
+  var attack = 0.04;
+  var sustain = 0.01;
+  var decay = 0.00;
+  var freq2 = freq + (Math.random()) * 12;
+  this.sfx.sound(x, y, 0, 0.1 + 0.2 * closeness, attack, sustain, decay, freq, freq2, 'square');
+};
+
+/**
+ * @constructor
+ */
+Sounds.PlayerSeekHum = function(sounds) {
+  this.sounds = sounds;
+  this.sfx = sounds.sfx;
+  this.worldPos = new Vec2d();
+  var gp = this.sfx.createGainAndPanner();
+  this.gain = gp.gain;
+  this.panner = gp.panner;
+  if (this.gain) {
+    this.wobbleGain = this.sfx.createGain();
+    this.wobbleGain.connect(this.gain);
+
+    this.gainOsc = this.sfx.createOscillator();
+    this.gainOsc.type = 'sine';
+    this.gainOsc.connect(this.wobbleGain.gain);
+
+    this.pitchOsc = this.sfx.createOscillator();
+    this.pitchOsc.type = 'square';
+    this.pitchOsc.connect(this.wobbleGain);
+
+  }
+};
+
+Sounds.PlayerSeekHum.prototype.start = function() {
+  this.pitchOsc.start();
+  this.gainOsc.start();
+};
+
+Sounds.PlayerSeekHum.prototype.stop = function(g) {
+  this.pitchOsc.stop();
+  this.gainOsc.stop();
+};
+
+Sounds.PlayerSeekHum.prototype.now = function() {
+  return this.sfx.ctx.currentTime;
+};
+
+Sounds.PlayerSeekHum.prototype.setGain = function(x) {
+  this.gain.gain.setValueAtTime(x, this.now());
+};
+
+Sounds.PlayerSeekHum.prototype.setPitchFreq = function(x) {
+  this.pitchOsc.frequency.setValueAtTime(x, this.now());
+};
+
+Sounds.PlayerSeekHum.prototype.setWubFreq = function(x) {
+  this.gainOsc.frequency.setValueAtTime(x, this.now());
+};
+
+Sounds.PlayerSeekHum.prototype.setWorldPos = function(worldPos) {
+  var screenPos = this.sounds.getScreenPosForWorldPos(worldPos);
+  this.panner.setPosition(screenPos.x, screenPos.y, 0);
 };
