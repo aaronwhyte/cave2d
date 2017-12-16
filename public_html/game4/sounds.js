@@ -94,8 +94,8 @@ Sounds.prototype.wallThump = function(worldPos, mag) {
   var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
-  var vol = Math.min(1, mag * 0.1);
-  if (vol > 0.1) {
+  var vol = Math.min(1, mag * 0.3);
+  if (vol > 0.15) {
     var dur = Math.clip(0.01 * mag*mag, 0.03, 0.1);
     var freq = Math.max(50, mag + 200 + 5 * Math.random());
     var freq2 = 1;
