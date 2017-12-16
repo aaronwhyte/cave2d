@@ -178,7 +178,7 @@ Sounds.prototype.playerKickHum = function(worldPos) {
   var screenPos = this.getScreenPosForWorldPos(worldPos);
   var x = screenPos.x;
   var y = screenPos.y;
-  var freq = 200 + (Math.random() - 0.5) * 2;
+  var freq = 220 + (Math.random() - 0.5) * 2;
   var attack = 0.07;
   var sustain = 0;
   var decay = 0.05;
@@ -224,7 +224,7 @@ Sounds.PlayerSeekHum.prototype.stop = function(g) {
 };
 
 Sounds.PlayerSeekHum.prototype.soon = function() {
-  return this.sfx.ctx.currentTime + 0.01;
+  return this.sfx.ctx.currentTime + 0.02;
 };
 
 Sounds.PlayerSeekHum.prototype.setGain = function(x) {

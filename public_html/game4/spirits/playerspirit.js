@@ -17,6 +17,7 @@ function PlayerSpirit(screen) {
   this.beamState = BeamState.OFF;
   this.targetBodyId = null;
   this.obstructionCount = 0;
+  this.seekTargetBodyId = null;
 
   this.accel = new Vec2d();
   this.keyMult = 0.25;
@@ -65,8 +66,8 @@ PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD * 0.25;
-PlayerSpirit.SEEKSCAN_FAN_ANGLE = Math.PI / 2;
-PlayerSpirit.SEEKSCAN_FORCE = 0.3;
+PlayerSpirit.SEEKSCAN_FAN_ANGLE = Math.PI / 4;
+PlayerSpirit.SEEKSCAN_FORCE = 0.1;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
 
 PlayerSpirit.KICK_FORCE = 0.7;
@@ -418,68 +419,94 @@ PlayerSpirit.prototype.breakBeam = function() {
   this.setBeamState(BeamState.OFF);
 };
 
+
 PlayerSpirit.prototype.handleSeeking = function() {
-  var bestBody = null;
-  var bestResultFraction = 2;
-  var minResultFrac = 2;
+  var now = this.now();
   var maxScanDist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD;
-  var pulled = false;
-  var maxFanRad = PlayerSpirit.SEEKSCAN_FAN_ANGLE;
-  var scans = 1;
-  var thisRad = this.getBody().rad;
+  var maxFanAngle = PlayerSpirit.SEEKSCAN_FAN_ANGLE;
+
   var scanPos = Vec2d.alloc().set(this.getBodyPos());
   var scanVel = Vec2d.alloc();
-  var aimAngle = this.aim.angle();
+
   var forceVec = Vec2d.alloc();
   var forcePos = Vec2d.alloc();
-  for (var i = 0; i < scans; i++) {
-    var radUnit = Math.random()-0.5;
-    scanVel.setXY(0, maxScanDist + thisRad)
-        .rot(radUnit * maxFanRad)
-        .scaleXY(0.5, 1)
-        .rot(aimAngle);
-    var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
-    var splashed = false;
-    if (resultFraction !== -1) {
-      if (resultFraction < minResultFrac) {
-        minResultFrac = resultFraction;
-      }
-      var foundBody = this.getScanHitBody();
-      if (foundBody && foundBody.mass < Infinity) {
-        // pull it closer
-        forcePos.set(scanVel).scale(resultFraction).add(scanPos).scale(0.1)
-            .add(foundBody.getPosAtTime(this.now(), this.vec2d)).scale(1 / (1 + 0.1));
-        forceVec.set(scanVel).scaleToLength(-(1 - resultFraction * 0.9) * PlayerSpirit.SEEKSCAN_FORCE);
-        foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, this.now());
-        this.screen.addTractorSeekSplash(true, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
-        pulled = true;
-        splashed = true;
-        if (resultFraction < bestResultFraction &&
-            resultFraction * maxScanDist <= PlayerSpirit.GRAB_DIST) {
-          // prepare to grab that thing, unless something better comes along
-          bestResultFraction = resultFraction;
-          bestBody = foundBody;
+
+  var candidateRF = 2;
+  var candidateBody = null;
+
+  var unsuitableRF = 2;
+
+  var self = this;
+
+  function scan() {
+    var rf = self.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
+    var pulling = false;
+    if (rf === -1) {
+      // miss
+    } else {
+      var foundBody = self.getScanHitBody();
+      if (foundBody) {
+        // hit
+        if (foundBody.mass === Infinity) {
+          // unsuitable
+          if (rf < unsuitableRF) {
+            unsuitableRF = rf;
+          }
+        } else {
+          // candidate
+          if (rf < candidateRF) {
+            candidateRF = rf;
+            candidateBody = foundBody;
+            self.seekTargetBodyId = foundBody.id;
+          }
+          // pull it closer
+          forcePos.set(scanVel).scale(rf).add(scanPos).scale(0.1)
+              .add(foundBody.getPosAtTime(now, self.vec2d)).scale(1 / (1 + 0.1));
+          forceVec.set(scanVel).scaleToLength(-(1 - rf * 0.9) * PlayerSpirit.SEEKSCAN_FORCE);
+          foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, now);
+          self.screen.addTractorSeekSplash(true, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, rf);
+          pulling = true;
         }
       }
     }
-    if (!splashed) {
-      this.screen.addTractorSeekSplash(false, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, resultFraction, this.color);
+    if (!pulling) {
+      self.screen.addTractorSeekSplash(false, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, rf);
     }
   }
 
+  // maybe direct a scan towards the last body we attracted
+  var seekBody = this.getSeekTargetBody();
+  if (seekBody) {
+    // set scanVel
+    this.seekTargetBodyId = null;
+    seekBody.getPosAtTime(now, scanVel).subtract(this.getBodyPos()).scaleToLength(maxScanDist).rot(2 * seekBody.rad * (Math.random() - 0.5) / maxScanDist);
+    var angleDiffToSeekBody = this.getAngleDiff(this.getAngleToBody(seekBody));
+    if (Math.abs(angleDiffToSeekBody) <= maxFanAngle) {
+      scan();
+    }
+  }
+
+  // always fire a random scan
+  var aimAngle = this.aim.angle();
+  var radUnit = Math.random() - 0.5;
+  scanVel.setXY(0, maxScanDist).rot(radUnit * maxFanAngle + aimAngle);
+  scan();
+
   this.seekHum.setWorldPos(this.getBodyPos());
-  if (minResultFrac === 2) {
-    this.seekHum.setPitchFreq(200 - Math.random() * 20);
-    this.seekHum.setWubFreq(4);
+  var minRf = Math.min(unsuitableRF + 0.9, candidateRF);
+  if (minRf >= 1) {
+    this.seekHum.setPitchFreq(220 - (Math.random() - 0.5) * 20);
+    this.seekHum.setWubFreq(10);
     this.seekHum.setGain(0.3);
   } else {
-    this.seekHum.setPitchFreq(200 + (pulled ? 240 * (1 - minResultFrac) : 0) - Math.random() * 20);
-    this.seekHum.setWubFreq((4 + 8 * (1 - minResultFrac)) * (pulled ?  2 : 1));
-    this.seekHum.setGain(0.3 + 0.3 * (1 - minResultFrac));
+    var div = minRf * 0.8 + 0.2;
+    this.seekHum.setPitchFreq(220 / div);
+    this.seekHum.setWubFreq(10 / div);
+    this.seekHum.setGain(0.3 + 0.2 * (1 - minRf));
   }
-  if (bestBody) {
+  if (candidateBody && candidateRF * maxScanDist <= PlayerSpirit.GRAB_DIST) {
     // grab that thing!
-    this.targetBodyId = bestBody.id;
+    this.targetBodyId = candidateBody.id;
     this.setBeamState(BeamState.WIELDING);
   }
   scanPos.free();
@@ -516,9 +543,12 @@ PlayerSpirit.prototype.setBeamState = function(newState) {
   if (newState === BeamState.SEEKING) {
     this.seekHum = new Sounds.PlayerSeekHum(this.sounds);
     this.seekHum.start();
-  } else if (this.seekHum) {
-    this.seekHum.stop();
-    this.seekHum = null;
+  } else {
+    this.seekTargetBodyId = null;
+    if (this.seekHum) {
+      this.seekHum.stop();
+      this.seekHum = null;
+    }
   }
 
   this.beamState = newState;
@@ -722,6 +752,16 @@ PlayerSpirit.prototype.getTargetBody = function() {
     b = this.screen.getBodyById(this.targetBodyId);
   } else {
     this.targetBodyId = 0;
+  }
+  return b;
+};
+
+PlayerSpirit.prototype.getSeekTargetBody = function() {
+  var b = null;
+  if (this.seekTargetBodyId) {
+    b = this.screen.getBodyById(this.seekTargetBodyId);
+  } else {
+    this.seekTargetBodyId = 0;
   }
   return b;
 };
