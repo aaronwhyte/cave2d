@@ -497,12 +497,10 @@ PlayerSpirit.prototype.handleSeeking = function() {
   if (minRf >= 1) {
     this.seekHum.setPitchFreq(220 - (Math.random() - 0.5) * 20);
     this.seekHum.setWubFreq(10);
-    this.seekHum.setGain(0.3);
   } else {
     var div = minRf * 0.8 + 0.2;
     this.seekHum.setPitchFreq(220 / div);
     this.seekHum.setWubFreq(10 / div);
-    this.seekHum.setGain(0.3 + 0.2 * (1 - minRf));
   }
   if (candidateBody && candidateRF * maxScanDist <= PlayerSpirit.GRAB_DIST) {
     // grab that thing!

@@ -214,17 +214,21 @@ Sounds.PlayerSeekHum = function(sounds) {
 };
 
 Sounds.PlayerSeekHum.prototype.start = function() {
+  this.gain.gain.setValueAtTime(0, this.sfx.ctx.currentTime);
+  this.gain.gain.linearRampToValueAtTime(0.3, this.sfx.ctx.currentTime + 0.1);
   this.pitchOsc.start();
   this.gainOsc.start();
 };
 
 Sounds.PlayerSeekHum.prototype.stop = function(g) {
-  this.pitchOsc.stop();
-  this.gainOsc.stop();
+  var t = this.soon();
+  this.gain.gain.linearRampToValueAtTime(0, t);
+  this.pitchOsc.stop(t);
+  this.gainOsc.stop(t);
 };
 
 Sounds.PlayerSeekHum.prototype.soon = function() {
-  return this.sfx.ctx.currentTime + 0.02;
+  return this.sfx.ctx.currentTime + 0.04;
 };
 
 Sounds.PlayerSeekHum.prototype.setGain = function(x) {

@@ -341,10 +341,10 @@ v seek
     v some hit - closeness
 - grab
   - sound
-  - splash?
+  - splash
 - release
   - sound
-  - splash?
+  - splash
 
 EXPLOSION THOUGHTS
 * Splashy everything like I have today
