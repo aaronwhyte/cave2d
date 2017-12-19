@@ -188,6 +188,37 @@ Sounds.prototype.playerKickHum = function(worldPos) {
 
 
 
+Sounds.prototype.playerGrab = function(worldPos, df) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
+  var x = screenPos.x;
+  var y = screenPos.y;
+  var div = df * 0.5 + 0.5;
+  var freq = 220 / div;
+  var freq2 = freq * 2;
+  var attack = 0;
+  var sustain = 0;
+  var decay = 0.05;
+  this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay * 2, freq, freq2, 'sawtooth');
+  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq * 4, freq2 * 4, 'sine');
+};
+
+
+Sounds.prototype.playerRelease = function(worldPos, df) {
+  var screenPos = this.getScreenPosForWorldPos(worldPos);
+  var x = screenPos.x;
+  var y = screenPos.y;
+  var div = df * 0.5 + 0.5;
+  var freq = 2 * 220 / div;
+  var freq2 = freq / 4;
+  var attack = 0.05;
+  var sustain = 0;
+  var decay = 0.01;
+  this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay * 2, freq, freq2, 'sawtooth');
+  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq * 4, freq2 * 4, 'sine');
+};
+
+
+
 /**
  * @constructor
  */
@@ -233,6 +264,19 @@ Sounds.PlayerSeekHum.prototype.soon = function() {
 
 Sounds.PlayerSeekHum.prototype.setGain = function(x) {
   this.gain.gain.linearRampToValueAtTime(x, this.soon());
+};
+
+Sounds.PlayerSeekHum.prototype.setDistanceFraction = function(df) {
+  var baseWub = 10;
+  if (df >= 1) {
+    this.setPitchFreq(220 - (Math.random() - 0.5) * 20);
+    this.setWubFreq(baseWub);
+  } else {
+    var div = df * 0.5 + 0.5;
+    // Max pitch is about 440 Hz, max wub is about 20.
+    this.setPitchFreq(220 / div);
+    this.setWubFreq(baseWub / div);
+  }
 };
 
 Sounds.PlayerSeekHum.prototype.setPitchFreq = function(x) {

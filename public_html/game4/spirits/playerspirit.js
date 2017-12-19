@@ -493,19 +493,13 @@ PlayerSpirit.prototype.handleSeeking = function() {
   scan();
 
   this.seekHum.setWorldPos(this.getBodyPos());
-  var minRf = Math.min(unsuitableRF + 0.9, candidateRF);
-  if (minRf >= 1) {
-    this.seekHum.setPitchFreq(220 - (Math.random() - 0.5) * 20);
-    this.seekHum.setWubFreq(10);
-  } else {
-    var div = minRf * 0.8 + 0.2;
-    this.seekHum.setPitchFreq(220 / div);
-    this.seekHum.setWubFreq(10 / div);
-  }
+  var minRf = Math.min(unsuitableRF + 0.5, candidateRF);
+  this.seekHum.setDistanceFraction(minRf);
   if (candidateBody && candidateRF * maxScanDist <= PlayerSpirit.GRAB_DIST) {
     // grab that thing!
     this.targetBodyId = candidateBody.id;
     this.setBeamState(BeamState.WIELDING);
+    this.sounds.playerGrab(this.getBodyPos(), PlayerSpirit.GRAB_DIST / (PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD));
   }
   scanPos.free();
   scanVel.free();
@@ -552,6 +546,7 @@ PlayerSpirit.prototype.setBeamState = function(newState) {
   this.beamState = newState;
   if (this.beamState === BeamState.OFF) {
     this.targetBodyId = 0;
+    this.sounds.playerRelease(this.getBodyPos(), PlayerSpirit.GRAB_DIST / (PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD));
   }
 
 };

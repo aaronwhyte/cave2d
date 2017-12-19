@@ -340,10 +340,10 @@ v seek
     v no hit
     v some hit - closeness
 - grab
-  - sound
+  v sound
   - splash
 - release
-  - sound
+  v sound
   - splash
 
 EXPLOSION THOUGHTS
