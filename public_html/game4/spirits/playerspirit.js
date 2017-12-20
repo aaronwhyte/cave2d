@@ -416,6 +416,9 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
 };
 
 PlayerSpirit.prototype.breakBeam = function() {
+  if (BeamState.isOutputish(this.beamState)) {
+    this.sounds.playerRelease(this.getBodyPos(), PlayerSpirit.GRAB_DIST / (PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD));
+  }
   this.setBeamState(BeamState.OFF);
 };
 
@@ -547,7 +550,6 @@ PlayerSpirit.prototype.setBeamState = function(newState) {
   this.beamState = newState;
   if (this.beamState === BeamState.OFF) {
     this.targetBodyId = 0;
-    this.sounds.playerRelease(this.getBodyPos(), PlayerSpirit.GRAB_DIST / (PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD));
   }
 };
 
