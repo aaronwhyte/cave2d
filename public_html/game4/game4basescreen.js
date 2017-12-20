@@ -224,3 +224,7 @@ Game4BaseScreen.prototype.addEnemyExplosion = function(pos, rad, color) {
 Game4BaseScreen.prototype.addBulletMuzzleFlash = function(pos, angPos) {
   this.splashes.addBulletMuzzleFlash(this.world.now, pos, angPos);
 };
+
+Game4BaseScreen.prototype.addGrabSplash = function(pos, angPos, targetRad) {
+  this.splashes.addGrabSplash(this.world.now, pos, angPos, targetRad);
+};

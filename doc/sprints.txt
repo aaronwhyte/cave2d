@@ -339,12 +339,12 @@ v seek
     v continuous sound object!
     v no hit
     v some hit - closeness
-- grab
+v grab
   v sound
-  - splash
-- release
+  v splash
+v release
   v sound
-  - splash
+  x splash
 
 EXPLOSION THOUGHTS
 * Splashy everything like I have today

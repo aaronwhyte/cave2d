@@ -500,6 +500,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
     this.targetBodyId = candidateBody.id;
     this.setBeamState(BeamState.WIELDING);
     this.sounds.playerGrab(this.getBodyPos(), PlayerSpirit.GRAB_DIST / (PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD));
+    this.screen.addGrabSplash(this.getBodyPos(), this.getAngleToTarget(), this.getTargetBody().rad);
   }
   scanPos.free();
   scanVel.free();
@@ -548,7 +549,6 @@ PlayerSpirit.prototype.setBeamState = function(newState) {
     this.targetBodyId = 0;
     this.sounds.playerRelease(this.getBodyPos(), PlayerSpirit.GRAB_DIST / (PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD));
   }
-
 };
 
 PlayerSpirit.prototype.setOutputToTarget = function(val) {

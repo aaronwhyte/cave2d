@@ -222,10 +222,10 @@ Splashes.prototype.addKickMissSplash = function(now, scanPos, scanVel) {
   var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.85).add(scanPos));
   var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
   this.addMovingLine(now, baseDur, p0t0, p1t0, r, p0t1, p1t1, r, color);
-  var p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.85).add(scanPos));
-  var p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
-  var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(1).add(scanPos));
-  var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(1).add(scanPos));
+  p0t0.setXYFromVec2d(v.set(scanVel).scale(0.85).add(scanPos));
+  p1t0.setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
+  p0t1.setXYFromVec2d(v.set(scanVel).scale(1).add(scanPos));
+  p1t1.setXYFromVec2d(v.set(scanVel).scale(1).add(scanPos));
   this.addMovingLine(now + baseDur, 4, p0t0, p1t0, r, p0t1, p1t1, r / 3, color);
   v.free();
   color.free();
@@ -416,3 +416,37 @@ Splashes.prototype.addDotSplash = function(now, pos, rad, duration, r, g, b) {
   this.splasher.addCopy(s);
 };
 
+Splashes.prototype.addGrabSplash = function(now, plrPos, dir, targetRad) {
+  var v = Vec2d.alloc();
+  var color = Vec4.alloc(0.5, 1, 0.5, 0);
+  var baseRad = targetRad * 2;
+  var addRad = PlayerSpirit.PLAYER_RAD / 2;
+  var dur = 5;
+  var p0t0 = Vec4.alloc();
+  var p1t0 = Vec4.alloc();
+  var p0t1 = Vec4.alloc();
+  var p1t1 = Vec4.alloc();
+
+  var center = Vec4.alloc().setXYFromVec2d(
+      v.setXY(0, PlayerSpirit.PLAYER_RAD + PlayerSpirit.WIELD_REST_DIST + targetRad).rot(dir).add(plrPos));
+
+  var n = 8;
+  // dir += Math.PI;
+  for (var i = 0; i < n; i++) {
+    if (i !== n / 2) {
+      var a = Math.PI * 2 * i / n + dir;
+      p0t0.setXYFromVec2d(v.setXY(0, baseRad).rot(a)).add(center);
+      p1t0.setXYFromVec2d(v.setXY(0, baseRad + addRad * 0.5).rot(a)).add(center);
+      p0t1.setXYFromVec2d(v.setXY(0, baseRad + addRad).rot(a)).add(center);
+      p1t1.set(p0t1);
+      this.addMovingLine(now, dur, p0t0, p1t0, PlayerSpirit.PLAYER_RAD * 0.15, p0t1, p1t1, PlayerSpirit.PLAYER_RAD * 0.05, color);
+    }
+  }
+  v.free();
+  color.free();
+  p0t0.free();
+  p1t0.free();
+  p0t1.free();
+  p1t1.free();
+  center.free()
+};
