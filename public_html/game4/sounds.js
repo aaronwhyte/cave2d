@@ -13,7 +13,11 @@ function Sounds(sfx, viewMatrix) {
 
 Sounds.prototype.setMasterGain = function(newGain) {
   var gainNode = this.sfx.getMasterGain();
-  gainNode.gain.value = newGain;
+  gainNode.gain.setValueAtTime(newGain, this.now() + 0.05);
+};
+
+Sounds.prototype.now = function() {
+  return this.sfx.ctx.currentTime;
 };
 
 Sounds.prototype.getMasterGain = function(newGain) {
@@ -195,9 +199,9 @@ Sounds.prototype.playerGrab = function(worldPos, df) {
   var div = df * 0.5 + 0.5;
   var freq = 220 / div;
   var freq2 = freq * 2;
-  var attack = 0;
+  var attack = 0.01;
   var sustain = 0;
-  var decay = 0.05;
+  var decay = 0.07;
   this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay * 2, freq, freq2, 'sawtooth');
   this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq * 4, freq2 * 4, 'sine');
 };
@@ -210,7 +214,7 @@ Sounds.prototype.playerRelease = function(worldPos, df) {
   var div = df * 0.5 + 0.5;
   var freq = 2 * 220 / div;
   var freq2 = freq / 4;
-  var attack = 0.05;
+  var attack = 0.07;
   var sustain = 0;
   var decay = 0.01;
   this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay * 2, freq, freq2, 'sawtooth');
@@ -240,7 +244,6 @@ Sounds.PlayerSeekHum = function(sounds) {
     this.pitchOsc = this.sfx.createOscillator();
     this.pitchOsc.type = 'sawtooth';
     this.pitchOsc.connect(this.wobbleGain);
-
   }
 };
 

@@ -46,7 +46,7 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.PLAYER_RAD = 1;
 
 // floaty!
-PlayerSpirit.SPEED = 8;
+PlayerSpirit.SPEED = 5;
 PlayerSpirit.TRACTION = 0.015;
 
 // // tight

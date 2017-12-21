@@ -208,7 +208,7 @@ MachineGunSpirit.prototype.fire = function() {
   this.screen.splashes.addDotSplash(this.now(),
       this.vec2d2.set(vel).scaleToLength(this.getBody().rad * 1.5).add(pos),
       rad * 2.5, 0.7,
-      1, 0.5, 0.5);
+      1, 0.9, 0.9);
 
   this.addBodyVel(vel.scale(-1 * 0.25 * bullet.getBody().mass / this.getBody().mass));
 };
