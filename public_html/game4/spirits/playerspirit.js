@@ -480,15 +480,17 @@ PlayerSpirit.prototype.handleSeeking = function() {
   // maybe direct a scan towards the last body we attracted
   var seekBody = this.getSeekTargetBody();
   if (seekBody) {
-    // set scanVel
+    var anglePaddingMult = 1.3;
     this.seekTargetBodyId = null;
-    seekBody.getPosAtTime(now, scanVel)
-        .subtract(this.getBodyPos())
-        .scaleToLength(maxScanDist)
-        .rot(2 * seekBody.rad * (Math.random() - 0.5) / maxScanDist);
     var angleDiffToSeekBody = this.getAngleDiff(this.getAngleToBody(seekBody));
-    if (Math.abs(angleDiffToSeekBody) <= maxFanAngle) {
-      scanPos.setXY(-angleDiffToSeekBody / maxFanAngle * this.getBody().rad, 0).rot(aimAngle).add(this.getBodyPos());
+    if (Math.abs(angleDiffToSeekBody) <= anglePaddingMult * maxFanAngle / 2) {
+      var radUnit = angleDiffToSeekBody / maxFanAngle / 2;
+      // set scanVel
+      seekBody.getPosAtTime(now, scanVel)
+          .subtract(this.getBodyPos())
+          .scaleToLength(maxScanDist * (1 - radUnit * radUnit))
+          .rot(2 * seekBody.rad * (Math.random() - 0.5) / maxScanDist);
+      scanPos.set(this.getBodyPos());
       scan();
     }
   }
@@ -496,7 +498,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
   // always fire a random scan
   var aimAngle = this.aim.angle();
   var radUnit = Math.random() - 0.5;
-  scanPos.setXY(radUnit * 2 * this.getBody().rad, 0).rot(aimAngle).add(this.getBodyPos());
+  scanPos.setXY(radUnit * this.getBody().rad, 0).rot(aimAngle).add(this.getBodyPos());
   scanVel.setXY(0, maxScanDist * (1 - radUnit * radUnit)).rot(radUnit * maxFanAngle + aimAngle);
   scan();
 
