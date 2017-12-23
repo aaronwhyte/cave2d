@@ -194,7 +194,7 @@ RogueGunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   var angPos = this.getBodyAngPos();
-  var speed = 2.5;
+  var speed = 2.25;
   var dist = 18 * (1 + Math.random() * 0.2);
   var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.3 * (Math.random() - 0.5)).scaleToLength(speed);
   var rad = 0.4;
@@ -218,7 +218,8 @@ RogueGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(0.5, 1, 1);
   spirit.damage = 0.5;
-  spirit.toughness = 0.6;
+  spirit.toughness = 0.4;
+  spirit.trailDuration = 1.5;
   var density = 0.5;
 
   var b = Body.alloc();

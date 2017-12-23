@@ -39,6 +39,7 @@ BulletSpirit.prototype.reset = function(screen) {
 
   this.toughness = 1;
   this.damage = 1;
+  this.trailDuration = 0.8;
 
   this.wallDamageMultiplier = 1;
 
@@ -98,7 +99,7 @@ BulletSpirit.prototype.addTrailSegment = function() {
 
 BulletSpirit.prototype.drawTrail = function() {
   var maxTime = this.now();
-  var duration = 2;
+  var duration = this.trailDuration;
   var minTime = maxTime - duration;
   var trailWarm = false;
   this.screen.renderer
@@ -115,7 +116,7 @@ BulletSpirit.prototype.drawTrail = function() {
       this.trail.getSegmentPosAtTime(i, drawStartTime, this.segStartVec);
       this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
 
-      var startRad = this.rad * (drawStartTime - minTime) / (maxTime - minTime);
+      var startRad = this.rad * ((drawStartTime+drawEndTime)/2 - minTime) / (maxTime - minTime);
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));

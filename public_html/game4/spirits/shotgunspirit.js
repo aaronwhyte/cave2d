@@ -194,12 +194,12 @@ ShotgunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   var angPos = this.getBodyAngPos();
-  var speed = 3.5;
+  var speed = 2;
   var baseVel = this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed);
-  var rad = 0.4;
+  var rad = 0.45;
   var vel = Vec2d.alloc();
   for (var i = -3; i <= 3; i++) {
-    var dist = 15 * (1 + Math.random() * 0.1);
+    var dist = 15 + Math.random() - Math.pow(Math.abs(i) / 3, 2);
     var rot = 0.1 * (i + 0.5 * (Math.random() - 0.5));
     vel.set(baseVel).rot(rot);
     var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos + rot, vel, rad, dist / speed));
@@ -215,7 +215,7 @@ ShotgunSpirit.prototype.fire = function() {
   this.screen.sounds.shotgun(pos);
   this.screen.splashes.addDotSplash(this.now(),
       this.vec2d2.set(baseVel).scaleToLength(this.getBody().rad * 2).add(pos),
-      rad * 2.5, 0.7,
+      rad * 4, 1.5,
       1, 0.9, 0.9);
 };
 
@@ -224,6 +224,7 @@ ShotgunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.damage = 0.75;
   spirit.toughness = 1;
+  spirit.trailDuration = 0.7;
   spirit.setColorRGB(1, 1, 0.5);
   var density = 2;
 
