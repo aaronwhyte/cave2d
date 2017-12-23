@@ -47,7 +47,7 @@ PlayerSpirit.PLAYER_RAD = 1;
 
 // floaty!
 PlayerSpirit.SPEED = 5;
-PlayerSpirit.TRACTION = 0.015;
+PlayerSpirit.TRACTION = 0.02;
 
 // // tight
 // PlayerSpirit.SPEED = 0.7;

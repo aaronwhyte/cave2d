@@ -73,7 +73,7 @@ ActivatorGunSpirit.createModel = function() {
       .addRigidModel(RigidModel.createCircle(9)
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
           .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(0, 0.9, 1);
+      .setColorRGB(0.9, 0.9, 0.9);
   return model.addRigidModel(body).addRigidModel(barrel);
 };
 

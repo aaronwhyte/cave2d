@@ -65,7 +65,7 @@ ShotgunSpirit.prototype.setModelStamp = function(modelStamp) {
 
 ShotgunSpirit.createModel = function() {
   var model = new RigidModel();
-  var body = RigidModel.createCircle(17).setColorRGB(0.7, 0.5, 0.3);
+  var body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
   var thick = 0.7;
   var barrel = RigidModel.createSquare()
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
@@ -73,7 +73,7 @@ ShotgunSpirit.createModel = function() {
       .addRigidModel(RigidModel.createCircle(9)
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
           .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(1, 0.7, 0.2);
+      .setColorRGB(1, 0.5, 0);
   return model.addRigidModel(body).addRigidModel(barrel);
 };
 
@@ -195,18 +195,18 @@ ShotgunSpirit.prototype.fire = function() {
   if (!pos) return;
   var angPos = this.getBodyAngPos();
   var speed = 2.5;
-  var baseVel = this.vec2d.setXY(0, 1).rot(angPos + 0.01 * (Math.random() - 0.5)).scaleToLength(speed);
+  var baseVel = this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed);
   var rad = 0.5;
   var vel = Vec2d.alloc();
   for (var i = -2; i <= 2; i++) {
-    var dist = 12 * (1 + Math.random() * 0.1);
-    var rot = 0.25 * i;
+    var dist = 13 * (1 + Math.random() * 0.1);
+    var rot = 0.2 * (i + 0.5 * (Math.random() - 0.5));
     vel.set(baseVel).rot(rot);
     var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos + rot, vel, rad, dist / speed));
     // For now, only players can fire weapons.
     bullet.team = Team.PLAYER;
     if (i === 0) {
-      this.addBodyVel(vel.scale(-1 * 0.5 * bullet.getBody().mass / this.getBody().mass));
+      this.addBodyVel(vel.scale(-1 * bullet.getBody().mass / this.getBody().mass));
     }
   }
   vel.free();
@@ -217,14 +217,14 @@ ShotgunSpirit.prototype.fire = function() {
       this.vec2d2.set(baseVel).scaleToLength(this.getBody().rad * 2).add(pos),
       rad * 2.5, 0.7,
       1, 0.9, 0.9);
-
 };
 
 ShotgunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
-  //spirit.setModelStamp(this.stamps.arrow);
-  spirit.setColorRGB(1, 1, 0);
+  spirit.damage = 1;
+  spirit.toughness = 0.5;
+  spirit.setColorRGB(1, 0.5, 0);
   var density = 1;
 
   var b = Body.alloc();

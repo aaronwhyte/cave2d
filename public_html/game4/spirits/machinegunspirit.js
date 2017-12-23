@@ -91,7 +91,7 @@ MachineGunSpirit.factory = function(screen, stamp, pos, dir) {
   b.grip = 0.25;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 0.7;
+  b.rad = 0.8;
   b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
@@ -216,8 +216,9 @@ MachineGunSpirit.prototype.fire = function() {
 MachineGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
-  //spirit.setModelStamp(this.stamps.arrow);
   spirit.setColorRGB(1, 1, 0);
+  spirit.damage = 1;
+  spirit.toughness = 0.5;
   var density = 1;
 
   var b = Body.alloc();

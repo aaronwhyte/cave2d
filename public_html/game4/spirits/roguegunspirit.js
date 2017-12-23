@@ -26,7 +26,7 @@ RogueGunSpirit.FIRE_TIMEOUT_ID = 2;
 RogueGunSpirit.FRICTION_TIMEOUT = 1.2;
 RogueGunSpirit.MAX_TIMEOUT = 10;
 
-RogueGunSpirit.FIRE_TIMEOUT = 3;
+RogueGunSpirit.FIRE_TIMEOUT = 3.5;
 
 RogueGunSpirit.SCHEMA = {
   0: "type",
@@ -65,7 +65,7 @@ RogueGunSpirit.prototype.setModelStamp = function(modelStamp) {
 
 RogueGunSpirit.createModel = function() {
   var model = new RigidModel();
-  var body = RigidModel.createCircle(17).setColorRGB(0, 0.5, 0.5);
+  var body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
   var thick = 0.4;
   var barrel = RigidModel.createSquare()
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
@@ -73,7 +73,7 @@ RogueGunSpirit.createModel = function() {
       .addRigidModel(RigidModel.createCircle(9)
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
           .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(0.8, 0.9, 0.9);
+      .setColorRGB(0.5, 1, 1);
   return model.addRigidModel(body).addRigidModel(barrel);
 };
 
@@ -91,7 +91,7 @@ RogueGunSpirit.factory = function(screen, stamp, pos, dir) {
   b.grip = 0.25;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 0.7;
+  b.rad = 0.65;
   b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
@@ -194,7 +194,7 @@ RogueGunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   var angPos = this.getBodyAngPos();
-  var speed = 2;
+  var speed = 1.8;
   var dist = 18 * (1 + Math.random() * 0.2);
   var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.3 * (Math.random() - 0.5)).scaleToLength(speed);
   var rad = 0.4;
@@ -216,11 +216,10 @@ RogueGunSpirit.prototype.fire = function() {
 RogueGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
-  //spirit.setModelStamp(this.stamps.arrow);
-  spirit.setColorRGB(0.3, 1, 1);
+  spirit.setColorRGB(0.5, 1, 1);
   spirit.damage = 0.5;
   spirit.toughness = 0.6;
-  var density = 0.3;
+  var density = 0.5;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
