@@ -26,7 +26,7 @@ ShotgunSpirit.FIRE_TIMEOUT_ID = 2;
 ShotgunSpirit.FRICTION_TIMEOUT = 1.2;
 ShotgunSpirit.MAX_TIMEOUT = 10;
 
-ShotgunSpirit.FIRE_TIMEOUT = 30;
+ShotgunSpirit.FIRE_TIMEOUT = 25;
 
 ShotgunSpirit.SCHEMA = {
   0: "type",
@@ -194,7 +194,7 @@ ShotgunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   var angPos = this.getBodyAngPos();
-  var speed = 2.5;
+  var speed = 4;
   var baseVel = this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed);
   var rad = 0.5;
   var vel = Vec2d.alloc();

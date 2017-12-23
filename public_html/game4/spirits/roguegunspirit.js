@@ -26,7 +26,7 @@ RogueGunSpirit.FIRE_TIMEOUT_ID = 2;
 RogueGunSpirit.FRICTION_TIMEOUT = 1.2;
 RogueGunSpirit.MAX_TIMEOUT = 10;
 
-RogueGunSpirit.FIRE_TIMEOUT = 3.5;
+RogueGunSpirit.FIRE_TIMEOUT = 2.3;
 
 RogueGunSpirit.SCHEMA = {
   0: "type",
@@ -194,7 +194,7 @@ RogueGunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   var angPos = this.getBodyAngPos();
-  var speed = 1.8;
+  var speed = 2.5;
   var dist = 18 * (1 + Math.random() * 0.2);
   var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.3 * (Math.random() - 0.5)).scaleToLength(speed);
   var rad = 0.4;
