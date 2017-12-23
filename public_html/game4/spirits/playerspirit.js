@@ -46,8 +46,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.PLAYER_RAD = 1;
 
 // floaty!
-PlayerSpirit.SPEED = 5;
-PlayerSpirit.TRACTION = 0.02;
+PlayerSpirit.SPEED = 1.75;
+PlayerSpirit.TRACTION = 0.5;
 
 // // tight
 // PlayerSpirit.SPEED = 0.7;
@@ -60,8 +60,8 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.WIELD_MAX_ACCEL = 3;
-PlayerSpirit.WIELD_MAX_FORCE = 1.5;
+PlayerSpirit.WIELD_MAX_ACCEL = 6;
+PlayerSpirit.WIELD_MAX_FORCE = 3;
 PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
@@ -249,15 +249,17 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   } else {
     this.tractionMult = Math.max(0, this.tractionMult - 0.01);
   }
-  var traction = PlayerSpirit.TRACTION * this.tractionMult;
-  // Half of traction's job is to stop you from sliding in the direction you're already going.
-  this.accel.set(playerBody.vel).scale(-traction);
+  if (!touchlike || stick.isTouched()) {
+    var traction = PlayerSpirit.TRACTION * this.tractionMult;
+    // Half of traction's job is to stop you from sliding in the direction you're already going.
+    this.accel.set(playerBody.vel).scale(-traction);
 
-  // The other half of traction's job is to get you going where you want.
-  // vec2d is the stick input right now.
-  this.vec2d.scale(speed * traction * (aimLocked ? 1 : Math.abs(stickDotAim)));
-  this.accel.add(this.vec2d);
-  playerBody.addVelAtTime(this.accel, this.now());
+    // The other half of traction's job is to get you going where you want.
+    // vec2d is the stick input right now.
+    this.vec2d.scale(speed * traction * (aimLocked ? 1 : Math.abs(stickDotAim)));
+    this.accel.add(this.vec2d);
+    playerBody.addVelAtTime(this.accel, this.now());
+  }
 
   ////////
   // AIM
@@ -273,11 +275,12 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   //////////////////
   // STICK SCALING
   if (touchlike && stickMag) {
-    var unshrinkingMag = 0.8;
-    if (stickMag < unshrinkingMag) {
-      var stickScale = 0.95 + 0.05 * stickMag / unshrinkingMag;
-      stick.scale(stickScale);
-    }
+    // var unshrinkingMag = 0.8;
+    // if (stickMag < unshrinkingMag) {
+    //   var stickScale = 0.95 + 0.05 * stickMag / unshrinkingMag;
+    //   stick.scale(stickScale);
+    // }
+    stick.scale(0.9);
   }
 };
 
