@@ -68,7 +68,7 @@ PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD * 0.25;
 PlayerSpirit.SEEKSCAN_FAN_ANGLE = Math.PI / 4;
 PlayerSpirit.SEEKSCAN_FORCE = 0.1;
-PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 15;
+PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 20;
 
 PlayerSpirit.KICK_FORCE = 0.7;
 
@@ -81,7 +81,7 @@ PlayerSpirit.MAX_OBSTRUCTION_COUNT = 30;
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.4;
 PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.4;
 PlayerSpirit.ANGULAR_FRICTION = 0.4;
-PlayerSpirit.BEAM_ANGULAR_ACCEL = 0.3;
+PlayerSpirit.BEAM_ANGULAR_ACCEL = 0.2;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -428,7 +428,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
   var maxScanDist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD;
   var maxFanAngle = PlayerSpirit.SEEKSCAN_FAN_ANGLE;
 
-  var scanPos = Vec2d.alloc().set(this.getBodyPos());
+  var scanPos = Vec2d.alloc();
   var scanVel = Vec2d.alloc();
 
   var forceVec = Vec2d.alloc();
@@ -441,7 +441,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
 
   var self = this;
 
-  function scan() {
+  function scan(leftFrac) {
     var rf = self.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
     var pulling = false;
     if (rf === -1) {
@@ -482,9 +482,13 @@ PlayerSpirit.prototype.handleSeeking = function() {
   if (seekBody) {
     // set scanVel
     this.seekTargetBodyId = null;
-    seekBody.getPosAtTime(now, scanVel).subtract(this.getBodyPos()).scaleToLength(maxScanDist).rot(2 * seekBody.rad * (Math.random() - 0.5) / maxScanDist);
+    seekBody.getPosAtTime(now, scanVel)
+        .subtract(this.getBodyPos())
+        .scaleToLength(maxScanDist)
+        .rot(2 * seekBody.rad * (Math.random() - 0.5) / maxScanDist);
     var angleDiffToSeekBody = this.getAngleDiff(this.getAngleToBody(seekBody));
     if (Math.abs(angleDiffToSeekBody) <= maxFanAngle) {
+      scanPos.setXY(-angleDiffToSeekBody / maxFanAngle * this.getBody().rad, 0).rot(aimAngle).add(this.getBodyPos());
       scan();
     }
   }
@@ -492,7 +496,8 @@ PlayerSpirit.prototype.handleSeeking = function() {
   // always fire a random scan
   var aimAngle = this.aim.angle();
   var radUnit = Math.random() - 0.5;
-  scanVel.setXY(0, maxScanDist).rot(radUnit * maxFanAngle + aimAngle);
+  scanPos.setXY(radUnit * 2 * this.getBody().rad, 0).rot(aimAngle).add(this.getBodyPos());
+  scanVel.setXY(0, maxScanDist * (1 - radUnit * radUnit)).rot(radUnit * maxFanAngle + aimAngle);
   scan();
 
   this.seekHum.setWorldPos(this.getBodyPos());
@@ -670,6 +675,9 @@ PlayerSpirit.prototype.handleBeamTorque = function(restingAngle, maxA) {
   // TODO actual target angular vel has to do with target/player pair orbit
   var v0 = targetBody.angVel - playerBody.angVel;
 
+  // Limit the max acceleration for objects with high moments of inertia,
+  // so the player can't spin them as if they are weightless.
+  maxA = Math.min(maxA, maxA / targetBody.moi);
   var angPulse = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
   targetBody.addAngVelAtTime(angPulse, now);
 };
