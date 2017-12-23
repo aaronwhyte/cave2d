@@ -31,9 +31,9 @@ function AntSpirit(screen) {
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 1.5;
-AntSpirit.THRUST = 1;
-AntSpirit.TRACTION = 0.5;
+AntSpirit.MEASURE_TIMEOUT = 1.7;
+AntSpirit.THRUST = 1.5;
+AntSpirit.TRACTION = 0.4;
 AntSpirit.MAX_TIMEOUT = 10;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 3;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
@@ -178,7 +178,7 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   var pos = this.getBodyPos();
   var now = this.now();
   var traction = AntSpirit.TRACTION;
-  var scanDist = 4 * body.rad;
+  var scanDist = 3 * body.rad;
   var distFrac, scanRot;
   var moreStress = 0.04;
 
@@ -232,10 +232,11 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   }
   // turn
   body.applyAngularFrictionAtTime(0.5, now);
-  var angAccel = Math.clip(bestRot * bestFrac * (1 - this.stress) * 0.3, -1, 1);
+  var clip = 0.7;
+  var angAccel = Math.clip(bestRot * bestFrac * (1 - this.stress) * 0.3, -clip, clip);
   body.addAngVelAtTime(angAccel, now);
   if (!this.stress) {
-    body.addAngVelAtTime(0.3 * (Math.random() - 0.5), now);
+    body.addAngVelAtTime(0.1 * (Math.random() - 0.5), now);
   }
 
   // and push
