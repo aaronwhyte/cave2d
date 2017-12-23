@@ -66,14 +66,14 @@ ShotgunSpirit.prototype.setModelStamp = function(modelStamp) {
 ShotgunSpirit.createModel = function() {
   var model = new RigidModel();
   var body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-  var thick = 0.7;
+  var thick = 0.65;
   var barrel = RigidModel.createSquare()
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
       .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
       .addRigidModel(RigidModel.createCircle(9)
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
           .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(1, 0.5, 0);
+      .setColorRGB(1, 0.2, 0.2);
   return model.addRigidModel(body).addRigidModel(barrel);
 };
 
@@ -194,13 +194,13 @@ ShotgunSpirit.prototype.fire = function() {
   var pos = this.getBodyPos();
   if (!pos) return;
   var angPos = this.getBodyAngPos();
-  var speed = 4;
+  var speed = 3.5;
   var baseVel = this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed);
-  var rad = 0.5;
+  var rad = 0.4;
   var vel = Vec2d.alloc();
-  for (var i = -2; i <= 2; i++) {
-    var dist = 13 * (1 + Math.random() * 0.1);
-    var rot = 0.2 * (i + 0.5 * (Math.random() - 0.5));
+  for (var i = -3; i <= 3; i++) {
+    var dist = 15 * (1 + Math.random() * 0.1);
+    var rot = 0.1 * (i + 0.5 * (Math.random() - 0.5));
     vel.set(baseVel).rot(rot);
     var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos + rot, vel, rad, dist / speed));
     // For now, only players can fire weapons.
@@ -222,10 +222,10 @@ ShotgunSpirit.prototype.fire = function() {
 ShotgunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
-  spirit.damage = 1;
-  spirit.toughness = 0.5;
-  spirit.setColorRGB(1, 0.5, 0);
-  var density = 1;
+  spirit.damage = 0.75;
+  spirit.toughness = 1;
+  spirit.setColorRGB(1, 1, 0.5);
+  var density = 2;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;

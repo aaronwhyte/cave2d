@@ -145,7 +145,12 @@ BulletSpirit.prototype.destroy = function() {
 };
 
 BulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  this.die();
+  var body = this.getBody();
+  if (body) {
+    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 1.5, 3,
+        this.color.getR(), this.color.getG(), this.color.getB());
+  }
+  this.destroyBody();
 };
 
 BulletSpirit.prototype.destroyBody = function() {
@@ -167,8 +172,10 @@ BulletSpirit.prototype.setFromJSON = function(json) {
 BulletSpirit.prototype.die = function() {
   var body = this.getBody();
   if (body) {
-    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 2, 4,
+    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 2, 5,
         this.color.getR(), this.color.getG(), this.color.getB());
+    this.screen.splashes.addBulletHitExplosion(this.now(), this.getBodyPos(), body.rad * 2,
+        this.color);
   }
   this.destroyBody();
 };
