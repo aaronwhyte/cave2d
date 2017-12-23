@@ -41,8 +41,8 @@ Sounds.prototype.bwip = function(worldPos, now) {
   var attack = 2/60;
   var sustain = 2/60;
   var decay = 0;//5/ 60;
-  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq, 10 * freq, 'triangle');
-  this.sfx.sound(x, y, 0, 0.2, attack, sustain, decay, freq/4, 10 * freq/4, 'triangle');
+  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq, 10 * freq, 'triangle');
+  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq/4, 10 * freq/4, 'triangle');
 };
 
 Sounds.prototype.bew = function(worldPos, now) {

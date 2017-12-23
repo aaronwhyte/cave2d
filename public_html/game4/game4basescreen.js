@@ -61,7 +61,9 @@ Game4BaseScreen.SpiritType = {
   TRACTOR_BULLET: 11,
   ENERGY_BULLET: 12,
   CENTIPEDE: 13,
-  MACHINE_GUN: 14
+  MACHINE_GUN: 14,
+  SHOTGUN: 15,
+  ROGUE_GUN: 16
 };
 
 Game4BaseScreen.MenuItem = {
@@ -72,7 +74,9 @@ Game4BaseScreen.MenuItem = {
   EXIT: 'exit',
   INDICATOR: 'indicator',
   ACTIVATOR_GUN: 'activator_gun',
-  MACHINE_GUN: 'machine_gun'
+  MACHINE_GUN: 'machine_gun',
+  SHOTGUN: 'shotgun',
+  ROGUE_GUN: 'rogue_gun'
 };
 
 Game4BaseScreen.prototype.createSpiritConfigs = function() {
@@ -106,7 +110,11 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
 
   addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN);
   addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR);
+  nextColumn();
+
   addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN);
+  addToMenu(st.SHOTGUN, ShotgunSpirit, mi.SHOTGUN);
+  addToMenu(st.ROGUE_GUN, RogueGunSpirit, mi.ROGUE_GUN);
   nextColumn();
 
   addOffMenu(st.PLAYER, PlayerSpirit, mi.PLAYER);

@@ -167,7 +167,8 @@ BulletSpirit.prototype.setFromJSON = function(json) {
 BulletSpirit.prototype.die = function() {
   var body = this.getBody();
   if (body) {
-    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 2, 4, 1, 1, 0);
+    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 2, 4,
+        this.color.getR(), this.color.getG(), this.color.getB());
   }
   this.destroyBody();
 };
