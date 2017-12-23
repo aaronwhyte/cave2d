@@ -65,7 +65,7 @@ RogueGunSpirit.prototype.setModelStamp = function(modelStamp) {
 
 RogueGunSpirit.createModel = function() {
   var model = new RigidModel();
-  var body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
+  var body = RigidModel.createCircle(17).setColorRGB(0, 0.5, 0.5);
   var thick = 0.4;
   var barrel = RigidModel.createSquare()
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
@@ -73,7 +73,7 @@ RogueGunSpirit.createModel = function() {
       .addRigidModel(RigidModel.createCircle(9)
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
           .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(0, 1, 1);
+      .setColorRGB(0.8, 0.9, 0.9);
   return model.addRigidModel(body).addRigidModel(barrel);
 };
 
@@ -195,7 +195,7 @@ RogueGunSpirit.prototype.fire = function() {
   if (!pos) return;
   var angPos = this.getBodyAngPos();
   var speed = 2;
-  var dist = 20 * (1 + Math.random() * 0.2);
+  var dist = 18 * (1 + Math.random() * 0.2);
   var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.3 * (Math.random() - 0.5)).scaleToLength(speed);
   var rad = 0.4;
   var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos, vel, rad, dist / speed));

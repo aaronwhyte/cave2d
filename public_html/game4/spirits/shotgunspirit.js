@@ -65,15 +65,15 @@ ShotgunSpirit.prototype.setModelStamp = function(modelStamp) {
 
 ShotgunSpirit.createModel = function() {
   var model = new RigidModel();
-  var body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-  var thick = 0.8;
+  var body = RigidModel.createCircle(17).setColorRGB(0.7, 0.5, 0.3);
+  var thick = 0.7;
   var barrel = RigidModel.createSquare()
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
       .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
       .addRigidModel(RigidModel.createCircle(9)
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
           .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(0.8, 0.8, 0.4);
+      .setColorRGB(1, 0.7, 0.2);
   return model.addRigidModel(body).addRigidModel(barrel);
 };
 
