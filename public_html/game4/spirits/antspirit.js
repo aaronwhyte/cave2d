@@ -18,25 +18,26 @@ function AntSpirit(screen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
   this.accel = new Vec2d();
+
+  // Between 0 and 1.
   this.stress = 0;
 
   this.lastControlTime = this.now();
   this.viewportsFromCamera = 0;
 
-  this.toughness = 2;
+  this.toughness = 1;
   this.damage = 1;
 }
-
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 1.2;
-AntSpirit.THRUST = 0.31;
+AntSpirit.MEASURE_TIMEOUT = 1.5;
+AntSpirit.THRUST = 1;
+AntSpirit.TRACTION = 0.5;
 AntSpirit.MAX_TIMEOUT = 10;
-AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 2;
+AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 3;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
-AntSpirit.MAX_HEALTH = 3;
 AntSpirit.OPTIMIZE = true;
 
 AntSpirit.SCHEMA = {
@@ -78,7 +79,7 @@ AntSpirit.createModel = function() {
           .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
           .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
-      .setColorRGB(0.1, 1, 0.1);
+      .setColorRGB(0.1, 0.8, 0.1);
 };
 
 AntSpirit.factory = function(screen, stamp, pos, dir) {
@@ -92,10 +93,10 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 0.9;
+  b.grip = 0.2;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 0.5 + Math.random();
+  b.rad = 0.95;
   b.hitGroup = screen.getHitGroups().ENEMY;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
@@ -132,7 +133,6 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   this.stress = this.stress || 0;
 
   var friction = this.getFriction();
-  var traction = 0.1;
 
   var now = this.now();
   var time = Math.max(0, Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
@@ -140,7 +140,6 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   // friction
   body.applyLinearFrictionAtTime(friction * time, now);
-  body.applyAngularFrictionAtTime(friction * time, now);
 
   var newVel = this.vec2d.set(body.vel);
 
@@ -155,49 +154,10 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   if (this.screen.isPlaying()) {
     if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
-      var antennaRotMag = Math.max(Math.PI * 0.15, Math.PI * this.stress);
-      // they get faster as they get hurt
-      var radThrust = (body.rad < 1 ? 0.5 * (1 - body.rad) : 0);
-      var thrust = AntSpirit.THRUST * (2 - this.health) + radThrust;
-      var scanDist = 0.6 * (2 - this.stress) * (1 + radThrust) / AntSpirit.THRUST;
-      var scanRot = 2 * antennaRotMag * (Math.random() - 0.5) + this.getBodyAngVel();
-      var distFrac = this.scan(pos, scanRot, scanDist, body.rad);
-      var closeness = 1 - distFrac;
-      var angAccel = 0;
-      if (distFrac >= 0) {
-        // rayscan hit
-        var otherSpirit = this.getScanHitSpirit();
-        if (otherSpirit && otherSpirit.type === Game4BaseScreen.SpiritType.PLAYER) {
-          // attack player!
-          this.stress = 0;
-          angAccel = 0.4 * scanRot;
-          thrust *= 1.2;
-        } else {
-          // avoid obstruction
-          angAccel = -scanRot * (0.5 * this.stress + 1) * closeness;
-          this.stress += 0.06 * closeness;
-          thrust *= distFrac * distFrac;
-        }
-      } else {
-        // clear path
-        // turn towards the scan
-        angAccel = 0.2 * scanRot;
-        this.stress = 0;
-      }
-      this.stress = Math.min(1, Math.max(0, this.stress));
-
-      body.addAngVelAtTime(angAccel, now);
-      body.applyAngularFrictionAtTime(0.4, now);
-
-      var dir = this.getBodyAngPos();
-
-      this.accel
-          .set(body.vel).scale(-traction * time)
-          .addXY(
-              Math.sin(dir) * thrust * traction * time,
-              Math.cos(dir) * thrust * traction * time);
-      newVel.add(this.accel);
+      this.handleLoner(newVel, time);
     }
+  } else {
+    body.applyAngularFrictionAtTime(friction * time, now);
   }
   // Reset the body's pathDurationMax because it gets changed at compile-time,
   // but it is serialized at level-save-time, so old saved values might not
@@ -212,9 +172,91 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   world.addTimeout(now + timeoutDuration, this.id, -1);
 };
 
-AntSpirit.prototype.getScanHitSpirit = function() {
-  var body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
-  return this.screen.getSpiritForBody(body);
+
+AntSpirit.prototype.handleLoner = function(newVel, time) {
+  var body = this.getBody();
+  var pos = this.getBodyPos();
+  var now = this.now();
+  var traction = AntSpirit.TRACTION;
+  var scanDist = 4 * body.rad;
+  var distFrac, scanRot;
+  var moreStress = 0.04;
+
+  var bestFrac = 0; // lowest possible value
+  var bestRot = 0;
+
+  var maxIterations = 8;
+  if (this.stress >= 1 ) {
+    // This stressed-out loner doesn't get any extra scan cycles
+    maxIterations = 0;
+    // freak out a little instead
+    body.addAngVelAtTime(0.2 * (Math.random() - 0.5), now);
+  }
+  // How far (to either side) to look for a way out.
+  var maxScanRotation = Math.PI * 0.99;
+
+  // Randomly pick a starting side for every pair of side-scans.
+  var lastSign = Math.sign(Math.random() - 0.5);
+  for (var i = 0; i <= maxIterations; i++) {
+    if (i === 0) {
+      distFrac = this.scan(pos, 0, scanDist, body.rad);
+      if (distFrac < 0) {
+        bestFrac = 1;
+      } else {
+        // hit something
+        bestFrac = distFrac;
+      }
+    } else {
+      // Do a pair of scans to either side, in random order
+      for (var signMult = -1; signMult <= 1; signMult += 2) {
+        scanRot = signMult * lastSign * maxScanRotation * i / maxIterations;
+        distFrac = this.scan(pos, scanRot, scanDist, body.rad);
+        if (distFrac < 0) {
+          bestFrac = 1;
+          bestRot = scanRot;
+        } else {
+          // hit something
+          if (distFrac > bestFrac) {
+            // This is the longest scan so far. Remember it!
+            bestFrac = distFrac;
+            bestRot = scanRot;
+          }
+          // keep looking...
+        }
+      }
+    }
+    if (bestFrac === 1) {
+      // A clear path is definitely the best path.
+      break;
+    }
+  }
+  // turn
+  body.applyAngularFrictionAtTime(0.5, now);
+  var angAccel = Math.clip(bestRot * bestFrac * (1 - this.stress) * 0.3, -1, 1);
+  body.addAngVelAtTime(angAccel, now);
+  if (!this.stress) {
+    body.addAngVelAtTime(0.3 * (Math.random() - 0.5), now);
+  }
+
+  // and push
+  var thrust = AntSpirit.THRUST * (0.5 * (1 - this.stress) + 0.5 * bestFrac);
+  var dir = this.getBodyAngPos();
+  this.accel
+      .set(body.vel).scale(-traction * time)
+      .addXY(
+          Math.sin(dir) * thrust * traction * time,
+          Math.cos(dir) * thrust * traction * time);
+  newVel.scale(1 - traction).add(this.accel.scale(traction));
+
+  if (bestFrac === 1) {
+    // relax!
+    this.stress = Math.max(0, this.stress - moreStress);
+  } else {
+    // get stressed?
+    var joinable = this.joinableAfterTime < this.now();
+    // less stress if unjoinable
+    this.stress = Math.min(1, this.stress + moreStress * (joinable ? 1 : 0.2));
+  }
 };
 
 AntSpirit.prototype.onDraw = function(world, renderer) {
@@ -237,106 +279,27 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
 AntSpirit.prototype.explode = function() {
   var body = this.getBody();
   var pos = this.getBodyPos();
-  // var craterRad = body.rad * 3;
-  // this.explosionSplash(pos, craterRad);
-  // var bulletRad = body.rad / 2;
-  // this.bulletBurst(pos, bulletRad, body.rad - bulletRad, craterRad * 1.75);
-  // this.screen.drawTerrainPill(pos, pos, body.rad * 0.7, 0);
+  this.screen.addEnemyExplosion(pos, body.rad, this.vec4.setXYZ(1, 1, 1));
   this.screen.sounds.antExplode(pos);
 
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
 };
 
-AntSpirit.prototype.bulletBurst = function(pos, bulletRad, startRad, endRad) {
-  var p = Vec2d.alloc();
-  var v = Vec2d.alloc();
-  var bulletCount = Math.floor(3 + bulletRad*5);
-  var a = Math.random() * Math.PI;
-  for (var i = 0; i < bulletCount; i++) {
-    var duration = (6 + 2 * Math.random());
-    var speed = (endRad - startRad) / duration;
-    a += 2 * Math.PI / bulletCount;
-    v.setXY(0, 1).rot(a + Math.random() * Math.PI * 0.15);
-    p.set(v).scale(startRad).add(pos);
-    v.scale(speed);
-    this.addBullet(p, v, bulletRad, duration);
-  }
-  v.free();
-  p.free();
-};
-
-AntSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
-  var now = this.now();
-  var spirit = BulletSpirit.alloc(this.screen);
-  spirit.setModelStamp(this.stamps.circleStamp);
-  spirit.setColorRGB(0, 0.5, 0);
-  var density = 1;
-
-  var b = Body.alloc();
-  b.shape = Body.Shape.CIRCLE;
-  b.setPosAtTime(pos, now);
-  b.setVelAtTime(vel, now);
-  b.rad = rad;
-  b.hitGroup = this.screen.getHitGroups().ENEMY_FIRE;
-  b.mass = (Math.PI * 4/3) * b.rad * density;
-  b.pathDurationMax = duration;
-  spirit.bodyId = this.screen.world.addBody(b);
-
-  var spiritId = this.screen.world.addSpirit(spirit);
-  b.spiritId = spiritId;
-  spirit.addTrailSegment();
-  spirit.digChance = 9;
-  spirit.bounceChance = 9;
-  spirit.damage = 0;
-  spirit.wallDamageMultiplier = 1.7;
-
-  // bullet self-destruct timeout
-  this.screen.world.addTimeout(now + duration, spiritId, 0);
-
-  return spiritId;
-};
-
-
-AntSpirit.prototype.explosionSplash = function(pos, rad) {
-  // TODO: Once ants start exploding again, move this up to Splashes
-  // var now = this.now();
-  // // cloud particles
-  // var s = this.screen.splash;
-  // var x = pos.x;
-  // var y = pos.y;
-  // var self = this;
-  // var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
-  //
-  // function addSplash(x, y, dx, dy, duration, sizeFactor) {
-  //   s.reset(Game4BaseScreen.SplashType.WALL_DAMAGE, self.stamps.circleStamp);
-  //   s.startTime = now;
-  //   s.duration = duration;
-  //
-  //   s.startPose.pos.setXYZ(x, y, -0.9);
-  //   s.endPose.pos.setXYZ(x + dx * s.duration, y + dy * s.duration, 0.9);
-  //   var startRad = sizeFactor * rad;
-  //   s.startPose.scale.setXYZ(startRad, startRad, 1);
-  //   s.endPose.scale.setXYZ(0, 0, 1);
-  //   s.startColor.setXYZ(0, 1, 0); // ant-ish color
-  //   s.endColor.setXYZ(0, 0.4, 0);
-  //   // s.endColor.setXYZ(0.2, 0.3, 0.6); // wall color
-  //   self.screen.splasher.addCopy(s);
-  // }
-  //
-  // particles = Math.ceil(5 * (1 + 0.5 * Math.random()));
-  // explosionRad = rad/2;
-  // dirOffset = 2 * Math.PI * Math.random();
-  // for (i = 0; i < particles; i++) {
-  //   duration = 10 * Math.random() + 6;
-  //   dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random()/4;
-  //   dx = 2 * Math.sin(dir) * explosionRad / duration;
-  //   dy = 2 * Math.cos(dir) * explosionRad / duration;
-  //   addSplash(x, y, dx, dy, duration, 0.3 + Math.random() * 0.1);
-  // }
-};
-
-
 AntSpirit.prototype.die = function() {
   this.explode();
+};
+
+/**
+ * Called after bouncing and damage exchange are done.
+ * @param {Vec2d} collisionVec
+ * @param {Number} mag the magnitude of the collision, kinda?
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
+ */
+AntSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+  // Override me!
+  var body = this.getBody();
+  if (!body) return;
+  //this.screen.sounds.wallThump(this.getBodyPos(), mag / body.mass);
 };
