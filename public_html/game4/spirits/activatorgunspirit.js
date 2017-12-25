@@ -26,7 +26,7 @@ ActivatorGunSpirit.FIRE_TIMEOUT_ID = 2;
 ActivatorGunSpirit.FRICTION_TIMEOUT = 1.2;
 ActivatorGunSpirit.MAX_TIMEOUT = 10;
 
-ActivatorGunSpirit.FIRE_TIMEOUT = 1.425;
+ActivatorGunSpirit.FIRE_TIMEOUT = 2.2;
 
 ActivatorGunSpirit.SCHEMA = {
   0: "type",
