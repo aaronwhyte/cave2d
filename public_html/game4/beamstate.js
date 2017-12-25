@@ -12,5 +12,5 @@ BeamState.isOutputish = function(state) {
 };
 
 BeamState.isAimLocked = function(state) {
-  return state === BeamState.ACTIVATING;
+  return false && state === BeamState.ACTIVATING;
 };
