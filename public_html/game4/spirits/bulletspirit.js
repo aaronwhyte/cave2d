@@ -102,6 +102,9 @@ BulletSpirit.prototype.drawTrail = function() {
   var duration = this.trailDuration;
   var minTime = maxTime - duration;
   var trailWarm = false;
+
+  this.headRad = this.rad;
+  this.tailRad = this.rad * 0.5;
   this.screen.renderer
       .setStamp(this.stamps.cylinderStamp)
       .setColorVector(this.color);
@@ -116,13 +119,13 @@ BulletSpirit.prototype.drawTrail = function() {
       this.trail.getSegmentPosAtTime(i, drawStartTime, this.segStartVec);
       this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
 
-      var startRad = this.rad * ((drawStartTime+drawEndTime)/2 - minTime) / (maxTime - minTime);
+      var startRad = this.tailRad + (this.headRad - this.tailRad) * (drawStartTime - minTime) / duration;
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
       this.screen.renderer.setModelMatrix(this.modelMatrix);
 
-      var endRad = this.rad * (drawEndTime - minTime) / (maxTime - minTime);
+      var endRad = this.tailRad + (this.headRad - this.tailRad) * (drawEndTime - minTime) / duration;
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
