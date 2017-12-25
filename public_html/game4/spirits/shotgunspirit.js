@@ -200,15 +200,13 @@ ShotgunSpirit.prototype.fire = function() {
   var vel = Vec2d.alloc();
   for (var i = -3; i <= 3; i++) {
     var dist = 15 + Math.random() - Math.pow(Math.abs(i) / 3, 2);
-    var rot = 0.1 * (i + 0.5 * (Math.random() - 0.5));
+    var rot = 0.12 * (i + 0.5 * (Math.random() - 0.5));
     vel.set(baseVel).rot(rot);
     var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos + rot, vel, rad, dist / speed));
     // For now, only players can fire weapons.
     bullet.team = Team.PLAYER;
-    if (i === 0) {
-      this.addBodyVel(vel.scale(-1 * bullet.getBody().mass / this.getBody().mass));
-    }
   }
+  this.addBodyVel(vel.setXY(0, -7 * bullet.getBody().mass / this.getBody().mass).rot(angPos));
   vel.free();
 
   this.lastFireTime = this.now();
@@ -223,10 +221,10 @@ ShotgunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.damage = 0.75;
-  spirit.toughness = 1;
+  spirit.toughness = 0.75;
   spirit.trailDuration = 0.7;
   spirit.setColorRGB(1, 1, 0.5);
-  var density = 2;
+  var density = 1;
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
