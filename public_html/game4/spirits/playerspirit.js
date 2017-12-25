@@ -45,9 +45,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 1;
 
-// floaty!
-PlayerSpirit.SPEED = 1.75;
-PlayerSpirit.TRACTION = 0.5;
+PlayerSpirit.SPEED = 1.5;
+PlayerSpirit.TRACTION = 0.1;
 
 // // tight
 // PlayerSpirit.SPEED = 0.7;
@@ -70,6 +69,7 @@ PlayerSpirit.SEEKSCAN_FAN_ANGLE = Math.PI / 4;
 PlayerSpirit.SEEKSCAN_FORCE = 0.1;
 PlayerSpirit.SEEKSCAN_DIST = PlayerSpirit.PLAYER_RAD * 20;
 
+PlayerSpirit.KICK_DIST = PlayerSpirit.PLAYER_RAD * 12;
 PlayerSpirit.KICK_FORCE = 0.7;
 
 // dist from player surface
@@ -249,17 +249,15 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   } else {
     this.tractionMult = Math.max(0, this.tractionMult - 0.01);
   }
-  if (!touchlike || stick.isTouched()) {
-    var traction = PlayerSpirit.TRACTION * this.tractionMult;
-    // Half of traction's job is to stop you from sliding in the direction you're already going.
-    this.accel.set(playerBody.vel).scale(-traction);
+  var traction = PlayerSpirit.TRACTION * this.tractionMult;
+  // Half of traction's job is to stop you from sliding in the direction you're already going.
+  this.accel.set(playerBody.vel).scale(-traction);
 
-    // The other half of traction's job is to get you going where you want.
-    // vec2d is the stick input right now.
-    this.vec2d.scale(speed * traction * (aimLocked ? 1 : Math.abs(stickDotAim)));
-    this.accel.add(this.vec2d);
-    playerBody.addVelAtTime(this.accel, this.now());
-  }
+  // The other half of traction's job is to get you going where you want.
+  // vec2d is the stick input right now.
+  this.vec2d.scale(speed * traction * (aimLocked ? 1 : Math.abs(stickDotAim)));
+  this.accel.add(this.vec2d);
+  playerBody.addVelAtTime(this.accel, this.now());
 
   ////////
   // AIM
@@ -270,17 +268,6 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     } else {
       this.handleKeyboardAim(stick, stickMag, reverseness);
     }
-  }
-
-  //////////////////
-  // STICK SCALING
-  if (touchlike && stickMag) {
-    // var unshrinkingMag = 0.8;
-    // if (stickMag < unshrinkingMag) {
-    //   var stickScale = 0.95 + 0.05 * stickMag / unshrinkingMag;
-    //   stick.scale(stickScale);
-    // }
-    stick.scale(0.9);
   }
 };
 
@@ -806,7 +793,7 @@ PlayerSpirit.prototype.freeKick = function(spread) {
   for (var i = 0; i < shots; i++) {
     var forceMag = 0;
     var angle = angPos + spread * (i + 0.5) / shots - spread / 2;
-    var dist = PlayerSpirit.PLAYER_RAD * 11;
+    var dist = PlayerSpirit.KICK_DIST;
     scanVel.setXY(0, dist).rot(angle);
     var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
     var splashed = false;
