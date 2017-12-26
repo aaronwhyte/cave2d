@@ -151,6 +151,7 @@ Game4BaseScreen.prototype.createHitPairs = function() {
     [g.PLAYER, g.PLAYER],
 
     [g.PLAYER_FIRE, g.WALL],
+    [g.PLAYER_FIRE, g.PLAYER],
     [g.PLAYER_FIRE, g.NEUTRAL],
 
     [g.PLAYER_SCAN, g.WALL],
