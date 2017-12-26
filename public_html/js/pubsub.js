@@ -12,7 +12,7 @@ PubSub = function() {
  * @param {Object} func
  */
 PubSub.prototype.subscribe = function(func) {
-  this.subs.put(func);
+  this.subs.add(func);
 };
 
 /**

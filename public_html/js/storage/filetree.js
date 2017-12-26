@@ -69,7 +69,7 @@ FileTree.prototype.listChildren = function(pathArray) {
     if (!foundSet.contains(fragment) &&
         this.isAncestorOf(pathArray, keyArray)) {
       retval.push(keyArray[pathArray.length]);
-      foundSet.put(fragment);
+      foundSet.add(fragment);
     }
   }
   return retval;

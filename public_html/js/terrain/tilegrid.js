@@ -93,7 +93,7 @@ TileGrid.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
       if (!objSet.contains(cellIndex)) {
         var rectPos = this.v0.setXY((cx + 0.5) * this.bitGrid.cellWorldSize, (cy + 0.5) * this.bitGrid.cellWorldSize);
         if (OverlapDetector.isRectOverlappingCircle(rectPos, rectRad, circle.pos, circle.rad)) {
-          objSet.put(this.bitGrid.getCellIdAtIndexXY(cx, cy));
+          objSet.add(this.bitGrid.getCellIdAtIndexXY(cx, cy));
         }
       }
     }

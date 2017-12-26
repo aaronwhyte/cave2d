@@ -25,7 +25,7 @@ Cell.prototype.reset = function(groupCount) {
 Poolify(Cell);
 
 Cell.prototype.addPathIdToGroup = function(pathId, groupId) {
-  this.groups[groupId].put(pathId);
+  this.groups[groupId].add(pathId);
 };
 
 Cell.prototype.removePathIdFromGroup = function(pathId, groupId) {

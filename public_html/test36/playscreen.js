@@ -10,7 +10,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
 
   this.listeners = new ArraySet();
   this.touchDetector = new TouchDetector();
-  this.listeners.put(this.touchDetector);
+  this.listeners.add(this.touchDetector);
 
   var self = this;
 
@@ -21,7 +21,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
       .addTrigger((new KeyTrigger()).addTriggerKeyByName('z'))
       .addTrigger(new MouseButtonTrigger())
       .addTrigger(this.gripTouchTrigger);
-  this.listeners.put(this.gripTrigger);
+  this.listeners.add(this.gripTrigger);
 
   // pause trigger and function
   this.pauseTouchTrigger = new RoundTouchTrigger(canvas)
@@ -29,7 +29,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   this.pauseTrigger = new MultiTrigger()
       .addTrigger((new KeyTrigger()).addTriggerKeyByName(Key.Name.SPACE))
       .addTrigger(this.pauseTouchTrigger);
-  this.listeners.put(this.pauseTrigger);
+  this.listeners.add(this.pauseTrigger);
   this.pauseDownFn = function() {
     self.paused = !self.paused;
     if (self.paused) {
@@ -63,7 +63,7 @@ function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   );
   this.trackball.setFriction(0.02);
   this.movement = new Vec2d();
-  this.listeners.put(this.trackball);
+  this.listeners.add(this.trackball);
 
   // for sound throttling
   this.hitsThisFrame = 0;

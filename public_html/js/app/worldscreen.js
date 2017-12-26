@@ -487,7 +487,7 @@ WorldScreen.prototype.getCanvas = function() {
 };
 
 WorldScreen.prototype.addListener = function(listener) {
-  this.listeners.put(listener);
+  this.listeners.add(listener);
   if (this.listening) {
     listener.startListening();
   }

@@ -675,7 +675,7 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
             var otherBody = this.paths[pathId];
             if (otherBody && otherBody.pathId == pathId) {
               if (!this.scannedBodyIds.contains(otherBody.id)) {
-                this.scannedBodyIds.put(otherBody.id);
+                this.scannedBodyIds.add(otherBody.id);
                 otherBody.freezeAtTime(this.now);
                 if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
                   retval = eventOut;
@@ -723,7 +723,7 @@ World.prototype.getBodyOverlaps = function(body) {
             var otherBody = this.paths[pathId];
             if (otherBody && otherBody.pathId == pathId) {
               if (!this.scannedBodyIds.contains(otherBody.id)) {
-                this.scannedBodyIds.put(otherBody.id);
+                this.scannedBodyIds.add(otherBody.id);
                 if (OverlapDetector.isBodyOverlappingBodyAtTime(body, otherBody, this.now)) {
                   retval.push(otherBody.id);
                 }
@@ -758,7 +758,7 @@ World.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
       var cell = this.getCell(ix, iy);
       if (cell) {
-        objSet.put(this.gridIndexForCellCoords(ix, iy));
+        objSet.add(this.gridIndexForCellCoords(ix, iy));
       }
     }
   }
@@ -786,7 +786,7 @@ World.prototype.addSpiritIdsInCellAndGroup = function(spiritIdSet, cellId, group
       if (body && body.pathId === pathId) {
         var spirit = this.spirits[body.spiritId];
         if (spirit) {
-          spiritIdSet.put(spirit.id);
+          spiritIdSet.add(spirit.id);
         }
         pi++;
       } else {

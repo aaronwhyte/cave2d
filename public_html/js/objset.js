@@ -16,7 +16,7 @@ ObjSet.prototype.reset = function() {
 
 Poolify(ObjSet);
 
-ObjSet.prototype.put = function(v) {
+ObjSet.prototype.add = function(v) {
   this.vals[v] = true;
   return this;
 };

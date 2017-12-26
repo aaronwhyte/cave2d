@@ -678,7 +678,7 @@ PlayScreen.prototype.getCanvas = function() {
 };
 
 PlayScreen.prototype.addListener = function(listener) {
-  this.listeners.put(listener);
+  this.listeners.add(listener);
   if (this.listening) {
     listener.startListening();
   }

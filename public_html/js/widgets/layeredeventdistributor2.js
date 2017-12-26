@@ -67,7 +67,7 @@ LayeredEventDistributor.prototype.addEventListenerToLayer = function(eventName, 
     if (!layer[eventName]) {
       layer[eventName] = new ArraySet();
     }
-    layer[eventName].put(listenerFn);
+    layer[eventName].add(listenerFn);
   }
 };
 

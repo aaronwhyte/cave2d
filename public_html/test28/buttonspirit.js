@@ -44,7 +44,7 @@ ButtonSpirit.prototype.lookForClick = function(world, renderer) {
   for (var pointerId in this.multiPointer.oldPositions) {
     var oldPos = this.multiPointer.oldPositions[pointerId];
     if (oldPos && this.isOverlapping(world, oldPos)) {
-      this.overlapIds.put(pointerId);
+      this.overlapIds.add(pointerId);
     }
   }
   // Process all events.

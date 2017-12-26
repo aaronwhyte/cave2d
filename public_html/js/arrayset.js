@@ -16,7 +16,7 @@ ArraySet.prototype.reset = function() {
 
 Poolify(ArraySet);
 
-ArraySet.prototype.put = function(v) {
+ArraySet.prototype.add = function(v) {
   for (var i = 0; i < this.vals.length; i++) {
     if (this.vals[i] == v) {
       return;

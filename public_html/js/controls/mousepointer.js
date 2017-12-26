@@ -76,7 +76,7 @@ MousePointer.prototype.stopListening = function() {
  * @param {Function} fn
  */
 MousePointer.prototype.addListener = function(fn) {
-  this.domEventListeners.put(fn);
+  this.domEventListeners.add(fn);
 };
 
 /**

@@ -104,7 +104,7 @@ MultiPointer.prototype.stopListening = function() {
  * @param {Function} fn
  */
 MultiPointer.prototype.addListener = function(fn) {
-  this.domEventListeners.put(fn);
+  this.domEventListeners.add(fn);
 };
 
 /**
