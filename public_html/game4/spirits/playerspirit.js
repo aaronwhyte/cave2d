@@ -45,12 +45,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 1;
 
-PlayerSpirit.SPEED = 1.5;
+PlayerSpirit.SPEED = 2;
 PlayerSpirit.TRACTION = 0.1;
-
-// // tight
-// PlayerSpirit.SPEED = 0.7;
-// PlayerSpirit.TRACTION = 0.7;
 
 PlayerSpirit.KEY_MULT_ADJUST = 0.075;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
