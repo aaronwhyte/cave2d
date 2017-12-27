@@ -31,9 +31,9 @@ function AntSpirit(screen) {
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 1.7;
-AntSpirit.THRUST = 2;
-AntSpirit.TRACTION = 0.2;
+AntSpirit.MEASURE_TIMEOUT = 2.8;
+AntSpirit.THRUST = 0.8;
+AntSpirit.TRACTION = 0.4;
 AntSpirit.MAX_TIMEOUT = 30;
 AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 1.2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
