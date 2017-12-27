@@ -43,7 +43,7 @@ Cell.prototype.getPathIdsForGroup = function(groupId) {
 
 Cell.prototype.isEmpty = function() {
   for (var i = 0; i < this.groups.length; i++) {
-    if (!this.groups[i].size) {
+    if (this.groups[i].size) {
       return false;
     }
   }
