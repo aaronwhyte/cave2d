@@ -47,11 +47,11 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   // pathId to Body. Obsolete pathIds might still point to their old Bodies, so check the body's pathId.
   this.paths = {};
 
-  // bodyId to "true". Holds IDs of body objects that need to have their paths processed by the collider
+  // Holds IDs of body objects that need to have their paths processed by the collider
   // before time can move forward. This includes newly-added bodies.
   // Bodies can be invalid for a time, so that they can be manipulated while time is standing still,
   // without having to recompute collisions every time.
-  this.invalidBodyIds = {};
+  this.invalidBodyIds = new Set();
 
   this.nextId = 10;
 
@@ -221,7 +221,7 @@ World.prototype.removeBodyId = function(bodyId) {
     this.removeBodyFromCellRange(body, range);
     delete this.bodies[body.id];
     delete this.paths[body.pathId];
-    delete this.invalidBodyIds[body.id];
+    this.invalidBodyIds.delete(body.id);
     body.free();
   } else {
     console.log("couldn't find or remove bodyId " + bodyId);
@@ -270,9 +270,8 @@ World.prototype.getBodyByPathId = function(pathId) {
  * It's good to do this after manipulating bodies and before reading them.
  */
 World.prototype.validateBodies = function() {
-  for (var bodyId in this.invalidBodyIds) {
-    delete this.invalidBodyIds[bodyId];
-    var body = this.bodies[bodyId];
+  for (let bodyId of this.invalidBodyIds.keys()) {
+    let body = this.bodies[bodyId];
     if (!body) continue;
     if (body.pathId) {
       delete this.paths[body.pathId];
@@ -290,6 +289,7 @@ World.prototype.validateBodies = function() {
     this.addFirstGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.X);
     this.addFirstGridEvent(body, WorldEvent.TYPE_GRID_EXIT, Vec2d.Y);
   }
+  this.invalidBodyIds.clear();
 };
 
 World.prototype.getCellRangeForRect = function(rect, range) {

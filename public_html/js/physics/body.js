@@ -170,7 +170,7 @@ Body.prototype.getArea = function() {
 
 Body.prototype.invalidatePath = function() {
   if (this.invalidBodyIds && this.id) {
-    this.invalidBodyIds[this.id] = true;
+    this.invalidBodyIds.add(this.id);
   }
 };
 
