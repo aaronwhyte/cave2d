@@ -28,7 +28,7 @@ Game4TestScreen.prototype.initWidgets = function() {
     for (var slotName in self.slots) {
       var slot = self.slots[slotName];
       if (slot.isPlaying()) {
-        slot.setState(PlayerSlot.STATE_WAITING);
+        slot.setState(ControlState.WAITING);
       }
     }
     // Always release pointerlock when exiting the test page.
