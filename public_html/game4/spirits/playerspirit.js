@@ -57,7 +57,7 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 PlayerSpirit.WIELD_MAX_ACCEL = 6;
 PlayerSpirit.WIELD_MAX_FORCE = 3;
-PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.5;
+PlayerSpirit.WIELD_REST_DIST = PlayerSpirit.PLAYER_RAD * 0.25;
 PlayerSpirit.WIELD_BREAK_DIST = PlayerSpirit.PLAYER_RAD * 3;
 
 PlayerSpirit.SEEKSCAN_RAD = PlayerSpirit.PLAYER_RAD * 0.25;
@@ -624,9 +624,7 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAcc
       while (p0 > Math.PI) p0 -= 2 * Math.PI;
       maxA = maxAccel;
       p0 = Math.clip(p0, -Math.PI / 2, Math.PI / 2);
-
       v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(-1).rot90Right());
-
       var turnAccelMag = -Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
       var turnForceMag = Math.min(targetBody.mass, playerBody.mass) * turnAccelMag;
       targetForce.add(this.vec2d.set(deltaPos).rot90Right().scaleToLength((1 - playerForceProportion) * turnForceMag));
