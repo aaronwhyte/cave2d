@@ -314,9 +314,6 @@ v bullet details
   v hit noise
   v bounce noise
 
-- change "mag" to be acceleration, not force?
-- Give each spirit its own sound characteristics for collisions??
-
 CONTROLS
 
 empty-handed kick and grab
@@ -354,17 +351,63 @@ EXPLOSION THOUGHTS
   * fat fragment shader, simply geometry (circle?)
   * fancy vertex shader with numbered objects and parameterized explosions
 
-How about explosions that
-AWESOME EXPLOSIONS IN JUST A FEW GL CALLS
-ALSO AWESOME POLYLINE DRAWING USING THE SAME TECHNIQUE
-- Long list of models, all pretty much the same  tiny thing, maybe tetrahedrons? but that's not important now.
-- Each vertex has a model number, a float from 0 to 1, to make this easy to scale to different counts.
-- Vertex shaders reposition and recolor each model independently based on an array of params, and time.
-- params are things like... The transformation for position 0
-
 WEAPONS & ENEMIES
+* enemies can be grabbed and used as weapons
+* But they must be basically dead for it to work?
+
+* Giant enemnies cannot be carried or used? Or they can be but they're so darn heavy that it sucks to try and
+  they don't fit in narrow spaces.
+
+- Basic shooter
+  - wanders, fires slow bullet occasionally at player
+- shotgunner
+- machine gunner
+- bomb thrower (also bombs can be caught and thrown!)
+- sniper
+
+- contact mines
+  - may be grabbed and kicked safely
+  - touching makes them boom, physical shrapnel
+
+Focus on big enemies, not lots of small ones.
+behaviors:
+- go forward
+- scan to avoid walls
+- hug wall
+- scan for player(s)
+- fire a weapon at a target
+
+- stationary turret
+  - scan for players
+  - fire at them
+
+- patrolling turret
+  - slowly move, avoiding walls
+
+- The Living Statue
+  - Frozen and spike-shielded when player is in view
+  -
+
+- sleepy chaser
+  - sleep when far from players
+  - scan towards player when plr is close enough, to maybe wake up
+    - ordered scan, closest player first
+  - wake on contact or when player is visible
+  - chase to where player was last visible
+  - last-seen timer
+  - new good wall avoiding biz too
+
+- fast tunnel racer! finally.
+  - scans towards players
+  - if plr seen, fire at player and run away
+  - hard to hit/kill
+
+- juggernaut
+  - slow wanderer
+  - when player seen, shields and charges at player, until contact with infinite mass or max time.
+
+
 - shotgun
-- swarm
 
 v rapid-fire
   - change to laser?
@@ -373,19 +416,27 @@ v rapid-fire
 - wall-hugger missile
 - tunnel lurker
 
-- rail gun
+- rail gun (penetrates, accurate, laser scope)
 - summoner
 - turret
 
-- grenade launcher
+- grenade launcher (explosive area of effect)
 - sniper
 
 - rocket launcher
 
 - ice beam
 
-- slime splaasher
+- slime splasher, lowers traction a lot
 
+
+How about explosions that
+AWESOME EXPLOSIONS IN JUST A FEW GL CALLS
+ALSO AWESOME POLYLINE DRAWING USING THE SAME TECHNIQUE
+- Long list of models, all pretty much the same  tiny thing, maybe tetrahedrons? but that's not important now.
+- Each vertex has a model number, a float from 0 to 1, to make this easy to scale to different counts.
+- Vertex shaders reposition and recolor each model independently based on an array of params, and time.
+- params are things like... The transformation for position 0
 
 
 SOUND 2
