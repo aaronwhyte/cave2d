@@ -302,6 +302,8 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
   this.drawStats();
   stats && stats.add(STAT_NAMES.STAT_DRAWING_MS, performance.now() - startTimeMs);
 
+  this.world.validateBodies();
+
   this.updateViewMatrix();
   this.drawScene();
   stats && stats.add(STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS, performance.now() - startTimeMs);
@@ -370,7 +372,7 @@ WorldScreen.prototype.clock = function(startTimeMs) {
 
     var e = this.world.getNextEvent();
     while (e && e.time <= endClock && performance.now() < endTimeMs) {
-      this.world.processNextEventWthoutFreeing();
+      this.world.processNextEventWithoutFreeing();
       if (e.type === WorldEvent.TYPE_HIT) {
         this.onHitEvent(e);
       } else if (e.type === WorldEvent.TYPE_TIMEOUT && !e.spiritId) {

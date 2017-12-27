@@ -66,7 +66,7 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   this.hitTimePadding = 0.01;
 
   // cache for rayscans and overlap scans.
-  this.scannedBodyIds = new ObjSet();
+  this.scannedBodyIds = new Set();
 
   // If you want this enabled, do it as part of world creation
   this.changeRecordingEnabled = false;
@@ -77,7 +77,10 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   this.bodyBefores = null;
   this.spiritBefores = null;
   this.nowBefore = null;
-  this.timeoutsBefore = null;
+
+  // temps that I don't want to alloc and free/reset a lot
+  this.tempRect = new Rect();
+  this.tempCellRange = new CellRange();
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -211,13 +214,11 @@ World.prototype.removeBodyId = function(bodyId) {
   var body = this.bodies[bodyId];
   if (body) {
     this.maybeRecordBodyBefore(bodyId, body);
-    var rect = Rect.alloc();
+    var rect = this.tempRect;
     this.getPaddedBodyBoundingRect(body, this.now, rect);
-    var range = CellRange.alloc();
+    var range = this.tempCellRange;
     this.getCellRangeForRect(rect, range);
     this.removeBodyFromCellRange(body, range);
-    range.free();
-    rect.free();
     delete this.bodies[body.id];
     delete this.paths[body.pathId];
     delete this.invalidBodyIds[body.id];
@@ -302,8 +303,8 @@ World.prototype.getCellRangeForRect = function(rect, range) {
 };
 
 World.prototype.addPathToGrid = function(body) {
-  var brect = this.getPaddedBodyBoundingRect(body, this.now, Rect.alloc());
-  var range = this.getCellRangeForRect(brect, CellRange.alloc());
+  var brect = this.getPaddedBodyBoundingRect(body, this.now, this.tempRect);
+  var range = this.getCellRangeForRect(brect, this.tempCellRange);
   for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
       var cell = this.getCell(ix, iy);
@@ -313,8 +314,6 @@ World.prototype.addPathToGrid = function(body) {
       this.addPathToCell(body, cell);
     }
   }
-  range.free();
-  brect.free();
 };
 
 World.prototype.getGroupCount = function() {
@@ -364,7 +363,7 @@ World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
   var perp = Vec2d.otherAxis(axis);
 
   // Calculate the leading/trailing point "p" on the moving bounding rect.
-  var rect = body.getBoundingRectAtTime(this.now, Rect.alloc());
+  var rect = body.getBoundingRectAtTime(this.now, this.tempRect);
   var vSign = Vec2d.alloc().set(body.vel).sign();
 
   var p = Vec2d.alloc().set(rect.rad).multiply(vSign);
@@ -399,7 +398,6 @@ World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
   c.free();
   p.free();
   vSign.free();
-  rect.free();
   return e;
 };
 
@@ -437,9 +435,9 @@ World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
   var vSign = Vec2d.alloc().set(v).sign();
   var nextCellIndex = prevEvent.cellRange.p0[axis] + vSign[axis];
   // What time will the point reach that cell index?
-  var rad = vSign[axis] * (body.shape == Body.Shape.CIRCLE ? body.rad : body.rectRad[axis]);
+  var rad = vSign[axis] * (body.shape === Body.Shape.CIRCLE ? body.rad : body.rectRad[axis]);
   var dest;
-  if (eventType == WorldEvent.TYPE_GRID_ENTER) {
+  if (eventType === WorldEvent.TYPE_GRID_ENTER) {
     dest = (nextCellIndex - 0.5 * vSign[axis]) * this.cellSize - rad;
   } else {
     dest = (nextCellIndex + 0.5 * vSign[axis]) * this.cellSize + rad;
@@ -458,11 +456,10 @@ World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
     // Is the event about entering the next set of cells, or leaving the current one?
     e.cellRange.p0[axis] = e.cellRange.p1[axis] = nextCellIndex;
     // The length of the crossing, in cells, depends on the position of the bounding rect at that time.
-    var rect = Rect.alloc();
+    var rect = this.tempRect;
     this.getPaddedBodyBoundingRect(body, t, rect);
     e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
     e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
-    rect.free();
   }
   vSign.free();
   return e;
@@ -490,14 +487,14 @@ World.prototype.getNextEvent = function() {
  * optionally doing some internal processing.
  */
 World.prototype.processNextEvent = function() {
-  this.processNextEventWthoutFreeing().free();
+  this.processNextEventWithoutFreeing().free();
 };
 
 /**
  var * Removes the next event from the queue, and advances the world time to the event time,
  * optionally doing some internal processing.
  */
-World.prototype.processNextEventWthoutFreeing = function() {
+World.prototype.processNextEventWithoutFreeing = function() {
   this.validateBodies();
   var e = this.queue.removeFirst();
   this.now = e.time;
@@ -561,9 +558,15 @@ World.prototype.loadTimeout = function(e) {
  */
 World.prototype.rayscan = function(req, resp) {
   this.validateBodies();
-  this.scannedBodyIds.reset();
+  this.scannedBodyIds.clear();
   var foundHit = false;
 
+  // allocs
+  var rect = this.tempRect;
+  var range = this.tempCellRange;
+  var hitEvent = WorldEvent.alloc();
+  var xEvent = WorldEvent.alloc();
+  var yEvent = WorldEvent.alloc();
   // Create a Body based on the ScanRequest.
   var b = Body.alloc();
   b.hitGroup = req.hitGroup;
@@ -573,13 +576,6 @@ World.prototype.rayscan = function(req, resp) {
   b.rad = req.rad;
   b.rectRad.set(req.rectRad);
   b.pathDurationMax = 1;
-
-  // allocs
-  var rect = Rect.alloc();
-  var range = CellRange.alloc();
-  var hitEvent = WorldEvent.alloc();
-  var xEvent = WorldEvent.alloc();
-  var yEvent = WorldEvent.alloc();
 
   // The hitEvent will always be the earliest hit, because every time a hit is found,
   // the body's pathDurationMax is ratcheted down to the hit time. So only
@@ -640,11 +636,10 @@ World.prototype.rayscan = function(req, resp) {
     resp.timeOffset = hitEvent.time - this.now;
     resp.collisionVec.set(hitEvent.collisionVec);
   }
-  rect.free();
-  range.free();
   hitEvent.free();
   xEvent.free();
   yEvent.free();
+  b.free();
   return foundHit;
 };
 
@@ -669,7 +664,7 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
           for (let pathId of pathIdSet.keys()) {
             let otherBody = this.paths[pathId];
             if (otherBody && otherBody.pathId === pathId) {
-              if (!this.scannedBodyIds.contains(otherBody.id)) {
+              if (!this.scannedBodyIds.has(otherBody.id)) {
                 this.scannedBodyIds.add(otherBody.id);
                 otherBody.freezeAtTime(this.now);
                 if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
@@ -700,9 +695,9 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
 World.prototype.getBodyOverlaps = function(body) {
   let retval = [];
   this.validateBodies();
-  this.scannedBodyIds.reset();
-  let brect = this.getPaddedBodyBoundingRect(body, this.now, Rect.alloc());
-  let range = this.getCellRangeForRect(brect, CellRange.alloc());
+  this.scannedBodyIds.clear();
+  let brect = this.getPaddedBodyBoundingRect(body, this.now, this.tempRect);
+  let range = this.getCellRangeForRect(brect, this.tempCellRange);
   for (let iy = range.p0.y; iy <= range.p1.y; iy++) {
     for (let ix = range.p0.x; ix <= range.p1.x; ix++) {
       let cell = this.getCell(ix, iy);
@@ -714,7 +709,7 @@ World.prototype.getBodyOverlaps = function(body) {
           for (let pathId of pathIdSet.keys()) {
             let otherBody = this.paths[pathId];
             if (otherBody && otherBody.pathId === pathId) {
-              if (!this.scannedBodyIds.contains(otherBody.id)) {
+              if (!this.scannedBodyIds.has(otherBody.id)) {
                 this.scannedBodyIds.add(otherBody.id);
                 if (OverlapDetector.isBodyOverlappingBodyAtTime(body, otherBody, this.now)) {
                   retval.push(otherBody.id);
@@ -729,8 +724,6 @@ World.prototype.getBodyOverlaps = function(body) {
       }
     }
   }
-  brect.free();
-  range.free();
   return retval;
 };
 
@@ -742,9 +735,8 @@ World.prototype.getBodyOverlaps = function(body) {
  * @return {Set}
  */
 World.prototype.addCellIdsOverlappingCircle = function(cellIdSet, circle) {
-  this.validateBodies();
-  var brect = circle.getBoundingRect(Rect.alloc());
-  var range = this.getCellRangeForRect(brect, CellRange.alloc());
+  var brect = circle.getBoundingRect(this.tempRect);
+  var range = this.getCellRangeForRect(brect, this.tempCellRange);
   for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
       var cell = this.getCell(ix, iy);
@@ -753,8 +745,6 @@ World.prototype.addCellIdsOverlappingCircle = function(cellIdSet, circle) {
       }
     }
   }
-  brect.free();
-  range.free();
   return cellIdSet;
 };
 

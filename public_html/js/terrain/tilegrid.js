@@ -18,7 +18,7 @@ function TileGrid(bitGrid, renderer, world, hitGroup, opt_useFans) {
   this.changes = null;
 
   // temp cache
-  this.cellIdsToDraw = new ObjSet();
+  this.cellIdsToDraw = new Set();
   this.v0 = new Vec2d();
   this.v1 = new Vec2d();
   this.rect = new Rect();
@@ -65,35 +65,35 @@ TileGrid.prototype.drawTiles = function(worldX, worldY, pixelsPerCell) {
  * Draws the visible tiles using the renderer.
  */
 TileGrid.prototype.drawTilesOverlappingCircles = function(circles) {
-  this.cellIdsToDraw.reset();
+  this.cellIdsToDraw.clear();
   for (var i = 0; i < circles.length; i++) {
     var circle = circles[i];
     if (!circle) continue;
     this.addCellIdsOverlappingCircle(this.cellIdsToDraw, circle);
   }
-  for (var cellId in this.cellIdsToDraw.vals) {
+  for (let cellId of this.cellIdsToDraw.keys()) {
     this.drawTileAtCellId(cellId);
   }
 };
 
 /**
- * Finds cells overlapping the world-coord circle, and puts thier cellIds into the objSet
- * @param objSet The set to write to
- * @param circle in world coords
+ * Finds cells overlapping the world-coord circle, and puts their cellIds into the Set
+ * @param {Set} outSet The set to write to
+ * @param {Circle} circle in world coords
  */
-TileGrid.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
-  var x0 = this.getCellIndexAtWorld(circle.pos.x - circle.rad);
-  var x1 = this.getCellIndexAtWorld(circle.pos.x + circle.rad);
-  var y0 = this.getCellIndexAtWorld(circle.pos.y - circle.rad);
-  var y1 = this.getCellIndexAtWorld(circle.pos.y + circle.rad);
-  var rectRad = this.v1.setXY(this.bitGrid.cellWorldSize/2, this.bitGrid.cellWorldSize/2);
-  for (var cy = y0; cy <= y1; cy++) {
-    for (var cx = x0; cx <= x1; cx++) {
-      var cellIndex = this.bitGrid.getCellIdAtIndexXY(cx, cy);
-      if (!objSet.contains(cellIndex)) {
-        var rectPos = this.v0.setXY((cx + 0.5) * this.bitGrid.cellWorldSize, (cy + 0.5) * this.bitGrid.cellWorldSize);
+TileGrid.prototype.addCellIdsOverlappingCircle = function(outSet, circle) {
+  let x0 = this.getCellIndexAtWorld(circle.pos.x - circle.rad);
+  let x1 = this.getCellIndexAtWorld(circle.pos.x + circle.rad);
+  let y0 = this.getCellIndexAtWorld(circle.pos.y - circle.rad);
+  let y1 = this.getCellIndexAtWorld(circle.pos.y + circle.rad);
+  let rectRad = this.v1.setXY(this.bitGrid.cellWorldSize/2, this.bitGrid.cellWorldSize/2);
+  for (let cy = y0; cy <= y1; cy++) {
+    for (let cx = x0; cx <= x1; cx++) {
+      let cellIndex = this.bitGrid.getCellIdAtIndexXY(cx, cy);
+      if (!outSet.has(cellIndex)) {
+        let rectPos = this.v0.setXY((cx + 0.5) * this.bitGrid.cellWorldSize, (cy + 0.5) * this.bitGrid.cellWorldSize);
         if (OverlapDetector.isRectOverlappingCircle(rectPos, rectRad, circle.pos, circle.rad)) {
-          objSet.add(this.bitGrid.getCellIdAtIndexXY(cx, cy));
+          outSet.add(this.bitGrid.getCellIdAtIndexXY(cx, cy));
         }
       }
     }
