@@ -15,6 +15,10 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.viewCircles = [];
 
+  // Temps
+  this.cellIdSet = new Set();
+  this.spiritIdSet = new Set();
+
   this.defaultViewCircle = new Circle();
   this.defaultViewCircle.rad =
       Game4PlayScreen.PLAYER_VIEW_RADIUS
@@ -420,14 +424,15 @@ Game4PlayScreen.prototype.updateViewCircles = function() {
 };
 
 Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
-  var cellIdSet = ObjSet.alloc();
-  var spiritIdSet = ObjSet.alloc();
-  var i;
-  for (i = 0; i < circles.length; i++) {
+  let cellIdSet = this.cellIdSet;
+  let spiritIdSet = this.spiritIdSet;
+  cellIdSet.clear();
+  spiritIdSet.clear();
+  for (let i = 0; i < circles.length; i++) {
     this.world.addCellIdsOverlappingCircle(cellIdSet, circles[i]);
   }
-  for (var cellId in cellIdSet.vals) {
-    for (var groupNum = 0; groupNum < this.world.getGroupCount(); groupNum++) {
+  for (let cellId of cellIdSet.keys()) {
+    for (let groupNum = 0; groupNum < this.world.getGroupCount(); groupNum++) {
       if (groupNum === this.getWallHitGroup()) {
         // Walls are drawn in a separate tile-drawing pass.
         continue;
@@ -435,19 +440,16 @@ Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
       this.world.addSpiritIdsInCellAndGroup(spiritIdSet, cellId, groupNum);
     }
   }
-  for (var spiritId in spiritIdSet.vals) {
-    var spirit = this.world.spirits[spiritId];
+  for (let spiritId of spiritIdSet.keys()) {
+    let spirit = this.world.spirits[spiritId];
     if (spirit) spirit.onDraw(this.world, this.renderer);
   }
 
   // HACKish: draw disembodied spirits too, like dead bullets that are still leaving trails
-  for (var spiritId in this.world.spirits) {
-    var spirit = this.world.spirits[spiritId];
+  for (let spiritId in this.world.spirits) {
+    let spirit = this.world.spirits[spiritId];
     if (!spirit.bodyId) spirit.onDraw(this.world, this.renderer);
   }
-
-  spiritIdSet.free();
-  cellIdSet.free();
 };
 
 Game4PlayScreen.prototype.positionCamera = function() {

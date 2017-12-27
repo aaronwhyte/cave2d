@@ -322,19 +322,17 @@ World.prototype.getGroupCount = function() {
 };
 
 World.prototype.addPathToCell = function(body, cell) {
-  var nextEvent = WorldEvent.alloc();
-  var group = body.hitGroup;
+  let nextEvent = WorldEvent.alloc();
+  let group = body.hitGroup;
 
-  var hitGroups = this.groupHitsGroups[group];
-  for (var gi = 0; gi < hitGroups.length; gi++) {
-    var otherGroup = hitGroups[gi];
-    var pathIdSet = cell.getPathIdsForGroup(otherGroup);
-    var pathIdArray = pathIdSet.vals;
-    for (var pi = 0; pi < pathIdArray.length;) {
-      var pathId = pathIdArray[pi];
-      var otherBody = this.paths[pathId];
-      if (otherBody && otherBody.pathId == pathId) {
-        var hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
+  let hitGroups = this.groupHitsGroups[group];
+  for (let gi = 0; gi < hitGroups.length; gi++) {
+    let otherGroup = hitGroups[gi];
+    let pathIdSet = cell.getPathIdsForGroup(otherGroup);
+    for (let pathId of pathIdSet.keys()) {
+      let otherBody = this.paths[pathId];
+      if (otherBody && otherBody.pathId === pathId) {
+        let hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
         if (hitEvent && hitEvent.time < Infinity) {
           // Pad the collision time to prevent numerical-challenge interpenetration.
           hitEvent.time = Math.max(hitEvent.time - this.hitTimePadding, this.now);
@@ -342,9 +340,8 @@ World.prototype.addPathToCell = function(body, cell) {
           this.queue.add(hitEvent);
           nextEvent = WorldEvent.alloc();
         }
-        pi++;
       } else {
-        pathIdSet.removeIndex(pi);
+        pathIdSet.delete(pathId);
       }
     }
   }
@@ -660,20 +657,18 @@ World.prototype.rayscan = function(req, resp) {
  * @returns {?WorldEvent} eventOut if there was a hit, or null otherwise.
  */
 World.prototype.getRayscanHit = function(body, range, eventOut) {
-  var retval = null;
-  for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
-    for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
-      var cell = this.getCell(ix, iy);
+  let retval = null;
+  for (let iy = range.p0.y; iy <= range.p1.y; iy++) {
+    for (let ix = range.p0.x; ix <= range.p1.x; ix++) {
+      let cell = this.getCell(ix, iy);
       if (cell) {
-        var hitGroups = this.groupHitsGroups[body.hitGroup];
-        for (var gi = 0; gi < hitGroups.length; gi++) {
-          var otherGroup = hitGroups[gi];
-          var pathIdSet = cell.getPathIdsForGroup(otherGroup);
-          var pathIdArray = pathIdSet.vals;
-          for (var i = 0; i < pathIdArray.length;) {
-            var pathId = pathIdArray[i];
-            var otherBody = this.paths[pathId];
-            if (otherBody && otherBody.pathId == pathId) {
+        let hitGroups = this.groupHitsGroups[body.hitGroup];
+        for (let gi = 0; gi < hitGroups.length; gi++) {
+          let otherGroup = hitGroups[gi];
+          let pathIdSet = cell.getPathIdsForGroup(otherGroup);
+          for (let pathId of pathIdSet.keys()) {
+            let otherBody = this.paths[pathId];
+            if (otherBody && otherBody.pathId === pathId) {
               if (!this.scannedBodyIds.contains(otherBody.id)) {
                 this.scannedBodyIds.add(otherBody.id);
                 otherBody.freezeAtTime(this.now);
@@ -685,9 +680,8 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
                 }
                 otherBody.unfreeze();
               }
-              i++;
             } else {
-              pathIdSet.removeIndex(i);
+              pathIdSet.delete(pathId);
             }
           }
         }
@@ -704,34 +698,31 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
  * @return {Array.<String>} body IDs
  */
 World.prototype.getBodyOverlaps = function(body) {
-  var retval = [];
+  let retval = [];
   this.validateBodies();
   this.scannedBodyIds.reset();
-  var brect = this.getPaddedBodyBoundingRect(body, this.now, Rect.alloc());
-  var range = this.getCellRangeForRect(brect, CellRange.alloc());
-  for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
-    for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
-      var cell = this.getCell(ix, iy);
+  let brect = this.getPaddedBodyBoundingRect(body, this.now, Rect.alloc());
+  let range = this.getCellRangeForRect(brect, CellRange.alloc());
+  for (let iy = range.p0.y; iy <= range.p1.y; iy++) {
+    for (let ix = range.p0.x; ix <= range.p1.x; ix++) {
+      let cell = this.getCell(ix, iy);
       if (cell) {
-        var hitGroups = this.groupHitsGroups[body.hitGroup];
-        for (var gi = 0; gi < hitGroups.length; gi++) {
-          var otherGroup = hitGroups[gi];
-          var pathIdSet = cell.getPathIdsForGroup(otherGroup);
-          var pathIdArray = pathIdSet.vals;
-          for (var pi = 0; pi < pathIdArray.length;) {
-            var pathId = pathIdArray[pi];
-            var otherBody = this.paths[pathId];
-            if (otherBody && otherBody.pathId == pathId) {
+        let hitGroups = this.groupHitsGroups[body.hitGroup];
+        for (let gi = 0; gi < hitGroups.length; gi++) {
+          let otherGroup = hitGroups[gi];
+          let pathIdSet = cell.getPathIdsForGroup(otherGroup);
+          for (let pathId of pathIdSet.keys()) {
+            let otherBody = this.paths[pathId];
+            if (otherBody && otherBody.pathId === pathId) {
               if (!this.scannedBodyIds.contains(otherBody.id)) {
                 this.scannedBodyIds.add(otherBody.id);
                 if (OverlapDetector.isBodyOverlappingBodyAtTime(body, otherBody, this.now)) {
                   retval.push(otherBody.id);
                 }
               }
-              pi++;
             } else {
               // opportunistically erase obsolete path from cell
-              pathIdSet.removeIndex(pi);
+              pathIdSet.delete(pathId);
             }
           }
         }
@@ -746,11 +737,11 @@ World.prototype.getBodyOverlaps = function(body) {
 
 /**
  * Finds all the cells overlapping the circle, and adds their IDs to the objSet.
- * @param {ObjSet} objSet The set that accumulates cell IDs
+ * @param {Set} cellIdSet The set that accumulates cell IDs
  * @param {Circle} circle
- * @return {ObjSet}
+ * @return {Set}
  */
-World.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
+World.prototype.addCellIdsOverlappingCircle = function(cellIdSet, circle) {
   this.validateBodies();
   var brect = circle.getBoundingRect(Rect.alloc());
   var range = this.getCellRangeForRect(brect, CellRange.alloc());
@@ -758,40 +749,37 @@ World.prototype.addCellIdsOverlappingCircle = function(objSet, circle) {
     for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
       var cell = this.getCell(ix, iy);
       if (cell) {
-        objSet.add(this.gridIndexForCellCoords(ix, iy));
+        cellIdSet.add(this.gridIndexForCellCoords(ix, iy));
       }
     }
   }
   brect.free();
   range.free();
-  return objSet;
+  return cellIdSet;
 };
 
 /**
  * Adds all the spirit IDs that are in a given cell and collision groupNum. This does not call validateBodies,
  * because that wrecks performance...?
- * @param {ObjSet} spiritIdSet
+ * @param {Set} spiritIdSet
  * @param cellId
  * @param groupNum
- * @returns {ObjSet}
+ * @returns {Set}
  */
 World.prototype.addSpiritIdsInCellAndGroup = function(spiritIdSet, cellId, groupNum) {
-  var cell = this.grid[cellId];
+  let cell = this.grid[cellId];
   if (cell) {
-    var pathIdSet = cell.getPathIdsForGroup(groupNum);
-    var pathIdArray = pathIdSet.vals;
-    for (var pi = 0; pi < pathIdArray.length;) {
-      var pathId = pathIdArray[pi];
-      var body = this.paths[pathId];
+    let pathIdSet = cell.getPathIdsForGroup(groupNum);
+    for (let pathId of pathIdSet.keys()) {
+      let body = this.paths[pathId];
       if (body && body.pathId === pathId) {
-        var spirit = this.spirits[body.spiritId];
+        let spirit = this.spirits[body.spiritId];
         if (spirit) {
           spiritIdSet.add(spirit.id);
         }
-        pi++;
       } else {
         // opportunistically erase obsolete path from cell
-        pathIdSet.removeIndex(pi);
+        pathIdSet.delete(pathId);
       }
     }
   }

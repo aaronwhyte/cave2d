@@ -12,13 +12,13 @@ function Cell(groupCount) {
 Cell.prototype.reset = function(groupCount) {
   for (var i = 0; i < groupCount; i++) {
     if (!this.groups[i]) {
-      this.groups[i] = ArraySet.alloc();
+      this.groups[i] = new Set();
     } else {
-      this.groups[i].reset();
+      this.groups[i].clear();
     }
   }
   while (this.groups.length > groupCount) {
-    this.groups.pop().free();
+    this.groups.pop();
   }
 };
 
@@ -29,13 +29,13 @@ Cell.prototype.addPathIdToGroup = function(pathId, groupId) {
 };
 
 Cell.prototype.removePathIdFromGroup = function(pathId, groupId) {
-  this.groups[groupId].remove(pathId);
+  this.groups[groupId].delete(pathId);
 };
 
 /**
- * Returns the internal ArraySet.
+ * Returns the internal Set.
  * @param groupId
- * @returns {ArraySet}
+ * @returns {Set}
  */
 Cell.prototype.getPathIdsForGroup = function(groupId) {
   return this.groups[groupId];
@@ -43,7 +43,7 @@ Cell.prototype.getPathIdsForGroup = function(groupId) {
 
 Cell.prototype.isEmpty = function() {
   for (var i = 0; i < this.groups.length; i++) {
-    if (!this.groups[i].isEmpty()) {
+    if (!this.groups[i].size) {
       return false;
     }
   }
