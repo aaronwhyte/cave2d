@@ -34,11 +34,10 @@ AntSpirit.prototype.constructor = AntSpirit;
 AntSpirit.MEASURE_TIMEOUT = 1.7;
 AntSpirit.THRUST = 2;
 AntSpirit.TRACTION = 0.2;
-AntSpirit.MAX_TIMEOUT = 10;
-AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 1.3;
+AntSpirit.MAX_TIMEOUT = 30;
+AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 1.2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
-AntSpirit.OPTIMIZE = true;
 
 AntSpirit.SCHEMA = {
   0: "type",
@@ -153,7 +152,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
 
   if (this.screen.isPlaying()) {
-    if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
+    if (this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
       this.handleLoner(newVel, time);
     }
   } else {
@@ -165,7 +164,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var timeoutDuration;
   timeoutDuration = Math.min(
       AntSpirit.MAX_TIMEOUT,
-      AntSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
+      AntSpirit.MEASURE_TIMEOUT * (0.2 * Math.random() + 0.9));
   body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, now);
   body.invalidatePath();
@@ -264,7 +263,7 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
   var body = this.getBody();
   var pos = this.getBodyPos();
   this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  if (!AntSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
+  if (this.viewportsFromCamera < 1.1) {
     renderer
         .setStamp(this.modelStamp)
         .setColorVector(this.vec4.set(this.color));
