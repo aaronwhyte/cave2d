@@ -81,6 +81,12 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   // temps that I don't want to alloc and free/reset a lot
   this.tempRect = new Rect();
   this.tempCellRange = new CellRange();
+
+  this.rayscanBody = new Body();
+  this.rayscanHitEvent = new WorldEvent();
+  this.rayscanXEvent = new WorldEvent();
+  this.rayscanYEvent = new WorldEvent();
+  this.rayscanEventOut = new WorldEvent();
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -564,11 +570,11 @@ World.prototype.rayscan = function(req, resp) {
   // allocs
   var rect = this.tempRect;
   var range = this.tempCellRange;
-  var hitEvent = WorldEvent.alloc();
-  var xEvent = WorldEvent.alloc();
-  var yEvent = WorldEvent.alloc();
+  var hitEvent = this.rayscanHitEvent;
+  var xEvent = this.rayscanXEvent;
+  var yEvent = this.rayscanYEvent;
   // Create a Body based on the ScanRequest.
-  var b = Body.alloc();
+  var b = this.rayscanBody;
   b.hitGroup = req.hitGroup;
   b.setPosAtTime(req.pos, this.now);
   b.vel.set(req.vel);
@@ -598,9 +604,9 @@ World.prototype.rayscan = function(req, resp) {
   // Process the earliest grid-enter event and generate the next one,
   // until they're later than the max time.
   var maxTime = this.now + b.pathDurationMax;
-  var eventOut = WorldEvent.alloc();
+  var eventOut = this.rayscanEventOut;
   var tmp;
-  while (xEvent.time <  maxTime || yEvent.time < maxTime) {
+  while (xEvent.time < maxTime || yEvent.time < maxTime) {
     if (xEvent.time < yEvent.time) {
       if (this.getRayscanHit(b, xEvent.cellRange, hitEvent)) {
         foundHit = true;
@@ -636,10 +642,6 @@ World.prototype.rayscan = function(req, resp) {
     resp.timeOffset = hitEvent.time - this.now;
     resp.collisionVec.set(hitEvent.collisionVec);
   }
-  hitEvent.free();
-  xEvent.free();
-  yEvent.free();
-  b.free();
   return foundHit;
 };
 
