@@ -61,6 +61,7 @@ SoundFx.prototype.getMasterGain = function() {
  * @param {number} freq2
  * @param {String} type Wave type string (square, sine, etc)
  * @param {!number} opt_delay optional delay value, before attack
+ * @return freshly created oscillator node
  */
 SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, freq2, type, opt_delay) {
   if (!this.ctx) return;
@@ -94,6 +95,7 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
   osc.connect(gain);
   gain.connect(panner);
   panner.connect(this.masterGain);
+  return osc;
 };
 
 SoundFx.prototype.createOscillator = function() {

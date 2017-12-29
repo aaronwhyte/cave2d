@@ -61,11 +61,11 @@ ScreenPage.prototype.enterDoc = function() {
 
   // On-event sound unlocker for iOS.
   var resumeButton = document.querySelector('#resumeButton');
-  var boundUnlock = this.unlockIosSound.bind(this);
-  resumeButton.addEventListener('touchend', boundUnlock);
-  resumeButton.addEventListener('touchstart', boundUnlock);
-  this.canvas.addEventListener('touchend', boundUnlock);
-  this.canvas.addEventListener('touchstart', boundUnlock);
+  var soundUnlock = this.unlockIosSound.bind(this);
+  resumeButton.addEventListener('touchend', soundUnlock);
+  resumeButton.addEventListener('touchstart', soundUnlock);
+  this.canvas.addEventListener('touchend', soundUnlock);
+  this.canvas.addEventListener('touchstart', soundUnlock);
 
   // prevent default on a lot of pinch and scroll events on mobile
   this.canvas.addEventListener('touchstart', Dom.pd);
@@ -82,7 +82,13 @@ ScreenPage.prototype.enterDoc = function() {
  * For now, I'll unlock every time there's a touchend.
  */
 ScreenPage.prototype.unlockIosSound = function() {
-  this.sfx.sound(0, 0, 0, 0.001, 0, 0, 0.001, 1, 1, 'sine');
+  // clear the old one
+  if (this.iosOscillator) {
+    this.iosOscillator.stop();
+  }
+  this.iosOscillator = this.sfx.sound(0, 0, 0, 0.001, 1,
+      60 * 60, // one hour
+      1, 1, 1, 'sine');
   this.iosSoundUnlocked++;
 };
 
