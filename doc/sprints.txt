@@ -343,6 +343,20 @@ v release
   v sound
   x splash
 
+v Fix iOS sound
+  * permission to make sounds expires one second after the last sound, and requires a new touch+sound to regain.
+  v try making continuous sound.
+  v also make sound for every touch up/down?
+
+- graph rendering II
+  - make polyline shader handle some large fixed number of points
+  - make something similar for area graphs, which are easier
+
+- Debug Undo/Redo
+  * undo reverts too much
+  * redo doesn't always work
+  - repro?
+
 EXPLOSION THOUGHTS
 * Splashy everything like I have today
 * Physics-y everything like N++. Nice if you can afford it! Mostly only hits walls
