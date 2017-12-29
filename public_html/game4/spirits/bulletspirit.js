@@ -151,7 +151,7 @@ BulletSpirit.prototype.destroy = function() {
 BulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var body = this.getBody();
   if (body) {
-    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 1.5, 3,
+    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 1.5, 5,
         this.color.getR(), this.color.getG(), this.color.getB());
   }
   this.destroyBody();
