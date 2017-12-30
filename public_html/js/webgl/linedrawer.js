@@ -29,7 +29,7 @@ LineDrawer.prototype.lineToXY = function(x, y) {
   if (!this.nextGroup) {
     throw "you gotta moveTo before you lineTo";
   }
-  this.nextGroup = (this.nextGroup == 1) ? 2 : 1;
+  this.nextGroup = (this.nextGroup === 1) ? 2 : 1;
   this.setRendererMatrix(x, y);
   this.renderer.drawStamp();
   return this;
@@ -72,7 +72,7 @@ LineDrawer.prototype.setRendererMatrix = function (x, y) {
   var z = this.nextZ;
   var r = this.nextLineThickness * 0.5;
   this.m.toTranslateXYZAndScaleXYZOp(x, y, z, r, r, r);
-  if (this.nextGroup == 1) {
+  if (this.nextGroup === 1) {
     this.renderer.setModelMatrix(this.m);
   } else {
     this.renderer.setModelMatrix2(this.m);

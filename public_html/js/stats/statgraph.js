@@ -45,22 +45,22 @@ StatGraph.prototype.draw = function(now) {
   this.lineDrawer.nextLineThickness = this.lineWidth;
 
   this.cuboid.getMinCorner(this.vec4);
-  var minX = this.vec4.getX();
-  var topY = this.vec4.getY();
+  let minX = this.vec4.getX();
+  let topY = this.vec4.getY();
 
   this.cuboid.getMaxCorner(this.vec4);
-  var maxX = this.vec4.getX();
-  var bottomY = this.vec4.getY();
+  let maxX = this.vec4.getX();
+  let bottomY = this.vec4.getY();
 
-  var timeCoef = this.timespan ? (maxX - minX) / this.timespan : 0;
-  var valCoef = (bottomY - topY) / (this.maxVal - this.minVal);
+  let timeCoef = this.timespan ? (maxX - minX) / this.timespan : 0;
+  let valCoef = (bottomY - topY) / (this.maxVal - this.minVal);
 
-  for (var i = 0, n = this.trail.size(); i < n; i++) {
-    var x = (this.trail.getTime(i) - now) * timeCoef + maxX;
-    var y = -(this.trail.getVal(i) - this.minVal) * valCoef + bottomY;
-    if (i == 0) {
+  for (let i = 0, n = this.trail.size(); i < n; i++) {
+    let x = (this.trail.getTime(i) - now) * timeCoef + maxX;
+    let y = -(this.trail.getVal(i) - this.minVal) * valCoef + bottomY;
+    if (i === 0) {
       this.lineDrawer.moveToXY(x, y);
-      if (n == 1) {
+      if (n === 1) {
         // draw a dot if there's just one data point
         this.lineDrawer.lineToXY(x, y);
       }
