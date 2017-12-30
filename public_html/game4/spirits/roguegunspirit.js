@@ -26,7 +26,7 @@ RogueGunSpirit.FIRE_TIMEOUT_ID = 2;
 RogueGunSpirit.FRICTION_TIMEOUT = 1.2;
 RogueGunSpirit.MAX_TIMEOUT = 10;
 
-RogueGunSpirit.FIRE_TIMEOUT = 2.3;
+RogueGunSpirit.FIRE_TIMEOUT = 2.7;
 
 RogueGunSpirit.SCHEMA = {
   0: "type",
@@ -196,7 +196,10 @@ RogueGunSpirit.prototype.fire = function() {
   var angPos = this.getBodyAngPos();
   var speed = 2.25;
   var dist = 18 * (1 + Math.random() * 0.2);
-  var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.3 * (Math.random() - 0.5)).scaleToLength(speed);
+
+  var rand = Math.random() - Math.random();
+  var vel = this.vec2d.setXY(0, 1).rot(angPos + 0.3 * rand).scaleToLength(speed);
+
   var rad = 0.4;
   var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos, vel, rad, dist / speed));
 
@@ -218,7 +221,7 @@ RogueGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(0.5, 1, 1);
   spirit.damage = 0.5;
-  spirit.toughness = 0.4;
+  spirit.toughness = 0.7;
   spirit.trailDuration = 1.5;
   var density = 0.5;
 
