@@ -1,6 +1,6 @@
 /**
  * A StatTrail that records the rate of change of a stat, not the values themselves.
- * It tales two samples to get thr first rate.
+ * It tales two samples to get the first rate.
  * @param {Stats} stats
  * @param {String} statName
  * @param {Number} length
@@ -21,8 +21,7 @@ StatRateTrail.prototype.sample = function(newTime) {
     let timeDiff = newTime - this.lastTime;
     if (timeDiff !== 0) {
       let rate = (newVal - this.lastVal) / timeDiff;
-      this.vals.enqueue(rate);
-      this.times.enqueue(newTime);
+      this.enqueueTimeAndValue(newTime, rate);
     }
   }
   this.lastTime = newTime;

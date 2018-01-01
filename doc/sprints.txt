@@ -349,8 +349,20 @@ v Fix iOS sound
   v also make sound for every touch up/down?
 
 - graph rendering II
-  - make polyline shader handle some large fixed number of points
-  - make something similar for area graphs, which are easier
+  v StatTrail changes
+    v change API to enqueue pairs, not single vals and times
+    v change guts to use a single circular queue like [t0, v0, t1, v1, t2, v2...]
+  - lineDrawer API
+    - accept a StatTrail, natively compatible with gl.uniform2fv([x0, y0, x1, y1, x2, y2...])
+    - load it into the renderer
+    - tell the renderer to use (my) polyline mode
+  - polyline model
+    - basic rect
+    - create model with as many segments as requested
+    - little end-caps (do those last)
+  - shader
+    - see pseudocode in graphing.txt
+
 
 - Debug Undo/Redo
   * undo reverts too much
