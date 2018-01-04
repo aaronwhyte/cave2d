@@ -26,7 +26,7 @@ RogueGunSpirit.FIRE_TIMEOUT_ID = 2;
 RogueGunSpirit.FRICTION_TIMEOUT = 1.2;
 RogueGunSpirit.MAX_TIMEOUT = 10;
 
-RogueGunSpirit.FIRE_TIMEOUT = 2.7;
+RogueGunSpirit.FIRE_TIMEOUT = 2.81;
 
 RogueGunSpirit.SCHEMA = {
   0: "type",
@@ -220,8 +220,8 @@ RogueGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(0.5, 1, 1);
-  spirit.damage = 0.5;
-  spirit.toughness = 0.7;
+  spirit.damage = 0.334;
+  spirit.toughness = 1.5;
   spirit.trailDuration = 1.5;
   var density = 0.5;
 

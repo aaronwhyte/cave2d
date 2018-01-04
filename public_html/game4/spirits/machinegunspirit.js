@@ -26,7 +26,7 @@ MachineGunSpirit.FIRE_TIMEOUT_ID = 2;
 MachineGunSpirit.FRICTION_TIMEOUT = 1.2;
 MachineGunSpirit.MAX_TIMEOUT = 10;
 
-MachineGunSpirit.FIRE_TIMEOUT = 4;
+MachineGunSpirit.FIRE_TIMEOUT = 5;
 
 MachineGunSpirit.SCHEMA = {
   0: "type",

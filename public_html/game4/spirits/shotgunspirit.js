@@ -221,7 +221,7 @@ ShotgunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   var now = this.now();
   var spirit = BulletSpirit.alloc(this.screen);
   spirit.damage = 0.75;
-  spirit.toughness = 0.9;
+  spirit.toughness = 1;
   spirit.trailDuration = 0.7;
   spirit.setColorRGB(1, 1, 0.5);
   var density = 1;
