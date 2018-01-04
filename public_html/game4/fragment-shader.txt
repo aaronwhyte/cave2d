@@ -1,7 +1,9 @@
 // Special rendering type:
 // 0: none
 // 1: circle cut-off
+// 2: polyline
 uniform lowp int uType;
+
 uniform highp float uTime;
 
 uniform lowp int uCircleCount; // 1 to 8
@@ -22,9 +24,11 @@ highp float rand(highp float i) {
 }
 
 void main(void) {
-  if (uType == 0) {
+  if (uType == 0 || uType == 2) {
+    // normal and polyline fragment shading is simple
     gl_FragColor = vColor;
   } else if (uType == 1) {
+    // circle mode!
     lowp float minDist = 1.0;
     for (int i = 0; i < 8; i++) {
       if (i < uCircleCount) {

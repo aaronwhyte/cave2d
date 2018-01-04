@@ -25,6 +25,10 @@ StatTrail.prototype.size = function() {
   return this.pairs.size() / 2;
 };
 
+StatTrail.prototype.getHeadIndex = function() {
+  return this.pairs.head;
+};
+
 StatTrail.prototype.getVal = function(i) {
   let index = i * 2;
   return index >= this.pairs.size() ? 0 : this.pairs.getFromHead(index);
@@ -32,4 +36,11 @@ StatTrail.prototype.getVal = function(i) {
 
 StatTrail.prototype.getTime = function(i) {
   return this.pairs.getFromHead(i * 2 + 1);
+};
+
+/**
+ * @returns {CircularQueue}
+ */
+StatTrail.prototype.getAllPairs = function() {
+  return this.pairs;
 };

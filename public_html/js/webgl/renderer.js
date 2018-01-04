@@ -35,6 +35,8 @@ Renderer.EMPTY_WARP_DATA = [
 Renderer.TEXTURE_NONE = 0;
 Renderer.TEXTURE_WALL = 1;
 
+Renderer.POLY_LINE_POINT_COUNT = 40;
+
 Renderer.prototype.initAttributesAndUniforms = function() {
   this.createVertexAttribute('aVertexPosition');
   this.createVertexAttribute('aVertexColor');
@@ -44,7 +46,9 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   this.createUniform('uModelMatrix2');
   this.createUniform('uModelColor');
 
+  // normal=0, circles=1, statgraph=2
   this.createUniform('uType');
+
   this.createUniform('uCircles');
   this.createUniform('uCircleCount');
 
@@ -53,6 +57,10 @@ Renderer.prototype.initAttributesAndUniforms = function() {
 
   this.createUniform('uTexture');
   this.createUniform('uTime');
+
+  this.createUniform('uPolyLineData');
+  this.createUniform('uPolyLineHeadIndex');
+  this.createUniform('uPolyLinePointCount');
 };
 
 Renderer.prototype.setWarps = function(type, data) {
@@ -183,8 +191,8 @@ Renderer.prototype.setCircleMode = function(circles) {
   if (circles.length * 3 !== this.circleArray.length) {
     this.circleArray.length = circles.length * 3;
   }
-  for (var i = 0; i < circles.length; i++) {
-    var c = circles[i];
+  for (let i = 0; i < circles.length; i++) {
+    let c = circles[i];
     this.circleArray[i * 3] = c.pos.x;
     this.circleArray[i * 3 + 1] = c.pos.y;
     this.circleArray[i * 3 + 2] = c.rad;
@@ -192,17 +200,23 @@ Renderer.prototype.setCircleMode = function(circles) {
   this.gl.uniform1i(this.uType, 1);
   this.gl.uniform1i(this.uCircleCount, circles.length);
   this.gl.uniform3fv(this.uCircles, this.circleArray);
+  return this;
 };
 
 Renderer.prototype.setNormalMode = function() {
   this.gl.uniform1i(this.uType, 0);
+  return this;
+};
+
+Renderer.prototype.setPolyLineMode = function() {
+  this.gl.uniform1i(this.uType, 2);
+  return this;
 };
 
 Renderer.prototype.setTime = function(t) {
   this.gl.uniform1f(this.uTime, t);
+  return this;
 };
-
-
 
 /**
  * Prepares for stamp() calls.
@@ -224,5 +238,13 @@ Renderer.prototype.setStamp = function(stamp) {
  */
 Renderer.prototype.drawStamp = function() {
   this.modelStamp.draw(this.gl);
+  return this;
+};
+
+Renderer.prototype.setPolyLineCircularQueue = function(xyCircularQueue) {
+  this.gl.uniform1fv(this.uPolyLineData, xyCircularQueue.getArray());
+  this.gl.uniform1i(this.uPolyLineHeadIndex, xyCircularQueue.head);
+  //console.log(xyCircularQueue.getArray());
+  //this.gl.uniform1i(this.uPolyLinePointCount, xyCircularQueue.size() / 2);
   return this;
 };

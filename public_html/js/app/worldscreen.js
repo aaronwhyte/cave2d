@@ -743,7 +743,7 @@ WorldScreen.prototype.initStatMons = function() {
   var samplesPerRightGraph = 2;
 
   var framesPerLeftSample = 10;
-  var samplesPerLeftGraph = 40;
+  var samplesPerLeftGraph = Renderer.POLY_LINE_POINT_COUNT;
 
   this.graphsCuboid = new Cuboid();
   this.bottomRightCuboid = new Cuboid();
@@ -801,13 +801,13 @@ WorldScreen.prototype.initStatMons = function() {
       .setGraphColor(new Vec4(1, 1, 1))
       .setLineWidth(lineWidth));
 
-  // BLUE: overhead to get to draw screen - mostly clearing the screen
+  // PURPLE: overhead to get to draw screen - mostly clearing the screen
   this.rightStatMons.push(new StatMon(
       stats, STAT_NAMES.TO_DRAWSCREEN_MS,
       framesPerRightSample, samplesPerRightGraph,
       0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
-      .setGraphColor(new Vec4(0, 0, 1))
+      .setGraphColor(new Vec4(1, 0, 1))
       .setBorderWidth(0)
       .setLineWidth(dotSize));
   this.leftStatMons.push(new StatMon(
@@ -815,7 +815,7 @@ WorldScreen.prototype.initStatMons = function() {
       framesPerLeftSample, samplesPerLeftGraph,
       0, this.getMsUntilClockAbort(),
       this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
-      .setGraphColor(new Vec4(0, 0, 1))
+      .setGraphColor(new Vec4(1, 0, 1))
       .setBorderWidth(0)
       .setLineWidth(lineWidth));
 

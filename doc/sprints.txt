@@ -352,16 +352,24 @@ v Fix iOS sound
   v StatTrail changes
     v change API to enqueue pairs, not single vals and times
     v change guts to use a single circular queue like [t0, v0, t1, v1, t2, v2...]
-  - lineDrawer API
-    - accept a StatTrail, natively compatible with gl.uniform2fv([x0, y0, x1, y1, x2, y2...])
-    - load it into the renderer
-    - tell the renderer to use (my) polyline mode
-  - polyline model
-    - basic rect
-    - create model with as many segments as requested
-    - little end-caps (do those last)
-  - shader
-    - see pseudocode in graphing.txt
+  v create polyline model
+    v basic rect
+    v create model with as many segments as requested
+  v get to actual gl.uniform2fv([x0, y0, x1, y1, x2, y2...])
+    v global const for stat trail point (x,y pair) count
+    v define uniform
+      v renderer
+      v shader
+      v set it from setStatGraphData
+    v load it into the renderer
+  v tell the renderer to use (my) graph polyline mode
+    v define value for mode (another value, like Circle mode)
+      v renderer
+      v shader "if" blocks in vertex shader
+    v set it from setStatGraphData? or further up.
+  v shader
+    v see pseudocode in graphing.txt
+  - polyline little end-caps (do those last)
 
 
 - Debug Undo/Redo

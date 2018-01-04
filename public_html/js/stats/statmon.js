@@ -3,7 +3,7 @@
  * @param {Stats} stats where the stat to sample lives
  * @param {string} statName the one to sample
  * @param {number} sampleInterval only sample every N calls to sample(). 1 means sample every time
- * @param {number} sampleCount the nubmer of samples the trail will remember. They are drawn evenly spaces, meh
+ * @param {number} sampleCount the nubmer of samples the trail will remember. They are drawn evenly spaced, meh
  * @param {number} minVal expected lowest value
  * @param {number} maxVal expected highest value
  * @param {Renderer} renderer
@@ -34,7 +34,7 @@ function StatMon(stats, statName,
 
   // TODO: also support non-rate trails? Hm.
   this.trail = new StatRateTrail(stats, this.statName, this.sampleCount);
-  this.graph = new StatGraph(this.trail, this.lineDrawer);
+  this.graph = new StatGraph(this.trail, this.renderer);
   this.graph.setTimespan(this.sampleCount * this.sampleInterval - 1);
   this.graph.setValueRange(minVal, maxVal);
   this.graph.setCuboid(cuboid);

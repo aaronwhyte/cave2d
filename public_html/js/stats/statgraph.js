@@ -1,12 +1,12 @@
 /**
  * @param {StatTrail} trail
- * @param {LineDrawer} lineDrawer
+ * @param {Renderer} renderer
  * @param {Cuboid} cuboid
  * @constructor
  */
-function StatGraph(trail, lineDrawer, cuboid) {
+function StatGraph(trail, renderer, cuboid) {
   this.trail = trail;
-  this.lineDrawer = lineDrawer;
+  this.renderer = renderer;
   this.cuboid = cuboid;
 
   this.timespan = 100;
@@ -14,6 +14,12 @@ function StatGraph(trail, lineDrawer, cuboid) {
   this.maxVal = 99;
   this.vec4 = new Vec4();
   this.lineWidth = 2;
+
+  this.m = new Matrix44();
+  this.m2 = new Matrix44();
+
+  this.stamp = RigidModel.createStatGraphSegmentPile(Renderer.POLY_LINE_POINT_COUNT)
+      .createModelStamp(renderer.gl);
 }
 
 StatGraph.prototype.setTimespan = function(timespan) {
@@ -37,35 +43,27 @@ StatGraph.prototype.setCuboid = function(cuboid) {
 };
 
 /**
- * @param {number} now subtracted from all time values
+ * Draws the graph lines using the current color and viewMatrix.
+ * @param {number} now  The current time, to offset all the time values.
  */
 StatGraph.prototype.draw = function(now) {
   // Z is the closest face of the cuboid.
-  this.lineDrawer.nextZ = this.cuboid.pos.getZ() + this.cuboid.rad.getZ();
-  this.lineDrawer.nextLineThickness = this.lineWidth;
+  let z = this.cuboid.pos.getZ() + this.cuboid.rad.getZ();
+  let midVal = (this.minVal + this.maxVal) / 2;
+  let valspan = this.maxVal - this.minVal;
+  let midTime = now - this.timespan / 2;
+  let cPos = this.cuboid.pos;
+  let cRad = this.cuboid.rad;
 
-  this.cuboid.getMinCorner(this.vec4);
-  let minX = this.vec4.getX();
-  let topY = this.vec4.getY();
-
-  this.cuboid.getMaxCorner(this.vec4);
-  let maxX = this.vec4.getX();
-  let bottomY = this.vec4.getY();
-
-  let timeCoef = this.timespan ? (maxX - minX) / this.timespan : 0;
-  let valCoef = (bottomY - topY) / (this.maxVal - this.minVal);
-
-  for (let i = 0, n = this.trail.size(); i < n; i++) {
-    let x = (this.trail.getTime(i) - now) * timeCoef + maxX;
-    let y = -(this.trail.getVal(i) - this.minVal) * valCoef + bottomY;
-    if (i === 0) {
-      this.lineDrawer.moveToXY(x, y);
-      if (n === 1) {
-        // draw a dot if there's just one data point
-        this.lineDrawer.lineToXY(x, y);
-      }
-    } else {
-      this.lineDrawer.lineToXY(x, y);
-    }
-  }
+  this.m.toIdentity()
+      .multiply(this.m2.toTranslateOpXYZ(cPos.getX(), cPos.getY(), z))
+      .multiply(this.m2.toScaleOpXYZ(cRad.getX() * 2 / this.timespan, -cRad.getY() * 2 / valspan, 1))
+      .multiply(this.m2.toTranslateOpXYZ(-midTime, -midVal, 0));
+  this.renderer
+      .setPolyLineMode()
+      .setModelMatrix(this.m)
+      .setStamp(this.stamp)
+      .setPolyLineCircularQueue(this.trail.getAllPairs(), this.trail.getHeadIndex(), this.trail.size())
+      .drawStamp()
+      .setNormalMode(); // TODO maybe push polyline mode and then pop it? Something else?
 };

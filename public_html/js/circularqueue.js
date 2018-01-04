@@ -21,19 +21,19 @@ function CircularQueue(maxLen) {
  * @return {boolean}
  */
 CircularQueue.prototype.isEmpty = function() {
-  return this.head == -1;
+  return this.head === -1;
 };
 
 /**
  * @return {boolean}
  */
 CircularQueue.prototype.isFull = function() {
-  if (this.head == -1) return false;
-  var nextHead = this.head + 1;
+  if (this.head === -1) return false;
+  let nextHead = this.head + 1;
   if (nextHead >= this.maxLen) {
     nextHead = 0;
   }
-  return nextHead == this.tail;
+  return nextHead === this.tail;
 };
 
 /**
@@ -43,8 +43,8 @@ CircularQueue.prototype.isFull = function() {
  * @return the object that fell off the tail, or null if nothing fell off
  */
 CircularQueue.prototype.enqueue = function(val) {
-  var whatFellOff = null;
-  if (this.head == -1) {
+  let whatFellOff = null;
+  if (this.head === -1) {
     // was empty
     this.head = this.tail = 0;
   } else {
@@ -52,7 +52,7 @@ CircularQueue.prototype.enqueue = function(val) {
     if (this.head >= this.maxLen) {
       this.head = 0;
     }
-    if (this.head == this.tail) {
+    if (this.head === this.tail) {
       whatFellOff = this.a[this.tail];
       // something falls off the tail
       this.tail++;
@@ -70,12 +70,12 @@ CircularQueue.prototype.enqueue = function(val) {
  * @return Whatever was pulled off the tail of the queue, or null if the queue is empty.
  */
 CircularQueue.prototype.dequeue = function() {
-  if (this.tail == -1) {
+  if (this.tail === -1) {
     // empty
     return null;
   }
-  var val = this.a[this.tail];
-  if (this.tail == this.head) {
+  let val = this.a[this.tail];
+  if (this.tail === this.head) {
     // now it's empty
     this.head = this.tail = -1;
   } else {
@@ -94,12 +94,12 @@ CircularQueue.prototype.dequeue = function() {
  * except that it removes from the other end, so "pop" and "enqueue" act like a stack.
  */
 CircularQueue.prototype.pop = function() {
-  if (this.head == -1) {
+  if (this.head === -1) {
     // empty
     return null;
   }
-  var val = this.a[this.head];
-  if (this.tail == this.head) {
+  let val = this.a[this.head];
+  if (this.tail === this.head) {
     // now it's empty
     this.head = this.tail = -1;
   } else {
@@ -117,11 +117,11 @@ CircularQueue.prototype.pop = function() {
  * @return {number} number of elements in the queue, between 0 and maxLength
  */
 CircularQueue.prototype.size = function() {
-  if (this.tail == -1) {
+  if (this.tail === -1) {
     // empty
     return 0;
   }
-  var size = 1 + this.head - this.tail;
+  let size = 1 + this.head - this.tail;
   if (size <= 0) {
     size += this.maxLen;
   }
@@ -139,7 +139,7 @@ CircularQueue.prototype.getFromTail = function(index) {
   if (index >= this.size()) {
     throw new Error("index " + index + " is greater than size " + this.size());
   }
-  var i = index + this.tail;
+  let i = index + this.tail;
   if (i >= this.maxLen) {
     // wrap around
     i -= this.maxLen;
@@ -157,10 +157,14 @@ CircularQueue.prototype.getFromHead = function(index) {
   if (index >= this.size()) {
     throw new Error("index " + index + " is greater than size " + this.size());
   }
-  var i = this.head - index;
+  let i = this.head - index;
   if (i < 0) {
     // wrap around
     i += this.maxLen;
   }
   return this.a[i];
+};
+
+CircularQueue.prototype.getArray = function() {
+  return this.a;
 };
