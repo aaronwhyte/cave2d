@@ -44,12 +44,12 @@ RigidModel.prototype.addTriangle = function(vertIndex0, vertIndex1, vertIndex2) 
  */
 RigidModel.prototype.addRigidModel = function(that) {
   // Map that's vertex indexes to their new indexes in this.
-  var i, vertexMap = {};
+  let i, vertexMap = {};
   for (i = 0; i < that.vertexes.length; i++) {
     vertexMap[i] = this.addVertex(that.vertexes[i].copy());
   }
   for (i = 0; i < that.triangles.length; i++) {
-    var thatTri = that.triangles[i];
+    let thatTri = that.triangles[i];
     this.addTriangle(
         vertexMap[thatTri[0]],
         vertexMap[thatTri[1]],
@@ -65,9 +65,9 @@ RigidModel.prototype.getBoundingRect = function() {
   if (!this.vertexes.length) {
     return null;
   }
-  var vert = this.vertexes[0];
-  var rect = new Rect(vert.position.v[0], vert.position.v[1], 0, 0);
-  for (var i = 1; i < this.vertexes.length; i++) {
+  let vert = this.vertexes[0];
+  let rect = new Rect(vert.position.v[0], vert.position.v[1], 0, 0);
+  for (let i = 1; i < this.vertexes.length; i++) {
     vert = this.vertexes[i];
     rect.coverXY(vert.position.v[0], vert.position.v[1]);
   }
@@ -80,7 +80,7 @@ RigidModel.prototype.getBoundingRect = function() {
  * @return {RigidModel} this
  */
 RigidModel.prototype.transformPositions = function(matrix) {
-  for (var i = 0; i < this.vertexes.length; i++) {
+  for (let i = 0; i < this.vertexes.length; i++) {
     this.vertexes[i].transformPosition(matrix);
   }
   return this;
@@ -91,7 +91,7 @@ RigidModel.prototype.transformPositions = function(matrix) {
  * @return {RigidModel} this
  */
 RigidModel.prototype.setColorRGB = function(r, g, b) {
-  for (var i = 0; i < this.vertexes.length; i++) {
+  for (let i = 0; i < this.vertexes.length; i++) {
     this.vertexes[i].setColorRGB(r, g, b);
   }
   return this;
@@ -105,8 +105,8 @@ RigidModel.prototype.setColorRGB = function(r, g, b) {
  * @return {RigidModel} this
  */
 RigidModel.prototype.sphereize = function(center, radius) {
-  for (var i = 0; i < this.vertexes.length; i++) {
-    var p = this.vertexes[i].position;
+  for (let i = 0; i < this.vertexes.length; i++) {
+    let p = this.vertexes[i].position;
     p.subtract(center).scaleToLength(radius).add(center);
   }
   return this;
@@ -119,33 +119,33 @@ RigidModel.prototype.sphereize = function(center, radius) {
  * original two points along the edge.
  */
 RigidModel.prototype.createQuadrupleTriangleModel = function() {
-  var m = new RigidModel();
+  let m = new RigidModel();
   function childName(index0, index1) {
     return (index0 < index1) ? index0 + "_" + index1 : index1 + "_" + index0;
   }
   // Each key is a name of a vertex - either the original parent vert index,
   // or a name created by joining two parent IDs.
   // Each value is a new model vertex index.
-  var namedVerts = {};
-  for (var ti = 0; ti < this.triangles.length; ti++) {
-    var oldTri = this.triangles[ti];
+  let namedVerts = {};
+  for (let ti = 0; ti < this.triangles.length; ti++) {
+    let oldTri = this.triangles[ti];
     // copy original verts, as needed
-    for (var i = 0; i < 3; i++) {
-      var vi = oldTri[i];
+    for (let i = 0; i < 3; i++) {
+      let vi = oldTri[i];
       // map old vertex index to new one
       if (!(vi in namedVerts)) {
         namedVerts[vi] = m.addVertex(this.vertexes[vi].copy());
       }
     }
     // create children in the middle of edges, as needed
-    for (var i = 0; i < 3; i++) {
-      var parent0Index = oldTri[i];
-      var parent1Index = oldTri[(i + 1) % 3];
-      var name = childName(parent0Index, parent1Index);
+    for (let i = 0; i < 3; i++) {
+      let parent0Index = oldTri[i];
+      let parent1Index = oldTri[(i + 1) % 3];
+      let name = childName(parent0Index, parent1Index);
       if (!(name in namedVerts)) {
-        var parent0 = this.vertexes[parent0Index];
-        var parent1 = this.vertexes[parent1Index];
-        var newVert = parent0.copy();
+        let parent0 = this.vertexes[parent0Index];
+        let parent1 = this.vertexes[parent1Index];
+        let newVert = parent0.copy();
         newVert.position.add(parent1.position).scale1(0.5);
         // I'm assuming alpha is always 1, so if that changes, change this to average alpha, too.
         newVert.color.add(parent1.color).scale1(0.5);
@@ -153,12 +153,12 @@ RigidModel.prototype.createQuadrupleTriangleModel = function() {
       }
     }
     // manually add triangles using the new vertexes
-    var a = namedVerts[oldTri[0]];
-    var b = namedVerts[oldTri[1]];
-    var c = namedVerts[oldTri[2]];
-    var ab = namedVerts[childName(oldTri[0], oldTri[1])];
-    var bc = namedVerts[childName(oldTri[1], oldTri[2])];
-    var ac = namedVerts[childName(oldTri[0], oldTri[2])];
+    let a = namedVerts[oldTri[0]];
+    let b = namedVerts[oldTri[1]];
+    let c = namedVerts[oldTri[2]];
+    let ab = namedVerts[childName(oldTri[0], oldTri[1])];
+    let bc = namedVerts[childName(oldTri[1], oldTri[2])];
+    let ac = namedVerts[childName(oldTri[0], oldTri[2])];
     m.addTriangle(a, ab, ac);
     m.addTriangle(ab, b, bc);
     m.addTriangle(ac, bc, c);
@@ -173,35 +173,35 @@ RigidModel.prototype.createQuadrupleTriangleModel = function() {
  * @returns {ModelStamp}
  */
 RigidModel.prototype.createModelStamp = function(gl) {
-  var i, positionArray = [], colorArray = [], groupArray = [];
+  let i, positionArray = [], colorArray = [], groupArray = [];
   for (i = 0; i < this.vertexes.length; i++) {
-    var vertex = this.vertexes[i];
-    for (var d = 0; d < 4; d++) {
+    let vertex = this.vertexes[i];
+    for (let d = 0; d < 4; d++) {
       positionArray.push(vertex.position.v[d]);
       colorArray.push(vertex.color.v[d]);
     }
     groupArray.push(vertex.group || 0);
   }
-  var posBuff = gl.createBuffer();
+  let posBuff = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, posBuff);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionArray), gl.STATIC_DRAW);
 
-  var colorBuff = gl.createBuffer();
+  let colorBuff = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorArray), gl.STATIC_DRAW);
 
-  var groupBuff = gl.createBuffer();
+  let groupBuff = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, groupBuff);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(groupArray), gl.STATIC_DRAW);
 
-  var elementsArray = [];
+  let elementsArray = [];
   for (i = 0; i < this.triangles.length; i++) {
-    var triangle = this.triangles[i];
-    for (var v = 0; v < 3; v++) {
+    let triangle = this.triangles[i];
+    for (let v = 0; v < 3; v++) {
       elementsArray.push(triangle[v]);
     }
   }
-  var elementBuff = gl.createBuffer();
+  let elementBuff = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuff);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(elementsArray), gl.STATIC_DRAW);
 
@@ -219,10 +219,10 @@ RigidModel.prototype.createModelStamp = function(gl) {
  * @returns {RigidModel}
  */
 RigidModel.createSquare = function() {
-  var m = new RigidModel();
-  var v = [];
-  for (var y = -1; y <= 1; y+= 2) {
-    for (var x = -1; x <= 1; x+= 2) {
+  let m = new RigidModel();
+  let v = [];
+  for (let y = -1; y <= 1; y+= 2) {
+    for (let x = -1; x <= 1; x+= 2) {
       v.push(m.addVertex(new Vertex().setPositionXYZ(x, y, 0).setColorRGB(1, 1, 1)));
     }
   }
@@ -243,13 +243,13 @@ RigidModel.createSquare = function() {
  * @returns {RigidModel}
  */
 RigidModel.createTriangle = function() {
-  var m = new RigidModel();
-  var top = new Vertex().setPositionXYZ(0, 2, 0).setColorRGB(1, 1, 1);
-  var right = top.copy().transformPosition(new Matrix44().toRotateZOp(2*Math.PI/3));
-  var left = top.copy().transformPosition(new Matrix44().toRotateZOp(-2*Math.PI/3));
-  var topIndex = m.addVertex(top);
-  var leftIndex = m.addVertex(left);
-  var rightIndex = m.addVertex(right);
+  let m = new RigidModel();
+  let top = new Vertex().setPositionXYZ(0, 2, 0).setColorRGB(1, 1, 1);
+  let right = top.copy().transformPosition(new Matrix44().toRotateZOp(2*Math.PI/3));
+  let left = top.copy().transformPosition(new Matrix44().toRotateZOp(-2*Math.PI/3));
+  let topIndex = m.addVertex(top);
+  let leftIndex = m.addVertex(left);
+  let rightIndex = m.addVertex(right);
   m.addTriangle(topIndex, leftIndex, rightIndex);
   return m;
 };
@@ -263,18 +263,18 @@ RigidModel.createTriangle = function() {
  */
 
 RigidModel.createCircleMesh = function(depth) {
-  var model = RigidModel.createTriangle();
-  for (var i = 0; i < depth; i++) {
+  let model = RigidModel.createTriangle();
+  for (let i = 0; i < depth; i++) {
     model = model.createQuadrupleTriangleModel();
   }
   // Remove triangles outside circle.
-  var outsiders = [];
-  var circleRadius = 1;
-  for (var t = 0; t < model.triangles.length;) {
-    var tri = model.triangles[t];
+  let outsiders = [];
+  let circleRadius = 1;
+  for (let t = 0; t < model.triangles.length;) {
+    let tri = model.triangles[t];
     outsiders.length = 0;
-    for (var v = 0; v < 3; v++) {
-      var vert = model.vertexes[tri[v]];
+    for (let v = 0; v < 3; v++) {
+      let vert = model.vertexes[tri[v]];
       if (vert.position.magnitude() > circleRadius) {
         outsiders.push(vert);
       }
@@ -285,7 +285,7 @@ RigidModel.createCircleMesh = function(depth) {
       model.triangles.pop();
     } else {
       // Reposition outside verts to be on the circle's edge.
-      for (var o = 0; o < outsiders.length; o++) {
+      for (let o = 0; o < outsiders.length; o++) {
         outsiders[o].position.scaleToLength(circleRadius);
       }
       t++;
@@ -295,15 +295,15 @@ RigidModel.createCircleMesh = function(depth) {
 };
 
 RigidModel.createRingMesh = function(depth, innerRadius) {
-  var model = RigidModel.createCircleMesh(depth);
+  let model = RigidModel.createCircleMesh(depth);
 
   // Remove triangles inside inner circle.
-  var insiders = [];
-  for (var t = 0; t < model.triangles.length;) {
-    var tri = model.triangles[t];
+  let insiders = [];
+  for (let t = 0; t < model.triangles.length;) {
+    let tri = model.triangles[t];
     insiders.length = 0;
-    for (var v = 0; v < 3; v++) {
-      var vert = model.vertexes[tri[v]];
+    for (let v = 0; v < 3; v++) {
+      let vert = model.vertexes[tri[v]];
       if (vert.position.magnitude() <= innerRadius) {
         insiders.push(vert);
       }
@@ -314,7 +314,7 @@ RigidModel.createRingMesh = function(depth, innerRadius) {
       model.triangles.pop();
     } else {
       // Reposition inside verts to be on the circle's edge.
-      for (var i = 0; i < insiders.length; i++) {
+      for (let i = 0; i < insiders.length; i++) {
         insiders[i].position.scaleToLength(innerRadius);
       }
       t++;
@@ -329,13 +329,13 @@ RigidModel.createRingMesh = function(depth, innerRadius) {
  * @returns {RigidModel}
  */
 RigidModel.createCircle = function(corners) {
-  var m = new RigidModel(), v = [];
-  for (var i = 0; i < corners; i++) {
-    var a = 2 * Math.PI * i / corners;
+  let m = new RigidModel(), v = [];
+  for (let i = 0; i < corners; i++) {
+    let a = 2 * Math.PI * i / corners;
     v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(0)));
   }
-  var centerIndex = m.addVertex(new Vertex().setPositionXYZ(0, 0, 0).setColorRGB(1, 1, 1));
-  for (var i = 0; i < corners; i++) {
+  let centerIndex = m.addVertex(new Vertex().setPositionXYZ(0, 0, 0).setColorRGB(1, 1, 1));
+  for (let i = 0; i < corners; i++) {
     m.addTriangle(v[i], v[(i + 1) % corners], centerIndex);
   }
   return m;
@@ -347,9 +347,9 @@ RigidModel.createCircle = function(corners) {
  * @param {Array.<Vec4>} vecs
  */
 RigidModel.createFromFanVecs = function(vecs) {
-  var m = new RigidModel();
-  for (var i = 0; i < vecs.length; i++) {
-    var v = new Vertex();
+  let m = new RigidModel();
+  for (let i = 0; i < vecs.length; i++) {
+    let v = new Vertex();
     v.position.set(vecs[i]);
     m.addVertex(v.setColorRGB(1, 1, 1).setGroup(0));
     if (i >= 2) {
@@ -366,9 +366,9 @@ RigidModel.createFromFanVecs = function(vecs) {
  * @returns {RigidModel}
  */
 RigidModel.createTube = function(corners) {
-  var m = new RigidModel(), v = [], i;
+  let m = new RigidModel(), v = [], i;
   for (i = 0; i < corners; i++) {
-    var a = 2 * Math.PI * i / corners;
+    let a = 2 * Math.PI * i / corners;
     v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(0)));
     v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(1)));
   }
@@ -391,9 +391,9 @@ RigidModel.createTube = function(corners) {
  * @returns {RigidModel}
  */
 RigidModel.createCylinder = function(corners) {
-  var m = new RigidModel(), v = [], i;
+  let m = new RigidModel(), v = [], i;
   for (i = 0; i < corners; i++) {
-    var a = 2 * Math.PI * i / corners;
+    let a = 2 * Math.PI * i / corners;
     v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(0)));
     v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(1)));
   }
@@ -401,7 +401,7 @@ RigidModel.createCylinder = function(corners) {
     m.addTriangle(v[nw], v[sw], v[ne]);
     m.addTriangle(v[se], v[ne], v[sw]);
   }
-  var edgeVertexCount = v.length;
+  let edgeVertexCount = v.length;
   for (i = 0; i < edgeVertexCount; i += 2) {
     // 0 2
     // 1 3
@@ -409,9 +409,9 @@ RigidModel.createCylinder = function(corners) {
   }
 
   // cap each end
-  for (var group = 0; group < 2; group++) {
-    var centerIndex = m.addVertex(new Vertex().setPositionXYZ(0, 0, 0).setColorRGB(1, 1, 1).setGroup(group));
-    for (var i = 0; i < edgeVertexCount; i += 2) {
+  for (let group = 0; group < 2; group++) {
+    let centerIndex = m.addVertex(new Vertex().setPositionXYZ(0, 0, 0).setColorRGB(1, 1, 1).setGroup(group));
+    for (let i = 0; i < edgeVertexCount; i += 2) {
       m.addTriangle(v[(i + group) % edgeVertexCount], v[(i + group + 2) % edgeVertexCount], centerIndex);
     }
   }
@@ -424,11 +424,11 @@ RigidModel.createCylinder = function(corners) {
  * @returns {RigidModel}
  */
 RigidModel.createCube = function() {
-  var m = new RigidModel();
-  var v = [];
-  for (var z = -1; z <= 1; z+= 2) {
-    for (var y = -1; y <= 1; y+= 2) {
-      for (var x = -1; x <= 1; x+= 2) {
+  let m = new RigidModel();
+  let v = [];
+  for (let z = -1; z <= 1; z+= 2) {
+    for (let y = -1; y <= 1; y+= 2) {
+      for (let x = -1; x <= 1; x+= 2) {
         v.push(m.addVertex(new Vertex().setPositionXYZ(x, y, z).setColorRGB(1, 1, 1)));
       }
     }
@@ -457,12 +457,12 @@ RigidModel.createCube = function() {
  * @returns {RigidModel}
  */
 RigidModel.createTetrahedron = function() {
-  var m = new RigidModel();
-  var dz = Math.sqrt(2) / 2;
-  var a = m.addVertex(new Vertex().setPositionXYZ(0, 1, -dz).setColorRGB(1, 1, 1));
-  var b = m.addVertex(new Vertex().setPositionXYZ(0, -1, -dz).setColorRGB(1, 1, 1));
-  var c = m.addVertex(new Vertex().setPositionXYZ(1, 0, dz).setColorRGB(1, 1, 1));
-  var d = m.addVertex(new Vertex().setPositionXYZ(-1, 0, dz).setColorRGB(1, 1, 1));
+  let m = new RigidModel();
+  let dz = Math.sqrt(2) / 2;
+  let a = m.addVertex(new Vertex().setPositionXYZ(0, 1, -dz).setColorRGB(1, 1, 1));
+  let b = m.addVertex(new Vertex().setPositionXYZ(0, -1, -dz).setColorRGB(1, 1, 1));
+  let c = m.addVertex(new Vertex().setPositionXYZ(1, 0, dz).setColorRGB(1, 1, 1));
+  let d = m.addVertex(new Vertex().setPositionXYZ(-1, 0, dz).setColorRGB(1, 1, 1));
   m.addTriangle(a, d, c);
   m.addTriangle(a, b, d);
   m.addTriangle(a, c, b);
@@ -475,16 +475,16 @@ RigidModel.createTetrahedron = function() {
  * @returns {RigidModel}
  */
 RigidModel.createOctahedron = function() {
-  var m = new RigidModel();
+  let m = new RigidModel();
   function v(x, y, z) {
     return m.addVertex(new Vertex().setPositionXYZ(x, y, z).setColorRGB(1, 1, 1));
   }
-  var a = v(1, 0, 0);
-  var b = v(-1, 0, 0);
-  var c = v(0, 1, 0);
-  var d = v(0, -1, 0);
-  var e = v(0, 0, 1);
-  var f = v(0, 0, -1);
+  let a = v(1, 0, 0);
+  let b = v(-1, 0, 0);
+  let c = v(0, 1, 0);
+  let d = v(0, -1, 0);
+  let e = v(0, 0, 1);
+  let f = v(0, 0, -1);
   m.addTriangle(c, e, a);
   m.addTriangle(c, a, f);
   m.addTriangle(c, f, b);
@@ -501,13 +501,13 @@ RigidModel.createStatGraphSegmentPile = function(pointCount) {
     m.addTriangle(v[nw], v[sw], v[ne]);
     m.addTriangle(v[se], v[ne], v[sw]);
   }
-  var m = new RigidModel();
-  var v = [];
-  for (var i = 0; i < pointCount - 1; i++) {
+  let m = new RigidModel();
+  let v = [];
+  for (let i = 0; i < pointCount - 1; i++) {
     // create a unit square whose z is the index into the stat data
     v.length = 0;
-    for (var y = -1; y <= 1; y += 2) {
-      for (var x = -1; x <= 1; x += 2) {
+    for (let y = -1; y <= 1; y += 2) {
+      for (let x = -1; x <= 1; x += 2) {
         v.push(m.addVertex(new Vertex().setPositionXYZ(x, y, i).setColorRGB(1, 1, 1)));
       }
     }

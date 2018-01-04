@@ -41,10 +41,10 @@ LineDrawer.prototype.lineToXY = function(x, y) {
  * @returns {LineDrawer}
  */
 LineDrawer.prototype.drawRect = function(rect) {
-  var n = rect.getMinY();
-  var s = rect.getMaxY();
-  var w = rect.getMinX();
-  var e = rect.getMaxX();
+  let n = rect.getMinY();
+  let s = rect.getMaxY();
+  let w = rect.getMinX();
+  let e = rect.getMaxX();
   this.moveToXY(w, n).lineToXY(e, n).lineToXY(e, s).lineToXY(w, s).lineToXY(w, n);
   return this;
 };
@@ -55,22 +55,22 @@ LineDrawer.prototype.drawRect = function(rect) {
  * @return {LineDrawer}
  */
 LineDrawer.prototype.drawRectFromCuboid = function(cuboid) {
-  var oldZ = this.nextZ;
+  let oldZ = this.nextZ;
   this.nextZ = cuboid.pos.getZ();
-  var v = cuboid.getMinCorner(this.vec4);
-  var n = v.getY();
-  var w = v.getX();
+  let v = cuboid.getMinCorner(this.vec4);
+  let n = v.getY();
+  let w = v.getX();
   v = cuboid.getMaxCorner(this.vec4);
-  var s = v.getY();
-  var e = v.getX();
+  let s = v.getY();
+  let e = v.getX();
   this.moveToXY(w, n).lineToXY(e, n).lineToXY(e, s).lineToXY(w, s).lineToXY(w, n);
   this.nextZ = oldZ;
   return this;
 };
 
 LineDrawer.prototype.setRendererMatrix = function (x, y) {
-  var z = this.nextZ;
-  var r = this.nextLineThickness * 0.5;
+  let z = this.nextZ;
+  let r = this.nextLineThickness * 0.5;
   this.m.toTranslateXYZAndScaleXYZOp(x, y, z, r, r, r);
   if (this.nextGroup === 1) {
     this.renderer.setModelMatrix(this.m);
