@@ -244,7 +244,6 @@ Renderer.prototype.drawStamp = function() {
 Renderer.prototype.setPolyLineCircularQueue = function(xyCircularQueue) {
   this.gl.uniform1fv(this.uPolyLineData, xyCircularQueue.getArray());
   this.gl.uniform1i(this.uPolyLineHeadIndex, xyCircularQueue.head);
-  //console.log(xyCircularQueue.getArray());
-  //this.gl.uniform1i(this.uPolyLinePointCount, xyCircularQueue.size() / 2);
+  this.gl.uniform1i(this.uPolyLinePointCount, xyCircularQueue.size() / 2);
   return this;
 };

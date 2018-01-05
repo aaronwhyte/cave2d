@@ -98,9 +98,12 @@ void main(void) {
     gl_Position *= uViewMatrix;
 
   } else if (uType == 2) {
-    gl_Position = aVertexPosition;
     // polyline mode!
-    int pointNum = int(gl_Position.z);
+
+    int pointNum = int(aVertexPosition.z);
+    if (pointNum > uPolyLinePointCount - 2) {
+      pointNum = uPolyLinePointCount - 2;
+    }
     int p0Index = uPolyLineHeadIndex - 2 * pointNum;
     if (p0Index < 0) {
       p0Index += POLY_LINE_DATA_LENGTH;
@@ -110,20 +113,42 @@ void main(void) {
       p1Index += POLY_LINE_DATA_LENGTH;
     }
 
-    float yOff = gl_Position.y;
-    if (gl_Position.x < 0.0) {
-      // p0
-      gl_Position.y = uPolyLineData[p0Index];
-      gl_Position.x = uPolyLineData[p0Index - 1];
+    vec2 p0 = vec2(uPolyLineData[p0Index - 1], uPolyLineData[p0Index]);
+    vec2 p1 = vec2(uPolyLineData[p1Index - 1], uPolyLineData[p1Index]);
+    float signX = sign(aVertexPosition.x);
+
+    // prepare to scale by line width
+    vec2 addForWidth = vec2(aVertexPosition.xy);
+    addForWidth.x -= signX;
+    //addForWidth *= 1.5; // optional line thickener
+
+    // rotate by the angle measured in graph space
+    vec4 g0;
+    g0.xy = p0.xy;
+    g0 *= uModelMatrix;
+
+    vec4 g1;
+    g1.xy = p1.xy;
+    g1 *= uModelMatrix;
+
+    float angle = atan(g1.y - g0.y, g1.x - g0.x);
+    float s = sin(angle);
+    float c = cos(angle);
+    mat2 rot = mat2(c, -s, s, c);
+    addForWidth *= rot;
+
+    // set to whichever point it is
+    gl_Position = aVertexPosition;
+    if (signX < 0.0) {
+      gl_Position.xy = p0;
     } else {
-      // p1
-      gl_Position.y = uPolyLineData[p1Index];
-      gl_Position.x = uPolyLineData[p1Index - 1];
+      gl_Position.xy = p1;
     }
+
     gl_Position *= uModelMatrix;
-    gl_Position.z = 0.99;
-    gl_Position.y += yOff * 1.5;
+    gl_Position.xy += addForWidth;
     gl_Position *= uViewMatrix;
+    gl_Position.z = -0.99;
   }
 
   vColor = aVertexColor * uModelColor;

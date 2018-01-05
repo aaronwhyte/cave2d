@@ -739,10 +739,10 @@ WorldScreen.prototype.unloadLevel = function() {
 ///////////
 
 WorldScreen.prototype.initStatMons = function() {
-  var framesPerRightSample = 1;
-  var samplesPerRightGraph = 2;
+  var framesPerRightSample = 3;
+  var samplesPerRightGraph = Renderer.POLY_LINE_POINT_COUNT;
 
-  var framesPerLeftSample = 10;
+  var framesPerLeftSample = Renderer.POLY_LINE_POINT_COUNT;
   var samplesPerLeftGraph = Renderer.POLY_LINE_POINT_COUNT;
 
   this.graphsCuboid = new Cuboid();
@@ -754,31 +754,31 @@ WorldScreen.prototype.initStatMons = function() {
   var graphWidthFrac = 1;
   var dotSize = 8;
   var lineWidth = 2;
-  var margin = 14;
+  var margin = 0;
   var borderColor = new Vec4(0.6, 0.6, 0.6);
   var stripeColor = borderColor;
 
   this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.graphsCuboid)
-      .setSizingMax(new Vec4(1/2, 1/2, 1), new Vec4(100, 100, Infinity))
-      .setAspectRatio(new Vec4(1, 1, 0))
+      .setSizingMax(new Vec4(1/2, 1/2, 1), new Vec4(200, 100, Infinity))
+      .setAspectRatio(new Vec4(2, 1, 0))
       .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-margin, -margin, 0))
       .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0)));
 
   this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.bottomRightCuboid)
-      .setSizingMax(new Vec4(0, 1/4, 1), Vec4.INFINITY)
+      .setSizingMax(new Vec4(graphWidthFrac / 2, 1/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(1, 1, 0), Vec4.ZERO)
       .setTargetAnchor(new Vec4(1, 1, 0), Vec4.ZERO));
   this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.bottomLeftCuboid)
-      .setSizingMax(new Vec4(graphWidthFrac, 1/4, 1), Vec4.INFINITY)
+      .setSizingMax(new Vec4(graphWidthFrac / 2, 1/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(-1, 1, 0), new Vec4(-margin, 0, 0))
       .setTargetAnchor(new Vec4(-1, 1, 0), Vec4.ZERO));
 
   this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.topRightCuboid)
-      .setSizingMax(new Vec4(0, 3/4, 1), Vec4.INFINITY)
+      .setSizingMax(new Vec4(graphWidthFrac / 2, 3/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(1, -1, 0), new Vec4(0, -margin, 0))
       .setTargetAnchor(new Vec4(1, -1, 0), Vec4.ZERO));
   this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.topLeftCuboid)
-      .setSizingMax(new Vec4(graphWidthFrac, 3/4, 1), Vec4.INFINITY)
+      .setSizingMax(new Vec4(graphWidthFrac / 2, 3/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(-1, -1, 0), new Vec4(-margin, -margin, 0))
       .setTargetAnchor(new Vec4(-1, -1, 0), Vec4.ZERO));
 

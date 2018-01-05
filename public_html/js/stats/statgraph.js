@@ -47,6 +47,8 @@ StatGraph.prototype.setCuboid = function(cuboid) {
  * @param {number} now  The current time, to offset all the time values.
  */
 StatGraph.prototype.draw = function(now) {
+  if (this.trail.size() < 2) return;
+
   // Z is the closest face of the cuboid.
   let z = this.cuboid.pos.getZ() + this.cuboid.rad.getZ();
   let midVal = (this.minVal + this.maxVal) / 2;
@@ -63,7 +65,7 @@ StatGraph.prototype.draw = function(now) {
       .setPolyLineMode()
       .setModelMatrix(this.m)
       .setStamp(this.stamp)
-      .setPolyLineCircularQueue(this.trail.getAllPairs(), this.trail.getHeadIndex(), this.trail.size())
+      .setPolyLineCircularQueue(this.trail.getAllPairs())
       .drawStamp()
       .setNormalMode(); // TODO maybe push polyline mode and then pop it? Something else?
 };
