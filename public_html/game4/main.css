@@ -166,6 +166,7 @@ canvas#canvas {
   padding:0.5em 1em;
   font-size:large;
   text-align:left;
+  white-space: nowrap;
 }
 
 .levelEditorDebugOptions label {
