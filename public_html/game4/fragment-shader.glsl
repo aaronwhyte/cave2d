@@ -24,10 +24,7 @@ highp float rand(highp float i) {
 }
 
 void main(void) {
-  if (uType == 0 || uType == 2) {
-    // normal and polyline fragment shading is simple
-    gl_FragColor = vColor;
-  } else if (uType == 1) {
+  if (uType == 1) {
     // circle mode!
     lowp float minDist = 1.0;
     for (int i = 0; i < 8; i++) {
@@ -43,25 +40,29 @@ void main(void) {
     } else if (minDist < 1.0) {
       gl_FragColor = vColor * 0.6;
     } else {
-      discard;
+      //discard;
+      gl_FragColor.xyz *= 0.0;
     }
+  } else {
+    // normal or polyline - simple
+    gl_FragColor = vColor;
   }
 
-  if (uTexture == TEXTURE_WALL) {
-    lowp float s = 0.5;
-    highp vec2 c = vec2(
-        floor((vPosReal.x) / s + 0.5) * s,
-        floor((vPosReal.y) / s + 0.5) * s);
-
-    highp float x = dot(c, vec2(13.987, 73.123)) + uTime / 321.;
-    lowp float i = floor(x);
-    lowp float f = fract(x);
-    lowp float n = mix(rand(i), rand(i + 1.0), smoothstep(0.,1.,f));
-
-    lowp float density = 0.05;
-    lowp float brightness = 0.5;
-    lowp float merp = smoothstep(0.0, 1.0, abs(n / density - 0.5) * 2.0) * brightness;
-    gl_FragColor.y += brightness - merp;
-    gl_FragColor.z += brightness - merp;
-  }
+//  if (uTexture == TEXTURE_WALL) {
+//    lowp float s = 0.5;
+//    highp vec2 c = vec2(
+//        floor((vPosReal.x) / s + 0.5) * s,
+//        floor((vPosReal.y) / s + 0.5) * s);
+//
+//    highp float x = dot(c, vec2(13.987, 73.123)) + uTime / 321.;
+//    lowp float i = floor(x);
+//    lowp float f = fract(x);
+//    lowp float n = mix(rand(i), rand(i + 1.0), smoothstep(0.,1.,f));
+//
+//    lowp float density = 0.05;
+//    lowp float brightness = 0.5;
+//    lowp float merp = smoothstep(0.0, 1.0, abs(n / density - 0.5) * 2.0) * brightness;
+//    gl_FragColor.y += brightness - merp;
+//    gl_FragColor.z += brightness - merp;
+//  }
 }

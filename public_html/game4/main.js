@@ -14,7 +14,7 @@ function main() {
   stats = new Stats();
   var basePath = ['game4'];
   app = new PlayApp('Game 4', basePath,
-      'vertex-shader.txt', 'fragment-shader.txt',
+      'vertex-shader.glsl', 'fragment-shader.glsl',
       'adventures/shorttest8.txt',
       PlayLevelPage);
   app.start();

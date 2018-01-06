@@ -47,7 +47,7 @@ Game4BaseScreen.WIDGET_RADIUS = 30;
 Game4BaseScreen.CAMERA_VIEW_DIST = 40;
 
 // Makes distortions smooth by eliminating T-junctions and making tile models more detailed.
-Game4BaseScreen.USE_FANS = true;
+Game4BaseScreen.USE_FANS = false;
 
 Game4BaseScreen.SpiritType = {
   ANT: 3,

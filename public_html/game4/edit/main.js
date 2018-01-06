@@ -15,7 +15,7 @@ function main() {
   var basePath = ['game4'];
   var fileTree = new FileTree(new RealStorage(localStorage));
   app = new EditorApp('Game 4', basePath,
-      '../vertex-shader.txt', '../fragment-shader.txt',
+      '../vertex-shader.glsl', '../fragment-shader.glsl',
       fileTree,
       EditLevelPage, TestLevelPage);
   app.start();
