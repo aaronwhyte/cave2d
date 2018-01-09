@@ -62,7 +62,7 @@ EditLevelPage.prototype.appendDebugOptions = function(df) {
     self.requestAnimation();
   });
   e = Dom.ce('span', label);
-  e.innerHTML = Strings.textToHtml(' line graphs');
+  e.innerHTML = Strings.textToHtml(' slow graphs');
 
   Dom.ce('br', debug);
 
@@ -76,7 +76,7 @@ EditLevelPage.prototype.appendDebugOptions = function(df) {
     self.requestAnimation();
   });
   e = Dom.ce('span', label);
-  e.innerHTML = Strings.textToHtml(' dot graphs');
+  e.innerHTML = Strings.textToHtml(' fast graphs');
 };
 
 
