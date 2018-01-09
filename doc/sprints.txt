@@ -348,7 +348,7 @@ v Fix iOS sound
   v try making continuous sound.
   v also make sound for every touch up/down?
 
-- graph rendering II
+v graph rendering II
   v StatTrail changes
     v change API to enqueue pairs, not single vals and times
     v change guts to use a single circular queue like [t0, v0, t1, v1, t2, v2...]
@@ -370,7 +370,7 @@ v Fix iOS sound
   v shader
     v see pseudocode in graphing.txt
   x polyline little end-caps (do those last)
-  - fix near-invisible vertical lines by adjusing line model
+  v fix near-invisible vertical lines by adjusing line model
 
 - swarm draw!
   * merge a bunch of drawings of the same model together with a single draw call.

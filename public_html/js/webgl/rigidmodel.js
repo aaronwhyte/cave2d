@@ -363,34 +363,11 @@ RigidModel.createFromFanVecs = function(vecs) {
  * Creates a model for an open unit circle on the XY plane, where there are two vertexes at each position,
  * one in group 0 and one in group 1. Group 0 and Group 1 are opposite ends of this open dimensionless tube.
  * @param corners
+ * @param {boolean} cap0
+ * @param {boolean} cap1
  * @returns {RigidModel}
  */
-RigidModel.createTube = function(corners) {
-  let m = new RigidModel(), v = [], i;
-  for (i = 0; i < corners; i++) {
-    let a = 2 * Math.PI * i / corners;
-    v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(0)));
-    v.push(m.addVertex(new Vertex().setPositionXYZ(Math.sin(a), Math.cos(a), 0).setColorRGB(1, 1, 1).setGroup(1)));
-  }
-  function face(nw, ne, sw, se) {
-    m.addTriangle(v[nw], v[sw], v[ne]);
-    m.addTriangle(v[se], v[ne], v[sw]);
-  }
-  for (i = 0; i < v.length; i += 2) {
-    // 0 2
-    // 1 3
-    face(i, (i + 2) % v.length, i + 1, (i + 3) % v.length);
-  }
-  return m;
-};
-
-/**
- * Creates a model for a closed unit circle on the XY plane, where there are two vertexes at each position,
- * one in group 0 and one in group 1. Group 0 and Group 1 are opposite ends of this closed dimensionless tube.
- * @param corners
- * @returns {RigidModel}
- */
-RigidModel.createCylinder = function(corners) {
+RigidModel.createTube = function(corners, cap0, cap1) {
   let m = new RigidModel(), v = [], i;
   for (i = 0; i < corners; i++) {
     let a = 2 * Math.PI * i / corners;
@@ -408,14 +385,26 @@ RigidModel.createCylinder = function(corners) {
     face(i, (i + 2) % edgeVertexCount, i + 1, (i + 3) % edgeVertexCount);
   }
 
-  // cap each end
+  // cap each end?
   for (let group = 0; group < 2; group++) {
-    let centerIndex = m.addVertex(new Vertex().setPositionXYZ(0, 0, 0).setColorRGB(1, 1, 1).setGroup(group));
-    for (let i = 0; i < edgeVertexCount; i += 2) {
-      m.addTriangle(v[(i + group) % edgeVertexCount], v[(i + group + 2) % edgeVertexCount], centerIndex);
+    if ((group === 0 && cap0) || (group === 1 && cap1)) {
+      let centerIndex = m.addVertex(new Vertex().setPositionXYZ(0, 0, 0).setColorRGB(1, 1, 1).setGroup(group));
+      for (let i = 0; i < edgeVertexCount; i += 2) {
+        m.addTriangle(v[(i + group) % edgeVertexCount], v[(i + group + 2) % edgeVertexCount], centerIndex);
+      }
     }
   }
   return m;
+};
+
+/**
+ * Creates a model for a closed unit circle on the XY plane, where there are two vertexes at each position,
+ * one in group 0 and one in group 1. Group 0 and Group 1 are opposite ends of this closed dimensionless tube.
+ * @param corners
+ * @returns {RigidModel}
+ */
+RigidModel.createCylinder = function(corners) {
+  return RigidModel.createTube(corners, true, true);
 };
 
 /**
@@ -509,6 +498,18 @@ RigidModel.createStatGraphSegmentPile = function(pointCount) {
     for (let y = -1; y <= 1; y += 2) {
       for (let x = -1; x <= 1; x += 2) {
         v.push(m.addVertex(new Vertex().setPositionXYZ(x, y, i).setColorRGB(1, 1, 1)));
+      }
+    }
+    // 2   3
+    //
+    // 0   1
+    face(2, 3, 0, 1);
+
+    v.length = 0;
+    for (let y = -1; y <= 1; y += 2) {
+      for (let x = -1; x <= 1; x += 2) {
+        // truncated hyphens on each side of the Y axis
+        v.push(m.addVertex(new Vertex().setPositionXYZ(y * 0.9 + x, 0, i).setColorRGB(1, 1, 1)));
       }
     }
     // 2   3
