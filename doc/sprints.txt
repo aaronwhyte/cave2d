@@ -369,7 +369,64 @@ v Fix iOS sound
     v set it from setStatGraphData? or further up.
   v shader
     v see pseudocode in graphing.txt
-  - polyline little end-caps (do those last)
+  x polyline little end-caps (do those last)
+  - fix near-invisible vertical lines by adjusing line model
+
+- swarm draw!
+  * merge a bunch of drawings of the same model together with a single draw call.
+  v make testlevel with a bajillion ants and stuff, to actually stress this stunningly powerful laptop
+  v make sure it's easy to set an array of matrixes
+  - SWARM_MAX constant for number of things to draw at once, max. Set it to 10 for now.
+  - make some parallel arrays
+    - uModelMatrixList[SWARM_MAX]
+    - uColorVecList[SWARM_MAX]
+  - Swarm class that owns SWARM_MAX stamps for the same base model
+    - each vertex knows its index in the matrix/color lists - new attribute integer I guess.
+    - make models that contain 1, 2, 3, 4, 5.... up to SWARM_MAX models
+    - register the thing with the renderer
+  - renderer will buffer draw calls for these models.
+    - map swarmId to registered Swarm classes
+    - swarmDraw(swarmId, modelMatrix, colorVec).
+      - buffer the values in the appropriate swarm
+      - buffer the current color vec likewise
+      - flush if SWARM_MAX is hit
+        - draw 'em all at once using the SWARM_MAX-count model
+        - clear the buffers
+    - renderer method to flush all swarms, using that swarm's remaining count model
+  - vertex shader "swarm" type
+    - vertex looks its model matrix and color matrix up in the uniform arrays
+  - convert ants to swarm-style
+    - see if it makes things faster
+      - try different values for N
+        - 1
+        - 5
+        - 10
+        - 20
+        - 50
+        - 100
+  - check on slow iPad
+
+- stats III: bars, numbers, and labels
+  - one row:
+    - fast single rectangle bar
+    - instant vs slow-changing average (use Printer for display first)
+    - static label (also use Printer first)
+  - high-level
+    - frames/sec
+    - clocks/sec
+  - breakdown
+    - stats ms
+    - draw ms
+    - spirits ms
+    - phy ms
+  - physics stats
+    - rayscans/sec
+    - events/sec?
+    - collision calcs/sec
+Haha maybe just dump it all to text in the console, I mean jeez.
+
+  - make labels into solid models
+  - update bars to be short area graphs?
 
 
 - Debug Undo/Redo
