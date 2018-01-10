@@ -50,7 +50,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.dirty = false;
   this.somethingMoving = false;
 
-  var self = this;
+  let self = this;
 
   this.pauseDownFn = function(e) {
     e = e || window.event;
@@ -109,9 +109,9 @@ WorldScreen.prototype.getPathDuration = function() {
  * @returns {SpiritConfig}
  */
 WorldScreen.prototype.createSpiritConfig = function(type, ctor, menuItemName, group, rank, factory) {
-  var model = ctor.createModel();
-  var stamp = model.createModelStamp(this.renderer.gl);
-  var menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, factory || ctor.factory) : null;
+  let model = ctor.createModel();
+  let stamp = model.createModelStamp(this.renderer.gl);
+  let menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, factory || ctor.factory) : null;
   return new SpiritConfig(type, ctor, stamp, menuItemConfig);
 };
 
@@ -245,7 +245,7 @@ WorldScreen.prototype.setPointerLockAllowed = function(allowed) {
 };
 
 WorldScreen.prototype.initWorld = function() {
-  var groupCount = Object.keys(this.getHitGroups()).length;
+  let groupCount = Object.keys(this.getHitGroups()).length;
   this.world = new World(this.bitSize * BitGrid.BITS, groupCount, this.getHitPairs(), this.getSpiritFactory());
   this.resolver = new HitResolver();
   this.bitGrid = new BitGrid(this.bitSize);
@@ -253,7 +253,7 @@ WorldScreen.prototype.initWorld = function() {
 };
 
 WorldScreen.prototype.getResizeFn = function() {
-  var self = this;
+  let self = this;
   return function() {
     self.controller.requestAnimation();
   }
@@ -264,8 +264,8 @@ WorldScreen.prototype.getResizeFn = function() {
  */
 WorldScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
-  var list = this.listeners.getValues();
-  for (var i = 0; i < list.length; i++) {
+  let list = this.listeners.getValues();
+  for (let i = 0; i < list.length; i++) {
     if (listen) {
       list[i].startListening();
     } else {
@@ -295,7 +295,7 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
   // update cuboids
   this.canvasCuboid.pos.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0);
   this.canvasCuboid.rad.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0.99);
-  for (var i = 0; i < this.cuboidRules.length; i++) {
+  for (let i = 0; i < this.cuboidRules.length; i++) {
     this.cuboidRules[i].apply();
   }
 
@@ -343,14 +343,14 @@ WorldScreen.prototype.hidePauseMenu = function() {
 
 WorldScreen.prototype.clock = function(startTimeMs) {
   if (this.paused) return;
-  var endTimeMs = startTimeMs + this.getMsUntilClockAbort();
-  var startClock = this.world.now;
-  var endClock = startClock + this.getClocksPerFrame() * this.timeMultiplier;
+  let endTimeMs = startTimeMs + this.getMsUntilClockAbort();
+  let startClock = this.world.now;
+  let endClock = startClock + this.getClocksPerFrame() * this.timeMultiplier;
 
   this.somethingMoving = this.isPlaying();
   if (!this.isPlaying()) {
     // editing!
-    for (var id in this.world.spirits) {
+    for (let id in this.world.spirits) {
       if (this.world.bodies[this.world.spirits[id].bodyId].isMoving()) {
         this.somethingMoving = true;
         break;
@@ -370,7 +370,7 @@ WorldScreen.prototype.clock = function(startTimeMs) {
     // then we might never make progress on physics again.
     endTimeMs = Math.max(performance.now() + WorldScreen.MINIMUM_PHYSICS_MS, endTimeMs);
 
-    var e = this.world.getNextEvent();
+    let e = this.world.getNextEvent();
     while (e && e.time <= endClock && performance.now() < endTimeMs) {
       this.world.processNextEventWithoutFreeing();
       if (e.type === WorldEvent.TYPE_HIT) {
@@ -430,18 +430,18 @@ WorldScreen.prototype.getSpiritForBody = function(b) {
 };
 
 WorldScreen.prototype.bodyIfSpiritType = function(type, b0, opt_b1) {
-  var s0 = this.getSpiritForBody(b0);
+  let s0 = this.getSpiritForBody(b0);
   if (s0 && s0.type === type) return b0;
   if (opt_b1) {
-    var s1 = this.getSpiritForBody(opt_b1);
+    let s1 = this.getSpiritForBody(opt_b1);
     if (s1 && s1.type === type) return opt_b1;
   }
   return null;
 };
 
 WorldScreen.prototype.onHitEvent = function(e) {
-  var b0 = this.world.getBodyByPathId(e.pathId0);
-  var b1 = this.world.getBodyByPathId(e.pathId1);
+  let b0 = this.world.getBodyByPathId(e.pathId0);
+  let b1 = this.world.getBodyByPathId(e.pathId1);
 
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
@@ -461,7 +461,7 @@ WorldScreen.prototype.getPixelsPerMeter = function() {
 WorldScreen.prototype.updateViewMatrix = function() {
   // scale
   this.viewMatrix.toIdentity();
-  var pixelsPerMeter = this.getPixelsPerMeter();
+  let pixelsPerMeter = this.getPixelsPerMeter();
   this.viewMatrix
       .multiply(this.mat44.toScaleOpXYZ(
           pixelsPerMeter / this.canvas.width,
@@ -469,7 +469,7 @@ WorldScreen.prototype.updateViewMatrix = function() {
           0.2));
 
   // center
-  var camera = this.getCamera();
+  let camera = this.getCamera();
   this.viewMatrix.multiply(this.mat44.toTranslateOpXYZ(
       -camera.getX(),
       -camera.getY(),
@@ -504,7 +504,7 @@ WorldScreen.prototype.getBodyById = function(id) {
 };
 
 WorldScreen.prototype.removeByBodyId = function(bodyId) {
-  var body = this.world.getBody(bodyId);
+  let body = this.world.getBody(bodyId);
   if (body) {
     if (body.spiritId) {
       this.world.removeSpiritId(body.spiritId);
@@ -553,7 +553,7 @@ WorldScreen.prototype.getSpiritPairMatchingTypes = function(pair, spiritType0, s
     return pair;
   }
   if (pair[0].type === spiritType1 && pair[1].type === spiritType0) {
-    var temp = pair[0];
+    let temp = pair[0];
     pair[0] = pair[1];
     pair[1] = temp;
     return pair;
@@ -574,15 +574,15 @@ WorldScreen.prototype.getSpiritPairMatchingTypes = function(pair, spiritType0, s
  * @returns {number} fraction (0-1) of vel where the hit happened, or -1 if there was no hit.
  */
 WorldScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
-  var resp = opt_resp || this.scanResp;
+  let resp = opt_resp || this.scanResp;
   this.scanReq.hitGroup = hitGroup;
   // write the body's position into the req's position slot.
   this.scanReq.pos.set(pos);
   this.scanReq.vel.set(vel);
   this.scanReq.shape = Body.Shape.CIRCLE;
   this.scanReq.rad = rad;
-  var retval = -1;
-  var hit = this.world.rayscan(this.scanReq, resp);
+  let retval = -1;
+  let hit = this.world.rayscan(this.scanReq, resp);
   if (hit) {
     retval = resp.timeOffset;
   }
@@ -611,13 +611,13 @@ WorldScreen.prototype.now = function() {
 };
 
 WorldScreen.prototype.drawSpirits = function() {
-  for (var id in this.world.spirits) {
+  for (let id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
 };
 
 WorldScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
-  var changedCellIds = this.tileGrid.drawTerrainPill(pos0, pos1, rad, color);
+  let changedCellIds = this.tileGrid.drawTerrainPill(pos0, pos1, rad, color);
   if (changedCellIds.length) {
     this.setDirty(true);
   }
@@ -627,7 +627,7 @@ WorldScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
  * Draws all the tiles that overlap the screen.
  */
 WorldScreen.prototype.drawTiles = function() {
-  var camera = this.getCamera();
+  let camera = this.getCamera();
   if (this.tileGrid) {
     this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
     this.tileGrid.drawTiles(camera.getX(), camera.getY(), this.getPixelsPerGridCell());
@@ -651,21 +651,21 @@ WorldScreen.prototype.getPixelsPerGridCell = function() {
 };
 
 WorldScreen.prototype.approxViewportsFromCamera = function(v) {
-  var camera = this.getCamera();
-  var ppm = this.getPixelsPerMeter();
+  let camera = this.getCamera();
+  let ppm = this.getPixelsPerMeter();
   return Math.max(
       Math.abs(camera.getX() - v.x) * ppm / this.canvas.width,
       Math.abs(camera.getY() - v.y) * ppm / this.canvas.height);
 };
 
 WorldScreen.prototype.worldToJson = function() {
-  var worldJsoner = new WorldJsoner();
-  var self = this;
+  let worldJsoner = new WorldJsoner();
+  let self = this;
   worldJsoner.setIsBodySerializableFn(function(body) {
     return body.hitGroup !== self.getWallHitGroup();
   });
   worldJsoner.roundBodyVelocities(this.world, WorldScreen.ROUND_VELOCITY_TO_NEAREST);
-  var json = worldJsoner.worldToJson(this.world);
+  let json = worldJsoner.worldToJson(this.world);
   json.terrain = this.bitGrid.toJSON();
   json.cameraPos = this.getCamera().cameraPos.toJSON();
 
@@ -680,7 +680,7 @@ WorldScreen.prototype.worldToJson = function() {
  * @param {Object} json
  */
 WorldScreen.prototype.loadWorldFromJson = function(json) {
-  var worldJsoner = new WorldJsoner();
+  let worldJsoner = new WorldJsoner();
   worldJsoner.loadWorldFromJson(this.world, json);
   this.bitGrid = BitGrid.fromJSON(json.terrain);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
@@ -700,11 +700,11 @@ WorldScreen.prototype.loadWorldFromJson = function(json) {
  * @return the new spiritId or null
  */
 WorldScreen.prototype.addItem = function(name, pos, dir) {
-  var configs = this.getSpiritConfigs();
-  for (var t in configs) {
-    var config = configs[t];
+  let configs = this.getSpiritConfigs();
+  for (let t in configs) {
+    let config = configs[t];
     if (config.menuItemConfig && config.menuItemConfig.itemName === name) {
-      var spiritId = config.menuItemConfig.factory(this, config.stamp, pos, dir);
+      let spiritId = config.menuItemConfig.factory(this, config.stamp, pos, dir);
       this.setDirty(true);
       return spiritId;
     }
@@ -716,9 +716,9 @@ WorldScreen.prototype.unloadLevel = function() {
   this.tileGrid.unloadAllCells();
   this.tileGrid = null;
   if (this.world) {
-    for (var spiritId in this.world.spirits) {
-      var s = this.world.spirits[spiritId];
-      var b = this.world.bodies[s.bodyId];
+    for (let spiritId in this.world.spirits) {
+      let s = this.world.spirits[spiritId];
+      let b = this.world.bodies[s.bodyId];
       if (b) {
         this.world.removeBodyId(b.id);
       }
@@ -739,45 +739,45 @@ WorldScreen.prototype.unloadLevel = function() {
 ///////////
 
 WorldScreen.prototype.initStatMons = function() {
-  var framesPerRightSample = 3;
-  var samplesPerRightGraph = Renderer.POLY_LINE_POINT_COUNT;
+  let framesPerRightSample = 3;
+  let samplesPerRightGraph = Renderer.POLY_LINE_POINT_COUNT;
 
-  var framesPerLeftSample = Renderer.POLY_LINE_POINT_COUNT;
-  var samplesPerLeftGraph = Renderer.POLY_LINE_POINT_COUNT;
+  let framesPerLeftSample = Renderer.POLY_LINE_POINT_COUNT;
+  let samplesPerLeftGraph = Renderer.POLY_LINE_POINT_COUNT;
 
-  this.graphsCuboid = new Cuboid();
+  this.statsCuboid = new Cuboid();
   this.bottomRightCuboid = new Cuboid();
   this.topRightCuboid = new Cuboid();
   this.bottomLeftCuboid = new Cuboid();
   this.topLeftCuboid = new Cuboid();
 
-  var graphWidthFrac = 1;
-  var dotSize = 8;
-  var lineWidth = 2;
-  var margin = 0;
-  var borderColor = new Vec4(0.6, 0.6, 0.6);
-  var stripeColor = borderColor;
+  let graphWidthFrac = 1;
+  let dotSize = 8;
+  let lineWidth = 2;
+  let margin = 0;
+  let borderColor = new Vec4(0.6, 0.6, 0.6);
+  let stripeColor = borderColor;
 
-  this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.graphsCuboid)
+  this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.statsCuboid)
       .setSizingMax(new Vec4(1/2, 1/2, 1), new Vec4(200, 100, Infinity))
       .setAspectRatio(new Vec4(2, 1, 0))
       .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-margin, -margin, 0))
       .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0)));
 
-  this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.bottomRightCuboid)
+  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.bottomRightCuboid)
       .setSizingMax(new Vec4(graphWidthFrac / 2, 1/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(1, 1, 0), Vec4.ZERO)
       .setTargetAnchor(new Vec4(1, 1, 0), Vec4.ZERO));
-  this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.bottomLeftCuboid)
+  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.bottomLeftCuboid)
       .setSizingMax(new Vec4(graphWidthFrac / 2, 1/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(-1, 1, 0), new Vec4(-margin, 0, 0))
       .setTargetAnchor(new Vec4(-1, 1, 0), Vec4.ZERO));
 
-  this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.topRightCuboid)
+  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.topRightCuboid)
       .setSizingMax(new Vec4(graphWidthFrac / 2, 3/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(1, -1, 0), new Vec4(0, -margin, 0))
       .setTargetAnchor(new Vec4(1, -1, 0), Vec4.ZERO));
-  this.cuboidRules.push(new CuboidRule(this.graphsCuboid, this.topLeftCuboid)
+  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.topLeftCuboid)
       .setSizingMax(new Vec4(graphWidthFrac / 2, 3/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(-1, -1, 0), new Vec4(-margin, -margin, 0))
       .setTargetAnchor(new Vec4(-1, -1, 0), Vec4.ZERO));
@@ -877,14 +877,14 @@ WorldScreen.prototype.initStatMons = function() {
 };
 
 WorldScreen.prototype.sampleStats = function() {
-  var i;
+  let i;
   if (this.rightStatMons) {
-    for (i = 0; i < this.rightStatMons.length; i++) {
+    for (let i = 0; i < this.rightStatMons.length; i++) {
       this.rightStatMons[i].sample();
     }
   }
   if (this.leftStatMons) {
-    for (i = 0; i < this.leftStatMons.length; i++) {
+    for (let i = 0; i < this.leftStatMons.length; i++) {
       this.leftStatMons[i].sample();
     }
   }
@@ -892,12 +892,12 @@ WorldScreen.prototype.sampleStats = function() {
 
 WorldScreen.prototype.drawStats = function() {
   if (this.drawLeftGraphs && this.leftStatMons) {
-    for (var i = 0; i < this.leftStatMons.length; i++) {
+    for (let i = 0; i < this.leftStatMons.length; i++) {
       this.leftStatMons[i].draw(this.canvas.width, this.canvas.height);
     }
   }
   if (this.drawRightGraphs && this.rightStatMons) {
-    for (var i = 0; i < this.rightStatMons.length; i++) {
+    for (let i = 0; i < this.rightStatMons.length; i++) {
       this.rightStatMons[i].draw(this.canvas.width, this.canvas.height);
     }
   }
