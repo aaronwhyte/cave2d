@@ -372,6 +372,46 @@ v graph rendering II
   x polyline little end-caps (do those last)
   v fix near-invisible vertical lines by adjusing line model
 
+- stats III: more collection and presentation
+  - collection
+    - realtime rates
+      - frames/sec
+      - clocks/sec
+    - frame breakdown
+      - delay ms
+      - stats ms (includes draw)
+      - controls ms
+      - wall draw ms
+      - sprite draw ms
+      - splash draw ms
+      - phy events ms (last but has minimums)
+      - total ms
+      - end-to-end ms (indicates skipped frames)
+    - physics rates
+      - collision calcs/clock (includes misses)
+      - rayscans/clock
+      - timeout events/clock
+      - phy event queue
+        - cell enter events/clock
+        - cell exit events/clock
+        - hit events/clock
+    - graphics rates
+      - GL draw calls per sec
+  - processing
+    - statTrails are nice
+    - last sampled value, for drawing
+    - slow-fade min and max to make spikes more obvious
+    - low-pass running average, for text
+  - presentation
+    - dump to console every N
+    - one row:
+      - fast single rectangle bar
+      - instant vs slow-changing average (use Printer for display first)
+      - static label (also use Printer first)
+Haha maybe just dump it all to text in the console, I mean jeez.
+  - make labels into solid models
+  - update bars to be short area graphs?
+
 - swarm draw!
   * merge a bunch of drawings of the same model together with a single draw call.
   v make testlevel with a bajillion ants and stuff, to actually stress this stunningly powerful laptop
@@ -405,29 +445,6 @@ v graph rendering II
         - 50
         - 100
   - check on slow iPad
-
-- stats III: bars, numbers, and labels
-  - one row:
-    - fast single rectangle bar
-    - instant vs slow-changing average (use Printer for display first)
-    - static label (also use Printer first)
-  - high-level
-    - frames/sec
-    - clocks/sec
-  - breakdown
-    - stats ms
-    - draw ms
-    - spirits ms
-    - phy ms
-  - physics stats
-    - rayscans/sec
-    - events/sec?
-    - collision calcs/sec
-Haha maybe just dump it all to text in the console, I mean jeez.
-
-  - make labels into solid models
-  - update bars to be short area graphs?
-
 
 - Debug Undo/Redo
   * undo reverts too much
