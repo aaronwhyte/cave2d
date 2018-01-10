@@ -82,7 +82,7 @@ function Game3BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adve
     e.preventDefault();
   };
 
-  this.drawScans = false;
+  this.shouldDrawScans = false;
 
   this.playerChasePolarity = 1;
 }
@@ -591,7 +591,7 @@ Game3BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
   if (hit) {
     retval = resp.timeOffset;
   }
-  if (this.drawScans) {
+  if (this.shouldDrawScans) {
     this.addScanSplash(pos, vel, rad, retval);
   }
   return retval;

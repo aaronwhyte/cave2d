@@ -26,7 +26,7 @@ function Game2BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.playerAveragePos = new Vec2d();
   this.levelColorVector.setRGBA(0.2, 0.3, 0.8, 1);
   this.timeMultiplier = 1;
-  this.drawScans = false;
+  this.shouldDrawScans = false;
   this.playerChasePolarity = 1;
 }
 Game2BaseScreen.prototype = new WorldScreen();

@@ -123,7 +123,7 @@ TestLevelPage.prototype.refreshPauseMenu = function() {
   e.defaultChecked = false;
   var self = this;
   e.addEventListener('change', function(element) {
-    self.screen.drawScans = element.target.checked;
+    self.screen.shouldDrawScans = element.target.checked;
   });
   e = Dom.ce('span', label);
   e.innerHTML = Strings.textToHtml(' draw rayscans');

@@ -16,6 +16,8 @@ function Game4EditScreen(controller, canvas, renderer, stamps, sfx, adventureNam
     self.testTriggerWidget.setKeyboardTipTimeoutMs(ms);
     self.editor.setKeyboardTipTimeoutMs(ms);
   };
+
+  this.shouldDrawStats = true;
 }
 Game4EditScreen.prototype = new Game4BaseScreen();
 Game4EditScreen.prototype.constructor = Game4EditScreen;

@@ -34,7 +34,7 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.initStatMons();
 
-  this.drawScans = false;
+  this.shouldDrawScans = false;
   this.drawLeftGraphs = false;
   this.drawRightGraphs = false;
 }

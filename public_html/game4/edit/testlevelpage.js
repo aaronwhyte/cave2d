@@ -17,14 +17,14 @@ TestLevelPage.prototype.constructor = TestLevelPage;
 TestLevelPage.prototype.maybeSaveLevel = function() {};
 
 TestLevelPage.prototype.refreshPauseMenu = function() {
-  var df = document.createDocumentFragment();
-  var e;
+  let df = document.createDocumentFragment();
+  let e;
 
-  var nav = Dom.ce('div', df, 'levelEditorNav');
+  let nav = Dom.ce('div', df, 'levelEditorNav');
 
   e = Dom.ce('div', nav);
   e = Dom.ce('a', e);
-  var query = {};
+  let query = {};
   query[EditorApp.PARAM_ADVENTURE_NAME] = this.adventureName;
   e.href = '#' + Url.encodeQuery(query);
   e.innerHTML = Strings.textToHtml(this.adventureName);
@@ -42,46 +42,32 @@ TestLevelPage.prototype.refreshPauseMenu = function() {
 };
 
 TestLevelPage.prototype.appendDebugOptions = function(df) {
-  var debug = Dom.ce('div', df, 'levelEditorDebugOptions');
+  let debug = Dom.ce('div', df, 'levelEditorDebugOptions');
+  let self = this;
+  let label, e;
 
-  var label = Dom.ce('label', debug);
-  var e = Dom.ce('input', label);
+  label = Dom.ce('label', debug);
+  e = Dom.ce('input', label);
   e.type = 'checkbox';
   e.defaultChecked = false;
-  var self = this;
   e.addEventListener('change', function(element) {
-    self.screen.drawScans = element.target.checked;
+    self.screen.shouldDrawScans = element.target.checked;
   });
   e = Dom.ce('span', label);
   e.innerHTML = Strings.textToHtml(' draw rayscans');
 
   Dom.ce('br', debug);
 
-  var label = Dom.ce('label', debug);
+  label = Dom.ce('label', debug);
   e = Dom.ce('input', label);
   e.type = 'checkbox';
-  e.defaultChecked = false;
-  var self = this;
+  e.defaultChecked = true;
   e.addEventListener('change', function(element) {
-    self.screen.drawLeftGraphs = element.target.checked;
+    self.screen.shouldDrawStats = element.target.checked;
     self.requestAnimation();
   });
   e = Dom.ce('span', label);
-  e.innerHTML = Strings.textToHtml(' slow graphs');
-
-  Dom.ce('br', debug);
-
-  var label = Dom.ce('label', debug);
-  e = Dom.ce('input', label);
-  e.type = 'checkbox';
-  e.defaultChecked = false;
-  var self = this;
-  e.addEventListener('change', function(element) {
-    self.screen.drawRightGraphs = element.target.checked;
-    self.requestAnimation();
-  });
-  e = Dom.ce('span', label);
-  e.innerHTML = Strings.textToHtml(' fast graphs');
+  e.innerHTML = Strings.textToHtml(' show stats');
 };
 
 TestLevelPage.prototype.maybeCreateScreen = function() {

@@ -39,7 +39,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.bitSize = 0.5;
   this.levelModelMatrix = new Matrix44();
   this.levelColorVector = new Vec4(0.4, 0.4, 0.4);
-  this.drawScans = false;
+  this.shouldDrawScans = false;
 
   this.timeMultiplier = 1;
 
@@ -69,6 +69,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
 
   this.canvasCuboid = new Cuboid();
   this.cuboidRules = [];
+  this.shouldDrawStats = false;
 }
 
 WorldScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
@@ -578,8 +579,8 @@ WorldScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
   if (hit) {
     retval = resp.timeOffset;
   }
-  // TODO drawScans is not a great API.
-  if (this.drawScans) {
+  // TODO shouldDrawScans is not a great API.
+  if (this.shouldDrawScans) {
     this.addScanSplash(pos, vel, rad, retval);
   }
   return retval;
@@ -731,24 +732,16 @@ WorldScreen.prototype.unloadLevel = function() {
 ///////////
 
 WorldScreen.prototype.initStatMons = function() {
-  let framesPerRightSample = 3;
-  let samplesPerRightGraph = Renderer.POLY_LINE_POINT_COUNT;
-
-  let framesPerLeftSample = Renderer.POLY_LINE_POINT_COUNT;
-  let samplesPerLeftGraph = Renderer.POLY_LINE_POINT_COUNT;
+  let framesPerSample = 3;
+  let samplesPerGraph = Renderer.POLY_LINE_POINT_COUNT;
 
   this.statsCuboid = new Cuboid();
-  this.bottomRightCuboid = new Cuboid();
-  this.topRightCuboid = new Cuboid();
-  this.bottomLeftCuboid = new Cuboid();
-  this.topLeftCuboid = new Cuboid();
+  this.bottomStatsCuboid = new Cuboid();
+  this.topStatsCuboid = new Cuboid();
 
   let graphWidthFrac = 1;
-  let dotSize = 8;
-  let lineWidth = 2;
   let margin = 0;
   let borderColor = new Vec4(0.6, 0.6, 0.6);
-  let stripeColor = borderColor;
 
   this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.statsCuboid)
       .setSizingMax(new Vec4(1/2, 1/2, 1), new Vec4(200, 100, Infinity))
@@ -756,140 +749,74 @@ WorldScreen.prototype.initStatMons = function() {
       .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-margin, -margin, 0))
       .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0)));
 
-  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.bottomRightCuboid)
+  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.bottomStatsCuboid)
       .setSizingMax(new Vec4(graphWidthFrac / 2, 1/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(1, 1, 0), Vec4.ZERO)
       .setTargetAnchor(new Vec4(1, 1, 0), Vec4.ZERO));
-  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.bottomLeftCuboid)
-      .setSizingMax(new Vec4(graphWidthFrac / 2, 1/4, 1), Vec4.INFINITY)
-      .setSourceAnchor(new Vec4(-1, 1, 0), new Vec4(-margin, 0, 0))
-      .setTargetAnchor(new Vec4(-1, 1, 0), Vec4.ZERO));
 
-  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.topRightCuboid)
+  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.topStatsCuboid)
       .setSizingMax(new Vec4(graphWidthFrac / 2, 3/4, 1), Vec4.INFINITY)
       .setSourceAnchor(new Vec4(1, -1, 0), new Vec4(0, -margin, 0))
       .setTargetAnchor(new Vec4(1, -1, 0), Vec4.ZERO));
-  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.topLeftCuboid)
-      .setSizingMax(new Vec4(graphWidthFrac / 2, 3/4, 1), Vec4.INFINITY)
-      .setSourceAnchor(new Vec4(-1, -1, 0), new Vec4(-margin, -margin, 0))
-      .setTargetAnchor(new Vec4(-1, -1, 0), Vec4.ZERO));
 
-  this.rightStatMons = [];
-  this.leftStatMons = [];
-  this.rightStatMons.push(new StatMon(
+  this.statMons = [];
+  this.statMons.push(new StatMon(
       stats, STAT_NAMES.WORLD_TIME,
-      framesPerRightSample, samplesPerRightGraph,
+      framesPerSample, samplesPerGraph,
       0, this.getClocksPerFrame(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.bottomRightCuboid)
-      .setBorderColor(stripeColor)
-      .setGraphColor(new Vec4(1, 1, 1))
-      .setLineWidth(dotSize));
-  this.leftStatMons.push(new StatMon(
-      stats, STAT_NAMES.WORLD_TIME,
-      framesPerLeftSample, samplesPerLeftGraph,
-      0, this.getClocksPerFrame(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.bottomLeftCuboid)
+      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.bottomStatsCuboid)
       .setBorderColor(borderColor)
-      .setGraphColor(new Vec4(1, 1, 1))
-      .setLineWidth(lineWidth));
+      .setGraphColor(new Vec4(1, 1, 1)));
 
   // PURPLE: overhead to get to draw screen - mostly clearing the screen
-  this.rightStatMons.push(new StatMon(
+  this.statMons.push(new StatMon(
       stats, STAT_NAMES.TO_DRAWSCREEN_MS,
-      framesPerRightSample, samplesPerRightGraph,
+      framesPerSample, samplesPerGraph,
       0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
+      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topStatsCuboid)
       .setGraphColor(new Vec4(1, 0, 1))
-      .setBorderWidth(0)
-      .setLineWidth(dotSize));
-  this.leftStatMons.push(new StatMon(
-      stats, STAT_NAMES.TO_DRAWSCREEN_MS,
-      framesPerLeftSample, samplesPerLeftGraph,
-      0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
-      .setGraphColor(new Vec4(1, 0, 1))
-      .setBorderWidth(0)
-      .setLineWidth(lineWidth));
+      .setBorderWidth(0));
 
   // GREEN: ..through the stat drawing itself..
-  this.rightStatMons.push(new StatMon(
+  this.statMons.push(new StatMon(
       stats, STAT_NAMES.STAT_DRAWING_MS,
-      framesPerRightSample, samplesPerRightGraph,
+      framesPerSample, samplesPerGraph,
       0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
+      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topStatsCuboid)
       .setGraphColor(new Vec4(0, 1, 0))
-      .setBorderWidth(0)
-      .setLineWidth(dotSize));
-  this.leftStatMons.push(new StatMon(
-      stats, STAT_NAMES.STAT_DRAWING_MS,
-      framesPerLeftSample, samplesPerLeftGraph,
-      0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
-      .setGraphColor(new Vec4(0, 1, 0))
-      .setBorderWidth(0)
-      .setLineWidth(lineWidth));
+      .setBorderWidth(0));
 
   // RED: ..through the scene drawing..
-  this.rightStatMons.push(new StatMon(
+  this.statMons.push(new StatMon(
       stats, STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS,
-      framesPerRightSample, samplesPerRightGraph,
+      framesPerSample, samplesPerGraph,
       0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
+      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topStatsCuboid)
       .setGraphColor(new Vec4(1, 0, 0))
-      .setBorderWidth(0)
-      .setLineWidth(dotSize));
-  this.leftStatMons.push(new StatMon(
-      stats, STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS,
-      framesPerLeftSample, samplesPerLeftGraph,
-      0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
-      .setGraphColor(new Vec4(1, 0, 0))
-      .setBorderWidth(0)
-      .setLineWidth(lineWidth));
+      .setBorderWidth(0));
 
   // YELLOW: ..and to the end, which is all physics
-  this.rightStatMons.push(new StatMon(
+  this.statMons.push(new StatMon(
       stats, STAT_NAMES.ANIMATION_MS,
-      framesPerRightSample, samplesPerRightGraph,
+      framesPerSample, samplesPerGraph,
       0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topRightCuboid)
-      .setBorderColor(stripeColor)
-      .setGraphColor(new Vec4(1, 1, 0))
-      .setLineWidth(dotSize));
-  this.leftStatMons.push(new StatMon(
-      stats, STAT_NAMES.ANIMATION_MS,
-      framesPerLeftSample, samplesPerLeftGraph,
-      0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topLeftCuboid)
+      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topStatsCuboid)
       .setBorderColor(borderColor)
-      .setGraphColor(new Vec4(1, 1, 0))
-      .setLineWidth(lineWidth));
-  this.drawLeftGraphs = false;
-  this.drawRightGraphs = false;
+      .setGraphColor(new Vec4(1, 1, 0)));
 };
 
 WorldScreen.prototype.sampleStats = function() {
-  if (this.rightStatMons) {
-    for (let i = 0; i < this.rightStatMons.length; i++) {
-      this.rightStatMons[i].sample();
-    }
-  }
-  if (this.leftStatMons) {
-    for (let i = 0; i < this.leftStatMons.length; i++) {
-      this.leftStatMons[i].sample();
+  if (this.statMons) {
+    for (let i = 0; i < this.statMons.length; i++) {
+      this.statMons[i].sample();
     }
   }
 };
 
 WorldScreen.prototype.drawStats = function() {
-  if (this.drawLeftGraphs && this.leftStatMons) {
-    for (let i = 0; i < this.leftStatMons.length; i++) {
-      this.leftStatMons[i].draw(this.canvas.width, this.canvas.height);
-    }
-  }
-  if (this.drawRightGraphs && this.rightStatMons) {
-    for (let i = 0; i < this.rightStatMons.length; i++) {
-      this.rightStatMons[i].draw(this.canvas.width, this.canvas.height);
+  if (this.shouldDrawStats && this.statMons) {
+    for (let i = 0; i < this.statMons.length; i++) {
+      this.statMons[i].draw(this.canvas.width, this.canvas.height);
     }
   }
 };

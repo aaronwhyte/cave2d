@@ -4,6 +4,8 @@
  */
 function Game4TestScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
   Game4PlayScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+
+  this.shouldDrawStats = true;
 }
 Game4TestScreen.prototype = new Game4PlayScreen();
 Game4TestScreen.prototype.constructor = Game4TestScreen;

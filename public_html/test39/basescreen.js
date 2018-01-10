@@ -518,7 +518,7 @@ BaseScreen.prototype.scan = function(hitGroup, pos, vel, rad, opt_resp) {
   if (hit) {
     retval = resp.timeOffset;
   }
-  if (this.drawScans) {
+  if (this.shouldDrawScans) {
     this.addScanSplash(pos, vel, rad, retval);
   }
   return retval;
