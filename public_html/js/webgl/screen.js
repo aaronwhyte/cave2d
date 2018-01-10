@@ -15,8 +15,9 @@ Screen.prototype.setScreenListening = function(listening) {
 /**
  * Do physics and drawing, optionally lazily initializing first.
  * @param {number} visibility from 0 to 1
+ * @param {number} startTimeMs the actual start time of the frame
  */
-Screen.prototype.drawScreen = function(visibility) {
+Screen.prototype.drawScreen = function(visibility, startTimeMs) {
 };
 
 /**

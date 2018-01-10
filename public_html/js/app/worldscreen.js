@@ -93,10 +93,6 @@ WorldScreen.prototype.getMsUntilClockAbort = function() {
   return this.getMsPerFrame() - 4;
 };
 
-WorldScreen.prototype.getPathDuration = function() {
-  return 0xffff;
-};
-
 /**
  * Util method for creating a SpiritConfig in one line.
  * @param type The spirit.type
@@ -482,10 +478,6 @@ WorldScreen.prototype.updateViewMatrix = function() {
 
 WorldScreen.prototype.getBodyPos = function(body, outVec2d) {
   return body.getPosAtTime(this.world.now, outVec2d);
-};
-
-WorldScreen.prototype.getCanvas = function() {
-  return this.canvas;
 };
 
 WorldScreen.prototype.addListener = function(listener) {
@@ -877,7 +869,6 @@ WorldScreen.prototype.initStatMons = function() {
 };
 
 WorldScreen.prototype.sampleStats = function() {
-  let i;
   if (this.rightStatMons) {
     for (let i = 0; i < this.rightStatMons.length; i++) {
       this.rightStatMons[i].sample();

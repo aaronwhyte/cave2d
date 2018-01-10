@@ -18,8 +18,8 @@ HitResolver.VERIFY_KINETIC_ENERGY_PRESERVED = false;
  * @param {Vec2d} collisionVec
  * @param {Body} b0
  * @param {Body} b1
- * @param {Vec2d} linearForceOut Optional output vec for recording center-to-center force applied to b0, or -f to b1
- * @param {Vec2d} rubForceOut Optional output vec for recording rotational force applied to b0, or -f to b1
+ * @param {Vec2d=} linearForceOut Optional output vec for recording center-to-center force applied to b0, or -f to b1
+ * @param {Vec2d=} rubForceOut Optional output vec for recording rotational force applied to b0, or -f to b1
  * @return true if this resolved the hit, or false if it was ignored, either because both masses were infinite,
  * or because at lease one mass was zero.
  */
