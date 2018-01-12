@@ -373,30 +373,52 @@ v graph rendering II
   v fix near-invisible vertical lines by adjusing line model
 
 - stats III: more collection and presentation
+  * every stat is sampled every frame unless otherwise mentioned
+  v remove global stats biz everywhere
+    v main.js everywhere
+    v all stat collection
+    v all stat rendering. CLEAN SWEEP
+  - add basic stats names & objs per class.
+    - WorldScreen
+      - frameCount variable incremented at the start of every frame
+      - frames/sec rate trail
+        - sample frameCount with time performane.now() at the start of each frame
+      - clocks/frame
+        - world.now sampled with frame number at end of each frame
+    - World
+    - Renderer
+      - draw count rate
+      - actual cumulative time in draw() calls
+
+    - accumulate them up to screen level
+  - New app/StatDash class is responsible for knowing about and displaying stats.
+    - run from WorldScreen
+      - dumbly renders line after line of whatever it is told to do at runtime
+      - WorldScreen asks everybody for their arrays of StatGauges
   - collection
-    - realtime rates
-      - frames/sec
-      - clocks/sec
-    - frame breakdown
-      - delay ms
-      - stats ms (includes draw)
-      - controls ms
-      - wall draw ms
-      - sprite draw ms
-      - splash draw ms
-      - phy events ms (last but has minimums)
-      - total ms
-      - end-to-end ms (indicates skipped frames)
-    - physics rates
-      - collision calcs/clock (includes misses)
-      - rayscans/clock
-      - timeout events/clock
-      - phy event queue
-        - cell enter events/clock
-        - cell exit events/clock
-        - hit events/clock
     - graphics rates
-      - GL draw calls per sec
+      - setAttribute count rate
+      - setUniform count rate
+    - frame ms breakdown
+      - delay ms, reported by the requestAnimationFrame API and now()
+      - validateBodies ms
+      - stats draw ms
+      - controls ms
+      - drawScene ms
+        - wall draw ms
+        - sprite draw ms
+        - splash draw ms
+      - phy events ms (last but has minimums), end-start, each frame
+      - total ms, just like delayMs but do it at the end of the frame
+      - misc ms = everything not in total, each frame
+    - physics world rates
+      - hit-checks, each frame (includes misses)
+      - rayscans, each frame
+      - phy event queue
+        - timeout events, each frame
+        - cell enter events, each frame
+        - cell exit events, each frame
+        - hit events, each frame
   - processing
     - statTrails are nice
     - last sampled value, for drawing

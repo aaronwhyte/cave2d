@@ -71,9 +71,7 @@ Test41EditScreen.prototype.handleInput = function () {
 
 Test41EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
-  var startTime = performance.now();
   this.drawSpirits();
-  stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);

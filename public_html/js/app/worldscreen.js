@@ -72,15 +72,15 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.shouldDrawStats = false;
 }
 
-WorldScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
-
-WorldScreen.MINIMUM_PHYSICS_MS = 2;
-
 WorldScreen.EventLayer = {
   POPUP: 0,
   HUD: 1,
   WORLD: 2
 };
+
+WorldScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
+
+WorldScreen.MINIMUM_PHYSICS_MS = 2;
 
 WorldScreen.prototype.getClocksPerFrame = function() {
   return 0.5;
@@ -278,7 +278,6 @@ WorldScreen.prototype.setScreenListening = function(listen) {
 };
 
 WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
-  stats && stats.add(STAT_NAMES.TO_DRAWSCREEN_MS, performance.now() - startTimeMs);
   if (this.destroyed) {
     console.warn('drawing destroyed screen - ignoring');
     return;
@@ -297,13 +296,11 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
   }
 
   this.drawStats();
-  stats && stats.add(STAT_NAMES.STAT_DRAWING_MS, performance.now() - startTimeMs);
 
   this.world.validateBodies();
 
   this.updateViewMatrix();
   this.drawScene();
-  stats && stats.add(STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS, performance.now() - startTimeMs);
 
   if (visibility === 1) {
     this.clock(startTimeMs);
@@ -388,7 +385,6 @@ WorldScreen.prototype.clock = function(startTimeMs) {
       this.world.now = endClock;
     }
   }
-  stats && stats.set(STAT_NAMES.WORLD_TIME, this.world.now);
   if (this.exitEndTime && this.world.now >= this.exitEndTime) {
     this.exitLevel();
   }
@@ -732,79 +728,20 @@ WorldScreen.prototype.unloadLevel = function() {
 ///////////
 
 WorldScreen.prototype.initStatMons = function() {
-  let framesPerSample = 3;
-  let samplesPerGraph = Renderer.POLY_LINE_POINT_COUNT;
-
   this.statsCuboid = new Cuboid();
-  this.bottomStatsCuboid = new Cuboid();
-  this.topStatsCuboid = new Cuboid();
-
-  let graphWidthFrac = 1;
-  let margin = 0;
-  let borderColor = new Vec4(0.6, 0.6, 0.6);
-
+  let margin = 4;
   this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.statsCuboid)
       .setSizingMax(new Vec4(1/2, 1/2, 1), new Vec4(200, 100, Infinity))
       .setAspectRatio(new Vec4(2, 1, 0))
       .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-margin, -margin, 0))
       .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0)));
-
-  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.bottomStatsCuboid)
-      .setSizingMax(new Vec4(graphWidthFrac / 2, 1/4, 1), Vec4.INFINITY)
-      .setSourceAnchor(new Vec4(1, 1, 0), Vec4.ZERO)
-      .setTargetAnchor(new Vec4(1, 1, 0), Vec4.ZERO));
-
-  this.cuboidRules.push(new CuboidRule(this.statsCuboid, this.topStatsCuboid)
-      .setSizingMax(new Vec4(graphWidthFrac / 2, 3/4, 1), Vec4.INFINITY)
-      .setSourceAnchor(new Vec4(1, -1, 0), new Vec4(0, -margin, 0))
-      .setTargetAnchor(new Vec4(1, -1, 0), Vec4.ZERO));
-
   this.statMons = [];
-  this.statMons.push(new StatMon(
-      stats, STAT_NAMES.WORLD_TIME,
-      framesPerSample, samplesPerGraph,
-      0, this.getClocksPerFrame(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.bottomStatsCuboid)
-      .setBorderColor(borderColor)
-      .setGraphColor(new Vec4(1, 1, 1)));
-
-  // PURPLE: overhead to get to draw screen - mostly clearing the screen
-  this.statMons.push(new StatMon(
-      stats, STAT_NAMES.TO_DRAWSCREEN_MS,
-      framesPerSample, samplesPerGraph,
-      0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topStatsCuboid)
-      .setGraphColor(new Vec4(1, 0, 1))
-      .setBorderWidth(0));
-
-  // GREEN: ..through the stat drawing itself..
-  this.statMons.push(new StatMon(
-      stats, STAT_NAMES.STAT_DRAWING_MS,
-      framesPerSample, samplesPerGraph,
-      0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topStatsCuboid)
-      .setGraphColor(new Vec4(0, 1, 0))
-      .setBorderWidth(0));
-
-  // RED: ..through the scene drawing..
-  this.statMons.push(new StatMon(
-      stats, STAT_NAMES.SCENE_PLUS_STAT_DRAWING_MS,
-      framesPerSample, samplesPerGraph,
-      0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topStatsCuboid)
-      .setGraphColor(new Vec4(1, 0, 0))
-      .setBorderWidth(0));
-
-  // YELLOW: ..and to the end, which is all physics
-  this.statMons.push(new StatMon(
-      stats, STAT_NAMES.ANIMATION_MS,
-      framesPerSample, samplesPerGraph,
-      0, this.getMsUntilClockAbort(),
-      this.renderer, new LineDrawer(this.renderer, this.stamps.lineStamp), this.topStatsCuboid)
-      .setBorderColor(borderColor)
-      .setGraphColor(new Vec4(1, 1, 0)));
 };
 
+/**
+ * Reads the stats from all the statMons.
+ * This is called at the start of a frame.
+ */
 WorldScreen.prototype.sampleStats = function() {
   if (this.statMons) {
     for (let i = 0; i < this.statMons.length; i++) {

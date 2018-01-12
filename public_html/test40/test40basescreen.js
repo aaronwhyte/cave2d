@@ -7,10 +7,6 @@ function Test40BaseScreen(controller, canvas, renderer, stamps, sfx) {
   WorldScreen.call(this, controller, canvas, renderer, stamps, sfx);
 
   this.levelColorVector = new Vec4(0.4, 0.4, 0.4);
-
-  this.initStatMons();
-  this.drawLeftGraphs = true;
-  this.drawRightGraphs = true;
 }
 Test40BaseScreen.prototype = new WorldScreen();
 Test40BaseScreen.prototype.constructor = Test40BaseScreen;

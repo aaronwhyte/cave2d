@@ -110,11 +110,9 @@ Test40EditScreen.prototype.handleInput = function () {
 
 Test40EditScreen.prototype.drawScene = function() {
   this.renderer.setViewMatrix(this.viewMatrix);
-  var startTime = performance.now();
   for (var id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
-  stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
   this.drawTiles();
   this.splasher.draw(this.renderer, this.world.now);

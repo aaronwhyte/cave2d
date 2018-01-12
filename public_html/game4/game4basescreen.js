@@ -32,11 +32,7 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.timeMultiplier = 1;
 
-  this.initStatMons();
-
   this.shouldDrawScans = false;
-  this.drawLeftGraphs = false;
-  this.drawRightGraphs = false;
 }
 Game4BaseScreen.prototype = new WorldScreen();
 Game4BaseScreen.prototype.constructor = Game4BaseScreen;

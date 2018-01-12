@@ -1,19 +1,15 @@
 /**
  * A circular buffer of values and sample times from a single Stats key
- * @param {Stats} stats
- * @param {String} statName
  * @param {Number} length
  * @constructor
  */
-function StatTrail(stats, statName, length) {
-  this.stats = stats;
-  this.statName = statName;
+function StatTrail(length) {
   // interleaved pairs of time, value, time, value, etc.
   this.pairs = new CircularQueue(length * 2);
 }
 
-StatTrail.prototype.sample = function(now) {
-  this.enqueueTimeAndValue(now, this.stats.get(this.statName));
+StatTrail.prototype.sample = function(now, value) {
+  this.enqueueTimeAndValue(now, value);
 };
 
 StatTrail.prototype.enqueueTimeAndValue = function(time, value) {

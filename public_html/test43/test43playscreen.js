@@ -336,8 +336,6 @@ Test43PlayScreen.prototype.handleInput = function () {
 };
 
 Test43PlayScreen.prototype.drawScene = function() {
-  var startTime = performance.now();
-
   // update this.circles to match all the player cameras, or the starting area if there are no players now.
   var pad = Test43PlayScreen.PLAYER_VIEW_RADIUS;
   var circles = this.viewCircles;
@@ -363,7 +361,6 @@ Test43PlayScreen.prototype.drawScene = function() {
   this.renderer.setCircleMode(this.viewCircles);
 
   this.drawSpiritsOverlappingCircles(circles);
-  stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
   this.drawTilesOverlappingCircles(circles);
 

@@ -40,7 +40,7 @@ ScreenPage.prototype.enterDoc = function() {
   if (this.canvas || this.pauseMenuDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
-  var df = document.createDocumentFragment();
+  let df = document.createDocumentFragment();
 
   this.canvas = Dom.ce('canvas', df);
   this.canvas.id = 'canvas';
@@ -50,7 +50,7 @@ ScreenPage.prototype.enterDoc = function() {
   document.body.appendChild(df);
   document.body.classList.add('canvasPage');
 
-  var metaViewport = document.head.querySelector('meta[name="viewport"]');
+  let metaViewport = document.head.querySelector('meta[name="viewport"]');
   this.oldMetaViewportContent = metaViewport.content;
   metaViewport.content = 'width=device-width, user-scalable=no';
 
@@ -60,8 +60,8 @@ ScreenPage.prototype.enterDoc = function() {
   this.sfx.setListenerXYZ(0, 0, 2);
 
   // On-event sound unlocker for iOS.
-  var resumeButton = document.querySelector('#resumeButton');
-  var soundUnlock = this.unlockIosSound.bind(this);
+  let resumeButton = document.querySelector('#resumeButton');
+  let soundUnlock = this.unlockIosSound.bind(this);
   resumeButton.addEventListener('touchend', soundUnlock);
   resumeButton.addEventListener('touchstart', soundUnlock);
   this.canvas.addEventListener('touchend', soundUnlock);
@@ -109,7 +109,7 @@ ScreenPage.prototype.exitDoc = function() {
   this.pauseMenuDiv = null;
   this.animationId = 0;
 
-  var metaViewport = document.head.querySelector('meta[name="viewport"]');
+  let metaViewport = document.head.querySelector('meta[name="viewport"]');
   metaViewport.content = this.oldMetaViewportContent;
   this.oldMetaViewportContent = null;
 };
@@ -128,17 +128,17 @@ ScreenPage.prototype.refreshPauseMenu = function() {
 };
 
 ScreenPage.prototype.appendTitle = function(df) {
-  var e = Dom.ce('div', df, 'gameTitle');
+  let e = Dom.ce('div', df, 'gameTitle');
   e.innerHTML = Strings.textToHtml(this.gameTitle);
 };
 ScreenPage.prototype.appendFullScreenButton = function(df) {
-  var e = Dom.ce('button', df, 'smallButton');
+  let e = Dom.ce('button', df, 'smallButton');
   e.id = 'fullScreenButton';
   e.innerHTML = Strings.textToHtml('full screen');
 };
 
 ScreenPage.prototype.appendResumeButton = function(df, opt_text) {
-  var e = Dom.ce('button', df, 'mainButton');
+  let e = Dom.ce('button', df, 'mainButton');
   e.id = 'resumeButton';
   e.innerHTML = Strings.textToHtml(opt_text || 'resume');
 };
@@ -159,13 +159,13 @@ ScreenPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentSha
     return;
   }
 
-  var gl = getWebGlContext(this.canvas, {
+  let gl = getWebGlContext(this.canvas, {
     alpha: false,
     antialias: true
   });
-  var vs = compileShader(gl, vertexShaderText, gl.VERTEX_SHADER);
-  var fs = compileShader(gl, fragmentShaderText, gl.FRAGMENT_SHADER);
-  var program = createProgram(gl, vs, fs);
+  let vs = compileShader(gl, vertexShaderText, gl.VERTEX_SHADER);
+  let fs = compileShader(gl, fragmentShaderText, gl.FRAGMENT_SHADER);
+  let program = createProgram(gl, vs, fs);
   gl.enable(gl.DEPTH_TEST);
   gl.useProgram(program);
   this.renderer = new Renderer(this.canvas, gl, program);
@@ -192,14 +192,10 @@ ScreenPage.prototype.animateFrame = function(startTimeMs) {
     return;
   }
 
-  this.screen.sampleStats();
   this.animationId = 0;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
   this.screen.drawScreen(1, startTimeMs);
-  if (stats && STAT_NAMES && STAT_NAMES.ANIMATION_MS) {
-    stats.add(STAT_NAMES.ANIMATION_MS, performance.now() - startTimeMs);
-  }
 };
 
 ScreenPage.prototype.requestFullScreen = function() {

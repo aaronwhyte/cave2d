@@ -175,12 +175,10 @@ Test45Page.prototype.animateFrame = function(startTimeMs) {
     console.log('animateFrame with no this.canvas');
     return;
   }
-  this.screen.sampleStats();
   this.animationId = 0;
   this.renderer.resize().clear();
   this.screen.setScreenListening(true);
   this.screen.drawScreen(1, startTimeMs);
-  stats.add(STAT_NAMES.ANIMATION_MS, performance.now() - startTimeMs);
 };
 
 Test45Page.prototype.requestFullScreen = function() {

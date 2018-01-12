@@ -373,8 +373,6 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
 };
 
 Game4PlayScreen.prototype.drawScene = function() {
-  var startTime = performance.now();
-
   this.updateViewCircles();
   this.positionCamera();
   this.updateViewMatrix();
@@ -384,7 +382,6 @@ Game4PlayScreen.prototype.drawScene = function() {
   this.renderer.setTime(this.now());
 
   this.drawSpiritsOverlappingCircles(this.viewCircles);
-  stats.add(STAT_NAMES.DRAW_SPIRITS_MS, performance.now() - startTime);
 
   this.drawTilesOverlappingCircles(this.viewCircles);
   this.splasher.draw(this.renderer, this.world.now);
