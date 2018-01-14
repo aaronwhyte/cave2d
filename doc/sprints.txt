@@ -378,14 +378,23 @@ v graph rendering II
     v main.js everywhere
     v all stat collection
     v all stat rendering. CLEAN SWEEP
-  - add basic stats names & objs per class.
-    - WorldScreen
-      - frameCount variable incremented at the start of every frame
-      - frames/sec rate trail
-        - sample frameCount with time performane.now() at the start of each frame
-      - clocks/frame
-        - world.now sampled with frame number at end of each frame
+  v delete StatRateTrail
+  v add RateStat, with sample(time, value)
+  v add MovingAverageStat also with sample(time, value)
+
+  - add basic raw values
+    v WorldScreen
+      v frameCount
     - World
+      x clocks (done as "now")
+      - body add count
+      - hit-check count
+      - hits enqueued
+      - timeouts enqueued
+      - enterances enqueued
+      - exits enqueued
+      - rayscan count
+      - rayscan hit-check count
     - Renderer
       - draw count rate
       - actual cumulative time in draw() calls

@@ -33,7 +33,7 @@ function StatMon(stats, statName,
   this.borderWidth = 2;
 
   // TODO: also support non-rate trails? Hm.
-  this.trail = new StatRateTrail(stats, this.statName, this.sampleCount);
+  this.trail = new RateStat(stats, this.statName, this.sampleCount);
   this.graph = new StatGraph(this.trail, this.renderer);
   this.graph.setTimespan(this.sampleCount * this.sampleInterval - 1);
   this.graph.setValueRange(minVal, maxVal);

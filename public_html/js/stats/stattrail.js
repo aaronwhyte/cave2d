@@ -1,5 +1,5 @@
 /**
- * A circular buffer of values and sample times from a single Stats key
+ * A circular buffer of pairs of (value, time)
  * @param {Number} length
  * @constructor
  */
