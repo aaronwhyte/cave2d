@@ -382,7 +382,7 @@ v graph rendering II
   v add RateStat, with sample(time, value)
   v add MovingAverageStat also with sample(time, value)
 
-  - add basic raw values
+  v add basic raw values
     v WorldScreen
       v frameCount
     v  World
@@ -394,17 +394,21 @@ v graph rendering II
       v enterOrExitEnqueuedCount
       v rayscan count
       v rayscan hit-check count
-    - Renderer
-      - draw count rate
-      - actual cumulative time in draw() calls
-  - New app/StatDash class is responsible for knowing about and displaying stats.
-    - run from WorldScreen
-      - dumbly renders line after line of whatever it is told to do at runtime
-      - WorldScreen asks everybody for their arrays of StatGauges
-  - collection
-    - graphics rates
-      - setAttribute count rate
-      - setUniform count rate
+    v Renderer
+      v draw count rate
+      v actual cumulative time in draw() calls
+  - processing
+    - statTrails are nice
+    - last sampled value, for drawing
+    - slow-fade min and max to make spikes more obvious
+    - low-pass running average, for text
+  - presentation
+    - dump to console every N
+    - one row:
+      - fast single rectangle bar
+      - instant vs slow-changing average (use Printer for display first)
+      - static label (also use Printer first)
+  - more data!
     - frame ms breakdown
       - delay ms, reported by the requestAnimationFrame API and now()
       - validateBodies ms
@@ -417,25 +421,6 @@ v graph rendering II
       - phy events ms (last but has minimums), end-start, each frame
       - total ms, just like delayMs but do it at the end of the frame
       - misc ms = everything not in total, each frame
-    - physics world rates
-      - hit-checks, each frame (includes misses)
-      - rayscans, each frame
-      - phy event queue
-        - timeout events, each frame
-        - cell enter events, each frame
-        - cell exit events, each frame
-        - hit events, each frame
-  - processing
-    - statTrails are nice
-    - last sampled value, for drawing
-    - slow-fade min and max to make spikes more obvious
-    - low-pass running average, for text
-  - presentation
-    - dump to console every N
-    - one row:
-      - fast single rectangle bar
-      - instant vs slow-changing average (use Printer for display first)
-      - static label (also use Printer first)
 Haha maybe just dump it all to text in the console, I mean jeez.
   - make labels into solid models
   - update bars to be short area graphs?
