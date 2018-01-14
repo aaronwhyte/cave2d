@@ -24,11 +24,11 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   this.groupPairs = opt_groupPairs || [[0, 0]];
   this.spiritFactory = opt_spiritFactory || null;
   this.groupHitsGroups = [];
-  for (var i = 0; i < this.groupPairs.length; i++) {
-    var pair = this.groupPairs[i];
-    for (var a = 0; a < 2; a++) {
-      var b = (a + 1) % 2;
-      var list = this.groupHitsGroups[pair[a]];
+  for (let i = 0; i < this.groupPairs.length; i++) {
+    let pair = this.groupPairs[i];
+    for (let a = 0; a < 2; a++) {
+      let b = (a + 1) % 2;
+      let list = this.groupHitsGroups[pair[a]];
       if (!list) {
         list = this.groupHitsGroups[pair[a]] = [];
       }
@@ -128,8 +128,8 @@ World.prototype.setCell = function(cell, ix, iy) {
 };
 
 World.prototype.removeCell = function(ix, iy) {
-  var index = this.gridIndexForCellCoords(ix, iy);
-  var cell = this.grid[index];
+  let index = this.gridIndexForCellCoords(ix, iy);
+  let cell = this.grid[index];
   if (cell) {
     delete this.grid[index];
     cell.free();
@@ -172,7 +172,7 @@ World.prototype.loadSpirit = function(spirit) {
  * @param id
  */
 World.prototype.removeSpiritId = function(id) {
-  var spirit = this.spirits[id];
+  let spirit = this.spirits[id];
   if (spirit) {
     this.maybeRecordSpiritBefore(id, spirit);
     delete this.spirits[id];
@@ -217,12 +217,12 @@ World.prototype.loadBody = function(body) {
  * @param bodyId
  */
 World.prototype.removeBodyId = function(bodyId) {
-  var body = this.bodies[bodyId];
+  let body = this.bodies[bodyId];
   if (body) {
     this.maybeRecordBodyBefore(bodyId, body);
-    var rect = this.tempRect;
+    let rect = this.tempRect;
     this.getPaddedBodyBoundingRect(body, this.now, rect);
-    var range = this.tempCellRange;
+    let range = this.tempCellRange;
     this.getCellRangeForRect(rect, range);
     this.removeBodyFromCellRange(body, range);
     delete this.bodies[body.id];
@@ -235,9 +235,9 @@ World.prototype.removeBodyId = function(bodyId) {
 };
 
 World.prototype.removeBodyFromCellRange = function(body, cellRange) {
-  for (var iy = cellRange.p0.y; iy <= cellRange.p1.y; iy++) {
-    for (var ix = cellRange.p0.x; ix <= cellRange.p1.x; ix++) {
-      var cell = this.getCell(ix, iy);
+  for (let iy = cellRange.p0.y; iy <= cellRange.p1.y; iy++) {
+    for (let ix = cellRange.p0.x; ix <= cellRange.p1.x; ix++) {
+      let cell = this.getCell(ix, iy);
       if (cell) {
         cell.removePathIdFromGroup(body.pathId, body.hitGroup);
         if (cell.isEmpty()) {
@@ -260,8 +260,8 @@ World.prototype.getBody = function(bodyId) {
  */
 World.prototype.getBodyByPathId = function(pathId) {
   this.validateBodies();
-  var body = this.paths[pathId];
-  if (body && body.pathId != pathId) {
+  let body = this.paths[pathId];
+  if (body && body.pathId !== pathId) {
     delete this.paths[pathId];
     body = null;
   }
@@ -309,11 +309,11 @@ World.prototype.getCellRangeForRect = function(rect, range) {
 };
 
 World.prototype.addPathToGrid = function(body) {
-  var brect = this.getPaddedBodyBoundingRect(body, this.now, this.tempRect);
-  var range = this.getCellRangeForRect(brect, this.tempCellRange);
-  for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
-    for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
-      var cell = this.getCell(ix, iy);
+  let brect = this.getPaddedBodyBoundingRect(body, this.now, this.tempRect);
+  let range = this.getCellRangeForRect(brect, this.tempCellRange);
+  for (let iy = range.p0.y; iy <= range.p1.y; iy++) {
+    for (let ix = range.p0.x; ix <= range.p1.x; ix++) {
+      let cell = this.getCell(ix, iy);
       if (!cell) {
         cell = this.setCell(Cell.alloc(this.getGroupCount()), ix, iy);
       }
@@ -364,26 +364,26 @@ World.prototype.addPathToCell = function(body, cell) {
  * @return {?WorldEvent} if there is an event, or null otherwise.
  */
 World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
-  var v = body.vel;
+  let v = body.vel;
   if (!v[axis]) return null;
-  var perp = Vec2d.otherAxis(axis);
+  let perp = Vec2d.otherAxis(axis);
 
   // Calculate the leading/trailing point "p" on the moving bounding rect.
-  var rect = body.getBoundingRectAtTime(this.now, this.tempRect);
-  var vSign = Vec2d.alloc().set(body.vel).sign();
+  let rect = body.getBoundingRectAtTime(this.now, this.tempRect);
+  let vSign = Vec2d.alloc().set(body.vel).sign();
 
-  var p = Vec2d.alloc().set(rect.rad).multiply(vSign);
+  let p = Vec2d.alloc().set(rect.rad).multiply(vSign);
   if (eventType === WorldEvent.TYPE_GRID_EXIT) {
     p.scale(-1);
   }
   p.add(rect.pos);
 
   // c is the center of the cell that p is in.
-  var c = Vec2d.alloc().set(p).roundToGrid(this.cellSize);
+  let c = Vec2d.alloc().set(p).roundToGrid(this.cellSize);
 
   // Calculate crossing times
-  var e = null;
-  var t = this.now + (c[axis] + 0.5 * vSign[axis] * this.cellSize - p[axis]) / v[axis];
+  let e = null;
+  let t = this.now + (c[axis] + 0.5 * vSign[axis] * this.cellSize - p[axis]) / v[axis];
   if (t < this.now) {
     console.error("oh crap, grid event time < now:", t, this.now);
   } else if (t <= body.getPathEndTime()) {
@@ -415,7 +415,7 @@ World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
  * @param {String} axis The axis along which the object travels (not the axis it crosses)
  */
 World.prototype.addFirstGridEvent = function(body, eventType, axis) {
-  var event = WorldEvent.alloc();
+  let event = WorldEvent.alloc();
   if (this.getFirstGridEvent(body, eventType, axis, event)) {
     this.queue.add(event);
   } else {
@@ -432,24 +432,24 @@ World.prototype.addFirstGridEvent = function(body, eventType, axis) {
  * @return {?WorldEvent} if there is an event, or null otherwise.
  */
 World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
-  var axis = prevEvent.axis;
-  var eventType = prevEvent.type;
-  var v = body.vel;
+  let axis = prevEvent.axis;
+  let eventType = prevEvent.type;
+  let v = body.vel;
   if (!v[axis]) return null;
-  var perp = Vec2d.otherAxis(axis);
+  let perp = Vec2d.otherAxis(axis);
 
-  var vSign = Vec2d.alloc().set(v).sign();
-  var nextCellIndex = prevEvent.cellRange.p0[axis] + vSign[axis];
+  let vSign = Vec2d.alloc().set(v).sign();
+  let nextCellIndex = prevEvent.cellRange.p0[axis] + vSign[axis];
   // What time will the point reach that cell index?
-  var rad = vSign[axis] * (body.shape === Body.Shape.CIRCLE ? body.rad : body.rectRad[axis]);
-  var dest;
+  let rad = vSign[axis] * (body.shape === Body.Shape.CIRCLE ? body.rad : body.rectRad[axis]);
+  let dest;
   if (eventType === WorldEvent.TYPE_GRID_ENTER) {
     dest = (nextCellIndex - 0.5 * vSign[axis]) * this.cellSize - rad;
   } else {
     dest = (nextCellIndex + 0.5 * vSign[axis]) * this.cellSize + rad;
   }
-  var t = body.pathStartTime + (dest - body.pathStartPos[axis]) / v[axis];
-  var e = null;
+  let t = body.pathStartTime + (dest - body.pathStartPos[axis]) / v[axis];
+  let e = null;
   if (t < this.now) {
     console.error("oh crap", t, this.now);
   } else if (t <= body.getPathEndTime()) {
@@ -462,7 +462,7 @@ World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
     // Is the event about entering the next set of cells, or leaving the current one?
     e.cellRange.p0[axis] = e.cellRange.p1[axis] = nextCellIndex;
     // The length of the crossing, in cells, depends on the position of the bounding rect at that time.
-    var rect = this.tempRect;
+    let rect = this.tempRect;
     this.getPaddedBodyBoundingRect(body, t, rect);
     e.cellRange.p0[perp] = this.cellCoord(rect.pos[perp] - rect.rad[perp]);
     e.cellRange.p1[perp] = this.cellCoord(rect.pos[perp] + rect.rad[perp]);
@@ -472,7 +472,7 @@ World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
 };
 
 World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
-  var event = WorldEvent.alloc();
+  let event = WorldEvent.alloc();
   if (this.getSubsequentGridEvent(body, prevEvent, event)) {
     this.queue.add(event);
   } else {
@@ -497,21 +497,21 @@ World.prototype.processNextEvent = function() {
 };
 
 /**
- var * Removes the next event from the queue, and advances the world time to the event time,
+ * Removes the next event from the queue, and advances the world time to the event time,
  * optionally doing some internal processing.
  */
 World.prototype.processNextEventWithoutFreeing = function() {
   this.validateBodies();
-  var e = this.queue.removeFirst();
+  let e = this.queue.removeFirst();
   this.now = e.time;
 
   if (e.type === WorldEvent.TYPE_GRID_ENTER) {
-    var body = this.paths[e.pathId];
-    if (body && body.pathId == e.pathId) {
+    let body = this.paths[e.pathId];
+    if (body && body.pathId === e.pathId) {
       this.addSubsequentGridEvent(body, e);
-      for (var iy = e.cellRange.p0.y; iy <= e.cellRange.p1.y; iy++) {
-        for (var ix = e.cellRange.p0.x; ix <= e.cellRange.p1.x; ix++) {
-          var cell = this.getCell(ix, iy);
+      for (let iy = e.cellRange.p0.y; iy <= e.cellRange.p1.y; iy++) {
+        for (let ix = e.cellRange.p0.x; ix <= e.cellRange.p1.x; ix++) {
+          let cell = this.getCell(ix, iy);
           if (!cell) {
             cell = this.setCell(Cell.alloc(this.getGroupCount()), ix, iy);
           }
@@ -521,8 +521,8 @@ World.prototype.processNextEventWithoutFreeing = function() {
     }
 
   } else if (e.type === WorldEvent.TYPE_GRID_EXIT) {
-    var body = this.paths[e.pathId];
-    if (body && body.pathId == e.pathId) {
+    let body = this.paths[e.pathId];
+    if (body && body.pathId === e.pathId) {
       this.addSubsequentGridEvent(body, e);
       this.removeBodyFromCellRange(body, e.cellRange);
     }
@@ -531,7 +531,7 @@ World.prototype.processNextEventWithoutFreeing = function() {
     // Let the game handle it.
 
   } else if (e.type === WorldEvent.TYPE_TIMEOUT) {
-    var spirit = this.spirits[e.spiritId];
+    let spirit = this.spirits[e.spiritId];
     if (spirit) {
       spirit.onTimeout(this, e.timeoutVal);
     }
@@ -540,7 +540,7 @@ World.prototype.processNextEventWithoutFreeing = function() {
 };
 
 World.prototype.addTimeout = function(time, spiritId, timeoutVal) {
-  var e = WorldEvent.alloc();
+  let e = WorldEvent.alloc();
   e.type = WorldEvent.TYPE_TIMEOUT;
   e.time = time;
   e.spiritId = spiritId;
@@ -565,16 +565,16 @@ World.prototype.loadTimeout = function(e) {
 World.prototype.rayscan = function(req, resp) {
   this.validateBodies();
   this.scannedBodyIds.clear();
-  var foundHit = false;
+  let foundHit = false;
 
   // allocs
-  var rect = this.tempRect;
-  var range = this.tempCellRange;
-  var hitEvent = this.rayscanHitEvent;
-  var xEvent = this.rayscanXEvent;
-  var yEvent = this.rayscanYEvent;
+  let rect = this.tempRect;
+  let range = this.tempCellRange;
+  let hitEvent = this.rayscanHitEvent;
+  let xEvent = this.rayscanXEvent;
+  let yEvent = this.rayscanYEvent;
   // Create a Body based on the ScanRequest.
-  var b = this.rayscanBody;
+  let b = this.rayscanBody;
   b.hitGroup = req.hitGroup;
   b.setPosAtTime(req.pos, this.now);
   b.vel.set(req.vel);
@@ -603,9 +603,9 @@ World.prototype.rayscan = function(req, resp) {
 
   // Process the earliest grid-enter event and generate the next one,
   // until they're later than the max time.
-  var maxTime = this.now + b.pathDurationMax;
-  var eventOut = this.rayscanEventOut;
-  var tmp;
+  let maxTime = this.now + b.pathDurationMax;
+  let eventOut = this.rayscanEventOut;
+  let tmp;
   while (xEvent.time < maxTime || yEvent.time < maxTime) {
     if (xEvent.time < yEvent.time) {
       if (this.getRayscanHit(b, xEvent.cellRange, hitEvent)) {
@@ -737,11 +737,11 @@ World.prototype.getBodyOverlaps = function(body) {
  * @return {Set}
  */
 World.prototype.addCellIdsOverlappingCircle = function(cellIdSet, circle) {
-  var brect = circle.getBoundingRect(this.tempRect);
-  var range = this.getCellRangeForRect(brect, this.tempCellRange);
-  for (var iy = range.p0.y; iy <= range.p1.y; iy++) {
-    for (var ix = range.p0.x; ix <= range.p1.x; ix++) {
-      var cell = this.getCell(ix, iy);
+  let brect = circle.getBoundingRect(this.tempRect);
+  let range = this.getCellRangeForRect(brect, this.tempCellRange);
+  for (let iy = range.p0.y; iy <= range.p1.y; iy++) {
+    for (let ix = range.p0.x; ix <= range.p1.x; ix++) {
+      let cell = this.getCell(ix, iy);
       if (cell) {
         cellIdSet.add(this.gridIndexForCellCoords(ix, iy));
       }
@@ -783,18 +783,18 @@ World.prototype.getPaddedBodyBoundingRect = function(body, time, rectOut) {
 };
 
 World.prototype.unload = function() {
-  for (var spiritId in this.spirits) {
+  for (let spiritId in this.spirits) {
     this.removeSpiritId(spiritId);
   }
-  for (var bodyId in this.bodies) {
+  for (let bodyId in this.bodies) {
     this.removeBodyId(bodyId);
   }
   this.queue.clear();
 };
 
 World.prototype.getQueueAsJson = function() {
-  var json = [];
-  for (var e = this.queue.getFirst(); e; e = e.next[0]) {
+  let json = [];
+  for (let e = this.queue.getFirst(); e; e = e.next[0]) {
     json.push(e.toJSON());
   }
   return json;
@@ -827,29 +827,29 @@ World.prototype.resumeRecordingChanges = function() {
 
 World.prototype.stopRecordingChanges = function() {
   if (!this.isChangeRecordingStarted()) throw Error('change recording was not started');
-  var changes = [];
-  for (var bodyId in this.bodyBefores) {
-    var bodyBefore = this.bodyBefores[bodyId];
-    var body = this.bodies[bodyId];
-    var bodyAfter = body ? body.toJSON() : null;
+  let changes = [];
+  for (let bodyId in this.bodyBefores) {
+    let bodyBefore = this.bodyBefores[bodyId];
+    let body = this.bodies[bodyId];
+    let bodyAfter = body ? body.toJSON() : null;
     // make sure it's not a no-op, like an add and a delete in the same changelist
     if (bodyBefore || bodyAfter) {
       changes.push(new ChangeOp(World.ChangeType.BODY, bodyId, bodyBefore, bodyAfter));
     }
   }
-  for (var spiritId in this.spiritBefores) {
-    var spiritBefore = this.spiritBefores[spiritId];
-    var spirit = this.spirits[spiritId];
-    var spiritAfter = spirit ? spirit.toJSON() : null;
+  for (let spiritId in this.spiritBefores) {
+    let spiritBefore = this.spiritBefores[spiritId];
+    let spirit = this.spirits[spiritId];
+    let spiritAfter = spirit ? spirit.toJSON() : null;
     // make sure it's not a no-op, like an add and a delete in the same changelist
     if (spiritBefore || spiritAfter) {
       changes.push(new ChangeOp(World.ChangeType.SPIRIT, spiritId, spiritBefore, spiritAfter));
     }
   }
-  if (this.nowBefore != this.now) {
+  if (this.nowBefore !== this.now) {
     changes.push(new ChangeOp(World.ChangeType.NOW, 0, this.nowBefore, this.now));
   }
-  var queueAfter = this.getQueueAsJson();
+  let queueAfter = this.getQueueAsJson();
   if (!this.queueJsonsEqual(this.queueBefore, queueAfter)) {
     changes.push(new ChangeOp(World.ChangeType.QUEUE, 0, this.queueBefore, queueAfter));
   }
@@ -864,9 +864,9 @@ World.prototype.stopRecordingChanges = function() {
 World.prototype.queueJsonsEqual = function(a, b) {
   if (!a && !b) return true;
   if (!a || !b) return false;
-  if (a.length != b.length) return false;
-  for (var i = 0; i < a.length; i++) {
-    if (JSON.stringify(a[i]) != JSON.stringify(b[i])) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (JSON.stringify(a[i]) !== JSON.stringify(b[i])) return false;
   }
   return true;
 };
@@ -876,7 +876,7 @@ World.prototype.isChangeRecordingStarted = function() {
 };
 
 World.prototype.applyChanges = function(changes) {
-  for (var i = 0; i < changes.length; i++) {
+  for (let i = 0; i < changes.length; i++) {
     this.applyChange(changes[i]);
   }
 };
@@ -884,7 +884,7 @@ World.prototype.applyChanges = function(changes) {
 World.prototype.applyChange = function(change) {
   switch (change.type) {
     case World.ChangeType.BODY:
-      var afterBody = change.afterState ? new Body().setFromJSON(change.afterState) : null;
+      let afterBody = change.afterState ? new Body().setFromJSON(change.afterState) : null;
       if (change.beforeState == null) {
         this.loadBody(afterBody);
       } else if (!afterBody) {
@@ -896,7 +896,7 @@ World.prototype.applyChange = function(change) {
       }
       break;
     case World.ChangeType.SPIRIT:
-      var afterSpirit = change.afterState ? this.createSpiritFromJson(change.afterState) : null;
+      let afterSpirit = change.afterState ? this.createSpiritFromJson(change.afterState) : null;
       if (change.beforeState == null) {
         this.loadSpirit(afterSpirit);
       } else if (!afterSpirit) {
@@ -913,7 +913,7 @@ World.prototype.applyChange = function(change) {
     case World.ChangeType.QUEUE:
       // replace the whole thing, since it's easy and not too expensive
       this.queue.clear();
-      for (var i = 0; change.afterState && i < change.afterState.length; i++) {
+      for (let i = 0; change.afterState && i < change.afterState.length; i++) {
         this.queue.add(new WorldEvent().setFromJSON(change.afterState[i]));
       }
       break;
