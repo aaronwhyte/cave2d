@@ -127,26 +127,8 @@ So, I rewrote it to track <i>changes</i> in terrain, bodies, spirits, timeouts, 
 changed things are updated when there's an undo/redo. It's more complex than I wanted, but it seems to be
 working, and it's fast.
 
-<h2><a href="test40">Test 40 - Stats and Line Graphs</a></h2>
-I added stat tracking, graphing, and layout infrastructure, with ten(!) graphs to test it.
-<p>
-The top graphs show how much of each frame's 16ms time budget is taken by parts of the requestAnimationFrame callback.
-The blue line shows the time from requestAnimationFrame's startTime param until the time drawScene() is called.
-From blue to green is the time it takes to draw the stat graphs themselves. From green to red is the time to draw
-everything else. And from red to yellow is the physics computation time, the last thing that happens.
-The physics system will stop processing physics events early if it gets too close to the 16ms-per-frame limit, to avoid
-skipping a frame. That's why the graph rarely goes past its upper bound, and why you can still edit at 60fps even if
-the physics engine bogs down. That's also why physics has to happen last, because it's the only part of the system that
-is flexible about how much work it does.
-<p>
-The bottom graphs show how much simulated world-time elapsed per frame. When the system is not overloaded,
-that should be a flat straight line at the top of the range. When it dips, it means the system had to stop
-processing physics events early, to avoid dropping a frame.
-<p>
-Each row has a left and right half, showing the same data at different time scales and sampling intervals.
-<p>
-To position and size the graphs nicely, I made a small 3D rectangle (Cuboid) layout system, which I'm now also using
-for UI widget layout.
+<h2>Test 40 - Stats and Line Graphs (deleted)</h2>
+All the original line-graph code is obsolete, so I removed this test. It served its purpose.
 
 <h2><a href="test39">Test 39 - Orientation &amp; Off-Center Force</a></h2>
 Updated the Body class to have angle, angular velocity, and moment of inertia.
