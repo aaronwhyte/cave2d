@@ -385,21 +385,18 @@ v graph rendering II
   - add basic raw values
     v WorldScreen
       v frameCount
-    - World
+    v  World
       x clocks (done as "now")
-      - body add count
-      - hit-check count
-      - hits enqueued
-      - timeouts enqueued
-      - enterances enqueued
-      - exits enqueued
-      - rayscan count
-      - rayscan hit-check count
+      v body add count
+      v body hit-check count
+      v hits enqueued
+      v timeouts enqueued
+      v enterOrExitEnqueuedCount
+      v rayscan count
+      v rayscan hit-check count
     - Renderer
       - draw count rate
       - actual cumulative time in draw() calls
-
-    - accumulate them up to screen level
   - New app/StatDash class is responsible for knowing about and displaying stats.
     - run from WorldScreen
       - dumbly renders line after line of whatever it is told to do at runtime

@@ -87,6 +87,15 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   this.rayscanXEvent = new WorldEvent();
   this.rayscanYEvent = new WorldEvent();
   this.rayscanEventOut = new WorldEvent();
+
+  // stats
+  this.addBodyCount = 0;
+  this.bodyCalcHitCount = 0;
+  this.hitEnqueuedCount = 0;
+  this.addTimeoutCount = 0;
+  this.enterOrExitEnqueuedCount = 0;
+  this.rayscanCount = 0;
+  this.rayscanCalcHitCount = 0;
 }
 
 World.SKIP_QUEUE_BASE = 2;
@@ -189,6 +198,7 @@ World.prototype.removeSpiritId = function(id) {
 World.prototype.addBody = function(body) {
   body.id = this.newId();
   this.loadBody(body);
+  this.addBodyCount++;
   return body.id;
 };
 
@@ -337,11 +347,13 @@ World.prototype.addPathToCell = function(body, cell) {
     for (let pathId of pathIdSet.keys()) {
       let otherBody = this.paths[pathId];
       if (otherBody && otherBody.pathId === pathId) {
+        this.bodyCalcHitCount++;
         let hitEvent = this.hitDetector.calcHit(this.now, body, otherBody, nextEvent);
         if (hitEvent && hitEvent.time < Infinity) {
           // Pad the collision time to prevent numerical-challenge interpenetration.
           hitEvent.time = Math.max(hitEvent.time - this.hitTimePadding, this.now);
           // Add the existing event and allocate the next one.
+          this.hitEnqueuedCount++;
           this.queue.add(hitEvent);
           nextEvent = WorldEvent.alloc();
         }
@@ -417,6 +429,7 @@ World.prototype.getFirstGridEvent = function(body, eventType, axis, eventOut) {
 World.prototype.addFirstGridEvent = function(body, eventType, axis) {
   let event = WorldEvent.alloc();
   if (this.getFirstGridEvent(body, eventType, axis, event)) {
+    this.enterOrExitEnqueuedCount++;
     this.queue.add(event);
   } else {
     event.free();
@@ -474,6 +487,7 @@ World.prototype.getSubsequentGridEvent = function(body, prevEvent, eventOut) {
 World.prototype.addSubsequentGridEvent = function(body, prevEvent) {
   let event = WorldEvent.alloc();
   if (this.getSubsequentGridEvent(body, prevEvent, event)) {
+    this.enterOrExitEnqueuedCount++;
     this.queue.add(event);
   } else {
     event.free();
@@ -540,6 +554,7 @@ World.prototype.processNextEventWithoutFreeing = function() {
 };
 
 World.prototype.addTimeout = function(time, spiritId, timeoutVal) {
+  this.addTimeoutCount++;
   let e = WorldEvent.alloc();
   e.type = WorldEvent.TYPE_TIMEOUT;
   e.time = time;
@@ -563,6 +578,7 @@ World.prototype.loadTimeout = function(e) {
  * @return {boolean} true if there's a hit, false if not.
  */
 World.prototype.rayscan = function(req, resp) {
+  this.rayscanCount++;
   this.validateBodies();
   this.scannedBodyIds.clear();
   let foundHit = false;
@@ -669,6 +685,7 @@ World.prototype.getRayscanHit = function(body, range, eventOut) {
               if (!this.scannedBodyIds.has(otherBody.id)) {
                 this.scannedBodyIds.add(otherBody.id);
                 otherBody.freezeAtTime(this.now);
+                this.rayscanCalcHitCount++;
                 if (this.hitDetector.calcHit(this.now, body, otherBody, eventOut)) {
                   retval = eventOut;
                   // Tighten the duration max. There's no point in looking for later hits, just earlier ones.

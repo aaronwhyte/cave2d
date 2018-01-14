@@ -16,6 +16,10 @@ function Renderer(canvas, gl, program) {
   this.oldColor = new Vec4(-1, -1, -1);
 
   this.circleArray = [];
+
+  // stats
+  this.drawCount = 0;
+  this.drawMs = 0;
 }
 
 Renderer.EMPTY_WARP_TYPES = [
@@ -237,7 +241,10 @@ Renderer.prototype.setStamp = function(stamp) {
  * @return {Renderer}
  */
 Renderer.prototype.drawStamp = function() {
+  this.drawCount++;
+  let t0 = performance.now();
   this.modelStamp.draw(this.gl);
+  this.drawMs += performance.now() - t0;
   return this;
 };
 
