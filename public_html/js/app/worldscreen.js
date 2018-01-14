@@ -245,7 +245,7 @@ WorldScreen.prototype.setPointerLockAllowed = function(allowed) {
 
 WorldScreen.prototype.initWorld = function() {
   let groupCount = Object.keys(this.getHitGroups()).length;
-  this.world = new World(this.bitSize * BitGrid.BITS, groupCount, this.getHitPairs(), this.getSpiritFactory());
+  this.world = new World(this.bitSize * BitGrid.BITS / 6, groupCount, this.getHitPairs(), this.getSpiritFactory());
   this.resolver = new HitResolver();
   this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
