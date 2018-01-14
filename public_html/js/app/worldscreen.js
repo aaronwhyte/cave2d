@@ -70,6 +70,8 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.canvasCuboid = new Cuboid();
   this.cuboidRules = [];
   this.shouldDrawStats = false;
+
+  this.frameCount = 0;
 }
 
 WorldScreen.EventLayer = {
@@ -278,6 +280,7 @@ WorldScreen.prototype.setScreenListening = function(listen) {
 };
 
 WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
+  this.frameCount++;
   if (this.destroyed) {
     console.warn('drawing destroyed screen - ignoring');
     return;
