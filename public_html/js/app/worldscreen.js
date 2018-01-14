@@ -46,18 +46,16 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.glyphs = new Glyphs(new GlyphMaker(0.4, 1.2));
   this.glyphs.initStamps(this.renderer.gl);
 
-  if (typeof Printer !== 'undefined') {
-    this.printer = new Printer(this.renderer, this.glyphs.stamps);
-    let mat4 = new Matrix44();
-    let vec4 = new Vec4();
-    this.printerStartMatrix = new Matrix44()
-        .multiply(mat4.toTranslateOpXYZ(20, 20, 0))
-        .multiply(mat4.toScaleOpXYZ(5, -5, 1));
-    this.printerNextCharMatrix = new Matrix44()
-        .multiply(mat4.toTranslateOpXYZ(3, 0, 0));
-    this.printerNextLineMatrix = new Matrix44()
-        .multiply(mat4.toTranslateOpXYZ(0, -5.5, 0));
-  }
+  this.printer = new Printer(this.renderer, this.glyphs.stamps);
+  let mat4 = new Matrix44();
+  let vec4 = new Vec4();
+  this.printerStartMatrix = new Matrix44()
+      .multiply(mat4.toTranslateOpXYZ(20, 20, 0))
+      .multiply(mat4.toScaleOpXYZ(5, -5, 1));
+  this.printerNextCharMatrix = new Matrix44()
+      .multiply(mat4.toTranslateOpXYZ(3, 0, 0));
+  this.printerNextLineMatrix = new Matrix44()
+      .multiply(mat4.toTranslateOpXYZ(0, -5.5, 0));
 
   // undo/redo support
   this.dirty = false;
@@ -771,23 +769,23 @@ WorldScreen.prototype.drawStats = function() {
   this.avgCpf = this.avgCpf || 0.5;
   this.avgFps = this.avgFps || 60;
   this.lastClocks = this.lastClocks || this.world.now;
-  // recalculate viewMatrix
-  this.viewMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(-1, 1, 0))
-      .multiply(
-          this.mat44.toScaleOpXYZ(
-          2 / this.canvas.width, -2 / this.canvas.height, 1))
-  ;
-  this.renderer.setViewMatrix(this.viewMatrix).setColorVector(Renderer.COLOR_WHITE);
   let cpf = this.world.now - this.lastClocks;
-  this.avgCpf = this.avgCpf * 0.99 + cpf * 0.01;
+  this.avgCpf = this.avgCpf * 0.98 + cpf * 0.02;
   let pnow = performance.now();
   let fps = 1000 / (pnow - this.lastFrameTimestamp);
-  this.avgFps = this.avgFps * 0.99 + fps * 0.01;
-  let txt =
-      "FPS: " + Math.round(10 * this.avgFps) / 10 +
-      "\nCPF: " + Math.round(100 * this.avgCpf) / 100;
-  if (this.printer) {
+  this.avgFps = this.avgFps * 0.98 + fps * 0.02;
+  if (this.shouldDrawStats) {
+    let txt =
+        "FPS: " + Math.round(10 * this.avgFps) / 10 +
+        "\nCPF: " + Math.round(100 * this.avgCpf) / 100;
+    // recalculate viewMatrix
+    this.viewMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(-1, 1, 0))
+        .multiply(
+            this.mat44.toScaleOpXYZ(
+                2 / this.canvas.width, -2 / this.canvas.height, 1))
+    ;
+    this.renderer.setViewMatrix(this.viewMatrix).setColorVector(Renderer.COLOR_WHITE);
     this.printer.printMultiLine(this.printerStartMatrix, this.printerNextCharMatrix, this.printerNextLineMatrix, txt);
   }
   this.lastClocks = this.world.now;

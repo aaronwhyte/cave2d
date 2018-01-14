@@ -102,25 +102,11 @@ Test43Page.prototype.refreshPauseMenu = function() {
   e.defaultChecked = false;
   var self = this;
   e.addEventListener('change', function(element) {
-    self.screen.drawLeftGraphs = element.target.checked;
+    self.screen.shouldDrawStats = element.target.checked;
     self.requestAnimation();
   });
   e = Dom.ce('span', label);
-  e.innerHTML = Strings.textToHtml(' line graphs');
-
-  Dom.ce('br', debug);
-
-  var label = Dom.ce('label', debug);
-  e = Dom.ce('input', label);
-  e.type = 'checkbox';
-  e.defaultChecked = false;
-  var self = this;
-  e.addEventListener('change', function(element) {
-    self.screen.drawRightGraphs = element.target.checked;
-    self.requestAnimation();
-  });
-  e = Dom.ce('span', label);
-  e.innerHTML = Strings.textToHtml(' dot graphs');
+  e.innerHTML = Strings.textToHtml(' draw stats');
 
   e = Dom.ce('button', df, 'smallButton');
   e.id = 'fullScreenButton';
