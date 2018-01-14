@@ -74,7 +74,7 @@ Glyphs.prototype.initModels = function() {
         w, -h, w, h);
     g('K',
         -w, h, -w, -h,
-        -w * (1 - r), -h * 0.2, w * 0.6, h * 0.6,
+        -w * (1 - r), -h * 0.2, w * 0.6, h,
         -w * 0.2, 0, w, -h);
     g('L',
         -w, h, -w, -h,

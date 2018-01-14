@@ -46,6 +46,19 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.glyphs = new Glyphs(new GlyphMaker(0.4, 1.2));
   this.glyphs.initStamps(this.renderer.gl);
 
+  if (typeof Printer !== 'undefined') {
+    this.printer = new Printer(this.renderer, this.glyphs.stamps);
+    let mat4 = new Matrix44();
+    let vec4 = new Vec4();
+    this.printerStartMatrix = new Matrix44()
+        .multiply(mat4.toTranslateOpXYZ(20, 20, 0))
+        .multiply(mat4.toScaleOpXYZ(5, -5, 1));
+    this.printerNextCharMatrix = new Matrix44()
+        .multiply(mat4.toTranslateOpXYZ(3, 0, 0));
+    this.printerNextLineMatrix = new Matrix44()
+        .multiply(mat4.toTranslateOpXYZ(0, -5.5, 0));
+  }
+
   // undo/redo support
   this.dirty = false;
   this.somethingMoving = false;
@@ -245,7 +258,8 @@ WorldScreen.prototype.setPointerLockAllowed = function(allowed) {
 
 WorldScreen.prototype.initWorld = function() {
   let groupCount = Object.keys(this.getHitGroups()).length;
-  this.world = new World(this.bitSize * BitGrid.BITS / 6, groupCount, this.getHitPairs(), this.getSpiritFactory());
+  // experimentally determined that "/ 2" is best on an old iPad. But "/ 6" is better on a new laptop. Hm.
+  this.world = new World(this.bitSize * BitGrid.BITS / 2, groupCount, this.getHitPairs(), this.getSpiritFactory());
   this.resolver = new HitResolver();
   this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
@@ -754,9 +768,28 @@ WorldScreen.prototype.sampleStats = function() {
 };
 
 WorldScreen.prototype.drawStats = function() {
-  if (this.shouldDrawStats && this.statMons) {
-    for (let i = 0; i < this.statMons.length; i++) {
-      this.statMons[i].draw(this.canvas.width, this.canvas.height);
-    }
+  this.avgCpf = this.avgCpf || 0.5;
+  this.avgFps = this.avgFps || 60;
+  this.lastClocks = this.lastClocks || this.world.now;
+  // recalculate viewMatrix
+  this.viewMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(-1, 1, 0))
+      .multiply(
+          this.mat44.toScaleOpXYZ(
+          2 / this.canvas.width, -2 / this.canvas.height, 1))
+  ;
+  this.renderer.setViewMatrix(this.viewMatrix).setColorVector(Renderer.COLOR_WHITE);
+  let cpf = this.world.now - this.lastClocks;
+  this.avgCpf = this.avgCpf * 0.99 + cpf * 0.01;
+  let pnow = performance.now();
+  let fps = 1000 / (pnow - this.lastFrameTimestamp);
+  this.avgFps = this.avgFps * 0.99 + fps * 0.01;
+  let txt =
+      "FPS: " + Math.round(10 * this.avgFps) / 10 +
+      "\nCPF: " + Math.round(100 * this.avgCpf) / 100;
+  if (this.printer) {
+    this.printer.printMultiLine(this.printerStartMatrix, this.printerNextCharMatrix, this.printerNextLineMatrix, txt);
   }
+  this.lastClocks = this.world.now;
+  this.lastFrameTimestamp = pnow;
 };
