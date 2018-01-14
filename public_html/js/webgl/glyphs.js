@@ -226,6 +226,12 @@ Glyphs.prototype.initModels = function() {
     g('+',
         -w, 0, w, 0,
         0, -w, 0, w);
+    g('/',
+        w, h, -w, -h);
+    g('*',
+        -w*0.9, h/3, w*0.9, -h/3,
+        -w*0.9, -h/3, w*0.9, h/3,
+        0, -w, 0, w);
   }
   return this.models;
 };

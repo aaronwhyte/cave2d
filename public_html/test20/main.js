@@ -20,7 +20,7 @@ var array3 = [0, 0, 0];
 var bodyPos = new Vec2d();
 var IDENTITY_VEC4 = [1, 1, 1, 1];
 
-var ZOOM = 5;
+var ZOOM = 6;
 
 function main() {
   canvas = document.querySelector('#canvas');
