@@ -23,7 +23,7 @@ function AntSpirit(screen) {
   this.stress = 0;
 
   this.lastControlTime = this.now();
-  this.viewportsFromCamera = 0;
+  this.distOutsideViewCircles = 0;
 
   this.toughness = 1;
   this.damage = 1;
@@ -31,11 +31,10 @@ function AntSpirit(screen) {
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 2.8;
-AntSpirit.THRUST = 0.8;
+AntSpirit.MEASURE_TIMEOUT = 3;
+AntSpirit.THRUST = 0.5;
 AntSpirit.TRACTION = 0.4;
-AntSpirit.MAX_TIMEOUT = 30;
-AntSpirit.LOW_POWER_VIEWPORTS_AWAY = 1.2;
+AntSpirit.MAX_TIMEOUT = 120;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
 
@@ -82,14 +81,14 @@ AntSpirit.createModel = function() {
 };
 
 AntSpirit.factory = function(screen, stamp, pos, dir) {
-  var world = screen.world;
+  let world = screen.world;
 
-  var spirit = new AntSpirit(screen);
+  let spirit = new AntSpirit(screen);
   spirit.setModelStamp(stamp);
   spirit.setColorRGB(1, 1, 1);
-  var density = 1;
+  let density = 1;
 
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.2;
@@ -101,7 +100,7 @@ AntSpirit.factory = function(screen, stamp, pos, dir) {
   b.moi = b.mass * b.rad * b.rad / 2;
   spirit.bodyId = world.addBody(b);
 
-  var spiritId = world.addSpirit(spirit);
+  let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
   world.addTimeout(screen.now(), spiritId, -1);
   return spiritId;
@@ -112,7 +111,7 @@ AntSpirit.prototype.setColorRGB = function(r, g, b) {
 };
 
 AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
-  var angle = this.getBodyAngPos() + rot;
+  let angle = this.getBodyAngPos() + rot;
   return this.screen.scan(
       this.screen.getHitGroups().ENEMY_SCAN,
       pos,
@@ -127,33 +126,27 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-  var body = this.getBody();
-  var pos = this.getBodyPos();
+  this.maybeStop();
+  let body = this.getBody();
+  let pos = this.getBodyPos();
   this.stress = this.stress || 0;
 
-  var friction = this.getFriction();
+  let friction = this.getFriction();
 
-  var now = this.now();
-  var time = Math.max(0, Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
+  let now = this.now();
+  let time = Math.max(0, Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
   this.lastControlTime = now;
 
   // friction
   body.applyLinearFrictionAtTime(friction * time, now);
 
-  var newVel = this.vec2d.set(body.vel);
+  let newVel = this.vec2d.set(body.vel);
 
-  var oldAngVelMag = Math.abs(this.getBodyAngVel());
-  if (oldAngVelMag && oldAngVelMag < AntSpirit.STOPPING_ANGVEL) {
-    this.setBodyAngVel(0);
-  }
-  var oldVelMagSq = newVel.magnitudeSquared();
-  if (oldVelMagSq && oldVelMagSq < AntSpirit.STOPPING_SPEED_SQUARED) {
-    newVel.reset();
-  }
-
+  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
+  let lowPower = this.distOutsideViewCircles > body.rad;
   if (this.screen.isPlaying()) {
-    this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-    if (this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
+    this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
+    if (!lowPower) {
       this.handleLoner(newVel, time);
     }
   } else {
@@ -162,10 +155,11 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   // Reset the body's pathDurationMax because it gets changed at compile-time,
   // but it is serialized at level-save-time, so old saved values might not
   // match the new compiled-in values. Hm.
-  var timeoutDuration;
+  let timeoutDuration;
   timeoutDuration = Math.min(
       AntSpirit.MAX_TIMEOUT,
-      AntSpirit.MEASURE_TIMEOUT * (0.2 * Math.random() + 0.9));
+      AntSpirit.MEASURE_TIMEOUT + this.distOutsideViewCircles)
+      * (0.2 * Math.random() + 0.9);
   body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, now);
   body.invalidatePath();
@@ -174,18 +168,18 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
 
 AntSpirit.prototype.handleLoner = function(newVel, time) {
-  var body = this.getBody();
-  var pos = this.getBodyPos();
-  var now = this.now();
-  var traction = AntSpirit.TRACTION;
-  var scanDist = 3 * body.rad;
-  var distFrac, scanRot;
-  var moreStress = 0.04;
+  let body = this.getBody();
+  let pos = this.getBodyPos();
+  let now = this.now();
+  let traction = AntSpirit.TRACTION;
+  let scanDist = 3 * body.rad;
+  let distFrac, scanRot;
+  let moreStress = 0.04;
 
-  var bestFrac = 0; // lowest possible value
-  var bestRot = 0;
+  let bestFrac = 0; // lowest possible value
+  let bestRot = 0;
 
-  var maxIterations = 8;
+  let maxIterations = 8;
   if (this.stress >= 1 ) {
     // This stressed-out loner doesn't get any extra scan cycles
     maxIterations = 0;
@@ -193,11 +187,11 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
     body.addAngVelAtTime(0.2 * (Math.random() - 0.5), now);
   }
   // How far (to either side) to look for a way out.
-  var maxScanRotation = Math.PI * 0.99;
+  let maxScanRotation = Math.PI * 0.99;
 
   // Randomly pick a starting side for every pair of side-scans.
-  var lastSign = Math.sign(Math.random() - 0.5);
-  for (var i = 0; i <= maxIterations; i++) {
+  let lastSign = Math.sign(Math.random() - 0.5);
+  for (let i = 0; i <= maxIterations; i++) {
     if (i === 0) {
       distFrac = this.scan(pos, 0, scanDist, body.rad);
       if (distFrac < 0) {
@@ -208,7 +202,7 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
       }
     } else {
       // Do a pair of scans to either side, in random order
-      for (var signMult = -1; signMult <= 1; signMult += 2) {
+      for (let signMult = -1; signMult <= 1; signMult += 2) {
         scanRot = signMult * lastSign * maxScanRotation * i / maxIterations;
         distFrac = this.scan(pos, scanRot, scanDist, body.rad);
         if (distFrac < 0) {
@@ -232,16 +226,16 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   }
   // turn
   body.applyAngularFrictionAtTime(0.5, now);
-  var clip = 0.7;
-  var angAccel = Math.clip(bestRot * bestFrac * (1 - this.stress) * 0.3, -clip, clip);
+  let clip = 0.7;
+  let angAccel = Math.clip(bestRot * bestFrac * (1 - this.stress) * 0.3, -clip, clip);
   body.addAngVelAtTime(angAccel, now);
   if (!this.stress) {
     body.addAngVelAtTime(0.1 * (Math.random() - 0.5), now);
   }
 
   // and push
-  var thrust = AntSpirit.THRUST * (0.5 * (1 - this.stress) + 0.5 * bestFrac);
-  var dir = this.getBodyAngPos();
+  let thrust = AntSpirit.THRUST * (0.5 * (1 - this.stress) + 0.5 * bestFrac);
+  let dir = this.getBodyAngPos();
   this.accel
       .set(body.vel).scale(-traction * time)
       .addXY(
@@ -253,18 +247,16 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
     // relax!
     this.stress = Math.max(0, this.stress - moreStress);
   } else {
-    // get stressed?
-    var joinable = this.joinableAfterTime < this.now();
-    // less stress if unjoinable
-    this.stress = Math.min(1, this.stress + moreStress * (joinable ? 1 : 0.2));
+    // get stressed
+    this.stress = Math.min(1, this.stress + moreStress * 0.2);
   }
 };
 
 AntSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody();
-  var pos = this.getBodyPos();
-  this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  if (this.viewportsFromCamera < 1.1) {
+  let body = this.getBody();
+  let pos = this.getBodyPos();
+  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
+  if (this.distOutsideViewCircles < 2 * body.rad) {
     renderer
         .setStamp(this.modelStamp)
         .setColorVector(this.vec4.set(this.color));
@@ -278,8 +270,8 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
 };
 
 AntSpirit.prototype.explode = function() {
-  var body = this.getBody();
-  var pos = this.getBodyPos();
+  let body = this.getBody();
+  let pos = this.getBodyPos();
   this.screen.addEnemyExplosion(pos, body.rad, this.vec4.setXYZ(1, 1, 1));
   this.screen.sounds.antExplode(pos);
 
@@ -299,8 +291,7 @@ AntSpirit.prototype.die = function() {
  * @param {Spirit} otherSpirit
  */
 AntSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  // Override me!
-  var body = this.getBody();
+  let body = this.getBody();
   if (!body) return;
   //this.screen.sounds.wallThump(this.getBodyPos(), mag / body.mass);
 };

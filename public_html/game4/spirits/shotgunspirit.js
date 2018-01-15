@@ -114,6 +114,7 @@ ShotgunSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var now = this.now();
 
   if (timeoutVal === ShotgunSpirit.FRICTION_TIMEOUT_ID) {
+    this.maybeStop();
     var body = this.getBody();
     var friction = this.getFriction();
     var time = ShotgunSpirit.FRICTION_TIMEOUT;

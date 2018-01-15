@@ -155,3 +155,7 @@ Game4EditScreen.prototype.configMousePointer = function() {
 Game4EditScreen.prototype.isPlaying = function() {
   return false;
 };
+
+Game4EditScreen.prototype.distOutsideViewCircles = function(pos) {
+  return 0;
+};

@@ -27,6 +27,10 @@ BaseSpirit.prototype.constructor = BaseSpirit;
 
 BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME = 1;
 
+BaseSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
+BaseSpirit.STOPPING_ANGVEL = 0.01;
+
+
 BaseSpirit.prototype.reset = function(screen) {
   this.screen = screen;
 
@@ -60,6 +64,19 @@ BaseSpirit.prototype.setModelStamp = function(modelStamp) {
 
 BaseSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
+};
+
+BaseSpirit.prototype.maybeStop = function() {
+  let body = this.getBody();
+  if (!body) return;
+  let oldAngVelMag = Math.abs(this.getBodyAngVel());
+  if (oldAngVelMag && oldAngVelMag < AntSpirit.STOPPING_ANGVEL) {
+    this.setBodyAngVel(0);
+  }
+  let oldVelMagSq = body.vel.magnitudeSquared();
+  if (oldVelMagSq && oldVelMagSq < AntSpirit.STOPPING_SPEED_SQUARED) {
+    this.setBodyVel(Vec2d.ZERO);
+  }
 };
 
 /**

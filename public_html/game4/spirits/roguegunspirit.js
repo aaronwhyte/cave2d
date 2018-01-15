@@ -114,6 +114,7 @@ RogueGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var now = this.now();
 
   if (timeoutVal === RogueGunSpirit.FRICTION_TIMEOUT_ID) {
+    this.maybeStop();
     var body = this.getBody();
     var friction = this.getFriction();
     var time = RogueGunSpirit.FRICTION_TIMEOUT;
@@ -123,15 +124,6 @@ RogueGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
     body.applyAngularFrictionAtTime(friction * time, now);
 
     var newVel = this.vec2d.set(body.vel);
-
-    var oldAngVelMag = Math.abs(this.getBodyAngVel());
-    if (oldAngVelMag && oldAngVelMag < RogueGunSpirit.STOPPING_ANGVEL) {
-      this.setBodyAngVel(0);
-    }
-    var oldVelMagSq = newVel.magnitudeSquared();
-    if (oldVelMagSq && oldVelMagSq < RogueGunSpirit.STOPPING_SPEED_SQUARED) {
-      newVel.reset();
-    }
 
     // Reset the body's pathDurationMax because it gets changed at compile-time,
     // but it is serialized at level-save-time, so old saved values might not

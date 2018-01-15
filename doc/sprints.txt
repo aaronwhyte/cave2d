@@ -418,10 +418,6 @@ v graph rendering II
       v total ms, just like delayMs but do it at the end of the frame
       - misc ms = everything not in total, each frame
 
-Haha maybe just dump it all to text in the console, I mean jeez.
-  - make labels into solid models
-  - update bars to be short area graphs?
-
 - fix this:
   [Deprecation] GainNode.gain.value setter smoothing is deprecated and will be removed in M64, around January 2018.
   Please use setTargetAtTime() instead if smoothing is needed.

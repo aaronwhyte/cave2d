@@ -1,3 +1,5 @@
+window.testTimeoutIncreaseWithDistance = false;
+
 /**
  * @constructor
  * @extends {WorldScreen}

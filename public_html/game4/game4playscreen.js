@@ -372,6 +372,16 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
   }
 };
 
+Game4PlayScreen.prototype.distOutsideViewCircles = function(v) {
+  let min = Infinity;
+  for (let i = 0; i < this.viewCircles.length; i++) {
+    let c = this.viewCircles[i];
+    let ds = Math.max(0, c.pos.distance(v) - c.rad);
+    if (ds < min) min = ds;
+  }
+  return min;
+};
+
 Game4PlayScreen.prototype.drawScene = function() {
   this.updateViewCircles();
   this.positionCamera();
@@ -428,13 +438,12 @@ Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
   for (let i = 0; i < circles.length; i++) {
     this.world.addCellIdsOverlappingCircle(cellIdSet, circles[i]);
   }
+  let hitGroupCount = this.world.getGroupCount();
   for (let cellId of cellIdSet.keys()) {
-    for (let groupNum = 0; groupNum < this.world.getGroupCount(); groupNum++) {
-      if (groupNum === this.getWallHitGroup()) {
-        // Walls are drawn in a separate tile-drawing pass.
-        continue;
+    for (let groupNum = 0; groupNum < hitGroupCount; groupNum++) {
+      if (groupNum !== HitGroups.WALL) {
+        this.world.addSpiritIdsInCellAndGroup(spiritIdSet, cellId, groupNum);
       }
-      this.world.addSpiritIdsInCellAndGroup(spiritIdSet, cellId, groupNum);
     }
   }
   for (let spiritId of spiritIdSet.keys()) {

@@ -114,6 +114,7 @@ MachineGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var now = this.now();
 
   if (timeoutVal === MachineGunSpirit.FRICTION_TIMEOUT_ID) {
+    this.maybeStop();
     var body = this.getBody();
     var friction = this.getFriction();
     var time = MachineGunSpirit.FRICTION_TIMEOUT;

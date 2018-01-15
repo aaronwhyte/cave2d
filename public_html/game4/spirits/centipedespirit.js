@@ -43,8 +43,6 @@ CentipedeSpirit.THRUST = 0.8;
 CentipedeSpirit.TRACTION = 0.5;
 CentipedeSpirit.MAX_TIMEOUT = 10;
 CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY = 3;
-CentipedeSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
-CentipedeSpirit.STOPPING_ANGVEL = 0.01;
 CentipedeSpirit.OPTIMIZE = true;
 
 CentipedeSpirit.SCHEMA = {
@@ -203,6 +201,7 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
+  this.maybeStop();
   var body = this.getBody();
   var pos = this.getBodyPos();
   this.stress = this.stress || 0;
@@ -217,15 +216,6 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
   body.applyLinearFrictionAtTime(friction * time, now);
 
   var newVel = this.vec2d.set(body.vel);
-
-  var oldAngVelMag = Math.abs(this.getBodyAngVel());
-  if (oldAngVelMag && oldAngVelMag < CentipedeSpirit.STOPPING_ANGVEL) {
-    this.setBodyAngVel(0);
-  }
-  var oldVelMagSq = newVel.magnitudeSquared();
-  if (oldVelMagSq && oldVelMagSq < CentipedeSpirit.STOPPING_SPEED_SQUARED) {
-    newVel.reset();
-  }
 
   var headward = this.getHeadwardSpirit();
   var tailward = this.getTailwardSpirit();

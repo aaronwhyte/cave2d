@@ -55,15 +55,13 @@ EntranceSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
+  this.maybeStop();
   var body = this.getBody();
   body.pathDurationMax = Infinity;
   // If the body is being moved (because it's in the editor), slow it to a stop.
   if (!body.vel.isZero()) {
     var friction = 0.5;
     var newVel = this.vec2d.set(body.vel).scale(1 - friction);
-    if (newVel.magnitudeSquared() < 0.01) {
-      newVel.reset();
-    }
     body.setVelAtTime(newVel, world.now);
   }
   world.addTimeout(world.now + EntranceSpirit.TIMEOUT, this.id, -1);

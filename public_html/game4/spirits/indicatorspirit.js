@@ -92,6 +92,7 @@ IndicatorSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
+  this.maybeStop();
   var body = this.getBody();
 
   var friction = this.getFriction();
@@ -104,15 +105,6 @@ IndicatorSpirit.prototype.onTimeout = function(world, timeoutVal) {
   body.applyAngularFrictionAtTime(friction * time, now);
 
   var newVel = this.vec2d.set(body.vel);
-
-  var oldAngVelMag = Math.abs(this.getBodyAngVel());
-  if (oldAngVelMag && oldAngVelMag < IndicatorSpirit.STOPPING_ANGVEL) {
-    this.setBodyAngVel(0);
-  }
-  var oldVelMagSq = newVel.magnitudeSquared();
-  if (oldVelMagSq && oldVelMagSq < IndicatorSpirit.STOPPING_SPEED_SQUARED) {
-    newVel.reset();
-  }
 
   // Reset the body's pathDurationMax because it gets changed at compile-time,
   // but it is serialized at level-save-time, so old saved values might not
