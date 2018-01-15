@@ -152,6 +152,7 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
 
   if (this.screen.isPlaying()) {
+    this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
     if (this.viewportsFromCamera < AntSpirit.LOW_POWER_VIEWPORTS_AWAY) {
       this.handleLoner(newVel, time);
     }

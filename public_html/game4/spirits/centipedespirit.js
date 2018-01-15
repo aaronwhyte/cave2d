@@ -230,6 +230,7 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
   var headward = this.getHeadwardSpirit();
   var tailward = this.getTailwardSpirit();
   if (this.screen.isPlaying()) {
+    this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
     if (!CentipedeSpirit.OPTIMIZE || this.viewportsFromCamera < CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY) {
       if (headward) {
         // this is following somebody
