@@ -15,7 +15,7 @@ MovingAverageStat.prototype.sample = function(time, value) {
   } else {
     let timeDiff = time - this.lastTime;
     let decay = Math.pow(this.decay, timeDiff);
-    this.avg = this.avg * decay + value * (1 - decay);
+    this.avg = this.avg * (1 - decay) + value * decay;
   }
   this.lastTime = time;
 };

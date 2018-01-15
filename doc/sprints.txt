@@ -397,33 +397,35 @@ v graph rendering II
     v Renderer
       v draw count rate
       v actual cumulative time in draw() calls
-  - processing
-    - statTrails are nice
-    - last sampled value, for drawing
-    - slow-fade min and max to make spikes more obvious
-    - low-pass running average, for text
-  - presentation
-    - dump to console every N
-    - one row:
-      - fast single rectangle bar
-      - instant vs slow-changing average (use Printer for display first)
-      - static label (also use Printer first)
+  v basic presentation
+    v F/S rate, moving avg
+    v C/F rate, moving avg
+  v cell-size debugging
+    v BHC/F body hit-calc
+    v RHC/F rayscan hit-calc
+    v EE/F enter/exit events enqueued
   - more data!
     - frame ms breakdown
       - delay ms, reported by the requestAnimationFrame API and now()
-      - validateBodies ms
-      - stats draw ms
+      v validateBodies ms (part of phy now)
+      v stats draw ms
       - controls ms
-      - drawScene ms
-        - wall draw ms
-        - sprite draw ms
-        - splash draw ms
-      - phy events ms (last but has minimums), end-start, each frame
-      - total ms, just like delayMs but do it at the end of the frame
+      v drawScene ms
+      - wall draw ms
+      - sprite draw ms
+      - splash draw ms
+      v phy events ms (last but has minimums), end-start, each frame
+      v total ms, just like delayMs but do it at the end of the frame
       - misc ms = everything not in total, each frame
+
 Haha maybe just dump it all to text in the console, I mean jeez.
   - make labels into solid models
   - update bars to be short area graphs?
+
+- fix this:
+  [Deprecation] GainNode.gain.value setter smoothing is deprecated and will be removed in M64, around January 2018.
+  Please use setTargetAtTime() instead if smoothing is needed.
+  See https://www.chromestatus.com/features/5287995770929152 for more details.
 
 - swarm draw!
   * merge a bunch of drawings of the same model together with a single draw call.

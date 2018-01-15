@@ -43,19 +43,51 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
 
   this.timeMultiplier = 1;
 
-  this.glyphs = new Glyphs(new GlyphMaker(0.4, 1.2));
+  // stats
+  this.shouldDrawStats = false;
+  this.frameCount = 0;
+  this.statDrawMs = 0;
+  this.sceneDrawMs = 0;
+  this.phyMs = 0;
+  this.totalMs = 0;
+  this.glyphs = new Glyphs(new GlyphMaker(0.5, 0));
   this.glyphs.initStamps(this.renderer.gl);
-
   this.printer = new Printer(this.renderer, this.glyphs.stamps);
   let mat4 = new Matrix44();
-  let vec4 = new Vec4();
   this.printerStartMatrix = new Matrix44()
       .multiply(mat4.toTranslateOpXYZ(20, 20, 0))
-      .multiply(mat4.toScaleOpXYZ(5, -5, 1));
+      .multiply(mat4.toScaleOpXYZ(4, -4, 1));
   this.printerNextCharMatrix = new Matrix44()
       .multiply(mat4.toTranslateOpXYZ(3, 0, 0));
   this.printerNextLineMatrix = new Matrix44()
       .multiply(mat4.toTranslateOpXYZ(0, -5.5, 0));
+  // frames per second
+  this.fpsRateStat = new RateStat();
+  this.fpsAvgStat = new MovingAverageStat(0.05);
+  // clocks per frame
+  this.cpfRateStat = new RateStat();
+  this.cpfAvgStat = new MovingAverageStat(0.05);
+  // body checkHits per frame
+  this.bchpfRateStat = new RateStat();
+  this.bchpfAvgStat = new MovingAverageStat(0.01);
+  // rayscan checkHits per frame
+  this.rchpfRateStat = new RateStat();
+  this.rchpfAvgStat = new MovingAverageStat(0.01);
+  // enter/exit events enqueued per frame
+  this.eepfRateStat = new RateStat();
+  this.eepfAvgStat = new MovingAverageStat(0.05);
+  // stat draw ms per frame
+  this.statDrawMsRateStat = new RateStat();
+  this.statDrawMsAvgStat = new MovingAverageStat(0.05);
+  // scene draw ms per frame
+  this.sceneDrawMsRateStat = new RateStat();
+  this.sceneDrawMsAvgStat = new MovingAverageStat(0.05);
+  // physics ms per frame
+  this.phyMsRateStat = new RateStat();
+  this.phyMsAvgStat = new MovingAverageStat(0.05);
+  // all the time we spend on this frame
+  this.totalMsRateStat = new RateStat();
+  this.totalMsAvgStat = new MovingAverageStat(0.05);
 
   // undo/redo support
   this.dirty = false;
@@ -80,9 +112,6 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
 
   this.canvasCuboid = new Cuboid();
   this.cuboidRules = [];
-  this.shouldDrawStats = false;
-
-  this.frameCount = 0;
 }
 
 WorldScreen.EventLayer = {
@@ -94,6 +123,7 @@ WorldScreen.EventLayer = {
 WorldScreen.ROUND_VELOCITY_TO_NEAREST = 0.001;
 
 WorldScreen.MINIMUM_PHYSICS_MS = 2;
+WorldScreen.RELAX_PER_FRAME_MS = 2;
 
 WorldScreen.prototype.getClocksPerFrame = function() {
   return 0.5;
@@ -104,7 +134,7 @@ WorldScreen.prototype.getMsPerFrame = function() {
 };
 
 WorldScreen.prototype.getMsUntilClockAbort = function() {
-  return this.getMsPerFrame() - 4;
+  return this.getMsPerFrame() - WorldScreen.RELAX_PER_FRAME_MS;
 };
 
 /**
@@ -310,17 +340,26 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
     this.cuboidRules[i].apply();
   }
 
+  let t = performance.now();
   this.drawStats();
+  this.statDrawMs += performance.now() - t;
 
+  t = performance.now();
   this.world.validateBodies();
+  this.phyMs += performance.now() - t;
 
+  t = performance.now();
   this.updateViewMatrix();
   this.drawScene();
+  this.sceneDrawMs += performance.now() - t;
 
   if (visibility === 1) {
+    t = performance.now();
     this.clock(startTimeMs);
+    this.phyMs += performance.now() - t;
   }
   this.onFrameEnd(startTimeMs);
+  this.totalMs += performance.now() - startTimeMs;
 };
 
 WorldScreen.prototype.destroyScreen = function() {
@@ -742,42 +781,36 @@ WorldScreen.prototype.unloadLevel = function() {
 // Stats //
 ///////////
 
-WorldScreen.prototype.initStatMons = function() {
-  this.statsCuboid = new Cuboid();
-  let margin = 4;
-  this.cuboidRules.push(new CuboidRule(this.canvasCuboid, this.statsCuboid)
-      .setSizingMax(new Vec4(1/2, 1/2, 1), new Vec4(200, 100, Infinity))
-      .setAspectRatio(new Vec4(2, 1, 0))
-      .setSourceAnchor(new Vec4(1, 1, 0), new Vec4(-margin, -margin, 0))
-      .setTargetAnchor(new Vec4(1, 1, 0), new Vec4(0, 0, 0)));
-  this.statMons = [];
-};
-
-/**
- * Reads the stats from all the statMons.
- * This is called at the start of a frame.
- */
-WorldScreen.prototype.sampleStats = function() {
-  if (this.statMons) {
-    for (let i = 0; i < this.statMons.length; i++) {
-      this.statMons[i].sample();
-    }
-  }
-};
-
 WorldScreen.prototype.drawStats = function() {
-  this.avgCpf = this.avgCpf || 0.5;
-  this.avgFps = this.avgFps || 60;
-  this.lastClocks = this.lastClocks || this.world.now;
-  let cpf = this.world.now - this.lastClocks;
-  this.avgCpf = this.avgCpf * 0.98 + cpf * 0.02;
-  let pnow = performance.now();
-  let fps = 1000 / (pnow - this.lastFrameTimestamp);
-  this.avgFps = this.avgFps * 0.98 + fps * 0.02;
+  let fc = this.frameCount;
+  function avgRatePerFrame(val, rateStat, avgStat) {
+    rateStat.sample(fc, val);
+    avgStat.sample(fc, rateStat.getValue());
+  }
+  this.fpsRateStat.sample(performance.now() / 1000, fc);
+  this.fpsAvgStat.sample(fc, this.fpsRateStat.getValue());
+  avgRatePerFrame(this.world.now, this.cpfRateStat, this.cpfAvgStat);
+  avgRatePerFrame(this.world.bodyCalcHitCount, this.bchpfRateStat, this.bchpfAvgStat);
+  avgRatePerFrame(this.world.rayscanCalcHitCount, this.rchpfRateStat, this.rchpfAvgStat);
+  avgRatePerFrame(this.world.enterOrExitEnqueuedCount, this.eepfRateStat, this.eepfAvgStat);
+  avgRatePerFrame(this.statDrawMs, this.statDrawMsRateStat, this.statDrawMsAvgStat);
+  avgRatePerFrame(this.sceneDrawMs, this.sceneDrawMsRateStat, this.sceneDrawMsAvgStat);
+  avgRatePerFrame(this.phyMs, this.phyMsRateStat, this.phyMsAvgStat);
+  avgRatePerFrame(this.totalMs, this.totalMsRateStat, this.totalMsAvgStat);
+
   if (this.shouldDrawStats) {
     let txt =
-        "FPS: " + Math.round(10 * this.avgFps) / 10 +
-        "\nCPF: " + Math.round(100 * this.avgCpf) / 100;
+          " FPS " + Math.round(this.fpsAvgStat.getValue()) +
+        "\n   C " + Math.round(100 * this.cpfAvgStat.getValue()) / 100 +
+        "\n BCH " + Math.round(this.bchpfAvgStat.getValue()) +
+        "\n RCH " + Math.round(this.rchpfAvgStat.getValue()) +
+        "\n  EE " + Math.round(this.eepfAvgStat.getValue()) +
+        "\n" +
+        "\nSTAT " + Math.round(100 * this.statDrawMsAvgStat.getValue()) / 100 +
+        "\nDRAW " + Math.round(100 * this.sceneDrawMsAvgStat.getValue()) / 100 +
+        "\n PHY " + Math.round(100 * this.phyMsAvgStat.getValue()) / 100 +
+        "\n SUM " + Math.round(100 * this.totalMsAvgStat.getValue()) / 100 +
+        "";
     // recalculate viewMatrix
     this.viewMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(-1, 1, 0))
@@ -788,6 +821,4 @@ WorldScreen.prototype.drawStats = function() {
     this.renderer.setViewMatrix(this.viewMatrix).setColorVector(Renderer.COLOR_WHITE);
     this.printer.printMultiLine(this.printerStartMatrix, this.printerNextCharMatrix, this.printerNextLineMatrix, txt);
   }
-  this.lastClocks = this.world.now;
-  this.lastFrameTimestamp = pnow;
 };
