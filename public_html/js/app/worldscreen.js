@@ -291,6 +291,7 @@ WorldScreen.prototype.initWorld = function() {
   let groupCount = Object.keys(this.getHitGroups()).length;
   // experimentally determined that "/ 2" is best on an old iPad. But "/ 6" is better on a new laptop. Hm.
   this.world = new World(this.bitSize * BitGrid.BITS / 2, groupCount, this.getHitPairs(), this.getSpiritFactory());
+  this.world.addStationaryGroup(this.getWallHitGroup());
   this.resolver = new HitResolver();
   this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);

@@ -47,6 +47,9 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   // pathId to Body. Obsolete pathIds might still point to their old Bodies, so check the body's pathId.
   this.paths = {};
 
+  // Groups whose objects never move
+  this.stationaryGroups = new Set();
+
   // Holds IDs of body objects that need to have their paths processed by the collider
   // before time can move forward. This includes newly-added bodies.
   // Bodies can be invalid for a time, so that they can be manipulated while time is standing still,
@@ -117,6 +120,10 @@ World.ChangeType = {
   SPIRIT: 'ws',
   NOW: 'wn',
   QUEUE: 'wq'
+};
+
+World.prototype.addStationaryGroup = function(group) {
+  this.stationaryGroups.add(group);
 };
 
 World.prototype.cellCoord = function(worldCoord) {
@@ -339,10 +346,15 @@ World.prototype.getGroupCount = function() {
 World.prototype.addPathToCell = function(body, cell) {
   let nextEvent = WorldEvent.alloc();
   let group = body.hitGroup;
+  let stationary = body.vel.isZero();
 
   let hitGroups = this.groupHitsGroups[group];
   for (let gi = 0; gi < hitGroups.length; gi++) {
     let otherGroup = hitGroups[gi];
+    if (stationary && this.stationaryGroups.has(otherGroup)) {
+      // Optimization: Stationary objects can't hit stationary objects.
+      continue;
+    }
     let pathIdSet = cell.getPathIdsForGroup(otherGroup);
     for (let pathId of pathIdSet.keys()) {
       let otherBody = this.paths[pathId];
