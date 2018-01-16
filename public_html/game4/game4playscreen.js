@@ -15,10 +15,6 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.viewCircles = [];
 
-  // Temps
-  this.cellIdSet = new Set();
-  this.spiritIdSet = new Set();
-
   this.defaultViewCircle = new Circle();
   this.defaultViewCircle.rad =
       Game4PlayScreen.PLAYER_VIEW_RADIUS
@@ -388,15 +384,14 @@ Game4PlayScreen.prototype.drawScene = function() {
   this.updateViewMatrix();
   // this.updateWarps();
   this.renderer.setViewMatrix(this.viewMatrix);
-  this.renderer.setCircleMode(this.viewCircles);
   this.renderer.setTime(this.now());
 
+  this.renderer.setCircleMode(this.viewCircles);
   this.drawSpiritsOverlappingCircles(this.viewCircles);
-
   this.drawTilesOverlappingCircles(this.viewCircles);
   this.splasher.draw(this.renderer, this.world.now);
-
   this.renderer.setNormalMode();
+
   this.drawHud();
 
   // Animate whenever this thing draws.
@@ -427,34 +422,6 @@ Game4PlayScreen.prototype.updateViewCircles = function() {
     this.viewCircles[0] = this.defaultViewCircle;
   } else {
     this.viewCircles.length = count;
-  }
-};
-
-Game4PlayScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
-  let cellIdSet = this.cellIdSet;
-  let spiritIdSet = this.spiritIdSet;
-  cellIdSet.clear();
-  spiritIdSet.clear();
-  for (let i = 0; i < circles.length; i++) {
-    this.world.addCellIdsOverlappingCircle(cellIdSet, circles[i]);
-  }
-  let hitGroupCount = this.world.getGroupCount();
-  for (let cellId of cellIdSet.keys()) {
-    for (let groupNum = 0; groupNum < hitGroupCount; groupNum++) {
-      if (groupNum !== HitGroups.WALL) {
-        this.world.addSpiritIdsInCellAndGroup(spiritIdSet, cellId, groupNum);
-      }
-    }
-  }
-  for (let spiritId of spiritIdSet.keys()) {
-    let spirit = this.world.spirits[spiritId];
-    if (spirit) spirit.onDraw(this.world, this.renderer);
-  }
-
-  // HACKish: draw disembodied spirits too, like dead bullets that are still leaving trails
-  for (let spiritId in this.world.spirits) {
-    let spirit = this.world.spirits[spiritId];
-    if (!spirit.bodyId) spirit.onDraw(this.world, this.renderer);
   }
 };
 

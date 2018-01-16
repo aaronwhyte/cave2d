@@ -18,6 +18,10 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.sounds = new Sounds(sfx, this.viewMatrix);
   this.useFans = !!opt_useFans;
 
+  // Temps for drawing spirits overlapping circles
+  this.cellIdSet = new Set();
+  this.spiritIdSet = new Set();
+
   this.listening = false;
   this.paused = false;
 
@@ -48,6 +52,9 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.frameCount = 0;
   this.statDrawMs = 0;
   this.sceneDrawMs = 0;
+  // scene breakdown
+  this.wallDrawMs = 0;
+  this.spiritDrawMs = 0;
   this.phyMs = 0;
   this.totalMs = 0;
   this.glyphs = new Glyphs(new GlyphMaker(0.5, 0.01));
@@ -82,9 +89,18 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   // stat draw ms per frame
   this.statDrawMsRateStat = new RateStat();
   this.statDrawMsAvgStat = new MovingAverageStat(0.05);
+
   // scene draw ms per frame
   this.sceneDrawMsRateStat = new RateStat();
   this.sceneDrawMsAvgStat = new MovingAverageStat(0.05);
+  // scene breakdown
+  this.wallDrawMsRateStat = new RateStat();
+  this.wallDrawMsAvgStat = new MovingAverageStat(0.05);
+  this.spiritDrawMsRateStat = new RateStat();
+  this.spiritDrawMsAvgStat = new MovingAverageStat(0.05);
+  this.splashDrawMsRateStat = new RateStat();
+  this.splashDrawMsAvgStat = new MovingAverageStat(0.2);
+
   // physics ms per frame
   this.phyMsRateStat = new RateStat();
   this.phyMsAvgStat = new MovingAverageStat(0.05);
@@ -658,9 +674,11 @@ WorldScreen.prototype.now = function() {
 };
 
 WorldScreen.prototype.drawSpirits = function() {
+  let t = performance.now();
   for (let id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
+  this.spiritDrawMs += performance.now() - t;
 };
 
 WorldScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
@@ -674,24 +692,63 @@ WorldScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
  * Draws all the tiles that overlap the screen.
  */
 WorldScreen.prototype.drawTiles = function() {
+  let t = performance.now();
   let camera = this.getCamera();
   if (this.tileGrid) {
     this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
     this.tileGrid.drawTiles(camera.getX(), camera.getY(), this.getPixelsPerGridCell());
   }
+  this.wallDrawMs += performance.now() - t;
 };
 
 /**
- * Draws all the tiles that overlap the circles in the array. Array values may be null.
+ * Draws all the wall tiles that overlap the circles in the array. Array values may be null.
  */
 WorldScreen.prototype.drawTilesOverlappingCircles = function(circles) {
+  let t = performance.now();
   if (this.tileGrid) {
     this.renderer.setTexture(Renderer.TEXTURE_WALL);
     this.renderer.setColorVector(this.levelColorVector).setModelMatrix(this.levelModelMatrix);
     this.tileGrid.drawTilesOverlappingCircles(circles);
     this.renderer.setTexture(Renderer.TEXTURE_NONE);
   }
+  this.wallDrawMs += performance.now() - t;
 };
+
+/**
+ * Draws all the spirits in cells that overlap the circles in the array. Array values may be null.
+ */
+WorldScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
+  let t = performance.now();
+  this.cellIdSet.clear();
+  this.spiritIdSet.clear();
+  for (let i = 0; i < circles.length; i++) {
+    if (circles[i] !== null) {
+      this.world.addCellIdsOverlappingCircle(this.cellIdSet, circles[i]);
+    }
+  }
+  let wallHitGroup = this.getWallHitGroup();
+  let hitGroupCount = this.world.getGroupCount();
+  for (let cellId of this.cellIdSet.keys()) {
+    for (let groupNum = 0; groupNum < hitGroupCount; groupNum++) {
+      if (groupNum !== wallHitGroup) {
+        this.world.addSpiritIdsInCellAndGroup(this.spiritIdSet, cellId, groupNum);
+      }
+    }
+  }
+  for (let spiritId of this.spiritIdSet.keys()) {
+    let spirit = this.world.spirits[spiritId];
+    if (spirit) spirit.onDraw(this.world, this.renderer);
+  }
+
+  // HACKish: draw disembodied spirits too, like dead bullets that are still leaving trails
+  for (let spiritId in this.world.spirits) {
+    let spirit = this.world.spirits[spiritId];
+    if (!spirit.bodyId) spirit.onDraw(this.world, this.renderer);
+  }
+  this.spiritDrawMs += performance.now() - t;
+};
+
 
 WorldScreen.prototype.getPixelsPerGridCell = function() {
   return this.bitGrid.bitWorldSize * BitGrid.BITS * this.getPixelsPerMeter();
@@ -800,6 +857,9 @@ WorldScreen.prototype.drawStats = function() {
   avgRatePerFrame(this.world.addTimeoutCount, this.toepfRateStat, this.toepfAvgStat);
   avgRatePerFrame(this.statDrawMs, this.statDrawMsRateStat, this.statDrawMsAvgStat);
   avgRatePerFrame(this.sceneDrawMs, this.sceneDrawMsRateStat, this.sceneDrawMsAvgStat);
+  avgRatePerFrame(this.wallDrawMs, this.wallDrawMsRateStat, this.wallDrawMsAvgStat);
+  avgRatePerFrame(this.spiritDrawMs, this.spiritDrawMsRateStat, this.spiritDrawMsAvgStat);
+  avgRatePerFrame(this.splasher.drawMs, this.splashDrawMsRateStat, this.splashDrawMsAvgStat);
   avgRatePerFrame(this.phyMs, this.phyMsRateStat, this.phyMsAvgStat);
   avgRatePerFrame(this.totalMs, this.totalMsRateStat, this.totalMsAvgStat);
 
@@ -807,13 +867,16 @@ WorldScreen.prototype.drawStats = function() {
     let txt =
           " FPS " + Math.round(this.fpsAvgStat.getValue()) +
         "\n   C " + Math.round(100 * this.cpfAvgStat.getValue()) / 100 +
-        "\n BCH " + Math.round(this.bchpfAvgStat.getValue()) +
-        "\n RCH " + Math.round(this.rchpfAvgStat.getValue()) +
-        "\n  TO " + Math.round(this.toepfAvgStat.getValue()) +
-        //"\n  EE " + Math.round(this.eepfAvgStat.getValue()) +
+        // "\n BCH " + Math.round(this.bchpfAvgStat.getValue()) +
+        // "\n RCH " + Math.round(this.rchpfAvgStat.getValue()) +
+        // "\n  TO " + Math.round(this.toepfAvgStat.getValue()) +
+        // "\n  EE " + Math.round(this.eepfAvgStat.getValue()) +
         "\n" +
         "\nSTAT " + Math.round(100 * this.statDrawMsAvgStat.getValue()) / 100 +
-        "\nDRAW " + Math.round(100 * this.sceneDrawMsAvgStat.getValue()) / 100 +
+        "\nSCNE " + Math.round(100 * this.sceneDrawMsAvgStat.getValue()) / 100 +
+        "\n     WALL " + Math.round(100 * this.wallDrawMsAvgStat.getValue()) / 100 +
+        "\n     SPRT " + Math.round(100 * this.spiritDrawMsAvgStat.getValue()) / 100 +
+        "\n     SPLA " + Math.round(100 * this.splashDrawMsAvgStat.getValue()) / 100 +
         "\n PHY " + Math.round(100 * this.phyMsAvgStat.getValue()) / 100 +
         "\n SUM " + Math.round(100 * this.totalMsAvgStat.getValue()) / 100 +
         "";

@@ -5,6 +5,7 @@ function Splasher() {
   this.splashes = [];
   this.matrix44 = new Matrix44();
   this.vec4 = new Vec4();
+  this.drawMs = 0;
 }
 
 Splasher.prototype.addCopy = function(copyMe) {
@@ -12,8 +13,9 @@ Splasher.prototype.addCopy = function(copyMe) {
 };
 
 Splasher.prototype.draw = function(renderer, now) {
-  for (var i = 0; i < this.splashes.length;) {
-    var splash = this.splashes[i];
+  let t = performance.now();
+  for (let i = 0; i < this.splashes.length;) {
+    let splash = this.splashes[i];
     if (splash.isExpired(now)) {
       // remove
       splash.free();
@@ -31,10 +33,11 @@ Splasher.prototype.draw = function(renderer, now) {
       i++;
     }
   }
+  this.drawMs += performance.now() - t;
 };
 
 Splasher.prototype.clear = function() {
-  for (var i = 0; i < this.splashes.length;) {
+  for (let i = 0; i < this.splashes.length;) {
     this.splashes[i].free();
   }
   this.splashes.length = 0;

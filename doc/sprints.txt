@@ -411,9 +411,9 @@ v graph rendering II
       v stats draw ms
       - controls ms
       v drawScene ms
-      - wall draw ms
-      - sprite draw ms
-      - splash draw ms
+      v wall draw ms
+      v spirit draw ms
+      v splash draw ms
       v phy events ms (last but has minimums), end-start, each frame
       v total ms, just like delayMs but do it at the end of the frame
       - misc ms = everything not in total, each frame
@@ -457,10 +457,11 @@ v graph rendering II
         - 100
   - check on slow iPad
 
-- Debug Undo/Redo
+x Debug Undo/Redo
   * undo reverts too much
   * redo doesn't always work
-  - repro?
+  x repro?
+  I think it was the constant clocking because stuff wasn't zeroing out its velocity. Fixed that.
 
 EXPLOSION THOUGHTS
 * Splashy everything like I have today

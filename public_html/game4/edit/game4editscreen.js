@@ -103,9 +103,7 @@ Game4EditScreen.prototype.handleInput = function () {
 Game4EditScreen.prototype.drawScene = function() {
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
-  for (var id in this.world.spirits) {
-    this.world.spirits[id].onDraw(this.world, this.renderer);
-  }
+  this.drawSpirits();
 
   this.renderer.setTexture(Renderer.TEXTURE_WALL);
   this.drawTiles();
