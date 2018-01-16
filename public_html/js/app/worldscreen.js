@@ -867,10 +867,6 @@ WorldScreen.prototype.drawStats = function() {
     let txt =
           " FPS " + Math.round(this.fpsAvgStat.getValue()) +
         "\n   C " + Math.round(100 * this.cpfAvgStat.getValue()) / 100 +
-        // "\n BCH " + Math.round(this.bchpfAvgStat.getValue()) +
-        // "\n RCH " + Math.round(this.rchpfAvgStat.getValue()) +
-        // "\n  TO " + Math.round(this.toepfAvgStat.getValue()) +
-        // "\n  EE " + Math.round(this.eepfAvgStat.getValue()) +
         "\n" +
         "\nSTAT " + Math.round(100 * this.statDrawMsAvgStat.getValue()) / 100 +
         "\nSCNE " + Math.round(100 * this.sceneDrawMsAvgStat.getValue()) / 100 +
@@ -878,7 +874,11 @@ WorldScreen.prototype.drawStats = function() {
         "\n     SPRT " + Math.round(100 * this.spiritDrawMsAvgStat.getValue()) / 100 +
         "\n     SPLA " + Math.round(100 * this.splashDrawMsAvgStat.getValue()) / 100 +
         "\n PHY " + Math.round(100 * this.phyMsAvgStat.getValue()) / 100 +
-        "\n SUM " + Math.round(100 * this.totalMsAvgStat.getValue()) / 100 +
+        "\n     BCH " + Math.round(this.bchpfAvgStat.getValue()) +
+        "\n     RCH " + Math.round(this.rchpfAvgStat.getValue()) +
+        // "\n      TO " + Math.round(this.toepfAvgStat.getValue()) +
+        // "\n      EE " + Math.round(this.eepfAvgStat.getValue()) +
+        "\nTOTL " + Math.round(100 * this.totalMsAvgStat.getValue()) / 100 +
         "";
     // recalculate viewMatrix
     this.viewMatrix.toIdentity()
