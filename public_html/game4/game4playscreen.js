@@ -20,15 +20,15 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
       Game4PlayScreen.PLAYER_VIEW_RADIUS
       * Game4PlayScreen.STARTING_VIEW_FRACTION;
 
-  var self = this;
+  let self = this;
 
   this.keyTipRevealer = function() {
-    var ms = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
+    let ms = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
     // TODO: key tips for mouse and keyboard players?
-    // for (var i = 0; i < self.players.length; i++) {
+    // for (let i = 0; i < self.players.length; i++) {
     //   self.players[i].setKeyboardTipTimeoutMs(ms);
     // }
-    for (var i = 0; i < self.widgets.length; i++) {
+    for (let i = 0; i < self.widgets.length; i++) {
       self.widgets[i].setKeyboardTipTimeoutMs(ms);
     }
   };
@@ -65,7 +65,7 @@ Game4PlayScreen.prototype.setScreenListening = function(listen) {
   // so test screen's untestWidget listening is taken care of here.
   Game4BaseScreen.prototype.setScreenListening.call(this, listen);
 
-  var buttonEvents = ['click', 'touchEnd'];
+  let buttonEvents = ['click', 'touchEnd'];
   Events.setListening(listen, document.querySelector('#fullScreenButton'),
       buttonEvents, this.fullScreenFn);
   // TODO: resumeButton is ignored in testscreen - this is sloppy
@@ -86,7 +86,7 @@ Game4PlayScreen.prototype.initPauseButtons = function() {
   this.pauseTouchWidget
       .addDoubleTapListener(this.pauseDownFn)
       .setStamp(this.stamps.pauseStamp);
-  var rule = new CuboidRule(this.canvasCuboid, this.pauseTouchWidget.getWidgetCuboid())
+  let rule = new CuboidRule(this.canvasCuboid, this.pauseTouchWidget.getWidgetCuboid())
       .setAspectRatio(new Vec4(1, 1))
       .setSourceAnchor(Vec4.ZERO, Vec4.ZERO)
       .setTargetAnchor(Vec4.ZERO, Vec4.ZERO)
@@ -98,7 +98,7 @@ Game4PlayScreen.prototype.initPauseButtons = function() {
 
 
 Game4PlayScreen.prototype.configurePlayerSlots = function() {
-  var self = this;
+  let self = this;
   function createKeyboardSlot(name, up, right, down, left, b1, b2, menuKey) {
     return new PlayerSlot(name)
         .add(ControlState.WAITING, new ControlMap()
@@ -121,10 +121,10 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
   }
 
   function createTouchSlot(name, angle) {
-    var buttonAngle = angle + Math.PI / 4;
-    var releasedColor = new Vec4(1, 1, 1, 0.2);
-    var pressedColor = new Vec4(1, 1, 1, 0.5);
-    var matrix = new Matrix44().toRotateZOp(angle);
+    let buttonAngle = angle + Math.PI / 4;
+    let releasedColor = new Vec4(1, 1, 1, 0.2);
+    let pressedColor = new Vec4(1, 1, 1, 0.5);
+    let matrix = new Matrix44().toRotateZOp(angle);
 
     function button(stamp) {
       return new TriggerWidget(self.getHudEventTarget())
@@ -135,30 +135,30 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
           .setReleasedColorVec4(releasedColor);
     }
 
-    var joinTrigger = button(self.stamps.joinButton);
-    var n = Math.sqrt(0.5);
-    var rule = new CuboidRule(self.canvasCuboid, joinTrigger.getWidgetCuboid())
+    let joinTrigger = button(self.stamps.joinButton);
+    let n = Math.sqrt(0.5);
+    let rule = new CuboidRule(self.canvasCuboid, joinTrigger.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
         .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
         .setTargetAnchor(new Vec4(-n, n).transform(matrix), Vec4.ZERO)
         .setSizingMax(new Vec4(0.12, 0.12, 0.99), new Vec4(30, 30));
     self.cuboidRules.push(rule);
 
-    var stick = new TouchStick(self.getWorldEventTarget())
+    let stick = new TouchStick(self.getWorldEventTarget())
         .setStartZoneFunction(function(x, y) {
           // If this touch is closer to the player's corner than it is to any other
           // active player's corner, then the player can have it.
           // That way inactive waiting-to-join slots don't detract from the other touch players.
-          var myCorner = slot.corner;
-          var distToMyCorner = Vec2d.distanceSq(
+          let myCorner = slot.corner;
+          let distToMyCorner = Vec2d.distanceSq(
               x, y,
               self.canvas.width * (myCorner.getX() + 1 / 2),
               self.canvas.height * (myCorner.getY() + 1 / 2));
-          for (var slotName in self.slots) {
-            var otherSlot = self.slots[slotName];
-            var otherCorner = otherSlot.corner;
+          for (let slotName in self.slots) {
+            let otherSlot = self.slots[slotName];
+            let otherCorner = otherSlot.corner;
             if (otherCorner && otherCorner !== myCorner && otherSlot.isPlaying()) {
-              var otherCornerDist = Vec2d.distanceSq(
+              let otherCornerDist = Vec2d.distanceSq(
                   x, y,
                   self.canvas.width * (otherCorner.getX() + 1 / 2),
                   self.canvas.height * (otherCorner.getY() + 1 / 2));
@@ -171,33 +171,33 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
         })
         .setRadius(Game4PlayScreen.TOUCH_STICK_RADIUS);
 
-    var buttonRad = 50;
-    var maxButtonRatio = 1/5;
-    var button1 = button(self.stamps.button1);
-    var rule1 = new CuboidRule(self.canvasCuboid, button1.getWidgetCuboid())
+    let buttonRad = 50;
+    let maxButtonRatio = 1/5;
+    let button1 = button(self.stamps.button1);
+    let rule1 = new CuboidRule(self.canvasCuboid, button1.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
         .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
         .setTargetAnchor(new Vec4(-1, 2.6).transform(matrix), new Vec4(-2, 0).transform(matrix))
         .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
     self.cuboidRules.push(rule1);
 
-    var button2 = button(self.stamps.button2);
-    var rule2 = new CuboidRule(self.canvasCuboid, button2.getWidgetCuboid())
+    let button2 = button(self.stamps.button2);
+    let rule2 = new CuboidRule(self.canvasCuboid, button2.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
         .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
         .setTargetAnchor(new Vec4(-2.6, 1).transform(matrix), new Vec4(0, 2).transform(matrix))
         .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
     self.cuboidRules.push(rule2);
 
-    var menuTrigger = button(self.stamps.menuButton);
-    var menuRule = new CuboidRule(self.canvasCuboid, menuTrigger.getWidgetCuboid())
+    let menuTrigger = button(self.stamps.menuButton);
+    let menuRule = new CuboidRule(self.canvasCuboid, menuTrigger.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
         .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
         .setTargetAnchor(new Vec4(-n, n).transform(matrix), Vec4.ZERO)
         .setSizingMax(new Vec4(0.12, 0.12, 0.99), new Vec4(30, 30));
     self.cuboidRules.push(menuRule);
 
-    var slot = new PlayerSlot(name)
+    let slot = new PlayerSlot(name)
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, joinTrigger))
         .add(ControlState.PLAYING, new ControlMap()
@@ -232,7 +232,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
         );
   }
 
-  var slotList = [
+  let slotList = [
     createKeyboardSlot('k1', Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'n', 'm', 'l'),
     createKeyboardSlot('k2', 'w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'q'),
     createPointerLockSlot('pl', 'v', 'b', 'g'),
@@ -242,8 +242,8 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
     createTouchSlot('t4', 3 * Math.PI / 2)
   ];
 
-  for (var i = 0; i < slotList.length; i++) {
-    var slot = slotList[i];
+  for (let i = 0; i < slotList.length; i++) {
+    let slot = slotList[i];
     slot.setState(ControlState.WAITING);
     this.slots[slot.name] = slot;
   }
@@ -267,8 +267,8 @@ Game4PlayScreen.prototype.exitLevel = function() {
 };
 
 Game4PlayScreen.prototype.snapCameraToEntrance = function() {
-  for (var spiritId in this.world.spirits) {
-    var spirit = this.world.spirits[spiritId];
+  for (let spiritId in this.world.spirits) {
+    let spirit = this.world.spirits[spiritId];
     if (spirit.type === Game4BaseScreen.SpiritType.ENTRANCE) {
       this.entranceSpirit = spirit;
       break;
@@ -277,22 +277,22 @@ Game4PlayScreen.prototype.snapCameraToEntrance = function() {
   if (this.entranceSpirit) {
     this.defaultViewCircle.pos.set(this.entranceSpirit.getBodyPos());
   }
-  var pos = this.defaultViewCircle.pos;
+  let pos = this.defaultViewCircle.pos;
   if (pos) {
     this.camera.set(pos);
   }
 };
 
 Game4PlayScreen.prototype.handleInput = function () {
-  for (var slotName in this.slots) {
-    var slot = this.slots[slotName];
-    var controls = slot.getControlList();
+  for (let slotName in this.slots) {
+    let slot = this.slots[slotName];
+    let controls = slot.getControlList();
     if (slot.stateName === ControlState.PLAYING) {
       if (controls.get(ControlName.MENU).getVal()) {
         // TODO: Don't make the menu instantly drop players
         this.playerDrop(slot);
       } else {
-        var playerSpirit = slot.spirit;
+        let playerSpirit = slot.spirit;
         if (playerSpirit) {
           playerSpirit.handleInput(controls);
         } else {
@@ -320,29 +320,29 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
   slot.releaseControls();
   slot.setRespawnPos(this.defaultViewCircle.pos);
 
-  var pos = new Vec2d(0, 0.5).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
-  var spiritId = this.addItem(Game4BaseScreen.MenuItem.PLAYER, pos, 0);
-  var spirit = this.world.spirits[spiritId];
+  let pos = new Vec2d(0, 0.5).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
+  let spiritId = this.addItem(Game4BaseScreen.MenuItem.PLAYER, pos, 0);
+  let spirit = this.world.spirits[spiritId];
 
   slot.setSpirit(spirit);
-  var r = 1 - 0.5 * Math.random();
-  var g = 1 - 0.5 * Math.random();
-  var b = 1 - 0.5 * Math.random();
+  let r = 1 - 0.5 * Math.random();
+  let g = 1 - 0.5 * Math.random();
+  let b = 1 - 0.5 * Math.random();
   spirit.setColorRGB(r, g, b);
 
-  var body = spirit.getBody();
+  let body = spirit.getBody();
   this.sounds.playerSpawn(pos);
   this.splashes.addPlayerSpawnSplash(this.now(), pos, body.rad, spirit.color);
 };
 
 Game4PlayScreen.prototype.killPlayerSpirit = function(spirit) {
-  var slot = this.getSlotForPlayerSpirit(spirit);
+  let slot = this.getSlotForPlayerSpirit(spirit);
   slot.killPlayerAtTime(this.now());
 };
 
 Game4PlayScreen.prototype.getSlotForPlayerSpirit = function(spirit) {
-  for (var slotName in this.slots) {
-    var slot = this.slots[slotName];
+  for (let slotName in this.slots) {
+    let slot = this.slots[slotName];
     if (slot.spirit === spirit) {
       return slot;
     }
@@ -361,8 +361,8 @@ Game4PlayScreen.prototype.onHitEvent = function(e) {
   if (e.time !== this.now()) {
     console.error('onHitEvent e.time !== this.now()', e.time, this.now());
   }
-  var b0 = this.world.getBodyByPathId(e.pathId0);
-  var b1 = this.world.getBodyByPathId(e.pathId1);
+  let b0 = this.world.getBodyByPathId(e.pathId0);
+  let b1 = this.world.getBodyByPathId(e.pathId1);
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
   }
@@ -403,10 +403,10 @@ Game4PlayScreen.prototype.drawScene = function() {
 Game4PlayScreen.prototype.updateViewCircles = function() {
   // update this.viewCircles to match all the player cameras,
   // or the starting area if there are no players now.
-  var count = 0;
-  var now = this.now();
-  for (var slotName in this.slots) {
-    var slot = this.slots[slotName];
+  let count = 0;
+  let now = this.now();
+  for (let slotName in this.slots) {
+    let slot = this.slots[slotName];
     if (slot.updateViewCircle(now)) {
       this.viewCircles[count] = slot.circle;
       count++;
@@ -427,13 +427,13 @@ Game4PlayScreen.prototype.updateViewCircles = function() {
 
 Game4PlayScreen.prototype.positionCamera = function() {
   this.viewableWorldRect.rad.reset();
-  var players = 0;
+  let players = 0;
 
-  for (var name in this.slots) {
-    var slot = this.slots[name];
+  for (let name in this.slots) {
+    let slot = this.slots[name];
     if (slot.isPlaying() || slot.getDeathFraction(this.now())) {
       players++;
-      var cam = slot.camera;
+      let cam = slot.camera;
       if (players === 1) {
         this.viewableWorldRect.setPosXY(cam.getX(), cam.getY());
       } else {
@@ -446,10 +446,10 @@ Game4PlayScreen.prototype.positionCamera = function() {
     this.viewableWorldRect.setPos(this.defaultViewCircle.pos);
   }
 
-  var pad = Game4PlayScreen.PLAYER_VIEW_RADIUS * Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC;
+  let pad = Game4PlayScreen.PLAYER_VIEW_RADIUS * Game4PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC;
   this.viewableWorldRect.padXY(pad, pad);
 
-  var destPixelsPerMeter = Math.min(
+  let destPixelsPerMeter = Math.min(
       2 * this.canvas.width / this.viewableWorldRect.getWidth(),
       2 * this.canvas.height / this.viewableWorldRect.getHeight());
   if (destPixelsPerMeter < this.pixelsPerMeter) {
@@ -479,10 +479,10 @@ Game4PlayScreen.prototype.drawHud = function() {
 
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
-  for (var slotName in this.slots) {
+  for (let slotName in this.slots) {
     this.slots[slotName].getControlList().draw(this.renderer);
   }
-  for (var i = 0; i < this.widgets.length; i++) {
+  for (let i = 0; i < this.widgets.length; i++) {
     this.widgets[i].draw(this.renderer);
   }
   this.pauseTouchWidget.draw(this.renderer);
@@ -504,9 +504,9 @@ Game4PlayScreen.prototype.isPlaying = function() {
  * </code>
  */
 Game4PlayScreen.prototype.createGameState = function() {
-  var players = [];
-  for (var name in this.slots) {
-    var slot = this.slots[name];
+  let players = [];
+  for (let name in this.slots) {
+    let slot = this.slots[name];
     if (slot.isPlaying()) {
       players.push({
         slotName: name
@@ -522,9 +522,9 @@ Game4PlayScreen.prototype.restoreGameState = function(state) {
   if (!state) {
     return;
   }
-  var players = state.players;
-  for (var i = 0; i < players.length; i++) {
-    var player = players[i];
+  let players = state.players;
+  for (let i = 0; i < players.length; i++) {
+    let player = players[i];
     this.playerJoin(this.slots[player.slotName]);
   }
 };
