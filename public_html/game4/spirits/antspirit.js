@@ -174,17 +174,17 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   let traction = AntSpirit.TRACTION;
   let scanDist = 3 * body.rad;
   let distFrac, scanRot;
-  let moreStress = 0.04;
+  let moreStress = 0.2;
 
   let bestFrac = 0; // lowest possible value
   let bestRot = 0;
 
   let maxIterations = 8;
-  if (this.stress >= 1 ) {
+  if (this.stress >= 1) {
     // This stressed-out loner doesn't get any extra scan cycles
     maxIterations = 0;
     // freak out a little instead
-    body.addAngVelAtTime(0.2 * (Math.random() - 0.5), now);
+    body.addAngVelAtTime(0.5 * (Math.random() - 0.5), now);
   }
   // How far (to either side) to look for a way out.
   let maxScanRotation = Math.PI * 0.99;
@@ -227,9 +227,10 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   // turn
   body.applyAngularFrictionAtTime(0.5, now);
   let clip = 0.7;
-  let angAccel = Math.clip(bestRot * bestFrac * (1 - this.stress) * 0.3, -clip, clip);
+  let angAccel = Math.clip(bestRot * bestFrac * 0.2, -clip, clip);
   body.addAngVelAtTime(angAccel, now);
   if (!this.stress) {
+    // wander a little
     body.addAngVelAtTime(0.1 * (Math.random() - 0.5), now);
   }
 
