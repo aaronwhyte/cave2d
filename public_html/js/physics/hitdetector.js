@@ -6,20 +6,30 @@ function HitDetector() {
   this.xOverlap = [0, 0];
   this.yOverlap = [0, 0];
   this.overlap = [0, 0, null]; // start, end, axis if any
+  this.p0 = new Vec2d();
+  this.p1 = new Vec2d();
+  this.p2 = new Vec2d();
+  this.p3 = new Vec2d();
+  this.p4 = new Vec2d();
+  this.p5 = new Vec2d();
+  this.p6 = new Vec2d();
+  this.p7 = new Vec2d();
+  this.p8 = new Vec2d();
+  this.p9 = new Vec2d();
 }
 
 HitDetector.prototype.calcHit = function(now, b0, b1, eventOut) {
   if (b0.vel.equals(b1.vel)) {
     return null;
   }
-  var hit = null;
-  if (b0.shape == Body.Shape.RECT) {
-    if (b1.shape == Body.Shape.RECT) {
+  let hit = null;
+  if (b0.shape === Body.Shape.RECT) {
+    if (b1.shape === Body.Shape.RECT) {
       hit = this.calcHitRectRect(now, b0, b1, eventOut);
     } else {
       hit = this.calcHitRectCircle(now, b0, b1, eventOut);
     }
-  } else if (b1.shape == Body.Shape.RECT) {
+  } else if (b1.shape === Body.Shape.RECT) {
     hit = this.calcHitRectCircle(now, b1, b0, eventOut);
   } else {
     hit = this.calcHitCircleCircle(now, b0, b1, eventOut);
@@ -35,22 +45,20 @@ HitDetector.prototype.calcHit = function(now, b0, b1, eventOut) {
  * @returns {?WorldEvent} Event if hit, or null.
  */
 HitDetector.prototype.calcHitCircleCircle = function(now, b0, b1, eventOut) {
-  var p0 = b0.getPosAtTime(now, Vec2d.alloc());
-  var p1 = b1.getPosAtTime(now, Vec2d.alloc());
+  let p0 = b0.getPosAtTime(now, this.p0);
+  let p1 = b1.getPosAtTime(now, this.p1);
 
   // For most of the computations, we shift times left so "now" is zero.
-  var maxDuration = Math.min(b0.getPathEndTime(), b1.getPathEndTime()) - now;
+  let maxDuration = Math.min(b0.getPathEndTime(), b1.getPathEndTime()) - now;
 
   // Normalize as if b0 is holding still at 0, 0.
-  var overlap = this.circleOriginOverlapTime(
+  let overlap = this.circleOriginOverlapTime(
       p1.x - p0.x,
       p1.y - p0.y,
       b1.vel.x - b0.vel.x,
       b1.vel.y - b0.vel.y,
       b0.rad + b1.rad);
-  p0.free();
-  p1.free();
-  var e = null;
+  let e = null;
   if (overlap && 0 < overlap[0] && overlap[0] <= maxDuration) {
     e = eventOut;
     e.type = WorldEvent.TYPE_HIT;
@@ -70,36 +78,33 @@ HitDetector.prototype.calcHitCircleCircle = function(now, b0, b1, eventOut) {
  * @returns {?WorldEvent} Event if hit, or null.
  */
 HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
-  var e = null;
-  var posRect = rect.getPosAtTime(now, Vec2d.alloc());
-  var posCirc = circ.getPosAtTime(now, Vec2d.alloc());
-  var maxDuration = Math.min(rect.getPathEndTime(), circ.getPathEndTime()) - now;
+  let e = null;
+  let posRect = rect.getPosAtTime(now, this.p0);
+  let posCirc = circ.getPosAtTime(now, this.p1);
+  let maxDuration = Math.min(rect.getPathEndTime(), circ.getPathEndTime()) - now;
 
   // bounding rect check
-  var brectOverlap = this.rectOverlapTime(
+  let brectOverlap = this.rectOverlapTime(
       posRect, rect.vel, rect.rectRad.x, rect.rectRad.y,
       posCirc, circ.vel, circ.rad, circ.rad);
   // If the brects don't overlap, or *finish* before 0, or start after max, then there's no legal hit.
   if (!brectOverlap || brectOverlap[1] <= 0 || maxDuration < brectOverlap[0]) {
-    posRect.free();
-    posCirc.free();
     return null;
   }
 
   // Put the circle at 0, 0, holding still. x, y, dx, and dy are for the rect.
-  // Tricky - re-use the allocated vecs. Free pos and vel before returning.
-  var pos = posRect.subtract(posCirc);
-  var vel = posCirc.set(rect.vel).subtract(circ.vel);
-  var vSign = Vec2d.alloc().set(vel).sign();
+  let pos = posRect.subtract(posCirc);
+  let vel = posCirc.set(rect.vel).subtract(circ.vel);
+  let vSign = this.p2.set(vel).sign();
 
   // Check leading edges. If a hit is found, return immediately,
   // because an edge hit is always earlier than a corner hit.
   // TODO more efficient special-purpose point vs aa-segment code.
-  var edgePos = Vec2d.alloc();
-  var edgeRad = Vec2d.alloc();
-  var compassPos = Vec2d.alloc();
-  for (var i = 0; i < 2 && !e; i++) {
-    var axis = Vec2d.AXES[i];
+  let edgePos = this.p3;
+  let edgeRad = this.p4;
+  let compassPos = this.p5;
+  for (let i = 0; i < 2 && !e; i++) {
+    let axis = Vec2d.AXES[i];
     if (vSign[axis]) {
       edgePos.set(pos);
       edgePos[axis] += rect.rectRad[axis] * vSign[axis];
@@ -107,7 +112,7 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
       edgeRad[axis] = 0;
 
       compassPos[axis] = -vSign[axis] * circ.rad;
-      var edgeOverlapTime = this.rectOverlapTime(
+      let edgeOverlapTime = this.rectOverlapTime(
           edgePos, vel, edgeRad.x, edgeRad.y,
           compassPos, Vec2d.ZERO, 0, 0);
       compassPos[axis] = 0;
@@ -121,14 +126,8 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
       }
     }
   }
-  edgePos.free();
-  edgeRad.free();
-  compassPos.free();
   if (e) {
     // There was an edge hit.
-    pos.free();
-    vel.free();
-    vSign.free();
     return e;
   }
 
@@ -137,10 +136,10 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
 
   // Check rect's leading corners, as point-circles, against the circle at 0, 0.
   // The bounding rects hit, so the rect is definitely approaching the circle.
-  var t = maxDuration + 1;
-  var cornerPos = Vec2d.alloc();
-  var hitCorner = Vec2d.alloc();
-  var overlap;
+  let t = maxDuration + 1;
+  let cornerPos = this.p6;
+  let hitCorner = this.p7;
+  let overlap;
   if (vSign.x && vSign.y) {
     // Diagonal motion. Check leading corner and two trailing corners.
     // A trailing corner might hit before a lead corner, so check them all.
@@ -175,9 +174,9 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
     // Check the two leading corners.
     // CornerPos starts in the middle of the lead edge,
     // then we shift it to the corners.
-    var shift = Vec2d.alloc().set(vSign).rot90Right().multiply(rect.rectRad);
-    var edgeCenter = Vec2d.alloc().set(rect.rectRad).multiply(vSign).add(pos);
-    for (var i = 0; i < 2; i++) {
+    let shift = this.p8.set(vSign).rot90Right().multiply(rect.rectRad);
+    let edgeCenter = this.p9.set(rect.rectRad).multiply(vSign).add(pos);
+    for (let i = 0; i < 2; i++) {
       cornerPos.set(edgeCenter).add(shift);
       overlap = this.circleOriginOverlapTime(
           cornerPos.x, cornerPos.y, vel.x, vel.y, circ.rad);
@@ -187,8 +186,6 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
       }
       shift.scale(-1);
     }
-    shift.free();
-    edgeCenter.free();
   }
   if (0 < t && t <= maxDuration) {
     e = eventOut;
@@ -200,11 +197,6 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
     // Slide the hit corner to the edge of the circle.
     e.collisionVec.set(vel).scale(t).add(hitCorner);
   }
-  hitCorner.free();
-  cornerPos.free();
-  vSign.free();
-  vel.free();
-  pos.free();
   return e;
 };
 
@@ -216,18 +208,16 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
  * @returns {?WorldEvent} Event if hit, or null.
  */
 HitDetector.prototype.calcHitRectRect = function(now, b0, b1, eventOut) {
-  var pos0 = b0.getPosAtTime(now, Vec2d.alloc());
-  var pos1 = b1.getPosAtTime(now, Vec2d.alloc());
+  let pos0 = b0.getPosAtTime(now, this.p0);
+  let pos1 = b1.getPosAtTime(now, this.p0);
 
   // For most of the computations, we shift times left so "now" is zero.
-  var maxDuration = Math.min(b0.getPathEndTime(), b1.getPathEndTime()) - now;
-  var overlap = this.rectOverlapTime(
+  let maxDuration = Math.min(b0.getPathEndTime(), b1.getPathEndTime()) - now;
+  let overlap = this.rectOverlapTime(
       pos0, b0.vel, b0.rectRad.x, b0.rectRad.y,
       pos1, b1.vel, b1.rectRad.x, b1.rectRad.y);
 
-  pos0.free();
-  pos1.free();
-  var e = null;
+  let e = null;
   if (overlap && 0 < overlap[0] && overlap[0] <= maxDuration) {
     e = eventOut;
     e.type = WorldEvent.TYPE_HIT;
@@ -250,16 +240,16 @@ HitDetector.prototype.calcHitRectRect = function(now, b0, b1, eventOut) {
  */
 HitDetector.prototype.circleOriginOverlapTime = function(x, y, dx, dy, rad) {
   // quadratic equation
-  var a = dx * dx + dy * dy; // not zero, because vels are not equal
-  if (a == 0) return null;
-  var b = 2 * (x * dx + y * dy);
-  var c = x * x + y * y - rad * rad;
-  var b2_4ac = b * b - 4 * a * c;
+  let a = dx * dx + dy * dy; // not zero, because vels are not equal
+  if (a === 0) return null;
+  let b = 2 * (x * dx + y * dy);
+  let c = x * x + y * y - rad * rad;
+  let b2_4ac = b * b - 4 * a * c;
   if (b2_4ac < 0) return null;
-  var sqrtb2_4ac = Math.sqrt(b2_4ac);
+  let sqrtb2_4ac = Math.sqrt(b2_4ac);
 
-  var t = (-b + sqrtb2_4ac) / (2 * a);
-  var t2 = (-b - sqrtb2_4ac) / (2 * a);
+  let t = (-b + sqrtb2_4ac) / (2 * a);
+  let t2 = (-b - sqrtb2_4ac) / (2 * a);
   this.overlap[0] = Math.min(t, t2);
   this.overlap[1] = Math.max(t, t2);
   return this.overlap;
@@ -280,19 +270,19 @@ HitDetector.prototype.circleOriginOverlapTime = function(x, y, dx, dy, rad) {
 HitDetector.prototype.rectOverlapTime = function(
     pos0, vel0, rad0x, rad0y,
     pos1, vel1, rad1x, rad1y) {
-  var count;
+  let count;
   count = this.overlapTime1D(
       pos0.x, vel0.x, rad0x,
       pos1.x, vel1.x, rad1x,
       this.xOverlap);
-  if (count == 0) return null;
+  if (count === 0) return null;
   count = this.overlapTime1D(
       pos0.y, vel0.y, rad0y,
       pos1.y, vel1.y, rad1y,
       this.yOverlap);
-  if (count == 0) return null;
+  if (count === 0) return null;
 
-  var overlapStart; // max of overlap starts
+  let overlapStart; // max of overlap starts
   if (this.xOverlap[0] < this.yOverlap[0]) {
     overlapStart = this.yOverlap[0];
     this.overlap[2] = Vec2d.Y;
@@ -300,7 +290,7 @@ HitDetector.prototype.rectOverlapTime = function(
     overlapStart = this.xOverlap[0];
     this.overlap[2] = Vec2d.X;
   }
-  var overlapEnd = Math.min(this.xOverlap[1], this.yOverlap[1]);
+  let overlapEnd = Math.min(this.xOverlap[1], this.yOverlap[1]);
   if (overlapEnd < overlapStart) return null;
   this.overlap[0] = overlapStart;
   this.overlap[1] = overlapEnd;
@@ -319,9 +309,9 @@ HitDetector.prototype.rectOverlapTime = function(
  * @returns {number} number of collisions returned on the output array
  */
 HitDetector.prototype.overlapTime1D = function(p0, v0, r0, p1, v1, r1, out) {
-  var v = v1 - v0;
-  var p = p1 - p0;
-  var r = r0 + r1;
+  let v = v1 - v0;
+  let p = p1 - p0;
+  let r = r0 + r1;
   if (!v) {
     // forever, or never?
     if (Math.abs(p) < r) {
@@ -337,7 +327,7 @@ HitDetector.prototype.overlapTime1D = function(p0, v0, r0, p1, v1, r1, out) {
   out[0] = (-p - r) / v;
   out[1] = (-p + r) / v;
   if (out[0] > out[1]) {
-    var tmp = out[0];
+    let tmp = out[0];
     out[0] = out[1];
     out[1] = tmp;
   }
