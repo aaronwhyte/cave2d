@@ -20,6 +20,7 @@ function HitDetector() {
 
 HitDetector.prototype.calcHit = function(now, b0, b1, eventOut) {
   if (b0.vel.equals(b1.vel)) {
+    // If they're moving at the same speed then they can't collide.
     return null;
   }
   let hit = null;
@@ -209,7 +210,7 @@ HitDetector.prototype.calcHitRectCircle = function(now, rect, circ, eventOut) {
  */
 HitDetector.prototype.calcHitRectRect = function(now, b0, b1, eventOut) {
   let pos0 = b0.getPosAtTime(now, this.p0);
-  let pos1 = b1.getPosAtTime(now, this.p0);
+  let pos1 = b1.getPosAtTime(now, this.p1);
 
   // For most of the computations, we shift times left so "now" is zero.
   let maxDuration = Math.min(b0.getPathEndTime(), b1.getPathEndTime()) - now;
