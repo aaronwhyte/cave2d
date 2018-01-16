@@ -34,7 +34,7 @@ AntSpirit.prototype.constructor = AntSpirit;
 AntSpirit.MEASURE_TIMEOUT = 3;
 AntSpirit.THRUST = 0.5;
 AntSpirit.TRACTION = 0.4;
-AntSpirit.MAX_TIMEOUT = 120;
+AntSpirit.MAX_TIMEOUT = 60;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
 
