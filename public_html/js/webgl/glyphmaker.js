@@ -18,9 +18,9 @@ GlyphMaker.prototype.clear = function() {
 };
 
 GlyphMaker.prototype.addStick = function(x0, y0, x1, y1) {
-  var len = Vec2d.distance(x0, y0, x1, y1) + this.lineWidth;
-  var fat = this.lineWidth/2;
-  var cuboid = RigidModel.createCube();
+  let len = Vec2d.distance(x0, y0, x1, y1) + this.lineWidth;
+  let fat = this.lineWidth/2;
+  let cuboid = RigidModel.createCube();
 
   // scale to the final size
   cuboid.transformPositions(this.mat.toScaleOp(this.vec.setXYZ(len/2, fat, this.glyphDepth/2)));
@@ -35,6 +35,26 @@ GlyphMaker.prototype.addStick = function(x0, y0, x1, y1) {
   cuboid.transformPositions(this.mat.toTranslateOp(this.vec.setXYZ(x0, y0, 0)));
 
   this.rigidModel.addRigidModel(cuboid);
+};
+
+GlyphMaker.prototype.addSegment = function(x0, y0, x1, y1) {
+  let len = Vec2d.distance(x0, y0, x1, y1) + this.lineWidth;
+  let fat = this.lineWidth/2;
+  let rect = RigidModel.createSquare();
+
+  // scale to the final size
+  rect.transformPositions(this.mat.toScaleOp(this.vec.setXYZ(len/2, fat, this.glyphDepth/2)));
+
+  // translate so x0, y0 is at the origin
+  rect.transformPositions(this.mat.toTranslateOp(this.vec.setXYZ(len/2 - fat, 0, 0)));
+
+  // rotate to final angle
+  rect.transformPositions(this.mat.toRotateZOp(Math.atan2(y1 - y0, x1 - x0)));
+
+  // move to final position
+  rect.transformPositions(this.mat.toTranslateOp(this.vec.setXYZ(x0, y0, 0)));
+
+  this.rigidModel.addRigidModel(rect);
 };
 
 GlyphMaker.prototype.addToRigidModel = function(target) {

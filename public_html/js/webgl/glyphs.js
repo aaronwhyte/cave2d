@@ -1,10 +1,12 @@
 /**
  * A collection of printable characters, as ModelStamp objects in the "stamps" map.
  * @param glyphMaker
+ * @param {boolean} flat true to make 'em 2d.
  * @constructor
  */
-function Glyphs(glyphMaker) {
+function Glyphs(glyphMaker, flat) {
   this.glyphMaker = glyphMaker;
+  this.flat = flat;
   this.models = null;
   this.stamps = null;
 }
@@ -12,15 +14,19 @@ function Glyphs(glyphMaker) {
 Glyphs.prototype.initModels = function() {
   if (!this.models) {
     this.models = {};
-    var r = this.glyphMaker.lineWidth / 2;
-    var h = 1.5;
-    var w = 1;
-    var self = this;
+    let r = this.glyphMaker.lineWidth / 2;
+    let h = 1.5;
+    let w = 1;
+    let self = this;
 
     function g() {
       self.glyphMaker.clear();
-      for (var i = 1; i < arguments.length; i += 4) {
-        self.glyphMaker.addStick(arguments[i], arguments[i + 1], arguments[i + 2], arguments[i + 3]);
+      for (let i = 1; i < arguments.length; i += 4) {
+        if (self.flat) {
+          self.glyphMaker.addSegment(arguments[i], arguments[i + 1], arguments[i + 2], arguments[i + 3]);
+        } else {
+          self.glyphMaker.addStick(arguments[i], arguments[i + 1], arguments[i + 2], arguments[i + 3]);
+        }
       }
       self.models[arguments[0]] = self.glyphMaker.addToRigidModel(new RigidModel());
     }
@@ -148,7 +154,7 @@ Glyphs.prototype.initModels = function() {
         -w, h, w, h,
         w, h, w, -h,
         -w, -h, w, -h,
-        w - r, h - r, -w + r, -h + r);
+        0, -h/8, 0, h/8);
     g('1',
         -w, h, 0 - r, h,
         0, h, 0, -h,
@@ -197,9 +203,12 @@ Glyphs.prototype.initModels = function() {
 
     g(' ');
     g('.',
-        0, -h, 0, -h);
+        -r/2, -h, -r/2, -h+r,
+        -r/2, -h+r, r/2, -h+r,
+        r/2, -h+r, r/2, -h,
+        -r/2, -h, r/2, -h);
     g(',',
-        0, -h, -w / 3, -h * 4 / 3);
+        0, -h, -w / 3, -h * 1.5);
     g('\'',
         0, h, 0, h * 4 / 3);
     g('"',
@@ -232,6 +241,11 @@ Glyphs.prototype.initModels = function() {
         -w*0.9, h/3, w*0.9, -h/3,
         -w*0.9, -h/3, w*0.9, h/3,
         0, -w, 0, w);
+    g('#',
+        -w*0.4, h*0.9, -w*0.6, -h*0.9,
+        -w, h*0.4, w, h*0.4,
+        w*0.6, h*0.9, w*0.4, -h*0.9,
+        -w, -h*0.4, w, -h*0.4);
   }
   return this.models;
 };
@@ -240,7 +254,7 @@ Glyphs.prototype.initStamps = function(gl) {
   if (!this.stamps) {
     this.initModels();
     this.stamps = {};
-    for (var key in this.models) {
+    for (let key in this.models) {
       this.stamps[key] = this.models[key].createModelStamp(gl);
     }
   }
