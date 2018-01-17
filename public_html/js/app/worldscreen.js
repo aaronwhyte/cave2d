@@ -49,13 +49,13 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
 
   // stats
   this.shouldDrawStats = false;
-  this.glyphs = new Glyphs(new GlyphMaker(0.5, 0.01));
+  this.glyphs = new Glyphs(new GlyphMaker(0.5, 1), true);
   this.glyphs.initStamps(this.renderer.gl);
   this.printer = new Printer(this.renderer, this.glyphs.stamps);
   let mat4 = new Matrix44();
   this.printerStartMatrix = new Matrix44()
       .multiply(mat4.toTranslateOpXYZ(20, 20, -0.95))
-      .multiply(mat4.toScaleOpXYZ(4, -4, 1));
+      .multiply(mat4.toScaleOpXYZ(3.6, -3.6, 1));
   this.printerNextCharMatrix = new Matrix44()
       .multiply(mat4.toTranslateOpXYZ(3, 0, 0));
   this.printerNextLineMatrix = new Matrix44()
