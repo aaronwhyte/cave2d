@@ -897,19 +897,19 @@ WorldScreen.prototype.drawStats = function() {
           " FPS " + Math.round(this.fpsAvgStat.getValue()) +
         "\n   C " + Math.round(100 * this.cpfAvgStat.getValue()) / 100 +
         "\n" +
-        "\n DLY " + Math.round(100 * this.startDelayMsAvgStat.getValue()) / 100 +
-        "\nSTAT " + Math.round(100 * this.statDrawMsAvgStat.getValue()) / 100 +
-        "\nINPT " + Math.round(100 * this.handleInputMsAvgStat.getValue()) / 100 +
+        // "\n DLY " + Math.round(100 * this.startDelayMsAvgStat.getValue()) / 100 +
         "\nSCNE " + Math.round(100 * this.sceneDrawMsAvgStat.getValue()) / 100 +
-        "\n     WALL " + Math.round(100 * this.wallDrawMsAvgStat.getValue()) / 100 +
-        "\n     SPRT " + Math.round(100 * this.spiritDrawMsAvgStat.getValue()) / 100 +
-        "\n     SPLA " + Math.round(100 * this.splashDrawMsAvgStat.getValue()) / 100 +
+        "\n       WALL " + Math.round(100 * this.wallDrawMsAvgStat.getValue()) / 100 +
+        "\n       SPRT " + Math.round(100 * this.spiritDrawMsAvgStat.getValue()) / 100 +
+        "\n       SPLA " + Math.round(100 * this.splashDrawMsAvgStat.getValue()) / 100 +
         "\n PHY " + Math.round(100 * this.phyMsAvgStat.getValue()) / 100 +
-        "\n     BCH " + Math.round(this.bchpfAvgStat.getValue()) +
-        "\n     RCH " + Math.round(this.rchpfAvgStat.getValue()) +
+        "\n       BCH " + Math.round(this.bchpfAvgStat.getValue()) +
+        "\n       RCH " + Math.round(this.rchpfAvgStat.getValue()) +
+        // "\nINPT " + Math.round(100 * this.handleInputMsAvgStat.getValue()) / 100 +
         // "\n      TO " + Math.round(this.toepfAvgStat.getValue()) +
         // "\n      EE " + Math.round(this.eepfAvgStat.getValue()) +
-        "\nTOTL " + Math.round(100 * this.totalMsAvgStat.getValue()) / 100 +
+        "\nSTAT " + Math.round(100 * this.statDrawMsAvgStat.getValue()) / 100 +
+        "\n ALL " + Math.round(100 * this.totalMsAvgStat.getValue()) / 100 +
         "";
     // recalculate viewMatrix
     this.viewMatrix.toIdentity()
