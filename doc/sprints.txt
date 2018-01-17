@@ -372,7 +372,7 @@ v graph rendering II
   x polyline little end-caps (do those last)
   v fix near-invisible vertical lines by adjusing line model
 
-- stats III: more collection and presentation
+v stats III: more collection and presentation
   * every stat is sampled every frame unless otherwise mentioned
   v remove global stats biz everywhere
     v main.js everywhere
@@ -404,19 +404,19 @@ v graph rendering II
     v BHC/F body hit-calc
     v RHC/F rayscan hit-calc
     v EE/F enter/exit events enqueued
-  - more data!
-    - frame ms breakdown
-      - delay ms, reported by the requestAnimationFrame API and now()
+  v more data!
+    v frame ms breakdown
+      v delay ms, reported by the requestAnimationFrame API and now()
       v validateBodies ms (part of phy now)
       v stats draw ms
-      - controls ms
+      v controls ms
       v drawScene ms
       v wall draw ms
       v spirit draw ms
       v splash draw ms
       v phy events ms (last but has minimums), end-start, each frame
       v total ms, just like delayMs but do it at the end of the frame
-      - misc ms = everything not in total, each frame
+      x misc ms = everything not in total, each frame
 
 - fix this:
   [Deprecation] GainNode.gain.value setter smoothing is deprecated and will be removed in M64, around January 2018.

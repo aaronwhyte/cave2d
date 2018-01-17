@@ -49,14 +49,6 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
 
   // stats
   this.shouldDrawStats = false;
-  this.frameCount = 0;
-  this.statDrawMs = 0;
-  this.sceneDrawMs = 0;
-  // scene breakdown
-  this.wallDrawMs = 0;
-  this.spiritDrawMs = 0;
-  this.phyMs = 0;
-  this.totalMs = 0;
   this.glyphs = new Glyphs(new GlyphMaker(0.5, 0.01));
   this.glyphs.initStamps(this.renderer.gl);
   this.printer = new Printer(this.renderer, this.glyphs.stamps);
@@ -68,43 +60,73 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
       .multiply(mat4.toTranslateOpXYZ(3, 0, 0));
   this.printerNextLineMatrix = new Matrix44()
       .multiply(mat4.toTranslateOpXYZ(0, -5.5, 0));
+
+  // gap between RAF callback start time and actual code execution
+  this.startDelayMs = 0;
+  this.startDelayMsRateStat = new RateStat();
+  this.startDelayMsAvgStat = new MovingAverageStat(0.05);
+
+  // Time to handle player inputs
+  this.handleInputMs = 0;
+  this.handleInputMsRateStat = new RateStat();
+  this.handleInputMsAvgStat = new MovingAverageStat(0.05);
+
   // frames per second
+  this.frameCount = 0;
   this.fpsRateStat = new RateStat();
   this.fpsAvgStat = new MovingAverageStat(0.05);
-  // clocks per frame
+
+  // clocks per frame; clock value is world.now
   this.cpfRateStat = new RateStat();
   this.cpfAvgStat = new MovingAverageStat(0.05);
-  // body checkHits per frame
+
+  // body checkHits per frame, tracked in World
   this.bchpfRateStat = new RateStat();
   this.bchpfAvgStat = new MovingAverageStat(0.05);
-  // rayscan checkHits per frame
+
+  // rayscan checkHits per frame, tracked in World
   this.rchpfRateStat = new RateStat();
   this.rchpfAvgStat = new MovingAverageStat(0.05);
-  // enter/exit events enqueued per frame
+
+  // enter/exit events enqueued per frame, tracked in World
   this.eepfRateStat = new RateStat();
   this.eepfAvgStat = new MovingAverageStat(0.05);
-  // timeout events enqueued per frame
+
+  // timeout events enqueued per frame, tracked in World
   this.toepfRateStat = new RateStat();
   this.toepfAvgStat = new MovingAverageStat(0.05);
-  // stat draw ms per frame
+
+  // time to handle and render these stats
+  this.statDrawMs = 0;
   this.statDrawMsRateStat = new RateStat();
   this.statDrawMsAvgStat = new MovingAverageStat(0.05);
 
-  // scene draw ms per frame
+  // total time to draw game scene
+  this.sceneDrawMs = 0;
   this.sceneDrawMsRateStat = new RateStat();
   this.sceneDrawMsAvgStat = new MovingAverageStat(0.05);
-  // scene breakdown
+
+  // scene breakdown: walls
+  this.wallDrawMs = 0;
   this.wallDrawMsRateStat = new RateStat();
   this.wallDrawMsAvgStat = new MovingAverageStat(0.05);
+
+  // scene breakdown: spirits
+  this.spiritDrawMs = 0;
   this.spiritDrawMsRateStat = new RateStat();
   this.spiritDrawMsAvgStat = new MovingAverageStat(0.05);
+
+  // scene breakdown: splashes, recorded inside Splasher
   this.splashDrawMsRateStat = new RateStat();
   this.splashDrawMsAvgStat = new MovingAverageStat(0.2);
 
-  // physics ms per frame
+  // physics ms per frame, including validateBodies and clock
+  this.phyMs = 0;
   this.phyMsRateStat = new RateStat();
   this.phyMsAvgStat = new MovingAverageStat(0.05);
+
   // all the time we spend on this frame
+  this.totalMs = 0;
   this.totalMsRateStat = new RateStat();
   this.totalMsAvgStat = new MovingAverageStat(0.05);
 
@@ -342,16 +364,20 @@ WorldScreen.prototype.setScreenListening = function(listen) {
 };
 
 WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
+  this.startDelayMs += performance.now() - startTimeMs;
+  let t;
   this.frameCount++;
   if (this.destroyed) {
     console.warn('drawing destroyed screen - ignoring');
     return;
   }
+  t = performance.now();
   if (visibility === 1) {
     if (this.handleInput) {
       this.handleInput();
     }
   }
+  this.handleInputMs += performance.now() - t;
 
   // update cuboids
   this.canvasCuboid.pos.setXYZ(this.canvas.width / 2, this.canvas.height / 2, 0);
@@ -360,7 +386,7 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
     this.cuboidRules[i].apply();
   }
 
-  let t = performance.now();
+  t = performance.now();
   this.drawStats();
   this.statDrawMs += performance.now() - t;
 
@@ -855,6 +881,9 @@ WorldScreen.prototype.drawStats = function() {
   avgRatePerFrame(this.world.rayscanCalcHitCount, this.rchpfRateStat, this.rchpfAvgStat);
   avgRatePerFrame(this.world.enterOrExitEnqueuedCount, this.eepfRateStat, this.eepfAvgStat);
   avgRatePerFrame(this.world.addTimeoutCount, this.toepfRateStat, this.toepfAvgStat);
+
+  avgRatePerFrame(this.startDelayMs, this.startDelayMsRateStat, this.startDelayMsAvgStat);
+  avgRatePerFrame(this.handleInputMs, this.handleInputMsRateStat, this.handleInputMsAvgStat);
   avgRatePerFrame(this.statDrawMs, this.statDrawMsRateStat, this.statDrawMsAvgStat);
   avgRatePerFrame(this.sceneDrawMs, this.sceneDrawMsRateStat, this.sceneDrawMsAvgStat);
   avgRatePerFrame(this.wallDrawMs, this.wallDrawMsRateStat, this.wallDrawMsAvgStat);
@@ -868,7 +897,9 @@ WorldScreen.prototype.drawStats = function() {
           " FPS " + Math.round(this.fpsAvgStat.getValue()) +
         "\n   C " + Math.round(100 * this.cpfAvgStat.getValue()) / 100 +
         "\n" +
+        "\n DLY " + Math.round(100 * this.startDelayMsAvgStat.getValue()) / 100 +
         "\nSTAT " + Math.round(100 * this.statDrawMsAvgStat.getValue()) / 100 +
+        "\nINPT " + Math.round(100 * this.handleInputMsAvgStat.getValue()) / 100 +
         "\nSCNE " + Math.round(100 * this.sceneDrawMsAvgStat.getValue()) / 100 +
         "\n     WALL " + Math.round(100 * this.wallDrawMsAvgStat.getValue()) / 100 +
         "\n     SPRT " + Math.round(100 * this.spiritDrawMsAvgStat.getValue()) / 100 +
