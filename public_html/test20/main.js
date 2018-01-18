@@ -112,13 +112,13 @@ function drawScene() {
   gl.uniformMatrix4fv(uViewMatrix, gl.FALSE, viewMatrix.m);
 
   var i = 0;
-  var r = 8;
+  var r = 10;
   for (var letter in glyphs.stamps) {
     var stamp = glyphs.stamps[letter];
     stamp.prepareToDraw(gl, aVertexPosition, aVertexColor);
 
     var x = ((i % r) - r/2);
-    var y = (r/3 - Math.floor(i / r)) * 1.5;
+    var y = -2 + (r/3 - Math.floor(i / r)) * 1.5;
     var t = Date.now();
     modelMatrix.toIdentity();
     mat4.toTranslateOp(vec4.setXYZ(x, y, 0));
