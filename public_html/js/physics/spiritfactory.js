@@ -14,13 +14,14 @@ function SpiritFactory(screen, configs) {
  * @returns {Spirit} a spirit, or null if the json is null
  */
 SpiritFactory.prototype.createSpiritFromJson = function(json) {
-  var spirit = null;
+  let spirit = null;
   if (json != null) {
-    var spiritType = json[0];
-    var spiritConfig = this.configs[spiritType];
+    let spiritType = json[0];
+    let spiritConfig = this.configs[spiritType];
     if (spiritConfig) {
       spirit = new spiritConfig.ctor(this.screen);
-      spirit.setModelStamp(spiritConfig.stamp);
+      if (spiritConfig.stamp) spirit.setModelStamp(spiritConfig.stamp);
+      if (spiritConfig.batchDrawer) spirit.setBatchDrawer(spiritConfig.batchDrawer);
       spirit.setFromJSON(json);
     } else {
       console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + json);

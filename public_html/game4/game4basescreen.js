@@ -76,8 +76,10 @@ Game4BaseScreen.MenuItem = {
 };
 
 Game4BaseScreen.prototype.createSpiritConfigs = function() {
-  var column = 0;
-  var row = 0;
+  let sc = {};
+  let column = 0;
+  let row = 0;
+  let self = this;
 
   function nextColumn() {
     column++;
@@ -85,16 +87,15 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
   }
 
   function addToMenu(spiritType, ctor, menuItem) {
-    a.push([spiritType, ctor, menuItem, column, row++]);
+    sc[spiritType] = self.createSpiritConfig(spiritType, ctor, menuItem, column, row++);
   }
 
   function addOffMenu(spiritType, ctor, menuItem) {
-    a.push([spiritType, ctor, menuItem]);
+    sc[spiritType] = self.createSpiritConfig(spiritType, ctor, menuItem);
   }
 
-  var st = Game4BaseScreen.SpiritType;
-  var mi = Game4BaseScreen.MenuItem;
-  var a = [];
+  let st = Game4BaseScreen.SpiritType;
+  let mi = Game4BaseScreen.MenuItem;
 
   addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE);
   addToMenu(st.EXIT, ExitSpirit, mi.EXIT);
@@ -117,11 +118,6 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
   addOffMenu(st.BULLET, BulletSpirit);
   addOffMenu(st.ACTIVATOR_BULLET, ActivatorBulletSpirit);
 
-  var sc = {};
-  for (var i = 0; i < a.length; i++) {
-    var p = a[i];
-    sc[p[0]] = this.createSpiritConfig(p[0], p[1], p[2], p[3], p[4]);
-  }
   return sc;
 };
 
@@ -130,7 +126,7 @@ Game4BaseScreen.prototype.createHitGroups = function() {
 };
 
 Game4BaseScreen.prototype.createHitPairs = function() {
-  var g = this.getHitGroups();
+  let g = this.getHitGroups();
   return [
     [g.EMPTY, g.EMPTY],
 
@@ -193,7 +189,7 @@ Game4BaseScreen.prototype.initWorld = function() {
   this.lastPathRefreshTime = -Infinity;
 
   // Wrap the default resolver in one that knows how to do awesome game stuff.
-  var bouncer = this.resolver;
+  let bouncer = this.resolver;
   bouncer.defaultElasticity = 0.95;
   this.resolver = new Game4HitResolver(this, bouncer);
 };

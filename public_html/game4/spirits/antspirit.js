@@ -80,11 +80,11 @@ AntSpirit.createModel = function() {
       .setColorRGB(0.1, 0.8, 0.1);
 };
 
-AntSpirit.factory = function(screen, stamp, pos, dir) {
+AntSpirit.factory = function(screen, batchDrawer, pos, dir) {
   let world = screen.world;
 
   let spirit = new AntSpirit(screen);
-  spirit.setModelStamp(stamp);
+  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   let density = 1;
 
@@ -258,15 +258,16 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
   let pos = this.getBodyPos();
   this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
   if (this.distOutsideViewCircles < 2 * body.rad) {
-    renderer
-        .setStamp(this.modelStamp)
-        .setColorVector(this.vec4.set(this.color));
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-    renderer.setModelMatrix(this.modelMatrix);
-    renderer.drawStamp();
+    // renderer
+    //     .setStamp(this.modelStamp)
+    //     .setColorVector(this.vec4.set(this.color));
+    // renderer.setModelMatrix(this.modelMatrix);
+    // renderer.drawStamp();
+    this.batchDrawer.batchDraw(this.color, this.modelMatrix, null);
   }
 };
 

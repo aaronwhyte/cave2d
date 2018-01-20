@@ -62,6 +62,10 @@ BaseSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };
 
+BaseSpirit.prototype.setBatchDrawer = function(batchDrawer) {
+  this.batchDrawer = batchDrawer;
+};
+
 BaseSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
@@ -119,7 +123,7 @@ BaseSpirit.prototype.getScanHitBody = function() {
 };
 
 BaseSpirit.prototype.getScanHitSpirit = function() {
-  var body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
+  let body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
   return this.screen.getSpiritForBody(body);
 };
 
@@ -128,46 +132,46 @@ BaseSpirit.prototype.getBody = function() {
 };
 
 BaseSpirit.prototype.getBodyPos = function() {
-  var body = this.getBody();
+  let body = this.getBody();
   return body ? body.getPosAtTime(this.now(), this.tempBodyPos) : null;
 };
 
 BaseSpirit.prototype.setBodyVel = function(v) {
-  var body = this.getBody();
+  let body = this.getBody();
   return body ? body.setVelAtTime(v, this.now()) : null;
 };
 
 BaseSpirit.prototype.addBodyVel = function(v) {
-  var body = this.getBody();
+  let body = this.getBody();
   return body ? body.addVelAtTime(v, this.now()) : null;
 };
 
 BaseSpirit.prototype.getBodyAngPos = function() {
-  var body = this.getBody();
+  let body = this.getBody();
   return body ? body.getAngPosAtTime(this.now()) : null;
 };
 
 BaseSpirit.prototype.setBodyAngPos = function(ap) {
-  var body = this.getBody();
+  let body = this.getBody();
   if (body) {
     body.setAngPosAtTime(ap, this.now());
   }
 };
 
 BaseSpirit.prototype.getBodyAngVel = function() {
-  var body = this.getBody();
+  let body = this.getBody();
   return body ? body.angVel : null;
 };
 
 BaseSpirit.prototype.setBodyAngVel = function(av) {
-  var body = this.getBody();
+  let body = this.getBody();
   if (body) {
     return body.setAngVelAtTime(av, this.now());
   }
 };
 
 BaseSpirit.prototype.addBodyAngVel = function(av) {
-  var body = this.getBody();
+  let body = this.getBody();
   if (body) {
     return body.addAngVelAtTime(av, this.now());
   }
@@ -182,16 +186,16 @@ BaseSpirit.prototype.getFriction = function() {
 };
 
 BaseSpirit.prototype.getAngleToBody = function(body) {
-  var thisPos = this.getBodyPos();
-  var thatPos = body.getPosAtTime(this.now(), Vec2d.alloc());
-  var p = thatPos.subtract(thisPos);
-  var angle = p.angle();
+  let thisPos = this.getBodyPos();
+  let thatPos = body.getPosAtTime(this.now(), Vec2d.alloc());
+  let p = thatPos.subtract(thisPos);
+  let angle = p.angle();
   thatPos.free();
   return angle;
 };
 
 BaseSpirit.prototype.getAngleDiff = function(toAngle) {
-  var angleDiff = toAngle - this.getBodyAngPos();
+  let angleDiff = toAngle - this.getBodyAngPos();
   while (angleDiff > Math.PI) {
     angleDiff -= 2 * Math.PI;
   }
@@ -269,17 +273,17 @@ BaseSpirit.prototype.onInputSumUpdate = function() {
 };
 
 BaseSpirit.prototype.sumOfInputs = function() {
-  var sum = 0;
-  for (var sourceId in this.inputIds) {
-    var sourceSpirit = this.screen.getSpiritById(sourceId);
+  let sum = 0;
+  for (let sourceId in this.inputIds) {
+    let sourceSpirit = this.screen.getSpiritById(sourceId);
     if (sourceSpirit) {
       sum += sourceSpirit.getOutputToTarget(this.id) || 0;
     } else {
       delete this.inputIds[sourceId];
     }
   }
-  var now = this.now();
-  for (var endTime in this.pulseEndToVal) {
+  let now = this.now();
+  for (let endTime in this.pulseEndToVal) {
     if (endTime >= now) {
       sum += this.pulseEndToVal[endTime];
     } else {
@@ -317,8 +321,8 @@ BaseSpirit.prototype.getEnergyCapacity = function() {
  * be negative. Otherwise this will be zero.
  */
 BaseSpirit.prototype.setEnergy = function(e) {
-  var newEnergy = Math.max(0, Math.min(this.energyCapacity, e));
-  var overflow = e - newEnergy;
+  let newEnergy = Math.max(0, Math.min(this.energyCapacity, e));
+  let overflow = e - newEnergy;
   this.energy = newEnergy;
   return overflow;
 };
@@ -361,9 +365,9 @@ BaseSpirit.prototype.applyDamage = function(damage) {
  */
 BaseSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
   // Override me!
-  var body = this.getBody();
+  let body = this.getBody();
   if (!body) return;
-  var now = this.now();
+  let now = this.now();
   if (this.lastThumpSoundTime + BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME < this.now()) {
     this.screen.sounds.wallThump(this.getBodyPos(), mag);
   }

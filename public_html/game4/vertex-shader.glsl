@@ -4,12 +4,20 @@
 // 2: polyline
 uniform lowp int uType;
 
+uniform lowp int uBatching;
+
 uniform highp float uTime;
 
 uniform mat4 uViewMatrix;
+
 uniform mat4 uModelMatrix;
 uniform mat4 uModelMatrix2;
 uniform vec4 uModelColor;
+
+const int BATCH_SIZE = 10;
+uniform mat4 uModelMatrixBatch[BATCH_SIZE];
+uniform mat4 uModelMatrix2Batch[BATCH_SIZE];
+uniform vec4 uModelColorBatch[BATCH_SIZE];
 
 // poly-line uses a circular buffer with alternating x and y values
 const int POLY_LINE_DATA_LENGTH = 40 * 2;
@@ -24,6 +32,7 @@ uniform vec4 uWarpData[8];
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
 attribute lowp float aVertexGroup;
+attribute lowp float aVertexInstance;
 
 varying lowp vec4 vColor;
 varying mediump vec2 vPosReal;
@@ -33,12 +42,35 @@ varying mediump vec2 vPosWarped;
 void main(void) {
   if (uType == 0 || uType == 1) {
     // normal mode or circle-clip mode - they're the same for the vertex shader
-    if (aVertexGroup == 0.0) {
-      gl_Position = aVertexPosition * uModelMatrix;
-      vPosReal = (aVertexPosition * uModelMatrix).xy;
+
+    if (uBatching == 1) {
+      int instance = int(aVertexInstance);
+      mat4 iModelMatrix = uModelMatrixBatch[instance];
+      mat4 iModelMatrix2 = uModelMatrix2Batch[instance];
+      vec4 iModelColor = uModelColorBatch[instance];
+
+      if (aVertexGroup == 0.0) {
+        gl_Position = aVertexPosition * iModelMatrix;
+        vPosReal = (aVertexPosition * iModelMatrix).xy;
+      } else {
+        gl_Position = aVertexPosition * iModelMatrix2;
+        vPosReal = (aVertexPosition * iModelMatrix2).xy;
+      }
+      vPosWarped = gl_Position.xy;
+      gl_Position *= uViewMatrix;
+      vColor = aVertexColor * iModelColor;
+      vColor = aVertexColor * iModelColor;
     } else {
-      gl_Position = aVertexPosition * uModelMatrix2;
-      vPosReal = (aVertexPosition * uModelMatrix2).xy;
+      if (aVertexGroup == 0.0) {
+        gl_Position = aVertexPosition * uModelMatrix;
+        vPosReal = (aVertexPosition * uModelMatrix).xy;
+      } else {
+        gl_Position = aVertexPosition * uModelMatrix2;
+        vPosReal = (aVertexPosition * uModelMatrix2).xy;
+      }
+      vPosWarped = gl_Position.xy;
+      gl_Position *= uViewMatrix;
+      vColor = aVertexColor * uModelColor;
     }
 
 //    vec2 distort = vec2(0, 0);
@@ -95,8 +127,6 @@ void main(void) {
 //      }
 //    }
 //    gl_Position.xy += distort;
-    vPosWarped = gl_Position.xy;
-    gl_Position *= uViewMatrix;
 
   } else if (uType == 2) {
     // polyline mode!
@@ -144,7 +174,7 @@ void main(void) {
     gl_Position.xy += addForWidth;
     gl_Position *= uViewMatrix;
     gl_Position.z = -0.99;
+    vColor = aVertexColor * uModelColor;
   }
 
-  vColor = aVertexColor * uModelColor;
 }

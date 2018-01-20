@@ -173,7 +173,7 @@ RigidModel.prototype.createQuadrupleTriangleModel = function() {
  * @returns {ModelStamp}
  */
 RigidModel.prototype.createModelStamp = function(gl) {
-  let i, positionArray = [], colorArray = [], groupArray = [];
+  let i, positionArray = [], colorArray = [], groupArray = [], instanceArray = [];
   for (i = 0; i < this.vertexes.length; i++) {
     let vertex = this.vertexes[i];
     for (let d = 0; d < 4; d++) {
@@ -181,6 +181,7 @@ RigidModel.prototype.createModelStamp = function(gl) {
       colorArray.push(vertex.color.v[d]);
     }
     groupArray.push(vertex.group || 0);
+    instanceArray.push(1);
   }
   let posBuff = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, posBuff);
@@ -193,6 +194,10 @@ RigidModel.prototype.createModelStamp = function(gl) {
   let groupBuff = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, groupBuff);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(groupArray), gl.STATIC_DRAW);
+
+  let instanceBuff = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuff);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(instanceArray), gl.STATIC_DRAW);
 
   let elementsArray = [];
   for (i = 0; i < this.triangles.length; i++) {
@@ -209,8 +214,75 @@ RigidModel.prototype.createModelStamp = function(gl) {
       posBuff,
       colorBuff,
       groupBuff,
-      elementBuff, elementsArray.length
+      elementBuff, elementsArray.length,
+      instanceBuff
   );
+};
+
+/**
+ * Adds 1..maxCount instances of immutable snapshot data to GL, and returns an array of handles to them.
+ * So if maxCount is 3, then ir will return an array of stamps:
+ * [stamp with 1 instance, stamp with 2 instances, stamp with 3 instances]
+ * @param gl
+ * @param maxCount
+ * @returns {Array.<ModelStamp>}
+ */
+RigidModel.prototype.createModelStampBatches = function(gl, maxCount) {
+  let stamps = [];
+  // Create stamp with 1 instance, then a stamp with 2 instances, etc.
+  for (let instanceCount = 1; instanceCount <= maxCount; instanceCount++) {
+    let positionArray = [], colorArray = [], groupArray = [], instanceArray = [];
+    let elementsArray = [];
+    // Repeat all the vertexes, once per instance
+    for (let instanceNum = 0; instanceNum < instanceCount; instanceNum++) {
+      for (let i = 0; i < this.vertexes.length; i++) {
+        let srcVertex = this.vertexes[i];
+        for (let d = 0; d < 4; d++) {
+          positionArray.push(srcVertex.position.v[d]);
+          colorArray.push(srcVertex.color.v[d]);
+        }
+        groupArray.push(srcVertex.group || 0);
+        instanceArray.push(instanceNum);
+      }
+      for (let i = 0; i < this.triangles.length; i++) {
+        let triangle = this.triangles[i];
+        for (let v = 0; v < 3; v++) {
+          // A triangle is a list of three vertex indexes.
+          // Since we've repeated the vertexes with different instance nums,
+          // we must offset these vertex indexes so they point at the right instance's vertexes.
+          elementsArray.push(triangle[v] + this.vertexes.length * instanceNum);
+        }
+      }
+    }
+    let posBuff = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuff);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionArray), gl.STATIC_DRAW);
+
+    let colorBuff = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuff);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorArray), gl.STATIC_DRAW);
+
+    let groupBuff = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, groupBuff);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(groupArray), gl.STATIC_DRAW);
+
+    let instanceBuff = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuff);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(instanceArray), gl.STATIC_DRAW);
+
+    let elementBuff = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuff);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(elementsArray), gl.STATIC_DRAW);
+
+    stamps.push(new ModelStamp(gl.TRIANGLES,
+        posBuff,
+        colorBuff,
+        groupBuff,
+        elementBuff, elementsArray.length,
+        instanceBuff
+    ));
+  }
+  return stamps;
 };
 
 /**

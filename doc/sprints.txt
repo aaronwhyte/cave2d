@@ -418,44 +418,48 @@ v stats III: more collection and presentation
       v total ms, just like delayMs but do it at the end of the frame
       x misc ms = everything not in total, each frame
 
+- batch draw!
+  * merge a bunch of drawings of the same model together with a single draw call.
+  v make testlevel with a bajillion ants and stuff, to actually stress this stunningly powerful laptop
+  v make sure it's easy to set an array of matrixes
+  v BATCH_MAX constant for number of things to draw at once, max. Set it to 10 for now.
+  v make some parallel arrays
+    v uModelMatrixBatch[BATCH_MAX]
+    v uModelMatrix2Batch[BATCH_MAX]
+    v uModelColorBatch[BATCH_MAX]
+  v attribute lowp float aVertexGroup;
+  v Update ModelStamp to include instance data
+
+  v Figure out the code around AntSpirit
+    v continue to generate a single RigidModel
+    x never set its modelStamp!
+    v sets its BatchDrawer instead
+      v BaseScreen generates BatchDrawer using AntSpirit.createModel().
+      - Screen has a list of BatchDrawers
+      - Screen passes BatchDrawer to AntSpirit
+      - AntSpirit uses it for addDraw(color, modelMatrix, opt_modelMatrix2) call
+      - flush()
+        - sets batch uniforms: colors and matrixes
+        - draws using stamps[count-1] which contains "count" instances
+      - BatchDrawer auto-flushes if it reaches its max count
+      - Screen calls flush() on each BatchDrawer at the end of the spirit (and splash!) drawing phase
+  v vertex shader "batch" type
+    v vertex looks its model matrix and color matrix up in the uniform arrays
+  - see if it makes things faster
+    - try different values for N on various devices
+      - 1
+      - 10
+      - 100
+  - apply it to cylinders too
+    - splashes
+    - bullets
+
+- Improve sleep/wake
+
 - fix this:
   [Deprecation] GainNode.gain.value setter smoothing is deprecated and will be removed in M64, around January 2018.
   Please use setTargetAtTime() instead if smoothing is needed.
   See https://www.chromestatus.com/features/5287995770929152 for more details.
-
-- swarm draw!
-  * merge a bunch of drawings of the same model together with a single draw call.
-  v make testlevel with a bajillion ants and stuff, to actually stress this stunningly powerful laptop
-  v make sure it's easy to set an array of matrixes
-  - SWARM_MAX constant for number of things to draw at once, max. Set it to 10 for now.
-  - make some parallel arrays
-    - uModelMatrixList[SWARM_MAX]
-    - uColorVecList[SWARM_MAX]
-  - Swarm class that owns SWARM_MAX stamps for the same base model
-    - each vertex knows its index in the matrix/color lists - new attribute integer I guess.
-    - make models that contain 1, 2, 3, 4, 5.... up to SWARM_MAX models
-    - register the thing with the renderer
-  - renderer will buffer draw calls for these models.
-    - map swarmId to registered Swarm classes
-    - swarmDraw(swarmId, modelMatrix, colorVec).
-      - buffer the values in the appropriate swarm
-      - buffer the current color vec likewise
-      - flush if SWARM_MAX is hit
-        - draw 'em all at once using the SWARM_MAX-count model
-        - clear the buffers
-    - renderer method to flush all swarms, using that swarm's remaining count model
-  - vertex shader "swarm" type
-    - vertex looks its model matrix and color matrix up in the uniform arrays
-  - convert ants to swarm-style
-    - see if it makes things faster
-      - try different values for N
-        - 1
-        - 5
-        - 10
-        - 20
-        - 50
-        - 100
-  - check on slow iPad
 
 x Debug Undo/Redo
   * undo reverts too much

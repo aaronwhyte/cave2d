@@ -16,6 +16,7 @@ function Renderer(canvas, gl, program) {
   this.oldColor = new Vec4(-1, -1, -1);
 
   this.circleArray = [];
+  this.modeStack = [];
 
   // stats
   this.drawCount = 0;
@@ -40,11 +41,13 @@ Renderer.TEXTURE_NONE = 0;
 Renderer.TEXTURE_WALL = 1;
 
 Renderer.POLY_LINE_POINT_COUNT = 40;
+Renderer.BATCH_MAX = 10;
 
 Renderer.prototype.initAttributesAndUniforms = function() {
   this.createVertexAttribute('aVertexPosition');
   this.createVertexAttribute('aVertexColor');
   this.createVertexAttribute('aVertexGroup');
+  this.createVertexAttribute('aVertexInstance');
   this.createUniform('uViewMatrix');
   this.createUniform('uModelMatrix');
   this.createUniform('uModelMatrix2');
@@ -52,6 +55,9 @@ Renderer.prototype.initAttributesAndUniforms = function() {
 
   // normal=0, circles=1, statgraph=2
   this.createUniform('uType');
+
+  // 1 if using batched drawing
+  this.createUniform('uBatching');
 
   this.createUniform('uCircles');
   this.createUniform('uCircleCount');
@@ -65,6 +71,10 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   this.createUniform('uPolyLineData');
   this.createUniform('uPolyLineHeadIndex');
   this.createUniform('uPolyLinePointCount');
+
+  this.createUniform('uModelMatrixBatch');
+  this.createUniform('uModelMatrix2Batch');
+  this.createUniform('uModelColorBatch');
 };
 
 Renderer.prototype.setWarps = function(type, data) {
@@ -217,6 +227,11 @@ Renderer.prototype.setPolyLineMode = function() {
   return this;
 };
 
+Renderer.prototype.setBatching = function(b) {
+  this.gl.uniform1i(this.uBatching, b ? 1 : 0);
+  return this;
+};
+
 Renderer.prototype.setTime = function(t) {
   this.gl.uniform1f(this.uTime, t);
   return this;
@@ -230,7 +245,7 @@ Renderer.prototype.setTime = function(t) {
 Renderer.prototype.setStamp = function(stamp) {
   if (this.modelStamp === null || this.modelStamp.id !== stamp.id) {
     this.modelStamp = stamp;
-    stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor, this.aVertexGroup);
+    stamp.prepareToDraw(this.gl, this.aVertexPosition, this.aVertexColor, this.aVertexGroup, this.aVertexInstance);
   }
   return this;
 };
@@ -253,4 +268,11 @@ Renderer.prototype.setPolyLineCircularQueue = function(xyCircularQueue) {
   this.gl.uniform1f(this.uPolyLineHeadIndex, xyCircularQueue.head);
   this.gl.uniform1f(this.uPolyLinePointCount, xyCircularQueue.size() / 2);
   return this;
+};
+
+
+Renderer.prototype.setBatchUniforms = function(colors, models, model2s) {
+  this.gl.uniform4fv(this.uModelColorBatch, colors);
+  this.gl.uniformMatrix4fv(this.uModelMatrixBatch, this.gl.FALSE, models);
+  if (model2s) this.gl.uniformMatrix4fv(this.uModelMatrix2Batch, this.gl.FALSE, model2s);
 };

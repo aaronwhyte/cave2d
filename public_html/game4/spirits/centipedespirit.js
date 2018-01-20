@@ -431,15 +431,11 @@ CentipedeSpirit.prototype.onDraw = function(world, renderer) {
   var pos = this.getBodyPos();
   this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
   if (!CentipedeSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
-    renderer
-        .setStamp(this.modelStamp)
-        .setColorVector(this.vec4.set(this.color));//.scale1(!this.headwardId ? 3 : 0.7));
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-    renderer.setModelMatrix(this.modelMatrix);
-    renderer.drawStamp();
+    this.batchDrawer.batchDraw(this.color, this.modelMatrix, null);
   }
 };
 

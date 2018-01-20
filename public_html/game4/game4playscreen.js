@@ -388,6 +388,13 @@ Game4PlayScreen.prototype.drawScene = function() {
 
   this.renderer.setCircleMode(this.viewCircles);
   this.drawSpiritsOverlappingCircles(this.viewCircles);
+
+  // TODO: make this part of World
+  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.ANT].batchDrawer.flush();
+  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.CENTIPEDE].batchDrawer.flush();
+  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.SHOTGUN].batchDrawer.flush();
+  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.ROGUE_GUN].batchDrawer.flush();
+
   this.drawTilesOverlappingCircles(this.viewCircles);
   this.splasher.draw(this.renderer, this.world.now);
   this.renderer.setNormalMode();

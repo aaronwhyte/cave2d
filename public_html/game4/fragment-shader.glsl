@@ -24,8 +24,8 @@ highp float rand(highp float i) {
 }
 
 void main(void) {
-  if (uType == 1) {
-    // circle mode!
+  if (uType == 1 || uType == 4) {
+    // circle mode! (or batch mode which still uses circles but I should separate them maybe)
     lowp float minDist = 1.0;
     for (int i = 0; i < 8; i++) {
       if (i < uCircleCount) {

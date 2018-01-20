@@ -166,15 +166,11 @@ ShotgunSpirit.prototype.onDraw = function(world, renderer) {
     if (lit) {
       this.vec4.scale1(1.2);
     }
-    renderer
-        .setStamp(this.modelStamp)
-        .setColorVector(this.vec4);
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-    renderer.setModelMatrix(this.modelMatrix);
-    renderer.drawStamp();
+    this.batchDrawer.batchDraw(this.vec4, this.modelMatrix, null);
   }
 };
 

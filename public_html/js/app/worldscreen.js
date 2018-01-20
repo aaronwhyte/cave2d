@@ -192,8 +192,9 @@ WorldScreen.prototype.getMsUntilClockAbort = function() {
 WorldScreen.prototype.createSpiritConfig = function(type, ctor, menuItemName, group, rank, factory) {
   let model = ctor.createModel();
   let stamp = model.createModelStamp(this.renderer.gl);
+  let batchDrawer = new BatchDrawer(model.createModelStampBatches(this.renderer.gl, Renderer.BATCH_MAX), this.renderer);
   let menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, factory || ctor.factory) : null;
-  return new SpiritConfig(type, ctor, stamp, menuItemConfig);
+  return new SpiritConfig(type, ctor, stamp, batchDrawer, menuItemConfig);
 };
 
 /**
@@ -704,6 +705,12 @@ WorldScreen.prototype.drawSpirits = function() {
   for (let id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
+  // TODO: make this part of World
+  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.ANT].batchDrawer.flush();
+  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.CENTIPEDE].batchDrawer.flush();
+  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.SHOTGUN].batchDrawer.flush();
+  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.ROGUE_GUN].batchDrawer.flush();
+
   this.spiritDrawMs += performance.now() - t;
 };
 
