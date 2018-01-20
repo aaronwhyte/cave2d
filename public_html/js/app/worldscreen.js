@@ -901,7 +901,8 @@ WorldScreen.prototype.drawStats = function() {
 
   if (this.shouldDrawStats) {
     let txt =
-          " FPS " + Math.round(this.fpsAvgStat.getValue()) +
+        "B1" +
+        "\n FPS " + Math.round(this.fpsAvgStat.getValue()) +
         "\n   C " + Math.round(100 * this.cpfAvgStat.getValue()) / 100 +
         "\n" +
         // "\n DLY " + Math.round(100 * this.startDelayMsAvgStat.getValue()) / 100 +

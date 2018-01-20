@@ -6,7 +6,7 @@ uniform lowp int uType;
 
 uniform lowp int uBatching;
 
-uniform highp float uTime;
+//uniform highp float uTime;
 
 uniform mat4 uViewMatrix;
 
@@ -19,15 +19,15 @@ uniform mat4 uModelMatrixBatch[BATCH_SIZE];
 uniform mat4 uModelMatrix2Batch[BATCH_SIZE];
 uniform vec4 uModelColorBatch[BATCH_SIZE];
 
-// poly-line uses a circular buffer with alternating x and y values
-const int POLY_LINE_DATA_LENGTH = 40 * 2;
-const float F_POLY_LINE_DATA_LENGTH = 40.0 * 2.0;
-uniform float uPolyLineData[POLY_LINE_DATA_LENGTH];
-uniform float uPolyLineHeadIndex;
-uniform float uPolyLinePointCount;
-
-uniform int uWarpType[8];
-uniform vec4 uWarpData[8];
+//// poly-line uses a circular buffer with alternating x and y values
+//const int POLY_LINE_DATA_LENGTH = 40 * 2;
+//const float F_POLY_LINE_DATA_LENGTH = 40.0 * 2.0;
+//uniform float uPolyLineData[POLY_LINE_DATA_LENGTH];
+//uniform float uPolyLineHeadIndex;
+//uniform float uPolyLinePointCount;
+//
+//uniform int uWarpType[8];
+//uniform vec4 uWarpData[8];
 
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
@@ -40,7 +40,7 @@ varying mediump vec2 vPosWarped;
 
 
 void main(void) {
-  if (uType == 0 || uType == 1) {
+//  if (uType == 0 || uType == 1) {
     // normal mode or circle-clip mode - they're the same for the vertex shader
 
     if (uBatching == 1) {
@@ -128,53 +128,53 @@ void main(void) {
 //    }
 //    gl_Position.xy += distort;
 
-  } else if (uType == 2) {
-    // polyline mode!
-
-    float fPointNum = min(aVertexPosition.z, uPolyLinePointCount - 2.0);
-
-    float fP0Index = uPolyLineHeadIndex - 2.0 * fPointNum;
-    // If fP0Index is less than 0, then this will add F_POLY_LINE_DATA_LENGTH to it
-    // to get it back in range, without an "if".
-    fP0Index -= floor(fP0Index / F_POLY_LINE_DATA_LENGTH) * F_POLY_LINE_DATA_LENGTH;
-    int p0Index = int(fP0Index);
-
-    float fP1Index = uPolyLineHeadIndex - 2.0 * (fPointNum + 1.0);
-    // ditto
-    fP1Index -= floor(fP1Index / F_POLY_LINE_DATA_LENGTH) * F_POLY_LINE_DATA_LENGTH;
-    int p1Index = int(fP1Index);
-
-    highp vec2 p0 = vec2(uPolyLineData[p0Index - 1], uPolyLineData[p0Index]);
-    highp vec2 p1 = vec2(uPolyLineData[p1Index - 1], uPolyLineData[p1Index]);
-    float signX = sign(aVertexPosition.x);
-
-    // prepare to scale by line width
-    highp vec2 addForWidth = vec2(aVertexPosition.xy);
-    addForWidth.x -= signX;
-    addForWidth *= 1.5; // optional line thickener
-
-//    // rotate by the angle measured in graph space
-//    // BUG doesn't work on old iPads for some reason. And I don't really need it.
-//    highp vec4 g0;
-//    g0.xy = p0.xy;
-//    g0 *= uModelMatrix;
-//    highp vec4 g1;
-//    g1.xy = p1.xy;
-//    g1 *= uModelMatrix;
-//    highp float angle = atan(g1.y - g0.y, g1.x - g0.x);
-//    highp float s = sin(angle);
-//    highp float c = cos(angle);
-//    highp mat2 rot = mat2(c, -s, s, c);
-//    addForWidth *= rot;
-
-    // set to whichever point it is
-    gl_Position = aVertexPosition;
-    gl_Position.xy = (p1.xy * (signX + 1.0) / 2.0) - (p0.xy * (signX - 1.0) / 2.0);
-    gl_Position *= uModelMatrix;
-    gl_Position.xy += addForWidth;
-    gl_Position *= uViewMatrix;
-    gl_Position.z = -0.99;
-    vColor = aVertexColor * uModelColor;
-  }
+//  } else if (uType == 2) {
+//    // polyline mode!
+//
+//    float fPointNum = min(aVertexPosition.z, uPolyLinePointCount - 2.0);
+//
+//    float fP0Index = uPolyLineHeadIndex - 2.0 * fPointNum;
+//    // If fP0Index is less than 0, then this will add F_POLY_LINE_DATA_LENGTH to it
+//    // to get it back in range, without an "if".
+//    fP0Index -= floor(fP0Index / F_POLY_LINE_DATA_LENGTH) * F_POLY_LINE_DATA_LENGTH;
+//    int p0Index = int(fP0Index);
+//
+//    float fP1Index = uPolyLineHeadIndex - 2.0 * (fPointNum + 1.0);
+//    // ditto
+//    fP1Index -= floor(fP1Index / F_POLY_LINE_DATA_LENGTH) * F_POLY_LINE_DATA_LENGTH;
+//    int p1Index = int(fP1Index);
+//
+//    highp vec2 p0 = vec2(uPolyLineData[p0Index - 1], uPolyLineData[p0Index]);
+//    highp vec2 p1 = vec2(uPolyLineData[p1Index - 1], uPolyLineData[p1Index]);
+//    float signX = sign(aVertexPosition.x);
+//
+//    // prepare to scale by line width
+//    highp vec2 addForWidth = vec2(aVertexPosition.xy);
+//    addForWidth.x -= signX;
+//    addForWidth *= 1.5; // optional line thickener
+//
+////    // rotate by the angle measured in graph space
+////    // BUG doesn't work on old iPads for some reason. And I don't really need it.
+////    highp vec4 g0;
+////    g0.xy = p0.xy;
+////    g0 *= uModelMatrix;
+////    highp vec4 g1;
+////    g1.xy = p1.xy;
+////    g1 *= uModelMatrix;
+////    highp float angle = atan(g1.y - g0.y, g1.x - g0.x);
+////    highp float s = sin(angle);
+////    highp float c = cos(angle);
+////    highp mat2 rot = mat2(c, -s, s, c);
+////    addForWidth *= rot;
+//
+//    // set to whichever point it is
+//    gl_Position = aVertexPosition;
+//    gl_Position.xy = (p1.xy * (signX + 1.0) / 2.0) - (p0.xy * (signX - 1.0) / 2.0);
+//    gl_Position *= uModelMatrix;
+//    gl_Position.xy += addForWidth;
+//    gl_Position *= uViewMatrix;
+//    gl_Position.z = -0.99;
+//    vColor = aVertexColor * uModelColor;
+//  }
 
 }

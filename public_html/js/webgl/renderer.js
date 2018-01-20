@@ -62,15 +62,15 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   this.createUniform('uCircles');
   this.createUniform('uCircleCount');
 
-  this.createUniform('uWarpType');
-  this.createUniform('uWarpData');
-
-  this.createUniform('uTexture');
-  this.createUniform('uTime');
-
-  this.createUniform('uPolyLineData');
-  this.createUniform('uPolyLineHeadIndex');
-  this.createUniform('uPolyLinePointCount');
+  // this.createUniform('uWarpType');
+  // this.createUniform('uWarpData');
+  //
+  // this.createUniform('uTexture');
+  // this.createUniform('uTime');
+  //
+  // this.createUniform('uPolyLineData');
+  // this.createUniform('uPolyLineHeadIndex');
+  // this.createUniform('uPolyLinePointCount');
 
   this.createUniform('uModelMatrixBatch');
   this.createUniform('uModelMatrix2Batch');
@@ -233,7 +233,7 @@ Renderer.prototype.setBatching = function(b) {
 };
 
 Renderer.prototype.setTime = function(t) {
-  this.gl.uniform1f(this.uTime, t);
+  // this.gl.uniform1f(this.uTime, t);
   return this;
 };
 

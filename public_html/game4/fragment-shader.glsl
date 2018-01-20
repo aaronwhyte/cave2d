@@ -4,7 +4,7 @@
 // 2: polyline
 uniform lowp int uType;
 
-uniform highp float uTime;
+//uniform highp float uTime;
 
 uniform lowp int uCircleCount; // 1 to 8
 uniform lowp vec3 uCircles[8];
@@ -13,15 +13,15 @@ varying lowp vec4 vColor;
 varying mediump vec2 vPosReal;
 varying mediump vec2 vPosWarped;
 
-uniform lowp int uTexture;
+//uniform lowp int uTexture;
+//
+//int TEXTURE_NONE = 0;
+//int TEXTURE_WALL = 1;
 
-int TEXTURE_NONE = 0;
-int TEXTURE_WALL = 1;
 
-
-highp float rand(highp float i) {
-  return fract(sin(i) * 9754.312);
-}
+//highp float rand(highp float i) {
+//  return fract(sin(i) * 9754.312);
+//}
 
 void main(void) {
   if (uType == 1 || uType == 4) {
