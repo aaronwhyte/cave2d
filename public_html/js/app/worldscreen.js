@@ -3,7 +3,7 @@
  * @constructor
  * @extends Screen
  */
-function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
+function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans, opt_supportBatchDrawing) {
   if (!controller) return; // generating prototype
   Screen.call(this);
 
@@ -17,6 +17,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
 
   this.sounds = new Sounds(sfx, this.viewMatrix);
   this.useFans = !!opt_useFans;
+  this.isBatchDrawingSupported = !!opt_supportBatchDrawing;
 
   // Temps for drawing spirits overlapping circles
   this.cellIdSet = new Set();
@@ -195,7 +196,9 @@ WorldScreen.prototype.getMsUntilClockAbort = function() {
 WorldScreen.prototype.createSpiritConfig = function(type, ctor, menuItemName, group, rank, factory) {
   let model = ctor.createModel();
   let stamp = model.createModelStamp(this.renderer.gl);
-  let batchDrawer = new BatchDrawer(model.createModelStampBatches(this.renderer.gl, Renderer.BATCH_MAX), this.renderer);
+  let batchDrawer = this.isBatchDrawingSupported
+      ? new BatchDrawer(model.createModelStampBatches(this.renderer.gl, Renderer.BATCH_MAX), this.renderer)
+      : null;
   let menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, factory || ctor.factory) : null;
   return new SpiritConfig(type, ctor, stamp, batchDrawer, menuItemConfig);
 };

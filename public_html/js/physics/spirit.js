@@ -45,3 +45,7 @@ Spirit.prototype.onDraw = function(world, renderer) {
 Spirit.prototype.setChangeListener = function(listener) {
   this.changeListener = listener;
 };
+
+Spirit.prototype.setBatchDrawer = function(bd) {
+  this.batchDrawer = bd;
+};

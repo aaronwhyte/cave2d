@@ -62,10 +62,6 @@ BaseSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };
 
-BaseSpirit.prototype.setBatchDrawer = function(batchDrawer) {
-  this.batchDrawer = batchDrawer;
-};
-
 BaseSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };

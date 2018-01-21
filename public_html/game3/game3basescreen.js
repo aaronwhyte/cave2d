@@ -148,7 +148,7 @@ Game3BaseScreen.prototype.initSpiritConfigs = function() {
     if (itemName) {
       menuItemConfig = new MenuItemConfig(itemName, group, rank, model, factory);
     }
-    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, menuItemConfig);
+    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, null, menuItemConfig);
   }
 
   // first column

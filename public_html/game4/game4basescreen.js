@@ -3,7 +3,9 @@
  * @extends {WorldScreen}
  */
 function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  WorldScreen.call(this, controller, canvas, renderer, stamps, sfx, Game4BaseScreen.USE_FANS);
+  WorldScreen.call(this, controller, canvas, renderer, stamps, sfx,
+      Game4BaseScreen.USE_FANS,
+      Game4BaseScreen.SUPPORT_BATCH_DRAWING);
   if (!controller) return; // generating prototype
 
   this.adventureName = adventureName;
@@ -44,6 +46,9 @@ Game4BaseScreen.CAMERA_VIEW_DIST = 40;
 
 // Makes distortions smooth by eliminating T-junctions and making tile models more detailed.
 Game4BaseScreen.USE_FANS = false;
+
+// Adds support for BatchDrawer drawing.
+Game4BaseScreen.SUPPORT_BATCH_DRAWING = true;
 
 Game4BaseScreen.SpiritType = {
   ANT: 3,

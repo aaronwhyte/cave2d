@@ -418,7 +418,7 @@ v stats III: more collection and presentation
       v total ms, just like delayMs but do it at the end of the frame
       x misc ms = everything not in total, each frame
 
-- batch draw!
+v batch draw!
   * merge a bunch of drawings of the same model together with a single draw call.
   v make testlevel with a bajillion ants and stuff, to actually stress this stunningly powerful laptop
   v make sure it's easy to set an array of matrixes
@@ -435,24 +435,31 @@ v stats III: more collection and presentation
     x never set its modelStamp!
     v sets its BatchDrawer instead
       v BaseScreen generates BatchDrawer using AntSpirit.createModel().
-      - Screen has a list of BatchDrawers
-      - Screen passes BatchDrawer to AntSpirit
-      - AntSpirit uses it for addDraw(color, modelMatrix, opt_modelMatrix2) call
-      - flush()
-        - sets batch uniforms: colors and matrixes
-        - draws using stamps[count-1] which contains "count" instances
-      - BatchDrawer auto-flushes if it reaches its max count
-      - Screen calls flush() on each BatchDrawer at the end of the spirit (and splash!) drawing phase
+      v Screen has a list of BatchDrawers
+      x Screen passes BatchDrawer to AntSpirit
+      v AntSpirit uses it for addDraw(color, modelMatrix, opt_modelMatrix2) call
+      v flush()
+        v sets batch uniforms: colors and matrixes
+        v draws using stamps[count-1] which contains "count" instances
+      v BatchDrawer auto-flushes if it reaches its max count
+      v Screen calls flush() on each BatchDrawer at the end of the spirit (and splash!) drawing phase
   v vertex shader "batch" type
     v vertex looks its model matrix and color matrix up in the uniform arrays
-  - see if it makes things faster
-    - try different values for N on various devices
-      - 1
-      - 10
-      - 100
-  - apply it to cylinders too
-    - splashes
-    - bullets
+  v see if it makes things faster
+    v try different values for N on various devices
+      v 1
+      v 10
+      v 100
+  v fix a bunch of broken editors that have empty menus?
+    * probably because I added a param to SpiritConfig(type, ctor, stamp, **batchDrawer**, menuItemConfig)
+    v fix game3 editor or delete game3
+    v text39
+    v test37
+- Copy the BatchDrawer code to the master git branch
+- apply BatchDrawer to cylinders too
+  - splashes
+  - bullets
+
 
 - Improve sleep/wake
 

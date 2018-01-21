@@ -36,7 +36,7 @@ ModelStamp.prototype.prepareToDraw = function(gl, aVertexPosition, aVertexColor,
     gl.vertexAttribPointer(aVertexGroup, 1, gl.FLOAT, false, 0, 0);
   }
   if (typeof aVertexInstance !== 'undefined') {
-    if (!this.instanceBuff) console.log('uh oh!');
+    if (!this.instanceBuff) console.error('ModelStamp prepareToDraw with aVertexInstance but no this.instanceBuff!');
     gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuff);
     gl.vertexAttribPointer(aVertexInstance, 1, gl.FLOAT, false, 0, 0);
   }

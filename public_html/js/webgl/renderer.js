@@ -14,10 +14,14 @@ function Renderer(canvas, gl, program) {
   this.initAttributesAndUniforms();
   this.modelStamp = null;
   this.oldColor = new Vec4(-1, -1, -1);
+
   this.isBatching = false;
 
   this.circleArray = [];
   this.modeStack = [];
+
+  // lazily set to true internally when the first batching-like call is made.
+  this.batchingSupportInitialized = false;
 
   // stats
   this.drawCount = 0;
@@ -48,7 +52,6 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   this.createVertexAttribute('aVertexPosition');
   this.createVertexAttribute('aVertexColor');
   this.createVertexAttribute('aVertexGroup');
-  this.createVertexAttribute('aVertexInstance');
   this.createUniform('uViewMatrix');
   this.createUniform('uModelMatrix');
   this.createUniform('uModelMatrix2');
@@ -56,9 +59,6 @@ Renderer.prototype.initAttributesAndUniforms = function() {
 
   // normal=0, circles=1, statgraph=2
   this.createUniform('uType');
-
-  // 1 if using batched drawing
-  this.createUniform('uBatching');
 
   this.createUniform('uCircles');
   this.createUniform('uCircleCount');
@@ -73,9 +73,18 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   // this.createUniform('uPolyLineHeadIndex');
   // this.createUniform('uPolyLinePointCount');
 
+};
+
+/**
+ * Creates attributes and uniforms for batching.
+ */
+Renderer.prototype.initBatchingSupport = function() {
+  this.createVertexAttribute('aVertexInstance');
+  this.createUniform('uBatching');
   this.createUniform('uModelMatrixBatch');
   this.createUniform('uModelMatrix2Batch');
   this.createUniform('uModelColorBatch');
+  this.batchingSupportInitialized = true;
 };
 
 Renderer.prototype.setWarps = function(type, data) {
@@ -238,6 +247,9 @@ Renderer.prototype.setPolyLineMode = function() {
  */
 Renderer.prototype.setBatching = function(b) {
   if (this.isBatching !== b) {
+    if (b && !this.batchingSupportInitialized) {
+      this.initBatchingSupport();
+    }
     this.gl.uniform1i(this.uBatching, b ? 1 : 0);
     this.isBatching = b;
   }
