@@ -50,6 +50,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans, opt
 
   // stats
   this.shouldDrawStats = false;
+  this.statRenderDrawCount = 0;
   this.glyphs = new Glyphs(new GlyphMaker(0.5, 1), true);
   this.glyphs.initStamps(this.renderer.gl);
   this.printer = new Printer(this.renderer, this.glyphs.stamps);
@@ -900,7 +901,8 @@ WorldScreen.prototype.drawStats = function() {
   avgRatePerFrame(this.world.enterOrExitEnqueuedCount, this.eepfRateStat, this.eepfAvgStat);
   avgRatePerFrame(this.world.addTimeoutCount, this.toepfRateStat, this.toepfAvgStat);
 
-  avgRatePerFrame(this.renderer.drawCount, this.drawCountRateStat, this.drawCountAvgStat);
+  // Subtract the stat glyph draw count itself, which is in the low hundreds :-(
+  avgRatePerFrame(this.renderer.drawCount - this.statRenderDrawCount, this.drawCountRateStat, this.drawCountAvgStat);
 
   avgRatePerFrame(this.startDelayMs, this.startDelayMsRateStat, this.startDelayMsAvgStat);
   avgRatePerFrame(this.handleInputMs, this.handleInputMsRateStat, this.handleInputMsAvgStat);
@@ -941,6 +943,8 @@ WorldScreen.prototype.drawStats = function() {
                 2 / this.canvas.width, -2 / this.canvas.height, 1))
     ;
     this.renderer.setViewMatrix(this.viewMatrix).setColorVector(Renderer.COLOR_WHITE);
+    let drawCount = this.renderer.drawCount;
     this.printer.printMultiLine(this.printerStartMatrix, this.printerNextCharMatrix, this.printerNextLineMatrix, txt);
+    this.statRenderDrawCount += this.renderer.drawCount - drawCount;
   }
 };

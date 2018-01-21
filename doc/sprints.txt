@@ -455,7 +455,7 @@ v batch draw!
     v fix game3 editor or delete game3
     v text39
     v test37
-- Copy the BatchDrawer code to the master git branch
+v Copy the BatchDrawer code to the master git branch
 - apply BatchDrawer to cylinders too
   - splashes
   - bullets
