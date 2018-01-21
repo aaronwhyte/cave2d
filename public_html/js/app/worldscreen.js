@@ -71,6 +71,9 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans) {
   this.handleInputMsRateStat = new RateStat();
   this.handleInputMsAvgStat = new MovingAverageStat(0.05);
 
+  this.drawCountRateStat = new RateStat();
+  this.drawCountAvgStat = new MovingAverageStat(0.05);
+
   // frames per second
   this.frameCount = 0;
   this.fpsRateStat = new RateStat();
@@ -705,12 +708,7 @@ WorldScreen.prototype.drawSpirits = function() {
   for (let id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
-  // TODO: make this part of World
-  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.ANT].batchDrawer.flush();
-  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.CENTIPEDE].batchDrawer.flush();
-  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.SHOTGUN].batchDrawer.flush();
-  this.getSpiritConfigs()[Game4BaseScreen.SpiritType.ROGUE_GUN].batchDrawer.flush();
-
+  this.flushBatchDrawers();
   this.spiritDrawMs += performance.now() - t;
 };
 
@@ -779,7 +777,17 @@ WorldScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
     let spirit = this.world.spirits[spiritId];
     if (!spirit.bodyId) spirit.onDraw(this.world, this.renderer);
   }
+
+  this.flushBatchDrawers();
   this.spiritDrawMs += performance.now() - t;
+};
+
+WorldScreen.prototype.flushBatchDrawers = function() {
+  let configs = this.getSpiritConfigs();
+  for (let k in configs) {
+    let c = configs[k];
+    c.batchDrawer && c.batchDrawer.flush();
+  }
 };
 
 
@@ -841,7 +849,7 @@ WorldScreen.prototype.addItem = function(name, pos, dir) {
   for (let t in configs) {
     let config = configs[t];
     if (config.menuItemConfig && config.menuItemConfig.itemName === name) {
-      let spiritId = config.menuItemConfig.factory(this, config.stamp, pos, dir);
+      let spiritId = config.menuItemConfig.factory(this, config.batchDrawer || config.stamp, pos, dir);
       this.setDirty(true);
       return spiritId;
     }
@@ -889,6 +897,8 @@ WorldScreen.prototype.drawStats = function() {
   avgRatePerFrame(this.world.enterOrExitEnqueuedCount, this.eepfRateStat, this.eepfAvgStat);
   avgRatePerFrame(this.world.addTimeoutCount, this.toepfRateStat, this.toepfAvgStat);
 
+  avgRatePerFrame(this.renderer.drawCount, this.drawCountRateStat, this.drawCountAvgStat);
+
   avgRatePerFrame(this.startDelayMs, this.startDelayMsRateStat, this.startDelayMsAvgStat);
   avgRatePerFrame(this.handleInputMs, this.handleInputMsRateStat, this.handleInputMsAvgStat);
   avgRatePerFrame(this.statDrawMs, this.statDrawMsRateStat, this.statDrawMsAvgStat);
@@ -904,6 +914,7 @@ WorldScreen.prototype.drawStats = function() {
         "B1" +
         "\n FPS " + Math.round(this.fpsAvgStat.getValue()) +
         "\n   C " + Math.round(100 * this.cpfAvgStat.getValue()) / 100 +
+        "\n   D " + Math.round(this.drawCountAvgStat.getValue()) +
         "\n" +
         // "\n DLY " + Math.round(100 * this.startDelayMsAvgStat.getValue()) / 100 +
         "\nSCNE " + Math.round(100 * this.sceneDrawMsAvgStat.getValue()) / 100 +

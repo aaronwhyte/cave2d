@@ -41,10 +41,8 @@ BatchDrawer.prototype.copyData = function(src, dest) {
 
 BatchDrawer.prototype.flush = function() {
   if (this.instances === 0) return;
-  this.renderer.setBatching(true);
   this.renderer.setStamp(this.stamps[this.instances - 1]);
   this.renderer.setBatchUniforms(this.c, this.m, this.m2);
   this.renderer.drawStamp();
-  this.renderer.setBatching(false);
   this.instances = 0;
 };

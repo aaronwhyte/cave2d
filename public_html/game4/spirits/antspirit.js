@@ -262,11 +262,6 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-    // renderer
-    //     .setStamp(this.modelStamp)
-    //     .setColorVector(this.vec4.set(this.color));
-    // renderer.setModelMatrix(this.modelMatrix);
-    // renderer.drawStamp();
     this.batchDrawer.batchDraw(this.color, this.modelMatrix, null);
   }
 };

@@ -135,11 +135,11 @@ PlayerSpirit.createModel = function() {
           .setColorRGB(0, 0, 0));
 };
 
-PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
+PlayerSpirit.factory = function(playScreen, batchDrawer, pos, dir) {
   var world = playScreen.world;
 
   var spirit = new PlayerSpirit(playScreen);
-  spirit.setModelStamp(stamp);
+  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
 
   var spiritId = world.addSpirit(spirit);
@@ -681,11 +681,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
       .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(this.now())));
-  renderer
-      .setStamp(this.modelStamp)
-      .setColorVector(this.color)
-      .setModelMatrix(this.modelMatrix)
-      .drawStamp();
+  this.batchDrawer.batchDraw(this.color, this.modelMatrix, null);
 
   var p1, p2, rad;
 

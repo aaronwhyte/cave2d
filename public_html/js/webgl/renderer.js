@@ -14,6 +14,7 @@ function Renderer(canvas, gl, program) {
   this.initAttributesAndUniforms();
   this.modelStamp = null;
   this.oldColor = new Vec4(-1, -1, -1);
+  this.isBatching = false;
 
   this.circleArray = [];
   this.modeStack = [];
@@ -174,6 +175,7 @@ Renderer.prototype.getViewMatrix = function() {
  * @return {Renderer}
  */
 Renderer.prototype.setModelMatrix = function(modelMatrix) {
+  this.setBatching(false);
   this.gl.uniformMatrix4fv(this.uModelMatrix, this.gl.FALSE, modelMatrix.m);
   return this;
 };
@@ -184,6 +186,7 @@ Renderer.prototype.setModelMatrix = function(modelMatrix) {
  * @return {Renderer}
  */
 Renderer.prototype.setModelMatrix2 = function(modelMatrix2) {
+  this.setBatching(false);
   this.gl.uniformMatrix4fv(this.uModelMatrix2, this.gl.FALSE, modelMatrix2.m);
   return this;
 };
@@ -194,6 +197,7 @@ Renderer.prototype.setModelMatrix2 = function(modelMatrix2) {
  * @return {Renderer}
  */
 Renderer.prototype.setColorVector = function(color) {
+  this.setBatching(false);
   if (!this.oldColor.equals(color)) {
     this.oldColor.set(color);
     this.gl.uniform4fv(this.uModelColor, this.oldColor.v);
@@ -227,8 +231,16 @@ Renderer.prototype.setPolyLineMode = function() {
   return this;
 };
 
+/**
+ * Lazily turn batching on and off.
+ * @param {Boolean} b
+ * @returns {Renderer}
+ */
 Renderer.prototype.setBatching = function(b) {
-  this.gl.uniform1i(this.uBatching, b ? 1 : 0);
+  if (this.isBatching !== b) {
+    this.gl.uniform1i(this.uBatching, b ? 1 : 0);
+    this.isBatching = b;
+  }
   return this;
 };
 
@@ -272,6 +284,7 @@ Renderer.prototype.setPolyLineCircularQueue = function(xyCircularQueue) {
 
 
 Renderer.prototype.setBatchUniforms = function(colors, models, model2s) {
+  this.setBatching(true);
   this.gl.uniform4fv(this.uModelColorBatch, colors);
   this.gl.uniformMatrix4fv(this.uModelMatrixBatch, this.gl.FALSE, models);
   if (model2s) this.gl.uniformMatrix4fv(this.uModelMatrix2Batch, this.gl.FALSE, model2s);
