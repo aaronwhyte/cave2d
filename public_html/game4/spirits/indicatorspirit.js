@@ -58,11 +58,11 @@ IndicatorSpirit.createModel = function() {
       .setColorRGB(0.5, 0.5, 0.4);
 };
 
-IndicatorSpirit.factory = function(screen, stamp, pos, dir) {
+IndicatorSpirit.factory = function(screen, batchDrawer, pos, dir) {
   var world = screen.world;
 
   var spirit = new IndicatorSpirit(screen);
-  spirit.setModelStamp(stamp);
+  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   var density = 1;
 
@@ -119,24 +119,12 @@ IndicatorSpirit.prototype.onTimeout = function(world, timeoutVal) {
   world.addTimeout(now + timeoutDuration, this.id, -1);
 };
 
-IndicatorSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody();
-  var pos = this.getBodyPos();
-  this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  if (!IndicatorSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
-    var lit = this.sumOfInputs() > 0;
-    this.vec4.set(this.color);
-    if (lit) {
-      this.vec4.scale1(1.5 + 5 * Math.random());
-    }
-    renderer
-        .setStamp(this.modelStamp)
-        .setColorVector(this.vec4);
-    this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-        .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-    renderer.setModelMatrix(this.modelMatrix);
-    renderer.drawStamp();
+
+IndicatorSpirit.prototype.getColor = function() {
+  let lit = this.sumOfInputs() > 0;
+  this.vec4.set(this.color);
+  if (lit) {
+    this.vec4.scale1(1.5 + 5 * Math.random());
   }
+  return this.vec4;
 };

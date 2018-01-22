@@ -201,6 +201,27 @@ BaseSpirit.prototype.getAngleDiff = function(toAngle) {
   return angleDiff;
 };
 
+BaseSpirit.prototype.getColor = function() {
+  return this.color;
+};
+
+BaseSpirit.prototype.drawBody = function() {
+  let body = this.getBody();
+  let pos = this.getBodyPos();
+  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
+  if (this.distOutsideViewCircles < 2 * body.rad) {
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
+        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+        .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
+    this.batchDrawer.batchDraw(this.getColor(), this.modelMatrix, null);
+  }
+};
+
+BaseSpirit.prototype.onDraw = function(world, renderer) {
+  this.drawBody();
+};
+
 
 //////////////////////////
 // Input/Output

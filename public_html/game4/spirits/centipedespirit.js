@@ -90,11 +90,11 @@ CentipedeSpirit.createModel = function() {
       .setColorRGB(1, 0.1, 0.1);
 };
 
-CentipedeSpirit.factory = function(screen, stamp, pos, dir) {
+CentipedeSpirit.factory = function(screen, batchDrawer, pos, dir) {
   var world = screen.world;
 
   var spirit = new CentipedeSpirit(screen);
-  spirit.setModelStamp(stamp);
+  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   var density = 1;
 
@@ -423,19 +423,6 @@ CentipedeSpirit.prototype.maybeJoin = function() {
       this.headwardId = otherSpirit.id;
       otherSpirit.tailwardId = this.id;
     }
-  }
-};
-
-CentipedeSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody();
-  var pos = this.getBodyPos();
-  this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  if (!CentipedeSpirit.OPTIMIZE || this.viewportsFromCamera < 1.1) {
-    this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-        .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-    this.batchDrawer.batchDraw(this.color, this.modelMatrix, null);
   }
 };
 

@@ -456,6 +456,7 @@ v batch draw!
     v text39
     v test37
 v Copy the BatchDrawer code to the master git branch
+v Fix game4/edit item adding
 - apply BatchDrawer to cylinders too
   - splashes
   - bullets

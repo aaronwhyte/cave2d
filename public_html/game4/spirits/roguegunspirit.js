@@ -77,11 +77,11 @@ RogueGunSpirit.createModel = function() {
   return model.addRigidModel(body).addRigidModel(barrel);
 };
 
-RogueGunSpirit.factory = function(screen, stamp, pos, dir) {
+RogueGunSpirit.factory = function(screen, batchDrawer, pos, dir) {
   var world = screen.world;
 
   var spirit = new RogueGunSpirit(screen);
-  spirit.setModelStamp(stamp);
+  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   var density = 1;
 
@@ -147,22 +147,13 @@ RogueGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
 };
 
-RogueGunSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody();
-  var pos = this.getBodyPos();
-  this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  if (this.viewportsFromCamera < 1.1) {
-    var lit = this.sumOfInputs() > 0;
-    this.vec4.set(this.color);
-    if (lit) {
-      this.vec4.scale1(1.2);
-    }
-    this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-        .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-    this.batchDrawer.batchDraw(this.vec4, this.modelMatrix, null);
+RogueGunSpirit.prototype.getColor = function() {
+  let lit = this.sumOfInputs() > 0;
+  this.vec4.set(this.color);
+  if (lit) {
+    this.vec4.scale1(1.2);
   }
+  return this.vec4;
 };
 
 RogueGunSpirit.prototype.onInputSumUpdate = function() {

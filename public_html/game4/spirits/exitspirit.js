@@ -34,11 +34,11 @@ ExitSpirit.createModel = function() {
       .setColorRGB(0.2, 0.8, 0.2);
 };
 
-ExitSpirit.factory = function(screen, stamp, pos) {
+ExitSpirit.factory = function(screen, batchDrawer, pos) {
   var world = screen.world;
 
   var spirit = new ExitSpirit(screen);
-  spirit.setModelStamp(stamp);
+  spirit.setBatchDrawer(batchDrawer);
 
   var b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -115,19 +115,7 @@ ExitSpirit.prototype.setModelStamp = function(modelStamp) {
 };
 
 ExitSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody();
-  var bodyPos = this.getBodyPos();
-  renderer
-      .setStamp(this.modelStamp)
-      .setColorVector(this.color);
-  // TODO: standardize Z
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.5))
-      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
-
-  renderer.setModelMatrix(this.modelMatrix);
-  renderer.drawStamp();
-
+  this.drawBody();
   // arrows and stars and orbits
   if (this.screen.isPlaying()) {
     for (var slotName in this.screen.slots) {

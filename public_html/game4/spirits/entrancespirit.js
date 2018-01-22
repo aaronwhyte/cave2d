@@ -29,11 +29,11 @@ EntranceSpirit.createModel = function() {
       .setColorRGB(0.7, 0.3, 0.7);
 };
 
-EntranceSpirit.factory = function(screen, stamp, pos) {
+EntranceSpirit.factory = function(screen, batchDrawer, pos) {
   var world = screen.world;
 
   var spirit = new EntranceSpirit(screen);
-  spirit.setModelStamp(stamp);
+  spirit.setBatchDrawer(batchDrawer);
   var density = 1;
 
   var b = Body.alloc();
@@ -82,19 +82,8 @@ EntranceSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };
 
-EntranceSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody();
-  var bodyPos = this.getBodyPos();
-  renderer
-      .setStamp(this.modelStamp)
-      .setColorVector(Renderer.COLOR_WHITE);
-  // TODO: standardize Z
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.5))
-      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1));
-
-  renderer.setModelMatrix(this.modelMatrix);
-  renderer.drawStamp();
+EntranceSpirit.prototype.getColor = function() {
+  return Renderer.COLOR_WHITE;
 };
 
 EntranceSpirit.prototype.toJSON = function() {
