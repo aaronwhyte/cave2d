@@ -463,6 +463,25 @@ v Fix game4/edit item adding
 
 
 - Improve sleep/wake
+  - debug by drawing everyone but use colors to indicate states:
+    - active,
+    - sleep-soon: waiting for timeout T to fire without going back to active
+    - sleep-asap: timeout fired, just hit the brakes to reach vel zero
+    - sleeping. If bumped, go to sleep-asap
+  - long loop for very periodic path invalidation while sleeping
+    - never stops
+  - tight loop
+    - awake and doing stuff (as we have today)
+    - or shutting down but not zero vel yet. Apply friction until close enough to zero out vel
+    - end it when criteria are met:
+      - shutting down
+        - far enough from player view
+        - some time has passed since visible to players.
+          (don't stop right outside the player's view)
+      - zero vel
+    - restart tight loop
+      - when visited by drawing, which is already visiting cells near players
+      - when bumped or otherwise accelerated, causing vel to go non-zero.
 
 - fix this:
   [Deprecation] GainNode.gain.value setter smoothing is deprecated and will be removed in M64, around January 2018.
