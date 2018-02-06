@@ -221,7 +221,7 @@ RigidModel.prototype.createModelStamp = function(gl) {
 
 /**
  * Adds 1..maxCount instances of immutable snapshot data to GL, and returns an array of handles to them.
- * So if maxCount is 3, then ir will return an array of stamps:
+ * So if maxCount is 3, then it will return an array of stamps:
  * [stamp with 1 instance, stamp with 2 instances, stamp with 3 instances]
  * @param gl
  * @param maxCount
