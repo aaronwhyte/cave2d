@@ -457,12 +457,25 @@ v batch draw!
     v test37
 v Copy the BatchDrawer code to the master git branch
 v Fix game4/edit item adding
-- apply BatchDrawer to cylinders too
+
+Attitude Adjustment: Feel free to delete old tests like crazy. Never let them slow you down.
+
+- apply BatchDrawer to more stuff
+  - make batch-drawer registration explicit.
+    - pull model, stamp, and batch creation way up out of spirits and into centralized "Drawables", with IDs
+    - change flush() to use Drawables batches, not the list of configs
+    - spirits access screen.drawables, or by drawables injection if I want to be demeterish
+    - spirits no longer know their models? They use the IDs of drawables in the drawer calls.
+    - spiritconfig menu items still get specific stamps for drawing the menu, but they're pulled from Drawables.
+  - bullet cylinders
   - splashes
-  - bullets
+    - circles
+    - tubes
 
+- change all the lazy init WorldScreen code to injection.
+  Go ahead and delete tests if that makes it easier.
 
-- Improve sleep/wake
+- Improve enemy sleep/wake
   - debug by drawing everyone but use colors to indicate states:
     - active,
     - sleep-soon: waiting for timeout T to fire without going back to active
@@ -483,6 +496,8 @@ v Fix game4/edit item adding
       - when visited by drawing, which is already visiting cells near players
       - when bumped or otherwise accelerated, causing vel to go non-zero.
 
+- Wall skating? Want it for enemies regardless.
+
 - fix this:
   [Deprecation] GainNode.gain.value setter smoothing is deprecated and will be removed in M64, around January 2018.
   Please use setTargetAtTime() instead if smoothing is needed.
@@ -494,20 +509,14 @@ x Debug Undo/Redo
   x repro?
   I think it was the constant clocking because stuff wasn't zeroing out its velocity. Fixed that.
 
-EXPLOSION THOUGHTS
-* Splashy everything like I have today
-* Physics-y everything like N++. Nice if you can afford it! Mostly only hits walls
-* Blend physics-y shrapnel and splashy clouds?
-* shader tricks
-  * fat fragment shader, simply geometry (circle?)
-  * fancy vertex shader with numbered objects and parameterized explosions
-
 WEAPONS & ENEMIES
 * enemies can be grabbed and used as weapons
 * But they must be basically dead for it to work?
 
 * Giant enemnies cannot be carried or used? Or they can be but they're so darn heavy that it sucks to try and
   they don't fit in narrow spaces.
+
+- Glaive! Activated, it zooms away, comes back, but is easy-ish to catch again
 
 - Basic shooter
   - wanders, fires slow bullet occasionally at player
@@ -520,7 +529,7 @@ WEAPONS & ENEMIES
   - may be grabbed and kicked safely
   - touching makes them boom, physical shrapnel
 
-Focus on big enemies, not lots of small ones.
+Focus on big enemies, not lots of small ones?
 behaviors:
 - go forward
 - scan to avoid walls
@@ -581,13 +590,15 @@ v rapid-fire
 - slime splasher, lowers traction a lot
 
 
-How about explosions that
-AWESOME EXPLOSIONS IN JUST A FEW GL CALLS
-ALSO AWESOME POLYLINE DRAWING USING THE SAME TECHNIQUE
-- Long list of models, all pretty much the same  tiny thing, maybe tetrahedrons? but that's not important now.
-- Each vertex has a model number, a float from 0 to 1, to make this easy to scale to different counts.
-- Vertex shaders reposition and recolor each model independently based on an array of params, and time.
-- params are things like... The transformation for position 0
+Better deaths/explosions
+- two-part models with spiky bits
+* Splashy everything like I have today
+* Physics-y everything like N++. Nice if you can afford it! Mostly only hits walls
+* shader tricks
+  * fat fragment shader, simply geometry (circle?)
+  * fancy vertex shader with numbered objects and parameterized explosions
+
+
 
 
 SOUND 2
