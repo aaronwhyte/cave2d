@@ -14,12 +14,12 @@ function TriggerWidget(elem) {
   this.mousePointerTrigger = null;
   this.stamp = null;
 
-  this.pressedColorVec4 = new Vec4().setXYZ(0.8, 0.8, 0.8);
-  this.releasedColorVec4 = new Vec4().setXYZ(0.5, 0.5, 0.5);
+  this.pressedColorVec4 = new Vec4().setRGBA(1, 1, 1, 0.9);
+  this.releasedColorVec4 = new Vec4().setRGBA(1, 1, 1, 0.8);
 
   this.keyboardTipModelMatrix = new Matrix44();
   this.keyboardTipStamp = null;
-  this.keyboardTipColorVec4 = new Vec4().setRGBA(0.5, 0.5, 0.5, 0.5);
+  this.keyboardTipColorVec4 = new Vec4().setRGBA(1, 1, 1, 0.9);
 
   // Time at which the keyboard tip will stop being rendered
   this.keyboardTipUntilTimeMs = -Infinity;

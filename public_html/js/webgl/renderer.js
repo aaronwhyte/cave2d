@@ -146,7 +146,7 @@ Renderer.prototype.clear = function() {
 Renderer.prototype.setBlendingEnabled = function(blend) {
   if (blend) {
     this.gl.enable(this.gl.BLEND);
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE)
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
   } else {
     this.gl.disable(this.gl.BLEND);
   }

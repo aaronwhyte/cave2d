@@ -21,20 +21,22 @@ function ModeMenuWidget(elem) {
   this.matrixesValid = false;
   this.stampsValid = false;
 
+  let alpha = 0.8;
+
   // single stamp for the entire set of items
   this.menuStamp = null;
   this.menuMatrix = new Matrix44();
-  this.menuColor = new Vec4(1, 1, 1, 0.5);
+  this.menuColor = new Vec4(1, 1, 1, alpha);
 
   // selection indicator, like a box around the selection
   this.indicatorStamp = null;
   this.indicatorMatrix = new Matrix44();
-  this.indicatorColor = new Vec4(1, 1, 1, 0.6);
+  this.indicatorColor = new Vec4(1, 1, 1, alpha);
 
   // keyboard tips, for people who like that sort of thing
   this.keyTipsStamp = null;
   this.keyTipsMatrix = new Matrix44();
-  this.keyTipsColor = new Vec4(1, 1, 1, 0.5);
+  this.keyTipsColor = new Vec4(1, 1, 1, alpha);
 
   // center of the group-0, rank-0 item
   this.menuPos = new Vec2d(0, 0);

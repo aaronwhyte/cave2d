@@ -97,8 +97,7 @@ EditorModels.prototype.getFillTrigger = function() {
   }
   model.addRigidModel(RigidModel.createRingMesh(5, 0.8).transformPositions(
       new Matrix44()
-          .multiply(new Matrix44().toScaleOpXYZ(EditorModels.cursorIconRad, EditorModels.cursorIconRad, 1)))
-      .setColorRGB(0.5, 0.5, 0.5));
+          .multiply(new Matrix44().toScaleOpXYZ(EditorModels.cursorIconRad, EditorModels.cursorIconRad, 1))));
   model.addRigidModel(this.getTriggerBackground());
   return model;
 };
@@ -106,8 +105,8 @@ EditorModels.prototype.getFillTrigger = function() {
 EditorModels.prototype.getAddMenuIndicator = function() {
   var model = new RigidModel();
   var size = 1.5;
-  var brightness = 0.5;
-  var thickness = 0.3;
+  var brightness = 1;
+  var thickness = 0.25;
   var length = 0.5 + thickness;
   for (var i = 0; i < 4; i++) {
     model

@@ -19,7 +19,7 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
   this.spiritConfigs = spiritConfigs;
   this.changeStack = opt_changeStack || null;
 
-  this.releasedColorVec4 = new Vec4(1, 1, 1, 0.5);
+  this.releasedColorVec4 = new Vec4(1, 1, 1, 0.7);
   this.pressedColorVec4 = new Vec4(1, 1, 1, 0.9);
 
   this.initWidgets(glyphs.initStamps(renderer.gl), editorStamps);
