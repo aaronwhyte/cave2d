@@ -18,6 +18,9 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans, opt
   this.sounds = new Sounds(sfx, this.viewMatrix);
   this.useFans = !!opt_useFans;
   this.isBatchDrawingSupported = !!opt_supportBatchDrawing;
+  if (this.isBatchDrawingSupported) {
+    this.drawPack = new DrawPack(this.renderer);
+  }
 
   // Temps for drawing spirits overlapping circles
   this.cellIdSet = new Set();
@@ -176,11 +179,22 @@ WorldScreen.prototype.getClocksPerFrame = function() {
 };
 
 WorldScreen.prototype.getMsPerFrame = function() {
-  return 1000 / 60;
+  return 1000 / this.fpsAvgStat.getValue();
+  // return 1000 / 60;
 };
 
 WorldScreen.prototype.getMsUntilClockAbort = function() {
   return this.getMsPerFrame() - WorldScreen.RELAX_PER_FRAME_MS;
+};
+
+WorldScreen.prototype.addModel = function(id, model, batchSize) {
+  return this.drawPack.addModel(id, model, batchSize);
+};
+
+WorldScreen.prototype.flushBatchDrawers = function() {
+  if (this.isBatchDrawingSupported) {
+    this.drawPack.flush();
+  }
 };
 
 /**
@@ -712,7 +726,9 @@ WorldScreen.prototype.drawSpirits = function() {
   for (let id in this.world.spirits) {
     this.world.spirits[id].onDraw(this.world, this.renderer);
   }
-  this.flushBatchDrawers();
+  if (this.isBatchDrawingSupported) {
+    this.flushBatchDrawers();
+  }
   this.spiritDrawMs += performance.now() - t;
 };
 
@@ -785,15 +801,6 @@ WorldScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
   this.flushBatchDrawers();
   this.spiritDrawMs += performance.now() - t;
 };
-
-WorldScreen.prototype.flushBatchDrawers = function() {
-  let configs = this.getSpiritConfigs();
-  for (let k in configs) {
-    let c = configs[k];
-    c.batchDrawer && c.batchDrawer.flush();
-  }
-};
-
 
 WorldScreen.prototype.getPixelsPerGridCell = function() {
   return this.bitGrid.bitWorldSize * BitGrid.BITS * this.getPixelsPerMeter();

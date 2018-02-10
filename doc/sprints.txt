@@ -462,11 +462,19 @@ Attitude Adjustment: Feel free to delete old tests like crazy. Never let them sl
 
 - apply BatchDrawer to more stuff
   - make batch-drawer registration explicit.
-    - pull model, stamp, and batch creation way up out of spirits and into centralized "Drawables", with IDs
-    - change flush() to use Drawables batches, not the list of configs
-    - spirits access screen.drawables, or by drawables injection if I want to be demeterish
-    - spirits no longer know their models? They use the IDs of drawables in the drawer calls.
-    - spiritconfig menu items still get specific stamps for drawing the menu, but they're pulled from Drawables.
+    - pull model, stamp, and batch creation way up out of spirits and into centralized "DrawPack" instance
+      v DrawPack class
+        v addModel
+        v draw
+        v flush
+      v add a DrawPack to Game4BaseScreen (or WorldScreen) and wrap its methods (demeter!)
+      - populate DrawPack with models mapped to IDs
+        - create model IDs
+        - move spirit model creation and ID assignment to central game draw-resource initializer?
+        - spirits know drawPack IDs (maybe multiple! Anything goes!)
+        - spirits use screen's new draw method, not direct renderer
+    v change flush() to use DrawPack, not the list of configs
+    - spiritconfig menu items still get specific stamps for drawing the menu, but they're pulled from DrawPack.
   - bullet cylinders
   - splashes
     - circles

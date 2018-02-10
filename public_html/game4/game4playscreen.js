@@ -391,6 +391,7 @@ Game4PlayScreen.prototype.drawScene = function() {
   this.drawSpiritsOverlappingCircles(this.viewCircles);
 
   this.splasher.draw(this.renderer, this.world.now);
+  this.flushBatchDrawers();
 
   this.renderer.setNormalMode();
   this.drawHud();
