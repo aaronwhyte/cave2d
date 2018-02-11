@@ -17,8 +17,8 @@ PlayLevelPage.prototype = new ScreenPage();
 PlayLevelPage.prototype.constructor = PlayLevelPage;
 
 PlayLevelPage.prototype.refreshPauseMenu = function() {
-  var df = document.createDocumentFragment();
-  var e;
+  let df = document.createDocumentFragment();
+  let e;
   this.appendTitle(df);
   this.appendFullScreenButton(df);
 

@@ -59,14 +59,14 @@ IndicatorSpirit.createModel = function() {
 };
 
 IndicatorSpirit.factory = function(screen, batchDrawer, pos, dir) {
-  var world = screen.world;
+  let world = screen.world;
 
-  var spirit = new IndicatorSpirit(screen);
+  let spirit = new IndicatorSpirit(screen);
   spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
-  var density = 1;
+  let density = 1;
 
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.9;
@@ -78,7 +78,7 @@ IndicatorSpirit.factory = function(screen, batchDrawer, pos, dir) {
   b.moi = b.mass * b.rad * b.rad / 2;
   spirit.bodyId = world.addBody(b);
 
-  var spiritId = world.addSpirit(spirit);
+  let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
   world.addTimeout(screen.now(), spiritId, -1);
   return spiritId;
@@ -93,23 +93,23 @@ IndicatorSpirit.prototype.onTimeout = function(world, timeoutVal) {
     this.changeListener.onBeforeSpiritChange(this);
   }
   this.maybeStop();
-  var body = this.getBody();
+  let body = this.getBody();
 
-  var friction = this.getFriction();
+  let friction = this.getFriction();
 
-  var now = this.now();
-  var time = IndicatorSpirit.MEASURE_TIMEOUT;
+  let now = this.now();
+  let time = IndicatorSpirit.MEASURE_TIMEOUT;
 
   // friction
   body.applyLinearFrictionAtTime(friction * time, now);
   body.applyAngularFrictionAtTime(friction * time, now);
 
-  var newVel = this.vec2d.set(body.vel);
+  let newVel = this.vec2d.set(body.vel);
 
   // Reset the body's pathDurationMax because it gets changed at compile-time,
   // but it is serialized at level-save-time, so old saved values might not
   // match the new compiled-in values. Hm.
-  var timeoutDuration;
+  let timeoutDuration;
   timeoutDuration = Math.min(
       IndicatorSpirit.MAX_TIMEOUT,
       IndicatorSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));

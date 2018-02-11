@@ -2,7 +2,7 @@
  * All the hit groups.
  * @enum {number}
  */
-HitGroups = {
+let HitGroups = {
   EMPTY: 0,
   WALL: 1,
   NEUTRAL: 2,

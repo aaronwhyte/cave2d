@@ -30,13 +30,13 @@ EntranceSpirit.createModel = function() {
 };
 
 EntranceSpirit.factory = function(screen, batchDrawer, pos) {
-  var world = screen.world;
+  let world = screen.world;
 
-  var spirit = new EntranceSpirit(screen);
+  let spirit = new EntranceSpirit(screen);
   spirit.setBatchDrawer(batchDrawer);
-  var density = 1;
+  let density = 1;
 
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, screen.now());
   b.rad = 4;
@@ -45,7 +45,7 @@ EntranceSpirit.factory = function(screen, batchDrawer, pos) {
   b.pathDurationMax = Infinity;
   spirit.bodyId = world.addBody(b);
 
-  var spiritId = world.addSpirit(spirit);
+  let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
   world.addTimeout(world.now, spiritId, -1);
   return spiritId;
@@ -56,12 +56,12 @@ EntranceSpirit.prototype.onTimeout = function(world, timeoutVal) {
     this.changeListener.onBeforeSpiritChange(this);
   }
   this.maybeStop();
-  var body = this.getBody();
+  let body = this.getBody();
   body.pathDurationMax = Infinity;
   // If the body is being moved (because it's in the editor), slow it to a stop.
   if (!body.vel.isZero()) {
-    var friction = 0.5;
-    var newVel = this.vec2d.set(body.vel).scale(1 - friction);
+    let friction = 0.5;
+    let newVel = this.vec2d.set(body.vel).scale(1 - friction);
     body.setVelAtTime(newVel, world.now);
   }
   world.addTimeout(world.now + EntranceSpirit.TIMEOUT, this.id, -1);

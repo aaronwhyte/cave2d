@@ -55,10 +55,10 @@ PlayerSlot.prototype.setRespawnPos = function(pos) {
  */
 PlayerSlot.prototype.setState = function(newStateName) {
   if (this.stateName === newStateName) return;
-  var oldControls = this.stateMap[this.stateName];
+  let oldControls = this.stateMap[this.stateName];
   if (oldControls) oldControls.stopListening();
 
-  var newControls = this.stateMap[newStateName];
+  let newControls = this.stateMap[newStateName];
   if (newControls) newControls.startListening();
   this.stateName = newStateName;
   return this;
@@ -83,7 +83,7 @@ PlayerSlot.prototype.getControlListForState = function(stateName) {
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.draw = function(renderer) {
-  var c = this.getControlList();
+  let c = this.getControlList();
   if (c) c.draw(renderer);
   return this;
 };
@@ -92,7 +92,7 @@ PlayerSlot.prototype.draw = function(renderer) {
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.releaseControls = function() {
-  var c = this.getControlList();
+  let c = this.getControlList();
   if (c) c.releaseControls();
   return this;
 };
@@ -106,16 +106,16 @@ PlayerSlot.prototype.updateViewCircle = function(now) {
     this.camera.follow(this.spirit.getCameraFocusPos());
   }
   this.circle.rad = Game4PlayScreen.PLAYER_VIEW_RADIUS;
-  var deathFraction = this.getDeathFraction(now);
-  var spawnFraction = this.getSpawnFraction(now);
+  let deathFraction = this.getDeathFraction(now);
+  let spawnFraction = this.getSpawnFraction(now);
   if (!this.spirit) {
-    var eyeShut = 0.75;
+    let eyeShut = 0.75;
     this.circle.rad *= Math.sin(
         Math.max(0, deathFraction * (2 - eyeShut) - (1 - eyeShut))
         * Math.PI / 2);
 
     // Use a sinusoid ease-out ease-in slide, but cube it to make the ease-out slower.
-    var camSlideFraction = Math.pow(0.5 - Math.cos((1-deathFraction) * Math.PI) / 2, 3);
+    let camSlideFraction = Math.pow(0.5 - Math.cos((1-deathFraction) * Math.PI) / 2, 3);
     this.camera.cameraPos.set(this.deathPos).scale(1 - camSlideFraction)
         .add(this.vec2d.set(this.respawnPos).scale(camSlideFraction));
   } else {

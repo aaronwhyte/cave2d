@@ -98,38 +98,38 @@ EnergyBulletSpirit.prototype.onDraw = function(world, renderer) {
 };
 
 EnergyBulletSpirit.prototype.addTrailSegment = function() {
-  var body = this.getBody();
+  let body = this.getBody();
   this.headRad = body.rad;
   this.tailRad = 0;
   this.trail.append(this.now(), this.getBodyPos(), body.vel);
 };
 
 EnergyBulletSpirit.prototype.drawTrail = function() {
-  var maxTime = this.now();
-  var duration = 3;
-  var minTime = maxTime - duration;
-  var trailWarm = false;
+  let maxTime = this.now();
+  let duration = 3;
+  let minTime = maxTime - duration;
+  let trailWarm = false;
   this.screen.renderer
       .setStamp(this.stamps.cylinderStamp)
       .setColorVector(this.color);
-  for (var i = 0; i < this.trail.size(); i++) {
-    var segStartTime = this.trail.getSegmentStartTime(i);
-    var segEndTime = this.trail.getSegmentEndTime(i);
-    var drawStartTime = Math.max(segStartTime, minTime);
-    var drawEndTime = Math.min(segEndTime, maxTime);
+  for (let i = 0; i < this.trail.size(); i++) {
+    let segStartTime = this.trail.getSegmentStartTime(i);
+    let segEndTime = this.trail.getSegmentEndTime(i);
+    let drawStartTime = Math.max(segStartTime, minTime);
+    let drawEndTime = Math.min(segEndTime, maxTime);
     if (drawStartTime <= drawEndTime) {
       trailWarm = true;
       // something to draw
       this.trail.getSegmentPosAtTime(i, drawStartTime, this.segStartVec);
       this.trail.getSegmentPosAtTime(i, drawEndTime, this.segEndVec);
 
-      var startRad = this.tailRad + (this.headRad - this.tailRad) * (drawStartTime - minTime) / duration;
+      let startRad = this.tailRad + (this.headRad - this.tailRad) * (drawStartTime - minTime) / duration;
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
       this.screen.renderer.setModelMatrix(this.modelMatrix);
 
-      var endRad = this.tailRad + (this.headRad - this.tailRad) * (drawEndTime - minTime) / duration;
+      let endRad = this.tailRad + (this.headRad - this.tailRad) * (drawEndTime - minTime) / duration;
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));

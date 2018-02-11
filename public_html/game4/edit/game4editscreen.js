@@ -9,10 +9,10 @@ function Game4EditScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);
 
-  var self = this;
+  let self = this;
 
   this.keyTipRevealer = function() {
-    var ms = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
+    let ms = Date.now() + Editor.KEYBOARD_TIP_TIMEOUT_MS;
     self.testTriggerWidget.setKeyboardTipTimeoutMs(ms);
     self.editor.setKeyboardTipTimeoutMs(ms);
   };
@@ -52,7 +52,7 @@ Game4EditScreen.prototype.updateHudLayout = function() {
 Game4EditScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
   Game4BaseScreen.prototype.setScreenListening.call(this, listen);
-  var buttonEvents = ['click', 'touchEnd'];
+  let buttonEvents = ['click', 'touchEnd'];
   Events.setListening(listen, document.querySelector('#fullScreenButton'), buttonEvents, this.fullScreenFn);
   Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
   Events.setListening(listen, this.canvas, 'mousemove', this.keyTipRevealer);
@@ -60,10 +60,10 @@ Game4EditScreen.prototype.setScreenListening = function(listen) {
 };
 
 Game4EditScreen.prototype.initWidgets = function() {
-  var self = this;
+  let self = this;
   this.testDownFn = function(e) {
     e = e || window.event;
-    var query = {};
+    let query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = self.adventureName;
     query[EditorApp.PARAM_LEVEL_NAME] = self.levelName;
     query[EditorApp.PARAM_MODE] = EditorApp.MODE_TEST;
@@ -88,8 +88,8 @@ Game4EditScreen.prototype.createDefaultWorld = function() {
 };
 
 Game4EditScreen.prototype.onHitEvent = function(e) {
-  var b0 = this.world.getBodyByPathId(e.pathId0);
-  var b1 = this.world.getBodyByPathId(e.pathId1);
+  let b0 = this.world.getBodyByPathId(e.pathId0);
+  let b1 = this.world.getBodyByPathId(e.pathId1);
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
   }

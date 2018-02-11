@@ -136,14 +136,14 @@ PlayerSpirit.createModel = function() {
 };
 
 PlayerSpirit.factory = function(playScreen, batchDrawer, pos, dir) {
-  var world = playScreen.world;
+  let world = playScreen.world;
 
-  var spirit = new PlayerSpirit(playScreen);
+  let spirit = new PlayerSpirit(playScreen);
   spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
 
-  var spiritId = world.addSpirit(spirit);
-  var b = spirit.createBody(pos, dir);
+  let spiritId = world.addSpirit(spirit);
+  let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
@@ -151,8 +151,8 @@ PlayerSpirit.factory = function(playScreen, batchDrawer, pos, dir) {
 };
 
 PlayerSpirit.prototype.createBody = function(pos, dir) {
-  var density = 1;
-  var b = Body.alloc();
+  let density = 1;
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
   b.rad = PlayerSpirit.PLAYER_RAD;
@@ -173,28 +173,28 @@ PlayerSpirit.prototype.getCameraFocusPos = function() {
 };
 
 PlayerSpirit.prototype.handleInput = function(controls) {
-  var playerBody = this.getBody();
+  let playerBody = this.getBody();
   if (!playerBody) return;
 
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-  var now = this.now();
-  var duration = now - this.lastInputTime;
+  let now = this.now();
+  let duration = now - this.lastInputTime;
   this.lastInputTime = now;
 
-  var stick = controls.get(ControlName.STICK);
-  var touchlike = stick.isTouchlike();
+  let stick = controls.get(ControlName.STICK);
+  let touchlike = stick.isTouchlike();
 
   ////////////
   // BUTTONS
 
-  var newKick = controls.get(ControlName.BUTTON_1).getVal();
-  var newGrab = controls.get(ControlName.BUTTON_2).getVal();
-  var kickDown = !this.oldKick && newKick;
-  var kickUp = this.oldKick && !newKick;
-  var grabDown = !this.oldGrab && newGrab;
-  var grabUp = this.oldGrab && !newGrab;
+  let newKick = controls.get(ControlName.BUTTON_1).getVal();
+  let newGrab = controls.get(ControlName.BUTTON_2).getVal();
+  let kickDown = !this.oldKick && newKick;
+  let kickUp = this.oldKick && !newKick;
+  let grabDown = !this.oldGrab && newGrab;
+  let grabUp = this.oldGrab && !newGrab;
   this.oldKick = newKick;
   this.oldGrab = newGrab;
 
@@ -225,13 +225,13 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   this.handleBeamState();
 
   stick.getVal(this.vec2d);
-  var stickMag = this.vec2d.magnitude();
-  var stickDotAim = stickMag ? this.vec2d.dot(this.aim) / stickMag : 0; // aim is always length 1
-  var aimLocked = BeamState.isAimLocked(this.beamState);
+  let stickMag = this.vec2d.magnitude();
+  let stickDotAim = stickMag ? this.vec2d.dot(this.aim) / stickMag : 0; // aim is always length 1
+  let aimLocked = BeamState.isAimLocked(this.beamState);
 
   ////////////
   // MOVEMENT
-  var speed = PlayerSpirit.SPEED;
+  let speed = PlayerSpirit.SPEED;
 
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
@@ -245,7 +245,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   } else {
     this.tractionMult = Math.max(0, this.tractionMult - 0.01);
   }
-  var traction = PlayerSpirit.TRACTION * this.tractionMult;
+  let traction = PlayerSpirit.TRACTION * this.tractionMult;
   // Half of traction's job is to stop you from sliding in the direction you're already going.
   this.accel.set(playerBody.vel).scale(-traction);
 
@@ -258,7 +258,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   ////////
   // AIM
   if (!aimLocked) {
-    var reverseness = Math.max(0, -stickDotAim);
+    let reverseness = Math.max(0, -stickDotAim);
     if (touchlike) {
       this.handleTouchlikeAim(stick, stickMag, reverseness);
     } else {
@@ -293,19 +293,19 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-  var now = this.now();
+  let now = this.now();
   if (timeoutVal === PlayerSpirit.FRICTION_TIMEOUT_ID || timeoutVal === -1) {
-    var duration = now - this.lastFrictionTime;
+    let duration = now - this.lastFrictionTime;
     this.lastFrictionTime = now;
 
-    var body = this.getBody();
+    let body = this.getBody();
     if (body) {
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
-      var targetBody = this.getTargetBody();
+      let targetBody = this.getTargetBody();
       if (!targetBody) {
         // Angle towards aim.
-        var aimAngle = this.destAim.angle();
-        var angleDiff = aimAngle - this.getBodyAngPos();
+        let aimAngle = this.destAim.angle();
+        let angleDiff = aimAngle - this.getBodyAngPos();
         while (angleDiff > Math.PI) {
           angleDiff -= 2 * Math.PI;
         }
@@ -315,7 +315,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
         this.addBodyAngVel(duration * PlayerSpirit.AIM_ANGPOS_ACCEL * angleDiff);
       } else {
         // Angle towards target.
-        var angleDiff = this.getAngleToTarget() - this.getBodyAngPos();
+        let angleDiff = this.getAngleToTarget() - this.getBodyAngPos();
         while (angleDiff > Math.PI) {
           angleDiff -= 2 * Math.PI;
         }
@@ -325,20 +325,20 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
         this.addBodyAngVel(duration * PlayerSpirit.LOCK_ANGPOS_ACCEL * angleDiff);
       }
 
-      var angularFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3), duration);
+      let angularFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3), duration);
       body.applyAngularFrictionAtTime(angularFriction, now);
 
-      var linearFriction = 1 - Math.pow(1 - (this.getFriction()), duration);
+      let linearFriction = 1 - Math.pow(1 - (this.getFriction()), duration);
       body.applyLinearFrictionAtTime(linearFriction, now);
 
-      var newVel = this.vec2d.set(body.vel);
+      let newVel = this.vec2d.set(body.vel);
 
       if (!this.screen.isPlaying()) {
-        var oldAngVelMag = Math.abs(this.getBodyAngVel());
+        let oldAngVelMag = Math.abs(this.getBodyAngVel());
         if (oldAngVelMag && oldAngVelMag < PlayerSpirit.STOPPING_ANGVEL) {
           this.setBodyAngVel(0);
         }
-        var oldVelMagSq = newVel.magnitudeSquared();
+        let oldVelMagSq = newVel.magnitudeSquared();
         if (oldVelMagSq && oldVelMagSq < PlayerSpirit.STOPPING_SPEED_SQUARED) {
           newVel.reset();
         }
@@ -356,8 +356,8 @@ PlayerSpirit.prototype.getAngleToTarget = function() {
 };
 
 PlayerSpirit.prototype.getSurfaceDistToTarget = function() {
-  var playerPos = this.getBodyPos();
-  var targetPos = this.getTargetBody().getPosAtTime(this.now(), Vec2d.alloc());
+  let playerPos = this.getBodyPos();
+  let targetPos = this.getTargetBody().getPosAtTime(this.now(), Vec2d.alloc());
   return targetPos.distance(playerPos) - this.getBody().rad - this.getTargetBody().rad;
 };
 
@@ -372,7 +372,7 @@ PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reversenes
     this.destAim.scale(0.5 * (1 - reverseness * 0.9))
         .add(stick.getVal(this.vec2d).scale(0.5 + 0.5 * stickMag));
     this.destAim.scaleToLength(1);
-    var dist = stick.getVal(this.vec2d).distance(this.destAim);
+    let dist = stick.getVal(this.vec2d).distance(this.destAim);
     this.aim.slideByFraction(this.destAim, Math.min(1, dist * 2));
   }
   this.aim.slideByFraction(this.destAim, 0.5).scaleToLength(1);
@@ -381,9 +381,9 @@ PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reversenes
 
 PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness) {
   // up/down/left/right buttons
-  var dist = 0;
+  let dist = 0;
   if (stickMag) {
-    var correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
+    let correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
     dist = correction.magnitude();
     this.destAim.add(correction.scale(Math.min(1, this.keyMult * this.keyMult)));
   }
@@ -394,8 +394,8 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
     this.aim.set(this.destAim);
   } else {
     dist = this.aim.distance(this.destAim);
-    var distContrib = dist * 0.25;
-    var smoothContrib = 0.1 / (dist + 0.1);
+    let distContrib = dist * 0.25;
+    let smoothContrib = 0.1 / (dist + 0.1);
     this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
     this.aim.scaleToLength(1);
   }
@@ -410,30 +410,30 @@ PlayerSpirit.prototype.breakBeam = function() {
 
 
 PlayerSpirit.prototype.handleSeeking = function() {
-  var now = this.now();
-  var maxScanDist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD;
-  var maxFanAngle = PlayerSpirit.SEEKSCAN_FAN_ANGLE;
+  let now = this.now();
+  let maxScanDist = PlayerSpirit.SEEKSCAN_DIST + PlayerSpirit.PLAYER_RAD;
+  let maxFanAngle = PlayerSpirit.SEEKSCAN_FAN_ANGLE;
 
-  var scanPos = Vec2d.alloc();
-  var scanVel = Vec2d.alloc();
+  let scanPos = Vec2d.alloc();
+  let scanVel = Vec2d.alloc();
 
-  var forceVec = Vec2d.alloc();
-  var forcePos = Vec2d.alloc();
+  let forceVec = Vec2d.alloc();
+  let forcePos = Vec2d.alloc();
 
-  var candidateRF = 2;
-  var candidateBody = null;
+  let candidateRF = 2;
+  let candidateBody = null;
 
-  var unsuitableRF = 2;
+  let unsuitableRF = 2;
 
-  var self = this;
+  let self = this;
 
   function scan(leftFrac) {
-    var rf = self.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
-    var pulling = false;
+    let rf = self.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
+    let pulling = false;
     if (rf === -1) {
       // miss
     } else {
-      var foundBody = self.getScanHitBody();
+      let foundBody = self.getScanHitBody();
       if (foundBody) {
         // hit
         if (foundBody.mass === Infinity) {
@@ -464,13 +464,13 @@ PlayerSpirit.prototype.handleSeeking = function() {
   }
 
   // maybe direct a scan towards the last body we attracted
-  var seekBody = this.getSeekTargetBody();
+  let seekBody = this.getSeekTargetBody();
   if (seekBody) {
-    var anglePaddingMult = 1.3;
+    let anglePaddingMult = 1.3;
     this.seekTargetBodyId = null;
-    var angleDiffToSeekBody = this.getAngleDiff(this.getAngleToBody(seekBody));
+    let angleDiffToSeekBody = this.getAngleDiff(this.getAngleToBody(seekBody));
     if (Math.abs(angleDiffToSeekBody) <= anglePaddingMult * maxFanAngle / 2) {
-      var radUnit = angleDiffToSeekBody / maxFanAngle / 2;
+      let radUnit = angleDiffToSeekBody / maxFanAngle / 2;
       // set scanVel
       seekBody.getPosAtTime(now, scanVel)
           .subtract(this.getBodyPos())
@@ -482,14 +482,14 @@ PlayerSpirit.prototype.handleSeeking = function() {
   }
 
   // always fire a random scan
-  var aimAngle = this.aim.angle();
-  var radUnit = Math.random() - 0.5;
+  let aimAngle = this.aim.angle();
+  let radUnit = Math.random() - 0.5;
   scanPos.setXY(radUnit * this.getBody().rad, 0).rot(aimAngle).add(this.getBodyPos());
   scanVel.setXY(0, maxScanDist * (1 - radUnit * radUnit)).rot(radUnit * maxFanAngle + aimAngle);
   scan();
 
   this.seekHum.setWorldPos(this.getBodyPos());
-  var minRf = Math.min(unsuitableRF + 0.5, candidateRF);
+  let minRf = Math.min(unsuitableRF + 0.5, candidateRF);
   this.seekHum.setDistanceFraction(minRf);
   if (candidateBody && candidateRF * maxScanDist <= PlayerSpirit.GRAB_DIST) {
     // grab that thing!
@@ -506,7 +506,7 @@ PlayerSpirit.prototype.handleSeeking = function() {
 
 PlayerSpirit.prototype.setBeamState = function(newState) {
   if (this.beamState === newState) return;
-  var target = this.getTargetSpirit();
+  let target = this.getTargetSpirit();
   if (target && target.isActivatable()) {
     // connect or disconnect?
     if (BeamState.isOutputish(newState)) {
@@ -521,7 +521,7 @@ PlayerSpirit.prototype.setBeamState = function(newState) {
     }
     if (target.isInputSource(this.id)) {
       // set new val?
-      var newVal = newState === BeamState.ACTIVATING ? 1 : 0;
+      let newVal = newState === BeamState.ACTIVATING ? 1 : 0;
       if (newVal !== this.outputIdsToVals[target.id]) {
         this.outputIdsToVals[target.id] = newVal;
         target.onInputChanged(this.id, newVal);
@@ -547,7 +547,7 @@ PlayerSpirit.prototype.setBeamState = function(newState) {
 };
 
 PlayerSpirit.prototype.setOutputToTarget = function(val) {
-  var target = this.getTargetSpirit();
+  let target = this.getTargetSpirit();
   if (target && target.isActivatable() && target.isInputSource(this.id) && val !== this.outputIdsToVals[target.id]) {
     this.outputIdsToVals[target.id] = val;
     target.onInputChanged(this.id, val);
@@ -570,18 +570,18 @@ PlayerSpirit.prototype.handleWielding = function() {
 };
 
 PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAccel, maxForce, isAngular, restingAngle) {
-  var playerBody = this.getBody();
-  var targetBody = this.getTargetBody();
-  var now = this.now();
-  var playerPos = this.getBodyPos();
-  var targetPos = targetBody.getPosAtTime(now, Vec2d.alloc());
-  var targetRad = targetBody.shape === Body.Shape.CIRCLE ? targetBody.rad : 1;
+  let playerBody = this.getBody();
+  let targetBody = this.getTargetBody();
+  let now = this.now();
+  let playerPos = this.getBodyPos();
+  let targetPos = targetBody.getPosAtTime(now, Vec2d.alloc());
+  let targetRad = targetBody.shape === Body.Shape.CIRCLE ? targetBody.rad : 1;
 
   // break beam if there's something in the way for a length of time
-  var scanVel = this.vec2d.set(targetPos).subtract(playerPos);
-  var obstructionScanRad = 0.01;
+  let scanVel = this.vec2d.set(targetPos).subtract(playerPos);
+  let obstructionScanRad = 0.01;
   scanVel.scaleToLength(scanVel.magnitude() - targetRad - obstructionScanRad);
-  var result = this.scanWithVel(HitGroups.PLAYER_SCAN, playerPos, scanVel, obstructionScanRad);
+  let result = this.scanWithVel(HitGroups.PLAYER_SCAN, playerPos, scanVel, obstructionScanRad);
   // this.screen.addTractorSeekSplash(playerPos, scanVel, 0.2 + 0.3 * this.tractorForceFrac, result > 0 ? result : 1, this.color);
   if (result >= 0 && result < 0.9) {
     this.obstructionCount++;
@@ -596,25 +596,25 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAcc
 
   // Weaken obstructed beams.
   // Unobstructedness is from 1 (not obstructed) to 0 (totally obstructed)
-  var unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
+  let unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
 
-  var deltaPos = Vec2d.alloc().set(targetPos).subtract(playerPos);
-  var surfaceDist = deltaPos.magnitude() - playerBody.rad - targetRad;
-  var p0 = surfaceDist - restingDist;
+  let deltaPos = Vec2d.alloc().set(targetPos).subtract(playerPos);
+  let surfaceDist = deltaPos.magnitude() - playerBody.rad - targetRad;
+  let p0 = surfaceDist - restingDist;
 
-  var deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
-  var v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(1));
+  let deltaVel = Vec2d.alloc().set(targetBody.vel).subtract(playerBody.vel);
+  let v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(1));
 
-  var maxA = maxAccel * unobstructedness * Math.abs(p0 * p0 / (restingDist * restingDist));
-  var forceMagSum = 0;
+  let maxA = maxAccel * unobstructedness * Math.abs(p0 * p0 / (restingDist * restingDist));
+  let forceMagSum = 0;
   if (p0 >= breakDist) {
     this.breakBeam();
   } else {
-    var playerForce = Vec2d.alloc();
-    var targetForce = Vec2d.alloc();
-    var playerForceProportion = 0.5;
-    var pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
-    var forceMag = targetBody.mass * pushAccelMag;
+    let playerForce = Vec2d.alloc();
+    let targetForce = Vec2d.alloc();
+    let playerForceProportion = 0.5;
+    let pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+    let forceMag = targetBody.mass * pushAccelMag;
     targetForce.set(deltaPos).scaleToLength((1 - playerForceProportion) * forceMag);
     playerForce.set(deltaPos).scaleToLength((-playerForceProportion) * forceMag);
 
@@ -625,14 +625,14 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAcc
       maxA = maxAccel;
       p0 = Math.clip(p0, -Math.PI / 2, Math.PI / 2);
       v0 = this.vec2d2.set(deltaVel).dot(this.vec2d.set(deltaPos).scaleToLength(-1).rot90Right());
-      var turnAccelMag = -Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
-      var turnForceMag = Math.min(targetBody.mass, playerBody.mass) * turnAccelMag;
+      let turnAccelMag = -Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+      let turnForceMag = Math.min(targetBody.mass, playerBody.mass) * turnAccelMag;
       targetForce.add(this.vec2d.set(deltaPos).rot90Right().scaleToLength((1 - playerForceProportion) * turnForceMag));
       playerForce.add(this.vec2d.set(deltaPos).rot90Right().scaleToLength(-playerForceProportion * turnForceMag));
     }
     forceMagSum = targetForce.magnitude() + playerForce.magnitude();
     if (forceMagSum > maxForce) {
-      var scaleFactor = maxForce / forceMagSum;
+      let scaleFactor = maxForce / forceMagSum;
       targetForce.scale(scaleFactor);
       playerForce.scale(scaleFactor);
       forceMagSum = maxForce;
@@ -650,21 +650,21 @@ PlayerSpirit.prototype.handleBeamForce = function(restingDist, breakDist, maxAcc
 };
 
 PlayerSpirit.prototype.handleBeamTorque = function(restingAngle, maxA) {
-  var playerBody = this.getBody();
-  var targetBody = this.getTargetBody();
-  var now = this.now();
+  let playerBody = this.getBody();
+  let targetBody = this.getTargetBody();
+  let now = this.now();
 
-  var p0 = targetBody.getAngPosAtTime(now) - restingAngle;
+  let p0 = targetBody.getAngPosAtTime(now) - restingAngle;
   while (p0 < -Math.PI) p0 += 2 * Math.PI;
   while (p0 > Math.PI) p0 -= 2 * Math.PI;
 
   // TODO actual target angular vel has to do with target/player pair orbit
-  var v0 = targetBody.angVel - playerBody.angVel;
+  let v0 = targetBody.angVel - playerBody.angVel;
 
   // Limit the max acceleration for objects with high moments of inertia,
   // so the player can't spin them as if they are weightless.
   maxA = Math.min(maxA, maxA / targetBody.moi);
-  var angPulse = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
+  let angPulse = Spring.getLandingAccel(p0, v0, maxA, PlayerSpirit.FRICTION_TIMEOUT);
   targetBody.addAngVelAtTime(angPulse, now);
 };
 
@@ -673,9 +673,9 @@ PlayerSpirit.prototype.handleActivating = function() {
 };
 
 PlayerSpirit.prototype.onDraw = function(world, renderer) {
-  var body = this.getBody();
+  let body = this.getBody();
   if (!body) return;
-  var bodyPos = this.getBodyPos();
+  let bodyPos = this.getBodyPos();
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
@@ -683,18 +683,18 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(this.now())));
   this.batchDrawer.batchDraw(this.color, this.modelMatrix, null);
 
-  var p1, p2, rad;
+  let p1, p2, rad;
 
   // tractor beam
-  var targetBody = this.getTargetBody();
+  let targetBody = this.getTargetBody();
   if (targetBody) {
-    var unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
+    let unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
     renderer.setStamp(this.stamps.lineStamp);
     this.aimColor.setRGBA(0, 1, 0);
     renderer.setColorVector(this.aimColor);
     p1 = bodyPos;
     p2 = targetBody.getPosAtTime(this.now(), this.vec2d);
-    var volume = 1/3 * PlayerSpirit.PLAYER_RAD * PlayerSpirit.WIELD_REST_DIST;
+    let volume = 1/3 * PlayerSpirit.PLAYER_RAD * PlayerSpirit.WIELD_REST_DIST;
     rad = Math.min(body.rad * 0.5, targetBody.rad, unobstructedness * volume / this.getSurfaceDistToTarget());
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
@@ -714,8 +714,8 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     renderer.setColorVector(this.aimColor);
     p1 = this.vec2d;
     p2 = this.vec2d2;
-    var p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
-    var p2Dist = PlayerSpirit.PLAYER_RAD * 2;
+    let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
+    let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
     rad = 0.15;
     p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
     p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
@@ -732,7 +732,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 };
 
 PlayerSpirit.prototype.getTargetBody = function() {
-  var b = null;
+  let b = null;
   if (this.targetBodyId) {
     b = this.screen.getBodyById(this.targetBodyId);
   } else {
@@ -742,7 +742,7 @@ PlayerSpirit.prototype.getTargetBody = function() {
 };
 
 PlayerSpirit.prototype.getSeekTargetBody = function() {
-  var b = null;
+  let b = null;
   if (this.seekTargetBodyId) {
     b = this.screen.getBodyById(this.seekTargetBodyId);
   } else {
@@ -756,12 +756,12 @@ PlayerSpirit.prototype.getTargetSpirit = function() {
 };
 
 PlayerSpirit.prototype.explode = function() {
-  var body = this.getBody();
+  let body = this.getBody();
   if (body) {
-    var now = this.now();
-    var pos = this.getBodyPos();
-    var x = pos.x;
-    var y = pos.y;
+    let now = this.now();
+    let pos = this.getBodyPos();
+    let x = pos.x;
+    let y = pos.y;
 
     this.sounds.playerExplode(pos);
     this.screen.addPlayerExplosionSplash(pos, this.color);
@@ -774,24 +774,24 @@ PlayerSpirit.prototype.explode = function() {
  * the kick button while not holding anything.
  */
 PlayerSpirit.prototype.freeKick = function(spread) {
-  var shots = 5;
-  var angPos = this.destAim.angle();
-  var scanPos = Vec2d.alloc().set(this.getBodyPos());
-  var scanVel = Vec2d.alloc();
-  var forceVec = Vec2d.alloc();
-  var forcePos = Vec2d.alloc();
-  for (var i = 0; i < shots; i++) {
-    var forceMag = 0;
-    var angle = angPos + spread * (i + 0.5) / shots - spread / 2;
-    var dist = PlayerSpirit.KICK_DIST;
+  let shots = 5;
+  let angPos = this.destAim.angle();
+  let scanPos = Vec2d.alloc().set(this.getBodyPos());
+  let scanVel = Vec2d.alloc();
+  let forceVec = Vec2d.alloc();
+  let forcePos = Vec2d.alloc();
+  for (let i = 0; i < shots; i++) {
+    let forceMag = 0;
+    let angle = angPos + spread * (i + 0.5) / shots - spread / 2;
+    let dist = PlayerSpirit.KICK_DIST;
     scanVel.setXY(0, dist).rot(angle);
-    var resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
-    var splashed = false;
+    let resultFraction = this.scanWithVel(HitGroups.PLAYER_SCAN, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD);
+    let splashed = false;
     if (resultFraction !== -1) {
-      var foundBody = this.getScanHitBody();
+      let foundBody = this.getScanHitBody();
       if (foundBody) {
         // Apply force at a mix of the contact point and the center of mass.
-        var contactPointMix = 0.2;
+        let contactPointMix = 0.2;
         forcePos.set(scanVel).scale(resultFraction).scale(contactPointMix)
             .add(foundBody.getPosAtTime(this.now(), this.vec2d)).subtract(scanPos)
             .scale(1 / (1 + contactPointMix))

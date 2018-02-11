@@ -7,9 +7,9 @@ function Models(glyphs) {
 }
 
 Models.prototype.getPause = function() {
-  var m = new RigidModel();
-  for (var x = -1; x <= 1; x += 2) {
-    var bar = RigidModel.createSquare().transformPositions(
+  let m = new RigidModel();
+  for (let x = -1; x <= 1; x += 2) {
+    let bar = RigidModel.createSquare().transformPositions(
         new Matrix44()
             .multiply(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1)
                 .multiply(new Matrix44().toTranslateOpXYZ(x * 3.25, 0, 0.9)
@@ -48,20 +48,20 @@ Models.prototype.getUntest = function() {
 };
 
 Models.prototype.getCharButton = function(char) {
-  var m = new RigidModel();
-  var glyphSize = 0.25;
+  let m = new RigidModel();
+  let glyphSize = 0.25;
   m.addRigidModel(this.glyphs.models[char]).transformPositions(new Matrix44().toScaleOpXYZ(glyphSize, -glyphSize, 1));
   m.addRigidModel(RigidModel.createCircle(24));
   return m;
 };
 
 Models.prototype.getArrow = function() {
-  var model = new RigidModel();
-  var arrowHead = RigidModel.createTriangle();
+  let model = new RigidModel();
+  let arrowHead = RigidModel.createTriangle();
   arrowHead.vertexes[0].position.setXYZ(0, 0, 0);
   arrowHead.vertexes[1].position.setXYZ(-0.4, -0.5, 0);
   arrowHead.vertexes[2].position.setXYZ(0.4, -0.5, 0);
-  var arrowShaft = RigidModel.createSquare()
+  let arrowShaft = RigidModel.createSquare()
       .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.3, 1))
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.7, 0));
   model.addRigidModel(arrowHead).addRigidModel(arrowShaft);
@@ -69,9 +69,9 @@ Models.prototype.getArrow = function() {
 };
 
 Models.prototype.getStar = function() {
-  var model = RigidModel.createCircle(10);
-  var inRad = 0.4;
-  for (var i = 1; i < 10; i += 2) {
+  let model = RigidModel.createCircle(10);
+  let inRad = 0.4;
+  for (let i = 1; i < 10; i += 2) {
     model.vertexes[i].position.scale1(inRad);
   }
   return model;

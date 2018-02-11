@@ -64,10 +64,10 @@ ShotgunSpirit.prototype.setModelStamp = function(modelStamp) {
 };
 
 ShotgunSpirit.createModel = function() {
-  var model = new RigidModel();
-  var body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-  var thick = 0.65;
-  var barrel = RigidModel.createSquare()
+  let model = new RigidModel();
+  let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
+  let thick = 0.65;
+  let barrel = RigidModel.createSquare()
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
       .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
       .addRigidModel(RigidModel.createCircle(9)
@@ -78,14 +78,14 @@ ShotgunSpirit.createModel = function() {
 };
 
 ShotgunSpirit.factory = function(screen, batchDrawer, pos, dir) {
-  var world = screen.world;
+  let world = screen.world;
 
-  var spirit = new ShotgunSpirit(screen);
+  let spirit = new ShotgunSpirit(screen);
   spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
-  var density = 1;
+  let density = 1;
 
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.25;
@@ -97,7 +97,7 @@ ShotgunSpirit.factory = function(screen, batchDrawer, pos, dir) {
   b.moi = b.mass * b.rad * b.rad / 2;
   spirit.bodyId = world.addBody(b);
 
-  var spiritId = world.addSpirit(spirit);
+  let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
   world.addTimeout(screen.now(), spiritId, ShotgunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
@@ -111,25 +111,25 @@ ShotgunSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-  var now = this.now();
+  let now = this.now();
 
   if (timeoutVal === ShotgunSpirit.FRICTION_TIMEOUT_ID) {
     this.maybeStop();
-    var body = this.getBody();
-    var friction = this.getFriction();
-    var time = ShotgunSpirit.FRICTION_TIMEOUT;
+    let body = this.getBody();
+    let friction = this.getFriction();
+    let time = ShotgunSpirit.FRICTION_TIMEOUT;
 
     // friction
     body.applyLinearFrictionAtTime(friction * time, now);
     body.applyAngularFrictionAtTime(friction * time, now);
 
-    var newVel = this.vec2d.set(body.vel);
+    let newVel = this.vec2d.set(body.vel);
 
-    var oldAngVelMag = Math.abs(this.getBodyAngVel());
+    let oldAngVelMag = Math.abs(this.getBodyAngVel());
     if (oldAngVelMag && oldAngVelMag < ShotgunSpirit.STOPPING_ANGVEL) {
       this.setBodyAngVel(0);
     }
-    var oldVelMagSq = newVel.magnitudeSquared();
+    let oldVelMagSq = newVel.magnitudeSquared();
     if (oldVelMagSq && oldVelMagSq < ShotgunSpirit.STOPPING_SPEED_SQUARED) {
       newVel.reset();
     }
@@ -137,7 +137,7 @@ ShotgunSpirit.prototype.onTimeout = function(world, timeoutVal) {
     // Reset the body's pathDurationMax because it gets changed at compile-time,
     // but it is serialized at level-save-time, so old saved values might not
     // match the new compiled-in values. Hm.
-    var timeoutDuration = Math.min(
+    let timeoutDuration = Math.min(
         ShotgunSpirit.MAX_TIMEOUT,
         ShotgunSpirit.FRICTION_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
     body.pathDurationMax = timeoutDuration * 1.1;
@@ -167,7 +167,7 @@ ShotgunSpirit.prototype.getColor = function() {
 
 ShotgunSpirit.prototype.onInputSumUpdate = function() {
   if (this.sumOfInputs() > 0) {
-    var now = this.now();
+    let now = this.now();
     if (this.lastFireTime + ShotgunSpirit.FIRE_TIMEOUT <= now) {
       this.fire();
     }
@@ -179,18 +179,19 @@ ShotgunSpirit.prototype.onInputSumUpdate = function() {
 };
 
 ShotgunSpirit.prototype.fire = function() {
-  var pos = this.getBodyPos();
+  let pos = this.getBodyPos();
   if (!pos) return;
-  var angPos = this.getBodyAngPos();
-  var speed = 2;
-  var baseVel = this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed);
-  var rad = 0.45;
-  var vel = Vec2d.alloc();
-  for (var i = -3; i <= 3; i++) {
-    var dist = 17 + Math.random() - Math.pow(Math.abs(i) / 3, 2);
-    var rot = 0.09 * (i + 0.5 * (Math.random() - 0.5));
+  let angPos = this.getBodyAngPos();
+  let speed = 2;
+  let baseVel = this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed);
+  let rad = 0.45;
+  let vel = Vec2d.alloc();
+  let bullet;
+  for (let i = -3; i <= 3; i++) {
+    let dist = 17 + Math.random() - Math.pow(Math.abs(i) / 3, 2);
+    let rot = 0.09 * (i + 0.5 * (Math.random() - 0.5));
     vel.set(baseVel).rot(rot);
-    var bullet = this.screen.getSpiritById(this.addBullet(pos, angPos + rot, vel, rad, dist / speed));
+    bullet = this.screen.getSpiritById(this.addBullet(pos, angPos + rot, vel, rad, dist / speed));
     // For now, only players can fire weapons.
     bullet.team = Team.PLAYER;
   }
@@ -206,15 +207,15 @@ ShotgunSpirit.prototype.fire = function() {
 };
 
 ShotgunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
-  var now = this.now();
-  var spirit = BulletSpirit.alloc(this.screen);
+  let now = this.now();
+  let spirit = BulletSpirit.alloc(this.screen);
   spirit.damage = 0.75;
   spirit.toughness = 1;
   spirit.trailDuration = 0.7;
   spirit.setColorRGB(1, 1, 0.5);
-  var density = 1;
+  let density = 1;
 
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, now);
   b.setAngPosAtTime(angPos, now);
@@ -225,7 +226,7 @@ ShotgunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   b.pathDurationMax = duration * 1.01;
   spirit.bodyId = this.screen.world.addBody(b);
 
-  var spiritId = this.screen.world.addSpirit(spirit);
+  let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
 

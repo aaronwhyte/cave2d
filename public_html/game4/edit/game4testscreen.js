@@ -17,18 +17,18 @@ Game4TestScreen.prototype.updateHudLayout = function() {
 };
 
 Game4TestScreen.prototype.initWidgets = function() {
-  var self = this;
+  let self = this;
   this.untestDownFn = function(e) {
     e = e || window.event;
-    var query = {};
+    let query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = self.adventureName;
     query[EditorApp.PARAM_LEVEL_NAME] = self.levelName;
     query[EditorApp.PARAM_MODE] = EditorApp.MODE_EDIT;
     Url.setFragment(Url.encodeQuery(query));
 
     // Drop all the players, so their controls will unlisten.
-    for (var slotName in self.slots) {
-      var slot = self.slots[slotName];
+    for (let slotName in self.slots) {
+      let slot = self.slots[slotName];
       if (slot.isPlaying()) {
         slot.setState(ControlState.WAITING);
       }

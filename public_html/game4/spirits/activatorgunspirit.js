@@ -64,10 +64,10 @@ ActivatorGunSpirit.prototype.setModelStamp = function(modelStamp) {
 };
 
 ActivatorGunSpirit.createModel = function() {
-  var model = new RigidModel();
-  var body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-  var thick = 0.3;
-  var barrel = RigidModel.createSquare()
+  let model = new RigidModel();
+  let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
+  let thick = 0.3;
+  let barrel = RigidModel.createSquare()
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
       .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
       .addRigidModel(RigidModel.createCircle(9)
@@ -78,14 +78,14 @@ ActivatorGunSpirit.createModel = function() {
 };
 
 ActivatorGunSpirit.factory = function(screen, batchDrawer, pos, dir) {
-  var world = screen.world;
+  let world = screen.world;
 
-  var spirit = new ActivatorGunSpirit(screen);
+  let spirit = new ActivatorGunSpirit(screen);
   spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
-  var density = 1;
+  let density = 1;
 
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.25;
@@ -97,7 +97,7 @@ ActivatorGunSpirit.factory = function(screen, batchDrawer, pos, dir) {
   b.moi = b.mass * b.rad * b.rad / 2;
   spirit.bodyId = world.addBody(b);
 
-  var spiritId = world.addSpirit(spirit);
+  let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
   world.addTimeout(screen.now(), spiritId, ActivatorGunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
@@ -111,24 +111,24 @@ ActivatorGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-  var now = this.now();
+  let now = this.now();
 
   if (timeoutVal === ActivatorGunSpirit.FRICTION_TIMEOUT_ID) {
     this.maybeStop();
-    var body = this.getBody();
-    var friction = this.getFriction();
-    var time = ActivatorGunSpirit.FRICTION_TIMEOUT;
+    let body = this.getBody();
+    let friction = this.getFriction();
+    let time = ActivatorGunSpirit.FRICTION_TIMEOUT;
 
     // friction
     body.applyLinearFrictionAtTime(friction * time, now);
     body.applyAngularFrictionAtTime(friction * time, now);
 
-    var newVel = this.vec2d.set(body.vel);
+    let newVel = this.vec2d.set(body.vel);
 
     // Reset the body's pathDurationMax because it gets changed at compile-time,
     // but it is serialized at level-save-time, so old saved values might not
     // match the new compiled-in values. Hm.
-    var timeoutDuration = Math.min(
+    let timeoutDuration = Math.min(
         ActivatorGunSpirit.MAX_TIMEOUT,
         ActivatorGunSpirit.FRICTION_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
     body.pathDurationMax = timeoutDuration * 1.1;
@@ -158,7 +158,7 @@ ActivatorGunSpirit.prototype.getColor = function() {
 
 ActivatorGunSpirit.prototype.onInputSumUpdate = function() {
   if (this.sumOfInputs() > 0) {
-    var now = this.now();
+    let now = this.now();
     if (this.lastFireTime + ActivatorGunSpirit.FIRE_TIMEOUT <= now) {
       this.fire();
     }
@@ -170,11 +170,11 @@ ActivatorGunSpirit.prototype.onInputSumUpdate = function() {
 };
 
 ActivatorGunSpirit.prototype.fire = function() {
-  var pos = this.getBodyPos();
+  let pos = this.getBodyPos();
   if (!pos) return;
-  var angPos = this.getBodyAngPos();
-  var speed = 3;
-  var dist = 25 + Math.random() * 5;
+  let angPos = this.getBodyAngPos();
+  let speed = 3;
+  let dist = 25 + Math.random() * 5;
   this.addBullet(
       pos, angPos,
       this.vec2d.setXY(0, 1).rot(angPos).scaleToLength(speed),
@@ -186,13 +186,13 @@ ActivatorGunSpirit.prototype.fire = function() {
 };
 
 ActivatorGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
-  var now = this.now();
-  var spirit = ActivatorBulletSpirit.alloc(this.screen);
+  let now = this.now();
+  let spirit = ActivatorBulletSpirit.alloc(this.screen);
   //spirit.setModelStamp(this.stamps.arrow);
   spirit.setColorRGB(1, 1, 1);
-  var density = 0;
+  let density = 0;
 
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, now);
   b.setAngPosAtTime(angPos, now);
@@ -203,7 +203,7 @@ ActivatorGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duratio
   b.pathDurationMax = duration * 1.01;
   spirit.bodyId = this.screen.world.addBody(b);
 
-  var spiritId = this.screen.world.addSpirit(spirit);
+  let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
 
