@@ -20,14 +20,14 @@ Splashes.Type = {
 };
 
 Splashes.prototype.addPlayerSpawnSplash = function(now, pos, bodyRad, color) {
-  var s = new Splash(1, this.stamps.tubeStamp);
-  var x = pos.x;
-  var y = pos.y;
+  let s = new Splash(1, this.stamps.tubeStamp);
+  let x = pos.x;
+  let y = pos.y;
 
   s.startTime = now;
   s.duration = 16;
-  var startRad = bodyRad * 3;
-  var endRad = bodyRad * 9 ;
+  let startRad = bodyRad * 3;
+  let endRad = bodyRad * 9 ;
 
   s.startPose.pos.setXYZ(x, y, 0.5);
   s.endPose.pos.setXYZ(x, y, 0.5);
@@ -49,12 +49,12 @@ Splashes.prototype.addPlayerSpawnSplash = function(now, pos, bodyRad, color) {
 
 Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
   // cloud particles
-  var s = this.splash;
-  var x = pos.x;
-  var y = pos.y;
-  var self = this;
+  let s = this.splash;
+  let x = pos.x;
+  let y = pos.y;
+  let self = this;
 
-  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+  let particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
   function addSplash(x, y, dx, dy, duration, rad) {
     s.reset(Splashes.ENEMY_EXPLOSION, self.stamps.circleStamp);
@@ -63,10 +63,10 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
 
     s.startPose.pos.setXYZ(x, y, -0.9);
     s.endPose.pos.setXYZ(x + dx, y + dy, 0.9);
-    var startRad = rad;
-    var endRad = rad / 4;
+    let startRad = rad;
+    let endRad = rad / 4;
     s.startPose.scale.setXYZ(startRad, startRad, startRad);
-    var startRot = Math.random() * Math.PI * 2;
+    let startRot = Math.random() * Math.PI * 2;
     s.startPose.rotZ = startRot;
     s.endPose.rotZ = startRot + (Math.random() - 0.5) * 2 * Math.PI;
     s.endPose.scale.setXYZ(endRad, endRad, endRad);
@@ -100,12 +100,12 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
 
 Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
   // cloud particles
-  var s = this.splash;
-  var x = pos.x;
-  var y = pos.y;
-  var self = this;
+  let s = this.splash;
+  let x = pos.x;
+  let y = pos.y;
+  let self = this;
 
-  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+  let particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
   function addSplash(x, y, dx, dy, duration, rad) {
     s.reset(Splashes.ENEMY_EXPLOSION, self.stamps.circleStamp);
@@ -114,10 +114,10 @@ Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
 
     s.startPose.pos.setXYZ(x, y, -0.9);
     s.endPose.pos.setXYZ(x + dx, y + dy, 0.9);
-    var startRad = rad;
-    var endRad = rad / 4;
+    let startRad = rad;
+    let endRad = rad / 4;
     s.startPose.scale.setXYZ(startRad, startRad, startRad);
-    var startRot = Math.random() * Math.PI * 2;
+    let startRot = Math.random() * Math.PI * 2;
     s.startPose.rotZ = startRot;
     s.endPose.rotZ = startRot + (Math.random() - 0.5) * 2 * Math.PI;
     s.endPose.scale.setXYZ(endRad, endRad, endRad);
@@ -139,18 +139,18 @@ Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
 };
 
 Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
-  var s = this.splash;
+  let s = this.splash;
   s.reset(Splashes.Type.SCAN, this.stamps.cylinderStamp);
 
   s.startTime = now;
   s.duration = 3;
 
-  var x = pos.x;
-  var y = pos.y;
-  var hit = dist >= 0;
-  var d = hit ? dist : 1;
-  var dx = vel.x * d;
-  var dy = vel.y * d;
+  let x = pos.x;
+  let y = pos.y;
+  let hit = dist >= 0;
+  let d = hit ? dist : 1;
+  let dx = vel.x * d;
+  let dy = vel.y * d;
 
   s.startPose.pos.setXYZ(x, y, 0);
   s.endPose.pos.setXYZ(x, y, 1);
@@ -178,23 +178,23 @@ Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
 
 Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, resultFraction, color) {
   if (Math.random() < 0.3) return;
-  var s = this.splash;
+  let s = this.splash;
   s.reset(Splashes.Type.SCAN, this.stamps.circleStamp);
 
   s.startTime = now;
 
-  var x = pos.x;
-  var y = pos.y;
-  var hit = resultFraction >= 0;
-  var d = hit ? resultFraction : 1;
-  var dx = vel.x * d;
-  var dy = vel.y * d;
+  let x = pos.x;
+  let y = pos.y;
+  let hit = resultFraction >= 0;
+  let d = hit ? resultFraction : 1;
+  let dx = vel.x * d;
+  let dy = vel.y * d;
 
   s.duration = 4 + Math.random() * 2;
-  var startDistFrac = 1;
-  var endRad = rad / 2;
-  var startRad = rad * 1.1;
-  var endDistFrac;
+  let startDistFrac = 1;
+  let endRad = rad / 2;
+  let startRad = rad * 1.1;
+  let endDistFrac;
   if (pulling) {
     // fast pulling splashes
     endDistFrac = resultFraction;
@@ -225,23 +225,23 @@ Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, 
 Splashes.KICK_START_DUR_BASE = 1;
 
 Splashes.prototype.addKickHitSplash = function(now, scanPos, scanVel, resultFraction) {
-  var scanMag = scanVel.magnitude();
-  var v = Vec2d.alloc();
-  var color = Vec4.alloc(0, 1, 0, 0);
-  var r = PlayerSpirit.SEEKSCAN_RAD;
-  var p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanPos));
-  var p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(Math.min(0.3, resultFraction)).add(scanPos));
-  var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
-  var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
-  var dur = (Splashes.KICK_START_DUR_BASE + Math.random()) * resultFraction;
+  let scanMag = scanVel.magnitude();
+  let v = Vec2d.alloc();
+  let color = Vec4.alloc(0, 1, 0, 0);
+  let r = PlayerSpirit.SEEKSCAN_RAD;
+  let p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanPos));
+  let p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(Math.min(0.3, resultFraction)).add(scanPos));
+  let p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
+  let p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(resultFraction).add(scanPos));
+  let dur = (Splashes.KICK_START_DUR_BASE + Math.random()) * resultFraction;
   this.addMovingLine(now, dur, p0t0, p1t0, r, p0t1, p1t1, r, color);
 
-  var lineCount = 1 + Math.floor(Math.random() * 2);
+  let lineCount = 1 + Math.floor(Math.random() * 2);
   p0t0.set(p1t1);
   scanVel.scaleToLength(1); // re-use
-  for (var i = 0; i < lineCount; i++) {
+  for (let i = 0; i < lineCount; i++) {
     dur = 3 * (1 + Math.random());
-    var burstRad = 8 * r * (Math.random() + 0.1);
+    let burstRad = 8 * r * (Math.random() + 0.1);
     v.set(scanVel).rot(Math.PI * (1 - resultFraction) * (Math.random() - 0.5));
     p1t0.setXYFromVec2d(v).scale1(burstRad * 0.25).add(p0t0);
     p0t1.setXYFromVec2d(v).scale1(burstRad * 0.9).add(p0t0);
@@ -260,14 +260,14 @@ Splashes.prototype.addKickHitSplash = function(now, scanPos, scanVel, resultFrac
 };
 
 Splashes.prototype.addKickMissSplash = function(now, scanPos, scanVel) {
-  var v = Vec2d.alloc();
-  var color = Vec4.alloc(0, 1, 0, 0);
-  var r = PlayerSpirit.SEEKSCAN_RAD;
-  var baseDur = Splashes.KICK_START_DUR_BASE + Math.random();
-  var p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.0).add(scanPos));
-  var p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.3).add(scanPos));
-  var p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.85).add(scanPos));
-  var p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
+  let v = Vec2d.alloc();
+  let color = Vec4.alloc(0, 1, 0, 0);
+  let r = PlayerSpirit.SEEKSCAN_RAD;
+  let baseDur = Splashes.KICK_START_DUR_BASE + Math.random();
+  let p0t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.0).add(scanPos));
+  let p1t0 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.3).add(scanPos));
+  let p0t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.85).add(scanPos));
+  let p1t1 = Vec4.alloc().setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
   this.addMovingLine(now, baseDur, p0t0, p1t0, r, p0t1, p1t1, r, color);
   p0t0.setXYFromVec2d(v.set(scanVel).scale(0.85).add(scanPos));
   p1t0.setXYFromVec2d(v.set(scanVel).scale(0.95).add(scanPos));
@@ -283,17 +283,17 @@ Splashes.prototype.addKickMissSplash = function(now, scanPos, scanVel) {
 };
 
 Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
-  var x = pos.x;
-  var y = pos.y;
+  let x = pos.x;
+  let y = pos.y;
 
   // giant tube explosion
-  var s = this.splash;
+  let s = this.splash;
   s.reset(1, this.stamps.tubeStamp);
 
   s.startTime = now;
   s.duration = 10;
-  var startRad = 10;
-  var endRad = 20;
+  let startRad = 10;
+  let endRad = 20;
 
   s.startPose.pos.setXYZ(x, y, -0.5);
   s.endPose.pos.setXYZ(x, y, 0);
@@ -313,8 +313,8 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   this.splasher.addCopy(s);
 
   // cloud particles
-  var self = this;
-  var particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+  let self = this;
+  let particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
   function addSplash(x, y, dx, dy, duration, sizeFactor, delay) {
     s.reset(1, self.stamps.circleStamp);
@@ -323,8 +323,8 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
 
     s.startPose.pos.setXYZ(x, y, -Math.random());
     s.endPose.pos.setXYZ(x + dx, y + dy, 1);
-    var startRad = sizeFactor;
-    var endRad = sizeFactor / 4;
+    let startRad = sizeFactor;
+    let endRad = sizeFactor / 4;
     s.startPose.scale.setXYZ(startRad, startRad, 1);
     s.endPose.scale.setXYZ(endRad, endRad, 1);
 
@@ -337,12 +337,12 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   particles = 15;
   explosionRad = 20;
   dirOffset = 2 * Math.PI * Math.random();
-  var f2 = Math.ceil(Math.random() * 3) * 2 + 3;
-  var r = 0;//(Math.random() - 0.5) * explosionRad * 2;
+  let f2 = Math.ceil(Math.random() * 3) * 2 + 3;
+  let r = 0;//(Math.random() - 0.5) * explosionRad * 2;
   for (i = 0; i < particles; i++) {
     duration = 40;
     dir = dirOffset + 2 * Math.PI * i / particles;
-    var dir2 = 2 * Math.PI * f2 * i / particles;
+    let dir2 = 2 * Math.PI * f2 * i / particles;
     dx = Math.sin(dir) * explosionRad + r * Math.cos(dir2);
     dy = Math.cos(dir) * explosionRad + r * Math.sin(dir2);
     addSplash(x, y, dx, dy, duration, 0.7);
@@ -350,7 +350,7 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   for (i = 0; i < particles; i++) {
     duration = 30;
     dir = dirOffset + 2 * Math.PI * i / particles;
-    var dir2 = 2 * Math.PI * f2 * i / particles;
+    let dir2 = 2 * Math.PI * f2 * i / particles;
     dx = Math.sin(dir) * explosionRad + r * Math.cos(dir2);
     dy = Math.cos(dir) * explosionRad + r * Math.sin(dir2);
     addSplash(x, y, dx, dy, duration, 0.7);
@@ -361,7 +361,7 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   explosionRad = 1.5;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    var r = Math.random() + 0.5;
+    let r = Math.random() + 0.5;
     duration = r * 20;
     dir = dirOffset + 2 * Math.PI * i / particles;
     dx = (2 - r) * Math.sin(dir) * explosionRad;
@@ -372,12 +372,12 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
 
 Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
   // giant tube implosion
-  var s = this.splash;
+  let s = this.splash;
   s.reset(Splashes.Type.WALL_DAMAGE, this.stamps.tubeStamp);
 
   s.startTime = startTime;
   s.duration = Game4PlayScreen.EXIT_DURATION;
-  var rad = 80;
+  let rad = 80;
 
   s.startPose.pos.setXYZ(x, y, -0.9999);
   s.endPose.pos.setXYZ(x, y, -0.9999);
@@ -412,7 +412,7 @@ Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
  * @param {Vec4} color
  */
 Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1, p1t1, rt1, color) {
-  var s = this.splash;
+  let s = this.splash;
   s.reset(Splashes.Type.SCAN, this.stamps.cylinderStamp);
 
   s.startTime = now;
@@ -435,20 +435,20 @@ Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1
 };
 
 // Splashes.prototype.addLineBurst = function(now, duration, center, r, color) {
-//   var lineCount = 3 + Math.floor(Math.random() * 2);
-//   var angle = Math.random() * 2 * Math.PI;
-//   for (var i = 0; i < lineCount; i++) {
+//   let lineCount = 3 + Math.floor(Math.random() * 2);
+//   let angle = Math.random() * 2 * Math.PI;
+//   for (let i = 0; i < lineCount; i++) {
 //     angle += 2 * Math.PI / lineCount;
 //     this.addMovingLine
 //   }
 // };
 
 Splashes.prototype.addDotSplash = function(now, pos, rad, duration, r, g, b) {
-  var s = this.splash;
+  let s = this.splash;
   s.reset(Splashes.Type.NOTE, this.stamps.circleStamp);
   s.startTime = now;
-  var x = pos.x;
-  var y = pos.y;
+  let x = pos.x;
+  let y = pos.y;
   s.duration = duration;
   s.startPose.pos.setXYZ(x, y, -0.99);
   s.endPose.pos.setXYZ(x, y, -0.99);
@@ -464,24 +464,24 @@ Splashes.prototype.addDotSplash = function(now, pos, rad, duration, r, g, b) {
 };
 
 Splashes.prototype.addGrabSplash = function(now, plrPos, dir, targetRad) {
-  var v = Vec2d.alloc();
-  var color = Vec4.alloc(0.5, 1, 0.5, 0);
-  var baseRad = targetRad + PlayerSpirit.PLAYER_RAD * 0.8;
-  var addRad = PlayerSpirit.PLAYER_RAD * 0.8;
-  var dur = 7;
-  var p0t0 = Vec4.alloc();
-  var p1t0 = Vec4.alloc();
-  var p0t1 = Vec4.alloc();
-  var p1t1 = Vec4.alloc();
+  let v = Vec2d.alloc();
+  let color = Vec4.alloc(0.5, 1, 0.5, 0);
+  let baseRad = targetRad + PlayerSpirit.PLAYER_RAD * 0.8;
+  let addRad = PlayerSpirit.PLAYER_RAD * 0.8;
+  let dur = 7;
+  let p0t0 = Vec4.alloc();
+  let p1t0 = Vec4.alloc();
+  let p0t1 = Vec4.alloc();
+  let p1t1 = Vec4.alloc();
 
-  var center = Vec4.alloc().setXYFromVec2d(
+  let center = Vec4.alloc().setXYFromVec2d(
       v.setXY(0, PlayerSpirit.PLAYER_RAD + PlayerSpirit.WIELD_REST_DIST + targetRad).rot(dir).add(plrPos));
 
-  var n = 8;
+  let n = 8;
   // dir += Math.PI;
-  for (var i = 0; i < n; i++) {
+  for (let i = 0; i < n; i++) {
     if (i !== n / 2) {
-      var a = Math.PI * 2 * i / n + dir;
+      let a = Math.PI * 2 * i / n + dir;
       p0t0.setXYFromVec2d(v.setXY(0, baseRad).rot(a)).add(center);
       p1t0.setXYFromVec2d(v.setXY(0, baseRad + addRad * 0.5).rot(a)).add(center);
       p0t1.setXYFromVec2d(v.setXY(0, baseRad + addRad).rot(a)).add(center);
