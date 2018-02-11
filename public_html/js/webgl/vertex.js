@@ -23,6 +23,11 @@ Vertex.prototype.setColorRGB = function(r, g, b) {
   return this;
 };
 
+Vertex.prototype.setColorRGBA = function(r, g, b, a) {
+  this.color.setRGBA(r, g, b, a);
+  return this;
+};
+
 Vertex.prototype.setColorArray = function(rgb) {
   this.setColorRGB(rgb[0], rgb[1], rgb[2]);
   return this;

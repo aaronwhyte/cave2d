@@ -8,12 +8,12 @@ function EditorModels() {
 EditorModels.cursorIconRad = 0.43;
 
 EditorModels.prototype.getCursor = function() {
-  var model = new RigidModel();
-  var arrowHead = RigidModel.createTriangle();
+  let model = new RigidModel();
+  let arrowHead = RigidModel.createTriangle();
   arrowHead.vertexes[0].position.setXYZ(0, 0, 0);
   arrowHead.vertexes[1].position.setXYZ(-0.4, -0.5, 0);
   arrowHead.vertexes[2].position.setXYZ(0.4, -0.5, 0);
-  var arrowShaft = RigidModel.createSquare()
+  let arrowShaft = RigidModel.createSquare()
       .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.35, 1))
       .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.7, 0));
   model.addRigidModel(arrowHead).addRigidModel(arrowShaft);
@@ -25,7 +25,7 @@ EditorModels.prototype.getCursor = function() {
 EditorModels.prototype.getTriggerBackground = function() {
   return RigidModel.createSquare().transformPositions(
       new Matrix44().toTranslateOpXYZ(0, 0, 0.1))
-      .setColorRGB(0.3, 0.3, 0.3);
+      .setColorRGBA(0.1, 0.1, 0.1, 0.7);
 };
 
 EditorModels.prototype.getAddTrigger = function() {
@@ -46,11 +46,11 @@ EditorModels.prototype.getRemoveTrigger = function() {
 
 EditorModels.prototype.getGripTrigger = function() {
   // TODO make this a hand, not a compass.
-  var model = RigidModel.createCircleMesh(3).transformPositions(new Matrix44().toScaleOpXYZ(0.3, 0.3, 1))
+  let model = RigidModel.createCircleMesh(3).transformPositions(new Matrix44().toScaleOpXYZ(0.3, 0.3, 1))
       .addRigidModel(RigidModel.createRingMesh(4, 0.8).transformPositions(
           new Matrix44().toScaleOpXYZ(0.6, 0.6, 1)))
       .addRigidModel(this.getTriggerBackground());
-  for (var i = 0; i < 4; i++) {
+  for (let i = 0; i < 4; i++) {
     model.addRigidModel(RigidModel.createTriangle().transformPositions(
         new Matrix44()
             .multiply(new Matrix44().toRotateZOp(i * Math.PI / 2))
@@ -62,9 +62,9 @@ EditorModels.prototype.getGripTrigger = function() {
 };
 
 EditorModels.prototype.getDigTrigger = function() {
-  var model = new RigidModel();
-  for (var x = -7.5; x <= 7.5; x++) {
-    var indent = 0;
+  let model = new RigidModel();
+  for (let x = -7.5; x <= 7.5; x++) {
+    let indent = 0;
     if (Math.abs(x) < 2) indent = 4 / 8;
     else if (Math.abs(x) < 3) indent = 3 / 8;
     else if (Math.abs(x) < 4) indent = 2 / 8;
@@ -83,9 +83,9 @@ EditorModels.prototype.getDigTrigger = function() {
 };
 
 EditorModels.prototype.getFillTrigger = function() {
-  var model = new RigidModel();
-  for (var x = -7.5; x <= 7.5; x++) {
-    var outdent = 0;
+  let model = new RigidModel();
+  for (let x = -7.5; x <= 7.5; x++) {
+    let outdent = 0;
     if (Math.abs(x) < 2) outdent = 4/8;
     else if (Math.abs(x) < 3) outdent = 3/8;
     else if (Math.abs(x) < 4) outdent = 2/8;
@@ -103,12 +103,12 @@ EditorModels.prototype.getFillTrigger = function() {
 };
 
 EditorModels.prototype.getAddMenuIndicator = function() {
-  var model = new RigidModel();
-  var size = 1.5;
-  var brightness = 1;
-  var thickness = 0.25;
-  var length = 0.5 + thickness;
-  for (var i = 0; i < 4; i++) {
+  let model = new RigidModel();
+  let size = 1.3;
+  let brightness = 1;
+  let thickness = 0.23;
+  let length = thickness * 2.5;
+  for (let i = 0; i < 4; i++) {
     model
         .addRigidModel(RigidModel.createSquare().transformPositions(
             new Matrix44()
@@ -131,9 +131,9 @@ EditorModels.prototype.getAddMenuIndicator = function() {
 
 
 EditorModels.prototype.getPause = function() {
-  var m = new RigidModel();
-  for (var x = -1; x <= 1; x += 2) {
-    var bar = RigidModel.createSquare().transformPositions(
+  let m = new RigidModel();
+  for (let x = -1; x <= 1; x += 2) {
+    let bar = RigidModel.createSquare().transformPositions(
         new Matrix44()
             .multiply(new Matrix44().toScaleOpXYZ(0.1, 0.5, 1)
                 .multiply(new Matrix44().toTranslateOpXYZ(x * 3.25, 0, 0.9)
@@ -156,7 +156,7 @@ EditorModels.prototype.getUntest = function() {
 };
 
 EditorModels.prototype.getUndo = function() {
-  var m = new RigidModel.createTriangle()
+  let m = new RigidModel.createTriangle()
       .transformPositions(new Matrix44().toRotateZOp(Math.PI/2))
       .transformPositions(new Matrix44().toScaleOpXYZ(0.17, 0.25, 1))
       .transformPositions(new Matrix44().toTranslateOpXYZ(0.1, 0, 0));

@@ -6,8 +6,8 @@ function EditorStamps() {
 }
 
 EditorStamps.create = function(renderer) {
-  var stamps = new EditorStamps();
-  var models = new EditorModels();
+  let stamps = new EditorStamps();
+  let models = new EditorModels();
 
   function stamp(model) {
     return model.createModelStamp(renderer.gl);

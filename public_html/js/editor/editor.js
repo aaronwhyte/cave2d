@@ -19,7 +19,7 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
   this.spiritConfigs = spiritConfigs;
   this.changeStack = opt_changeStack || null;
 
-  this.releasedColorVec4 = new Vec4(1, 1, 1, 0.7);
+  this.releasedColorVec4 = new Vec4(1, 1, 1, 0.8);
   this.pressedColorVec4 = new Vec4(1, 1, 1, 0.9);
 
   this.initWidgets(glyphs.initStamps(renderer.gl), editorStamps);
@@ -116,7 +116,7 @@ Editor.setCache = function(val) {
  * @returns {*|null}
  */
 Editor.getCache = function(key) {
-  if (key && Editor.cacheKey == key) {
+  if (key && Editor.cacheKey === key) {
     return Editor.cache;
   }
   return null;
@@ -125,9 +125,9 @@ Editor.getCache = function(key) {
 Editor.WIDGET_RADIUS = 30;
 
 Editor.prototype.initWidgets = function(glyphStamps, editorStamps) {
-  var self = this;
+  let self = this;
   function createTrigger(stamp, keyName, keyStamp, mouseable) {
-    var widget = new TriggerWidget(self.host.getHudEventTarget())
+    let widget = new TriggerWidget(self.host.getHudEventTarget())
         .setReleasedColorVec4(self.releasedColorVec4)
         .setPressedColorVec4(self.pressedColorVec4)
         .setStamp(stamp)
@@ -179,12 +179,12 @@ Editor.prototype.initWidgets = function(glyphStamps, editorStamps) {
  * @param direction 1 if you're starting from the top, or -1 if starting from the bottom
  */
 Editor.prototype.addLeftTriggerRules = function(triggers, direction) {
-  var triggerFractionY = 1/(this.leftTriggers.length + 1);
-  var maxSizeRad = new Vec4(1/5, triggerFractionY, 1);
-  var maxSizePx = new Vec4(50, 50, Infinity);
-  var sourceAnchorRad = new Vec4(-1, -direction, 0);
-  for (var i = 0; i < triggers.length; i++) {
-    var target = triggers[i].getWidgetCuboid();
+  let triggerFractionY = 1/(this.leftTriggers.length + 1);
+  let maxSizeRad = new Vec4(1/5, triggerFractionY, 1);
+  let maxSizePx = new Vec4(50, 50, Infinity);
+  let sourceAnchorRad = new Vec4(-1, -direction, 0);
+  for (let i = 0; i < triggers.length; i++) {
+    let target = triggers[i].getWidgetCuboid();
     this.cuboidRules.push(new CuboidRule(this.canvasCuboid, target)
         .setAspectRatio(new Vec4(1, 1))
         .setSizingMax(maxSizeRad, maxSizePx)
@@ -217,13 +217,18 @@ Editor.prototype.addTopRightTriggerRules = function() {
 
 Editor.prototype.buildMenu = function() {
   if (!this.spiritConfigs) throw new Error('Editor spiritConfigs is falsy: ' + this.spiritConfigs);
-  for (var t in this.spiritConfigs) {
-    var c = this.spiritConfigs[t].menuItemConfig;
+  for (let t in this.spiritConfigs) {
+    let c = this.spiritConfigs[t].menuItemConfig;
     if (c) {
-      this.addMenuItem(c.group, c.rank, c.itemName, c.model);
+      let m = new RigidModel().addRigidModel((c.model)
+          .addRigidModel(RigidModel.createSquare()//createCircle(32)
+              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0.1))
+              .transformPositions(new Matrix44().toScaleOpXYZ(2, 2, 1))
+              .setColorRGBA(0.1, 0.1, 0.1, 0.7)));
+      this.addMenuItem(c.group, c.rank, c.itemName, m);
     }
   }
-  for (var group = 0; group < this.getMaxGroupNum(); group++) {
+  for (let group = 0; group < this.getMaxGroupNum(); group++) {
     this.addMenuKeyboardShortcut(group, group + 1);
   }
 };
@@ -257,18 +262,18 @@ Editor.prototype.updateHudLayout = function() {
   this.triggerSpacing = this.triggerRad * 0.25;
 
   this.canvasCuboid.setToCanvas(this.canvas);
-  for (var i = 0; i < this.cuboidRules.length; i++) {
+  for (let i = 0; i < this.cuboidRules.length; i++) {
     this.cuboidRules[i].apply();
   }
 
-  var menuItemSize = this.getMenuItemSize();
+  let menuItemSize = this.getMenuItemSize();
   this.menu.setItemPositionMatrix(new Matrix44().toScaleOpXYZ(menuItemSize, menuItemSize, 1));
   this.menu.setItemScale(new Vec2d(1, -1).scale(menuItemSize * 0.3));
   this.menu.setPosition(new Vec2d(this.triggerRad * 2 + menuItemSize, this.triggerSpacing + menuItemSize * 0.6));
 };
 
 Editor.prototype.createCursorBody = function() {
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.rad = this.cursorRad;
   b.hitGroup = this.host.getCursorHitGroup();
@@ -276,7 +281,7 @@ Editor.prototype.createCursorBody = function() {
 };
 
 Editor.prototype.setKeyboardTipTimeoutMs = function(ms) {
-  for (var i = 0; i < this.leftTriggers.length; i++) {
+  for (let i = 0; i < this.leftTriggers.length; i++) {
     this.leftTriggers[i].setKeyboardTipTimeoutMs(ms);
   }
   if (this.changeStack) {
@@ -292,7 +297,7 @@ Editor.prototype.interrupt = function() {
   this.oldPanTriggerVal = false;
   this.oldAddTriggerVal = false;
   this.panTriggerWidget.release();
-  for (var i = 0; i < this.leftTriggers.length; i++) {
+  for (let i = 0; i < this.leftTriggers.length; i++) {
     this.leftTriggers[i].release();
   }
   this.ongoingEditGesture = false;
@@ -300,14 +305,14 @@ Editor.prototype.interrupt = function() {
 
 Editor.prototype.handleInput = function() {
   this.ongoingEditGesture = false;
-  var oldCursorPos = Vec2d.alloc().set(this.cursorPos);
-  var sensitivity = this.host.getViewDist() * 0.02;
+  let oldCursorPos = Vec2d.alloc().set(this.cursorPos);
+  let sensitivity = this.host.getViewDist() * 0.02;
 
   // touch trackball movement
   this.trackball.getVal(this.movement);
   if (this.trackball.isTouched()) {
-    var inertia = 0.75;
-    var newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y).scale(sensitivity);
+    let inertia = 0.75;
+    let newVel = Vec2d.alloc().setXY(this.movement.x, -this.movement.y).scale(sensitivity);
     this.cursorVel.scale(inertia).add(newVel.scale(1 - inertia));
     newVel.free();
   }
@@ -344,7 +349,7 @@ Editor.prototype.handleInput = function() {
   if (!this.cursorVel.isZero()) {
     this.cursorPos.add(this.cursorVel);
     // Increase friction at low speeds, to help make smaller movements.
-    var slowness = Math.max(0, (1 - this.cursorVel.magnitude()/sensitivity));
+    let slowness = Math.max(0, (1 - this.cursorVel.magnitude()/sensitivity));
 
     this.host.camera.follow(this.cursorPos);
     this.host.updateViewMatrix();
@@ -393,9 +398,9 @@ Editor.prototype.handleInput = function() {
   }
   this.oldAddTriggerVal = this.addTriggerWidget.getVal();
 
-  var moveLen = oldCursorPos.subtract(this.cursorPos).magnitude();
+  let moveLen = oldCursorPos.subtract(this.cursorPos).magnitude();
   if (moveLen) {
-    var tailVel = Vec2d.alloc().set(this.cursorPos).subtract(this.cursorTail).scale(0.2 * moveLen);
+    let tailVel = Vec2d.alloc().set(this.cursorPos).subtract(this.cursorTail).scale(0.2 * moveLen);
     this.cursorTail.add(tailVel);
     this.cursorTail.subtract(this.cursorPos).scaleToLength(1).add(this.cursorPos);
     tailVel.free();
@@ -405,15 +410,15 @@ Editor.prototype.handleInput = function() {
 };
 
 Editor.prototype.updateCursorDir = function() {
-  var cursorTailDiff = this.vec2d.set(this.cursorPos).subtract(this.cursorTail);
+  let cursorTailDiff = this.vec2d.set(this.cursorPos).subtract(this.cursorTail);
   this.cursorDir = Math.atan2(cursorTailDiff.x, cursorTailDiff.y) || 0;
 };
 
 Editor.prototype.dragObject = function() {
-  var now = this.now();
-  var body = this.host.getBodyById(this.indicatedBodyId);
+  let now = this.now();
+  let body = this.host.getBodyById(this.indicatedBodyId);
   if (body) {
-    var bodyPos = this.host.getBodyPos(body, this.vec2d);
+    let bodyPos = this.host.getBodyPos(body, this.vec2d);
     if (!this.gripPoint) {
       // Get a grip.
       this.gripPoint = Vec2d.alloc()
@@ -422,15 +427,15 @@ Editor.prototype.dragObject = function() {
           .rot(-body.getAngPosAtTime(now));
     }
 
-    var bodyToGrip = Vec2d.alloc()
+    let bodyToGrip = Vec2d.alloc()
         .set(this.gripPoint)
         .rot(body.getAngPosAtTime(now));
-    var accel = Vec2d.alloc()
+    let accel = Vec2d.alloc()
         .set(this.cursorPos)
         .subtract(bodyToGrip)
         .subtract(bodyPos)
         .scale(this.gripAccelFraction);
-    var gripInWorld = Vec2d.alloc()
+    let gripInWorld = Vec2d.alloc()
         .set(bodyPos)
         .add(bodyToGrip);
 
@@ -447,17 +452,17 @@ Editor.prototype.dragObject = function() {
 
 Editor.prototype.doCursorHoverScan = function() {
   this.cursorBody.setPosAtTime(this.cursorPos, this.now());
-  var i, hitBody, overlapBodyIds;
+  let i, hitBody, overlapBodyIds;
 
   // center pinpoint check
   this.cursorBody.rad = 0;
   overlapBodyIds = this.host.getBodyOverlaps(this.cursorBody);
-  var lowestArea = Infinity;
-  var smallestBody = null;
+  let lowestArea = Infinity;
+  let smallestBody = null;
   for (i = 0; i < overlapBodyIds.length; i++) {
     hitBody = this.host.getBodyById(overlapBodyIds[i]);
     if (hitBody) {
-      if (hitBody.hitGroup != this.host.getWallHitGroup() &&
+      if (hitBody.hitGroup !== this.host.getWallHitGroup() &&
           hitBody.getArea() < lowestArea) {
         lowestArea = hitBody.getArea();
         smallestBody = hitBody;
@@ -468,7 +473,7 @@ Editor.prototype.doCursorHoverScan = function() {
 };
 
 Editor.prototype.setIndicatedBodyId = function(id) {
-  if (id != this.indicatedBodyId) {
+  if (id !== this.indicatedBodyId) {
     this.indicatedBodyId = id;
     this.indicatorChangeTime = Date.now();
   }
@@ -478,11 +483,11 @@ Editor.prototype.drawScene = function() {
   this.renderer.setBlendingEnabled(true);
 
   // highlighted body indicator
-  var indicatedBody = this.host.getBodyById(this.indicatedBodyId);
+  let indicatedBody = this.host.getBodyById(this.indicatedBodyId);
   if (indicatedBody) {
-    var bodyPos = this.host.getBodyPos(indicatedBody, this.vec2d);
-    var innerRad = indicatedBody.rad + this.host.getViewDist() * 0.02;
-    var outerRad = indicatedBody.rad + this.host.getViewDist() * 0.03;
+    let bodyPos = this.host.getBodyPos(indicatedBody, this.vec2d);
+    let innerRad = indicatedBody.rad + this.host.getViewDist() * 0.02;
+    let outerRad = indicatedBody.rad + this.host.getViewDist() * 0.03;
     this.renderer
         .setStamp(this.stamps.indicator)
         .setColorVector(this.getIndicatorColorVector());
@@ -498,12 +503,12 @@ Editor.prototype.drawScene = function() {
   }
 
   // cursor
-  var gt = this.gripTriggerWidget.getVal();
-  var dt = this.digTriggerWidget.getVal();
-  var ft = this.fillTriggerWidget.getVal();
-  var rt = this.removeTriggerWidget.getVal();
-  var any = ft || dt || gt || rt;
-  var coef = any ? 1 : 0.8;
+  let gt = this.gripTriggerWidget.getVal();
+  let dt = this.digTriggerWidget.getVal();
+  let ft = this.fillTriggerWidget.getVal();
+  let rt = this.removeTriggerWidget.getVal();
+  let any = ft || dt || gt || rt;
+  let coef = any ? 1 : 0.8;
   this.renderer
       .setStamp(this.stamps.cursor)
       .setColorVector(this.colorVector.setRGBA(
@@ -511,8 +516,8 @@ Editor.prototype.drawScene = function() {
           dt ? 0.5 : coef,
           gt ? 0.5 : coef,
           this.indicatedBodyId && gt && !(dt || ft || rt) ? 0.3 : 0.8));
-  var outerCursorRad = this.cursorRad;
-  var innerCursorRad = this.cursorRad * 0.9;
+  let outerCursorRad = this.cursorRad;
+  let innerCursorRad = this.cursorRad * 0.9;
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
       .multiply(this.mat44.toRotateZOp(-this.cursorDir))
@@ -541,7 +546,7 @@ Editor.prototype.drawScene = function() {
  * Draw stuff on screen coords, with 0,0 at the top left and canvas.width, canvas.height at the bottom right.
  */
 Editor.prototype.drawHud = function() {
-  for (var i = 0; i < this.leftTriggers.length; i++) {
+  for (let i = 0; i < this.leftTriggers.length; i++) {
     this.leftTriggers[i].draw(this.renderer);
   }
   this.pauseTriggerWidget.draw(this.renderer);
@@ -594,7 +599,7 @@ Editor.prototype.stopRecordingChanges = function() {
 
 Editor.prototype.undo = function() {
   this.stopMoving();
-  var changes = this.stopRecordingChanges();
+  let changes = this.stopRecordingChanges();
   if (changes.length) {
     this.saveToChangeStack(changes);
   }
@@ -607,7 +612,7 @@ Editor.prototype.undo = function() {
 
 Editor.prototype.redo = function() {
   this.stopMoving();
-  var changes = this.stopRecordingChanges();
+  let changes = this.stopRecordingChanges();
   if (changes.length) {
     this.saveToChangeStack(changes);
   }
@@ -618,10 +623,10 @@ Editor.prototype.redo = function() {
 };
 
 Editor.prototype.applyChanges = function(changes) {
-  var terrainChanges = [];
-  var worldChanges = [];
-  for (var i = 0; i < changes.length; i++) {
-    var c = changes[i];
+  let terrainChanges = [];
+  let worldChanges = [];
+  for (let i = 0; i < changes.length; i++) {
+    let c = changes[i];
     switch (c.type) {
       case BitGrid.CHANGE_TYPE:
         terrainChanges.push(c);
@@ -655,7 +660,7 @@ Editor.prototype.saveToChangeStack = function(changes) {
  */
 Editor.prototype.stopMoving = function () {
   this.interrupt();
-  for (var bodyId in this.host.world.bodies) {
+  for (let bodyId in this.host.world.bodies) {
     this.host.world.bodies[bodyId].stopMoving(this.now());
   }
 };
@@ -668,13 +673,13 @@ Editor.prototype.onWorldToJson = function(json) {
 
 Editor.prototype.onLoadWorldFromJson = function(json) {
   if (json.cursorPos) {
-    var cursorPos = Vec2d.fromJSON(json.cursorPos);
+    let cursorPos = Vec2d.fromJSON(json.cursorPos);
     if (cursorPos) this.cursorPos.set(Vec2d.fromJSON(json.cursorPos));
   }
   if (json.cursorTail) {
     this.cursorTail.set(Vec2d.fromJSON(json.cursorTail));
   }
-  var cacheVal = Editor.getCache(json.cacheKey);
+  let cacheVal = Editor.getCache(json.cacheKey);
   if (cacheVal) {
     this.changeStack = cacheVal;
   }

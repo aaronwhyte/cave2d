@@ -90,6 +90,17 @@ RigidModel.prototype.transformPositions = function(matrix) {
  * Sets all the vertex colors in this model.
  * @return {RigidModel} this
  */
+RigidModel.prototype.setColorRGBA = function(r, g, b, a) {
+  for (let i = 0; i < this.vertexes.length; i++) {
+    this.vertexes[i].setColorRGBA(r, g, b, a);
+  }
+  return this;
+};
+
+/**
+ * Sets all the vertex colors in this model.
+ * @return {RigidModel} this
+ */
 RigidModel.prototype.setColorRGB = function(r, g, b) {
   for (let i = 0; i < this.vertexes.length; i++) {
     this.vertexes[i].setColorRGB(r, g, b);

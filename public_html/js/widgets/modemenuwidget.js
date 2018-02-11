@@ -21,7 +21,7 @@ function ModeMenuWidget(elem) {
   this.matrixesValid = false;
   this.stampsValid = false;
 
-  let alpha = 0.8;
+  let alpha = 0.9;
 
   // single stamp for the entire set of items
   this.menuStamp = null;
@@ -44,17 +44,8 @@ function ModeMenuWidget(elem) {
   this.itemPosMatrix = new Matrix44();
   this.inverseItemPosMatrix = new Matrix44();
 
-  // How to map from page coords to (group, rank) coords.
-  this.pageToItemMatrix = new Matrix44();
-
   // scale to apply to individual items
   this.itemScale = new Vec2d(1, -1);
-
-  // scale to apply to keyboard tips
-  this.keyTipsScale = new Vec2d(0.5, -0.5);
-
-  // scale to apply to keyboard tips
-  this.keyTipsOffset = new Vec2d(0, -1);
 
   // time after which the keyboard tips will stop being rendered
   this.keyTipsUntilTimeMs = -Infinity;
@@ -65,14 +56,14 @@ function ModeMenuWidget(elem) {
 
   this.keys = new Keys();
 
-  var self = this;
+  let self = this;
   this.keyDownListener = function(e) {
     if (!e) e = window.event;
-    var keyName = self.keys.getNameForKeyCode(e.keyCode);
+    let keyName = self.keys.getNameForKeyCode(e.keyCode);
     if (keyName in self.keyNameToGroup) {
-      var newGroup = self.keyNameToGroup[keyName];
-      var newRank = self.selectedRank;
-      if (newGroup == self.selectedGroup) {
+      let newGroup = self.keyNameToGroup[keyName];
+      let newRank = self.selectedRank;
+      if (newGroup === self.selectedGroup) {
         // advance rank
         newRank = (newRank + 1) % self.groups[newGroup].length;
       } else {
@@ -83,9 +74,9 @@ function ModeMenuWidget(elem) {
   };
   this.touchStartListener = function(e) {
     if (!e) e = window.event;
-    var touches = e.changedTouches;
-    for (var i = 0; i < touches.length; i++) {
-      var touch = touches[i];
+    let touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+      let touch = touches[i];
       if (self.maybeSelectPageXY(touch.pageX, touch.pageY)) {
         // for layer thing
         return false;
@@ -224,8 +215,8 @@ ModeMenuWidget.prototype.draw = function(renderer) {
 };
 
 ModeMenuWidget.prototype.getSelectedName = function() {
-  var g = this.groups[this.selectedGroup];
-  var r = g && g[this.selectedRank];
+  let g = this.groups[this.selectedGroup];
+  let r = g && g[this.selectedRank];
   return r && r.name;
 };
 
@@ -260,14 +251,14 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
     this.keyTipsStamp = null;
   }
   if (!this.menuStamp) {
-    var menuModel = new RigidModel();
-    var itemOffset = Vec4.alloc();
-    for (var g = 0; g < this.groups.length; g++) {
-      var group = this.groups[g];
-      for (var r = 0; r < group.length; r++) {
-        var item = group[r];
+    let menuModel = new RigidModel();
+    let itemOffset = Vec4.alloc();
+    for (let g = 0; g < this.groups.length; g++) {
+      let group = this.groups[g];
+      for (let r = 0; r < group.length; r++) {
+        let item = group[r];
         this.getItemOffset(g, r, itemOffset);
-        var itemModel = new RigidModel()
+        let itemModel = new RigidModel()
             .addRigidModel(item.model)
             .transformPositions(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y, 1))
             .transformPositions(this.mat44.toTranslateOpXYZ(itemOffset.getX(), itemOffset.getY(), 0));
@@ -287,7 +278,7 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
 ModeMenuWidget.prototype.validateMatrixes = function() {
   if (this.matrixesValid) return;
   this.menuMatrix.toTranslateOpXYZ(this.menuPos.x, this.menuPos.y, -0.9);
-  var indicatorOffset = this.getItemOffset(this.selectedGroup, this.selectedRank, Vec4.alloc());
+  let indicatorOffset = this.getItemOffset(this.selectedGroup, this.selectedRank, Vec4.alloc());
   this.indicatorMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(
           this.menuPos.x + indicatorOffset.getX(),
@@ -305,11 +296,11 @@ ModeMenuWidget.prototype.getItemOffset = function(group, rank, vec4Out) {
 };
 
 ModeMenuWidget.prototype.maybeSelectPageXY = function(pageX, pageY) {
-  var selected = false;
-  var pos = Vec4.alloc().setXYZ(pageX - this.menuPos.x, pageY - this.menuPos.y, 0);
+  let selected = false;
+  let pos = Vec4.alloc().setXYZ(pageX - this.menuPos.x, pageY - this.menuPos.y, 0);
   pos.transform(this.inverseItemPosMatrix);
-  var group = Math.round(pos.getX());
-  var rank = Math.round(pos.getY());
+  let group = Math.round(pos.getX());
+  let rank = Math.round(pos.getY());
   if (this.groups[group] && this.groups[group][rank]) {
     this.setSelectedGroupAndRank(group, rank);
     selected = true;
