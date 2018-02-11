@@ -44,11 +44,11 @@ RigidModel.prototype.addTriangle = function(vertIndex0, vertIndex1, vertIndex2) 
  */
 RigidModel.prototype.addRigidModel = function(that) {
   // Map that's vertex indexes to their new indexes in this.
-  let i, vertexMap = {};
-  for (i = 0; i < that.vertexes.length; i++) {
+  let vertexMap = {};
+  for (let i = 0; i < that.vertexes.length; i++) {
     vertexMap[i] = this.addVertex(that.vertexes[i].copy());
   }
-  for (i = 0; i < that.triangles.length; i++) {
+  for (let i = 0; i < that.triangles.length; i++) {
     let thatTri = that.triangles[i];
     this.addTriangle(
         vertexMap[thatTri[0]],

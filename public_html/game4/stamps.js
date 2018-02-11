@@ -8,7 +8,7 @@ function Stamps() {
 Stamps.create = function(renderer) {
 
   let stamps = new Stamps();
-  let glyphs = new Glyphs(new GlyphMaker(0.4, 1.2));
+  let glyphs = new Glyphs(new GlyphMaker(0.4, 1.2), true);
   glyphs.initModels();
   let models = new Models(glyphs);
   function stamp(model) {
@@ -19,23 +19,8 @@ Stamps.create = function(renderer) {
   stamps.septagonStamp = stamp(RigidModel.createCircle(7));
   stamps.squareStamp = stamp(RigidModel.createSquare());
   stamps.tubeStamp = stamp(RigidModel.createTube(32));
-
-
   stamps.cylinderStamp = stamp(RigidModel.createCylinder(32));
-  stamps.cylinderBatchDrawer = batchDrawer(RigidModel.createCylinder(32));
-
-
   stamps.lineStamp = stamp(RigidModel.createCylinder(9));
-
-  // fancier stuff
-  let model = RigidModel.createCube()
-      .createQuadrupleTriangleModel().createQuadrupleTriangleModel().sphereize(Vec4.ZERO, 1);
-  for (let i = 0; i < model.vertexes.length; i++) {
-    let v = model.vertexes[i];
-    let height = 1 - (v.position.getZ() / 2 + 0.5);
-    v.color.scale1(height);
-  }
-  stamps.sphereLowPoly = stamp(model);
 
   // HUD icons
   stamps.pauseStamp = stamp(models.getPause());

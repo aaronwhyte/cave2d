@@ -50,8 +50,12 @@ Models.prototype.getUntest = function() {
 Models.prototype.getCharButton = function(char) {
   let m = new RigidModel();
   let glyphSize = 0.25;
-  m.addRigidModel(this.glyphs.models[char]).transformPositions(new Matrix44().toScaleOpXYZ(glyphSize, -glyphSize, 1));
-  m.addRigidModel(RigidModel.createCircle(24));
+  let c = RigidModel.createCircle(24).setColorRGBA(0.5, 0.5, 0.5, 0.7);
+  m.addRigidModel(this.glyphs.models[char])
+      .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.001))
+      .transformPositions(new Matrix44().toScaleOpXYZ(glyphSize, -glyphSize, 1))
+      .setColorRGBA(1, 1, 1, 1);
+  m.addRigidModel(c);
   return m;
 };
 
