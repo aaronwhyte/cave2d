@@ -54,7 +54,7 @@ PlayerSlot.prototype.setRespawnPos = function(pos) {
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.setState = function(newStateName) {
-  if (this.stateName === newStateName) return;
+  if (this.stateName === newStateName) return this;
   let oldControls = this.stateMap[this.stateName];
   if (oldControls) oldControls.stopListening();
 
