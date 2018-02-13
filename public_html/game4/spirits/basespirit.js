@@ -42,7 +42,6 @@ BaseSpirit.prototype.reset = function(screen) {
 
   this.bodyId = -1;
   this.id = -1;
-  this.modelStamp = null;
   this.tempBodyPos.reset();
 
   // energy
@@ -56,10 +55,6 @@ BaseSpirit.prototype.reset = function(screen) {
   // harmless and invulnerable
   this.toughness = Infinity;
   this.damage = 0;
-};
-
-BaseSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
 };
 
 BaseSpirit.prototype.setColorRGB = function(r, g, b) {
@@ -205,6 +200,10 @@ BaseSpirit.prototype.getColor = function() {
   return this.color;
 };
 
+BaseSpirit.prototype.getModelId = function() {
+  return -1;
+};
+
 BaseSpirit.prototype.drawBody = function() {
   let body = this.getBody();
   let pos = this.getBodyPos();
@@ -214,7 +213,7 @@ BaseSpirit.prototype.drawBody = function() {
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-    this.batchDrawer.batchDraw(this.getColor(), this.modelMatrix, null);
+    this.screen.drawModel(this.getModelId(), this.getColor(), this.modelMatrix);
   }
 };
 

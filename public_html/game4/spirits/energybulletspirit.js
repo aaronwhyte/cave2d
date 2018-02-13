@@ -71,19 +71,6 @@ EnergyBulletSpirit.getJsoner = function() {
   return EnergyBulletSpirit.jsoner;
 };
 
-EnergyBulletSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-EnergyBulletSpirit.createModel = function() {
-  return RigidModel.createCircle(13)
-      .setColorRGB(1, 1, 1);
-};
-
-EnergyBulletSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
-};
-
 EnergyBulletSpirit.prototype.onHitEnergizable = function(otherSpirit, pos) {
   otherSpirit.addEnergy(this.energy);
   this.destroyBody();
@@ -109,9 +96,6 @@ EnergyBulletSpirit.prototype.drawTrail = function() {
   let duration = 3;
   let minTime = maxTime - duration;
   let trailWarm = false;
-  this.screen.renderer
-      .setStamp(this.stamps.cylinderStamp)
-      .setColorVector(this.color);
   for (let i = 0; i < this.trail.size(); i++) {
     let segStartTime = this.trail.getSegmentStartTime(i);
     let segEndTime = this.trail.getSegmentEndTime(i);
@@ -127,14 +111,11 @@ EnergyBulletSpirit.prototype.drawTrail = function() {
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
-      this.screen.renderer.setModelMatrix(this.modelMatrix);
-
       let endRad = this.tailRad + (this.headRad - this.tailRad) * (drawEndTime - minTime) / duration;
-      this.modelMatrix.toIdentity()
+      this.modelMatrix2.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
-      this.screen.renderer.setModelMatrix2(this.modelMatrix);
-      this.screen.renderer.drawStamp();
+      this.screen.drawModel(ModelIds.CYLINDER_32, this.color, this.modelMatrix, this.modelMatrix2);
     }
   }
   if (!trailWarm) {

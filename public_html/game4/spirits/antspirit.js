@@ -63,28 +63,10 @@ AntSpirit.prototype.setFromJSON = function(json) {
   AntSpirit.getJsoner().setFromJSON(json, this);
 };
 
-AntSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-AntSpirit.createModel = function() {
-  return RigidModel.createCircle(8)
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
-      .setColorRGB(0.1, 0.8, 0.1);
-};
-
-AntSpirit.factory = function(screen, batchDrawer, pos, dir) {
+AntSpirit.factory = function(screen, ignored, pos, dir) {
   let world = screen.world;
 
   let spirit = new AntSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   let density = 1;
 
@@ -106,8 +88,8 @@ AntSpirit.factory = function(screen, batchDrawer, pos, dir) {
   return spiritId;
 };
 
-AntSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
+AntSpirit.prototype.getModelId = function() {
+  return ModelIds.ANT;
 };
 
 AntSpirit.prototype.scan = function(pos, rot, dist, rad) {

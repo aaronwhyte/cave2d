@@ -24,16 +24,10 @@ EntranceSpirit.SCHEMA = {
   2: "bodyId"
 };
 
-EntranceSpirit.createModel = function() {
-  return RigidModel.createRingMesh(5, 0.8)
-      .setColorRGB(0.7, 0.3, 0.7);
-};
-
-EntranceSpirit.factory = function(screen, batchDrawer, pos) {
+EntranceSpirit.factory = function(screen, ignored, pos) {
   let world = screen.world;
 
   let spirit = new EntranceSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
   let density = 1;
 
   let b = Body.alloc();
@@ -78,12 +72,12 @@ EntranceSpirit.getJsoner = function() {
   return EntranceSpirit.jsoner;
 };
 
-EntranceSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
 EntranceSpirit.prototype.getColor = function() {
   return Renderer.COLOR_WHITE;
+};
+
+EntranceSpirit.prototype.getModelId = function() {
+  return ModelIds.ENTRANCE;
 };
 
 EntranceSpirit.prototype.toJSON = function() {

@@ -35,6 +35,7 @@ function PlayerSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+  this.modelMatrix2 = new Matrix44();
 
   // combat
   this.toughness = 1;
@@ -118,28 +119,10 @@ PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
   return this;
 };
 
-PlayerSpirit.createModel = function() {
-  return RigidModel.createCircle(24)
-      .setColorRGB(1, 1, 1)
-      .addRigidModel(RigidModel.createCircle(12)
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(-0.32, 0.23, -0.25))
-          .setColorRGB(0, 0, 0))
-      .addRigidModel(RigidModel.createCircle(12)
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0.32, 0.23, -0.25))
-          .setColorRGB(0, 0, 0))
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.07, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.37, -0.25))
-          .setColorRGB(0, 0, 0));
-};
-
-PlayerSpirit.factory = function(playScreen, batchDrawer, pos, dir) {
+PlayerSpirit.factory = function(playScreen, ignored, pos, dir) {
   let world = playScreen.world;
 
   let spirit = new PlayerSpirit(playScreen);
-  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
 
   let spiritId = world.addSpirit(spirit);
@@ -148,6 +131,10 @@ PlayerSpirit.factory = function(playScreen, batchDrawer, pos, dir) {
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
+};
+
+PlayerSpirit.prototype.getModelId = function() {
+  return ModelIds.PLAYER;
 };
 
 PlayerSpirit.prototype.createBody = function(pos, dir) {
@@ -681,7 +668,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
       .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(this.now())));
-  this.batchDrawer.batchDraw(this.color, this.modelMatrix, null);
+  this.screen.drawModel(this.getModelId(), this.color, this.modelMatrix, null);
 
   let p1, p2, rad;
 
@@ -689,9 +676,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   let targetBody = this.getTargetBody();
   if (targetBody) {
     let unobstructedness = 1 - this.obstructionCount / PlayerSpirit.MAX_OBSTRUCTION_COUNT;
-    renderer.setStamp(this.stamps.lineStamp);
     this.aimColor.setRGBA(0, 1, 0);
-    renderer.setColorVector(this.aimColor);
     p1 = bodyPos;
     p2 = targetBody.getPosAtTime(this.now(), this.vec2d);
     let volume = 1/3 * PlayerSpirit.PLAYER_RAD * PlayerSpirit.WIELD_REST_DIST;
@@ -699,19 +684,15 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    renderer.setModelMatrix(this.modelMatrix);
-    this.modelMatrix.toIdentity()
+    this.modelMatrix2.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    renderer.setModelMatrix2(this.modelMatrix);
-    renderer.drawStamp();
+    this.screen.drawModel(ModelIds.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
   }
 
   // aim guide
   if (!targetBody) {
-    renderer.setStamp(this.stamps.lineStamp);
     this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
-    renderer.setColorVector(this.aimColor);
     p1 = this.vec2d;
     p2 = this.vec2d2;
     let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
@@ -722,12 +703,10 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    renderer.setModelMatrix(this.modelMatrix);
-    this.modelMatrix.toIdentity()
+    this.modelMatrix2.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    renderer.setModelMatrix2(this.modelMatrix);
-    renderer.drawStamp();
+    this.screen.drawModel(ModelIds.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
   }
 };
 

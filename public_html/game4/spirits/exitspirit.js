@@ -29,16 +29,10 @@ ExitSpirit.SCHEMA = {
   2: "bodyId"
 };
 
-ExitSpirit.createModel = function() {
-  return RigidModel.createRingMesh(5, 0.8)
-      .setColorRGB(0.2, 0.8, 0.2);
-};
-
-ExitSpirit.factory = function(screen, batchDrawer, pos) {
+ExitSpirit.factory = function(screen, ignored, pos) {
   let world = screen.world;
 
   let spirit = new ExitSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
 
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -53,6 +47,10 @@ ExitSpirit.factory = function(screen, batchDrawer, pos) {
   b.spiritId = spiritId;
   world.addTimeout(world.now, spiritId, -1);
   return spiritId;
+};
+
+ExitSpirit.prototype.getModelId = function() {
+  return ModelIds.EXIT;
 };
 
 ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -108,10 +106,6 @@ ExitSpirit.getJsoner = function() {
     ExitSpirit.jsoner = new Jsoner(ExitSpirit.SCHEMA);
   }
   return ExitSpirit.jsoner;
-};
-
-ExitSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
 };
 
 ExitSpirit.prototype.onDraw = function(world, renderer) {

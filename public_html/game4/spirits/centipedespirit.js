@@ -73,28 +73,10 @@ CentipedeSpirit.prototype.setFromJSON = function(json) {
   CentipedeSpirit.getJsoner().setFromJSON(json, this);
 };
 
-CentipedeSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-CentipedeSpirit.createModel = function() {
-  return RigidModel.createCircle(8)
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
-      .addRigidModel(RigidModel.createSquare()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
-      .setColorRGB(1, 0.1, 0.1);
-};
-
-CentipedeSpirit.factory = function(screen, batchDrawer, pos, dir) {
+CentipedeSpirit.factory = function(screen, ignored, pos, dir) {
   let world = screen.world;
 
   let spirit = new CentipedeSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   let density = 1;
 
@@ -116,8 +98,8 @@ CentipedeSpirit.factory = function(screen, batchDrawer, pos, dir) {
   return spiritId;
 };
 
-CentipedeSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
+CentipedeSpirit.prototype.getModelId = function() {
+  return ModelIds.CENTIPEDE;
 };
 
 CentipedeSpirit.prototype.scan = function(pos, rot, dist, rad) {

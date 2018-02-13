@@ -3,7 +3,7 @@
  * @constructor
  * @extends Screen
  */
-function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans, opt_supportBatchDrawing) {
+function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans, opt_supportBatchDrawing, opt_models) {
   if (!controller) return; // generating prototype
   Screen.call(this);
 
@@ -11,6 +11,7 @@ function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans, opt
   this.canvas = canvas;
   this.renderer = renderer;
   this.stamps = stamps;
+  this.models = opt_models || null;
 
   this.viewMatrix = new Matrix44();
   this.mat44 = new Matrix44();
@@ -187,8 +188,24 @@ WorldScreen.prototype.getMsUntilClockAbort = function() {
   return this.getMsPerFrame() - WorldScreen.RELAX_PER_FRAME_MS;
 };
 
+/**
+ * Adds a model, creating a stamp or a batchDrawer depending on batchSize.
+ * @param id The caller-defined key. Re-adding something that was already added will cause an error!
+ * @param {RigidModel} model
+ * @param {number} batchSize If this is less than 2, then a batchDrawer won't be created. Regular stamps will be used.
+ */
 WorldScreen.prototype.addModel = function(id, model, batchSize) {
   return this.drawPack.addModel(id, model, batchSize);
+};
+
+/**
+ * @param {number} id
+ * @param {Vec4} color
+ * @param {Matrix44} matrix
+ * @param {Matrix44=} matrix2
+ */
+WorldScreen.prototype.drawModel = function(id, color, matrix, matrix2) {
+  this.drawPack.draw(id, color, matrix, matrix2);
 };
 
 WorldScreen.prototype.flushBatchDrawers = function() {
@@ -216,6 +233,25 @@ WorldScreen.prototype.createSpiritConfig = function(type, ctor, menuItemName, gr
       : null;
   let menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, factory || ctor.factory) : null;
   return new SpiritConfig(type, ctor, stamp, batchDrawer, menuItemConfig);
+};
+
+/**
+ * Util method for creating a SpiritConfig in one line.
+ * @param type The spirit.type
+ * @param ctor The spirit constructor
+ * @param {=String} menuItemName the menu item name, or null if this is not part of an editor menu
+ *     If this is falsy, then the rest of the arguments can be omitted.
+ * @param {=number} group The menu item group
+ * @param {=number} rank The menu item rank within the group
+ * @param {=number} modelId
+ * @returns {SpiritConfig}
+ */
+WorldScreen.prototype.createSpiritConfig2 = function(type, ctor, menuItemName, group, rank, modelId) {
+  let menuItemConfig = null;
+  if (menuItemName) {
+    menuItemConfig = new MenuItemConfig(menuItemName, group, rank, this.models.createModel(modelId), ctor.factory);
+  }
+  return new SpiritConfig(type, ctor, null, null, menuItemConfig);
 };
 
 /**

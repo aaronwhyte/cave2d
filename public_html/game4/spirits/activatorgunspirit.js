@@ -59,29 +59,10 @@ ActivatorGunSpirit.prototype.setFromJSON = function(json) {
   ActivatorGunSpirit.getJsoner().setFromJSON(json, this);
 };
 
-ActivatorGunSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-ActivatorGunSpirit.createModel = function() {
-  let model = new RigidModel();
-  let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-  let thick = 0.3;
-  let barrel = RigidModel.createSquare()
-      .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
-      .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
-      .addRigidModel(RigidModel.createCircle(9)
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(0.9, 0.9, 0.9);
-  return model.addRigidModel(body).addRigidModel(barrel);
-};
-
-ActivatorGunSpirit.factory = function(screen, batchDrawer, pos, dir) {
+ActivatorGunSpirit.factory = function(screen, ignored, pos, dir) {
   let world = screen.world;
 
   let spirit = new ActivatorGunSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   let density = 1;
 
@@ -101,10 +82,6 @@ ActivatorGunSpirit.factory = function(screen, batchDrawer, pos, dir) {
   b.spiritId = spiritId;
   world.addTimeout(screen.now(), spiritId, ActivatorGunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
-};
-
-ActivatorGunSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
 };
 
 ActivatorGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -154,6 +131,10 @@ ActivatorGunSpirit.prototype.getColor = function() {
     this.vec4.scale1(1.2);
   }
   return this.vec4;
+};
+
+ActivatorGunSpirit.prototype.getModelId = function() {
+  return ModelIds.ACTIVATOR_GUN;
 };
 
 ActivatorGunSpirit.prototype.onInputSumUpdate = function() {

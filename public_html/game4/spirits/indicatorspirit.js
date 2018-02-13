@@ -49,15 +49,6 @@ IndicatorSpirit.prototype.setFromJSON = function(json) {
   IndicatorSpirit.getJsoner().setFromJSON(json, this);
 };
 
-IndicatorSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-IndicatorSpirit.createModel = function() {
-  return RigidModel.createCircle(17)
-      .setColorRGB(0.5, 0.5, 0.4);
-};
-
 IndicatorSpirit.factory = function(screen, batchDrawer, pos, dir) {
   let world = screen.world;
 
@@ -82,10 +73,6 @@ IndicatorSpirit.factory = function(screen, batchDrawer, pos, dir) {
   b.spiritId = spiritId;
   world.addTimeout(screen.now(), spiritId, -1);
   return spiritId;
-};
-
-IndicatorSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
 };
 
 IndicatorSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -127,4 +114,8 @@ IndicatorSpirit.prototype.getColor = function() {
     this.vec4.scale1(1.5 + 5 * Math.random());
   }
   return this.vec4;
+};
+
+IndicatorSpirit.prototype.getModelId = function() {
+  return ModelIds.INDICATOR;
 };

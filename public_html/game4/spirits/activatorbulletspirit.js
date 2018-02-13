@@ -11,6 +11,7 @@ function ActivatorBulletSpirit(screen) {
   // temps
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
+  this.modelMatrix2 = new Matrix44();
   this.vec4 = new Vec4();
 
   // trail stuff
@@ -70,15 +71,6 @@ ActivatorBulletSpirit.getJsoner = function() {
   return ActivatorBulletSpirit.jsoner;
 };
 
-ActivatorBulletSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-ActivatorBulletSpirit.createModel = function() {
-  return RigidModel.createCircle(13)
-      .setColorRGB(1, 1, 1);
-};
-
 ActivatorBulletSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
@@ -91,22 +83,6 @@ ActivatorBulletSpirit.prototype.onHitOther = function(collisionVeg, mag, otherBo
 };
 
 ActivatorBulletSpirit.prototype.onDraw = function(world, renderer) {
-  // let body = this.getBody();
-  // if (body && this.modelStamp) {
-  //   let pos = this.getBodyPos();
-  //   this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  //   if (this.viewportsFromCamera < 1.1) {
-  //     renderer
-  //         .setStamp(this.modelStamp)
-  //         .setColorVector(this.vec4.set(this.color));
-  //     this.modelMatrix.toIdentity()
-  //         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
-  //         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-  //         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-  //     renderer.setModelMatrix(this.modelMatrix);
-  //     renderer.drawStamp();
-  //   }
-  // }
   this.drawTrail();
 };
 
@@ -122,9 +98,6 @@ ActivatorBulletSpirit.prototype.drawTrail = function() {
   let duration = 3;
   let minTime = maxTime - duration;
   let trailWarm = false;
-  this.screen.renderer
-      .setStamp(this.stamps.cylinderStamp)
-      .setColorVector(this.color);
   for (let i = 0; i < this.trail.size(); i++) {
     let segStartTime = this.trail.getSegmentStartTime(i);
     let segEndTime = this.trail.getSegmentEndTime(i);
@@ -140,14 +113,11 @@ ActivatorBulletSpirit.prototype.drawTrail = function() {
       this.modelMatrix.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
-      this.screen.renderer.setModelMatrix(this.modelMatrix);
-
       let endRad = this.tailRad + (this.headRad - this.tailRad) * (drawEndTime - minTime) / duration;
-      this.modelMatrix.toIdentity()
+      this.modelMatrix2.toIdentity()
           .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
-      this.screen.renderer.setModelMatrix2(this.modelMatrix);
-      this.screen.renderer.drawStamp();
+      this.screen.drawModel(ModelIds.CYLINDER_32, this.color, this.modelMatrix, this.modelMatrix2);
     }
   }
   if (!trailWarm) {

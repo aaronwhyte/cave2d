@@ -59,29 +59,10 @@ ShotgunSpirit.prototype.setFromJSON = function(json) {
   ShotgunSpirit.getJsoner().setFromJSON(json, this);
 };
 
-ShotgunSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-ShotgunSpirit.createModel = function() {
-  let model = new RigidModel();
-  let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-  let thick = 0.65;
-  let barrel = RigidModel.createSquare()
-      .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
-      .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
-      .addRigidModel(RigidModel.createCircle(9)
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(1, 0.2, 0.2);
-  return model.addRigidModel(body).addRigidModel(barrel);
-};
-
-ShotgunSpirit.factory = function(screen, batchDrawer, pos, dir) {
+ShotgunSpirit.factory = function(screen, ignored, pos, dir) {
   let world = screen.world;
 
   let spirit = new ShotgunSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   let density = 1;
 
@@ -101,10 +82,6 @@ ShotgunSpirit.factory = function(screen, batchDrawer, pos, dir) {
   b.spiritId = spiritId;
   world.addTimeout(screen.now(), spiritId, ShotgunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
-};
-
-ShotgunSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
 };
 
 ShotgunSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -163,6 +140,10 @@ ShotgunSpirit.prototype.getColor = function() {
     this.vec4.scale1(1.2);
   }
   return this.vec4;
+};
+
+ShotgunSpirit.prototype.getModelId = function() {
+  return ModelIds.SHOTGUN;
 };
 
 ShotgunSpirit.prototype.onInputSumUpdate = function() {

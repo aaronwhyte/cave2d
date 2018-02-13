@@ -59,29 +59,10 @@ RogueGunSpirit.prototype.setFromJSON = function(json) {
   RogueGunSpirit.getJsoner().setFromJSON(json, this);
 };
 
-RogueGunSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-RogueGunSpirit.createModel = function() {
-  let model = new RigidModel();
-  let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-  let thick = 0.4;
-  let barrel = RigidModel.createSquare()
-      .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
-      .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
-      .addRigidModel(RigidModel.createCircle(9)
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(0.5, 1, 1);
-  return model.addRigidModel(body).addRigidModel(barrel);
-};
-
-RogueGunSpirit.factory = function(screen, batchDrawer, pos, dir) {
+RogueGunSpirit.factory = function(screen, ignored, pos, dir) {
   let world = screen.world;
 
   let spirit = new RogueGunSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   let density = 1;
 
@@ -101,10 +82,6 @@ RogueGunSpirit.factory = function(screen, batchDrawer, pos, dir) {
   b.spiritId = spiritId;
   world.addTimeout(screen.now(), spiritId, RogueGunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
-};
-
-RogueGunSpirit.prototype.setColorRGB = function(r, g, b) {
-  this.color.setXYZ(r, g, b);
 };
 
 RogueGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -154,6 +131,10 @@ RogueGunSpirit.prototype.getColor = function() {
     this.vec4.scale1(1.2);
   }
   return this.vec4;
+};
+
+RogueGunSpirit.prototype.getModelId = function() {
+  return ModelIds.ROGUE_GUN;
 };
 
 RogueGunSpirit.prototype.onInputSumUpdate = function() {

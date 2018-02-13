@@ -3,9 +3,14 @@
  * @extends {WorldScreen}
  */
 function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  let glyphs = new Glyphs(new GlyphMaker(0.4, 1.2), true);
+  glyphs.initModels();
+  let models = new Models(glyphs);
+
   WorldScreen.call(this, controller, canvas, renderer, stamps, sfx,
       Game4BaseScreen.USE_FANS,
-      Game4BaseScreen.SUPPORT_BATCH_DRAWING);
+      Game4BaseScreen.SUPPORT_BATCH_DRAWING,
+      models);
   if (!controller) return; // generating prototype
 
   this.adventureName = adventureName;
@@ -27,6 +32,8 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.hudViewMatrix = new Matrix44();
 
   this.sounds.setMasterGain(0.5);
+
+  this.models = models;
 
   this.splashes = new Splashes(this.splasher, this.stamps);
 
@@ -91,37 +98,29 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
     row = 0;
   }
 
-  function addToMenu(spiritType, ctor, menuItem) {
-    sc[spiritType] = self.createSpiritConfig(spiritType, ctor, menuItem, column, row++);
-  }
-
-  function addOffMenu(spiritType, ctor, menuItem) {
-    sc[spiritType] = self.createSpiritConfig(spiritType, ctor, menuItem);
+  function addToMenu(spiritType, ctor, menuItem, modelId) {
+    sc[spiritType] = self.createSpiritConfig2(spiritType, ctor, menuItem, column, row++, modelId);
   }
 
   let st = Game4BaseScreen.SpiritType;
   let mi = Game4BaseScreen.MenuItem;
 
-  addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE);
-  addToMenu(st.EXIT, ExitSpirit, mi.EXIT);
+  addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, ModelIds.ENTRANCE);
+  addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelIds.EXIT);
   nextColumn();
 
-  addToMenu(st.ANT, AntSpirit, mi.RED_ANT);
-  addToMenu(st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE);
+  addToMenu(st.ANT, AntSpirit, mi.RED_ANT, ModelIds.ANT);
+  addToMenu(st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE, ModelIds.CENTIPEDE);
   nextColumn();
 
-  addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN);
-  addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR);
+  addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, ModelIds.ACTIVATOR_GUN);
+  addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR, ModelIds.INDICATOR);
   nextColumn();
 
-  addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN);
-  addToMenu(st.SHOTGUN, ShotgunSpirit, mi.SHOTGUN);
-  addToMenu(st.ROGUE_GUN, RogueGunSpirit, mi.ROGUE_GUN);
+  addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN, ModelIds.MACHINE_GUN);
+  addToMenu(st.SHOTGUN, ShotgunSpirit, mi.SHOTGUN, ModelIds.SHOTGUN);
+  addToMenu(st.ROGUE_GUN, RogueGunSpirit, mi.ROGUE_GUN, ModelIds.ROGUE_GUN);
   nextColumn();
-
-  addOffMenu(st.PLAYER, PlayerSpirit, mi.PLAYER);
-  addOffMenu(st.BULLET, BulletSpirit);
-  addOffMenu(st.ACTIVATOR_BULLET, ActivatorBulletSpirit);
 
   return sc;
 };
@@ -197,6 +196,12 @@ Game4BaseScreen.prototype.initWorld = function() {
   let bouncer = this.resolver;
   bouncer.defaultElasticity = 0.95;
   this.resolver = new Game4HitResolver(this, bouncer);
+
+  // Prepare the drawing system
+  for (let name in ModelIds) {
+    let id = ModelIds[name];
+    this.addModel(id, this.models.createModel(id), Renderer.BATCH_MAX);
+  }
 };
 
 Game4BaseScreen.prototype.getCamera = function() {

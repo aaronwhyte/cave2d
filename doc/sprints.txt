@@ -468,8 +468,6 @@ Attitude Adjustment: Feel free to delete old tests like crazy. Never let them sl
         v draw
         v flush
       v add a DrawPack to Game4BaseScreen (or WorldScreen) and wrap its methods (demeter!)
-      - populate DrawPack with models mapped to IDs
-        - create model IDs
         - move spirit model creation and ID assignment to central game draw-resource initializer?
         - spirits know drawPack IDs (maybe multiple! Anything goes!)
         - spirits use screen's new draw method, not direct renderer

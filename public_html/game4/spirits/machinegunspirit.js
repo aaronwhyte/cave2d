@@ -59,29 +59,10 @@ MachineGunSpirit.prototype.setFromJSON = function(json) {
   MachineGunSpirit.getJsoner().setFromJSON(json, this);
 };
 
-MachineGunSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
-MachineGunSpirit.createModel = function() {
-  let model = new RigidModel();
-  let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-  let thick = 0.5;
-  let barrel = RigidModel.createSquare()
-      .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
-      .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
-      .addRigidModel(RigidModel.createCircle(9)
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-      .setColorRGB(1, 1, 0);
-  return model.addRigidModel(body).addRigidModel(barrel);
-};
-
-MachineGunSpirit.factory = function(screen, batchDrawer, pos, dir) {
+MachineGunSpirit.factory = function(screen, ignored, pos, dir) {
   let world = screen.world;
 
   let spirit = new MachineGunSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   let density = 1;
 
@@ -154,6 +135,10 @@ MachineGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
       this.waitingForFireTimeout = false;
     }
   }
+};
+
+MachineGunSpirit.prototype.getModelId = function() {
+  return ModelIds.MACHINE_GUN;
 };
 
 MachineGunSpirit.prototype.getColor = function() {

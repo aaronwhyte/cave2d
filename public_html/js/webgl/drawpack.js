@@ -37,7 +37,7 @@ DrawPack.prototype.addModel = function(id, model, batchSize) {
 DrawPack.prototype.draw = function(id, color, matrix, matrix2) {
   let batcher = this.batchers.get(id);
   if (batcher) {
-    batcher.draw(color, matrix, matrix2);
+    batcher.batchDraw(color, matrix, matrix2);
   } else {
     let stamp = this.stamps.get(id);
     if (stamp) {

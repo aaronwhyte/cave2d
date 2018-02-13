@@ -123,7 +123,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
   function createTouchSlot(name, angle) {
     let buttonAngle = angle + Math.PI / 4;
     let releasedColor = new Vec4(1, 1, 1, 1);
-    let pressedColor = new Vec4(1, 1, 1, 1.3);
+    let pressedColor = new Vec4(1, 1, 1, 1.);
     let matrix = new Matrix44().toRotateZOp(angle);
 
     function button(stamp) {
@@ -321,7 +321,7 @@ Game4PlayScreen.prototype.playerSpawn = function(slot) {
   slot.setRespawnPos(this.defaultViewCircle.pos);
 
   let pos = new Vec2d(0, 0.5).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
-  let spiritId = this.addItem(Game4BaseScreen.MenuItem.PLAYER, pos, 0);
+  let spiritId = PlayerSpirit.factory(this, null, pos, 0);
   let spirit = this.world.spirits[spiritId];
 
   slot.setSpirit(spirit);
