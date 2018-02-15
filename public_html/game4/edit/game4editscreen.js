@@ -74,7 +74,7 @@ Game4EditScreen.prototype.initWidgets = function() {
   this.testTriggerWidget = new TriggerWidget(this.getHudEventTarget())
       .addTriggerDownListener(this.testDownFn)
       .setReleasedColorVec4(new Vec4(1, 1, 1, 0.8))
-      .setPressedColorVec4(new Vec4(1, 1, 1, 9))
+      .setPressedColorVec4(new Vec4(1, 1, 1, 0.9))
       .listenToTouch()
       .listenToMousePointer()
       .addTriggerKeyByName('t')

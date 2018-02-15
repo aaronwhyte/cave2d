@@ -123,7 +123,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
   function createTouchSlot(name, angle) {
     let buttonAngle = angle + Math.PI / 4;
     let releasedColor = new Vec4(1, 1, 1, 1);
-    let pressedColor = new Vec4(1, 1, 1, 1.);
+    let pressedColor = new Vec4(1, 1, 1, 1.3);
     let matrix = new Matrix44().toRotateZOp(angle);
 
     function button(stamp) {
