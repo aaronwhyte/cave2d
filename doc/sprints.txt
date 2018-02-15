@@ -462,27 +462,26 @@ Attitude Adjustment: Feel free to delete old tests like crazy. Never let them sl
 
 - apply BatchDrawer to more stuff
   - make batch-drawer registration explicit.
-    - pull model, stamp, and batch creation way up out of spirits and into centralized "DrawPack" instance
+    v pull model, stamp, and batch creation way up out of spirits and into centralized "DrawPack" instance
       v DrawPack class
         v addModel
         v draw
         v flush
       v add a DrawPack to Game4BaseScreen (or WorldScreen) and wrap its methods (demeter!)
-      - update Models class
+      v update Models class
         v create model IDs for game4 like ModelId.SHOTGUN etc, in Models file
         v replace named funcs with this.models.getModel(Models.SHOTGUN)
-        - update all remaining places where calls line models.getShotgun() are made
       v In init, add all the models to WorldScreen? Game4BaseScreen I guess. Or lazy-load?
       v spirits use screen's new draw method and model IDs
       v change flush() to use DrawPack, not the list of configs
-      - remove game4's Stamps class?
-        - replace all remaining uses with worldscreen's methods? Depends.
-          v bullet cylinders
-          v player aim guide
-          v player tractor beam
-          - splashes
-            - circles
-            - tubes
+      v replace most/all remaining Stamps uses with worldscreen's methods
+        v bullet cylinders
+        v player aim guide
+        v player tractor beam
+        v splashes
+          v make splash take modelId - new factory method?
+          v make splasher alternately draw using screen instead of renderer
+          v update all of them in game4!
     - Editor updates?
       - spiritconfig menu items still get specific stamps for drawing the menu... but they're pulled from DrawPack?
   - remove batchDrawer and stamp from spirits' factory params? Maybe just for game4?

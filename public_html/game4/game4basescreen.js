@@ -35,7 +35,7 @@ function Game4BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.models = models;
 
-  this.splashes = new Splashes(this.splasher, this.stamps);
+  this.splashes = new Splashes(this.splasher);
 
   this.levelColorVector.setRGBA(0.2, 0.3, 0.9, 1);
 

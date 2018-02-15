@@ -1,8 +1,19 @@
 /**
- * A predeclared particle effect, expressed as a function of time.
+ * A predeclared particle effect, expressed as a function of time. * @param type
+ * @param {Number} type - used for s27n which honestly I don't care about.
+ * @param {=ModelStamp} stamp optional, if modelId is provided.
+ * @param {Pose} startPose
+ * @param {Pose} endPose
+ * @param {Pose} startPose2
+ * @param {Pose} endPose2
+ * @param {Vec4} startColor
+ * @param {Vec4} endColor
+ * @param {Number} startTime
+ * @param {Number} duration
+ * @param {Number} modelId instead of a Stamp.
  * @constructor
  */
-function Splash(type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration) {
+function Splash(type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration, modelId) {
   this.type = 0;
   this.stamp = null;
   this.startPose = new Pose();
@@ -13,11 +24,12 @@ function Splash(type, stamp, startPose, endPose, startPose2, endPose2, startColo
   this.endColor = new Vec4();
   this.startTime = 0;
   this.duration = 0;
-  this.reset(type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration);
+  this.modelId = 0;
+  this.reset(type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration, modelId);
 }
 
 Splash.prototype.reset = function(
-    type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration) {
+    type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration, modelId) {
   this.type = type || -1;
   this.stamp = stamp || null;
   startPose ? this.startPose.set(startPose) : this.startPose.reset();
@@ -28,16 +40,20 @@ Splash.prototype.reset = function(
   endColor ? this.endColor.set(endColor) : this.endColor.reset();
   this.startTime = startTime || 0;
   this.duration = duration || 0;
+  this.modelId = modelId || 0;
   return this;
 };
 
 Splash.pool = [];
 
-Splash.alloc = function(type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration) {
+Splash.alloc = function(type, stamp, startPose, endPose, startPose2, endPose2,
+                        startColor, endColor, startTime, duration, modelId) {
   if (Splash.pool.length) {
-    return Splash.pool.pop().reset(type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration);
+    return Splash.pool.pop().reset(type, stamp, startPose, endPose, startPose2, endPose2,
+        startColor, endColor, startTime, duration, modelId);
   }
-  return new Splash(type, stamp, startPose, endPose, startPose2, endPose2, startColor, endColor, startTime, duration);
+  return new Splash(type, stamp, startPose, endPose, startPose2, endPose2,
+      startColor, endColor, startTime, duration, modelId);
 };
 
 Splash.prototype.free = function() {
@@ -53,7 +69,8 @@ Splash.SCHEMA = {
   5: "startColor",
   6: "endColor",
   7: "startTime",
-  8: "duration"
+  8: "duration",
+  9: "modelId"
 };
 
 Splash.getJsoner = function() {
@@ -82,6 +99,7 @@ Splash.prototype.set = function(that) {
   this.endColor.set(that.endColor);
   this.startTime = that.startTime;
   this.duration = that.duration;
+  this.modelId = that.modelId;
   return this;
 };
 

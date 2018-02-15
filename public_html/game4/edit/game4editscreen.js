@@ -109,7 +109,7 @@ Game4EditScreen.prototype.drawScene = function() {
   this.drawTiles();
   this.renderer.setTexture(Renderer.TEXTURE_NONE);
 
-  this.splasher.draw(this.renderer, this.world.now);
+  this.splasher.drawWithModelIds(this, this.world.now);
   this.editor.drawScene();
   this.drawHud();
   this.configMousePointer();
