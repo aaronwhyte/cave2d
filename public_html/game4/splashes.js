@@ -73,30 +73,31 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
     s.endPose.rotZ = startRot + (Math.random() - 0.5) * 2 * Math.PI;
     s.endPose.scale.setXYZ(endRad, endRad, endRad);
     s.startColor.set(color);
-    s.endColor.set(color).scale1(0.25);
+    s.endColor.set(color).scale1(0.5);
     self.splasher.addCopy(s);
   }
 
-  particles = 12;
+  particles = Math.floor(8 * rad);
   explosionRad = rad * 8;
   dirOffset = 2 * Math.PI * Math.random();
   // outer
   for (i = 0; i < particles; i++) {
-    duration = explosionRad * 1.5 * (1 + Math.random() * 0.2);
-    dir = dirOffset + 2 * Math.PI * (i/particles);
-    dx = Math.sin(dir) * explosionRad;
-    dy = Math.cos(dir) * explosionRad;
-    addSplash(x, y, dx, dy, duration, rad * 0.5);
+    let erad = explosionRad * 0.8 * (0.8 + 0.4 * Math.random());
+    duration = 1.4 * erad * (0.5 + Math.random());
+    dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random() * 0.3;
+    dx = Math.sin(dir) * erad;
+    dy = Math.cos(dir) * erad;
+    addSplash(x, y, dx, dy, duration, rad * 0.8);
   }
   // middle cloud
   dirOffset = 2 * Math.PI * Math.random();
-  particles = Math.floor(5 * (1 + Math.random()));
+  particles = Math.floor(8 * rad);
   for (i = 0; i < particles; i++) {
-    duration = 9 * (1 + Math.random());
+    duration = 10 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles);
-    dx = Math.sin(dir) * explosionRad * 0.11;
-    dy = Math.cos(dir) * explosionRad * 0.11;
-    addSplash(x, y, dx, dy, duration, rad * (1.1 + Math.random() / 2));
+    dx = Math.sin(dir) * explosionRad * 0.25;
+    dy = Math.cos(dir) * explosionRad * 0.25;
+    addSplash(x, y, dx, dy, duration, rad * (1.2 + Math.random() / 2));
   }
 };
 
@@ -329,7 +330,7 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
     s.startPose.pos.setXYZ(x, y, -Math.random());
     s.endPose.pos.setXYZ(x + dx, y + dy, 1);
     let startRad = sizeFactor;
-    let endRad = sizeFactor / 4;
+    let endRad = sizeFactor * 0.1;
     s.startPose.scale.setXYZ(startRad, startRad, 1);
     s.endPose.scale.setXYZ(endRad, endRad, 1);
 
@@ -339,39 +340,29 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   }
 
   // fast outer particles
-  particles = 15;
-  explosionRad = 20;
+  particles = 8;
   dirOffset = 2 * Math.PI * Math.random();
-  let f2 = Math.ceil(Math.random() * 3) * 2 + 3;
-  let r = 0;//(Math.random() - 0.5) * explosionRad * 2;
-  for (i = 0; i < particles; i++) {
-    duration = 40;
-    dir = dirOffset + 2 * Math.PI * i / particles;
-    let dir2 = 2 * Math.PI * f2 * i / particles;
-    dx = Math.sin(dir) * explosionRad + r * Math.cos(dir2);
-    dy = Math.cos(dir) * explosionRad + r * Math.sin(dir2);
-    addSplash(x, y, dx, dy, duration, 0.7);
-  }
   for (i = 0; i < particles; i++) {
     duration = 30;
-    dir = dirOffset + 2 * Math.PI * i / particles;
-    let dir2 = 2 * Math.PI * f2 * i / particles;
-    dx = Math.sin(dir) * explosionRad + r * Math.cos(dir2);
-    dy = Math.cos(dir) * explosionRad + r * Math.sin(dir2);
-    addSplash(x, y, dx, dy, duration, 0.7);
+    explosionRad = 15 + 10 * Math.random();
+    dir = dirOffset + 2 * Math.PI * i / particles + Math.random() * 0.2;
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    addSplash(x, y, dx, dy, duration, 1);
+    addSplash(x, y, dx, dy, duration * 0.66, 1);
   }
 
   // inner smoke ring
-  particles = Math.ceil(10 * (1 + 0.5 * Math.random()));
-  explosionRad = 1.5;
+  particles = 12;
+  explosionRad = 4;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    let r = Math.random() + 0.5;
-    duration = r * 20;
+    let r = Math.random() * 0.4 + (1 - 0.4 / 2);
+    duration = 30 * r;
     dir = dirOffset + 2 * Math.PI * i / particles;
-    dx = (2 - r) * Math.sin(dir) * explosionRad;
-    dy = (2 - r) * Math.cos(dir) * explosionRad;
-    addSplash(x + dx, y + dy, dx, dy, duration, 1 + r);
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    addSplash(x, y, dx, dy, duration, explosionRad/2);
   }
 };
 
