@@ -35,16 +35,16 @@ Test45BaseScreen.SplashType = {
 Test45BaseScreen.prototype.createSpiritConfigs = function() {
   var sc = {};
   sc[Test45BaseScreen.SpiritType.ANT] = this.createSpiritConfig(
-      Test45BaseScreen.SpiritType.ANT, AntSpirit, Test45BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
+      Test45BaseScreen.SpiritType.ANT, AntSpirit, Test45BaseScreen.MenuItem.ANT, 0, 0);
 
   sc[Test45BaseScreen.SpiritType.PLAYER] = this.createSpiritConfig(
-      Test45BaseScreen.SpiritType.PLAYER, PlayerSpirit, Test45BaseScreen.MenuItem.PLAYER, 0, 1, PlayerSpirit.factory);
+      Test45BaseScreen.SpiritType.PLAYER, PlayerSpirit, Test45BaseScreen.MenuItem.PLAYER, 0, 1);
 
   sc[Test45BaseScreen.SpiritType.BALL] = this.createSpiritConfig(
-      Test45BaseScreen.SpiritType.BALL, BallSpirit, Test45BaseScreen.MenuItem.BALL, 1, 0, BallSpirit.factory);
+      Test45BaseScreen.SpiritType.BALL, BallSpirit, Test45BaseScreen.MenuItem.BALL, 1, 0);
 
   sc[Test45BaseScreen.SpiritType.ROCK] = this.createSpiritConfig(
-      Test45BaseScreen.SpiritType.ROCK, RockSpirit, Test45BaseScreen.MenuItem.ROCK, 1, 1, RockSpirit.factory);
+      Test45BaseScreen.SpiritType.ROCK, RockSpirit, Test45BaseScreen.MenuItem.ROCK, 1, 1);
 
   return sc;
 };

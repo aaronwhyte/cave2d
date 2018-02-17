@@ -24,9 +24,9 @@ Test43BaseScreen.MenuItem = {
 Test43BaseScreen.prototype.createSpiritConfigs = function() {
   var sc = {};
   sc[Test43BaseScreen.SpiritType.ANT] = this.createSpiritConfig(
-      Test43BaseScreen.SpiritType.ANT, AntSpirit, Test43BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
+      Test43BaseScreen.SpiritType.ANT, AntSpirit, Test43BaseScreen.MenuItem.ANT, 0, 0);
   sc[Test43BaseScreen.SpiritType.PLAYER] = this.createSpiritConfig(
-      Test43BaseScreen.SpiritType.PLAYER, PlayerSpirit, Test43BaseScreen.MenuItem.PLAYER, 0, 0, PlayerSpirit.factory);
+      Test43BaseScreen.SpiritType.PLAYER, PlayerSpirit, Test43BaseScreen.MenuItem.PLAYER, 0, 0);
   return sc;
 };
 

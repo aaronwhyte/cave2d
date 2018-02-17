@@ -22,7 +22,7 @@ Test41BaseScreen.MenuItem = {
 Test41BaseScreen.prototype.createSpiritConfigs = function() {
   var sc = {};
   sc[Test41BaseScreen.SpiritType.ANT] = this.createSpiritConfig(
-      Test41BaseScreen.SpiritType.ANT, AntSpirit, Test41BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
+      Test41BaseScreen.SpiritType.ANT, AntSpirit, Test41BaseScreen.MenuItem.ANT, 0, 0);
   return sc;
 };
 

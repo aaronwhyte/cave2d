@@ -1,16 +1,26 @@
 /**
  * Extensible base-class for Screens that mainly wrap a World.
+ * Some of this is here for backwards compat. It's better to use opt_supportBatchDrawing and opt_models, and not opt_stamps.
+ *
+ * @param {ScreenPage} controller
+ * @param {canvas} canvas
+ * @param {Renderer} renderer
+ * @param {Object=} opt_stamps  a map from stamp name to stamp, for one-off renderer drawing. Deprecated - use opt_models.
+ * @param {SoundFx} sfx
+ * @param {boolean} opt_useFans  true to avoid t-junctions in wall models by creating a lot more vertexes
+ * @param {boolean} opt_supportBatchDrawing  true to use a collection of BatchDrawers instead of drawing one-off stamps
+ * @param {Object} opt_models  a map from modelId to model, to use instead  of stamps
  * @constructor
  * @extends Screen
  */
-function WorldScreen(controller, canvas, renderer, stamps, sfx, opt_useFans, opt_supportBatchDrawing, opt_models) {
+function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans, opt_supportBatchDrawing, opt_models) {
   if (!controller) return; // generating prototype
   Screen.call(this);
 
   this.controller = controller;
   this.canvas = canvas;
   this.renderer = renderer;
-  this.stamps = stamps;
+  this.stamps = opt_stamps;
   this.models = opt_models || null;
 
   this.viewMatrix = new Matrix44();
@@ -217,26 +227,25 @@ WorldScreen.prototype.flushBatchDrawers = function() {
 /**
  * Util method for creating a SpiritConfig in one line.
  * @param type The spirit.type
- * @param ctor The spirit constructor
+ * @param ctor The spirit constructor. Must have a static factory method
  * @param {=String} menuItemName the menu item name, or null if this is not part of an editor menu
  *     If this is falsy, then the rest of the argumets can be omitted.
  * @param {=number} group The menu item group
  * @param {=number} rank The menu item rank within the group
- * @param {=Function} factory The function for creating this new item. Defaults to ctor.factory
  * @returns {SpiritConfig}
  */
-WorldScreen.prototype.createSpiritConfig = function(type, ctor, menuItemName, group, rank, factory) {
+WorldScreen.prototype.createSpiritConfig = function(type, ctor, menuItemName, group, rank) {
   let model = ctor.createModel();
   let stamp = model.createModelStamp(this.renderer.gl);
   let batchDrawer = this.isBatchDrawingSupported
       ? new BatchDrawer(model.createModelStampBatches(this.renderer.gl, Renderer.BATCH_MAX), this.renderer)
       : null;
-  let menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, factory || ctor.factory) : null;
+  let menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, ctor.factory) : null;
   return new SpiritConfig(type, ctor, stamp, batchDrawer, menuItemConfig);
 };
 
 /**
- * Util method for creating a SpiritConfig in one line.
+ * Util method for creating a SpiritConfig in one line, using one of this screen's modelIds.
  * @param type The spirit.type
  * @param ctor The spirit constructor
  * @param {=String} menuItemName the menu item name, or null if this is not part of an editor menu
