@@ -67,7 +67,7 @@ Game2BaseScreen.prototype.createSpiritConfigs = function() {
   var sc = {};
   for (var i = 0; i < a.length; i++) {
     var p = a[i];
-    sc[p[0]] = this.createSpiritConfig(p[0], p[1], p[2], p[3], p[4]);
+    sc[p[0]] = this.createSpiritConfig(p[1], p[2], p[3], p[4], p[1].createModel());
   }
   return sc;
 };

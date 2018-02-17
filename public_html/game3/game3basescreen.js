@@ -141,29 +141,25 @@ Game3BaseScreen.prototype.initSpiritConfigs = function() {
   this.spiritConfigs = {};
 
   var self = this;
-  function addConfig(type, ctor, itemName, group, rank, factory) {
+  function addConfig(ctor, itemName, group, rank, factory) {
     var model = ctor.createModel();
     var stamp = model.createModelStamp(self.renderer.gl);
     var menuItemConfig = null;
     if (itemName) {
       menuItemConfig = new MenuItemConfig(itemName, group, rank, model, factory);
     }
-    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, null, menuItemConfig);
+    self.spiritConfigs[type] = new SpiritConfig(ctor, stamp, null, menuItemConfig);
   }
 
   // first column
-  addConfig(Game3BaseScreen.SpiritType.ANT, AntSpirit,
-      Game3BaseScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
+  addConfig(AntSpirit, Game3BaseScreen.MenuItem.RED_ANT, 0, 0, AntSpirit.factory);
 
   // second column
-  addConfig(Game3BaseScreen.SpiritType.PLAYER, PlayerSpirit,
-      Game3BaseScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
+  addConfig(PlayerSpirit, Game3BaseScreen.MenuItem.PLAYER, 1, 0, PlayerSpirit.factory);
 
-  addConfig(Game3BaseScreen.SpiritType.EXIT, ExitSpirit,
-      Game3BaseScreen.MenuItem.EXIT, 1, 1, ExitSpirit.factory);
+  addConfig(ExitSpirit, Game3BaseScreen.MenuItem.EXIT, 1, 1, ExitSpirit.factory);
 
-  addConfig(Game3BaseScreen.SpiritType.BULLET, BulletSpirit,
-      null, -1, -1, BulletSpirit.factory);
+  addConfig(BulletSpirit, null, -1, -1, BulletSpirit.factory);
 };
 
 Game3BaseScreen.Group = {

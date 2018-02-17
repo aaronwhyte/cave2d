@@ -99,7 +99,7 @@ Game4BaseScreen.prototype.createSpiritConfigs = function() {
   }
 
   function addToMenu(spiritType, ctor, menuItem, modelId) {
-    sc[spiritType] = self.createSpiritConfig2(spiritType, ctor, menuItem, column, row++, modelId);
+    sc[spiritType] = self.createSpiritConfig2(ctor, menuItem, column, row++, self.models.createModel(modelId));
   }
 
   let st = Game4BaseScreen.SpiritType;

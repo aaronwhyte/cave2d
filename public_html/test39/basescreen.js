@@ -126,19 +126,18 @@ BaseScreen.prototype.initSpiritConfigs = function() {
   this.spiritConfigs = {};
 
   var self = this;
-  function addConfig(type, ctor, itemName, group, rank, factory) {
+  function addConfig(ctor, itemName, group, rank, factory) {
     var model = ctor.createModel();
     var stamp = model.createModelStamp(self.renderer.gl);
     var menuItemConfig = null;
     if (itemName) {
       menuItemConfig = new MenuItemConfig(itemName, group, rank, model, factory);
     }
-    self.spiritConfigs[type] = new SpiritConfig(type, ctor, stamp, null, menuItemConfig);
+    self.spiritConfigs[type] = new SpiritConfig(ctor, stamp, null, menuItemConfig);
   }
 
   // first column
-  addConfig(BaseScreen.SpiritType.ANT, AntSpirit,
-      BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
+  addConfig(AntSpirit, BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.factory);
 };
 
 BaseScreen.Group = {

@@ -21,8 +21,8 @@ Test41BaseScreen.MenuItem = {
 
 Test41BaseScreen.prototype.createSpiritConfigs = function() {
   var sc = {};
-  sc[Test41BaseScreen.SpiritType.ANT] = this.createSpiritConfig(
-      Test41BaseScreen.SpiritType.ANT, AntSpirit, Test41BaseScreen.MenuItem.ANT, 0, 0);
+  sc[Test41BaseScreen.SpiritType.ANT] =
+      this.createSpiritConfig(AntSpirit, Test41BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.createModel());
   return sc;
 };
 

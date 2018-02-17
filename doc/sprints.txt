@@ -487,7 +487,11 @@ v apply BatchDrawer to more stuff
   x remove batchDrawer and stamp from spirits' factory params? Maybe just for game4?
 
 - change all the lazy init WorldScreen code to injection.
-  - remove createSpiritConfigs
+  - remove createSpiritConfigs()
+    v remove spiritType from createSpiriConfig and v2.
+    - inject models into spirit configs directly
+    - remove stamp and batchdrawer from SpiritConfig
+      - update all SpiritConfig constructor calls, oy
     - worldscreen
     - game4
     - game2
