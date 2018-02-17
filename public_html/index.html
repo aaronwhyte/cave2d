@@ -78,43 +78,6 @@ source code. But it's kinda fun to play with on its own.
 This is more of a platformer demo. Roll around the test level, using left and right swipes or arrows,
 and the shift key for turbo if you're using a keyboard. There's a <a href="game3/edit">level editor</a> too.
 
-
-<h1>Gameplay Tests</h1>
-
-<h2><a href="test45">Test 45 - Tractor Beams II [work in progress]</a></h2>
-Re-simplified tractor beams, but with some new fast stabilization, and with force that's usually proportional
-to the mass you're moving around, so there's a more uniform feel.
-This has a whole new mode scheme. Using the two buttons you can go between empty-handed, scanning, swinging, wielding, and activating.
-Plus there's throwing from the wielding mode.
-
-<h2><a href="test44">Test 44 - Tractor Beams</a></h2>
-First there was <a href="http://plexode.com/vorp">plexode.com/vorp</a>, with tractor beams that connected
-centers of mass for roughly same-sized un-rotatable square objects. But these new tractorbeams work on
-all objects and walls, because they connect at exactly the point where the beam first anchored to the body.
-
-<h2><a href="test43">Test 43 - Local Multiplayer Camera</a></h2>
-Zoom and pan to keep the players and their surroundings in view.
-Only tiles and spirits near each player get drawn. I use a fragment shader to smooth each player's viewable region
-into a circle.
-
-<h2><a href="test42">Test 42 - Local Multiplayer Controls</a></h2>
-This tests joining and dropping, plus dying and respawning, for up to seven players.
-<ul>
-  <li>There are four touchscreen player slots, one for each corner. Each corner has a join/drop button, and action
-    buttons appear when a player joins.
-    Move and aim by dragging on the screen. Each player who joins gets as much space as possible to use.</li>
-  <li>There are two keyboard-only player slots. They each have four directional keys, plus a "precision" key.
-    They usually move and aim at top speed, but when the "precision" key is held down, the player can aim carefully and
-    move slowly.
-    <ol>
-      <li>WASD keys steer, Z and X are action buttons, and SHIFT is for precision. Press Q to drop out.</li>
-      <li>Arrow keys steer, "," and "." are action buttons, and M is for precision. Press L to drop out.</li>
-    </ol>
-  <li>There's one mouse/trackpad player slot, using Pointer Lock.
-  The V and B keys are action buttons, and so are the left and right mouse buttons. Press G to drop out.</li>
-</ul>
-
-
 <h1>Editor Tests</h1>
 
 <h2><a href="test41">Test 41 - Undo and Redo</a></h2>
