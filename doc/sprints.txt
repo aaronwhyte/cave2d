@@ -460,8 +460,8 @@ v Fix game4/edit item adding
 
 Attitude Adjustment: Feel free to delete old tests like crazy. Never let them slow you down.
 
-- apply BatchDrawer to more stuff
-  - make batch-drawer registration explicit.
+v apply BatchDrawer to more stuff
+  v make batch-drawer registration explicit.
     v pull model, stamp, and batch creation way up out of spirits and into centralized "DrawPack" instance
       v DrawPack class
         v addModel
@@ -482,20 +482,26 @@ Attitude Adjustment: Feel free to delete old tests like crazy. Never let them sl
           v make splash take modelId - new factory method?
           v make splasher alternately draw using screen instead of renderer
           v update all of them in game4!
-    - Editor updates?
-      - spiritconfig menu items still get specific stamps for drawing the menu... but they're pulled from DrawPack?
-  - remove batchDrawer and stamp from spirits' factory params? Maybe just for game4?
+    x Editor updates?
+      x spiritconfig menu items still get specific stamps for drawing the menu... but they're pulled from DrawPack?
+  x remove batchDrawer and stamp from spirits' factory params? Maybe just for game4?
 
 - change all the lazy init WorldScreen code to injection.
-  Go ahead and delete tests if that makes it easier.
+  - remove createSpiritConfigs
+    - worldscreen
+    - game4
+    - game2
+    - tests (feel free to delete 'em!)
+  - remove createHitGroups
+  - remove createHitPairs
 
-- Improve enemy sleep/wake
+- Improve game4 enemy sleep/wake
   - debug by drawing everyone but use colors to indicate states:
     - active,
     - sleep-soon: waiting for timeout T to fire without going back to active
     - sleep-asap: timeout fired, just hit the brakes to reach vel zero
     - sleeping. If bumped, go to sleep-asap
-  - long loop for very periodic path invalidation while sleeping
+  - long timeout loop for very periodic path invalidation while sleeping
     - never stops
   - tight loop
     - awake and doing stuff (as we have today)
@@ -530,7 +536,7 @@ WEAPONS & ENEMIES
 * Giant enemnies cannot be carried or used? Or they can be but they're so darn heavy that it sucks to try and
   they don't fit in narrow spaces.
 
-- Glaive! Activated, it zooms away, comes back, but is easy-ish to catch again
+- Glaive! Activated, it zooms away, comes back, but is easy-ish to catch again. But it can kill you...
 
 - Basic shooter
   - wanders, fires slow bullet occasionally at player
