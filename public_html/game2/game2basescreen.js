@@ -55,72 +55,81 @@ Game2BaseScreen.SplashType = {
   ERROR: 4
 };
 
-Game2BaseScreen.prototype.createSpiritConfigs = function() {
-  var st = Game2BaseScreen.SpiritType;
-  var mi = Game2BaseScreen.MenuItem;
-  var a  = [
+Game2BaseScreen.prototype.getSpiritConfigs = function() {
+  if (!this.spiritConfigs) {
+    let st = Game2BaseScreen.SpiritType;
+    let mi = Game2BaseScreen.MenuItem;
+    let a = [
       [st.ANT, AntSpirit, mi.RED_ANT, 0, 0],
       [st.PLAYER, PlayerSpirit, mi.PLAYER, 1, 0],
       [st.EXIT, ExitSpirit, mi.EXIT, 1, 1],
       [st.BULLET, BulletSpirit]
-  ];
-  var sc = {};
-  for (var i = 0; i < a.length; i++) {
-    var p = a[i];
-    sc[p[0]] = this.createSpiritConfig(p[1], p[2], p[3], p[4], p[1].createModel());
+    ];
+    let sc = {};
+    for (let i = 0; i < a.length; i++) {
+      let p = a[i];
+      sc[p[0]] = this.createSpiritConfig(p[1], p[2], p[3], p[4], p[1].createModel());
+    }
+    this.spiritConfigs = sc;
   }
-  return sc;
+  return this.spiritConfigs;
 };
 
-Game2BaseScreen.prototype.createHitGroups = function() {
-  return {
-    EMPTY: 0,
-    WALL: 1,
-    NEUTRAL: 2,
-    CURSOR: 3,
-    PLAYER: 4,
-    PLAYER_FIRE: 5,
-    ENEMY: 6,
-    ENEMY_FIRE: 7,
-    ENEMY_SCAN: 8
+Game2BaseScreen.prototype.getHitGroups = function() {
+  if (!this.hitGroups) {
+    this.hitGroups = {
+      EMPTY: 0,
+      WALL: 1,
+      NEUTRAL: 2,
+      CURSOR: 3,
+      PLAYER: 4,
+      PLAYER_FIRE: 5,
+      ENEMY: 6,
+      ENEMY_FIRE: 7,
+      ENEMY_SCAN: 8
+    }
   }
+  return this.hitGroups;
 };
 
-Game2BaseScreen.prototype.createHitPairs = function() {
-  var g = this.getHitGroups();
-  return [
-    [g.EMPTY, g.EMPTY],
+Game2BaseScreen.prototype.getHitPairs = function() {
+  if (!this.hitPairs) {
+    let g = this.getHitGroups();
+    this.hitPairs = [
+      [g.EMPTY, g.EMPTY],
 
-    [g.NEUTRAL, g.WALL],
-    [g.NEUTRAL, g.NEUTRAL],
+      [g.NEUTRAL, g.WALL],
+      [g.NEUTRAL, g.NEUTRAL],
 
-    [g.CURSOR, g.WALL],
-    [g.CURSOR, g.NEUTRAL],
+      [g.CURSOR, g.WALL],
+      [g.CURSOR, g.NEUTRAL],
 
-    [g.PLAYER, g.CURSOR],
-    [g.PLAYER, g.NEUTRAL],
-    [g.PLAYER, g.WALL],
-    [g.PLAYER, g.PLAYER],
+      [g.PLAYER, g.CURSOR],
+      [g.PLAYER, g.NEUTRAL],
+      [g.PLAYER, g.WALL],
+      [g.PLAYER, g.PLAYER],
 
-    [g.PLAYER_FIRE, g.NEUTRAL],
-    [g.PLAYER_FIRE, g.WALL],
+      [g.PLAYER_FIRE, g.NEUTRAL],
+      [g.PLAYER_FIRE, g.WALL],
 
-    [g.ENEMY, g.NEUTRAL],
-    [g.ENEMY, g.WALL],
-    [g.ENEMY, g.CURSOR],
-    [g.ENEMY, g.PLAYER],
-    [g.ENEMY, g.PLAYER_FIRE],
-    [g.ENEMY, g.ENEMY],
+      [g.ENEMY, g.NEUTRAL],
+      [g.ENEMY, g.WALL],
+      [g.ENEMY, g.CURSOR],
+      [g.ENEMY, g.PLAYER],
+      [g.ENEMY, g.PLAYER_FIRE],
+      [g.ENEMY, g.ENEMY],
 
-    [g.ENEMY_FIRE, g.WALL],
-    [g.ENEMY_FIRE, g.NEUTRAL],
-    [g.ENEMY_FIRE, g.PLAYER],
+      [g.ENEMY_FIRE, g.WALL],
+      [g.ENEMY_FIRE, g.NEUTRAL],
+      [g.ENEMY_FIRE, g.PLAYER],
 
-    [g.ENEMY_SCAN, g.WALL],
-    [g.ENEMY_SCAN, g.NEUTRAL],
-    [g.ENEMY_SCAN, g.PLAYER],
-    [g.ENEMY_SCAN, g.ENEMY]
-  ];
+      [g.ENEMY_SCAN, g.WALL],
+      [g.ENEMY_SCAN, g.NEUTRAL],
+      [g.ENEMY_SCAN, g.PLAYER],
+      [g.ENEMY_SCAN, g.ENEMY]
+    ];
+  }
+  return this.hitPairs;
 };
 
 Game2BaseScreen.prototype.getWallHitGroup = function() {
@@ -142,7 +151,7 @@ Game2BaseScreen.prototype.getCamera = function() {
 };
 
 Game2BaseScreen.prototype.createTrackball = function() {
-  var trackball = new MultiTrackball()
+  let trackball = new MultiTrackball()
       .addTrackball(new TouchTrackball(this.getWorldEventTarget())
           .setStartZoneFunction(function(x, y) { return true; }))
       .addTrackball(
@@ -158,8 +167,8 @@ Game2BaseScreen.prototype.createTrackball = function() {
 };
 
 Game2BaseScreen.prototype.createButtonWidgets = function() {
-  var glyphStamps = this.glyphs.initStamps(this.renderer.gl);
-  var widgets = [
+  let glyphStamps = this.glyphs.initStamps(this.renderer.gl);
+  let widgets = [
     new TriggerWidget(this.getHudEventTarget())
         .setReleasedColorVec4(new Vec4(1, 1, 1, 0.25))
         .setPressedColorVec4(new Vec4(1, 1, 1, 0.5))
@@ -182,7 +191,7 @@ Game2BaseScreen.prototype.createButtonWidgets = function() {
         .listenToTouch()
         .listenToMousePointer()
         .addTriggerKeyByName(Key.Name.SPACE)];
-  for (var i = 0; i < widgets.length; i++) {
+  for (let i = 0; i < widgets.length; i++) {
     this.addListener(widgets[i]);
   }
   return widgets;
@@ -191,24 +200,24 @@ Game2BaseScreen.prototype.createButtonWidgets = function() {
 Game2BaseScreen.prototype.onHitEvent = function(e) {
   if (!this.isPlaying()) return;
 
-  var b0 = this.world.getBodyByPathId(e.pathId0);
-  var b1 = this.world.getBodyByPathId(e.pathId1);
+  let b0 = this.world.getBodyByPathId(e.pathId0);
+  let b1 = this.world.getBodyByPathId(e.pathId1);
 
   if (b0 && b1) {
     this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-    var vec = Vec2d.alloc();
-    var mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
-    var pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
+    let vec = Vec2d.alloc();
+    let mag = vec.set(b1.vel).subtract(b0.vel).projectOnto(e.collisionVec).magnitude();
+    let pos = this.resolver.getHitPos(e.time, e.collisionVec, b0, b1, vec);
 
-    var playerBody = this.bodyIfSpiritType(Game2BaseScreen.SpiritType.PLAYER, b0, b1);
+    let playerBody = this.bodyIfSpiritType(Game2BaseScreen.SpiritType.PLAYER, b0, b1);
     if (playerBody) {
-      var playerSpirit = this.getSpiritForBody(playerBody);
-      var exitBody = this.bodyIfSpiritType(Game2BaseScreen.SpiritType.EXIT, b0, b1);
+      let playerSpirit = this.getSpiritForBody(playerBody);
+      let exitBody = this.bodyIfSpiritType(Game2BaseScreen.SpiritType.EXIT, b0, b1);
       if (exitBody && !this.exitStartTime) {
         this.sounds.exit(this.getAveragePlayerPos());
         this.startExit(exitBody.pathStartPos.x, exitBody.pathStartPos.y);
       }
-      var antBody = this.bodyIfSpiritType(Game2BaseScreen.SpiritType.ANT, b0, b1);
+      let antBody = this.bodyIfSpiritType(Game2BaseScreen.SpiritType.ANT, b0, b1);
       if (antBody) {
         playerSpirit.hitAnt(mag);
       }
@@ -217,11 +226,11 @@ Game2BaseScreen.prototype.onHitEvent = function(e) {
       }
     }
 
-    var bulletBody = this.bodyIfSpiritType(Game2BaseScreen.SpiritType.BULLET, b0, b1);
+    let bulletBody = this.bodyIfSpiritType(Game2BaseScreen.SpiritType.BULLET, b0, b1);
     if (bulletBody) {
-      var bulletSpirit = this.getSpiritForBody(bulletBody);
-      var otherBody = this.otherBody(bulletBody, b0, b1);
-      var otherSpirit = this.getSpiritForBody(otherBody);
+      let bulletSpirit = this.getSpiritForBody(bulletBody);
+      let otherBody = this.otherBody(bulletBody, b0, b1);
+      let otherSpirit = this.getSpiritForBody(otherBody);
       if (!otherSpirit) {
         // wall?
         bulletSpirit.onHitWall(mag, pos);
@@ -240,18 +249,18 @@ Game2BaseScreen.prototype.onHitEvent = function(e) {
 };
 
 Game2BaseScreen.prototype.handleInput = function() {
-  for (var i = 0; i < this.players.length; i++) {
+  for (let i = 0; i < this.players.length; i++) {
     this.players[i].handleInput();
   }
 };
 
 Game2BaseScreen.prototype.addPlayer = function() {
-  var p = new Player();
-  var trackball = this.createTrackball();
-  var buttons = this.createButtonWidgets();
+  let p = new Player();
+  let trackball = this.createTrackball();
+  let buttons = this.createButtonWidgets();
   p.setControls(trackball, buttons[0], buttons[1], buttons[2]);
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
+  for (let id in this.world.spirits) {
+    let spirit = this.world.spirits[id];
     if (spirit.type == Game2BaseScreen.SpiritType.PLAYER) {
       p.addSpirit(spirit);
     }
@@ -268,18 +277,18 @@ Game2BaseScreen.prototype.getCursorHitGroup = function() {
 };
 
 Game2BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
-  var s = this.splash;
+  let s = this.splash;
   s.reset(Game2BaseScreen.SplashType.SCAN, this.stamps.cylinderStamp);
 
   s.startTime = this.world.now;
   s.duration = 20;
 
-  var x = pos.x;
-  var y = pos.y;
-  var hit = dist >= 0;
-  var d = hit ? dist : 1;
-  var dx = vel.x * d;
-  var dy = vel.y * d;
+  let x = pos.x;
+  let y = pos.y;
+  let hit = dist >= 0;
+  let d = hit ? dist : 1;
+  let dx = vel.x * d;
+  let dy = vel.y * d;
 
   s.startPose.pos.setXYZ(x, y, 0);
   s.endPose.pos.setXYZ(x, y, 1);
@@ -306,11 +315,11 @@ Game2BaseScreen.prototype.addScanSplash = function (pos, vel, rad, dist) {
 };
 
 Game2BaseScreen.prototype.getAveragePlayerPos = function() {
-  var playerCount = 0;
-  for (var id in this.world.spirits) {
-    var spirit = this.world.spirits[id];
+  let playerCount = 0;
+  for (let id in this.world.spirits) {
+    let spirit = this.world.spirits[id];
     if (spirit.type == Game2BaseScreen.SpiritType.PLAYER) {
-      var body = spirit.getBody(this.world);
+      let body = spirit.getBody(this.world);
       if (body) {
         if (playerCount == 0) {
           this.playerAveragePos.reset();

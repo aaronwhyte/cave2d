@@ -87,97 +87,103 @@ Game4BaseScreen.MenuItem = {
   ROGUE_GUN: 'rogue_gun'
 };
 
-Game4BaseScreen.prototype.createSpiritConfigs = function() {
-  let sc = {};
-  let column = 0;
-  let row = 0;
-  let self = this;
+Game4BaseScreen.prototype.getSpiritConfigs = function() {
+  if (!this.spiritConfigs) {
+    let sc = {};
+    let column = 0;
+    let row = 0;
+    let self = this;
 
-  function nextColumn() {
-    column++;
-    row = 0;
+    function nextColumn() {
+      column++;
+      row = 0;
+    }
+
+    function addToMenu(spiritType, ctor, menuItem, modelId) {
+      sc[spiritType] = self.createSpiritConfig2(ctor, menuItem, column, row++, self.models.createModel(modelId));
+    }
+
+    let st = Game4BaseScreen.SpiritType;
+    let mi = Game4BaseScreen.MenuItem;
+
+    addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, ModelIds.ENTRANCE);
+    addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelIds.EXIT);
+    nextColumn();
+
+    addToMenu(st.ANT, AntSpirit, mi.RED_ANT, ModelIds.ANT);
+    addToMenu(st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE, ModelIds.CENTIPEDE);
+    nextColumn();
+
+    addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, ModelIds.ACTIVATOR_GUN);
+    addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR, ModelIds.INDICATOR);
+    nextColumn();
+
+    addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN, ModelIds.MACHINE_GUN);
+    addToMenu(st.SHOTGUN, ShotgunSpirit, mi.SHOTGUN, ModelIds.SHOTGUN);
+    addToMenu(st.ROGUE_GUN, RogueGunSpirit, mi.ROGUE_GUN, ModelIds.ROGUE_GUN);
+    nextColumn();
+
+    this.spiritConfigs = sc;
   }
-
-  function addToMenu(spiritType, ctor, menuItem, modelId) {
-    sc[spiritType] = self.createSpiritConfig2(ctor, menuItem, column, row++, self.models.createModel(modelId));
-  }
-
-  let st = Game4BaseScreen.SpiritType;
-  let mi = Game4BaseScreen.MenuItem;
-
-  addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, ModelIds.ENTRANCE);
-  addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelIds.EXIT);
-  nextColumn();
-
-  addToMenu(st.ANT, AntSpirit, mi.RED_ANT, ModelIds.ANT);
-  addToMenu(st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE, ModelIds.CENTIPEDE);
-  nextColumn();
-
-  addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, ModelIds.ACTIVATOR_GUN);
-  addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR, ModelIds.INDICATOR);
-  nextColumn();
-
-  addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN, ModelIds.MACHINE_GUN);
-  addToMenu(st.SHOTGUN, ShotgunSpirit, mi.SHOTGUN, ModelIds.SHOTGUN);
-  addToMenu(st.ROGUE_GUN, RogueGunSpirit, mi.ROGUE_GUN, ModelIds.ROGUE_GUN);
-  nextColumn();
-
-  return sc;
+  return this.spiritConfigs;
 };
 
-Game4BaseScreen.prototype.createHitGroups = function() {
+Game4BaseScreen.prototype.getHitGroups = function() {
   return HitGroups;
 };
 
-Game4BaseScreen.prototype.createHitPairs = function() {
-  let g = this.getHitGroups();
-  return [
-    [g.EMPTY, g.EMPTY],
+Game4BaseScreen.prototype.getHitPairs = function() {
+  if (!this.hitPairs) {
+    let g = this.getHitGroups();
+    this.hitPairs = [
+      [g.EMPTY, g.EMPTY],
 
-    [g.NEUTRAL, g.WALL],
-    [g.NEUTRAL, g.NEUTRAL],
+      [g.NEUTRAL, g.WALL],
+      [g.NEUTRAL, g.NEUTRAL],
 
-    [g.CURSOR, g.EMPTY],
-    [g.CURSOR, g.WALL],
-    [g.CURSOR, g.NEUTRAL],
+      [g.CURSOR, g.EMPTY],
+      [g.CURSOR, g.WALL],
+      [g.CURSOR, g.NEUTRAL],
 
-    [g.PLAYER, g.WALL],
-    [g.PLAYER, g.NEUTRAL],
-    [g.PLAYER, g.CURSOR],
-    [g.PLAYER, g.PLAYER],
+      [g.PLAYER, g.WALL],
+      [g.PLAYER, g.NEUTRAL],
+      [g.PLAYER, g.CURSOR],
+      [g.PLAYER, g.PLAYER],
 
-    [g.PLAYER_FIRE, g.WALL],
-    [g.PLAYER_FIRE, g.PLAYER],
-    [g.PLAYER_FIRE, g.NEUTRAL],
+      [g.PLAYER_FIRE, g.WALL],
+      [g.PLAYER_FIRE, g.PLAYER],
+      [g.PLAYER_FIRE, g.NEUTRAL],
 
-    [g.PLAYER_SCAN, g.WALL],
-    [g.PLAYER_SCAN, g.NEUTRAL],
-    [g.PLAYER_SCAN, g.PLAYER],
+      [g.PLAYER_SCAN, g.WALL],
+      [g.PLAYER_SCAN, g.NEUTRAL],
+      [g.PLAYER_SCAN, g.PLAYER],
 
-    [g.ENEMY, g.WALL],
-    [g.ENEMY, g.NEUTRAL],
-    [g.ENEMY, g.CURSOR],
-    [g.ENEMY, g.PLAYER],
-    [g.ENEMY, g.PLAYER_FIRE],
-    [g.ENEMY, g.PLAYER_SCAN],
-    [g.ENEMY, g.ENEMY],
+      [g.ENEMY, g.WALL],
+      [g.ENEMY, g.NEUTRAL],
+      [g.ENEMY, g.CURSOR],
+      [g.ENEMY, g.PLAYER],
+      [g.ENEMY, g.PLAYER_FIRE],
+      [g.ENEMY, g.PLAYER_SCAN],
+      [g.ENEMY, g.ENEMY],
 
-    [g.ENEMY_FIRE, g.WALL],
-    [g.ENEMY_FIRE, g.NEUTRAL],
-    [g.ENEMY_FIRE, g.PLAYER],
+      [g.ENEMY_FIRE, g.WALL],
+      [g.ENEMY_FIRE, g.NEUTRAL],
+      [g.ENEMY_FIRE, g.PLAYER],
 
-    [g.ENEMY_SCAN, g.WALL],
-    [g.ENEMY_SCAN, g.NEUTRAL],
-    [g.ENEMY_SCAN, g.PLAYER],
-    [g.ENEMY_SCAN, g.ENEMY],
+      [g.ENEMY_SCAN, g.WALL],
+      [g.ENEMY_SCAN, g.NEUTRAL],
+      [g.ENEMY_SCAN, g.PLAYER],
+      [g.ENEMY_SCAN, g.ENEMY],
 
-    [g.BEAM, g.WALL],
-    [g.BEAM, g.NEUTRAL],
-    [g.BEAM, g.PLAYER],
-    [g.BEAM, g.PLAYER_FIRE],
-    [g.BEAM, g.ENEMY],
-    [g.BEAM, g.ENEMY_FIRE]
-  ];
+      [g.BEAM, g.WALL],
+      [g.BEAM, g.NEUTRAL],
+      [g.BEAM, g.PLAYER],
+      [g.BEAM, g.PLAYER_FIRE],
+      [g.BEAM, g.ENEMY],
+      [g.BEAM, g.ENEMY_FIRE]
+    ];
+  }
+  return this.hitPairs;
 };
 
 Game4BaseScreen.prototype.getWallHitGroup = function() {

@@ -259,31 +259,6 @@ WorldScreen.prototype.createSpiritConfig2 = function(ctor, menuItemName, group, 
 };
 
 /**
- * Override this function to always return a map from spirit.type to SpiritConfig. It will only be called once.
- * this.createSpiritConfig() can be used to help.
- * @returns {Object} mapping spirit.type to SpiritConfig.
- */
-WorldScreen.prototype.createSpiritConfigs = function() {
-  throw new Error("Define createSpiritConfigs");
-};
-
-/**
- * Override this to always return the collision hit group name/number map. Only called once.
- * @return {Object} mapping from hit group name to group number.
- */
-WorldScreen.prototype.createHitGroups = function() {
-  throw new Error("Define createHitGroups");
-};
-
-/**
- * Override this to always return the array of array-pairs of hit group numbers, for pairs of things that can collide.
- * @return {Array.<Array>.<number>} Array of two-element arrays, each pair containing two hit-group numbers.
- */
-WorldScreen.prototype.createHitPairs = function() {
-  throw new Error("Define createHitPairs");
-};
-
-/**
  * @return {number} the hit-group number of wall bodies, a constant
  */
 WorldScreen.prototype.getWallHitGroup = function() {
@@ -306,14 +281,10 @@ WorldScreen.prototype.onHitEvent = function(e) {
 };
 
 /**
- * Lazily inits SpiritConfig map.
  * @returns {Object}
  */
 WorldScreen.prototype.getSpiritConfigs = function() {
-  if (!this.spiritConfigs) {
-    this.spiritConfigs = this.createSpiritConfigs();
-  }
-  return this.spiritConfigs;
+  throw new Error("define getSpiritConfigs");
 };
 
 /**
@@ -332,10 +303,7 @@ WorldScreen.prototype.getSpiritFactory = function() {
  * @returns {Object}
  */
 WorldScreen.prototype.getHitGroups = function() {
-  if (!this.hitGroups) {
-    this.hitGroups = this.createHitGroups();
-  }
-  return this.hitGroups;
+  throw new Error("define getHitGroups");
 };
 
 /**
@@ -343,10 +311,7 @@ WorldScreen.prototype.getHitGroups = function() {
  * @returns {Object}
  */
 WorldScreen.prototype.getHitPairs = function() {
-  if (!this.hitPairs) {
-    this.hitPairs = this.createHitPairs();
-  }
-  return this.hitPairs;
+  throw new Error("define getHitPairs");
 };
 
 /**

@@ -486,19 +486,27 @@ v apply BatchDrawer to more stuff
       x spiritconfig menu items still get specific stamps for drawing the menu... but they're pulled from DrawPack?
   x remove batchDrawer and stamp from spirits' factory params? Maybe just for game4?
 
-- change all the lazy init WorldScreen code to injection.
-  - remove createSpiritConfigs()
-    v refactor spirit config junk
-      v remove spiritType from createSpiriConfig and v2.
-      v inject models into createSpiritConfig
-      v remove batchdrawer from SpiritConfig
-      v remove batchDrawer/stamp from Spirit.factory()
-    - worldscreen
-    - game4
-    - game2
-    - tests (feel free to delete 'em!)
-  - remove createHitGroups
-  - remove createHitPairs
+v remove all the lazy WorldScreen.createXxxs methods
+  v refactor spirit config junk
+    v remove spiritType from createSpiriConfig and v2.
+    v inject models into createSpiritConfig
+    v remove batchdrawer from SpiritConfig
+    v remove batchDrawer/stamp from Spirit.factory()
+  v remove createSpiritConfigs()
+    v worldscreen
+    v test41
+    v game4
+    v game2
+  v remove createHitGroups()
+    v worldscreen
+    v test41
+    v game4
+    v game2
+  v remove createHitPairs()
+    v worldscreen
+    v test41
+    v game4
+    v game2
 
 - Improve game4 enemy sleep/wake
   - debug by drawing everyone but use colors to indicate states:

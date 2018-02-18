@@ -19,44 +19,52 @@ Test41BaseScreen.MenuItem = {
   ANT: 'ant'
 };
 
-Test41BaseScreen.prototype.createSpiritConfigs = function() {
-  var sc = {};
-  sc[Test41BaseScreen.SpiritType.ANT] =
-      this.createSpiritConfig(AntSpirit, Test41BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.createModel());
-  return sc;
+Test41BaseScreen.prototype.getSpiritConfigs = function() {
+  if (!this.spiritConfigs) {
+    this.spiritConfigs = {};
+    this.spiritConfigs[Test41BaseScreen.SpiritType.ANT] =
+        this.createSpiritConfig(AntSpirit, Test41BaseScreen.MenuItem.ANT, 0, 0, AntSpirit.createModel());
+  }
+  return this.spiritConfigs;
 };
 
-Test41BaseScreen.prototype.createHitGroups = function() {
-  return {
-    EMPTY: 0,
-    WALL: 1,
-    NEUTRAL: 2,
-    CURSOR: 3,
-    ENEMY: 4,
-    ENEMY_SCAN: 5
-  };
+Test41BaseScreen.prototype.getHitGroups = function() {
+  if (!this.hitGroups) {
+    this.hitGroups = {
+      EMPTY: 0,
+      WALL: 1,
+      NEUTRAL: 2,
+      CURSOR: 3,
+      ENEMY: 4,
+      ENEMY_SCAN: 5
+    };
+  }
+  return this.hitGroups;
 };
 
-Test41BaseScreen.prototype.createHitPairs = function() {
-  var g = this.getHitGroups();
-  return [
-    [g.EMPTY, g.EMPTY],
+Test41BaseScreen.prototype.getHitPairs = function() {
+  if (!this.hitPairs) {
+    let g = this.getHitGroups();
+    this.hitPairs = [
+      [g.EMPTY, g.EMPTY],
 
-    [g.NEUTRAL, g.WALL],
-    [g.NEUTRAL, g.NEUTRAL],
+      [g.NEUTRAL, g.WALL],
+      [g.NEUTRAL, g.NEUTRAL],
 
-    [g.CURSOR, g.WALL],
-    [g.CURSOR, g.NEUTRAL],
+      [g.CURSOR, g.WALL],
+      [g.CURSOR, g.NEUTRAL],
 
-    [g.ENEMY, g.NEUTRAL],
-    [g.ENEMY, g.WALL],
-    [g.ENEMY, g.CURSOR],
-    [g.ENEMY, g.ENEMY],
+      [g.ENEMY, g.NEUTRAL],
+      [g.ENEMY, g.WALL],
+      [g.ENEMY, g.CURSOR],
+      [g.ENEMY, g.ENEMY],
 
-    [g.ENEMY_SCAN, g.WALL],
-    [g.ENEMY_SCAN, g.NEUTRAL],
-    [g.ENEMY_SCAN, g.ENEMY]
-  ];
+      [g.ENEMY_SCAN, g.WALL],
+      [g.ENEMY_SCAN, g.NEUTRAL],
+      [g.ENEMY_SCAN, g.ENEMY]
+    ];
+  }
+  return this.hitPairs;
 };
 
 Test41BaseScreen.prototype.getWallHitGroup = function() {
@@ -68,7 +76,7 @@ Test41BaseScreen.prototype.getCursorHitGroup = function() {
 };
 
 Test41BaseScreen.prototype.createTrackball = function() {
-  var trackball = new MultiTrackball()
+  let trackball = new MultiTrackball()
       .addTrackball(new TouchTrackball(this.getWorldEventTarget())
           .setStartZoneFunction(function(x, y) { return true; }))
       .addTrackball(
@@ -81,13 +89,4 @@ Test41BaseScreen.prototype.createTrackball = function() {
   trackball.setFriction(0.05);
   this.addListener(trackball);
   return trackball;
-};
-
-Test41BaseScreen.prototype.onHitEvent = function(e) {
-  var b0 = this.world.getBodyByPathId(e.pathId0);
-  var b1 = this.world.getBodyByPathId(e.pathId1);
-
-  if (b0 && b1) {
-    this.resolver.resolveHit(e.time, e.collisionVec, b0, b1);
-  }
 };
