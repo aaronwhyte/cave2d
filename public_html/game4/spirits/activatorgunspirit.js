@@ -59,7 +59,7 @@ ActivatorGunSpirit.prototype.setFromJSON = function(json) {
   ActivatorGunSpirit.getJsoner().setFromJSON(json, this);
 };
 
-ActivatorGunSpirit.factory = function(screen, ignored, pos, dir) {
+ActivatorGunSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 
   let spirit = new ActivatorGunSpirit(screen);

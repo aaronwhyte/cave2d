@@ -59,7 +59,7 @@ RogueGunSpirit.prototype.setFromJSON = function(json) {
   RogueGunSpirit.getJsoner().setFromJSON(json, this);
 };
 
-RogueGunSpirit.factory = function(screen, ignored, pos, dir) {
+RogueGunSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 
   let spirit = new RogueGunSpirit(screen);

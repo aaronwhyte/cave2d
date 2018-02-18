@@ -21,7 +21,6 @@ SpiritFactory.prototype.createSpiritFromJson = function(json) {
     if (spiritConfig) {
       spirit = new spiritConfig.ctor(this.screen);
       if (spiritConfig.stamp) spirit.setModelStamp(spiritConfig.stamp);
-      if (spiritConfig.batchDrawer) spirit.setBatchDrawer(spiritConfig.batchDrawer);
       spirit.setFromJSON(json);
     } else {
       console.error("Unknown spiritType " + spiritType + " in spirit JSON: " + json);

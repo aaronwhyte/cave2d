@@ -488,10 +488,11 @@ v apply BatchDrawer to more stuff
 
 - change all the lazy init WorldScreen code to injection.
   - remove createSpiritConfigs()
-    v remove spiritType from createSpiriConfig and v2.
-    - inject models into spirit configs directly
-    - remove stamp and batchdrawer from SpiritConfig
-      - update all SpiritConfig constructor calls, oy
+    v refactor spirit config junk
+      v remove spiritType from createSpiriConfig and v2.
+      v inject models into createSpiritConfig
+      v remove batchdrawer from SpiritConfig
+      v remove batchDrawer/stamp from Spirit.factory()
     - worldscreen
     - game4
     - game2

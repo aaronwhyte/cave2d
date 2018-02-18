@@ -28,11 +28,10 @@ ExitSpirit.createModel = function() {
   return RigidModel.createSquare().setColorRGB(0.3, 1, 0.3);
 };
 
-ExitSpirit.factory = function(screen, stamp, pos) {
+ExitSpirit.factory = function(screen, pos) {
   var world = screen.world;
 
   var spirit = new ExitSpirit(screen);
-  spirit.setModelStamp(stamp);
   var density = 1;
 
   var b = Body.alloc();

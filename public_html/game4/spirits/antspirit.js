@@ -63,7 +63,7 @@ AntSpirit.prototype.setFromJSON = function(json) {
   AntSpirit.getJsoner().setFromJSON(json, this);
 };
 
-AntSpirit.factory = function(screen, ignored, pos, dir) {
+AntSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 
   let spirit = new AntSpirit(screen);

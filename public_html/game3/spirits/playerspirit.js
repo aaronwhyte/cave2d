@@ -102,11 +102,10 @@ PlayerSpirit.createModel = function() {
   return model;
 };
 
-PlayerSpirit.factory = function(playScreen, stamp, pos, dir) {
+PlayerSpirit.factory = function(playScreen, pos, dir) {
   var world = playScreen.world;
 
   var spirit = new PlayerSpirit(playScreen);
-  spirit.setModelStamp(stamp);
   spirit.setColorRGB(1, 1, 1);
 
   var spiritId = world.addSpirit(spirit);

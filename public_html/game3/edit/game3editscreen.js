@@ -183,7 +183,7 @@ Game3EditScreen.prototype.addItem = function(name, pos, dir) {
   for (var t in this.spiritConfigs) {
     var c = this.spiritConfigs[t];
     if (c.menuItemConfig && c.menuItemConfig.itemName == name) {
-      c.menuItemConfig.factory(this, c.stamp, pos, dir);
+      c.menuItemConfig.factory(this, pos, dir);
       break;
     }
   }

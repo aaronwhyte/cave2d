@@ -59,7 +59,7 @@ ShotgunSpirit.prototype.setFromJSON = function(json) {
   ShotgunSpirit.getJsoner().setFromJSON(json, this);
 };
 
-ShotgunSpirit.factory = function(screen, ignored, pos, dir) {
+ShotgunSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 
   let spirit = new ShotgunSpirit(screen);

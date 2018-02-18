@@ -237,7 +237,7 @@ WorldScreen.prototype.flushBatchDrawers = function() {
 WorldScreen.prototype.createSpiritConfig = function(ctor, menuItemName, group, rank, model) {
   let stamp = model.createModelStamp(this.renderer.gl);
   let menuItemConfig = menuItemName ? new MenuItemConfig(menuItemName, group, rank, model, ctor.factory) : null;
-  return new SpiritConfig(ctor, stamp, null, menuItemConfig);
+  return new SpiritConfig(ctor, stamp, menuItemConfig);
 };
 
 /**
@@ -255,7 +255,7 @@ WorldScreen.prototype.createSpiritConfig2 = function(ctor, menuItemName, group, 
   if (menuItemName) {
     menuItemConfig = new MenuItemConfig(menuItemName, group, rank, model, ctor.factory);
   }
-  return new SpiritConfig(ctor, null, null, menuItemConfig);
+  return new SpiritConfig(ctor, null, menuItemConfig);
 };
 
 /**
@@ -900,7 +900,12 @@ WorldScreen.prototype.addItem = function(name, pos, dir) {
   for (let t in configs) {
     let config = configs[t];
     if (config.menuItemConfig && config.menuItemConfig.itemName === name) {
-      let spiritId = config.menuItemConfig.factory(this, config.batchDrawer || config.stamp, pos, dir);
+      let spiritId = config.menuItemConfig.factory(this, pos, dir);
+      if (config.stamp) {
+        // old-school, before modelIds existed
+        let spirit = this.getSpiritById(spiritId);
+        spirit.setModelStamp(config.stamp);
+      }
       this.setDirty(true);
       return spiritId;
     }

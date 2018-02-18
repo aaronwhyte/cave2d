@@ -24,7 +24,7 @@ EntranceSpirit.SCHEMA = {
   2: "bodyId"
 };
 
-EntranceSpirit.factory = function(screen, ignored, pos) {
+EntranceSpirit.factory = function(screen, pos) {
   let world = screen.world;
 
   let spirit = new EntranceSpirit(screen);

@@ -59,7 +59,7 @@ MachineGunSpirit.prototype.setFromJSON = function(json) {
   MachineGunSpirit.getJsoner().setFromJSON(json, this);
 };
 
-MachineGunSpirit.factory = function(screen, ignored, pos, dir) {
+MachineGunSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 
   let spirit = new MachineGunSpirit(screen);

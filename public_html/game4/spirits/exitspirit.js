@@ -29,7 +29,7 @@ ExitSpirit.SCHEMA = {
   2: "bodyId"
 };
 
-ExitSpirit.factory = function(screen, ignored, pos) {
+ExitSpirit.factory = function(screen, pos) {
   let world = screen.world;
 
   let spirit = new ExitSpirit(screen);

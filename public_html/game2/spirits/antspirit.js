@@ -83,11 +83,10 @@ AntSpirit.createModel = function() {
       .setColorRGB(0.1, 1, 0.1);
 };
 
-AntSpirit.factory = function(screen, stamp, pos, dir) {
+AntSpirit.factory = function(screen, pos, dir) {
   var world = screen.world;
 
   var spirit = new AntSpirit(screen);
-  spirit.setModelStamp(stamp);
   spirit.setColorRGB(1, 1, 1);
   var density = 1;
 

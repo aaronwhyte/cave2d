@@ -73,7 +73,7 @@ CentipedeSpirit.prototype.setFromJSON = function(json) {
   CentipedeSpirit.getJsoner().setFromJSON(json, this);
 };
 
-CentipedeSpirit.factory = function(screen, ignored, pos, dir) {
+CentipedeSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 
   let spirit = new CentipedeSpirit(screen);

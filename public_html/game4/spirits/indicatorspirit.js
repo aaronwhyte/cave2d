@@ -49,11 +49,10 @@ IndicatorSpirit.prototype.setFromJSON = function(json) {
   IndicatorSpirit.getJsoner().setFromJSON(json, this);
 };
 
-IndicatorSpirit.factory = function(screen, batchDrawer, pos, dir) {
+IndicatorSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 
   let spirit = new IndicatorSpirit(screen);
-  spirit.setBatchDrawer(batchDrawer);
   spirit.setColorRGB(1, 1, 1);
   let density = 1;
 

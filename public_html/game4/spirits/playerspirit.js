@@ -119,7 +119,7 @@ PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
   return this;
 };
 
-PlayerSpirit.factory = function(playScreen, ignored, pos, dir) {
+PlayerSpirit.factory = function(playScreen, pos, dir) {
   let world = playScreen.world;
 
   let spirit = new PlayerSpirit(playScreen);

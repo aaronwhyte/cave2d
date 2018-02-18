@@ -65,10 +65,6 @@ AntSpirit.prototype.setFromJSON = function(json) {
   return this;
 };
 
-AntSpirit.prototype.setModelStamp = function(modelStamp) {
-  this.modelStamp = modelStamp;
-};
-
 AntSpirit.createModel = function() {
   return RigidModel.createCircle(17)
       .addRigidModel(RigidModel.createSquare()
@@ -82,11 +78,10 @@ AntSpirit.createModel = function() {
       .setColorRGB(0.2, 0.5, 1);
 };
 
-AntSpirit.factory = function(screen, stamp, pos, dir) {
+AntSpirit.factory = function(screen, pos, dir) {
   var world = screen.world;
 
   var spirit = new AntSpirit(screen);
-  spirit.setModelStamp(stamp);
   spirit.setColorRGB(1, 1, 1);
   var density = 1;
 
