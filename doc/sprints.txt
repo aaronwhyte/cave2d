@@ -509,25 +509,18 @@ v remove all the lazy WorldScreen.createXxxs methods
     v game2
 
 - Improve game4 enemy sleep/wake
-  - debug by drawing everyone but use colors to indicate states:
-    - active,
-    - sleep-soon: waiting for timeout T to fire without going back to active
-    - sleep-asap: timeout fired, just hit the brakes to reach vel zero
-    - sleeping. If bumped, go to sleep-asap
-  - long timeout loop for very periodic path invalidation while sleeping
-    - never stops
-  - tight loop
-    - awake and doing stuff (as we have today)
-    - or shutting down but not zero vel yet. Apply friction until close enough to zero out vel
-    - end it when criteria are met:
-      - shutting down
-        - far enough from player view
-        - some time has passed since visible to players.
-          (don't stop right outside the player's view)
-      - zero vel
-    - restart tight loop
-      - when visited by drawing, which is already visiting cells near players
-      - when bumped or otherwise accelerated, causing vel to go non-zero.
+  - debug by drawing everyone but use graphics to indicate states:
+    - Active
+      - If distant from all players, goto 2
+    - Braking. Normal active timeout loop.
+      - Slow down to reach vel zero.
+      - if wake-dist from player, goto Active
+      - If vel reaches 0, goto Sleeping
+    - Sleeping
+      - longer timeout loop, longer path duration
+      - If bumped or otherwise vel != 0, go to Braking
+      - when visited by drawing loop, which is already visiting cells near players, recheck dist
+        - if wake-dist from player, goto Active
 
 - Wall skating? Want it for enemies regardless.
 
