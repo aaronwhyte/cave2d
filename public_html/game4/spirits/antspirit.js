@@ -27,16 +27,27 @@ function AntSpirit(screen) {
 
   this.toughness = 1;
   this.damage = 1;
+
+  // These represent the futuremost times for each timeout.
+  this.nextActiveTime = -1;
+  this.nextPassiveTime = -1;
 }
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.MEASURE_TIMEOUT = 3;
+AntSpirit.ACTIVE_TIMEOUT = 3;
+AntSpirit.PASSIVE_TIMEOUT = 300;
+
 AntSpirit.THRUST = 0.5;
 AntSpirit.TRACTION = 0.4;
-AntSpirit.MAX_TIMEOUT = 60;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
+
+// This many rads away from a player view bubble, an active ant can go to sleep.
+AntSpirit.SLEEP_RADS = 10;
+
+// This many rads away from a player view bubble, a sleeping ant can wake up.
+AntSpirit.WAKE_RADS = 5;
 
 AntSpirit.SCHEMA = {
   0: "type",
@@ -84,8 +95,29 @@ AntSpirit.factory = function(screen, pos, dir) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, -1);
+  spirit.scheduleActiveTimeout(spirit.now());
+  spirit.schedulePassiveTimeout(spirit.now());
   return spiritId;
+};
+
+AntSpirit.prototype.scheduleActiveTimeout = function(time) {
+  if (this.nextActiveTime < time) {
+    if (this.changeListener) {
+      this.changeListener.onBeforeSpiritChange(this);
+    }
+    this.screen.world.addTimeout(time, this.id, BaseSpirit.ACTIVE_TIMEOUT_VAL);
+    this.nextActiveTime = time;
+  }
+};
+
+AntSpirit.prototype.schedulePassiveTimeout = function(time) {
+  if (this.nextPassiveTime < time) {
+    if (this.changeListener) {
+      this.changeListener.onBeforeSpiritChange(this);
+    }
+    this.screen.world.addTimeout(time, this.id, BaseSpirit.PASSIVE_TIMEOUT_VAL);
+    this.nextPassiveTime = time;
+  }
 };
 
 AntSpirit.prototype.getModelId = function() {
@@ -108,46 +140,101 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
-  this.maybeStop();
-  let body = this.getBody();
-  let pos = this.getBodyPos();
-  this.stress = this.stress || 0;
-
-  let friction = this.getFriction();
-
-  let now = this.now();
-  let time = Math.max(0, Math.min(AntSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
-  this.lastControlTime = now;
-
-  // friction
-  body.applyLinearFrictionAtTime(friction * time, now);
-
-  let newVel = this.vec2d.set(body.vel);
-
-  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
-  let lowPower = this.distOutsideViewCircles > body.rad;
-  if (this.screen.isPlaying()) {
-    this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
-    if (!lowPower) {
-      this.handleLoner(newVel, time);
+  if (timeoutVal === BaseSpirit.ACTIVE_TIMEOUT_VAL) {
+    if (this.now() === this.nextActiveTime) {
+      this.doActiveTimeout();
     }
-  } else {
-    body.applyAngularFrictionAtTime(friction * time, now);
+  } else if (timeoutVal === BaseSpirit.PASSIVE_TIMEOUT_VAL) {
+    if (this.now() === this.nextPassiveTime) {
+      this.doPassiveTimeout();
+    }
+  } else if (timeoutVal === -1) {
+    // This is an old timeout from  before the passive/active biz.
+    // Ignore it, but start the new-style timeouts.
+    this.scheduleActiveTimeout(this.now() + AntSpirit.ACTIVE_TIMEOUT * Math.random());
+    this.schedulePassiveTimeout(this.now() + AntSpirit.PASSIVE_TIMEOUT * Math.random());
   }
-  // Reset the body's pathDurationMax because it gets changed at compile-time,
-  // but it is serialized at level-save-time, so old saved values might not
-  // match the new compiled-in values. Hm.
-  let timeoutDuration;
-  timeoutDuration = Math.min(
-      AntSpirit.MAX_TIMEOUT,
-      AntSpirit.MEASURE_TIMEOUT + this.distOutsideViewCircles)
-      * (0.2 * Math.random() + 0.9);
-  body.pathDurationMax = timeoutDuration * 1.1;
-  body.setVelAtTime(newVel, now);
-  body.invalidatePath();
-  world.addTimeout(now + timeoutDuration, this.id, -1);
 };
 
+AntSpirit.prototype.doActiveTimeout = function(world) {
+  this.stress = this.stress || 0;
+  if (!this.screen.isPlaying()) {
+    this.doEditorActiveTimeout();
+  } else {
+    this.doPlayingActiveTimeout();
+  }
+};
+
+AntSpirit.prototype.doEditorActiveTimeout = function() {
+  let now = this.now();
+  let time = Math.max(0, Math.min(AntSpirit.ACTIVE_TIMEOUT, now - this.lastControlTime));
+  let body = this.getBody();
+  let friction = this.getFriction();
+  body.applyLinearFrictionAtTime(friction * time, now);
+  body.applyAngularFrictionAtTime(friction * time, now);
+  this.maybeStop();
+
+  let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.2 * Math.random());
+  body.pathDurationMax = timeoutDuration * 1.01;
+  body.invalidatePath();
+  this.scheduleActiveTimeout(now + timeoutDuration);
+};
+
+AntSpirit.prototype.doPlayingActiveTimeout = function() {
+  let now = this.now();
+  let time = Math.max(0, Math.min(AntSpirit.ACTIVE_TIMEOUT, now - this.lastControlTime));
+  this.lastControlTime = now;
+
+  let body = this.getBody();
+  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(this.getBodyPos());
+
+  if (this.distOutsideViewCircles < body.rad * AntSpirit.SLEEP_RADS) {
+    // normal active biz
+    let friction = this.getFriction();
+    body.applyLinearFrictionAtTime(friction * time, now);
+    let newVel = this.vec2d.set(body.vel);
+
+    this.handleLoner(newVel, time);
+
+    let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.2 * Math.random());
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.setVelAtTime(newVel, now);
+    body.invalidatePath();
+    this.scheduleActiveTimeout(now + timeoutDuration);
+
+  } else {
+    // brakes only
+    let friction = this.getFriction();
+    body.applyLinearFrictionAtTime(friction * time, now);
+    body.applyAngularFrictionAtTime(friction * time, now);
+    let stopped = this.maybeStop();
+    if (stopped) {
+      // Assume the next timeout will be the passive one.
+      let timeoutDuration = this.nextPassiveTime - now;
+      body.pathDurationMax = timeoutDuration * 1.01;
+      body.invalidatePath();
+      // Do not schedule another active timeout.
+    } else {
+      // keep braking
+      let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.2 * Math.random());
+      body.pathDurationMax = timeoutDuration * 1.01;
+      body.invalidatePath();
+      this.scheduleActiveTimeout(now + timeoutDuration);
+    }
+  }
+};
+
+AntSpirit.prototype.doPassiveTimeout = function(world) {
+  let timeoutDuration = AntSpirit.PASSIVE_TIMEOUT * (0.9 + 0.2 * Math.random());
+  if (this.nextActiveTime < this.now()) {
+    // There is no scheduled active time,
+    // so the passive timeout loop is in charge of invalidating paths.
+    let body = this.getBody();
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.invalidatePath();
+  }
+  this.schedulePassiveTimeout(this.now() + timeoutDuration);
+};
 
 AntSpirit.prototype.handleLoner = function(newVel, time) {
   let body = this.getBody();
@@ -257,7 +344,20 @@ AntSpirit.prototype.die = function() {
  * @param {Spirit} otherSpirit
  */
 AntSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  let body = this.getBody();
-  if (!body) return;
+  this.maybeWake();
   //this.screen.sounds.wallThump(this.getBodyPos(), mag / body.mass);
 };
+
+AntSpirit.prototype.maybeWake = function() {
+  if (this.nextActiveTime < this.now()) {
+    this.scheduleActiveTimeout(this.now());
+  }
+};
+
+AntSpirit.prototype.onDraw = function(world, renderer) {
+  this.drawBody();
+  if (this.distOutsideViewCircles < this.getBody().rad * AntSpirit.WAKE_RADS) {
+    this.maybeWake();
+  }
+};
+

@@ -30,6 +30,9 @@ BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME = 1;
 BaseSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 BaseSpirit.STOPPING_ANGVEL = 0.01;
 
+BaseSpirit.ACTIVE_TIMEOUT_VAL = 1;
+BaseSpirit.PASSIVE_TIMEOUT_VAL = 2;
+
 
 BaseSpirit.prototype.reset = function(screen) {
   this.screen = screen;
@@ -61,17 +64,32 @@ BaseSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
 
+/**
+ * @returns {boolean} true if the spirit's body exists and is completely stopped after the call.
+ */
 BaseSpirit.prototype.maybeStop = function() {
   let body = this.getBody();
-  if (!body) return;
-  let oldAngVelMag = Math.abs(this.getBodyAngVel());
-  if (oldAngVelMag && oldAngVelMag < AntSpirit.STOPPING_ANGVEL) {
-    this.setBodyAngVel(0);
+  let angStopped = false;
+  let linStopped = false;
+  if (!body) {
+    return false;
+  } else {
+    let oldAngVelMag = Math.abs(this.getBodyAngVel());
+    if (!oldAngVelMag) {
+      angStopped = true;
+    } else if (oldAngVelMag < AntSpirit.STOPPING_ANGVEL) {
+      this.setBodyAngVel(0);
+      angStopped = true;
+    }
+    let oldVelMagSq = body.vel.magnitudeSquared();
+    if (!oldVelMagSq) {
+      linStopped = true;
+    } else if (oldVelMagSq < AntSpirit.STOPPING_SPEED_SQUARED) {
+      this.setBodyVel(Vec2d.ZERO);
+      linStopped = true;
+    }
   }
-  let oldVelMagSq = body.vel.magnitudeSquared();
-  if (oldVelMagSq && oldVelMagSq < AntSpirit.STOPPING_SPEED_SQUARED) {
-    this.setBodyVel(Vec2d.ZERO);
-  }
+  return angStopped && linStopped;
 };
 
 /**
@@ -170,6 +188,10 @@ BaseSpirit.prototype.addBodyAngVel = function(av) {
 
 BaseSpirit.prototype.now = function() {
   return this.screen.now();
+};
+
+BaseSpirit.prototype.addTimeout = function(time, spiritId, timeoutVal) {
+  this.screen.world.addTimeout(time, spiritId, timeoutVal);
 };
 
 BaseSpirit.prototype.getFriction = function() {

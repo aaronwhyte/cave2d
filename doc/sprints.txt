@@ -508,19 +508,18 @@ v remove all the lazy WorldScreen.createXxxs methods
     v game4
     v game2
 
-- Improve game4 enemy sleep/wake
-  - debug by drawing everyone but use graphics to indicate states:
-    - Active
-      - If distant from all players, goto 2
-    - Braking. Normal active timeout loop.
-      - Slow down to reach vel zero.
-      - if wake-dist from player, goto Active
-      - If vel reaches 0, goto Sleeping
-    - Sleeping
-      - longer timeout loop, longer path duration
-      - If bumped or otherwise vel != 0, go to Braking
-      - when visited by drawing loop, which is already visiting cells near players, recheck dist
-        - if wake-dist from player, goto Active
+v Improve game4 enemy sleep/wake
+  v Active
+    v If distant from all players, goto Braking
+  v Braking. Normal active timeout loop.
+    v Slow down to reach vel zero.
+    v if wake-dist from player, goto Active
+    v If vel reaches 0, goto Sleeping
+  v Sleeping
+    v longer timeout loop, longer path duration
+    v If bumped or otherwise vel != 0, go to Braking
+    v when visited by drawing loop, which is already visiting cells near players, recheck dist
+      v if wake-dist from player, goto Active
 
 - Wall skating? Want it for enemies regardless.
 
