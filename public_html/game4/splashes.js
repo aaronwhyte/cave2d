@@ -55,7 +55,7 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
   let y = pos.y;
   let self = this;
 
-  let particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+  let particles, explosionRad, dirOffset, dir, dx, dy, duration;
 
   function addSplash(x, y, dx, dy, duration, rad) {
     s.reset(Splashes.Type.ENEMY_EXPLOSION, null);
@@ -81,7 +81,7 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
   explosionRad = rad * 8;
   dirOffset = 2 * Math.PI * Math.random();
   // outer
-  for (i = 0; i < particles; i++) {
+  for (let i = 0; i < particles; i++) {
     let erad = explosionRad * 0.8 * (0.8 + 0.4 * Math.random());
     duration = 1.4 * erad * (0.5 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random() * 0.3;
@@ -92,7 +92,7 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
   // middle cloud
   dirOffset = 2 * Math.PI * Math.random();
   particles = Math.floor(8 * rad);
-  for (i = 0; i < particles; i++) {
+  for (let i = 0; i < particles; i++) {
     duration = 10 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles);
     dx = Math.sin(dir) * explosionRad * 0.25;
@@ -102,17 +102,17 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
 };
 
 Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
-  // cloud particles
   let s = this.splash;
   let x = pos.x;
   let y = pos.y;
   let self = this;
 
-  let particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+  let particles, explosionRad, dirOffset, dir, dx, dy, duration;
 
   function addSplash(x, y, dx, dy, duration, rad) {
     s.reset(Splashes.Type.ENEMY_EXPLOSION, null);
     s.modelId = ModelIds.CIRCLE_32;
+    s.startTime = now;
     s.duration = duration;
 
     s.startPose.pos.setXYZ(x, y, -0.9);
@@ -132,7 +132,7 @@ Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
   particles = 3;
   explosionRad = rad * 2;
   dirOffset = 2 * Math.PI * Math.random();
-  for (i = 0; i < particles; i++) {
+  for (let i = 0; i < particles; i++) {
     duration = 4 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles);
     dx = Math.sin(dir) * explosionRad;
