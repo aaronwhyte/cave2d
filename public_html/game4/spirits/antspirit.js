@@ -36,7 +36,7 @@ AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.ACTIVE_TIMEOUT = 3;
-AntSpirit.PASSIVE_TIMEOUT = 300;
+AntSpirit.PASSIVE_TIMEOUT = 1000;
 
 AntSpirit.THRUST = 0.5;
 AntSpirit.TRACTION = 0.4;
@@ -47,7 +47,7 @@ AntSpirit.STOPPING_ANGVEL = 0.01;
 AntSpirit.SLEEP_RADS = 10;
 
 // This many rads away from a player view bubble, a sleeping ant can wake up.
-AntSpirit.WAKE_RADS = 5;
+AntSpirit.WAKE_RADS = 2;
 
 AntSpirit.SCHEMA = {
   0: "type",
@@ -96,7 +96,7 @@ AntSpirit.factory = function(screen, pos, dir) {
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.scheduleActiveTimeout(spirit.now());
-  spirit.schedulePassiveTimeout(spirit.now());
+  spirit.schedulePassiveTimeout(spirit.now() + AntSpirit.PASSIVE_TIMEOUT * Math.random());
   return spiritId;
 };
 
@@ -140,15 +140,22 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
+  // Allow -1 timeouts because that's the initial value.
+  // But after those fire, no dupes can be created.
   if (timeoutVal === BaseSpirit.ACTIVE_TIMEOUT_VAL) {
-    if (this.now() === this.nextActiveTime) {
+    if (this.now() === this.nextActiveTime || this.nextActiveTime === -1) {
       this.doActiveTimeout();
+    // } else {
+    //   console.log('dropping active timeout because now != nextActiveTime', this.now(), this.nextActiveTime);
     }
   } else if (timeoutVal === BaseSpirit.PASSIVE_TIMEOUT_VAL) {
-    if (this.now() === this.nextPassiveTime) {
+    if (this.now() === this.nextPassiveTime || this.nextPassiveTime === -1) {
       this.doPassiveTimeout();
+    // } else {
+    //   console.log('dropping passive timeout because now != nextPassiveTime', this.now(), this.nextPassiveTime);
     }
   } else if (timeoutVal === -1) {
+    // console.log('legacy timeout - schedule new active and passive timeouts');
     // This is an old timeout from  before the passive/active biz.
     // Ignore it, but start the new-style timeouts.
     this.scheduleActiveTimeout(this.now() + AntSpirit.ACTIVE_TIMEOUT * Math.random());
@@ -174,7 +181,7 @@ AntSpirit.prototype.doEditorActiveTimeout = function() {
   body.applyAngularFrictionAtTime(friction * time, now);
   this.maybeStop();
 
-  let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.2 * Math.random());
+  let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
   body.pathDurationMax = timeoutDuration * 1.01;
   body.invalidatePath();
   this.scheduleActiveTimeout(now + timeoutDuration);
@@ -196,7 +203,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 
     this.handleLoner(newVel, time);
 
-    let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.2 * Math.random());
+    let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
     body.pathDurationMax = timeoutDuration * 1.01;
     body.setVelAtTime(newVel, now);
     body.invalidatePath();
@@ -210,13 +217,13 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
     let stopped = this.maybeStop();
     if (stopped) {
       // Assume the next timeout will be the passive one.
-      let timeoutDuration = this.nextPassiveTime - now;
+      let timeoutDuration = AntSpirit.PASSIVE_TIMEOUT;
       body.pathDurationMax = timeoutDuration * 1.01;
       body.invalidatePath();
       // Do not schedule another active timeout.
     } else {
       // keep braking
-      let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.2 * Math.random());
+      let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
       body.pathDurationMax = timeoutDuration * 1.01;
       body.invalidatePath();
       this.scheduleActiveTimeout(now + timeoutDuration);
@@ -225,7 +232,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 };
 
 AntSpirit.prototype.doPassiveTimeout = function(world) {
-  let timeoutDuration = AntSpirit.PASSIVE_TIMEOUT * (0.9 + 0.2 * Math.random());
+  let timeoutDuration = AntSpirit.PASSIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
   if (this.nextActiveTime < this.now()) {
     // There is no scheduled active time,
     // so the passive timeout loop is in charge of invalidating paths.
