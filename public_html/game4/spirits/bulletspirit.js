@@ -161,7 +161,7 @@ BulletSpirit.prototype.setFromJSON = function(json) {
 BulletSpirit.prototype.die = function() {
   let body = this.getBody();
   if (body) {
-    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 2, 5,
+    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 1.5, 3,
         this.color.getR(), this.color.getG(), this.color.getB());
     this.screen.splashes.addBulletHitExplosion(this.now(), this.getBodyPos(), body.rad * 2,
         this.color);
@@ -173,12 +173,15 @@ BulletSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
   let body = this.getBody();
   if (!body) return;
 
-  this.screen.sounds.wallThump(this.getBodyPos(), mag);
+  this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag + 0.5));
 
   // bounce or vanish?
   this.applyDamage(mag * 0.7);
   if (this.health > 0) {
     // bounce
     this.addTrailSegment();
+    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * (1 + Math.min(mag, 2)), 4,
+        this.color.getR(), this.color.getG(), this.color.getB());
+    this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag * 2));
   }
 };

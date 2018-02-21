@@ -452,7 +452,7 @@ Splashes.prototype.addDotSplash = function(now, pos, rad, duration, r, g, b) {
   s.startPose.pos.setXYZ(x, y, -0.99);
   s.endPose.pos.setXYZ(x, y, -0.99);
   s.startPose.scale.setXYZ(rad, rad, 1);
-  s.endPose.scale.setXYZ(0, 0, 1);
+  s.endPose.scale.setXYZ(rad / 3, rad / 3, 1);
   s.startPose.rotZ = 0;
   s.endPose.rotZ = 0;
 
