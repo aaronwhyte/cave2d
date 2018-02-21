@@ -1,0 +1,533 @@
+2017-06-18
+
+game4 nest
+v take over old game4
+
+reduce setScreenListening redundancy
+v shrink testscreen's setScreenListening()
+v ditto for playscreen
+v repeat for all the play/test code that could use it throughout cave2d
+
+2017-06-24
+
+v testScreen inherits from playScreen, to de-dupe a lot of code.
+
+game4 multiplayer controls
+v controlName, controlState files
+v create the 7 slots
+  v study test45
+  v page calls configurePlayerSlots() near initializing the world
+  v screen.configurePlayerSlots()
+    v models and stamps
+      v models.glyphs
+  v screen.handleInput()
+    v slots
+      v join
+        v playerJoin(slot)
+          v playerSpawn(slot)
+      v drop
+        v playerDrop()
+    v PlayerSpirit.handleInput
+      v unpack and use controls
+      v make tractor beams work like test45
+v Render the hud
+v Add the mid-screen pause widget
+
+2017-06-28
+
+game4 multiplayer rendering
+v zoom
+v selective tile draw
+v selective spirit draw
+v shader for circle mask
+
+Refactoring
+v pull renderer up out of test44-45 and game4 and replace the main renderer
+v standardize metrics, graphing code chunks
+  v initStatMons
+  v fields
+    v statMons
+      v leftStatMons
+      v rightStatMons
+      v drawLeftGraphs
+      v drawRightGraphs
+    v cuboids
+      * add to CuboidRules
+      v bottomRight
+      v topRight
+      v bottomLeft
+      v topLeft
+      v graphsCuboid
+  v sampleStats - overridden from WorldScreen, called from page.animateFrame()
+  v drawStats
+
+v pull game4's splashes into a new file, like I did for "sounds" (done except for unused explosion biz)
+
+v delete game4.getAveragePlayerPos and everything that uses it
+
+v player death
+  v explosion
+    v at all
+    v move to Splashes
+  v respawn timeout start
+  v respawn
+
+v fix crash when beam target body vanishes
+
+Game4 Basic Mechanics
+v entrance 1
+  v entrance spirit
+    v config
+    v editor-able
+    v remove player from editor menu
+  v zero players
+    v camera at entrance
+  v add player at entrance
+  v respawn after death
+    v death by critter
+v exit 1: basic game2 biz
+v useful objects & activation
+  * based on "Vehicles" basic neuron model
+  * Each target has one input port that accepts any number of simultaneous connections.
+  * Input values are steady values that change discontinuously, in sudden steps.
+  v data structures
+    v Source maintains map from target spirit IDs to output values to those targets, in case source gets polled.
+    v Target maintains set of source spirit IDs, for polling.
+    v Target also maintains map from pulse input end time to pulse input value.
+  v activation by linked spirit
+    v api
+      v targetSpirit.addInputSource(sourceSpiritId) // set output value first in case target reads it
+      v targetSpirit.removeInputSource(sourceSpiritId)
+      v targetSpirit.onInputChanged(sourceSpiritId, val)
+      v sourceSpirit.getOutputToTarget(targetId)
+      x world.isOutputInputPair(sourceId, targetId) // debugging only?
+  v activation by pulse or ray
+    v targetSpirit.addInputPulse(duration)
+  v target polls inputs on events and timeouts (anything that could change values)
+    v targetSpirit.sumOfInputs()
+    v iterate through pulses, culling obsolete ones and adding valued from active ones
+    v iterate through sources, culling or adding
+  v exercise the system
+    v player activates indicator light
+      v indicator light spirit that just shows whether there's any input or not
+        v basic spirit
+        v add to editor menu
+        v polls for activation during rendering
+      v player tractor beam can activate target
+        v wield adds source
+        v unwield detaches it
+        v activate sets val to 1
+        v deactivate 0
+      v whole thing works
+    v player wielding/activating/ejecting twists things to point along wield vector
+    v activator raygun that serves 2 purposes:
+      v it is activation target, like the light
+      v When activated, it fires activation bullets that can activate stuff like lights and other rayguns
+        v activation bullet spirit
+          v collision triggers activation pulse
+
+Movement again...
+v traction or responsive movement
+v good slow aim precision
+
+Bugs and cleaning
+v Unlock mouse pointer when paused, relock on resume
+v Activator gun fire schedule
+  v use new timeout (don't re-use friction)
+  v don't stop firing when off-screen
+v higher friction/traction on all manipulable objects
+
+x change Wield physics? (what did I have in mind??)
+
+v entrance 2: done 2017-09-17
+  * continuation of player slots - don't make players re-add themselves
+  * "gameState"
+  v app/PlayApp
+    v exitLevel param
+    v VictoryPage ctor param (not that it matters)
+    v createPlayLevelPage param
+    v playLevelPageCtor call param
+    v restartLevel param
+      v createPlayLevelPage param
+  v app/ScreenPage
+    v ctor param
+    v field
+  v game4/PlayLevelPage
+    v ctor param
+    v pass fresh value to this.app.exitLevel
+      * have a way to create a fresh one!
+      v game4PlayScreen.createGameState()
+    v pass old value to this.app.restartLevel
+    v use in maybeCreateScreen()
+      x pass to Game4PlayScreen ctor I guess!
+      v page explicitly restores state with Game4PlayScreen call
+  v game4/Game4PlayScreen
+    v createGameState() called from PlayLevelPage
+      v list of players
+        v slot names or whatever
+        x color?
+        x position relative to exit?
+        x velocity relative to exit?
+        x equipment (later!)
+    v Populate slotNames when creating slots.
+    v method for adding a player by slotName
+  v Slots
+    * need permanent serializable IDs
+    v replace random slot.id with real names
+  v Maintain pointerlock across levels
+
+v Increase "slot" responsibility
+  v player spirit in slot
+  v remove list of player spirits from playScreen
+    v use slots instead
+  v remove slot from playerSpirit
+    v pass controlList to playerSpirit.handleInput
+    v remove slot state checking from player
+  v player circle (from spirit)
+    v slot calls follow each frame
+  v player camera (from spirit)
+  v remove lastSpiritId
+  v death
+    v when player spirit dies, find its slot (scan?) to update state
+    v know player death time
+    v remember death position
+    v nuke player spirit immediately because slot knows all
+  v know respawn world position
+  v respawn
+    v do it on first frame after death time is up. No timeout.
+    v and only if player is still playing
+    v free: prevents player from dropping and respawning super fast
+
+v death 2
+  v fragment-view circle shrinks to nothing in-place
+    * don't encourage dying to get extra info
+    * slow enough to see how you died, fast enough to not be totally annoying.
+  v ghost returns to spawn point
+    x player gets ghost body? Maybe totally invisible non-body would be fine.
+    x ghost pan/zoom camera circle doesn't affect shader during normal draw.
+    x ghosts are drawn always - separate pass with different shader params so they don't get clipped out
+    x touching spawn point restores solid player body, back to normal.
+
+v exit 2
+  * all players must be present and relaxed to exit
+  v exit has circle body
+    v new test level
+  v 1/distfrac shader
+    v add shader fork
+      v borrow from test32
+    v make existing weird shader near exit work first
+    v draw exit as every player but using the weird shader
+    v then try 1/distfrac shader
+    v make players visible in exit mirror even when very far away
+  x cache exit warp arrays
+  x allow multiple exits to draw mirror
+  ... OK, the 1/dist shader is cool but the idea for the exit was a bust.
+  v start exit when all players are close
+    v exit tracks player distances
+  v arrow & star
+    v models
+      b arrow - tip is 0,0
+      v star - center is 0,0
+    v for each player
+      v if too far, draw arrow between player and exit
+        v scale and position based on dist:
+          v small and far if far
+          v big and close to exit when plr is close
+          v smaller as plr gets really close
+      v if close enough, draw star over player's head
+        v grow with proximity to exit
+        v pull player into exit orbit?
+
+
+v Bug! I need to disable screen-lock in edit mode.
+  Something about transition from test to edit?
+v Bug in undo/redo for exit/entrance spirits.
+
+v eliminate wall T-junctions and make edges meshy
+  v start new BitRect to hold data and logic for bit rect conversions
+    v without breaking everything
+      v update every bitgrid user
+      v createWorldRect() to do what BitGrid did
+    v refactor BitGrid to use BitRect's createWorldRect
+      v pull bitrect creation out into something the fan method can use later
+  v fan basics
+    v for now, just an array of Vec4
+    v BitGrid can return a pile of fans
+    v TileGrid can create models and stamps from said pile. Triangles for now since I don't really use GL fans.
+      v Model.createFanFromVec4Array(list of v4s)
+      v sanity-test by randomizing vertex colors?
+  v optimize
+    v detailed
+      v don't add vertex at top/bottom if the opposite cell pair is solid+solid
+        v but do add 'em every so often... every 4?
+    x solid
+      x create 16 different solid tile models, for each "is-neighbor-detailed" value, 2^4
+      x live draw the right one based on the 4 neighbors - don't even bother caching?
+
+v fix long midpoint-to-corner triangle edges by breaking up rects
+  v chop fan rects every 8 bits! Then midpoints and chunks will be every 4, nice and even.
+    v or every 4!
+
+v Fix fragment shader interaction with distortion. Pass new x/y in, not original x/y.
+
+v Add fragment shader wall rendering texture biz and make sure it distorts well
+
+
+SIMPLER CONTROLS
+Always wield
+v remove drag. Go straight to wield.
+v remove eject. Go straight to drop.
+v restore speed while wielding.
+
+v centipede
+  v awesome tunnel navigation
+  v get unstuck by breaking apart
+  v get unstuck by reversing and bisecting
+
+
+done 2017-12-08
+v simple combat system
+  v collision system
+    v pull out collision resolution class
+    v teams
+    v get damages based on other spirit teams
+    v do damages
+      v handle deaths with generic explosion
+    v do bounce physics regardless?
+    v bullets could die after hitting a thing, even if not damaged
+      v onHitOther() gives bullets a chance to die after hitting something
+        v die after doing damage
+        v check to see if bouncing is OK and die if not
+  v enemy explosion splashes
+
+v bullet-gun for player
+  v shoots
+  v physical recoil
+  v shot sound
+  v muzzle flash
+
+done 2017-12-09
+v bullet details
+  v splash at range timeout
+  v at hit
+  x on bounce?
+  v hit noise
+  v bounce noise
+
+CONTROLS
+
+empty-handed kick and grab
+v kick
+  v instant, not sustained
+  x actual repulsor shotgun
+    * tried it but didn't like it
+  v rayscans instead of bullets! More efficient, faster, better graphics possibilities
+  v splashes
+    v splash-lines!
+  x frequency limit
+  v sound
+    v non hit
+    v hit
+v seek
+  v rayscans instead of bullets
+  v splashes
+  x frequency limit
+  v sound
+    v continuous sound object!
+    v no hit
+    v some hit - closeness
+v grab
+  v sound
+  v splash
+v release
+  v sound
+  x splash
+
+v Fix iOS sound
+  * permission to make sounds expires one second after the last sound, and requires a new touch+sound to regain.
+  v try making continuous sound.
+  v also make sound for every touch up/down?
+
+v graph rendering II
+  v StatTrail changes
+    v change API to enqueue pairs, not single vals and times
+    v change guts to use a single circular queue like [t0, v0, t1, v1, t2, v2...]
+  v create polyline model
+    v basic rect
+    v create model with as many segments as requested
+  v get to actual gl.uniform2fv([x0, y0, x1, y1, x2, y2...])
+    v global const for stat trail point (x,y pair) count
+    v define uniform
+      v renderer
+      v shader
+      v set it from setStatGraphData
+    v load it into the renderer
+  v tell the renderer to use (my) graph polyline mode
+    v define value for mode (another value, like Circle mode)
+      v renderer
+      v shader "if" blocks in vertex shader
+    v set it from setStatGraphData? or further up.
+  v shader
+    v see pseudocode in graphing.txt
+  x polyline little end-caps (do those last)
+  v fix near-invisible vertical lines by adjusing line model
+
+v stats III: more collection and presentation
+  * every stat is sampled every frame unless otherwise mentioned
+  v remove global stats biz everywhere
+    v main.js everywhere
+    v all stat collection
+    v all stat rendering. CLEAN SWEEP
+  v delete StatRateTrail
+  v add RateStat, with sample(time, value)
+  v add MovingAverageStat also with sample(time, value)
+
+  v add basic raw values
+    v WorldScreen
+      v frameCount
+    v  World
+      x clocks (done as "now")
+      v body add count
+      v body hit-check count
+      v hits enqueued
+      v timeouts enqueued
+      v enterOrExitEnqueuedCount
+      v rayscan count
+      v rayscan hit-check count
+    v Renderer
+      v draw count rate
+      v actual cumulative time in draw() calls
+  v basic presentation
+    v F/S rate, moving avg
+    v C/F rate, moving avg
+  v cell-size debugging
+    v BHC/F body hit-calc
+    v RHC/F rayscan hit-calc
+    v EE/F enter/exit events enqueued
+  v more data!
+    v frame ms breakdown
+      v delay ms, reported by the requestAnimationFrame API and now()
+      v validateBodies ms (part of phy now)
+      v stats draw ms
+      v controls ms
+      v drawScene ms
+      v wall draw ms
+      v spirit draw ms
+      v splash draw ms
+      v phy events ms (last but has minimums), end-start, each frame
+      v total ms, just like delayMs but do it at the end of the frame
+      x misc ms = everything not in total, each frame
+
+v batch draw!
+  * merge a bunch of drawings of the same model together with a single draw call.
+  v make testlevel with a bajillion ants and stuff, to actually stress this stunningly powerful laptop
+  v make sure it's easy to set an array of matrixes
+  v BATCH_MAX constant for number of things to draw at once, max. Set it to 10 for now.
+  v make some parallel arrays
+    v uModelMatrixBatch[BATCH_MAX]
+    v uModelMatrix2Batch[BATCH_MAX]
+    v uModelColorBatch[BATCH_MAX]
+  v attribute lowp float aVertexGroup;
+  v Update ModelStamp to include instance data
+
+  v Figure out the code around AntSpirit
+    v continue to generate a single RigidModel
+    x never set its modelStamp!
+    v sets its BatchDrawer instead
+      v BaseScreen generates BatchDrawer using AntSpirit.createModel().
+      v Screen has a list of BatchDrawers
+      x Screen passes BatchDrawer to AntSpirit
+      v AntSpirit uses it for addDraw(color, modelMatrix, opt_modelMatrix2) call
+      v flush()
+        v sets batch uniforms: colors and matrixes
+        v draws using stamps[count-1] which contains "count" instances
+      v BatchDrawer auto-flushes if it reaches its max count
+      v Screen calls flush() on each BatchDrawer at the end of the spirit (and splash!) drawing phase
+  v vertex shader "batch" type
+    v vertex looks its model matrix and color matrix up in the uniform arrays
+  v see if it makes things faster
+    v try different values for N on various devices
+      v 1
+      v 10
+      v 100
+  v fix a bunch of broken editors that have empty menus?
+    * probably because I added a param to SpiritConfig(type, ctor, stamp, **batchDrawer**, menuItemConfig)
+    v fix game3 editor or delete game3
+    v text39
+    v test37
+v Copy the BatchDrawer code to the master git branch
+v Fix game4/edit item adding
+
+Attitude Adjustment: Feel free to delete old tests like crazy. Never let them slow you down.
+
+v apply BatchDrawer to more stuff
+  v make batch-drawer registration explicit.
+    v pull model, stamp, and batch creation way up out of spirits and into centralized "DrawPack" instance
+      v DrawPack class
+        v addModel
+        v draw
+        v flush
+      v add a DrawPack to Game4BaseScreen (or WorldScreen) and wrap its methods (demeter!)
+      v update Models class
+        v create model IDs for game4 like ModelId.SHOTGUN etc, in Models file
+        v replace named funcs with this.models.getModel(Models.SHOTGUN)
+      v In init, add all the models to WorldScreen? Game4BaseScreen I guess. Or lazy-load?
+      v spirits use screen's new draw method and model IDs
+      v change flush() to use DrawPack, not the list of configs
+      v replace most/all remaining Stamps uses with worldscreen's methods
+        v bullet cylinders
+        v player aim guide
+        v player tractor beam
+        v splashes
+          v make splash take modelId - new factory method?
+          v make splasher alternately draw using screen instead of renderer
+          v update all of them in game4!
+    x Editor updates?
+      x spiritconfig menu items still get specific stamps for drawing the menu... but they're pulled from DrawPack?
+  x remove batchDrawer and stamp from spirits' factory params? Maybe just for game4?
+
+v remove all the lazy WorldScreen.createXxxs methods
+  v refactor spirit config junk
+    v remove spiritType from createSpiriConfig and v2.
+    v inject models into createSpiritConfig
+    v remove batchdrawer from SpiritConfig
+    v remove batchDrawer/stamp from Spirit.factory()
+  v remove createSpiritConfigs()
+    v worldscreen
+    v test41
+    v game4
+    v game2
+  v remove createHitGroups()
+    v worldscreen
+    v test41
+    v game4
+    v game2
+  v remove createHitPairs()
+    v worldscreen
+    v test41
+    v game4
+    v game2
+
+v Improve game4 enemy sleep/wake
+  v Active
+    v If distant from all players, goto Braking
+  v Braking. Normal active timeout loop.
+    v Slow down to reach vel zero.
+    v if wake-dist from player, goto Active
+    v If vel reaches 0, goto Sleeping
+  v Sleeping
+    v longer timeout loop, longer path duration
+    v If bumped or otherwise vel != 0, go to Braking
+    v when visited by drawing loop, which is already visiting cells near players, recheck dist
+      v if wake-dist from player, goto Active
+
+x Debug Undo/Redo
+  * undo reverts too much
+  * redo doesn't always work
+  x repro?
+  I think it was the constant clocking because stuff wasn't zeroing out its velocity. Fixed that.
+
+v fix this:
+  [Deprecation] GainNode.gain.value setter smoothing is deprecated and will be removed in M64, around January 2018.
+  Please use setTargetAtTime() instead if smoothing is needed.
+  See https://www.chromestatus.com/features/5287995770929152 for more details.
