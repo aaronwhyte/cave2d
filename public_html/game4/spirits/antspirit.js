@@ -38,8 +38,8 @@ AntSpirit.prototype.constructor = AntSpirit;
 AntSpirit.ACTIVE_TIMEOUT = 3;
 AntSpirit.PASSIVE_TIMEOUT = 1000;
 
-AntSpirit.THRUST = 0.5;
-AntSpirit.TRACTION = 0.4;
+AntSpirit.THRUST = 1.5;
+AntSpirit.TRACTION = 0.2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
 
@@ -260,7 +260,7 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
     // This stressed-out loner doesn't get any extra scan cycles
     maxIterations = 0;
     // freak out a little instead
-    body.addAngVelAtTime(0.5 * (Math.random() - 0.5), now);
+    body.addAngVelAtTime(0.7 * (Math.random() - 0.5), now);
   }
   // How far (to either side) to look for a way out.
   let maxScanRotation = Math.PI * 0.99;
@@ -269,7 +269,7 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   let lastSign = Math.sign(Math.random() - 0.5);
   for (let i = 0; i <= maxIterations; i++) {
     if (i === 0) {
-      distFrac = this.scan(pos, 0, scanDist, body.rad);
+      distFrac = this.scan(pos, 0.5 * (Math.random() - 0.5), scanDist, body.rad);
       if (distFrac < 0) {
         bestFrac = 1;
       } else {
