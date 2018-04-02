@@ -1,9 +1,129 @@
-WEAPONS & ENEMIES
-* enemies can be grabbed and used as weapons
-* But they must be basically dead for it to work?
+Make enemy development easier with some library biz.
+- Wake and Sleep: hooks around timeouts, distance limits, friction, nearly-drawn, low-power, bump-wake, other wake
+  - document Ant biz
+    * 
+  - make it re-usable
+- factor out Ant and Centipede Wall avoidance
+  - search for wall ahead
+  - side-sweep to find clear path, early bail
+- target-intercept behavior, like tractor beam
+  - search for target
+    - random search (or structured sweep?)
+    - compare candidate target with current target if any.
+  - target chosen
+    - scan towards target
+    - move to intercept
+      - choose along vector of where target is (0) and where intercept point is (1)
+        - pull out intercept code for Avoidance
+      - adjust vel to target vel or whatever
+- target-avoidance
+  - same as intercept, but adjust vel away from target vel
+- Also do diff between "hit target hard" and "come to rest at dist D from target", mjolnir-style
+- stun effect (timer mostly)
+- flying/knock-back that sends lower traction to 0 for a time (until it hits something?). Often combined with stun.
+- ice effect - shiny crystal
+- slime effect - smooth lumps
+- damage flashs for non-fatal damage
 
-* Giant enemies cannot be carried or used? Or they can be but they're so darn heavy that it sucks to try and
-  they don't fit in narrow spaces.
+- make a bullet that does the same
+
+Awesome weapons and effects:
+- Mjolnir
+  - auto-hits enemies when swung around, with heavy knockback
+  - When activated, charges up,
+    and when released, flies and seeks one enemy, then returns (gently) to player for grabbing
+  - When dropped, is immovable?
+- Waymaker
+  - Smashes anything, digs a tunnel
+- Gale
+  - medium-length wind force repels all enemies (and objects)
+- Wide-area stun
+
+
+
+
+Most super-basic:
+* gun-acting robot enemy that is also a weapon
+* more of that
+
+
+
+So:
+- basic shooter
+- slimer
+- shotgunner
+- machine-gun
+- grenade
+- snowball
+- rogue
+- flame-thrower
+- rocket
+- laser burst
+- seeker missile
+- sustained laser
+
+
+Proper weapons, mostly melee or thrown
+- mace
+- star(s)
+- glaive
+
+Plants with interesting qualities.
+- bomb
+- mine
+- slime
+- gas
+- frost
+- bramble?
+- decoy
+
+Robots with more powerful weapons, that you can grab and use!
+
+Monsters
+
+Breath weapons
+- Gas and spark monster makes an easy weapon.
+- Slime barfer
+- ice breath
+- flame breath
+- water spitter
+Robots
+* turrets of course
+* walkers
+* sometimes explode!
+- shielders
+- repulsors
+- blasters (primitive)
+- rail-gun
+- missiles
+- repair drones
+Plants (grenades)
+- bomb fruit
+- gas fruit
+- slime fruit
+- bramble fruit?
+Pure tools
+- lance
+- drill
+- glaive
+- mine
+- grenade
+
+Different movement characteristics
+- forward speed
+- sidestep speed
+- backward speed
+- turning speed
+
+
+melee
+
+throw
+gas - hazard only for now, flamable later. Gas immunity
+slime - makes it easy to direct enemies into gas
+fire
+ice
+
 
 - Glaive! Activated, it zooms away, comes back, but is easy-ish to catch again. But it can kill you...
 
