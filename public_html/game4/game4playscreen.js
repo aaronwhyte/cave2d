@@ -378,6 +378,16 @@ Game4PlayScreen.prototype.distOutsideViewCircles = function(v) {
   return min;
 };
 
+Game4PlayScreen.prototype.distFromViewCenter = function(v) {
+  let min = Infinity;
+  for (let i = 0; i < this.viewCircles.length; i++) {
+    let c = this.viewCircles[i];
+    let ds = c.pos.distance(v);
+    if (ds < min) min = ds;
+  }
+  return min;
+};
+
 Game4PlayScreen.prototype.drawScene = function() {
   this.updateViewCircles();
   this.positionCamera();

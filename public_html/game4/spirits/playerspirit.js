@@ -31,7 +31,6 @@ function PlayerSpirit(screen) {
 
   this.vec2d = new Vec2d();
   this.vec2d2 = new Vec2d();
-  this.vec2d3 = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
@@ -440,6 +439,10 @@ PlayerSpirit.prototype.handleSeeking = function() {
               .add(foundBody.getPosAtTime(now, self.vec2d)).scale(1 / (1 + 0.1));
           forceVec.set(scanVel).scaleToLength(-(1 - rf * 0.9) * PlayerSpirit.SEEKSCAN_FORCE);
           foundBody.applyForceAtWorldPosAndTime(forceVec, forcePos, now);
+
+          // // Apply opposite force to player
+          // self.getBody().applyForceAtWorldPosAndTime(forceVec.scale(-1), self.getBodyPos(), now);
+
           self.screen.addTractorSeekSplash(true, scanPos, scanVel, PlayerSpirit.SEEKSCAN_RAD, rf);
           pulling = true;
         }

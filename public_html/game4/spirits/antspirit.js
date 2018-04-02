@@ -194,6 +194,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 
   let body = this.getBody();
   this.distOutsideViewCircles = this.screen.distOutsideViewCircles(this.getBodyPos());
+  // this.distOutsideViewCircles = this.screen.distFromViewCenter(this.getBodyPos()) - 5; // fun debugging
 
   if (this.distOutsideViewCircles < body.rad * AntSpirit.SLEEP_RADS) {
     // normal active biz

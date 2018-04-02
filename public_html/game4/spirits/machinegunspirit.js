@@ -26,7 +26,12 @@ MachineGunSpirit.FIRE_TIMEOUT_ID = 2;
 MachineGunSpirit.FRICTION_TIMEOUT = 1.2;
 MachineGunSpirit.MAX_TIMEOUT = 10;
 
+// MachineGunSpirit.FIRE_DISTANCE = 2;
+// MachineGunSpirit.FIRE_TIMEOUT = 0.25;
+// MachineGunSpirit.FIRE_SPEED = 100;
+MachineGunSpirit.FIRE_DISTANCE = 30;
 MachineGunSpirit.FIRE_TIMEOUT = 5;
+MachineGunSpirit.FIRE_SPEED = 3.5;
 
 MachineGunSpirit.SCHEMA = {
   0: "type",
@@ -167,8 +172,8 @@ MachineGunSpirit.prototype.fire = function() {
   let pos = this.getBodyPos();
   if (!pos) return;
   let angPos = this.getBodyAngPos();
-  let speed = 3.5;
-  let dist = 30 * (1 + Math.random() * 0.2);
+  let speed = MachineGunSpirit.FIRE_SPEED;
+  let dist = MachineGunSpirit.FIRE_DISTANCE * (1 + Math.random() * 0.2);
   let vel = this.vec2d.setXY(0, 1).rot(angPos + 0.05 * (Math.random() - 0.5)).scaleToLength(speed);
   let rad = 0.5;
   let bullet = this.screen.getSpiritById(this.addBullet(pos, angPos, vel, rad, dist / speed));
