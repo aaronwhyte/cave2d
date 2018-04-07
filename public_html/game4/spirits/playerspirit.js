@@ -43,7 +43,7 @@ function PlayerSpirit(screen) {
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.PLAYER_RAD = 1;
+PlayerSpirit.PLAYER_RAD = 0.99;
 
 PlayerSpirit.SPEED = 2;
 PlayerSpirit.TRACTION = 0.1;
