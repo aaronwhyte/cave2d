@@ -30,6 +30,7 @@ function PlayerSpirit(screen) {
   this.lastInputTime = this.now();
 
   this.vec2d = new Vec2d();
+  this.stickVec = new Vec2d();
   this.vec2d2 = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
@@ -184,6 +185,12 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   this.oldKick = newKick;
   this.oldGrab = newGrab;
 
+  // get stick val early, to distinguish between throw and drop
+  stick.getVal(this.stickVec);
+  let stickMag = this.stickVec.magnitude();
+  let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
+  let aimLocked = BeamState.isAimLocked(this.beamState);
+
   // Settle on a new beamState
   if (this.beamState === BeamState.OFF) {
     if (kickDown) {
@@ -198,7 +205,12 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     }
   } else if (this.beamState === BeamState.WIELDING) {
     if (kickDown) {
+      let angleToTarget = this.getAngleToTarget();
       this.breakBeam();
+      if (stickMag > 0.1) {
+        this.destAim.setXY(0, 1).rot(angleToTarget);
+        this.freeKick(0);
+      }
     } else if (grabDown) {
       this.setBeamState(BeamState.ACTIVATING);
     }
@@ -209,11 +221,6 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   }
   this.breakBeamIfTargetMissing();
   this.handleBeamState();
-
-  stick.getVal(this.vec2d);
-  let stickMag = this.vec2d.magnitude();
-  let stickDotAim = stickMag ? this.vec2d.dot(this.aim) / stickMag : 0; // aim is always length 1
-  let aimLocked = BeamState.isAimLocked(this.beamState);
 
   ////////////
   // MOVEMENT
@@ -237,8 +244,8 @@ PlayerSpirit.prototype.handleInput = function(controls) {
 
   // The other half of traction's job is to get you going where you want.
   // vec2d is the stick input right now.
-  this.vec2d.scale(speed * traction * (aimLocked ? 1 : Math.abs(stickDotAim)));
-  this.accel.add(this.vec2d);
+  this.stickVec.scale(speed * traction * (aimLocked ? 1 : Math.abs(stickDotAim)));
+  this.accel.add(this.stickVec);
   playerBody.addVelAtTime(this.accel, this.now());
 
   ////////
@@ -773,7 +780,7 @@ PlayerSpirit.prototype.freeKick = function(spread) {
       let foundBody = this.getScanHitBody();
       if (foundBody) {
         // Apply force at a mix of the contact point and the center of mass.
-        let contactPointMix = 0.2;
+        let contactPointMix = 0.5;
         forcePos.set(scanVel).scale(resultFraction).scale(contactPointMix)
             .add(foundBody.getPosAtTime(this.now(), this.vec2d)).subtract(scanPos)
             .scale(1 / (1 + contactPointMix))

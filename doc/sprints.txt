@@ -1,8 +1,13 @@
+Drop & Throw
+v add kick+move = throw (implement as insta-kick)
+v keep kick+stillness = drop
+
 Make enemy development easier with some library biz.
 - Wake and Sleep: hooks around timeouts, distance limits, friction, nearly-drawn, low-power, bump-wake, other wake
-  - document Ant biz
-    * 
-  - make it re-usable
+  v document Ant spirit efficiency biz
+  - make it re-usable for spirit
+    - plan it!
+    - pull it up
 - factor out Ant and Centipede Wall avoidance
   - search for wall ahead
   - side-sweep to find clear path, early bail
