@@ -145,14 +145,14 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (timeoutVal === BaseSpirit.ACTIVE_TIMEOUT_VAL) {
     if (this.now() === this.nextActiveTime || this.nextActiveTime === -1) {
       this.doActiveTimeout();
-    // } else {
-    //   console.log('dropping active timeout because now != nextActiveTime', this.now(), this.nextActiveTime);
+      // } else {
+      //   console.log('dropping active timeout because now != nextActiveTime', this.now(), this.nextActiveTime);
     }
   } else if (timeoutVal === BaseSpirit.PASSIVE_TIMEOUT_VAL) {
     if (this.now() === this.nextPassiveTime || this.nextPassiveTime === -1) {
       this.doPassiveTimeout();
-    // } else {
-    //   console.log('dropping passive timeout because now != nextPassiveTime', this.now(), this.nextPassiveTime);
+      // } else {
+      //   console.log('dropping passive timeout because now != nextPassiveTime', this.now(), this.nextPassiveTime);
     }
   } else if (timeoutVal === -1) {
     // console.log('legacy timeout - schedule new active and passive timeouts');
@@ -164,7 +164,6 @@ AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
 };
 
 AntSpirit.prototype.doActiveTimeout = function(world) {
-  this.stress = this.stress || 0;
   if (!this.screen.isPlaying()) {
     this.doEditorActiveTimeout();
   } else {
@@ -188,6 +187,7 @@ AntSpirit.prototype.doEditorActiveTimeout = function() {
 };
 
 AntSpirit.prototype.doPlayingActiveTimeout = function() {
+  this.stress = this.stress || 0;
   let now = this.now();
   let time = Math.max(0, Math.min(AntSpirit.ACTIVE_TIMEOUT, now - this.lastControlTime));
   this.lastControlTime = now;
