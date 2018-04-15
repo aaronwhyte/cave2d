@@ -12,7 +12,6 @@ function RogueGunSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
-  this.viewportsFromCamera = 0;
 
   this.lastFireTime = 0;
   this.waitingForFireTimeout = false;
@@ -20,11 +19,7 @@ function RogueGunSpirit(screen) {
 RogueGunSpirit.prototype = new BaseSpirit();
 RogueGunSpirit.prototype.constructor = RogueGunSpirit;
 
-RogueGunSpirit.FRICTION_TIMEOUT_ID = 1;
 RogueGunSpirit.FIRE_TIMEOUT_ID = 2;
-
-RogueGunSpirit.FRICTION_TIMEOUT = 1.2;
-RogueGunSpirit.MAX_TIMEOUT = 10;
 
 RogueGunSpirit.FIRE_TIMEOUT = 2.81;
 
@@ -80,40 +75,13 @@ RogueGunSpirit.factory = function(screen, pos, dir) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, RogueGunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
 };
 
 RogueGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  if (this.changeListener) {
-    this.changeListener.onBeforeSpiritChange(this);
-  }
-  let now = this.now();
+  BaseSpirit.prototype.onTimeout.call(this, world, timeoutVal);
 
-  if (timeoutVal === RogueGunSpirit.FRICTION_TIMEOUT_ID) {
-    this.maybeStop();
-    let body = this.getBody();
-    let friction = this.getFriction();
-    let time = RogueGunSpirit.FRICTION_TIMEOUT;
-
-    // friction
-    body.applyLinearFrictionAtTime(friction * time, now);
-    body.applyAngularFrictionAtTime(friction * time, now);
-
-    let newVel = this.vec2d.set(body.vel);
-
-    // Reset the body's pathDurationMax because it gets changed at compile-time,
-    // but it is serialized at level-save-time, so old saved values might not
-    // match the new compiled-in values. Hm.
-    let timeoutDuration = Math.min(
-        RogueGunSpirit.MAX_TIMEOUT,
-        RogueGunSpirit.FRICTION_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
-    body.pathDurationMax = timeoutDuration * 1.1;
-    body.setVelAtTime(newVel, now);
-    body.invalidatePath();
-    world.addTimeout(now + timeoutDuration, this.id, RogueGunSpirit.FRICTION_TIMEOUT_ID);
-
-  } else if (timeoutVal === RogueGunSpirit.FIRE_TIMEOUT_ID) {
+  if (timeoutVal === RogueGunSpirit.FIRE_TIMEOUT_ID) {
     if (this.sumOfInputs() > 0) {
       this.fire();
       this.screen.world.addTimeout(this.lastFireTime + RogueGunSpirit.FIRE_TIMEOUT, this.id, RogueGunSpirit.FIRE_TIMEOUT_ID);
@@ -201,7 +169,7 @@ RogueGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration) {
   spirit.addTrailSegment();
 
   // bullet self-destruct timeout
-  this.screen.world.addTimeout(now + duration, spiritId, 0);
+  this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
 
   return spiritId;
 };

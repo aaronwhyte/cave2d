@@ -12,7 +12,6 @@ function MachineGunSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
-  this.viewportsFromCamera = 0;
 
   this.lastFireTime = 0;
   this.waitingForFireTimeout = false;
@@ -20,15 +19,8 @@ function MachineGunSpirit(screen) {
 MachineGunSpirit.prototype = new BaseSpirit();
 MachineGunSpirit.prototype.constructor = MachineGunSpirit;
 
-MachineGunSpirit.FRICTION_TIMEOUT_ID = 1;
 MachineGunSpirit.FIRE_TIMEOUT_ID = 2;
 
-MachineGunSpirit.FRICTION_TIMEOUT = 1.2;
-MachineGunSpirit.MAX_TIMEOUT = 10;
-
-// MachineGunSpirit.FIRE_DISTANCE = 2;
-// MachineGunSpirit.FIRE_TIMEOUT = 0.25;
-// MachineGunSpirit.FIRE_SPEED = 100;
 MachineGunSpirit.FIRE_DISTANCE = 30;
 MachineGunSpirit.FIRE_TIMEOUT = 5;
 MachineGunSpirit.FIRE_SPEED = 3.5;
@@ -85,7 +77,6 @@ MachineGunSpirit.factory = function(screen, pos, dir) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, MachineGunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
 };
 
@@ -94,44 +85,9 @@ MachineGunSpirit.prototype.setColorRGB = function(r, g, b) {
 };
 
 MachineGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  if (this.changeListener) {
-    this.changeListener.onBeforeSpiritChange(this);
-  }
-  let now = this.now();
+  BaseSpirit.prototype.onTimeout.call(this, world, timeoutVal);
 
-  if (timeoutVal === MachineGunSpirit.FRICTION_TIMEOUT_ID) {
-    this.maybeStop();
-    let body = this.getBody();
-    let friction = this.getFriction();
-    let time = MachineGunSpirit.FRICTION_TIMEOUT;
-
-    // friction
-    body.applyLinearFrictionAtTime(friction * time, now);
-    body.applyAngularFrictionAtTime(friction * time, now);
-
-    let newVel = this.vec2d.set(body.vel);
-
-    let oldAngVelMag = Math.abs(this.getBodyAngVel());
-    if (oldAngVelMag && oldAngVelMag < MachineGunSpirit.STOPPING_ANGVEL) {
-      this.setBodyAngVel(0);
-    }
-    let oldVelMagSq = newVel.magnitudeSquared();
-    if (oldVelMagSq && oldVelMagSq < MachineGunSpirit.STOPPING_SPEED_SQUARED) {
-      newVel.reset();
-    }
-
-    // Reset the body's pathDurationMax because it gets changed at compile-time,
-    // but it is serialized at level-save-time, so old saved values might not
-    // match the new compiled-in values. Hm.
-    let timeoutDuration = Math.min(
-        MachineGunSpirit.MAX_TIMEOUT,
-        MachineGunSpirit.FRICTION_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
-    body.pathDurationMax = timeoutDuration * 1.1;
-    body.setVelAtTime(newVel, now);
-    body.invalidatePath();
-    world.addTimeout(now + timeoutDuration, this.id, MachineGunSpirit.FRICTION_TIMEOUT_ID);
-
-  } else if (timeoutVal === MachineGunSpirit.FIRE_TIMEOUT_ID) {
+  if (timeoutVal === MachineGunSpirit.FIRE_TIMEOUT_ID) {
     if (this.sumOfInputs() > 0) {
       this.fire();
       this.screen.world.addTimeout(this.lastFireTime + MachineGunSpirit.FIRE_TIMEOUT, this.id, MachineGunSpirit.FIRE_TIMEOUT_ID);
@@ -215,7 +171,7 @@ MachineGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duration)
   spirit.addTrailSegment();
 
   // bullet self-destruct timeout
-  this.screen.world.addTimeout(now + duration, spiritId, 0);
+  this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
 
   return spiritId;
 };

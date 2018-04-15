@@ -12,13 +12,9 @@ function IndicatorSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
-  this.viewportsFromCamera = 0;
 }
 IndicatorSpirit.prototype = new BaseSpirit();
 IndicatorSpirit.prototype.constructor = IndicatorSpirit;
-
-IndicatorSpirit.MEASURE_TIMEOUT = 1.2;
-IndicatorSpirit.MAX_TIMEOUT = 10;
 
 IndicatorSpirit.SCHEMA = {
   0: "type",
@@ -70,41 +66,8 @@ IndicatorSpirit.factory = function(screen, pos, dir) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, -1);
   return spiritId;
 };
-
-IndicatorSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  if (this.changeListener) {
-    this.changeListener.onBeforeSpiritChange(this);
-  }
-  this.maybeStop();
-  let body = this.getBody();
-
-  let friction = this.getFriction();
-
-  let now = this.now();
-  let time = IndicatorSpirit.MEASURE_TIMEOUT;
-
-  // friction
-  body.applyLinearFrictionAtTime(friction * time, now);
-  body.applyAngularFrictionAtTime(friction * time, now);
-
-  let newVel = this.vec2d.set(body.vel);
-
-  // Reset the body's pathDurationMax because it gets changed at compile-time,
-  // but it is serialized at level-save-time, so old saved values might not
-  // match the new compiled-in values. Hm.
-  let timeoutDuration;
-  timeoutDuration = Math.min(
-      IndicatorSpirit.MAX_TIMEOUT,
-      IndicatorSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
-  body.pathDurationMax = timeoutDuration * 1.1;
-  body.setVelAtTime(newVel, now);
-  body.invalidatePath();
-  world.addTimeout(now + timeoutDuration, this.id, -1);
-};
-
 
 IndicatorSpirit.prototype.getColor = function() {
   let lit = this.sumOfInputs() > 0;

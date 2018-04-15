@@ -86,6 +86,7 @@ Body.prototype.reset = function() {
   this.freezePathDurationMax = 0;
 
   this.changeListener = null;
+  this.wakeListener = null;
 
   return this;
 };
@@ -137,8 +138,21 @@ Body.prototype.setChangeListener = function(listener) {
   this.changeListener = listener;
 };
 
+/**
+ * @param listener Something with a maybeWake(), called when this goes from motionlessness to moving.
+ */
+Body.prototype.setWakeListener = function(listener) {
+  this.wakeListener = listener;
+};
+
 Body.prototype.onBeforeChange = function() {
   if (this.changeListener) this.changeListener.onBeforeBodyChange(this);
+};
+
+Body.prototype.maybeWake = function() {
+  if (this.wakeListener && this.isMoving()) {
+    this.wakeListener.maybeWake();
+  }
 };
 
 /**
@@ -147,7 +161,7 @@ Body.prototype.onBeforeChange = function() {
  * @returns {Rect}
  */
 Body.prototype.getBoundingRectAtTime = function(t, opt_out) {
-  var out = opt_out || new Rect();
+  let out = opt_out || new Rect();
   this.getPosAtTime(t, out.pos);
   if (this.shape === Body.Shape.CIRCLE) {
     out.setRadXY(this.rad, this.rad);
@@ -224,6 +238,7 @@ Body.prototype.setVelAtTime = function(vel, t) {
   this.onBeforeChange();
   this.moveToTime(t);
   this.vel.set(vel);
+  this.maybeWake();
 };
 
 /**
@@ -238,6 +253,7 @@ Body.prototype.addVelAtTime = function(vel, t) {
   this.onBeforeChange();
   this.moveToTime(t);
   this.vel.add(vel);
+  this.maybeWake();
 };
 
 /**
@@ -253,6 +269,7 @@ Body.prototype.setVelXYAtTime = function(x, y, t) {
   this.onBeforeChange();
   this.moveToTime(t);
   this.vel.setXY(x, y);
+  this.maybeWake();
 };
 
 /**
@@ -268,6 +285,7 @@ Body.prototype.addVelXYAtTime = function(x, y, t) {
   this.onBeforeChange();
   this.moveToTime(t);
   this.vel.addXY(x, y);
+  this.maybeWake();
 };
 
 /**
@@ -304,6 +322,7 @@ Body.prototype.setAngPosAtTime = function(ap, t) {
   this.onBeforeChange();
   this.angStartTime = t;
   this.angStartPos = ap;
+  this.maybeWake();
 };
 
 /**
@@ -321,6 +340,7 @@ Body.prototype.setAngVelAtTime = function(av, t) {
   } else if (this.angVel < -Body.MAX_ABS_ANGVEL) {
     this.angVel = -Body.MAX_ABS_ANGVEL;
   }
+  this.maybeWake();
 };
 
 Body.prototype.addAngVelAtTime = function(av, t) {
@@ -333,6 +353,7 @@ Body.prototype.applyLinearFrictionAtTime = function(friction, time) {
   this.invalidatePath();
   this.moveToTime(time);
   this.vel.scale(1 - friction);
+  this.maybeWake();
 };
 
 Body.prototype.applyAngularFrictionAtTime = function(friction, time) {
@@ -340,6 +361,7 @@ Body.prototype.applyAngularFrictionAtTime = function(friction, time) {
   this.onBeforeChange();
   this.moveToTime(time);
   this.angVel *= 1 - friction;
+  this.maybeWake();
 };
 
 /**
@@ -361,15 +383,15 @@ Body.prototype.getVelocityAtWorldPoint = function(now, point, out) {
 Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now) {
   // angular acceleration
   if (this.turnable && this.moi && this.moi !== Infinity) {
-    var gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
-    var torque = gripVec.cross(force);
+    let gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
+    let torque = gripVec.cross(force);
     this.setAngVelAtTime(this.angVel + torque / this.moi, now);
     gripVec.free();
   }
 
   // linear acceleration
   if (this.mass && this.mass !== Infinity) {
-    var newVel = Vec2d.alloc()
+    let newVel = Vec2d.alloc()
         .set(force)
         .scale(1 / this.mass)
         .add(this.vel);
@@ -381,14 +403,14 @@ Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now) {
 Body.prototype.applyAccelAtWorldPosAndTime = function(accel, worldPoint, now) {
   // angular acceleration
   if (this.turnable) {
-    var gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
-    var angAccel = gripVec.cross(accel);
+    let gripVec = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
+    let angAccel = gripVec.cross(accel);
     this.setAngVelAtTime(this.angVel + angAccel, now);
     gripVec.free();
   }
 
   // linear acceleration
-  var newVel = Vec2d.alloc()
+  let newVel = Vec2d.alloc()
       .set(accel)
       .add(this.vel);
   this.setVelAtTime(newVel, now);
@@ -401,7 +423,7 @@ Body.prototype.applyAccelAtWorldPosAndTime = function(accel, worldPoint, now) {
  */
 Body.prototype.moveToTime = function(t) {
   if (this.pathStartTime !== t) {
-    var temp = this.getPosAtTime(t, Vec2d.alloc());
+    let temp = this.getPosAtTime(t, Vec2d.alloc());
     this.pathStartPos.set(temp);
     this.pathStartTime = t;
     temp.free();
@@ -424,7 +446,7 @@ Body.prototype.getKineticEnergy = function() {
  * @returns {number}
  */
 Body.prototype.getReciprocalMassAlongTangentAtDistance = function(forceDist) {
-  var retval = 0;
+  let retval = 0;
   if (this.mass && this.mass !== Infinity) {
     retval += 1 / this.mass;
   }
@@ -442,13 +464,13 @@ Body.prototype.getReciprocalMassAlongTangentAtDistance = function(forceDist) {
  * @returns {number}
  */
 Body.prototype.getReciprocalMassAtPlaceAndDirAtTime = function(worldPoint, dirUnitVec, now) {
-  var retval = 0;
+  let retval = 0;
   if (this.mass && this.mass !== Infinity) {
     retval += 1 / this.mass;
   }
   if (this.turnable && this.moi && this.moi !== Infinity) {
-    var radial = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
-    var cross = Math.abs(radial.cross(dirUnitVec));
+    let radial = this.getPosAtTime(now, Vec2d.alloc()).subtract(worldPoint);
+    let cross = Math.abs(radial.cross(dirUnitVec));
     retval += cross / this.moi;
     radial.free();
   }

@@ -20,6 +20,10 @@ function BaseSpirit(screen) {
 
   this.lastThumpSoundTime = 0;
 
+  // These represent the futuremost times for each timeout.
+  this.nextActiveTime = -1;
+  this.nextPassiveTime = -1;
+
   BaseSpirit.prototype.reset.call(this, screen);
 }
 BaseSpirit.prototype = new Spirit();
@@ -30,9 +34,16 @@ BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME = 1;
 BaseSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 BaseSpirit.STOPPING_ANGVEL = 0.01;
 
-BaseSpirit.ACTIVE_TIMEOUT_VAL = 1;
-BaseSpirit.PASSIVE_TIMEOUT_VAL = 2;
+BaseSpirit.ACTIVE_TIMEOUT_VAL = 1000;
+BaseSpirit.PASSIVE_TIMEOUT_VAL = 1001;
 
+BaseSpirit.PASSIVE_TIMEOUT = 1000;
+
+/**
+ * Returned by the default getActiveTimeout(), which van be overridden.
+ * @type {number}
+ */
+BaseSpirit.ACTIVE_TIMEOUT = 1.5;
 
 BaseSpirit.prototype.reset = function(screen) {
   this.screen = screen;
@@ -77,14 +88,14 @@ BaseSpirit.prototype.maybeStop = function() {
     let oldAngVelMag = Math.abs(this.getBodyAngVel());
     if (!oldAngVelMag) {
       angStopped = true;
-    } else if (oldAngVelMag < AntSpirit.STOPPING_ANGVEL) {
+    } else if (oldAngVelMag < BaseSpirit.STOPPING_ANGVEL) {
       this.setBodyAngVel(0);
       angStopped = true;
     }
     let oldVelMagSq = body.vel.magnitudeSquared();
     if (!oldVelMagSq) {
       linStopped = true;
-    } else if (oldVelMagSq < AntSpirit.STOPPING_SPEED_SQUARED) {
+    } else if (oldVelMagSq < BaseSpirit.STOPPING_SPEED_SQUARED) {
       this.setBodyVel(Vec2d.ZERO);
       linStopped = true;
     }
@@ -380,6 +391,10 @@ BaseSpirit.prototype.addEnergy = function(e) {
   return this.setEnergy(this.energy + e);
 };
 
+//////////////////
+// Collision Biz
+//////////////////
+
 BaseSpirit.prototype.damagesTeam = function(otherTeam) {
   if (!this.damage) return false;
   return (this.team === Team.PLAYER && otherTeam === Team.ENEMY) ||
@@ -410,4 +425,125 @@ BaseSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSp
     this.screen.sounds.wallThump(this.getBodyPos(), mag);
   }
   this.lastThumpSoundTime = now;
+
+  this.maybeWake();
+};
+
+/////////////
+// Timeouts
+/////////////
+
+BaseSpirit.prototype.scheduleActiveTimeout = function(time) {
+  if (this.nextActiveTime < time) {
+    if (this.changeListener) {
+      this.changeListener.onBeforeSpiritChange(this);
+    }
+    this.screen.world.addTimeout(time, this.id, BaseSpirit.ACTIVE_TIMEOUT_VAL);
+    this.nextActiveTime = time;
+  }
+};
+
+BaseSpirit.prototype.schedulePassiveTimeout = function(time) {
+  if (this.nextPassiveTime < time) {
+    if (this.changeListener) {
+      this.changeListener.onBeforeSpiritChange(this);
+    }
+    this.screen.world.addTimeout(time, this.id, BaseSpirit.PASSIVE_TIMEOUT_VAL);
+    this.nextPassiveTime = time;
+  }
+};
+
+BaseSpirit.prototype.doPassiveTimeout = function(world) {
+  let timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
+  if (this.nextActiveTime < this.now()) {
+    // There is no scheduled active time,
+    // so the passive timeout loop is in charge of invalidating paths.
+    let body = this.getBody();
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.invalidatePath();
+  }
+  this.schedulePassiveTimeout(this.now() + timeoutDuration);
+};
+
+BaseSpirit.prototype.onTimeout = function(world, timeoutVal) {
+  if (this.changeListener) {
+    this.changeListener.onBeforeSpiritChange(this);
+  }
+  // Allow -1 timeouts because that's the initial value.
+  // But after those fire, no dupes can be created.
+  if (timeoutVal === BaseSpirit.ACTIVE_TIMEOUT_VAL) {
+    if (this.now() === this.nextActiveTime || this.nextActiveTime === -1) {
+      this.doActiveTimeout();
+    // } else {
+    //   console.log('dropping active timeout because now != nextActiveTime', this.now(), this.nextActiveTime);
+    }
+  } else if (timeoutVal === BaseSpirit.PASSIVE_TIMEOUT_VAL) {
+    if (this.now() === this.nextPassiveTime || this.nextPassiveTime === -1) {
+      this.doPassiveTimeout();
+    // } else {
+    //   console.log('dropping passive timeout because now != nextPassiveTime', this.now(), this.nextPassiveTime);
+    }
+  } else if (timeoutVal === -1) {
+    // console.log('legacy timeout - schedule new active and passive timeouts');
+    // This is an old timeout from  before the passive/active biz.
+    // Ignore it, but start the new-style timeouts.
+    this.scheduleActiveTimeout(this.now() + this.getActiveTimeout() * Math.random());
+    this.schedulePassiveTimeout(this.now() + BaseSpirit.PASSIVE_TIMEOUT * Math.random());
+  }
+};
+
+BaseSpirit.prototype.doActiveTimeout = function(world) {
+  if (!this.screen.isPlaying()) {
+    this.doEditorActiveTimeout();
+  } else {
+    this.doPlayingActiveTimeout();
+  }
+};
+
+BaseSpirit.prototype.doEditorActiveTimeout = function() {
+  let now = this.now();
+  this.lastControlTime = this.lastControlTime || (this.now() - this.getActiveTimeout());
+  let time = Math.max(0, Math.min(this.getActiveTimeout(), now - this.lastControlTime));
+  let body = this.getBody();
+  let friction = this.getFriction();
+  body.applyLinearFrictionAtTime(friction * time, now);
+  body.applyAngularFrictionAtTime(friction * time, now);
+  let stopped = this.maybeStop();
+  if (stopped) {
+    // Assume the next timeout will be the passive one.
+    let timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT;
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.invalidatePath();
+    // Do not schedule another active timeout.
+  } else {
+    // keep braking
+    let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.invalidatePath();
+    this.scheduleActiveTimeout(now + timeoutDuration);
+  }
+};
+
+/**
+ * override me to make something neat happen
+ */
+BaseSpirit.prototype.doPlayingActiveTimeout = function() {
+  this.doEditorActiveTimeout();
+};
+
+/**
+ * override me to change the active timeout
+ * @returns {number}
+ */
+BaseSpirit.prototype.getActiveTimeout = function() {
+  return BaseSpirit.ACTIVE_TIMEOUT;
+};
+
+BaseSpirit.prototype.maybeWake = function() {
+  this.scheduleActiveTimeout(this.now());
+};
+
+BaseSpirit.prototype.startTimeouts = function() {
+  this.scheduleActiveTimeout(this.now());
+  this.schedulePassiveTimeout(this.now() + BaseSpirit.PASSIVE_TIMEOUT * Math.random());
 };

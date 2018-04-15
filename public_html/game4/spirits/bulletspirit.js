@@ -23,6 +23,7 @@ function BulletSpirit(screen) {
 BulletSpirit.prototype = new BaseSpirit();
 BulletSpirit.prototype.constructor = BulletSpirit;
 
+BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL = 1;
 
 BulletSpirit.prototype.reset = function(screen) {
   BaseSpirit.prototype.reset.call(this, screen);
@@ -133,13 +134,22 @@ BulletSpirit.prototype.destroy = function() {
   }
 };
 
+/**
+ * @override
+ */
+BulletSpirit.prototype.startTimeouts = function() {
+  // ignore
+};
+
 BulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  let body = this.getBody();
-  if (body) {
-    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 1.5, 5,
-        this.color.getR(), this.color.getG(), this.color.getB());
+  if (timeoutVal === BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL) {
+    let body = this.getBody();
+    if (body) {
+      this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 1.5, 5,
+          this.color.getR(), this.color.getG(), this.color.getB());
+    }
+    this.destroyBody();
   }
-  this.destroyBody();
 };
 
 BulletSpirit.prototype.destroyBody = function() {

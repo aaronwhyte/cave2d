@@ -58,6 +58,8 @@ CentipedeSpirit.SCHEMA = {
   9: "joinableAfterTime"
 };
 
+CentipedeSpirit.LEGACY_TIMEOUT_VAL = 1;
+
 CentipedeSpirit.getJsoner = function() {
   if (!CentipedeSpirit.jsoner) {
     CentipedeSpirit.jsoner = new Jsoner(CentipedeSpirit.SCHEMA);
@@ -94,7 +96,7 @@ CentipedeSpirit.factory = function(screen, pos, dir) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, -1);
+  world.addTimeout(screen.now(), spiritId, CentipedeSpirit.LEGACY_TIMEOUT_VAL);
   return spiritId;
 };
 
@@ -179,7 +181,16 @@ CentipedeSpirit.prototype.findMipointSpirit = function() {
   return halfNode;
 };
 
+/**
+ * @override
+ */
+CentipedeSpirit.prototype.startTimeouts = function() {
+  // ignore
+};
+
 CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
+  if (timeoutVal !== CentipedeSpirit.LEGACY_TIMEOUT_VAL) return;
+
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
@@ -193,9 +204,6 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
   let now = this.now();
   let time = Math.max(0, Math.min(CentipedeSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
   this.lastControlTime = now;
-
-  // friction
-  body.applyLinearFrictionAtTime(friction * time, now);
 
   let newVel = this.vec2d.set(body.vel);
 
@@ -228,7 +236,7 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
   body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, now);
   body.invalidatePath();
-  world.addTimeout(now + timeoutDuration, this.id, -1);
+  world.addTimeout(now + timeoutDuration, this.id, CentipedeSpirit.LEGACY_TIMEOUT_VAL);
 };
 
 CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
@@ -422,16 +430,3 @@ CentipedeSpirit.prototype.die = function() {
   this.explode();
 };
 
-/**
- * Called after bouncing and damage exchange are done.
- * @param {Vec2d} collisionVec
- * @param {Number} mag the magnitude of the collision, kinda?
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
- */
-CentipedeSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  // Override me!
-  let body = this.getBody();
-  if (!body) return;
-  //this.screen.sounds.wallThump(this.getBodyPos(), mag / body.mass);
-};

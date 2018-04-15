@@ -22,21 +22,15 @@ function AntSpirit(screen) {
   // Between 0 and 1.
   this.stress = 0;
 
-  this.lastControlTime = this.now();
   this.distOutsideViewCircles = 0;
 
   this.toughness = 1;
   this.damage = 1;
-
-  // These represent the futuremost times for each timeout.
-  this.nextActiveTime = -1;
-  this.nextPassiveTime = -1;
 }
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.ACTIVE_TIMEOUT = 3;
-AntSpirit.PASSIVE_TIMEOUT = 1000;
 
 AntSpirit.THRUST = 1.5;
 AntSpirit.TRACTION = 0.2;
@@ -95,29 +89,15 @@ AntSpirit.factory = function(screen, pos, dir) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  spirit.scheduleActiveTimeout(spirit.now());
-  spirit.schedulePassiveTimeout(spirit.now() + AntSpirit.PASSIVE_TIMEOUT * Math.random());
   return spiritId;
 };
 
-AntSpirit.prototype.scheduleActiveTimeout = function(time) {
-  if (this.nextActiveTime < time) {
-    if (this.changeListener) {
-      this.changeListener.onBeforeSpiritChange(this);
-    }
-    this.screen.world.addTimeout(time, this.id, BaseSpirit.ACTIVE_TIMEOUT_VAL);
-    this.nextActiveTime = time;
-  }
-};
-
-AntSpirit.prototype.schedulePassiveTimeout = function(time) {
-  if (this.nextPassiveTime < time) {
-    if (this.changeListener) {
-      this.changeListener.onBeforeSpiritChange(this);
-    }
-    this.screen.world.addTimeout(time, this.id, BaseSpirit.PASSIVE_TIMEOUT_VAL);
-    this.nextPassiveTime = time;
-  }
+/**
+ * @override
+ * @returns {number}
+ */
+AntSpirit.prototype.getActiveTimeout = function() {
+  return AntSpirit.ACTIVE_TIMEOUT;
 };
 
 AntSpirit.prototype.getModelId = function() {
@@ -136,60 +116,13 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
       this.scanResp);
 };
 
-AntSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  if (this.changeListener) {
-    this.changeListener.onBeforeSpiritChange(this);
-  }
-  // Allow -1 timeouts because that's the initial value.
-  // But after those fire, no dupes can be created.
-  if (timeoutVal === BaseSpirit.ACTIVE_TIMEOUT_VAL) {
-    if (this.now() === this.nextActiveTime || this.nextActiveTime === -1) {
-      this.doActiveTimeout();
-      // } else {
-      //   console.log('dropping active timeout because now != nextActiveTime', this.now(), this.nextActiveTime);
-    }
-  } else if (timeoutVal === BaseSpirit.PASSIVE_TIMEOUT_VAL) {
-    if (this.now() === this.nextPassiveTime || this.nextPassiveTime === -1) {
-      this.doPassiveTimeout();
-      // } else {
-      //   console.log('dropping passive timeout because now != nextPassiveTime', this.now(), this.nextPassiveTime);
-    }
-  } else if (timeoutVal === -1) {
-    // console.log('legacy timeout - schedule new active and passive timeouts');
-    // This is an old timeout from  before the passive/active biz.
-    // Ignore it, but start the new-style timeouts.
-    this.scheduleActiveTimeout(this.now() + AntSpirit.ACTIVE_TIMEOUT * Math.random());
-    this.schedulePassiveTimeout(this.now() + AntSpirit.PASSIVE_TIMEOUT * Math.random());
-  }
-};
-
-AntSpirit.prototype.doActiveTimeout = function(world) {
-  if (!this.screen.isPlaying()) {
-    this.doEditorActiveTimeout();
-  } else {
-    this.doPlayingActiveTimeout();
-  }
-};
-
-AntSpirit.prototype.doEditorActiveTimeout = function() {
-  let now = this.now();
-  let time = Math.max(0, Math.min(AntSpirit.ACTIVE_TIMEOUT, now - this.lastControlTime));
-  let body = this.getBody();
-  let friction = this.getFriction();
-  body.applyLinearFrictionAtTime(friction * time, now);
-  body.applyAngularFrictionAtTime(friction * time, now);
-  this.maybeStop();
-
-  let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
-  body.pathDurationMax = timeoutDuration * 1.01;
-  body.invalidatePath();
-  this.scheduleActiveTimeout(now + timeoutDuration);
-};
-
+/**
+ * @override
+ */
 AntSpirit.prototype.doPlayingActiveTimeout = function() {
   this.stress = this.stress || 0;
   let now = this.now();
-  let time = Math.max(0, Math.min(AntSpirit.ACTIVE_TIMEOUT, now - this.lastControlTime));
+  let time = Math.max(0, Math.min(this.getActiveTimeout(), now - this.lastControlTime));
   this.lastControlTime = now;
 
   let body = this.getBody();
@@ -204,7 +137,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 
     this.handleLoner(newVel, time);
 
-    let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
+    let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
     body.pathDurationMax = timeoutDuration * 1.01;
     body.setVelAtTime(newVel, now);
     body.invalidatePath();
@@ -218,30 +151,18 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
     let stopped = this.maybeStop();
     if (stopped) {
       // Assume the next timeout will be the passive one.
-      let timeoutDuration = AntSpirit.PASSIVE_TIMEOUT;
+      let timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT;
       body.pathDurationMax = timeoutDuration * 1.01;
       body.invalidatePath();
       // Do not schedule another active timeout.
     } else {
       // keep braking
-      let timeoutDuration = AntSpirit.ACTIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
+      let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
       body.pathDurationMax = timeoutDuration * 1.01;
       body.invalidatePath();
       this.scheduleActiveTimeout(now + timeoutDuration);
     }
   }
-};
-
-AntSpirit.prototype.doPassiveTimeout = function(world) {
-  let timeoutDuration = AntSpirit.PASSIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
-  if (this.nextActiveTime < this.now()) {
-    // There is no scheduled active time,
-    // so the passive timeout loop is in charge of invalidating paths.
-    let body = this.getBody();
-    body.pathDurationMax = timeoutDuration * 1.01;
-    body.invalidatePath();
-  }
-  this.schedulePassiveTimeout(this.now() + timeoutDuration);
 };
 
 AntSpirit.prototype.handleLoner = function(newVel, time) {
@@ -342,24 +263,6 @@ AntSpirit.prototype.explode = function() {
 
 AntSpirit.prototype.die = function() {
   this.explode();
-};
-
-/**
- * Called after bouncing and damage exchange are done.
- * @param {Vec2d} collisionVec
- * @param {Number} mag the magnitude of the collision, kinda?
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
- */
-AntSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  this.maybeWake();
-  //this.screen.sounds.wallThump(this.getBodyPos(), mag / body.mass);
-};
-
-AntSpirit.prototype.maybeWake = function() {
-  if (this.nextActiveTime < this.now()) {
-    this.scheduleActiveTimeout(this.now());
-  }
 };
 
 AntSpirit.prototype.onDraw = function(world, renderer) {

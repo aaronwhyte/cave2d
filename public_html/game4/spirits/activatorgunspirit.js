@@ -12,7 +12,6 @@ function ActivatorGunSpirit(screen) {
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
-  this.viewportsFromCamera = 0;
 
   this.lastFireTime = 0;
   this.waitingForFireTimeout = false;
@@ -20,11 +19,7 @@ function ActivatorGunSpirit(screen) {
 ActivatorGunSpirit.prototype = new BaseSpirit();
 ActivatorGunSpirit.prototype.constructor = ActivatorGunSpirit;
 
-ActivatorGunSpirit.FRICTION_TIMEOUT_ID = 1;
 ActivatorGunSpirit.FIRE_TIMEOUT_ID = 2;
-
-ActivatorGunSpirit.FRICTION_TIMEOUT = 1.2;
-ActivatorGunSpirit.MAX_TIMEOUT = 10;
 
 ActivatorGunSpirit.FIRE_TIMEOUT = 2.2;
 
@@ -80,40 +75,18 @@ ActivatorGunSpirit.factory = function(screen, pos, dir) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, ActivatorGunSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
 };
 
+/**
+ * @override
+ * @param world
+ * @param timeoutVal
+ */
 ActivatorGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  if (this.changeListener) {
-    this.changeListener.onBeforeSpiritChange(this);
-  }
-  let now = this.now();
+  BaseSpirit.prototype.onTimeout.call(this, world, timeoutVal);
 
-  if (timeoutVal === ActivatorGunSpirit.FRICTION_TIMEOUT_ID) {
-    this.maybeStop();
-    let body = this.getBody();
-    let friction = this.getFriction();
-    let time = ActivatorGunSpirit.FRICTION_TIMEOUT;
-
-    // friction
-    body.applyLinearFrictionAtTime(friction * time, now);
-    body.applyAngularFrictionAtTime(friction * time, now);
-
-    let newVel = this.vec2d.set(body.vel);
-
-    // Reset the body's pathDurationMax because it gets changed at compile-time,
-    // but it is serialized at level-save-time, so old saved values might not
-    // match the new compiled-in values. Hm.
-    let timeoutDuration = Math.min(
-        ActivatorGunSpirit.MAX_TIMEOUT,
-        ActivatorGunSpirit.FRICTION_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
-    body.pathDurationMax = timeoutDuration * 1.1;
-    body.setVelAtTime(newVel, now);
-    body.invalidatePath();
-    world.addTimeout(now + timeoutDuration, this.id, ActivatorGunSpirit.FRICTION_TIMEOUT_ID);
-
-  } else if (timeoutVal === ActivatorGunSpirit.FIRE_TIMEOUT_ID) {
+  if (timeoutVal === ActivatorGunSpirit.FIRE_TIMEOUT_ID) {
     if (this.sumOfInputs() > 0) {
       this.fire();
       this.screen.world.addTimeout(this.lastFireTime + ActivatorGunSpirit.FIRE_TIMEOUT, this.id, ActivatorGunSpirit.FIRE_TIMEOUT_ID);
@@ -189,7 +162,7 @@ ActivatorGunSpirit.prototype.addBullet = function(pos, angPos, vel, rad, duratio
   spirit.addTrailSegment();
 
   // bullet self-destruct timeout
-  this.screen.world.addTimeout(now + duration, spiritId, 0);
+  this.screen.world.addTimeout(now + duration, spiritId, ActivatorBulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
 
   return spiritId;
 };

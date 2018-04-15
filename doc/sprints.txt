@@ -3,32 +3,60 @@ v add kick+move = throw (implement as insta-kick)
 v keep kick+stillness = drop
 
 Make enemy development easier with some library biz.
+And make inanimate objects a lot cheaper too!
 - Wake and Sleep: hooks around timeouts, distance limits, friction, nearly-drawn, low-power, bump-wake, other wake
   v document Ant spirit efficiency biz
-  - make it re-usable for spirit
-    - plan it!
-    - pull it up
+  v make it re-usable for spirit
+    v plan it!
+    v pull it up
+  - use in spirits
+    v ants
+    v all inanimates
+      v performance savings confirmed
+    v fix editor to auto-wake anything that's dragged
+    v fix anybody missing passive timeout loop
+    v make body wake spirit when vel changes to non-zero
+      v like change listener, add optional link to wakable spirit!!
+        v undo maybeWake hacks
+          v body itself
+          v player tractor
+          v editor
+    - centipede is the trickiest! If any part is active then all parts should be active.
 - factor out Ant and Centipede Wall avoidance
   - search for wall ahead
   - side-sweep to find clear path, early bail
+  - encapsulate behavior class?
 - target-intercept behavior, like tractor beam
   - search for target
     - random search (or structured sweep?)
     - compare candidate target with current target if any.
   - target chosen
-    - scan towards target
+    - scan to target
     - move to intercept
       - choose along vector of where target is (0) and where intercept point is (1)
         - pull out intercept code for Avoidance
       - adjust vel to target vel or whatever
 - target-avoidance
-  - same as intercept, but adjust vel away from target vel
+  - same as intercept, but adjust vel away from target vel?
 - Also do diff between "hit target hard" and "come to rest at dist D from target", mjolnir-style
+
+Impl concepts:
+- desired distance
+  - negative infinity: ram target hard
+  - 0: rest just barelytouching target
+  - small num: follow target w/o touching
+  - infinity: get away from the target!
+- lead/follow
+  - try to get to where target will be in f(positions and vels) time
+    - zero:  dumbly go to where target is now.
+    - positive but proportional to... dist?: lead the target
+    - if negative, try to get to where target would have come from - go behind target
+
 - stun effect (timer mostly)
 - flying/knock-back that sends lower traction to 0 for a time (until it hits something?). Often combined with stun.
 - ice effect - shiny crystal
 - slime effect - smooth lumps
-- damage flashs for non-fatal damage
+- damage-flashes for non-fatal damage
 
 - make a bullet that does the same
 
@@ -51,7 +79,14 @@ Most super-basic:
 * gun-acting robot enemy that is also a weapon
 * more of that
 
-
+Robot where you can Rotate through modes via activation?
+- deactivate and float
+- follow me passively
+- active, maintain position & direction
+- active, maintain position but do rotational scan
+- come with me and defend me - wingman
+- active, patrol local area
+- active, scout ahead, then return to me
 
 So:
 - basic shooter

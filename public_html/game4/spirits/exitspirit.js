@@ -45,7 +45,6 @@ ExitSpirit.factory = function(screen, pos) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(world.now, spiritId, -1);
   return spiritId;
 };
 
@@ -54,20 +53,10 @@ ExitSpirit.prototype.getModelId = function() {
 };
 
 ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  if (this.changeListener) {
-    this.changeListener.onBeforeSpiritChange(this);
-  }
-  this.maybeStop();
-  let body = this.getBody();
-  body.pathDurationMax = Infinity;
-  // If the body is being moved (because it's in the editor), slow it to a stop.
-  if (!body.vel.isZero()) {
-    let friction = 0.5;
-    let newVel = this.vec2d.set(body.vel).scale(1 - friction);
-    body.setVelAtTime(newVel, world.now);
-  }
+  BaseSpirit.prototype.onTimeout.call(this, world, timeoutVal);
 
   if (this.screen.isPlaying()) {
+    let body = this.getBody();
     let closeCount = 0;
     let playerCount = 0;
     let rad = body.rad;
@@ -96,9 +85,6 @@ ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
     //   this.screen.addPortalMoteSplash(bodyPos, body.rad, 0);
     // }
   }
-
-  world.addTimeout(world.now + ExitSpirit.TIMEOUT, this.id, -1);
-
 };
 
 ExitSpirit.getJsoner = function() {

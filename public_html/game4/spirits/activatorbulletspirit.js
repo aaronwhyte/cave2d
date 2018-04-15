@@ -26,6 +26,8 @@ ActivatorBulletSpirit.prototype.constructor = ActivatorBulletSpirit;
 
 ActivatorBulletSpirit.INPUT_DURATION = 1.42; // just under the gun's timeout time
 
+ActivatorBulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL = 1;
+
 ActivatorBulletSpirit.prototype.reset = function(screen) {
   BaseSpirit.prototype.reset.call(this, screen);
 
@@ -135,8 +137,17 @@ ActivatorBulletSpirit.prototype.destroy = function() {
   }
 };
 
+/**
+ * @override
+ */
+ActivatorBulletSpirit.prototype.startTimeouts = function() {
+  // ignore
+};
+
 ActivatorBulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  this.destroyBody();
+  if (timeoutVal === ActivatorBulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL) {
+    this.destroyBody();
+  }
 };
 
 ActivatorBulletSpirit.prototype.destroyBody = function() {

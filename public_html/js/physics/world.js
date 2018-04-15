@@ -181,6 +181,13 @@ World.prototype.loadSpirit = function(spirit) {
     spirit.setChangeListener(this);
     this.maybeRecordSpiritBefore(spirit.id, null);
   }
+  if (spirit.maybeWake) {
+    let body = this.bodies[spirit.bodyId];
+    if (body) {
+      body.setWakeListener(spirit);
+    }
+  }
+  if (spirit.startTimeouts) spirit.startTimeouts();
 };
 
 /**
@@ -226,6 +233,10 @@ World.prototype.loadBody = function(body) {
   if (this.changeRecordingEnabled) {
     body.setChangeListener(this);
     this.maybeRecordBodyBefore(body.id, null);
+  }
+  let spirit = this.spirits[body.spiritId];
+  if (spirit && spirit.maybeWake) {
+    body.setWakeListener(spirit);
   }
 };
 
