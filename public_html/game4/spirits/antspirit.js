@@ -272,3 +272,21 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
   }
 };
 
+/**
+ * Called after bouncing and damage exchange are done.
+ * @param {Vec2d} collisionVec
+ * @param {Number} mag the magnitude of the collision, kinda?
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
+ */
+AntSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+  // let body = this.getBody();
+  // if (!body) return;
+  // let now = this.now();
+  // if (this.lastThumpSoundTime + BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME < this.now()) {
+  //   this.screen.sounds.wallThump(this.getBodyPos(), mag);
+  // }
+  // this.lastThumpSoundTime = now;
+
+  this.maybeWake();
+};
