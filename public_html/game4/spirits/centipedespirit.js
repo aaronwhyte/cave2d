@@ -58,8 +58,6 @@ CentipedeSpirit.SCHEMA = {
   9: "joinableAfterTime"
 };
 
-CentipedeSpirit.LEGACY_TIMEOUT_VAL = 1;
-
 CentipedeSpirit.getJsoner = function() {
   if (!CentipedeSpirit.jsoner) {
     CentipedeSpirit.jsoner = new Jsoner(CentipedeSpirit.SCHEMA);
@@ -96,7 +94,6 @@ CentipedeSpirit.factory = function(screen, pos, dir) {
 
   let spiritId = world.addSpirit(spirit);
   b.spiritId = spiritId;
-  world.addTimeout(screen.now(), spiritId, CentipedeSpirit.LEGACY_TIMEOUT_VAL);
   return spiritId;
 };
 
@@ -181,16 +178,7 @@ CentipedeSpirit.prototype.findMipointSpirit = function() {
   return halfNode;
 };
 
-/**
- * @override
- */
-CentipedeSpirit.prototype.startTimeouts = function() {
-  // ignore
-};
-
-CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
-  if (timeoutVal !== CentipedeSpirit.LEGACY_TIMEOUT_VAL) return;
-
+CentipedeSpirit.prototype.doPlayingActiveTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
@@ -209,22 +197,18 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
   let headward = this.getHeadwardSpirit();
   let tailward = this.getTailwardSpirit();
-  if (this.screen.isPlaying()) {
-    this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-    if (!CentipedeSpirit.OPTIMIZE || this.viewportsFromCamera < CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY) {
-      if (headward) {
-        // this is following somebody
-        this.handleFollower(newVel, time, headward);
-      } else if (tailward) {
-        // this is the leader
-        this.handleLeader(newVel, time);
-      } else {
-        // no head or tail. Consider joining a chain
-        this.handleLoner(newVel, time);
-      }
+  this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
+  if (!CentipedeSpirit.OPTIMIZE || this.viewportsFromCamera < CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY) {
+    if (headward) {
+      // this is following somebody
+      this.handleFollower(newVel, time, headward);
+    } else if (tailward) {
+      // this is the leader
+      this.handleLeader(newVel, time);
+    } else {
+      // no head or tail. Consider joining a chain
+      this.handleLoner(newVel, time);
     }
-  } else {
-    body.applyAngularFrictionAtTime(friction * time, now);
   }
   // Reset the body's pathDurationMax because it gets changed at compile-time,
   // but it is serialized at level-save-time, so old saved values might not
@@ -236,7 +220,7 @@ CentipedeSpirit.prototype.onTimeout = function(world, timeoutVal) {
   body.pathDurationMax = timeoutDuration * 1.1;
   body.setVelAtTime(newVel, now);
   body.invalidatePath();
-  world.addTimeout(now + timeoutDuration, this.id, CentipedeSpirit.LEGACY_TIMEOUT_VAL);
+  this.scheduleActiveTimeout(now + timeoutDuration);
 };
 
 CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
