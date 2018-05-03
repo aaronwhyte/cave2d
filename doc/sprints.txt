@@ -4,12 +4,12 @@ v keep kick+stillness = drop
 
 Make enemy development easier with some library biz.
 And make inanimate objects a lot cheaper too!
-- Wake and Sleep: hooks around timeouts, distance limits, friction, nearly-drawn, low-power, bump-wake, other wake
+v Wake and Sleep: hooks around timeouts, distance limits, friction, nearly-drawn, low-power, bump-wake, other wake
   v document Ant spirit efficiency biz
   v make it re-usable for spirit
     v plan it!
     v pull it up
-  - use in spirits
+  v use in spirits
     v ants
     v all inanimates
       v performance savings confirmed
@@ -21,7 +21,20 @@ And make inanimate objects a lot cheaper too!
           v body itself
           v player tractor
           v editor
-    - centipede is the trickiest! If any part is active then all parts should be active.
+    v centipede is the trickiest! If any part is active then all parts should be active.
+      v just make it not broken, using active loop
+        v play
+        v edit
+      v going to sleep
+        v awake head checks whole body.
+          v each body part must have canSleep(), including head.
+        v If all may rest then head tells them to all become inactive.
+      v waking up
+        v any inactive part that gets drawn or close to it signals all other parts to wake.
+        v they all become active immediately so no more signals happen until next sleep
+      v joining
+        v an active centipede joining an inactive one causes it to become active
+
 - factor out Ant and Centipede Wall avoidance
   - search for wall ahead
   - side-sweep to find clear path, early bail

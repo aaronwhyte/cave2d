@@ -372,7 +372,8 @@ Game4PlayScreen.prototype.distOutsideViewCircles = function(v) {
   let min = Infinity;
   for (let i = 0; i < this.viewCircles.length; i++) {
     let c = this.viewCircles[i];
-    let ds = Math.max(0, c.pos.distance(v) - c.rad);
+    // let ds = Math.max(0, c.pos.distance(v) - c.rad);
+    let ds = c.pos.distance(v) - c.rad;
     if (ds < min) min = ds;
   }
   return min;

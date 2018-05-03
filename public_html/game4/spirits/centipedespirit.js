@@ -9,6 +9,7 @@ function CentipedeSpirit(screen) {
   this.team = Team.ENEMY;
 
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
+  this.sleepyColor = new Vec4().setRGBA(0.5, 0.5, 0.5, 1);
 
   this.vecToPlayer = new Vec2d();
   this.vec2d = new Vec2d();
@@ -26,7 +27,11 @@ function CentipedeSpirit(screen) {
   this.joinableAfterTime = 0;
 
   this.lastControlTime = this.now();
-  this.viewportsFromCamera = 0;
+  this.distOutsideViewCircles = Infinity;
+
+  // This is to help spirits not have to guess whether the whole chain is sleepy or not.
+  // Every spirit in a chain has the same value.
+  this.sleepy = false;
 
   this.headwardId = 0;
   this.tailwardId = 0;
@@ -42,8 +47,14 @@ CentipedeSpirit.REJOIN_TIMEOUT = 50;
 CentipedeSpirit.THRUST = 0.8;
 CentipedeSpirit.TRACTION = 0.5;
 CentipedeSpirit.MAX_TIMEOUT = 10;
-CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY = 3;
 CentipedeSpirit.OPTIMIZE = true;
+
+// This many rads away from a player view bubble, an active spirit can go to sleep.
+CentipedeSpirit.SLEEP_RADS = 10;
+
+// This many rads away from a player view bubble, a sleeping spirit can wake up.
+CentipedeSpirit.WAKE_RADS = 5;
+
 
 CentipedeSpirit.SCHEMA = {
   0: "type",
@@ -183,44 +194,72 @@ CentipedeSpirit.prototype.doPlayingActiveTimeout = function(world, timeoutVal) {
     this.changeListener.onBeforeSpiritChange(this);
   }
   this.maybeStop();
-  let body = this.getBody();
-  let pos = this.getBodyPos();
-  this.stress = this.stress || 0;
 
-  let friction = this.getFriction();
+  let pos = this.getBodyPos();
+  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
+
+  this.stress = this.stress || 0;
 
   let now = this.now();
   let time = Math.max(0, Math.min(CentipedeSpirit.MEASURE_TIMEOUT, now - this.lastControlTime));
   this.lastControlTime = now;
 
+  let body = this.getBody();
   let newVel = this.vec2d.set(body.vel);
 
   let headward = this.getHeadwardSpirit();
+  let isFront = !headward;
   let tailward = this.getTailwardSpirit();
-  this.viewportsFromCamera = this.screen.approxViewportsFromCamera(pos);
-  if (!CentipedeSpirit.OPTIMIZE || this.viewportsFromCamera < CentipedeSpirit.LOW_POWER_VIEWPORTS_AWAY) {
-    if (headward) {
-      // this is following somebody
-      this.handleFollower(newVel, time, headward);
-    } else if (tailward) {
-      // this is the leader
-      this.handleLeader(newVel, time);
-    } else {
-      // no head or tail. Consider joining a chain
-      this.handleLoner(newVel, time);
+  if (!isFront) {
+    // this is following somebody
+    this.handleFollower(newVel, time, headward);
+  } else if (tailward) {
+    // this is the leader
+    this.handleFront(newVel, time, true);
+  } else {
+    // no head or tail. Consider joining a chain
+    this.handleFront(newVel, time, false);
+  }
+
+  // Front spirits can decide whether the whole chain can go to sleep or not.
+  if (isFront) {
+    let sleepy = isFront && this.canSleep();
+    let node = this;
+    while (sleepy && (node = node.getTailwardSpirit())) {
+      sleepy = node.canSleep();
+    }
+    if (sleepy !== this.sleepy) {
+      //console.log('active timeout setting sleepy to ' + sleepy);
+      this.setChainSleepy(sleepy);
     }
   }
-  // Reset the body's pathDurationMax because it gets changed at compile-time,
-  // but it is serialized at level-save-time, so old saved values might not
-  // match the new compiled-in values. Hm.
+
   let timeoutDuration;
-  timeoutDuration = Math.min(
-      CentipedeSpirit.MAX_TIMEOUT,
-      CentipedeSpirit.MEASURE_TIMEOUT * Math.max(1, this.viewportsFromCamera) * (0.2 * Math.random() + 0.9));
-  body.pathDurationMax = timeoutDuration * 1.1;
-  body.setVelAtTime(newVel, now);
+  if (this.sleepy) {
+    // brakes only
+    let friction = this.getFriction();
+    body.applyLinearFrictionAtTime(friction * time, now);
+    body.applyAngularFrictionAtTime(friction * time, now);
+    let stopped = this.maybeStop();
+    if (stopped) {
+      // Assume the next timeout will be the passive one.
+      timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT;
+      // Do not schedule another active timeout.
+    } else {
+      // keep braking
+      timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
+      this.scheduleActiveTimeout(now + timeoutDuration);
+    }
+  } else {
+    // Reset the body's pathDurationMax because it gets changed at compile-time,
+    // but it is serialized at level-save-time, so old saved values might not
+    // match the new compiled-in values. Hm.
+    timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
+    body.setVelAtTime(newVel, now);
+    this.scheduleActiveTimeout(now + timeoutDuration);
+  }
+  body.pathDurationMax = timeoutDuration * 1.01;
   body.invalidatePath();
-  this.scheduleActiveTimeout(now + timeoutDuration);
 };
 
 CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
@@ -240,7 +279,7 @@ CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
     this.getHeadwardSpirit().breakOffTail();
   } else {
     // linear accel
-    let p0 = dist - thisBody.rad * 1.05 - thatBody.rad;
+    let p0 = dist - thisBody.rad * 1.1 - thatBody.rad;
     let deltaPos = Vec2d.alloc().set(thatPos).subtract(thisPos);
     let deltaVel = Vec2d.alloc().set(thatBody.vel).subtract(thisBody.vel);
     let v0 = deltaVel.dot(deltaPos.scaleToLength(1));
@@ -260,17 +299,9 @@ CentipedeSpirit.prototype.handleFollower = function(newVel, time, headward) {
   thatPos.free();
 };
 
-CentipedeSpirit.prototype.handleLeader = function(newVel, time) {
-  this.handleFront(newVel, time, true);
-};
-
-CentipedeSpirit.prototype.handleLoner = function(newVel, time) {
-  this.handleFront(newVel, time, false);
-};
-
 CentipedeSpirit.prototype.getHeadId = function() {
   let node = this;
-  let nextNode = null;
+  let nextNode;
   while (nextNode = node.getHeadwardSpirit()) {
     node = nextNode;
   }
@@ -396,6 +427,9 @@ CentipedeSpirit.prototype.maybeJoin = function() {
       // Found a relaxed segment with out a tail. Join up!
       this.headwardId = otherSpirit.id;
       otherSpirit.tailwardId = this.id;
+
+      // Make sure the whole chain is awake
+      this.setChainSleepy(false);
     }
   }
 };
@@ -432,4 +466,41 @@ CentipedeSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, ot
   // this.lastThumpSoundTime = now;
 
   this.maybeWake();
+};
+
+CentipedeSpirit.prototype.maybeWake = function() {
+  this.scheduleActiveTimeout(this.now());
+  if (this.sleepy && !this.canSleep()) {
+    this.setChainSleepy(false);
+  }
+};
+
+CentipedeSpirit.prototype.onDraw = function(world, renderer) {
+  this.drawBody();
+  if (this.distOutsideViewCircles < this.getBody().rad * CentipedeSpirit.WAKE_RADS) {
+    this.maybeWake();
+  }
+};
+
+CentipedeSpirit.prototype.canSleep = function() {
+  return this.distOutsideViewCircles > this.getBody().rad * CentipedeSpirit.SLEEP_RADS;
+};
+
+CentipedeSpirit.prototype.setChainSleepy = function(s) {
+  // console.log('setChainSleepy ', s);
+  let node = this.getHeadmostSpirit();
+  while (node) {
+    // If we're waking nodes, then activate sleepers
+    let awaken = node.sleepy && !s;
+    node.sleepy = s;
+    if (awaken) {
+      // console.log('awaken individual');
+      node.maybeWake();
+    }
+    node = node.getTailwardSpirit()
+  }
+};
+
+BaseSpirit.prototype.getColor = function() {
+  return this.sleepy ? this.sleepyColor : this.color;
 };
