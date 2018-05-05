@@ -35,6 +35,9 @@ v Wake and Sleep: hooks around timeouts, distance limits, friction, nearly-drawn
       v joining
         v an active centipede joining an inactive one causes it to become active
 
+v Fix Chrome audio on laptops. https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
+  v iOS touch hack, but for keyboard and mouse too?
+
 - factor out Ant and Centipede Wall avoidance
   - search for wall ahead
   - side-sweep to find clear path, early bail

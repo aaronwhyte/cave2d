@@ -67,6 +67,10 @@ ScreenPage.prototype.enterDoc = function() {
   this.canvas.addEventListener('touchend', soundUnlock);
   this.canvas.addEventListener('touchstart', soundUnlock);
 
+  // for Chrome 2018-05 era
+  this.canvas.addEventListener('keydown', soundUnlock);
+  this.canvas.addEventListener('mousedown', soundUnlock);
+
   // prevent default on a lot of pinch and scroll events on mobile
   this.canvas.addEventListener('touchstart', Dom.pd);
   this.canvas.addEventListener('touchmove', Dom.pd);
