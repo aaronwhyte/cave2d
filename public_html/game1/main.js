@@ -6,7 +6,7 @@ function main() {
 
 function Game1(canvas) {
   this.canvas = canvas;
-  this.iosSoundUnlocked = false;
+  this.soundUnlocked = false;
   this.animateFrameFn = this.animateFrame.bind(this);
 }
 
@@ -16,9 +16,10 @@ Game1.prototype.start = function() {
   this.sfx = new SoundFx();
   this.sfx.setListenerXYZ(0, 0, 5);
 
-  // on-event sound unlocker for iOS
-  document.body.addEventListener('mouseup', this.unlockIosSound.bind(this));
-  document.body.addEventListener('touchend', this.unlockIosSound.bind(this));
+  // on-event sound unlocker for iOS, Chrome, etc.
+  document.body.addEventListener('mouseup', this.unlockSound.bind(this));
+  document.body.addEventListener('touchend', this.unlockSound.bind(this));
+  document.body.addEventListener('keydown', this.unlockSound.bind(this));
 };
 
 var MS_PER_FRAME = 1000 / 60;
@@ -31,10 +32,10 @@ Game1.SCREEN_PAUSE = 'pause';
 
 Game1.SCREENS = [Game1.SCREEN_TITLE, Game1.SCREEN_PLAY, Game1.SCREEN_PAUSE];
 
-Game1.prototype.unlockIosSound = function() {
-  if (!this.iosSoundUnlocked) {
+Game1.prototype.unlockSound = function() {
+  if (!this.soundUnlocked) {
     this.sfx.sound(0, 0, 0, 0.001, 0, 0, 0.001, 1, 1, 'sine');
-    this.iosSoundUnlocked = true;
+    this.soundUnlocked = true;
   }
 };
 

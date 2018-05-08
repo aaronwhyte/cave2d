@@ -65,11 +65,14 @@ SoundFx.prototype.getMasterGain = function() {
  */
 SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, freq2, type, opt_delay) {
   if (!this.ctx) return;
-  var delay = opt_delay || 0;
-  var c = this.ctx;
-  var t0 = c.currentTime + delay;
-  var t1 = t0 + attack + sustain + decay;
-  var gain = this.createGain();
+  if (this.ctx.state != 'running') {
+    this.ctx.resume();
+  }
+  let delay = opt_delay || 0;
+  let c = this.ctx;
+  let t0 = c.currentTime + delay;
+  let t1 = t0 + attack + sustain + decay;
+  let gain = this.createGain();
   if (attack) {
     gain.gain.setValueAtTime(0.001, t0);
     gain.gain.exponentialRampToValueAtTime(vol, t0 + attack);
@@ -82,14 +85,14 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
     gain.gain.exponentialRampToValueAtTime(0.01, t0 + attack + sustain + decay);
   }
 
-  var osc = this.createOscillator();
+  let osc = this.createOscillator();
   osc.frequency.setValueAtTime(freq1, t0);
   osc.frequency.exponentialRampToValueAtTime(freq2, t0 + attack + sustain + decay);
   osc.type = type;
   osc.start(t0);
   osc.stop(t1);
 
-  var panner = c.createPanner();
+  let panner = c.createPanner();
   panner.setPosition(x, y, z);
 
   osc.connect(gain);
@@ -99,7 +102,7 @@ SoundFx.prototype.sound = function(x, y, z, vol, attack, sustain, decay, freq1, 
 };
 
 SoundFx.prototype.createOscillator = function() {
-  var osc = this.ctx.createOscillator();
+  let osc = this.ctx.createOscillator();
   if (!osc.start) osc.start = osc.noteOn;
   if (!osc.stop) osc.start = osc.noteOff;
   return osc;
@@ -112,8 +115,8 @@ SoundFx.prototype.createOscillator = function() {
  */
 SoundFx.prototype.createGainAndPanner = function() {
   if (!this.ctx) return null;
-  var c = this.ctx;
-  var r = {};
+  let c = this.ctx;
+  let r = {};
   r.gain = this.createGain();
   r.panner = c.createPanner();
   r.gain.connect(r.panner);
@@ -132,7 +135,7 @@ SoundFx.prototype.createGainAndPanner = function() {
  * @param {String} opt_type Wave type string (square, sine, etc). Default is sine
  */
 SoundFx.prototype.note = function(x, y, z, vol, sustain, freq, opt_type) {
-  var type = opt_type || 'sine';
+  let type = opt_type || 'sine';
   this.sound(x, y, z, vol, 0, sustain, 0, freq, freq, type);
 };
 

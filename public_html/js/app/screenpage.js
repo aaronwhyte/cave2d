@@ -59,14 +59,13 @@ ScreenPage.prototype.enterDoc = function() {
   this.sfx = new SoundFx();
   this.sfx.setListenerXYZ(0, 0, 2);
 
-  // On-event sound unlocker for iOS.
+  // On-event sound unlocker.
   let resumeButton = document.querySelector('#resumeButton');
-  let soundUnlock = this.unlockIosSound.bind(this);
+  let soundUnlock = this.unlockSound.bind(this);
   resumeButton.addEventListener('touchend', soundUnlock);
   resumeButton.addEventListener('touchstart', soundUnlock);
   this.canvas.addEventListener('touchend', soundUnlock);
   this.canvas.addEventListener('touchstart', soundUnlock);
-
   // for Chrome 2018-05 era
   this.canvas.addEventListener('keydown', soundUnlock);
   this.canvas.addEventListener('mousedown', soundUnlock);
@@ -82,10 +81,10 @@ ScreenPage.prototype.enterDoc = function() {
 };
 
 /**
- * It seems that a drag won't work. There has to be a clean tap.
- * For now, I'll unlock every time there's a touchend.
+ * Starts a one-hour super-quiet sound, which prevents iOS wrecking you next audio attempt
+ * if you don't touch anything for a couple seconds.
  */
-ScreenPage.prototype.unlockIosSound = function() {
+ScreenPage.prototype.unlockSound = function() {
   // clear the old one
   if (this.iosOscillator) {
     this.iosOscillator.stop();
