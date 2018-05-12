@@ -35,15 +35,57 @@ v Wake and Sleep: hooks around timeouts, distance limits, friction, nearly-drawn
       v joining
         v an active centipede joining an inactive one causes it to become active
 
-- Fix Chrome audio on laptops. https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
+v Fix Chrome audio on laptops. https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
   iOS touch hack, but for keyboard and mouse too?
+  resume() if audio context is not running
   v game4
-  - everywhere else!
+  v everywhere else!
 
-- factor out Ant and Centipede Wall avoidance
-  - search for wall ahead
-  - side-sweep to find clear path, early bail. That's the main reusable part
-  - encapsulate behavior class?
+Dumb arcade enemies:
+- fire projectiles that harm player
+  - for now harm = kill (but I really liked fracas2's 3 stages of health: temp superpowered, regular, and near-death bullet-time)
+- dumb movement states
+  - wander
+    - factor out Ant and Centipede Wall avoidance
+      - encapsulate behavior class with state and params
+      - search for wall ahead
+      - side-sweep to find clear path, early bail. That's the main reusable part.
+  - chase player (when unobstructed by huge masses)
+  - follow invisible directional arrows?
+  - follow walls
+  - stationary
+- some are dangerous to touch
+  - spiker
+  - floating mines
+- melee weapons, like spiker (instant, rayscan) or
+- some have an invincibility phase, especially turrets.
+  - Pick a color for invincibility
+- moods
+  - safe until attacked
+  - hostile when hungry
+  - flee when hurt
+  - attraction - follow at respectful dist
+  - alliance
+    - hang around X
+    - attack those who are hostile towards X
+- mood-inducing artifacts and weapons
+  - fear gas
+  - anger gas
+  - fear gaze
+  - attraction gaze!
+- physics-y enemies
+  - asteroids float through walls
+  - bouncy balls bounce and split
+  - statues teleport using rayscans
+
+
+
+Fun props:
+- bumper
+- blipper
+- portal
+- repulsor cannon
+
 - target-intercept behavior, like tractor beam
   - search for target
     - random search (or structured sweep?)
@@ -233,7 +275,6 @@ behaviors:
   - slow wanderer
   - when player seen, shields and charges at player, until contact with infinite mass or max time.
 
-
 - shotgun
 
 v rapid-fire
@@ -264,3 +305,6 @@ Better deaths/explosions
 * shader tricks
   * fat fragment shader, simply geometry (circle?)
   * fancy vertex shader with numbered objects and parameterized explosions
+
+Idea: animate as many off-screen enemies as we can given our physics budget left over from on-screen ones.
+
