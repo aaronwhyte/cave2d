@@ -99,7 +99,7 @@ Game5PlayScreen.prototype.initPauseButtons = function() {
 
 Game5PlayScreen.prototype.configurePlayerSlots = function() {
   let self = this;
-  function createKeyboardSlot(name, up, right, down, left, b1, b2, menuKey) {
+  function createKeyboardSlot(name, up, right, down, left, menuKey) {
     return new PlayerSlot(name)
         .add(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
@@ -107,15 +107,11 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(right)
                 .addTriggerKeyByName(down)
                 .addTriggerKeyByName(left)
-                .addTriggerKeyByName(b1)
-                .addTriggerKeyByName(b2)
                 .addTriggerKeyByName(menuKey)
             ))
         .add(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, new KeyStick()
                 .setUpRightDownLeftByName(up, right, down, left))
-            .add(ControlName.BUTTON_1, new KeyTrigger().addTriggerKeyByName(b1))
-            .add(ControlName.BUTTON_2, new KeyTrigger().addTriggerKeyByName(b2))
             .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
   }
@@ -171,24 +167,6 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
         })
         .setRadius(Game5PlayScreen.TOUCH_STICK_RADIUS);
 
-    let buttonRad = 50;
-    let maxButtonRatio = 1/5;
-    let button1 = button(self.stamps.button1);
-    let rule1 = new CuboidRule(self.canvasCuboid, button1.getWidgetCuboid())
-        .setAspectRatio(new Vec4(1, 1))
-        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
-        .setTargetAnchor(new Vec4(-1, 2.6).transform(matrix), new Vec4(-2, 0).transform(matrix))
-        .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
-    self.cuboidRules.push(rule1);
-
-    let button2 = button(self.stamps.button2);
-    let rule2 = new CuboidRule(self.canvasCuboid, button2.getWidgetCuboid())
-        .setAspectRatio(new Vec4(1, 1))
-        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
-        .setTargetAnchor(new Vec4(-2.6, 1).transform(matrix), new Vec4(0, 2).transform(matrix))
-        .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
-    self.cuboidRules.push(rule2);
-
     let menuTrigger = button(self.stamps.menuButton);
     let menuRule = new CuboidRule(self.canvasCuboid, menuTrigger.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
@@ -202,14 +180,12 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
             .add(ControlName.JOIN_TRIGGER, joinTrigger))
         .add(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, stick)
-            .add(ControlName.BUTTON_1, button1)
-            .add(ControlName.BUTTON_2, button2)
             .add(ControlName.MENU, menuTrigger));
     slot.corner = new Vec4(-1, 1).transform(matrix);
     return slot;
   }
 
-  function createPointerLockSlot(name, b1, b2, menuKey) {
+  function createPointerLockSlot(name, menuKey) {
     // Only join on mouse-click, since that's a good indication you have a mouse in hand,
     // and it starts the Pointer Lock process.
     return new PlayerSlot(name)
@@ -217,25 +193,17 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
             .add(ControlName.JOIN_TRIGGER, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger()
-                    .addTriggerKeyByName(b1)
-                    .addTriggerKeyByName(b2)
                     .addTriggerKeyByName(menuKey))))
         .add(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, new PointerLockStick(document.body).setRadius(100))
-            .add(ControlName.BUTTON_1, new MultiTrigger()
-                .addTrigger(new MouseButtonTrigger(self.canvas))
-                .addTrigger(new KeyTrigger().addTriggerKeyByName(b1)))
-            .add(ControlName.BUTTON_2, new MultiTrigger()
-                .addTrigger(new MouseButtonTrigger(self.canvas).setListenToLeftButton(false))
-                .addTrigger(new KeyTrigger().addTriggerKeyByName(b2)))
             .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
   }
 
   let slotList = [
-    createKeyboardSlot('k1', Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'n', 'm', 'l'),
-    createKeyboardSlot('k2', 'w', 'd', 's', 'a', Key.Name.SHIFT, 'z', 'q'),
-    createPointerLockSlot('pl', 'v', 'b', 'g'),
+    createKeyboardSlot('k1', Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, '1'),
+    createKeyboardSlot('k2', 'w', 'd', 's', 'a', '2'),
+    createPointerLockSlot('pl', 'g'),
     createTouchSlot('t1', 0),
     createTouchSlot('t2', Math.PI / 2),
     createTouchSlot('t3', Math.PI),

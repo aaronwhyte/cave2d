@@ -46,7 +46,7 @@ v code nest
 v remove unused spirits
 - remove tractorbeam
   v from playerspirit
-  - from controls
+  v from controls
   - from splashes
   - from sounds
 
