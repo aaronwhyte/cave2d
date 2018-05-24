@@ -58,33 +58,18 @@ Game5BaseScreen.USE_FANS = false;
 Game5BaseScreen.SUPPORT_BATCH_DRAWING = true;
 
 Game5BaseScreen.SpiritType = {
-  ANT: 3,
-  PLAYER: 4,
-  EXIT: 5,
-  BULLET: 6,
-  ENTRANCE: 7,
-  INDICATOR: 8,
-  ACTIVATOR_GUN: 9,
-  ACTIVATOR_BULLET: 10,
-  TRACTOR_BULLET: 11,
-  ENERGY_BULLET: 12,
-  CENTIPEDE: 13,
-  MACHINE_GUN: 14,
-  SHOTGUN: 15,
-  ROGUE_GUN: 16
+  ENTRANCE: 1,
+  EXIT: 2,
+  PLAYER: 3,
+  BULLET: 4,
+  ANT: 5
 };
 
 Game5BaseScreen.MenuItem = {
-  RED_ANT: 'red_ant',
-  CENTIPEDE: 'centipede',
-  PLAYER: 'player',
   ENTRANCE: 'entrance',
   EXIT: 'exit',
-  INDICATOR: 'indicator',
-  ACTIVATOR_GUN: 'activator_gun',
-  MACHINE_GUN: 'machine_gun',
-  SHOTGUN: 'shotgun',
-  ROGUE_GUN: 'rogue_gun'
+  PLAYER: 'player',
+  ANT: 'ant'
 };
 
 Game5BaseScreen.prototype.getSpiritConfigs = function() {
@@ -110,17 +95,7 @@ Game5BaseScreen.prototype.getSpiritConfigs = function() {
     addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelIds.EXIT);
     nextColumn();
 
-    addToMenu(st.ANT, AntSpirit, mi.RED_ANT, ModelIds.ANT);
-    addToMenu(st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE, ModelIds.CENTIPEDE);
-    nextColumn();
-
-    addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, ModelIds.ACTIVATOR_GUN);
-    addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR, ModelIds.INDICATOR);
-    nextColumn();
-
-    addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN, ModelIds.MACHINE_GUN);
-    addToMenu(st.SHOTGUN, ShotgunSpirit, mi.SHOTGUN, ModelIds.SHOTGUN);
-    addToMenu(st.ROGUE_GUN, RogueGunSpirit, mi.ROGUE_GUN, ModelIds.ROGUE_GUN);
+    addToMenu(st.ANT, AntSpirit, mi.ANT, ModelIds.ANT);
     nextColumn();
 
     this.spiritConfigs = sc;
