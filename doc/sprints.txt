@@ -41,6 +41,10 @@ v Fix Chrome audio on laptops. https://developers.google.com/web/updates/2017/09
   v game4
   v everywhere else!
 
+Game 5 skeleton
+v code nest
+
+
 Dumb arcade enemies:
 - fire projectiles that harm player
   - for now harm = kill (but I really liked fracas2's 3 stages of health: temp superpowered, regular, and near-death bullet-time)
