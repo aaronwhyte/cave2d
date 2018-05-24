@@ -43,7 +43,12 @@ v Fix Chrome audio on laptops. https://developers.google.com/web/updates/2017/09
 
 Game 5 skeleton
 v code nest
-
+v remove unused spirits
+- remove tractorbeam
+  v from playerspirit
+  - from controls
+  - from splashes
+  - from sounds
 
 Dumb arcade enemies:
 - fire projectiles that harm player
