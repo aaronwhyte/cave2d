@@ -44,11 +44,11 @@ v Fix Chrome audio on laptops. https://developers.google.com/web/updates/2017/09
 Game 5 skeleton
 v code nest
 v remove unused spirits
-- remove tractorbeam
+v remove tractorbeam
   v from playerspirit
   v from controls
   v from splashes
-  - from sounds
+  v from sounds
 - player basic fire weapon
 - killer ants
 
