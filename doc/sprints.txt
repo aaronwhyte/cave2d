@@ -47,8 +47,10 @@ v remove unused spirits
 - remove tractorbeam
   v from playerspirit
   v from controls
-  - from splashes
+  v from splashes
   - from sounds
+- player basic fire weapon
+- killer ants
 
 Dumb arcade enemies:
 - fire projectiles that harm player

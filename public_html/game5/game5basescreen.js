@@ -189,22 +189,6 @@ Game5BaseScreen.prototype.getCamera = function() {
   return this.camera;
 };
 
-Game5BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
-  this.splashes.addScanSplash(this.world.now, pos, vel, rad, dist);
-};
-
-Game5BaseScreen.prototype.addTractorSeekSplash = function(pulling, pos, vel, rad, dist, color) {
-  this.splashes.addTractorSeekSplash(this.world.now, pulling, pos, vel, rad, dist, color);
-};
-
-Game5BaseScreen.prototype.addKickHitSplash = function(scanPos, scanVel, resultFraction) {
-  this.splashes.addKickHitSplash(this.world.now, scanPos, scanVel, resultFraction);
-};
-
-Game5BaseScreen.prototype.addKickMissSplash = function(scanPos, scanVel) {
-  this.splashes.addKickMissSplash(this.world.now, scanPos, scanVel);
-};
-
 Game5BaseScreen.prototype.addPlayerExplosionSplash = function(pos, color) {
   this.splashes.addPlayerExplosionSplash(this.world.now, pos, color);
 };
@@ -215,8 +199,4 @@ Game5BaseScreen.prototype.addEnemyExplosion = function(pos, rad, color) {
 
 Game5BaseScreen.prototype.addBulletMuzzleFlash = function(pos, angPos) {
   this.splashes.addBulletMuzzleFlash(this.world.now, pos, angPos);
-};
-
-Game5BaseScreen.prototype.addGrabSplash = function(pos, angPos, targetRad) {
-  this.splashes.addGrabSplash(this.world.now, pos, angPos, targetRad);
 };
