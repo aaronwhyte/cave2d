@@ -133,6 +133,9 @@ LayeredEventDistributor.prototype.createLayer = function(num) {
   layer.removeEventListener = function(type, listener) {
     self.removeEventListenerFromLayer(type, listener, num);
   };
+  layer.requestPointerLock = function() {
+    self.canvas.requestPointerLock();
+  };
   return layer;
 };
 

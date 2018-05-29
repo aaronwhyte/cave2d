@@ -30,17 +30,17 @@ Player.prototype.setControls = function(trackball, b1, b2, pauseBtn) {
 };
 
 Player.prototype.handleInput = function() {
-  var tx = 0, ty = 0, tTouched = false;
+  var tx = 0, ty = 0, tTouched = false, tContrib = 0;
   if (this.trackball) {
     this.trackball.getVal(this.vec);
     tx = this.vec.x;
     ty = this.vec.y;
     tTouched = this.trackball.isTouched();
+    tContrib = this.trackball.getContrib();
     this.trackball.reset();
   }
   var b1 = this.b1 ? this.b1.getVal() : false;
   var b2 = this.b2 ? this.b2.getVal() : false;
-  var tContrib = this.trackball.getContrib();
   for (var id in this.spirits) {
     this.spirits[id].handleInput(tx, ty, tTouched, tContrib, b1, b2);
   }

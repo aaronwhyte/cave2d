@@ -152,8 +152,12 @@ Game2BaseScreen.prototype.getCamera = function() {
 
 Game2BaseScreen.prototype.createTrackball = function() {
   let trackball = new MultiTrackball()
-      .addTrackball(new TouchTrackball(this.getWorldEventTarget())
-          .setStartZoneFunction(function(x, y) { return true; }))
+      .addTrackball(
+          new TouchTrackball(this.getWorldEventTarget())
+              .setStartZoneFunction(function(x, y) { return true; }))
+      .addTrackball(
+          new MouseTrackball(this.getWorldEventTarget())
+              .setSpeed(0.1))
       .addTrackball(
           new KeyTrackball(
               new KeyStick().setUpRightDownLeftByName(Key.Name.DOWN, Key.Name.RIGHT, Key.Name.UP, Key.Name.LEFT),

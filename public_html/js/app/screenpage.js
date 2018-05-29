@@ -134,6 +134,7 @@ ScreenPage.prototype.appendTitle = function(df) {
   let e = Dom.ce('div', df, 'gameTitle');
   e.innerHTML = Strings.textToHtml(this.gameTitle);
 };
+
 ScreenPage.prototype.appendFullScreenButton = function(df) {
   let e = Dom.ce('button', df, 'smallButton');
   e.id = 'fullScreenButton';
