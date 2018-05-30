@@ -48,7 +48,7 @@ PlayerSpirit.MAX_BANG = 1.5;
 
 PlayerSpirit.TRACKBALL_ACCEL = 1;
 PlayerSpirit.TRACKBALL_TRACTION = 0.3;
-PlayerSpirit.TRACKBALL_MAX_ACCEL = 1.5;
+PlayerSpirit.TRACKBALL_MAX_ACCEL = 2;
 PlayerSpirit.AIM_SENSITIVITY = 2;
 
 PlayerSpirit.FRICTION = 0.1;
