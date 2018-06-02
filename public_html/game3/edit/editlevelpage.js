@@ -29,6 +29,7 @@ EditLevelPage.prototype = new Page();
 EditLevelPage.prototype.constructor = EditLevelPage;
 
 EditLevelPage.prototype.enterDoc = function() {
+  Page.prototype.enterDoc.call(this);
   if (this.canvas || this.pauseMenuDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -79,6 +80,7 @@ EditLevelPage.prototype.unlockIosSound = function() {
 };
 
 EditLevelPage.prototype.exitDoc = function() {
+  Page.prototype.exitDoc.call(this);
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }

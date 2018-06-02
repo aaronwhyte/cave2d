@@ -20,6 +20,7 @@ Test41Page.prototype = new Page();
 Test41Page.prototype.constructor = Test41Page;
 
 Test41Page.prototype.enterDoc = function() {
+  Page.prototype.enterDoc.call(this);
   if (this.canvas || this.pauseMenuDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -67,6 +68,7 @@ Test41Page.prototype.unlockIosSound = function() {
 };
 
 Test41Page.prototype.exitDoc = function() {
+  Page.prototype.exitDoc.call(this);
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }

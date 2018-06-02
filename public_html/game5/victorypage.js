@@ -12,6 +12,7 @@ VictoryPage.prototype = new Page();
 VictoryPage.prototype.constructor = VictoryPage;
 
 VictoryPage.prototype.enterDoc = function() {
+  Page.prototype.enterDoc.call(this);
   var df = document.createDocumentFragment();
 
   this.div = Dom.ce('div', df);
@@ -28,6 +29,7 @@ VictoryPage.prototype.enterDoc = function() {
 };
 
 VictoryPage.prototype.exitDoc = function() {
+  Page.prototype.exitDoc.call(this);
   document.body.removeChild(this.div);
   document.body.classList.remove('victoryPage');
   this.canvas = null;

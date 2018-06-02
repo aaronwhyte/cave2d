@@ -31,6 +31,7 @@ PlayLevelPage.prototype = new Page();
 PlayLevelPage.prototype.constructor = PlayLevelPage;
 
 PlayLevelPage.prototype.enterDoc = function() {
+  Page.prototype.enterDoc.call(this);
   if (this.canvas || this.pauseMenuDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -81,6 +82,7 @@ PlayLevelPage.prototype.unlockIosSound = function() {
 };
 
 PlayLevelPage.prototype.exitDoc = function() {
+  Page.prototype.exitDoc.call(this);
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }

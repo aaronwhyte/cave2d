@@ -21,6 +21,7 @@ LevelListPage.prototype.constructor = LevelListPage;
 LevelListPage.TOUCHDATE = 'TOUCHDATE';
 
 LevelListPage.prototype.enterDoc = function() {
+  Page.prototype.enterDoc.call(this);
   if (this.rootNode) {
     throw Error('this.rootNode should be falsey, but it is ' + this.rootNode);
   }
@@ -30,6 +31,7 @@ LevelListPage.prototype.enterDoc = function() {
 };
 
 LevelListPage.prototype.exitDoc = function() {
+  Page.prototype.exitDoc.call(this);
   if (!this.rootNode) {
     throw Error('this.rootNode should be truthy, but it is ' + this.rootNode);
   }

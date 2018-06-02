@@ -37,6 +37,7 @@ ScreenPage.prototype = new Page();
 ScreenPage.prototype.constructor = ScreenPage;
 
 ScreenPage.prototype.enterDoc = function() {
+  Page.prototype.enterDoc.call(this);
   if (this.canvas || this.pauseMenuDiv) {
     throw Error('nodes should be falsey. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }
@@ -96,6 +97,7 @@ ScreenPage.prototype.unlockSound = function() {
 };
 
 ScreenPage.prototype.exitDoc = function() {
+  Page.prototype.exitDoc.call(this);
   if (!this.canvas || !this.pauseMenuDiv) {
     throw Error('nodes should be truthy. canvas:' + this.canvas + 'pauseMenuDiv:' + this.pauseMenuDiv);
   }

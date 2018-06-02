@@ -23,6 +23,7 @@ ExportPage.prototype = new Page();
 ExportPage.prototype.constructor = ExportPage;
 
 ExportPage.prototype.enterDoc = function() {
+  Page.prototype.enterDoc.call(this);
   if (this.rootNode) {
     throw Error('this.rootNode should be falsey, but it is ' + this.rootNode);
   }
@@ -35,6 +36,7 @@ ExportPage.prototype.enterDoc = function() {
 };
 
 ExportPage.prototype.exitDoc = function() {
+  Page.prototype.exitDoc.call(this);
   if (!this.rootNode) {
     throw Error('this.rootNode should be truthy, but it is ' + this.rootNode);
   }

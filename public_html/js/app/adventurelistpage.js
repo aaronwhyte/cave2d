@@ -20,6 +20,7 @@ AdventureListPage.prototype.constructor = AdventureListPage;
 AdventureListPage.TOUCHDATE = 'TOUCHDATE';
 
 AdventureListPage.prototype.enterDoc = function() {
+  Page.prototype.enterDoc.call(this);
   if (this.rootNode) {
     throw Error('this.rootNode should be falsey, but it is ' + this.rootNode);
   }
@@ -29,6 +30,7 @@ AdventureListPage.prototype.enterDoc = function() {
 };
 
 AdventureListPage.prototype.exitDoc = function() {
+  Page.prototype.exitDoc.call(this);
   if (!this.rootNode) {
     throw Error('this.rootNode should be truthy, but it is ' + this.rootNode);
   }
