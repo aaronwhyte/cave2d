@@ -17,4 +17,7 @@ Page.prototype.enterDoc = function() {
  * It should undo whatever was done in enterDoc.
  */
 Page.prototype.exitDoc = function() {
+  if (document.exitPointerLock) {
+    document.exitPointerLock();
+  }
 };
