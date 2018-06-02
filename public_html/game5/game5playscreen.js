@@ -195,7 +195,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTrigger(new KeyTrigger()
                     .addTriggerKeyByName(menuKey))))
         .add(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, new PointerLockStick(document.body).setRadius(100))
+            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(100))
             .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
   }

@@ -221,7 +221,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
                     .addTriggerKeyByName(b2)
                     .addTriggerKeyByName(menuKey))))
         .add(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, new PointerLockStick(document.body).setRadius(100))
+            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(100))
             .add(ControlName.BUTTON_1, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger().addTriggerKeyByName(b1)))
