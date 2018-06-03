@@ -38,8 +38,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-PlayerSpirit.SPEED = 2;
-PlayerSpirit.TRACTION = 0.1;
+PlayerSpirit.SPEED = 4;
+PlayerSpirit.TRACTION = 0.02;
 
 PlayerSpirit.KEY_MULT_ADJUST = 0.075;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -48,10 +48,8 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.AIM_ANGPOS_ACCEL = 0.4;
-PlayerSpirit.LOCK_ANGPOS_ACCEL = 0.4;
-PlayerSpirit.ANGULAR_FRICTION = 0.4;
-PlayerSpirit.BEAM_ANGULAR_ACCEL = 0.2;
+PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
+PlayerSpirit.ANGULAR_FRICTION = 0.3;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
