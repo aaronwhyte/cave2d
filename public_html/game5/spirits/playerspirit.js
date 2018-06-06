@@ -16,7 +16,6 @@ function PlayerSpirit(screen) {
 
   this.accel = new Vec2d();
   this.keyMult = 0.25;
-  this.tractionMult = 0;
 
   this.lastFrictionTime = this.now();
   this.lastInputTime = this.now();
@@ -38,10 +37,10 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-PlayerSpirit.SPEED = 4;
+PlayerSpirit.SPEED = 3;
 PlayerSpirit.TRACTION = 0.02;
 
-PlayerSpirit.KEY_MULT_ADJUST = 0.075;
+PlayerSpirit.KEY_MULT_ADJUST = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
@@ -145,6 +144,10 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   let touchlike = stick.isTouchlike();
   stick.getVal(this.stickVec);
   let stickMag = this.stickVec.magnitude();
+
+  // TODO: is this good, squaring the stickVec to make aiming without moving easier?
+  this.stickVec.scale(stickMag);
+
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
   let speed = PlayerSpirit.SPEED;
 
@@ -152,24 +155,21 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   if (!touchlike) {
     this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
     this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
-    speed *= this.keyMult;
+    speed *= this.keyMult * this.keyMult;
   }
 
-  if (stickMag > 0.01) {
-    this.tractionMult = 1;
-  } else {
-    this.tractionMult = Math.max(0, this.tractionMult - 0.01);
-  }
-  let traction = PlayerSpirit.TRACTION * this.tractionMult;
-  // Half of traction's job is to stop you from sliding in the direction you're already going.
-  this.accel.set(playerBody.vel).scale(-traction);
+  if (stick.isTouched()) {
+    let traction = PlayerSpirit.TRACTION;
+    // Half of traction's job is to stop you from sliding in the direction you're already going.
+    this.accel.set(playerBody.vel).scale(-traction);
 
-  // The other half of traction's job is to get you going where you want.
-  // vec2d is the stick input right now.
-  this.stickVec.scale(speed * traction);
-  this.accel.add(this.stickVec);
-  this.accel.debugIfNaN();
-  playerBody.addVelAtTime(this.accel, this.now());
+    // The other half of traction's job is to get you going where you want.
+    // vec2d is the stick input right now.
+    this.stickVec.scale(speed * traction);
+    this.accel.add(this.stickVec);
+    // this.accel.debugIfNaN();
+    playerBody.addVelAtTime(this.accel, this.now());
+  }
 
   ////////
   // AIM
@@ -254,7 +254,7 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
   if (stickMag) {
     let correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
     dist = correction.magnitude();
-    this.destAim.add(correction.scale(Math.min(1, this.keyMult * this.keyMult)));
+    this.destAim.add(correction.scale(0.5 * Math.min(1, this.keyMult * this.keyMult)));
   }
   this.destAim.scaleToLength(1);
   if (reverseness > 0.99) {
