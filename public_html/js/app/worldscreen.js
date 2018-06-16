@@ -630,6 +630,10 @@ WorldScreen.prototype.removeByBodyId = function(bodyId) {
   }
 };
 
+WorldScreen.prototype.removeSpiritId = function(id) {
+  this.world.removeSpiritId(id);
+};
+
 WorldScreen.prototype.getWorldTime = function() {
   return this.world.now;
 };

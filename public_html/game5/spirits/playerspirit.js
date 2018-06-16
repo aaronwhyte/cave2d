@@ -37,8 +37,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-PlayerSpirit.SPEED = 3;
-PlayerSpirit.TRACTION = 0.02;
+PlayerSpirit.SPEED = 2;
+PlayerSpirit.TRACTION = 0.04;
 
 PlayerSpirit.KEY_MULT_ADJUST = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -99,6 +99,12 @@ PlayerSpirit.factory = function(playScreen, pos, dir) {
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
+  let w = new BaseWeapon(playScreen);
+  world.addSpirit(w);
+  w.setWielderId(spiritId);
+  w.setButtonDown(true);
+  spirit.weapon = w;
+
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
 };
@@ -146,7 +152,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   let stickMag = this.stickVec.magnitude();
 
   // TODO: is this good, squaring the stickVec to make aiming without moving easier?
-  this.stickVec.scale(stickMag);
+  //this.stickVec.scale(stickMag);
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
   let speed = PlayerSpirit.SPEED;
@@ -313,12 +319,11 @@ PlayerSpirit.prototype.explode = function() {
     this.screen.addPlayerExplosionSplash(pos, this.color);
     this.screen.removeByBodyId(this.bodyId);
   }
+  if (this.weapon) {
+    this.screen.removeSpiritId(this.weapon.id);
+  }
 };
 
 PlayerSpirit.prototype.die = function() {
-  if (this.seekHum) {
-    this.seekHum.stop();
-    this.seekHum = null;
-  }
   this.screen.killPlayerSpirit(this);
 };

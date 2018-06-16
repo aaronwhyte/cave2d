@@ -49,8 +49,53 @@ v remove tractorbeam
   v from controls
   v from splashes
   v from sounds
-- player basic fire weapon
-- killer ants
+
+x Fix pointerlock everywhere.
+  No I messed it up, and decided it wasn't worthwhile. It's good enough.
+
+Player movement
+x use mouse trackball
+x limit max accel, like game2
+x stun when hitting things hard, to prevent super-strong pushing. Lowers max accel more.
+v floaty garbage because I love it!!
+
+- base weapon responsibilities
+  v setWielder(spiritId) to read team? Or just setTeam? Changing spirits releases trigger I guess
+  v trigger API: down, up. Call down and then up immediately for one-time shot.
+  v enforce rate-of-fire. Remember last fire time.
+  - read owner body's pos, vel, angpos, angvel when firing
+  - manage sounds, graphics, and actual fire effect such as creating projectiles
+  - maybe draw, also based on owner body
+  - setRateMultiplier(something around 1) nextFireTime = lastFireTime + fireDelay / rateMultiplier
+  - expose properties like shotSpeed, shotSpread, shotRange, inaccuracy, splashRadius, for general aiming/firing alg.
+
+- end-to-end test
+  - machine gun
+    - turret
+    - player
+  - shotgun
+    - turret
+    - player
+
+- leaf weapon classes
+  - pistol
+  - shotgun
+  - rogue gun
+  - machine gun
+  - rocket
+  - smart missile
+  - saw
+- hosts
+  - player
+  - turret
+  - tank
+  - grunt
+  - flier
+
+- health framework
+  - damage is floating point
+  - health rests at whole numbers
+  - health regenerates from fraction to whole number
 
 Dumb arcade enemies:
 - fire projectiles that harm player
@@ -89,7 +134,12 @@ Dumb arcade enemies:
   - bouncy balls bounce and split
   - statues teleport using rayscans
 
-
+- powerup framework
+  - durable one-use shield
+  - temp invincibility
+  - slower enemies & enemy bullets
+  - weapon magnet
+  - periodic time-freeze (no firing!)
 
 Fun props:
 - bumper
