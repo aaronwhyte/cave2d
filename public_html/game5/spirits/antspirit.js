@@ -30,7 +30,7 @@ function AntSpirit(screen) {
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
 
-AntSpirit.ACTIVE_TIMEOUT = 3;
+AntSpirit.ACTIVE_TIMEOUT = 1.3;
 
 AntSpirit.THRUST = 1.5;
 AntSpirit.TRACTION = 0.2;
