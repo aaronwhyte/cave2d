@@ -429,6 +429,10 @@ BaseSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSp
   this.maybeWake();
 };
 
+BaseSpirit.prototype.getAimVec = function() {
+  return this.vec2d.set(0, 1).rot(this.getBodyAngPos())
+};
+
 /////////////
 // Timeouts
 /////////////

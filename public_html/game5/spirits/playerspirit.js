@@ -99,7 +99,7 @@ PlayerSpirit.factory = function(playScreen, pos, dir) {
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
-  let w = new BaseWeapon(playScreen);
+  let w = new LaserWeapon(playScreen);
   world.addSpirit(w);
   w.setWielderId(spiritId);
   w.setButtonDown(true);
@@ -186,6 +186,12 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     this.handleKeyboardAim(stick, stickMag, reverseness);
   }
 };
+
+PlayerSpirit.prototype.getAimVec = function() {
+  return this.aim;
+};
+
+
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {

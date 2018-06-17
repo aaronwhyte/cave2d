@@ -11,6 +11,7 @@ function BaseWeapon(screen) {
   this.buttonDown = false;
   this.timeoutRunning = false;
   this.lastFireTime = -1000;
+  this.aimVec = new Vec2d(0, 1);
 }
 
 /*
@@ -37,27 +38,31 @@ BaseWeapon.prototype.getSpirit = function() {
  * @returns {number}
  */
 BaseWeapon.prototype.getNextFireTime = function() {
-  return this.lastFireTime + 1; // just a random default fire rate
+  return this.lastFireTime + 10; // just a random default fire rate
 };
 
 BaseWeapon.prototype.setButtonDown = function(b) {
   this.buttonDown = b;
   if (this.buttonDown && !this.timeoutRunning) {
     this.fire();
+    this.updateFireTimeout();
   }
 };
 
 BaseWeapon.prototype.fire = function() {
-  this.lastFireTime = this.now();
-  console.log('fire! next fire timeout: ', this.getNextFireTime(), this.id, -1);
-  this.screen.world.addTimeout(this.getNextFireTime(), this.id, -1);
+  console.log('fire! (override me)');
 };
 
+BaseWeapon.prototype.updateFireTimeout = function() {
+  this.lastFireTime = this.now();
+  this.screen.world.addTimeout(this.getNextFireTime(), this.id, -1);
+};
 
 BaseWeapon.prototype.onTimeout = function() {
   this.timeoutRunning = false;
   if (this.buttonDown) {
     this.fire();
+    this.updateFireTimeout();
   }
 };
 
@@ -65,13 +70,12 @@ BaseWeapon.prototype.now = function() {
   return this.screen.now();
 };
 
-// BaseWeapon.prototype.getBody = function() {
-//   let s = this.getSpirit();
-//   return s && s.getBody();
-// };
-//
-// BaseWeapon.prototype.getBodyPos = function() {
-//   let s = this.getSpirit();
-//   return s && s.getBodyPos();
-// };
-//
+BaseWeapon.prototype.getBody = function() {
+  let s = this.getSpirit();
+  return s && s.getBody();
+};
+
+BaseWeapon.prototype.getBodyPos = function() {
+  let s = this.getSpirit();
+  return s && s.getBodyPos();
+};
