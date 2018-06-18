@@ -10,10 +10,10 @@ LaserWeapon.prototype.constructor = LaserWeapon;
 
 
 LaserWeapon.prototype.getNextFireTime = function() {
-  let throttle = 3;
+  let throttle = 0.5 + 0.25 * Math.sin(1232.7432 * this.id + this.lastFireTime);
   let throttledTime = this.lastFireTime + throttle;
   let calcDelayFromTime = Math.max(this.now(), throttledTime);
-  let delay = Math.max(0, 30 - calcDelayFromTime % 40);
+  let delay = Math.max(0, 25 - (calcDelayFromTime + this.id) % 30);
   return calcDelayFromTime + delay;
 };
 
@@ -39,7 +39,7 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(0.5, 1, 1);
-  let density = 0.05;
+  let density = 0.2;
 
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -58,11 +58,11 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 0;
-  spirit.damage = 0.25;
+  spirit.damage = 1;
   spirit.digChance = 0;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
-  spirit.trailDuration = 1.5;
+  spirit.trailDuration = 1.2;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
