@@ -24,21 +24,21 @@ function Game5HitResolver(screen, bouncer) {
 Game5HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   // To prevent object interpenetration, do this.
   // To encourage it, don't do this. :-p
-  var bounced = this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
+  let bounced = this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
   if (!bounced) {
     this.linearForce.reset();
     this.rubForce.reset();
   }
-  var mag;
+  let mag;
 
   // Plan effects on "the other":
   // damage, healing, activation, ice, slime, acceleration, teleport, etc.
-  var s0 = this.screen.getSpiritForBody(b0);
-  var s1 = this.screen.getSpiritForBody(b1);
+  let s0 = this.screen.getSpiritForBody(b0);
+  let s1 = this.screen.getSpiritForBody(b1);
 
   if (s0 && s1) {
-    var damageTo0 = s1.damagesTeam(s0.team) ? s1.damage : 0;
-    var damageTo1 = s0.damagesTeam(s1.team) ? s0.damage : 0;
+    let damageTo0 = s1.damagesTeam(s0.team) ? s1.damage : 0;
+    let damageTo1 = s0.damagesTeam(s1.team) ? s0.damage : 0;
     if (damageTo0) {
       s0.applyDamage(damageTo0);
       s0 = this.screen.getSpiritForBody(b0);
@@ -60,14 +60,14 @@ Game5HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   // bounce unless vetoed
   // apply special effects
 
-  var vec = Vec2d.alloc();
+  let vec = Vec2d.alloc();
   mag = this.linearForce.magnitude() + this.rubForce.magnitude();
-  var pos = this.getHitPos(time, collisionVec, b0, b1, vec);
-  var otherBody, otherSpirit;
+  let pos = this.getHitPos(time, collisionVec, b0, b1, vec);
+  let otherBody, otherSpirit;
 
-  var ebb = this.screen.bodyIfSpiritType(Game5BaseScreen.SpiritType.ENERGY_BULLET, b0, b1);
+  let ebb = this.screen.bodyIfSpiritType(Game5BaseScreen.SpiritType.ENERGY_BULLET, b0, b1);
   if (ebb) {
-    var ebbs = this.screen.getSpiritForBody(ebb);
+    let ebbs = this.screen.getSpiritForBody(ebb);
     otherBody = this.screen.otherBody(ebb, b0, b1);
     otherSpirit = this.screen.getSpiritForBody(otherBody);
     if (otherSpirit && otherSpirit.getEnergyCapacity()) {
