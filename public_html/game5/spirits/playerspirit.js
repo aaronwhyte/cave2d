@@ -11,7 +11,7 @@ function PlayerSpirit(screen) {
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   this.aimColor = new Vec4();
 
-  this.aim = new Vec2d();
+  this.aim = new Vec2d(0, 1);
   this.destAim = new Vec2d();
 
   this.accel = new Vec2d();
@@ -89,17 +89,17 @@ PlayerSpirit.prototype.setColorRGB = function(r, g, b) {
   return this;
 };
 
-PlayerSpirit.factory = function(playScreen, pos, dir) {
-  let world = playScreen.world;
+PlayerSpirit.factory = function(screen, pos, dir) {
+  let world = screen.world;
 
-  let spirit = new PlayerSpirit(playScreen);
+  let spirit = new PlayerSpirit(screen);
   spirit.setColorRGB(1, 1, 1);
 
   let spiritId = world.addSpirit(spirit);
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
-  let w = new LaserWeapon(playScreen);
+  let w = new LaserWeapon(screen);
   world.addSpirit(w);
   w.setWielderId(spiritId);
   w.setButtonDown(true);

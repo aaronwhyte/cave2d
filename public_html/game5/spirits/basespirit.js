@@ -9,6 +9,8 @@ function BaseSpirit(screen) {
   this.scanVec = new Vec2d();
   this.scanResp = new ScanResponse();
 
+  this.aimVec = new Vec2d();
+
   // activation input/output...
 
   // Source maintains map from target spirit IDs to output values to those targets, in case source gets polled.
@@ -429,9 +431,25 @@ BaseSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSp
   this.maybeWake();
 };
 
+/////////////////
+// Weapon stuff
+/////////////////
+
 BaseSpirit.prototype.getAimVec = function() {
-  return this.vec2d.set(0, 1).rot(this.getBodyAngPos())
+  return this.aimVec.setXY(0, 1).rot(this.getBodyAngPos());
 };
+
+BaseSpirit.prototype.getFireHitGroupForTeam = function(team) {
+  switch(team) {
+    case Team.PLAYER:
+      return HitGroups.PLAYER_FIRE;
+    case Team.ENEMY:
+      return HitGroups.ENEMY_FIRE;
+    default:
+      return HitGroups.NEUTRAL;
+  }
+};
+
 
 /////////////
 // Timeouts

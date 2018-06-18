@@ -120,6 +120,14 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
  * @override
  */
 AntSpirit.prototype.doPlayingActiveTimeout = function() {
+  if (!this.weapon && this.screen.isPlaying()) {
+    let w = new LaserWeapon(this.screen);
+    this.screen.world.addSpirit(w);
+    w.setWielderId(this.id);
+    this.weapon = w;
+  }
+  this.weapon.setButtonDown(true);
+
   this.stress = this.stress || 0;
   let now = this.now();
   let time = Math.max(0, Math.min(this.getActiveTimeout(), now - this.lastControlTime));
@@ -145,6 +153,9 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 
   } else {
     // brakes only
+    if (this.weapon) {
+      this.weapon.setButtonDown(false);
+    }
     let friction = this.getFriction();
     body.applyLinearFrictionAtTime(friction * time, now);
     body.applyAngularFrictionAtTime(friction * time, now);
@@ -257,6 +268,9 @@ AntSpirit.prototype.explode = function() {
   this.screen.addEnemyExplosion(pos, body.rad, this.vec4.setXYZ(1, 1, 1));
   this.screen.sounds.antExplode(pos);
 
+  if (this.weapon) {
+    this.screen.removeSpiritId(this.weapon.id);
+  }
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
 };

@@ -10,8 +10,11 @@ LaserWeapon.prototype.constructor = LaserWeapon;
 
 
 LaserWeapon.prototype.getNextFireTime = function() {
-  let delay = Math.max(0, (20 - this.now() % 40));
-  return this.lastFireTime + 0.6 * (0.5 + Math.random()) + delay;
+  let throttle = 3;
+  let throttledTime = this.lastFireTime + throttle;
+  let calcDelayFromTime = Math.max(this.now(), throttledTime);
+  let delay = Math.max(0, 30 - calcDelayFromTime % 40);
+  return calcDelayFromTime + delay;
 };
 
 /**
@@ -26,8 +29,8 @@ LaserWeapon.prototype.fire = function() {
   this.addBullet(
       pos,
       this.vec2d.set(aimVec).scaleToLength(20),
-      0.5 + 0.1 * Math.random(),
-      1.5 + Math.random() * 0.5
+      0.4 + 0.1 * Math.random(),
+      1.2 + Math.random() * 0.5
   );
   // this.screen.sounds.pew(pos, this.now());
 };
@@ -36,7 +39,7 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(0.5, 1, 1);
-  let density = 1;
+  let density = 0.05;
 
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -44,8 +47,8 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   b.setVelAtTime(vel, now);
   b.rad = rad;
 
-  // TODO team-based bullet making
-  b.hitGroup = b.hitGroup = this.screen.getHitGroups().PLAYER_FIRE;
+  let wielder = this.getSpirit();
+  b.hitGroup = this.getFireHitGroupForTeam(wielder.team);
 
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.pathDurationMax = duration;
@@ -55,9 +58,11 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 0;
-  spirit.digChance = 0.06;
+  spirit.damage = 0.25;
+  spirit.digChance = 0;
   spirit.bounceChance = 0;
-  spirit.team = this.getSpirit.team;
+  spirit.team = wielder.team;
+  spirit.trailDuration = 1.5;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
