@@ -25,7 +25,7 @@ function AntSpirit(screen) {
   this.distOutsideViewCircles = 0;
 
   this.toughness = 1;
-  this.damage = 1;
+  this.damage = 0;
 }
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
