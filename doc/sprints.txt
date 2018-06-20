@@ -59,43 +59,45 @@ x limit max accel, like game2
 x stun when hitting things hard, to prevent super-strong pushing. Lowers max accel more.
 v floaty garbage because I love it!!
 
-- base weapon responsibilities
+v base weapon responsibilities
   v setWielder(spiritId) to read team? Or just setTeam? Changing spirits releases trigger I guess
   v trigger API: down, up. Call down and then up immediately for one-time shot.
   v enforce rate-of-fire. Remember last fire time.
-  - read owner body's pos, vel, angpos, angvel when firing
-  - manage sounds, graphics, and actual fire effect such as creating projectiles
-  - maybe draw, also based on owner body
-  - setRateMultiplier(something around 1) nextFireTime = lastFireTime + fireDelay / rateMultiplier
-  - expose properties like shotSpeed, shotSpread, shotRange, inaccuracy, splashRadius, for general aiming/firing alg.
+  v read owner body's pos, vel, angpos, angvel when firing
+  v manage sounds, graphics, and actual fire effect such as creating projectiles
+  x maybe draw, also based on owner body
+  x setRateMultiplier(something around 1) nextFireTime = lastFireTime + fireDelay / rateMultiplier
+  x expose properties like shotSpeed, shotSpread, shotRange, inaccuracy, splashRadius, for general aiming/firing alg.
 
-- end-to-end test
-  - machine gun
-    - turret
-    - player
-  - shotgun
-    - turret
-    - player
+v laser
+  v player
+  v ants
+
+- health framework
+  - damage is floating point
+  - health regenerates from fraction to whole number
+  - healing jumps you up by exactly 1
+This solves some problems:
+1) Not all weapons have to be all-or-nothing damage, (though maybe that would still be a good forced simplification)
+2) There can still be specific health-based modes
+3) Folks aren't walking around within a hair's-breadth of dying.
+4) Player is encouraged to concentrate attacks on an enemy long enough to drop it at least one full HP.
+5) health can still be displayed with integer chunks
 
 - leaf weapon classes
-  - pistol
-  - shotgun
-  - rogue gun
-  - machine gun
-  - rocket
-  - smart missile
-  - saw
+  v laser - long, straight, no bounce, frequent
+  - shotgun - short wide, a bit bouncy, infrequent
+  - rogue gun - medium, narrowish, very bouncy, low damage
+  - machine gun - long, straightish, little bounce, frequent
+  - rocket - dumb, infrequent, explosive
+  - magic missile - seeking, avoids walls. Infrequent!
+  - saw. Really short, constant, cut through walls.
 - hosts
-  - player
+  v player
   - turret
   - tank
   - grunt
   - flier
-
-- health framework
-  - damage is floating point
-  - health rests at whole numbers
-  - health regenerates from fraction to whole number
 
 Dumb arcade enemies:
 - fire projectiles that harm player

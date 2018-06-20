@@ -37,8 +37,8 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-PlayerSpirit.SPEED = 2;
-PlayerSpirit.TRACTION = 0.04;
+PlayerSpirit.SPEED = 1;
+PlayerSpirit.TRACTION = 0.2;
 
 PlayerSpirit.KEY_MULT_ADJUST = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -164,7 +164,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     speed *= this.keyMult * this.keyMult;
   }
 
-  if (stick.isTouched()) {
+  //if (stick.isTouched()) {
     let traction = PlayerSpirit.TRACTION;
     // Half of traction's job is to stop you from sliding in the direction you're already going.
     this.accel.set(playerBody.vel).scale(-traction);
@@ -175,7 +175,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     this.accel.add(this.stickVec);
     // this.accel.debugIfNaN();
     playerBody.addVelAtTime(this.accel, this.now());
-  }
+  //}
 
   ////////
   // AIM
