@@ -94,7 +94,7 @@ BulletSpirit.prototype.drawTrail = function() {
   let trailWarm = false;
 
   this.headRad = this.rad;
-  this.tailRad = this.rad * 0.5;
+  this.tailRad = this.rad * 0.25;
   for (let i = 0; i < this.trail.size(); i++) {
     let segStartTime = this.trail.getSegmentStartTime(i);
     let segEndTime = this.trail.getSegmentEndTime(i);
