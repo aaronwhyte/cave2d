@@ -58,6 +58,15 @@ Game5PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
 Game5PlayScreen.prototype.updateHudLayout = function() {
 };
 
+/**
+ * @returns {number}
+ * @override
+ */
+Game5PlayScreen.prototype.getClocksPerFrame = function() {
+  return 0.5;
+};
+
+
 Game5PlayScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
 
