@@ -48,9 +48,6 @@ AntSpirit.SCHEMA = {
   1: "id",
   2: "bodyId",
   3: "color",
-  4: "stress",
-  5: "health",
-  6: "lastControlTime"
 };
 
 AntSpirit.getJsoner = function() {
