@@ -66,7 +66,7 @@ function World(opt_cellSize, opt_groupCount, opt_groupPairs, opt_spiritFactory) 
   this.now = 1;
 
   this.hitDetector = new HitDetector();
-  this.hitTimePadding = 0.01;
+  this.hitTimePadding = 0.001;
 
   // cache for rayscans and overlap scans.
   this.scannedBodyIds = new Set();
