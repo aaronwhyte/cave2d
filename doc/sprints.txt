@@ -73,6 +73,31 @@ v laser
   v player
   v ants
 
+Vision and target-finding
+- Have a memory of where the target was last seen and what direction it was going and how long ago that was.
+- searching
+  - Do clear scan for enemies (only check for enemies, not obstructions)
+    - If there's a hit, do obstruction scan
+      - If that hits, then remember the position and velocity of that spirit, and the new time
+- focusing
+  - do obstruction scan towards last pos + (vel*time?)
+    - if no hit then oh well
+    - else remember vel pos time
+- chasing
+  - turn towards last-seen pos
+  - head for it
+  - if really close to it then
+    - brake(?) and turn in last-seen direction?
+    - head in last-seen dir?
+    - lose interest quickly
+
+
+Focus and firing algorithm
+
+- pluggable, not baked into spirit
+  -
+
+
 - health framework
   - damage is floating point
   - health regenerates from fraction to whole number
