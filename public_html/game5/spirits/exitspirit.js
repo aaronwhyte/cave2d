@@ -160,7 +160,7 @@ ExitSpirit.prototype.handlePlayerSpirit = function(world, renderer, playerSpirit
   if (surfaceDist < ExitSpirit.EXIT_DISTANCE * 2) {
     let p0 = surfaceDist - ExitSpirit.EXIT_DISTANCE / 2;
     let v0 = this.vec2d.set(playerSpirit.getBody().vel).rot(-toSign.angle()).y / 10;
-    let maxA = 0.1;
+    let maxA = 0.02;
     let pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, ExitSpirit.TIMEOUT * 2);
     playerSpirit.addBodyVel(toSign.scaleToLength(1).scale(pushAccelMag));
   }
