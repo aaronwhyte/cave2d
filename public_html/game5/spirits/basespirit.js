@@ -6,6 +6,7 @@ function BaseSpirit(screen) {
   Spirit.call(this);
 
   this.tempBodyPos = new Vec2d();
+  this.tempBodyVel = new Vec2d();
   this.scanVec = new Vec2d();
   this.scanResp = new ScanResponse();
 
@@ -156,6 +157,11 @@ BaseSpirit.prototype.getBody = function() {
 BaseSpirit.prototype.getBodyPos = function() {
   let body = this.getBody();
   return body ? body.getPosAtTime(this.now(), this.tempBodyPos) : null;
+};
+
+BaseSpirit.prototype.getBodyVel = function() {
+  let body = this.getBody();
+  return body ? this.tempBodyVel.set(body.vel) : null;
 };
 
 BaseSpirit.prototype.setBodyVel = function(v) {
