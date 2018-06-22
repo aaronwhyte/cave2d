@@ -10,18 +10,14 @@ LaserWeapon.prototype.constructor = LaserWeapon;
 
 
 LaserWeapon.prototype.getNextFireTime = function() {
-  // let throttle = 1.5 + 0.2 * Math.sin(1232.7432 * this.id + this.lastFireTime);
-  // return this.lastFireTime + throttle;
+  // let throttle = 0.9 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
+  // let throttledTime = this.lastFireTime + throttle;
+  // let calcDelayFromTime = Math.max(this.now(), throttledTime);
+  // let delay = Math.max(0, 24 - (calcDelayFromTime + this.id) % 32);
+  // return calcDelayFromTime + delay;
 
-  let throttle = 0.9 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
-  let throttledTime = this.lastFireTime + throttle;
-  let calcDelayFromTime = Math.max(this.now(), throttledTime);
-  let delay = Math.max(0, 24 - (calcDelayFromTime + this.id) % 32);
-  return calcDelayFromTime + delay;
-
-  // let throttle = 2 + Math.sin(1232.7432 * this.id + this.lastFireTime);
-  // return this.lastFireTime + throttle;
-
+  let throttle = 2.71 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
+  return this.lastFireTime + throttle;
 };
 
 /**
@@ -30,13 +26,16 @@ LaserWeapon.prototype.getNextFireTime = function() {
 LaserWeapon.prototype.fire = function() {
   let pos = this.getBodyPos();
   if (!pos) return;
-  let aimVec = this.getSpirit().getAimVec().rot(0.02 * (Math.random() - 0.5));
-  this.vec2d.set(aimVec).rot90Right().scale(0.5 * (Math.random() - 0.5));
+  let aimVec = this.getSpirit().getAimVec().rot(0.01 * (Math.random() - 0.5));
+
+  // some aim wiggle
+  this.vec2d.set(aimVec).rot90Right().scale(0.1 * (Math.random() - 0.5));
   pos.add(this.vec2d);
+
   this.addBullet(
       pos,
       this.vec2d.set(aimVec).scaleToLength(20),
-      0.4,
+      0.2,
       1.5 + Math.random() * 0.5
   );
   // this.screen.sounds.pew(pos, this.now());
@@ -45,7 +44,13 @@ LaserWeapon.prototype.fire = function() {
 LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
-  spirit.setColorRGB(0.8, 0, 0);
+  let period = 15;
+  let half = period/2;
+  spirit.setColorRGB(
+      0.8 + 0.2 * Math.abs((now + this.id) % period - half) / half,
+      0,
+      0
+  );
   let density = 0.1;
 
   let b = Body.alloc();
@@ -65,11 +70,14 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 0;
-  spirit.damage = 0.34;
+  spirit.damage = 1;
   spirit.digChance = 0;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
-  spirit.trailDuration = 1.2;
+  spirit.trailDuration = 2.9;
+  spirit.headRadFraction = 2;
+  spirit.tailRadFraction = 2;
+
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
