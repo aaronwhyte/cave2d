@@ -43,6 +43,8 @@ BulletSpirit.prototype.reset = function(screen) {
   this.toughness = 1;
   this.damage = 1;
   this.trailDuration = 0.8;
+  this.headRadFraction = 1;
+  this.tailRadFraction = 0.25;
 
   this.wallDamageMultiplier = 1;
 
@@ -93,8 +95,8 @@ BulletSpirit.prototype.drawTrail = function() {
   let minTime = maxTime - duration;
   let trailWarm = false;
 
-  this.headRad = this.rad;
-  this.tailRad = this.rad * 0.25;
+  this.headRad = this.rad * this.headRadFraction;
+  this.tailRad = this.rad * this.tailRadFraction;
   for (let i = 0; i < this.trail.size(); i++) {
     let segStartTime = this.trail.getSegmentStartTime(i);
     let segEndTime = this.trail.getSegmentEndTime(i);
@@ -145,7 +147,7 @@ BulletSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (timeoutVal === BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL) {
     let body = this.getBody();
     if (body) {
-      this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 1.5, 5,
+      this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * this.headRadFraction * 1.5, 5,
           this.color.getR(), this.color.getG(), this.color.getB());
     }
     this.destroyBody();
@@ -171,9 +173,10 @@ BulletSpirit.prototype.setFromJSON = function(json) {
 BulletSpirit.prototype.die = function() {
   let body = this.getBody();
   if (body) {
-    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * 1.5, 3,
+    let rad = body.rad * this.headRadFraction;
+    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), rad * 2, 5,
         this.color.getR(), this.color.getG(), this.color.getB());
-    this.screen.splashes.addBulletHitExplosion(this.now(), this.getBodyPos(), body.rad * 2,
+    this.screen.splashes.addBulletHitExplosion(this.now(), this.getBodyPos(), rad * 2.5,
         this.color);
   }
   this.destroyBody();
