@@ -144,15 +144,15 @@ Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
 Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   let x = pos.x;
   let y = pos.y;
+  let s = this.splash;
 
   // giant tube explosion
-  let s = this.splash;
   s.reset();
   s.modelId = ModelIds.TUBE_32;
 
   s.startTime = now;
   s.duration = 10;
-  let startRad = 10;
+  let startRad = 2;
   let endRad = 20;
 
   s.startPose.pos.setXYZ(x, y, -0.5);
@@ -179,7 +179,7 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   function addSplash(x, y, dx, dy, duration, sizeFactor, delay) {
     s.reset();
     s.modelId = ModelIds.CIRCLE_32;
-    s.startTime = now + (delay || 0);
+    s.startTime = now + (delay || 0) + 1;
     s.duration = duration;
 
     s.startPose.pos.setXYZ(x, y, -Math.random());

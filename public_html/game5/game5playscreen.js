@@ -313,6 +313,7 @@ Game5PlayScreen.prototype.playerSpawn = function(slot) {
 };
 
 Game5PlayScreen.prototype.killPlayerSpirit = function(spirit) {
+  this.setTimeWarp(0);
   let slot = this.getSlotForPlayerSpirit(spirit);
   slot.killPlayerAtTime(this.now());
 };
@@ -367,6 +368,7 @@ Game5PlayScreen.prototype.distFromViewCenter = function(v) {
 };
 
 Game5PlayScreen.prototype.drawScene = function() {
+  this.approachTimeWarpLinearly(1, 0.03);
   this.updateViewCircles();
   this.positionCamera();
   this.updateViewMatrix();

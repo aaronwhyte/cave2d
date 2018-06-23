@@ -152,13 +152,13 @@ Sounds.prototype.playerExplode = function(worldPos) {
   let x = screenPos.x;
   let y = screenPos.y;
   // quick rise
-  this.sfx.sound(x, y, 0, 2, 0, 0.1, 0, 20, 250, 'square');
+  this.sfx.sound(x, y, 0, 2, 0.06, 0.1, 0, 20, 250, 'square');
 
   // fading crackle
   let voices = 2;
-  let attack = 0;
+  let attack = 0.06;
   let sustain = 0.2 * (Math.random() + 1);
-  let decay = (Math.random()*0.2 + 1) * 0.6;
+  let decay = (Math.random()*0.2 + 1) * 1.2;
   for (let i = 0; i < voices; i++) {
     let freq1 = (Math.random() + i) * 10 + 40;
     let freq2 = Math.random() + 1 + i * 4;

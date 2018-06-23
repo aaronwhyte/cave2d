@@ -726,6 +726,14 @@ WorldScreen.prototype.setTimeWarp = function(multiplier) {
   this.timeMultiplier = multiplier;
 };
 
+WorldScreen.prototype.approachTimeWarpLinearly = function(destWarp, linearFactor) {
+  let diff = destWarp - this.timeMultiplier;
+  if (Math.abs(diff > linearFactor)) {
+    diff = Math.sign(diff) * linearFactor;
+  }
+  this.timeMultiplier += diff;
+};
+
 WorldScreen.prototype.now = function() {
   return this.world.now;
 };
