@@ -200,3 +200,8 @@ Game5BaseScreen.prototype.addEnemyExplosion = function(pos, rad, color) {
 Game5BaseScreen.prototype.addBulletMuzzleFlash = function(pos, angPos) {
   this.splashes.addBulletMuzzleFlash(this.world.now, pos, angPos);
 };
+
+Game5BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
+  this.splashes.addScanSplash(this.world.now, pos, vel, rad, dist);
+};
+

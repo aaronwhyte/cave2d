@@ -73,6 +73,8 @@ v laser
   v player
   v ants
 
+v fix rayscan-debugging graphics
+
 Vision and target-finding
 - Have a memory of where the target was last seen and what direction it was going and how long ago that was.
 - searching

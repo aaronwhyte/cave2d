@@ -307,3 +307,43 @@ Splashes.prototype.addDotSplash = function(now, pos, rad, duration, r, g, b) {
 
   this.splasher.addCopy(s);
 };
+
+Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
+  let s = this.splash;
+  s.reset(Splashes.Type.SCAN);
+  s.modelId = ModelIds.CYLINDER_32;
+
+  s.startTime = now;
+  s.duration = 3;
+
+  let x = pos.x;
+  let y = pos.y;
+  let hit = dist >= 0;
+  let d = hit ? dist : 1;
+  let dx = vel.x * d;
+  let dy = vel.y * d;
+
+  s.startPose.pos.setXYZ(x, y, 0);
+  s.endPose.pos.setXYZ(x, y, 1);
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad, rad, 1);
+
+  s.startPose2.pos.setXYZ(x + dx, y + dy, 0);
+  s.endPose2.pos.setXYZ(x + dx, y + dy, 1);
+  s.startPose2.scale.setXYZ(rad, rad, 1);
+  s.endPose2.scale.setXYZ(rad, rad, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  if (dist < 0) {
+    s.startColor.setXYZ(0.2, 0.5, 0.2);
+    s.endColor.setXYZ(0.02, 0.05, 0.02);
+  } else {
+    s.startColor.setXYZ(0.8, 0.2, 0.2);
+    s.endColor.setXYZ(0.08, 0.02, 0.02);
+  }
+
+  this.splasher.addCopy(s);
+};
+
