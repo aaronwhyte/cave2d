@@ -123,7 +123,6 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
     w.setWielderId(this.id);
     this.weapon = w;
   }
-  this.weapon.setButtonDown(true);
 
   this.stress = this.stress || 0;
   let now = this.now();
@@ -136,6 +135,9 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 
   if (this.distOutsideViewCircles < body.rad * AntSpirit.SLEEP_RADS) {
     // normal active biz
+    if (this.weapon) {
+      this.weapon.setButtonDown(true);
+    }
     let friction = this.getFriction();
     body.applyLinearFrictionAtTime(friction * time, now);
     let newVel = this.vec2d.set(body.vel);
