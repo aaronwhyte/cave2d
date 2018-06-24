@@ -110,12 +110,12 @@ BulletSpirit.prototype.drawTrail = function() {
 
       let startRad = this.tailRad + (this.headRad - this.tailRad) * (drawStartTime - minTime) / duration;
       this.modelMatrix.toIdentity()
-          .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0))
+          .multiply(this.mat44.toTranslateOpXYZ(this.segStartVec.x, this.segStartVec.y, 0.5))
           .multiply(this.mat44.toScaleOpXYZ(startRad, startRad, 1));
 
       let endRad = this.tailRad + (this.headRad - this.tailRad) * (drawEndTime - minTime) / duration;
       this.modelMatrix2.toIdentity()
-          .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0))
+          .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0.5))
           .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
 
       this.screen.drawModel(ModelIds.CYLINDER_32, this.color, this.modelMatrix, this.modelMatrix2);

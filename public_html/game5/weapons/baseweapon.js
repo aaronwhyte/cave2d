@@ -32,7 +32,7 @@ BaseWeapon.prototype.setWielderId = function(id) {
   this.wielderId = id;
 };
 
-BaseWeapon.prototype.getSpirit = function() {
+BaseWeapon.prototype.getWielderSpirit = function() {
   return this.screen.getSpiritById(this.wielderId);
 };
 
@@ -85,16 +85,12 @@ BaseWeapon.prototype.onTimeout = function(world, timeoutVal) {
   }
 };
 
-BaseWeapon.prototype.now = function() {
-  return this.screen.now();
-};
-
 BaseWeapon.prototype.getBody = function() {
-  let s = this.getSpirit();
+  let s = this.getWielderSpirit();
   return s && s.getBody();
 };
 
 BaseWeapon.prototype.getBodyPos = function() {
-  let s = this.getSpirit();
+  let s = this.getWielderSpirit();
   return s && s.getBodyPos();
 };
