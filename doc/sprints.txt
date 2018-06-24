@@ -76,7 +76,35 @@ v laser
 v fix rayscan-debugging graphics
 
 Vision and target-finding
+* Scans for unobstructed targets
+* Can lock on to targets to track them more aggressively
+* Knows last time target was seen, pos, and velocity.
+* This is all great but it is separate from
 - Have a memory of where the target was last seen and what direction it was going and how long ago that was.
+- API
+  - on-off switch, like weapon, used by critters to turn down computations when idling out of view.
+    - controls timeouts, which fire rayscans, much like weapon.
+  - set owner spirit (like weapon)
+  - set cone length, half-width
+  - getters
+    - targetStatus: acquired, lost, destroyed
+    - last seen time
+    - last seen pos
+    - last seen vel
+- Random scan behavior
+  - search in defined cone for target
+  - first scan for target, ignoring walls
+  - if found, then do more expensive obfuscation scan
+- later API
+  - adjustable rayscan period
+  - set callback for telling the spirit about target updates
+    * but for now just poll
+    * only reason for callbacks is if spirit is inert except for target-scanning
+    - target acquired
+    - target lost
+    - target destroyed? Happens if last target state was "acquired" and target spirit/body is now invalid.
+
+
 - searching
   - Do clear scan for enemies (only check for enemies, not obstructions)
     - If there's a hit, do obstruction scan
