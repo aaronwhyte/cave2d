@@ -26,11 +26,13 @@ LaserWeapon.prototype.getNextFireTime = function() {
 LaserWeapon.prototype.fire = function() {
   let pos = this.getBodyPos();
   if (!pos) return;
-  let aimVec = this.getWielderSpirit().getAimVec().rot(0.01 * (Math.random() - 0.5));
 
   // some aim wiggle
+  let aimVec = this.getWielderSpirit().getAimVec().rot(0.01 * (Math.random() - 0.5));
+
   let rad = 0.17;
-  this.vec2d.set(aimVec).scaleToLength(this.getWielderSpirit().getBody().rad - rad - 0.01);
+  // Start the bullet just inside the front of the wielder, not in the center
+  this.vec2d.set(aimVec).scaleToLength(this.getWielderSpirit().getBody().rad - rad * 1.001);
   pos.add(this.vec2d);
 
   this.addBullet(
