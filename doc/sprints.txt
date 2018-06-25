@@ -82,19 +82,19 @@ Vision and target-finding
 * This is all great but it is separate from
 - Have a memory of where the target was last seen and what direction it was going and how long ago that was.
 - API
-  - on-off switch, like weapon, used by critters to turn down computations when idling out of view.
-    - controls timeouts, which fire rayscans, much like weapon.
-  - set owner spirit (like weapon)
-  - set cone length, half-width
+  v on-off switch, like weapon, used by critters to turn down computations when idling out of view.
+    v controls timeouts, which fire rayscans, much like weapon.
+  v set owner spirit (like weapon)
+  v set cone length, half-width
   - getters
     - targetStatus: acquired, lost, destroyed
     - last seen time
     - last seen pos
     - last seen vel
-- Random scan behavior
-  - search in defined cone for target
-  - first scan for target, ignoring walls
-  - if found, then do more expensive obfuscation scan
+v Random scan behavior
+  v search in defined cone for target
+v make ant fire when it sees player
+
 - later API
   - adjustable rayscan period
   - set callback for telling the spirit about target updates
@@ -103,6 +103,10 @@ Vision and target-finding
     - target acquired
     - target lost
     - target destroyed? Happens if last target state was "acquired" and target spirit/body is now invalid.
+- later scan
+  - first scan for target, ignoring walls
+  - if found, then do more expensive obfuscation scan
+
 
 
 - searching

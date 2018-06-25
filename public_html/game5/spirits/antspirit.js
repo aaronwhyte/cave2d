@@ -117,11 +117,20 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
  * @override
  */
 AntSpirit.prototype.doPlayingActiveTimeout = function() {
-  if (!this.weapon && this.screen.isPlaying()) {
-    let w = new LaserWeapon(this.screen);
-    this.screen.world.addSpirit(w);
-    w.setWielderId(this.id);
-    this.weapon = w;
+  if (this.screen.isPlaying()) {
+    if (!this.weapon) {
+      let w = new LaserWeapon(this.screen);
+      this.screen.world.addSpirit(w);
+      w.setWielderId(this.id);
+      this.weapon = w;
+    }
+    if (!this.scanner) {
+      let s = new Scanner(this.screen, this.team);
+      this.screen.world.addSpirit(s);
+      s.setWielderId(this.id);
+      s.coneWidth = Math.PI / 8;
+      this.scanner = s;
+    }
   }
 
   this.stress = this.stress || 0;
@@ -135,8 +144,12 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 
   if (this.distOutsideViewCircles < body.rad * AntSpirit.SLEEP_RADS) {
     // normal active biz
-    if (this.weapon) {
-      this.weapon.setButtonDown(true);
+    if (this.weapon && this.scanner) {
+      let shouldFire = now - this.scanner.lastTargetTime < 20;
+      this.weapon.setButtonDown(shouldFire);
+    }
+    if (this.scanner) {
+      this.scanner.setButtonDown(true);
     }
     let friction = this.getFriction();
     body.applyLinearFrictionAtTime(friction * time, now);
@@ -154,6 +167,9 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
     // brakes only
     if (this.weapon) {
       this.weapon.setButtonDown(false);
+    }
+    if (this.scanner) {
+      this.scanner.setButtonDown(false);
     }
     let friction = this.getFriction();
     body.applyLinearFrictionAtTime(friction * time, now);
@@ -269,6 +285,9 @@ AntSpirit.prototype.explode = function() {
 
   if (this.weapon) {
     this.screen.removeSpiritId(this.weapon.id);
+  }
+  if (this.scanner) {
+    this.screen.removeSpiritId(this.scanner.id);
   }
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);

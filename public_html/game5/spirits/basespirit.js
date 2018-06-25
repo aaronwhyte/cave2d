@@ -410,6 +410,12 @@ BaseSpirit.prototype.damagesTeam = function(otherTeam) {
       (this.team === Team.NEUTRAL);
 };
 
+BaseSpirit.prototype.attacksTeam = function(otherTeam) {
+  return (this.team === Team.PLAYER && otherTeam === Team.ENEMY) ||
+      (this.team === Team.ENEMY && otherTeam === Team.PLAYER) ||
+      (this.team === Team.NEUTRAL && otherTeam);
+};
+
 BaseSpirit.prototype.applyDamage = function(damage) {
   this.health -= damage / this.toughness;
   if (this.health <= 0) {

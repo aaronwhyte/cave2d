@@ -1,11 +1,11 @@
 /**
  * @constructor
- * @extends {BaseWeapon}
+ * @extends {BaseTool}
  */
 function LaserWeapon(screen) {
-  BaseWeapon.call(this, screen);
+  BaseTool.call(this, screen);
 }
-LaserWeapon.prototype = new BaseWeapon();
+LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
 
 
