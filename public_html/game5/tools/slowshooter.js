@@ -10,7 +10,7 @@ SlowShooter.prototype.constructor = SlowShooter;
 
 
 SlowShooter.prototype.getNextFireTime = function() {
-  let throttle = 60 + 5 * Math.sin(2349.12983 * this.id + this.lastFireTime);
+  let throttle = 40 + 5 * Math.sin(2349.12983 * this.id + this.lastFireTime);
   return this.lastFireTime + throttle;
 };
 
@@ -21,33 +21,32 @@ SlowShooter.prototype.fire = function() {
   let pos = this.getBodyPos();
   if (!pos) return;
 
+  let wielder = this.getWielderSpirit();
+  let now = this.now();
+  let body = this.getBody();
+
   // some aim wiggle
-  let aimVec = this.getWielderSpirit().getAimVec().rot(0.1 * (Math.random() - 0.5));
+  let aimVec = wielder.getAimVec().rot(0.1 * (Math.random() - 0.5));
 
-  let rad = 0.7;
+  let rad = 0.6;
   // Start the bullet just inside the front of the wielder, not in the center
-  this.vec2d.set(aimVec).scaleToLength(this.getWielderSpirit().getBody().rad - rad * 1.001);
+  this.vec2d.set(aimVec).scaleToLength(body.rad - rad * 1.001);
   pos.add(this.vec2d);
+  let vel = this.vec2d.set(aimVec).scaleToLength(0.7);
 
-  this.addBullet(
-      pos,
-      this.vec2d.set(aimVec).scaleToLength(0.6),
-      rad,
-      200
-  );
-  // this.screen.sounds.pew(pos, this.now());
+  this.addBullet(pos, vel, rad, 100);
+  this.screen.sounds.bew(pos, now);
+  this.screen.splashes.addDotSplash(now,
+      vel.scaleToLength(body.rad * 1.5).add(pos),
+      rad * 3, 2,
+      1, 0.9, 0.5);
+  body.applyForceAtWorldPosAndTime(wielder.getAimVec().scaleToLength(-2), pos, now);
 };
 
 SlowShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
-  let period = 15;
-  let half = period/2;
-  spirit.setColorRGB(
-      1,
-      0,
-      0
-  );
+  spirit.setColorRGB(1, 0.9, 0);
   let density = 2;
 
   let b = Body.alloc();
@@ -71,7 +70,7 @@ SlowShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.digChance = 2;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
-  spirit.trailDuration = 0.5;
+  spirit.trailDuration = 1;
   spirit.headRadFraction = 1;
   spirit.tailRadFraction = 1;
 

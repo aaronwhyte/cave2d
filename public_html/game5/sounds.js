@@ -49,13 +49,13 @@ Sounds.prototype.bew = function(worldPos, now) {
   let screenPos = this.getScreenPosForWorldPos(worldPos);
   let x = screenPos.x;
   let y = screenPos.y;
-  let freq = 380
+  let freq = 440
       - Math.abs((now % 8) - 4) * 10
       - Math.abs((now % 100) - 50) * 0.1;
   let freq2 = (5 + 5 * Math.random()) * freq;
-  let attack = 0.2/60;
+  let attack = 0.5/60;
   let sustain = 2/60;
-  let decay = 4/60;
+  let decay = 10/60;
   this.sfx.sound(x, y, 0, 0.5 + 0.2 * Math.random(), attack, sustain, decay, freq, freq/(20 + 20 * Math.random()), 'sawtooth');
   this.sfx.sound(x, y, 0, 0.2 + 0.1 * Math.random(), attack, sustain, decay, freq2, freq2/(20 + 20 * Math.random()), 'triangle');
 };
