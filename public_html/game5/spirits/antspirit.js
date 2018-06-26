@@ -119,7 +119,7 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 AntSpirit.prototype.doPlayingActiveTimeout = function() {
   if (this.screen.isPlaying()) {
     if (!this.weapon) {
-      let w = new LaserWeapon(this.screen);
+      let w = new SlowShooter(this.screen);
       this.screen.world.addSpirit(w);
       w.setWielderId(this.id);
       this.weapon = w;
