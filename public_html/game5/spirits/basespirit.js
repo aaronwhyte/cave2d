@@ -50,6 +50,7 @@ BaseSpirit.ACTIVE_TIMEOUT = 1.5;
 
 BaseSpirit.prototype.reset = function(screen) {
   this.screen = screen;
+  this.lastControlTime = 0;
 
   // Violate Law of Demeter here :-/
   if (this.screen) {
