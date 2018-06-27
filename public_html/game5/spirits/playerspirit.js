@@ -99,7 +99,7 @@ PlayerSpirit.factory = function(screen, pos, dir) {
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
-  let w = new LaserWeapon(screen);
+  let w = new SlowShooter(screen);
   world.addSpirit(w);
   w.setWielderId(spiritId);
   w.setButtonDown(true);

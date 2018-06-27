@@ -40,7 +40,10 @@ SlowShooter.prototype.fire = function() {
       vel.scaleToLength(body.rad * 1.5).add(pos),
       rad * 3, 2,
       1, 0.9, 0.5);
-  body.applyForceAtWorldPosAndTime(wielder.getAimVec().scaleToLength(-2), pos, now);
+
+  // recoil
+  let forceVec = this.vec2d.set(wielder.getAimVec()).scaleToLength(-2);
+  body.applyForceAtWorldPosAndTime(forceVec, pos, now);
 };
 
 SlowShooter.prototype.addBullet = function(pos, vel, rad, duration) {
