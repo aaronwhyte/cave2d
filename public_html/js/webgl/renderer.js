@@ -18,14 +18,12 @@ function Renderer(canvas, gl, program) {
   this.isBatching = false;
 
   this.circleArray = [];
-  this.modeStack = [];
 
   // lazily set to true internally when the first batching-like call is made.
   this.batchingSupportInitialized = false;
 
   // stats
   this.drawCount = 0;
-  this.drawMs = 0;
 }
 
 Renderer.EMPTY_WARP_TYPES = [
@@ -281,9 +279,7 @@ Renderer.prototype.setStamp = function(stamp) {
  */
 Renderer.prototype.drawStamp = function() {
   this.drawCount++;
-  let t0 = performance.now();
   this.modelStamp.draw(this.gl);
-  this.drawMs += performance.now() - t0;
   return this;
 };
 
