@@ -2,22 +2,22 @@
  * @constructor
  * @extends {BaseTool}
  */
-function SlowShooter(screen) {
+function MediumShooter(screen) {
   BaseTool.call(this, screen);
 }
-SlowShooter.prototype = new BaseTool();
-SlowShooter.prototype.constructor = SlowShooter;
+MediumShooter.prototype = new BaseTool();
+MediumShooter.prototype.constructor = MediumShooter;
 
 
-SlowShooter.prototype.getNextFireTime = function() {
-  let throttle = 40 + 5 * Math.sin(2349.12983 * this.id + this.lastFireTime);
+MediumShooter.prototype.getNextFireTime = function() {
+  let throttle = 10 + 0.2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
   return this.lastFireTime + throttle;
 };
 
 /**
  * @override
  */
-SlowShooter.prototype.fire = function() {
+MediumShooter.prototype.fire = function() {
   let pos = this.getBodyPos();
   if (!pos) return;
 
@@ -25,31 +25,27 @@ SlowShooter.prototype.fire = function() {
   let now = this.now();
   let body = this.getBody();
 
-  // some aim wiggle
-  let aimVec = wielder.getAimVec().rot(0.1 * (Math.random() - 0.5));
+  let aimVec = wielder.getAimVec();
 
-  let rad = 0.6;
+  let rad = 0.5;
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(body.rad - rad * 1.001);
   pos.add(this.vec2d);
-  let vel = this.vec2d.set(aimVec).scaleToLength(0.7);
+  let speed = 2;
+  let vel = this.vec2d.set(aimVec).scaleToLength(speed);
 
-  this.addBullet(pos, vel, rad, 100);
-  this.screen.sounds.bew(pos, now);
+  this.addBullet(pos, vel, rad, 30 / speed);
+  this.screen.sounds.bam(pos, now);
   this.screen.splashes.addDotSplash(now,
       vel.scaleToLength(rad * 1.5).add(pos),
-      rad * 3, 2,
-      1, 0.9, 0.5);
-
-  // recoil
-  let forceVec = this.vec2d.set(wielder.getAimVec()).scaleToLength(-2);
-  body.applyForceAtWorldPosAndTime(forceVec, pos, now);
+      rad * (1.5 + Math.random()), 2,
+      0.8, 0.8, 0.8);
 };
 
-SlowShooter.prototype.addBullet = function(pos, vel, rad, duration) {
+MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
-  spirit.setColorRGB(1, 0.9, 0);
+  spirit.setColorRGB(1, 1, 0);
   let density = 2;
 
   let b = Body.alloc();
@@ -73,10 +69,9 @@ SlowShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.digChance = 2;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
-  spirit.trailDuration = 1;
+  spirit.trailDuration = 1.5;
   spirit.headRadFraction = 1;
-  spirit.tailRadFraction = 1;
-
+  spirit.tailRadFraction = 0.5;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);

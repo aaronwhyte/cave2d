@@ -37,8 +37,17 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-PlayerSpirit.SPEED = 1;
-PlayerSpirit.TRACTION = 0.08;
+// // super traction
+// PlayerSpirit.SPEED = 0.8;
+// PlayerSpirit.TRACTION = 0.5;
+//
+// medium
+PlayerSpirit.SPEED = 1.1;
+PlayerSpirit.TRACTION = 0.06;
+//
+// // fast n floaty
+// PlayerSpirit.SPEED = 2;
+// PlayerSpirit.TRACTION = 0.02;
 
 PlayerSpirit.KEY_MULT_ADJUST = 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
@@ -99,7 +108,7 @@ PlayerSpirit.factory = function(screen, pos, dir) {
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
-  let w = new SlowShooter(screen);
+  let w = new MediumShooter(screen);
   world.addSpirit(w);
   w.setWielderId(spiritId);
   w.setButtonDown(true);
@@ -135,6 +144,10 @@ PlayerSpirit.prototype.getCameraFocusPos = function() {
   return this.vec2d.set(this.aim).scaleToLength(PlayerSpirit.PLAYER_RAD * 3).add(this.getBodyPos());
 };
 
+/**
+ *
+ * @param {Controls} controls
+ */
 PlayerSpirit.prototype.handleInput = function(controls) {
   let playerBody = this.getBody();
   if (!playerBody) return;
@@ -150,9 +163,6 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   let touchlike = stick.isTouchlike();
   stick.getVal(this.stickVec);
   let stickMag = this.stickVec.magnitude();
-
-  // TODO: is this good, squaring the stickVec to make aiming without moving easier?
-  //this.stickVec.scale(stickMag);
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
   let speed = PlayerSpirit.SPEED;

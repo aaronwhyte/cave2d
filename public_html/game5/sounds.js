@@ -60,6 +60,22 @@ Sounds.prototype.bew = function(worldPos, now) {
   this.sfx.sound(x, y, 0, 0.2 + 0.1 * Math.random(), attack, sustain, decay, freq2, freq2/(20 + 20 * Math.random()), 'triangle');
 };
 
+Sounds.prototype.bam = function(worldPos, now) {
+  let screenPos = this.getScreenPosForWorldPos(worldPos);
+  let x = screenPos.x;
+  let y = screenPos.y;
+  let freq = 110 + Math.sin(98723.12312 * now) * 2;
+  let freq2 = freq * 0.025;
+  let attack = 1/60;
+  let sustain = 1/60;
+  let decay = 20/60;
+  for (let i = 0; i < 1; i++) {
+    freq *= 1 + (Math.random() * 0.05);
+    freq2 *= 1 + (Math.random() * 0.05);
+    this.sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq, freq2, 'square', 0.1*i / 60);
+  }
+};
+
 Sounds.prototype.shotgun = function(worldPos) {
   let screenPos = this.getScreenPosForWorldPos(worldPos);
   let x = screenPos.x;
