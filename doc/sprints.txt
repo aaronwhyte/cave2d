@@ -80,25 +80,14 @@ Scanner: Vision and target-finding
 * Can lock on to targets to track them more aggressively
 * Knows last time target was seen, pos, and velocity.
 * This is all great but it is separate from movement
-- Have a memory of where the target was last seen and what direction it was going and how long ago that was.
-- API
-  v on-off switch, like weapon, used by critters to turn down computations when idling out of view.
-    v controls timeouts, which fire rayscans, much like weapon.
-  v set owner spirit (like weapon)
-  v set cone length, half-width
-  - getters
-    - targetStatus: acquired, lost, destroyed
-    - last seen time
-    - last seen pos
-    - last seen vel
-v random scan behavior
-  v search in defined cone for target
-- locked scan behavior
-  - locking is up to spirit!
-  - scan straight at target location if it was visible last scan
-- target switching
-  - do random scan even when a target is acquired
-  - let wielder know about second candidate, let wielder decide when to lock.
+v always do random scan, track random scan separately from locked scan
+- client decides what to lock to. Add setLockedSpiritId(id) and breakLock()
+- if now - lastLockedTargetSeenTime > maxBrokenLockDuration then break lock
+- if lock unbroken
+  - if lock target overlaps lock-view cone
+    - scan to see if view is unobstructed
+      - center scan. if hit, done
+      - if center fails, sweep to edges (maybe in just one step for each side) until hit
 
 - ant integration
   v ant fires when it sees target
@@ -109,6 +98,23 @@ v random scan behavior
     - start search fresh
   - ant loses interest if it cannot find target after a while
   - ant loses interest if it sees target destroyed
+
+- searching
+  * more efficient rayscanning when you're looking for rare bodies
+  - Do clear scan for targets (only check for targets, not obstructions)
+    - If there's a hit, do obstruction scan
+      - If that hits, then remember the position and velocity of that target, and the new time
+- focusing
+  - do obstruction scan towards last pos + (vel*time?)
+    - if no hit then oh well
+    - else remember vel pos time
+- chasing
+  - turn towards last-seen pos
+  - head for it
+  - if really close to it then
+    - brake(?) and turn in last-seen direction?
+    - head in last-seen dir?
+    - lose interest quickly
 
 - later scanner API
   - adjustable rayscan period
@@ -122,23 +128,10 @@ v random scan behavior
   - first scan for target, ignoring walls
   - if found, then do more expensive obfuscation scan
 
+- trackball-ish player controls like game2?
 
+- level generation fun!
 
-- searching
-  - Do clear scan for enemies (only check for enemies, not obstructions)
-    - If there's a hit, do obstruction scan
-      - If that hits, then remember the position and velocity of that spirit, and the new time
-- focusing
-  - do obstruction scan towards last pos + (vel*time?)
-    - if no hit then oh well
-    - else remember vel pos time
-- chasing
-  - turn towards last-seen pos
-  - head for it
-  - if really close to it then
-    - brake(?) and turn in last-seen direction?
-    - head in last-seen dir?
-    - lose interest quickly
 
 
 Focus and firing algorithm
