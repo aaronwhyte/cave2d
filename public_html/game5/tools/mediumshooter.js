@@ -35,7 +35,7 @@ MediumShooter.prototype.fire = function() {
   let vel = this.vec2d.set(aimVec).scaleToLength(speed);
 
   this.addBullet(pos, vel, rad, 30 / speed);
-  this.screen.sounds.bam(pos, now);
+  this.screen.sounds.zup(pos, now);
   this.screen.splashes.addDotSplash(now,
       vel.scaleToLength(rad * 1.5).add(pos),
       rad * (1.5 + Math.random()), 2,
