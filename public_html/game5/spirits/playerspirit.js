@@ -111,7 +111,6 @@ PlayerSpirit.factory = function(screen, pos, dir) {
   let w = new MediumShooter(screen);
   world.addSpirit(w);
   w.setWielderId(spiritId);
-  w.setButtonDown(true);
   spirit.weapon = w;
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
@@ -164,6 +163,12 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   stick.getVal(this.stickVec);
   let stickMag = this.stickVec.magnitude();
 
+  // Only shoot if the player moved/aimed recently
+  if (stickMag > 0.001) {
+    this.lastStickVecTime = now;
+  }
+  this.weapon.setButtonDown(now - this.lastStickVecTime < 10);
+
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
   let speed = PlayerSpirit.SPEED;
 
@@ -174,18 +179,16 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     speed *= this.keyMult * this.keyMult;
   }
 
-  //if (stick.isTouched()) {
-    let traction = PlayerSpirit.TRACTION;
-    // Half of traction's job is to stop you from sliding in the direction you're already going.
-    this.accel.set(playerBody.vel).scale(-traction);
+  let traction = PlayerSpirit.TRACTION;
+  // Half of traction's job is to stop you from sliding in the direction you're already going.
+  this.accel.set(playerBody.vel).scale(-traction);
 
-    // The other half of traction's job is to get you going where you want.
-    // vec2d is the stick input right now.
-    this.stickVec.scale(speed * traction);
-    this.accel.add(this.stickVec);
-    // this.accel.debugIfNaN();
-    playerBody.addVelAtTime(this.accel, this.now());
-  //}
+  // The other half of traction's job is to get you going where you want.
+  // vec2d is the stick input right now.
+  this.stickVec.scale(speed * traction);
+  this.accel.add(this.stickVec);
+  // this.accel.debugIfNaN();
+  playerBody.addVelAtTime(this.accel, this.now());
 
   ////////
   // AIM
