@@ -145,7 +145,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
   if (this.distOutsideViewCircles < body.rad * AntSpirit.SLEEP_RADS) {
     // normal active biz
     if (this.weapon && this.scanner) {
-      let shouldFire = now - this.scanner.lastTargetTime < 20;
+      let shouldFire = now - this.scanner.wideHitTime < 20;
       this.weapon.setButtonDown(shouldFire);
     }
     if (this.scanner) {
