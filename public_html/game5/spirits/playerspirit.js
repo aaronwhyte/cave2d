@@ -37,13 +37,13 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-// // super traction
-// PlayerSpirit.SPEED = 0.8;
-// PlayerSpirit.TRACTION = 0.5;
+// super traction
+PlayerSpirit.SPEED = 0.8;
+PlayerSpirit.TRACTION = 0.2;
 //
 // medium
-PlayerSpirit.SPEED = 1.1;
-PlayerSpirit.TRACTION = 0.06;
+// PlayerSpirit.SPEED = 1.1;
+// PlayerSpirit.TRACTION = 0.06;
 //
 // // fast n floaty
 // PlayerSpirit.SPEED = 2;
