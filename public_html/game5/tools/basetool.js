@@ -84,3 +84,8 @@ BaseTool.prototype.getBodyPos = function() {
   let s = this.getWielderSpirit();
   return s && s.getBodyPos();
 };
+
+BaseTool.prototype.getBodyAngPos = function() {
+  let s = this.getWielderSpirit();
+  return s && s.getBodyAngPos();
+};

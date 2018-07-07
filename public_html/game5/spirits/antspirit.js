@@ -128,7 +128,8 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       let s = new Scanner(this.screen, this.team);
       this.screen.world.addSpirit(s);
       s.setWielderId(this.id);
-      s.coneWidth = Math.PI / 8;
+      s.coneWidth = Math.PI;
+      s.autoLockBreakTimeout = 60;
       this.scanner = s;
     }
   }
@@ -145,7 +146,13 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
   if (this.distOutsideViewCircles < body.rad * AntSpirit.SLEEP_RADS) {
     // normal active biz
     if (this.weapon && this.scanner) {
-      let shouldFire = now - this.scanner.wideHitTime < 20;
+      if (!this.scanner.lockedHitSpiritId) {
+        // Nothing is locked, so maybe acquire a lock.
+        if (now - this.scanner.wideHitTime < 20) {
+          this.scanner.setLockedSpiritId(this.scanner.wideHitSpiritId);
+        }
+      }
+      let shouldFire = now - this.scanner.lockedHitTime < 30;
       this.weapon.setButtonDown(shouldFire);
     }
     if (this.scanner) {
@@ -213,42 +220,65 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   // How far (to either side) to look for a way out.
   let maxScanRotation = Math.PI * 0.99;
 
-  // Randomly pick a starting side for every pair of side-scans.
-  let lastSign = Math.sign(Math.random() - 0.5);
-  for (let i = 0; i <= maxIterations; i++) {
-    if (i === 0) {
-      distFrac = this.scan(pos, 0.5 * (Math.random() - 0.5), scanDist, body.rad);
-      if (distFrac < 0) {
-        bestFrac = 1;
-      } else {
-        // hit something
-        bestFrac = distFrac;
-      }
-    } else {
-      // Do a pair of scans to either side, in random order
-      for (let signMult = -1; signMult <= 1; signMult += 2) {
-        scanRot = signMult * lastSign * maxScanRotation * i / maxIterations;
-        distFrac = this.scan(pos, scanRot, scanDist, body.rad);
-        if (distFrac < 0) {
-          bestFrac = 1;
-          bestRot = scanRot;
-        } else {
-          // hit something
-          if (distFrac > bestFrac) {
-            // This is the longest scan so far. Remember it!
-            bestFrac = distFrac;
-            bestRot = scanRot;
-          }
-          // keep looking...
-        }
-      }
-    }
-    if (bestFrac === 1) {
-      // A clear path is definitely the best path.
-      break;
+  // Decide which way to steer based on target lock
+  // chase locked target!
+  let chaseRot = 0;
+  let lockedSpirit = this.screen.getSpiritById(this.scanner.lockedHitSpiritId);
+  let lockedBody = null;
+
+  if (lockedSpirit) {
+    lockedBody = this.screen.getBodyById(lockedSpirit.bodyId);
+    if (lockedBody) {
+      // this.screen.splashes.addDotSplash(now, this.scanner.lockedHitPos, 0.7, 10,
+      //     1, 1, 1);
+      chaseRot = this.getAngleDiff(this.getAngleToPos(this.scanner.lockedHitPos));
     }
   }
-  // turn
+  let targetVisible = lockedBody && (now - this.scanner.lockedHitTime < 10);
+
+  if (targetVisible) {
+    bestRot = chaseRot / 4;
+    bestFrac = 1;
+  } else {
+    // Randomly pick a starting side for every pair of side-scans.
+    let lastSign = Math.sign(Math.random() - 0.5);
+    for (let i = 0; i <= maxIterations; i++) {
+      if (i === 0) {
+        distFrac = this.scan(pos, chaseRot + 0.5 * (Math.random() - 0.5), scanDist, body.rad);
+        if (distFrac < 0) {
+          bestFrac = 1;
+          bestRot = chaseRot;
+        } else {
+          // hit something
+          bestFrac = distFrac;
+        }
+      } else {
+        // Do a pair of scans to either side, in random order
+        for (let signMult = -1; signMult <= 1; signMult += 2) {
+          scanRot = chaseRot + signMult * lastSign * maxScanRotation * i / maxIterations;
+          distFrac = this.scan(pos, scanRot, scanDist, body.rad);
+          if (distFrac < 0) {
+            bestFrac = 1;
+            bestRot = scanRot;
+          } else {
+            // hit something
+            if (distFrac > bestFrac) {
+              // This is the longest scan so far. Remember it!
+              bestFrac = distFrac;
+              bestRot = scanRot;
+            }
+            // keep looking...
+          }
+        }
+      }
+      if (bestFrac === 1) {
+        // A clear path is definitely the best path.
+        break;
+      }
+    }
+  }
+
+  // turn...
   body.applyAngularFrictionAtTime(0.5, now);
   let clip = 0.7;
   let angAccel = Math.clip(bestRot * bestFrac * 0.2, -clip, clip);
@@ -258,8 +288,15 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
     body.addAngVelAtTime(0.1 * (Math.random() - 0.5), now);
   }
 
-  // and push
+  // ...and push
   let thrust = AntSpirit.THRUST * (0.5 * (1 - this.stress) + 0.5 * bestFrac);
+  if (targetVisible) {
+    thrust *= 0.8;
+  } else if (lockedBody) {
+    thrust *= 1.2;
+    // thrust *= lockedBody ? 1.5
+    //     : 1 + 0.5 * Math.max(0, 1 - 0.2 * (now - this.scanner.lockedHitTime) / this.scanner.autoLockBreakTimeout);
+  }
   let dir = this.getBodyAngPos();
   this.accel
       .set(body.vel).scale(-traction * time)
@@ -268,7 +305,7 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
           Math.cos(dir) * thrust * traction * time);
   newVel.scale(1 - traction).add(this.accel.scale(traction));
 
-  if (bestFrac === 1) {
+  if (targetVisible || bestFrac === 1) {
     // relax!
     this.stress = Math.max(0, this.stress - moreStress);
   } else {

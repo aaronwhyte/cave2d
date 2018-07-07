@@ -81,42 +81,32 @@ Scanner: Vision and target-finding
 * Knows last time target was seen, pos, and velocity.
 * This is all great but it is separate from movement
 v always do random scan, track random scan separately from locked scan
-- client decides what to lock to. Add setLockedSpiritId(id) and breakLock()
-- if now - lastLockedTargetSeenTime > maxBrokenLockDuration then break lock
-- if lock unbroken
-  - if lock target overlaps lock-view cone
-    - scan to see if view is unobstructed
-      - center scan. if hit, done
-      - if center fails, sweep to edges (maybe in just one step for each side) until hit
+v client decides what to lock to. Add setLockedSpiritId(id) and breakLock()
+v if now - lastLockedTargetSeenTime > maxBrokenLockDuration then break lock
+v if lock unbroken
+  v if lock target overlaps lock-view cone
+    v scan to see if view is unobstructed
+      v center scan. if hit, done
 
-- ant integration
+v ant integration
   v ant fires when it sees target
-  - ant turns towards target
+  v ant locks target
+  v ant turns towards locked target
   - ant follows target around corners
-    - move to target last pos
-    - rotate to target last velocity
-    - start search fresh
-  - ant loses interest if it cannot find target after a while
-  - ant loses interest if it sees target destroyed
+    v move to target last pos
+    x rotate to target last velocity
+    v start search fresh
+  v ant loses interest if it cannot find target after a while
+  x ant loses interest if it sees target destroyed
 
 - searching
   * more efficient rayscanning when you're looking for rare bodies
   - Do clear scan for targets (only check for targets, not obstructions)
     - If there's a hit, do obstruction scan
       - If that hits, then remember the position and velocity of that target, and the new time
-- focusing
-  - do obstruction scan towards last pos + (vel*time?)
-    - if no hit then oh well
-    - else remember vel pos time
-- chasing
-  - turn towards last-seen pos
-  - head for it
-  - if really close to it then
-    - brake(?) and turn in last-seen direction?
-    - head in last-seen dir?
-    - lose interest quickly
 
 - later scanner API
+  - if center fails, sweep to edges (maybe in just one step for each side) until hit
   - adjustable rayscan period
   - set callback for telling the spirit about target updates
     * but for now just poll

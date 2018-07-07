@@ -6,6 +6,7 @@ function BaseSpirit(screen) {
   Spirit.call(this);
 
   this.tempBodyPos = new Vec2d();
+  this.tempAnglePos = new Vec2d();
   this.tempBodyVel = new Vec2d();
   this.scanVec = new Vec2d();
   this.scanResp = new ScanResponse();
@@ -220,10 +221,17 @@ BaseSpirit.prototype.getFriction = function() {
 
 BaseSpirit.prototype.getAngleToBody = function(body) {
   let thisPos = this.getBodyPos();
-  let thatPos = body.getPosAtTime(this.now(), Vec2d.alloc());
+  let thatPos = body.getPosAtTime(this.now(), this.tempAnglePos);
   let p = thatPos.subtract(thisPos);
   let angle = p.angle();
-  thatPos.free();
+  return angle;
+};
+
+BaseSpirit.prototype.getAngleToPos = function(pos) {
+  let thisPos = this.getBodyPos();
+  let thatPos = this.tempAnglePos.set(pos);
+  let p = thatPos.subtract(thisPos);
+  let angle = p.angle();
   return angle;
 };
 
