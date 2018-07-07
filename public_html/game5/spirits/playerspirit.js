@@ -38,7 +38,7 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.PLAYER_RAD = 0.99;
 
 // super traction
-PlayerSpirit.SPEED = 0.8;
+PlayerSpirit.SPEED = 1;
 PlayerSpirit.TRACTION = 0.2;
 //
 // medium
@@ -108,10 +108,10 @@ PlayerSpirit.factory = function(screen, pos, dir) {
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
-  let w = new MediumShooter(screen);
-  world.addSpirit(w);
-  w.setWielderId(spiritId);
-  spirit.weapon = w;
+  // let w = new MediumShooter(screen);
+  // world.addSpirit(w);
+  // w.setWielderId(spiritId);
+  // spirit.weapon = w;
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
@@ -167,7 +167,9 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   if (stickMag > 0.001) {
     this.lastStickVecTime = now;
   }
-  this.weapon.setButtonDown(now - this.lastStickVecTime < 10);
+  if (this.weapon) {
+    this.weapon.setButtonDown(now - this.lastStickVecTime < 10);
+  }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
   let speed = PlayerSpirit.SPEED;

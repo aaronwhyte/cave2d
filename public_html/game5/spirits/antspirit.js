@@ -33,6 +33,8 @@ AntSpirit.prototype.constructor = AntSpirit;
 AntSpirit.ACTIVE_TIMEOUT = 1.3;
 
 AntSpirit.THRUST = 1.5;
+AntSpirit.FIRING_THRUST_MULTIPLIER = 0.1;
+AntSpirit.CHASING_THRUST_MULTIPLIER = 2;
 AntSpirit.TRACTION = 0.2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
@@ -128,7 +130,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       let s = new Scanner(this.screen, this.team);
       this.screen.world.addSpirit(s);
       s.setWielderId(this.id);
-      s.coneWidth = Math.PI;
+      s.coneWidth = Math.PI *  1.5;
       s.autoLockBreakTimeout = 60;
       this.scanner = s;
     }
@@ -152,7 +154,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
           this.scanner.setLockedSpiritId(this.scanner.wideHitSpiritId);
         }
       }
-      let shouldFire = now - this.scanner.lockedHitTime < 30;
+      let shouldFire = now - this.scanner.lockedHitTime <= this.scanner.scanPeriod;
       this.weapon.setButtonDown(shouldFire);
     }
     if (this.scanner) {
@@ -237,7 +239,7 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   let targetVisible = lockedBody && (now - this.scanner.lockedHitTime < 10);
 
   if (targetVisible) {
-    bestRot = chaseRot / 4;
+    bestRot = chaseRot / 2;
     bestFrac = 1;
   } else {
     // Randomly pick a starting side for every pair of side-scans.
@@ -291,11 +293,11 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   // ...and push
   let thrust = AntSpirit.THRUST * (0.5 * (1 - this.stress) + 0.5 * bestFrac);
   if (targetVisible) {
-    thrust *= 0.8;
+    thrust *= AntSpirit.FIRING_THRUST_MULTIPLIER;
   } else if (lockedBody) {
-    thrust *= 1.2;
-    // thrust *= lockedBody ? 1.5
-    //     : 1 + 0.5 * Math.max(0, 1 - 0.2 * (now - this.scanner.lockedHitTime) / this.scanner.autoLockBreakTimeout);
+    thrust *= AntSpirit.CHASING_THRUST_MULTIPLIER;
+    // thrust *= lockedBody ? 1.2
+    //     // : 1 + 0.2 * Math.max(0, 1 - 0.5 * (now - this.scanner.lockedHitTime) / this.scanner.autoLockBreakTimeout);
   }
   let dir = this.getBodyAngPos();
   this.accel

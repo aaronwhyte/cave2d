@@ -40,6 +40,11 @@ MediumShooter.prototype.fire = function() {
       vel.scaleToLength(rad * 1.5).add(pos),
       rad * (1.5 + Math.random()), 2,
       0.8, 0.8, 0.8);
+
+  // recoil
+  let forceVec = this.vec2d.set(wielder.getAimVec()).scaleToLength(-1);
+  body.applyForceAtWorldPosAndTime(forceVec, pos, now);
+
 };
 
 MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {

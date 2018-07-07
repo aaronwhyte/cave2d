@@ -59,7 +59,7 @@ Scanner.prototype.fire = function() {
 Scanner.prototype.doWideScan = function(pos) {
   let wielder = this.getWielderSpirit();
   let aimAngle = this.getBodyAngPos() + this.coneWidth * (Math.random() - 0.5);
-  let rad = 0.1;
+  let rad = 0.5;
   let now = this.now();
 
   // TODO change this to first scan sans walls. That means doubling the team groups.
@@ -121,7 +121,7 @@ Scanner.prototype.doLockedScan = function(pos) {
     return;
   }
 
-  let rad = 0.2;
+  let rad = 0.5;
   let now = this.now();
 
   let dist = this.scan(this.getFireHitGroupForTeam(wielder.team), pos, angPos + angleDiff, this.coneLen, rad);
