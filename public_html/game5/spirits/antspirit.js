@@ -35,6 +35,7 @@ AntSpirit.ACTIVE_TIMEOUT = 1.3;
 AntSpirit.THRUST = 1.5;
 AntSpirit.FIRING_THRUST_MULTIPLIER = 0.1;
 AntSpirit.CHASING_THRUST_MULTIPLIER = 2;
+AntSpirit.MAX_FIRE_ANGLE_DIFF = Math.PI / 16;
 AntSpirit.TRACTION = 0.2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
@@ -130,7 +131,8 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       let s = new Scanner(this.screen, this.team);
       this.screen.world.addSpirit(s);
       s.setWielderId(this.id);
-      s.coneWidth = Math.PI *  1.5;
+      s.coneWidth = Math.PI * 1.1;
+      s.scanPeriod = 0.4;
       s.autoLockBreakTimeout = 60;
       this.scanner = s;
     }
@@ -154,7 +156,8 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
           this.scanner.setLockedSpiritId(this.scanner.wideHitSpiritId);
         }
       }
-      let shouldFire = now - this.scanner.lockedHitTime <= this.scanner.scanPeriod;
+      let shouldFire = now - this.scanner.lockedHitTime <= this.scanner.scanPeriod &&
+          Math.abs(this.getAngleDiff(this.getAngleToPos(this.scanner.lockedHitPos))) < AntSpirit.MAX_FIRE_ANGLE_DIFF;
       this.weapon.setButtonDown(shouldFire);
     }
     if (this.scanner) {
