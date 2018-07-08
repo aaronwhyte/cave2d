@@ -111,8 +111,6 @@ Game5BaseScreen.prototype.getHitPairs = function() {
   if (!this.hitPairs) {
     let g = this.getHitGroups();
     this.hitPairs = [
-      [g.EMPTY, g.EMPTY],
-
       [g.NEUTRAL, g.WALL],
       [g.NEUTRAL, g.NEUTRAL],
 
@@ -150,12 +148,10 @@ Game5BaseScreen.prototype.getHitPairs = function() {
       [g.ENEMY_SCAN, g.PLAYER],
       [g.ENEMY_SCAN, g.ENEMY],
 
-      [g.BEAM, g.WALL],
-      [g.BEAM, g.NEUTRAL],
-      [g.BEAM, g.PLAYER],
-      [g.BEAM, g.PLAYER_FIRE],
-      [g.BEAM, g.ENEMY],
-      [g.BEAM, g.ENEMY_FIRE]
+      [g.PLAYER_WIDE_SCAN, g.ENEMY],
+      [g.ENEMY_WIDE_SCAN, g.PLAYER],
+
+      [g.EMPTY, g.EMPTY]
     ];
   }
   return this.hitPairs;

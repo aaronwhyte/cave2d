@@ -47,13 +47,6 @@ Scanner.prototype.fire = function() {
   }
 
   this.doWideScan(pos);
-
-  if (this.lockedHitSpiritId >= 0) {
-    this.doLockedScan(pos);
-    if (this.lockedHitSpiritId >= 0 && now - this.lockedHitTime > this.autoLockBreakTimeout) {
-      this.clearLockedSpiritId();
-    }
-  }
 };
 
 Scanner.prototype.doWideScan = function(pos) {
@@ -62,32 +55,43 @@ Scanner.prototype.doWideScan = function(pos) {
   let rad = 0.5;
   let now = this.now();
 
-  // TODO change this to first scan sans walls. That means doubling the team groups.
-  let dist = this.scan(
-      this.getFireHitGroupForTeam(wielder.team),
+  // First scan and ignore walls, because there's no reason to do collision checks with walls
+  // if there's no target behind those walls, and wall checks are expensive.
+  let isAnyoneThereDist = this.scan(
+      this.getWideScanHitGroupForTeam(wielder.team),
       pos,
       aimAngle,
       this.coneLen,
       rad);
-  if (dist >= 0) {
-    let body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
-    let spirit = this.screen.getSpiritForBody(body);
-    if (spirit) {
-      if (wielder.attacksTeam(spirit.team)) {
-        this.wideHitTime = now;
-        this.wideHitSpiritId = spirit.id;
-        this.wideHitPos.set(spirit.getBodyPos());
-        this.wideHitVel.set(spirit.getBodyVel());
-      } else {
-        // TODO status = "target lost"?
+  if (isAnyoneThereDist >= 0) {
+    let dist = this.scan(
+        this.getFireHitGroupForTeam(wielder.team),
+        pos,
+        aimAngle,
+        this.coneLen,
+        rad);
+    if (dist >= 0) {
+      let body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
+      let spirit = this.screen.getSpiritForBody(body);
+      if (spirit) {
+        if (wielder.attacksTeam(spirit.team)) {
+          this.wideHitTime = now;
+          this.wideHitSpiritId = spirit.id;
+          this.wideHitPos.set(spirit.getBodyPos());
+          this.wideHitVel.set(spirit.getBodyVel());
+        }
       }
     }
   }
 };
 
-Scanner.prototype.doLockedScan = function(pos) {
+/**
+ * Wielder calls this to see if the locked object is still visible.
+ */
+Scanner.prototype.doLockedScan = function() {
+  if (!this.lockedHitSpiritId) return;
+
   let wielder = this.getWielderSpirit();
-  let aimVec = wielder.getAimVec();
   let lockedSpirit = this.screen.getSpiritById(this.lockedHitSpiritId);
   if (!lockedSpirit) {
     this.clearLockedSpiritId();
@@ -99,6 +103,7 @@ Scanner.prototype.doLockedScan = function(pos) {
     return;
   }
 
+  let pos = this.getBodyPos();
   let lockedPos = lockedSpirit.getBodyPos();
   let centerDist = pos.distance(lockedPos);
   if (centerDist - lockedBody.rad > this.coneLen) {
@@ -124,6 +129,7 @@ Scanner.prototype.doLockedScan = function(pos) {
   let rad = 0.5;
   let now = this.now();
 
+  // This is purely an obstruction check, so pay full price for wall detection.
   let dist = this.scan(this.getFireHitGroupForTeam(wielder.team), pos, angPos + angleDiff, this.coneLen, rad);
   if (dist >= 0) {
     let body = this.screen.world.getBodyByPathId(this.scanResp.pathId);
@@ -133,6 +139,10 @@ Scanner.prototype.doLockedScan = function(pos) {
       this.lockedHitPos.set(lockedPos);
       this.lockedHitVel.set(lockedSpirit.getBodyVel());
     }
+  }
+
+  if (this.lockedHitSpiritId >= 0 && now - this.lockedHitTime > this.autoLockBreakTimeout) {
+    this.clearLockedSpiritId();
   }
 };
 

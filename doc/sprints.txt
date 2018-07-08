@@ -92,36 +92,19 @@ v ant integration
   v ant fires when it sees target
   v ant locks target
   v ant turns towards locked target
-  - ant follows target around corners
+  v ant follows target around corners
     v move to target last pos
     x rotate to target last velocity
     v start search fresh
   v ant loses interest if it cannot find target after a while
   x ant loses interest if it sees target destroyed
 
-- searching
+v searching
   * more efficient rayscanning when you're looking for rare bodies
-  - Do clear scan for targets (only check for targets, not obstructions)
-    - If there's a hit, do obstruction scan
-      - If that hits, then remember the position and velocity of that target, and the new time
-
-- later scanner API
-  - if center fails, sweep to edges (maybe in just one step for each side) until hit
-  - adjustable rayscan period
-  - set callback for telling the spirit about target updates
-    * but for now just poll
-    * only reason for callbacks is if spirit is inert except for target-scanning
-    - target acquired
-    - target lost
-    - target destroyed? Happens if last target state was "acquired" and target spirit/body is now invalid.
-- later scan
-  - first scan for target, ignoring walls
-  - if found, then do more expensive obfuscation scan
-
-- trackball-ish player controls like game2?
+  v Do clear scan for targets (only check for targets, not obstructions)
+    v If there's a hit, do obstruction scan
 
 - level generation fun!
-
 
 
 Focus and firing algorithm

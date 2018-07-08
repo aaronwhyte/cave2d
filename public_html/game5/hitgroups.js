@@ -13,5 +13,6 @@ let HitGroups = {
   ENEMY_FIRE: 7,
   ENEMY_SCAN: 8,
   PLAYER_SCAN: 9,
-  BEAM: 10
+  PLAYER_WIDE_SCAN: 10,
+  ENEMY_WIDE_SCAN: 11
 };

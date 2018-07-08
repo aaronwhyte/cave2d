@@ -471,6 +471,17 @@ BaseSpirit.prototype.getFireHitGroupForTeam = function(team) {
   }
 };
 
+BaseSpirit.prototype.getWideScanHitGroupForTeam = function(team) {
+  switch(team) {
+    case Team.PLAYER:
+      return HitGroups.PLAYER_WIDE_SCAN;
+    case Team.ENEMY:
+      return HitGroups.ENEMY_WIDE_SCAN;
+    default:
+      return HitGroups.NEUTRAL; // TODO neutral_wide_scan?
+  }
+};
+
 
 /////////////
 // Timeouts
