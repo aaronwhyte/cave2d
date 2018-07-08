@@ -69,7 +69,8 @@ Sounds.prototype.zup = function(worldPos, now) {
   let decay = 2/60;
   let freq = 200 + Math.random() * 100;
   let freq2 = freq * (10 + 10 * Math.random());
-  this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay, freq, freq2, 'triangle', 0);
+  this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq, freq2, 'triangle', 0.3/60);
+  this.sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq, freq2, 'square', 0);
 };
 
 Sounds.prototype.shotgun = function(worldPos) {
