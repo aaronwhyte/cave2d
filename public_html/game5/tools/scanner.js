@@ -34,6 +34,14 @@ Scanner.prototype.getNextFireTime = function() {
 };
 
 /**
+ * @override
+ */
+Scanner.prototype.setButtonDown = function(b) {
+  BaseTool.prototype.setButtonDown.call(this, b);
+  if (!b) this.clearLockedSpiritId();
+};
+
+/**
  * This does the sweep
  * @override
  */
@@ -82,6 +90,11 @@ Scanner.prototype.doWideScan = function(pos) {
         }
       }
     }
+  }
+
+  // auto-clear the lock
+  if (this.lockedHitSpiritId && now - this.lockedHitTime > this.autoLockBreakTimeout) {
+    this.clearLockedSpiritId();
   }
 };
 
@@ -141,7 +154,7 @@ Scanner.prototype.doLockedScan = function() {
     }
   }
 
-  if (this.lockedHitSpiritId >= 0 && now - this.lockedHitTime > this.autoLockBreakTimeout) {
+  if (this.lockedHitSpiritId && now - this.lockedHitTime > this.autoLockBreakTimeout) {
     this.clearLockedSpiritId();
   }
 };
