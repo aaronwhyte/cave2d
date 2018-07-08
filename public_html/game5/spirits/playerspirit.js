@@ -108,10 +108,10 @@ PlayerSpirit.factory = function(screen, pos, dir) {
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
-  // let w = new MediumShooter(screen);
-  // world.addSpirit(w);
-  // w.setWielderId(spiritId);
-  // spirit.weapon = w;
+  let w = new MediumShooter(screen);
+  world.addSpirit(w);
+  w.setWielderId(spiritId);
+  spirit.weapon = w;
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
