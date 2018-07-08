@@ -34,6 +34,9 @@ BaseTool.prototype.getNextFireTime = function() {
   return this.lastFireTime + 10; // just a random default fire rate
 };
 
+/**
+ * @param {boolean} b
+ */
 BaseTool.prototype.setButtonDown = function(b) {
   this.buttonDown = b;
   if (this.buttonDown && !this.timeoutRunning) {

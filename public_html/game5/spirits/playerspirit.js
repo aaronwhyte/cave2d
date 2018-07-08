@@ -30,7 +30,7 @@ function PlayerSpirit(screen) {
 
   // combat
   this.toughness = 1;
-  this.damage = 0;
+  this.damage = 1;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -39,7 +39,7 @@ PlayerSpirit.PLAYER_RAD = 0.99;
 
 // super traction
 PlayerSpirit.SPEED = 1;
-PlayerSpirit.TRACTION = 0.2;
+PlayerSpirit.TRACTION = 0.5;
 //
 // medium
 // PlayerSpirit.SPEED = 1.1;
@@ -58,6 +58,8 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
 PlayerSpirit.ANGULAR_FRICTION = 0.3;
+
+PlayerSpirit.STOP_FIRING_AFTER_TIME = 10;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -108,10 +110,10 @@ PlayerSpirit.factory = function(screen, pos, dir) {
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
-  let w = new MediumShooter(screen);
-  world.addSpirit(w);
-  w.setWielderId(spiritId);
-  spirit.weapon = w;
+  // let w = new PlayerGun(screen);
+  // world.addSpirit(w);
+  // w.setWielderId(spiritId);
+  // spirit.weapon = w;
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
@@ -168,7 +170,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     this.lastStickVecTime = now;
   }
   if (this.weapon) {
-    this.weapon.setButtonDown(now - this.lastStickVecTime < 10);
+    this.weapon.setButtonDown(now - this.lastStickVecTime < PlayerSpirit.STOP_FIRING_AFTER_TIME);
   }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1

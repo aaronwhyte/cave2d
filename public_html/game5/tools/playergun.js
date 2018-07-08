@@ -2,23 +2,23 @@
  * @constructor
  * @extends {BaseTool}
  */
-function MediumShooter(screen) {
+function PlayerGun(screen) {
   BaseTool.call(this, screen);
 }
-MediumShooter.prototype = new BaseTool();
-MediumShooter.prototype.constructor = MediumShooter;
+PlayerGun.prototype = new BaseTool();
+PlayerGun.prototype.constructor = PlayerGun;
 
-MediumShooter.RECOIL_FORCE = 0.2;
+PlayerGun.RECOIL_FORCE = 0;
 
-MediumShooter.prototype.getNextFireTime = function() {
-  let throttle = 8 + 0.2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
+PlayerGun.prototype.getNextFireTime = function() {
+  let throttle = 2 * (1 + 0.05 * Math.sin(2349.12983 * this.id + this.lastFireTime));
   return this.lastFireTime + throttle;
 };
 
 /**
  * @override
  */
-MediumShooter.prototype.fire = function() {
+PlayerGun.prototype.fire = function() {
   let pos = this.getBodyPos();
   if (!pos) return;
 
@@ -28,14 +28,14 @@ MediumShooter.prototype.fire = function() {
 
   let aimVec = wielder.getAimVec();
 
-  let rad = 0.5;
+  let rad = 0.4;
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(body.rad - rad * 1.001);
   pos.add(this.vec2d);
-  let speed = 2;
-  let vel = this.vec2d.set(aimVec).scaleToLength(speed);
+  let speed = 3;
+  let vel = this.vec2d.set(aimVec).scaleToLength(speed).rot(0.1 * (Math.random() - 0.5));
 
-  this.addBullet(pos, vel, rad, 30 / speed);
+  this.addBullet(pos, vel, rad, 5 / speed);
   this.screen.sounds.zup(pos, now);
   this.screen.splashes.addDotSplash(now,
       vel.scaleToLength(rad * 1.5).add(pos),
@@ -43,12 +43,13 @@ MediumShooter.prototype.fire = function() {
       0.8, 0.8, 0.8);
 
   // recoil
-  let forceVec = this.vec2d.set(wielder.getAimVec()).scaleToLength(-MediumShooter.RECOIL_FORCE);
-  body.applyForceAtWorldPosAndTime(forceVec, pos, now);
-
+  if (PlayerGun.RECOIL_FORCE) {
+    let forceVec = this.vec2d.set(wielder.getAimVec()).scaleToLength(-PlayerGun.RECOIL_FORCE);
+    body.applyForceAtWorldPosAndTime(forceVec, pos, now);
+  }
 };
 
-MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
+PlayerGun.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(1, 1, 0);
@@ -75,7 +76,7 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.digChance = 2;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
-  spirit.trailDuration = 1.5;
+  spirit.trailDuration = 1;
   spirit.headRadFraction = 1;
   spirit.tailRadFraction = 0.5;
 
