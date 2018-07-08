@@ -185,6 +185,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
     }
     if (this.scanner) {
       this.scanner.setButtonDown(false);
+      this.scanner.clearLockedSpiritId();
     }
     let friction = this.getFriction();
     body.applyLinearFrictionAtTime(friction * time, now);
