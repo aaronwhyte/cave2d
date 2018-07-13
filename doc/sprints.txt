@@ -103,6 +103,8 @@ v searching
   * more efficient rayscanning when you're looking for rare bodies
   v Do clear scan for targets (only check for targets, not obstructions)
     v If there's a hit, do obstruction scan
+v less randomness, more regular sweeping
+
 
 - level generation fun!
 

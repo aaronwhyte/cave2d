@@ -131,8 +131,10 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       let s = new Scanner(this.screen, this.team);
       this.screen.world.addSpirit(s);
       s.setWielderId(this.id);
-      s.coneWidth = Math.PI * 1.1;
-      s.scanPeriod = 0.9;
+      s.coneWidth = Math.PI * 1.2;
+      s.scanPeriod = 0.5;
+      s.scanRad = 0.75;
+      s.scanGap = 1.5;
       s.autoLockBreakTimeout = 60;
       this.scanner = s;
     }

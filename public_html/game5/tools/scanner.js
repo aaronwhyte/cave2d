@@ -6,7 +6,9 @@ function Scanner(screen, clientSpirit) {
   BaseTool.call(this, screen);
   this.client  = clientSpirit;
 
-  this.scanPeriod = 1.1;
+  this.scanPeriod = 1;
+  this.scanRad = 0.5;
+  this.scanGap = 0.25;
   this.autoLockBreakTimeout = 10;
   this.coneWidth = Math.PI / 2;
   this.coneLen = 20;
@@ -59,9 +61,15 @@ Scanner.prototype.fire = function() {
 
 Scanner.prototype.doWideScan = function(pos) {
   let wielder = this.getWielderSpirit();
-  let aimAngle = this.getBodyAngPos() + this.coneWidth * (Math.random() - 0.5);
-  let rad = 0.5;
   let now = this.now();
+  let rad = this.scanRad;
+  let sweepSize = this.coneLen * this.coneWidth;
+  let stepsPerSweep = Math.floor(sweepSize / (2 * rad + this.scanGap));
+  let stepNum = ((this.wielderId * 17 + now) / this.scanPeriod) % (2 * stepsPerSweep);
+  if (stepNum >= stepsPerSweep) {
+    stepNum = stepsPerSweep * 2 - stepNum;
+  }
+  let aimAngle = this.getBodyAngPos() - 0.5 * this.coneWidth + stepNum * this.coneWidth / stepsPerSweep;
 
   // First scan and ignore walls, because there's no reason to do collision checks with walls
   // if there's no target behind those walls, and wall checks are expensive.
