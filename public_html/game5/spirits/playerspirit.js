@@ -37,19 +37,10 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-// super traction
-PlayerSpirit.SPEED = 1;
-PlayerSpirit.TRACTION = 0.5;
-//
-// medium
-// PlayerSpirit.SPEED = 1.1;
-// PlayerSpirit.TRACTION = 0.06;
-//
-// // fast n floaty
-// PlayerSpirit.SPEED = 2;
-// PlayerSpirit.TRACTION = 0.02;
+PlayerSpirit.SPEED = 1.1;
+PlayerSpirit.TRACTION = 0.2;
 
-PlayerSpirit.KEY_MULT_ADJUST = 0.1;
+PlayerSpirit.KEY_MULT_ADJUST = 1/3;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
