@@ -142,7 +142,7 @@ Scanner.prototype.doLockedScan = function() {
     angleDiff += 2 * Math.PI;
   }
   // TODO: add geometry code for deciding if a circle is within a cone
-  if (angleDiff > this.coneWidth + Math.asin(lockedBody.rad / centerDist)) {
+  if (Math.abs(angleDiff) > this.coneWidth/2) {// + Math.asin(lockedBody.rad / centerDist)) {
     // to the side of the cone
     return;
   }
