@@ -73,6 +73,23 @@ Sounds.prototype.zup = function(worldPos, now) {
   this.sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq, freq2, 'square', 0);
 };
 
+Sounds.prototype.zap = function(worldPos, now) {
+  let screenPos = this.getScreenPosForWorldPos(worldPos);
+  let x = screenPos.x;
+  let y = screenPos.y;
+  let attack = 0;
+  let sustain = 0;
+  let decay = 0.25;
+  let freq = 100;
+  let freq2 = 5000 + Math.random() * 10;
+  this.sfx.sound(x, y, 0, 0.7, attack, sustain, decay, freq, freq2, 'triangle', 0);
+
+  attack = 0.07;
+  sustain = 0;
+  decay = 0.1;
+  this.sfx.sound(x, y, 0, 0.5, attack, sustain, decay, freq, freq2, 'square', 0);
+};
+
 Sounds.prototype.shotgun = function(worldPos) {
   let screenPos = this.getScreenPosForWorldPos(worldPos);
   let x = screenPos.x;

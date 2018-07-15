@@ -1,6 +1,6 @@
 /**
  * Base class for tools. Spirits own these and delegate management to these.
- * @param {Game5BaseScreen} screen access to sound effects, the world, etc.
+ * @param {Game5BaseScreen} screen  access to sound effects, the world, etc.
  * @constructor
  */
 function BaseTool(screen) {

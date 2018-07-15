@@ -16,7 +16,7 @@ LaserWeapon.prototype.getNextFireTime = function() {
   // let delay = Math.max(0, 24 - (calcDelayFromTime + this.id) % 32);
   // return calcDelayFromTime + delay;
 
-  let throttle = 1.35 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
+  let throttle = 7 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
   return this.lastFireTime + throttle;
 };
 
@@ -41,7 +41,11 @@ LaserWeapon.prototype.fire = function() {
       rad,
       1.5 + Math.random() * 0.2
   );
-  // this.screen.sounds.pew(pos, this.now());
+  this.screen.sounds.zap(pos, this.now());
+  this.screen.splashes.addDotSplash(this.now(),
+      this.vec2d.set(aimVec).scaleToLength(rad * 1.5).add(pos),
+      rad * (5 + Math.random()), 2,
+      1 - 0.2 * Math.random(), 0, 0);
 };
 
 LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
@@ -77,9 +81,9 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.digChance = 0;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
-  spirit.trailDuration = 1.5;
-  spirit.headRadFraction = 2;
-  spirit.tailRadFraction = 2;
+  spirit.trailDuration = 7;
+  spirit.headRadFraction = 3;
+  spirit.tailRadFraction = 0;
 
 
   // bullet self-destruct timeout

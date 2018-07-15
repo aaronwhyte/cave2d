@@ -32,10 +32,10 @@ AntSpirit.prototype.constructor = AntSpirit;
 
 AntSpirit.ACTIVE_TIMEOUT = 1.3;
 
-AntSpirit.THRUST = 1.5;
-AntSpirit.FIRING_THRUST_MULTIPLIER = 0.8;
-AntSpirit.CHASING_THRUST_MULTIPLIER = 2;
-AntSpirit.MAX_FIRE_ANGLE_DIFF = Math.PI / 16;
+AntSpirit.THRUST = 1;
+AntSpirit.FIRING_THRUST_MULTIPLIER = 0.2;
+AntSpirit.CHASING_THRUST_MULTIPLIER = 2.5;
+AntSpirit.MAX_FIRE_ANGLE_DIFF = Math.PI / 12;
 AntSpirit.TRACTION = 0.2;
 AntSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 AntSpirit.STOPPING_ANGVEL = 0.01;
@@ -122,7 +122,14 @@ AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
 AntSpirit.prototype.doPlayingActiveTimeout = function() {
   if (this.screen.isPlaying()) {
     if (!this.weapon) {
-      let w = new SlowShooter(this.screen);
+      let w;
+      if (Math.random() < 0.1) {
+        w = new LaserWeapon(this.screen);
+      } else if (Math.random() < 0.3) {
+        w = new MediumShooter(this.screen);
+      } else {
+        w = new SlowShooter(this.screen);
+      }
       this.screen.world.addSpirit(w);
       w.setWielderId(this.id);
       this.weapon = w;
@@ -231,8 +238,7 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   // How far (to either side) to look for a way out.
   let maxScanRotation = Math.PI * 0.99;
 
-  // Decide which way to steer based on target lock
-  // chase locked target!
+  // Decide which way to steer based on target lock.
   let chaseRot = 0;
   let lockedSpirit = this.screen.getSpiritById(this.scanner.lockedHitSpiritId);
   let lockedBody = null;
@@ -242,13 +248,21 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
     if (lockedBody) {
       // this.screen.splashes.addDotSplash(now, this.scanner.lockedHitPos, 0.7, 10,
       //     1, 1, 1);
-      chaseRot = this.getAngleDiff(this.getAngleToPos(this.scanner.lockedHitPos));
+      if (this.scanner.lockedHitPos.distance(this.getBodyPos()) < body.rad * 2) {
+        // close to last-seen pos, so try last-known velocity
+        chaseRot = this.getAngleDiff(this.scanner.lockedHitVel.angle());
+        lockedBody = null;
+        this.scanner.clearLockedSpiritId();
+      } else {
+        // far from last-seen position, so head to it.
+        chaseRot = this.getAngleDiff(this.getAngleToPos(this.scanner.lockedHitPos));
+      }
     }
   }
-  let targetVisible = lockedBody && (now - this.scanner.lockedHitTime < 10);
+  let targetVisible = lockedBody && now === this.scanner.lockedHitTime;
 
   if (targetVisible) {
-    bestRot = chaseRot / 2;
+    bestRot = chaseRot;
     bestFrac = 1;
   } else {
     // Randomly pick a starting side for every pair of side-scans.
