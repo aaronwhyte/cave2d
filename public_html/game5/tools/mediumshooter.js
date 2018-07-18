@@ -53,7 +53,7 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(1, 1, 0);
-  let density = 2;
+  let density = 4;
 
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;

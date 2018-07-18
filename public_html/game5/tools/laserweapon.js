@@ -58,7 +58,7 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
       0,
       0
   );
-  let density = 0.1;
+  let density = 1;
 
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
