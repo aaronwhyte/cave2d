@@ -29,7 +29,7 @@ function PlayerSpirit(screen) {
   this.modelMatrix2 = new Matrix44();
 
   // combat
-  this.toughness = 1;
+  this.toughness = 3;
   this.damage = 1;
 }
 PlayerSpirit.prototype = new BaseSpirit();
