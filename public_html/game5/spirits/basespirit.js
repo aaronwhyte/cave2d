@@ -426,7 +426,12 @@ BaseSpirit.prototype.attacksTeam = function(otherTeam) {
 };
 
 BaseSpirit.prototype.applyDamage = function(damage) {
-  this.health -= damage / this.toughness;
+  let damageFraction = damage / this.toughness;
+
+  // Round up to nearest thousandth, to prevent floating-point junk
+  // from leaving you with something like 0.0000001 health.
+  this.health -= Math.ceil(1000 * damageFraction) / 1000;
+
   if (this.health <= 0) {
     this.die();
   }
