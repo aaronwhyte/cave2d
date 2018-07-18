@@ -308,7 +308,7 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   let clip = 0.7;
   let angAccel = Math.clip(bestRot * bestFrac * 0.2, -clip, clip);
   body.addAngVelAtTime(angAccel, now);
-  if (!this.stress) {
+  if (!this.stress && !targetVisible) {
     // wander a little
     body.addAngVelAtTime(0.1 * (Math.random() - 0.5), now);
   }
