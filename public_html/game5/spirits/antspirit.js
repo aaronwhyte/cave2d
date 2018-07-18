@@ -26,6 +26,7 @@ function AntSpirit(screen) {
 
   this.toughness = 1;
   this.damage = 0;
+  this.chasePlayer = true;
 }
 AntSpirit.prototype = new BaseSpirit();
 AntSpirit.prototype.constructor = AntSpirit;
@@ -139,6 +140,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       this.screen.world.addSpirit(s);
       s.setWielderId(this.id);
       s.coneWidth = Math.PI * 1.2;
+      s.coneLen = 20;
       s.scanPeriod = 0.5;
       s.scanRad = 0.75;
       s.scanGap = 1.5;
@@ -317,10 +319,8 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
   let thrust = AntSpirit.THRUST * (0.5 * (1 - this.stress) + 0.5 * bestFrac);
   if (targetVisible) {
     thrust *= AntSpirit.FIRING_THRUST_MULTIPLIER;
-  } else if (lockedBody) {
+  } else if (this.chasePlayer && lockedBody) {
     thrust *= AntSpirit.CHASING_THRUST_MULTIPLIER;
-    // thrust *= lockedBody ? 1.2
-    //     // : 1 + 0.2 * Math.max(0, 1 - 0.5 * (now - this.scanner.lockedHitTime) / this.scanner.autoLockBreakTimeout);
   }
   let dir = this.getBodyAngPos();
   this.accel
