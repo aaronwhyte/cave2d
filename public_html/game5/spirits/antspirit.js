@@ -123,7 +123,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
   if (this.screen.isPlaying()) {
     if (!this.weapon) {
       let w;
-      if (Math.random() < 0.1) {
+      if (Math.random() < 0.15) {
         w = new LaserWeapon(this.screen);
       } else if (Math.random() < 0.3) {
         w = new MediumShooter(this.screen);
