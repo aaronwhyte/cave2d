@@ -8,10 +8,10 @@ function MediumShooter(screen) {
 MediumShooter.prototype = new BaseTool();
 MediumShooter.prototype.constructor = MediumShooter;
 
-MediumShooter.RECOIL_FORCE = 0.2;
+MediumShooter.RECOIL_FORCE = 0.5;
 
 MediumShooter.prototype.getNextFireTime = function() {
-  let throttle = 8 + 0.2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
+  let throttle = 4 + 0.2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
   return this.lastFireTime + throttle;
 };
 
@@ -32,7 +32,7 @@ MediumShooter.prototype.fire = function() {
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(body.rad - rad * 1.001);
   pos.add(this.vec2d);
-  let speed = 1.5;
+  let speed = 1;
   let dist = 50;
   let vel = this.vec2d.set(aimVec).scaleToLength(speed);
 
@@ -76,9 +76,9 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.digChance = 2;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
-  spirit.trailDuration = 1.5;
+  spirit.trailDuration = 1.6;
   spirit.headRadFraction = 1;
-  spirit.tailRadFraction = 0.5;
+  spirit.tailRadFraction = 0.2;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
