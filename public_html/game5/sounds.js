@@ -79,11 +79,11 @@ Sounds.prototype.zap = function(worldPos, now) {
   let y = screenPos.y;
   let attack = 0.05;
   let sustain = 0;
-  let decay = 0.1;
-  let freq = 40;
-  let freq2 = 5000 + Math.random() * 10;
-  this.sfx.sound(x, y, 0, 1, attack, sustain, decay, freq, freq2, 'sawtooth', 0);
-  // this.sfx.sound(x, y, 0, 1, attack, sustain, decay, freq*2, freq2*2, 'square', Math.random() * 0.01);
+  let decay = 0.1 * (1 + Math.random() * 0.5);
+  let freq = 60;
+  let freq2 = 2000 + Math.random() * 10;
+  this.sfx.sound(x, y, 0, 1, attack, sustain, decay/4, freq, freq2, 'square', 0);
+  this.sfx.sound(x, y, 0, 1.2, attack, sustain, decay, freq, freq2, 'triangle', Math.random() * 0.01);
 
   attack = 0.07;
   sustain = 0;
