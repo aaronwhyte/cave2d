@@ -2,9 +2,8 @@
  * @constructor
  * @extends {BaseTool}
  */
-function TargetScanner(screen, clientSpirit) {
+function TargetScanner(screen) {
   BaseTool.call(this, screen);
-  this.client  = clientSpirit;
 
   this.scanPeriod = 1;
   this.scanRad = 0.5;
@@ -22,8 +21,6 @@ function TargetScanner(screen, clientSpirit) {
   this.lockedHitPos = new Vec2d();
   this.lockedHitVel = new Vec2d();
   this.lockedHitSpiritId = 0;
-
-  this.lastScanTime = -Infinity;
 }
 TargetScanner.prototype = new BaseTool();
 TargetScanner.prototype.constructor = TargetScanner;
@@ -48,14 +45,11 @@ TargetScanner.prototype.setButtonDown = function(b) {
  * @override
  */
 TargetScanner.prototype.fire = function() {
-  let now = this.now();
-  this.lastScanTime = now;
   let pos = this.getBodyPos();
   if (!pos) {
     console.log('no body to scan from');
     return;
   }
-
   this.doWideScan(pos);
 };
 
