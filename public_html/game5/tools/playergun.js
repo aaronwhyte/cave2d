@@ -32,10 +32,11 @@ PlayerGun.prototype.fire = function() {
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(body.rad - rad * 1.001);
   pos.add(this.vec2d);
+  let dist = 30;
   let speed = 3;
   let vel = this.vec2d.set(aimVec).scaleToLength(speed).rot(0.1 * (Math.random() - 0.5));
 
-  this.addBullet(pos, vel, rad, 5 / speed);
+  this.addBullet(pos, vel, rad, dist / speed);
   this.screen.sounds.zup(pos, now);
   this.screen.splashes.addDotSplash(now,
       vel.scaleToLength(rad * 1.5).add(pos),
