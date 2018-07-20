@@ -136,7 +136,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       this.weapon = w;
     }
     if (!this.scanner) {
-      let s = new Scanner(this.screen, this.team);
+      let s = new TargetScanner(this.screen, this.team);
       this.screen.world.addSpirit(s);
       s.setWielderId(this.id);
       s.coneWidth = Math.PI * 1.2;
