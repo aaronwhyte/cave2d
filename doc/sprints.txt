@@ -105,15 +105,100 @@ v searching
     v If there's a hit, do obstruction scan
 v less randomness, more regular sweeping
 
+- ClearPathScanner: class for finding a clear path
+  - short scan for obstructions in desired motion direction
+  - sweep-scan out to sides to find nearest unobstructed angle
+  - state updates to include
+    - unobstructed direction
+    - isObstructed, and then
+      - obstruction distance
+      - obstruction path ID (to get body ID or spirit ID etc)
+  - params:
+    * scan rad = body rad
+    * there is no scan period. This scanner is on-demand.
+    - scan group
+    - number of scans to the side to do (chages with stress so we do need it)
+    - angle increments of the side scans
+    - scan length
+  - integrate into ant
 
-- level generation fun!
+- hearing sense
+  - SoundHistory class
+    - backed by circular buffer
+    - records are SoundEntry objs, pre-allocated to fill buffer
+      - type
+      - location
+      - time
+      - radius (simulates effect of volume)
+    - lastSoundId starts at -1 and goes up by one each time
+  - Hearing module for spirits
+    - Spirits remember their own lastSoundId
+    - when active but busy (target locked) they just set this.lastSoundId = soundHistory.lastSoundId
+    - when just becoming active, also ignore prev sounds
+    - when bored, process unprocessed ones in order
+      - scoring: priority(type) - (age + distance / speed)
+    - copy the fields for their last highest
+    - each "bored" enemy
+      - looks at ALL of them
+        - decides on most attractive
+        - copies the record to a local cache
+      - tends towards sound until its score is 0 or until it is forgotton
+  - if a target is seen, that clears the hearing record
+
+- better combat
+  - melee weapons scan and lash out at target in range
+  - non-fatal hit:
+    - stun
+    - N-frame white flash (need to handle render-time biz like that, not in world-time)
+    - force applies to attacker and defender, but mostly defender
+  - fatal hit
+    - changes spirit to corpse, with lots of knockback
+    - corpse turns to dust easily
+
+- Encapsulate behavior: WallAvoidance
+  - uses ClearPathScanner
+  - moving in a given direction
+    - angular friction
+    - linear friction
+    - turn towards direction
+    - and thrust (proportional to direction alignment + constant)
+  - stress?
+    - influencers
+      - obstructions increase stress
+      - clear path or target-visible clears stress
+    - effects
+      - 100% stress means lots of obstruction, maybe trapped. Subtle state change:
+        - clear-path side-sweep scan count = 0
+        - should also stop scanner I guess
+        - randomly freak out instead since plans didn't work.
+      - if unstressed, wanderers turn randomly
+      - stress decreases thrust, to avoid ramming into walls
 
 
-Focus and firing algorithm
+V .............. V
+V                V
+|   WELCOME TO   |
+| THE LATER ZONE |
+|                |
+V .............. V
 
-- pluggable, not baked into spirit
-  -
+- weapons show up on carriers? Need special weapon graphics.
+  * iconic grx for every weapon
+  * show it outside of creature, in fire direction
+  * show it inside weapon-pickup bubble
 
+- weapons
+  v slow shooter
+  v medium shooter - machine-gunny
+  v laser 1.0 - long, straight, no bounce, frequent
+  - telegraph laser fire with sparks, add delay
+  - shotgun - short wide, a bit bouncy, infrequent
+  - magic missile - seeking, avoids walls. Infrequent!
+  - rogue gun - medium, narrowish, very bouncy, low damage
+  - rocket - dumb, infrequent, explosive
+  - saw - really short, constant, cuts through walls.
+
+- level generation
 
 - health framework
   - damage is floating point
@@ -125,65 +210,6 @@ This solves some problems:
 3) Folks aren't walking around within a hair's-breadth of dying.
 4) Player is encouraged to concentrate attacks on an enemy long enough to drop it at least one full HP.
 5) health can still be displayed with integer chunks
-
-- leaf weapon classes
-  v laser - long, straight, no bounce, frequent
-  - shotgun - short wide, a bit bouncy, infrequent
-  - rogue gun - medium, narrowish, very bouncy, low damage
-  - machine gun - long, straightish, little bounce, frequent
-  - rocket - dumb, infrequent, explosive
-  - magic missile - seeking, avoids walls. Infrequent!
-  - saw. Really short, constant, cut through walls.
-- hosts
-  v player
-  - turret
-  - tank
-  - grunt
-  - flier
-
-Dumb arcade enemies:
-- fire projectiles that harm player
-  - for now harm = kill (but I really liked fracas2's 3 stages of health: temp superpowered, regular, and near-death bullet-time)
-- dumb movement states
-  - wander
-    - factor out Ant and Centipede Wall avoidance
-      - encapsulate behavior class with state and params
-      - search for wall ahead
-      - side-sweep to find clear path, early bail. That's the main reusable part.
-  - chase player (when unobstructed by huge masses)
-  - follow invisible directional arrows?
-  - follow walls
-  - stationary
-- some are dangerous to touch
-  - spiker
-  - floating mines
-- melee weapons, like spiker (instant, rayscan) or
-- some have an invincibility phase, especially turrets.
-  - Pick a color for invincibility
-- moods
-  - safe until attacked
-  - hostile when hungry
-  - flee when hurt
-  - attraction - follow at respectful dist
-  - alliance
-    - hang around X
-    - attack those who are hostile towards X
-- mood-inducing artifacts and weapons
-  - fear gas
-  - anger gas
-  - fear gaze
-  - attraction gaze!
-- physics-y enemies
-  - asteroids float through walls
-  - bouncy balls bounce and split
-  - statues teleport using rayscans
-
-- powerup framework
-  - durable one-use shield
-  - temp invincibility
-  - slower enemies & enemy bullets
-  - weapon magnet
-  - periodic time-freeze (no firing!)
 
 Fun props:
 - bumper
@@ -208,208 +234,13 @@ Fun props:
 Impl concepts:
 - desired distance
   - negative infinity: ram target hard
-  - 0: rest just barelytouching target
-  - small num: follow target w/o touching
-  - infinity: get away from the target!
+  - small negative number: gently push target
+  - 0: rest just barely touching target
+  - small positive num: follow target w/o touching
+  - positive infinity: get away from the target!
 - lead/follow
   - try to get to where target will be in f(positions and vels) time
     - zero:  dumbly go to where target is now.
     - positive but proportional to... dist?: lead the target
     - if negative, try to get to where target would have come from - go behind target
-
-- stun effect (timer mostly)
-- flying/knock-back that sends lower traction to 0 for a time (until it hits something?). Often combined with stun.
-- ice effect - shiny crystal
-- slime effect - smooth lumps
-- damage-flashes for non-fatal damage
-
-- make a bullet that does the same
-
-Awesome weapons and effects:
-- Mjolnir
-  - auto-hits enemies when swung around, with heavy knockback
-  - When activated, charges up,
-    and when released, flies and seeks one enemy, then returns (gently) to player for grabbing
-  - When dropped, is immovable?
-- Waymaker
-  - Smashes anything, digs a tunnel
-- Gale
-  - medium-length wind force repels all enemies (and objects)
-- Wide-area stun
-
-
-
-
-Most super-basic:
-* gun-acting robot enemy that is also a weapon
-* more of that
-
-Robot where you can Rotate through modes via activation?
-- deactivate and float
-- follow me passively
-- active, maintain position & direction
-- active, maintain position but do rotational scan
-- come with me and defend me - wingman
-- active, patrol local area
-- active, scout ahead, then return to me
-
-So:
-- basic shooter
-- slimer
-- shotgunner
-- machine-gun
-- grenade
-- snowball
-- rogue
-- flame-thrower
-- rocket
-- laser burst
-- seeker missile
-- sustained laser
-
-
-Proper weapons, mostly melee or thrown
-- mace
-- star(s)
-- glaive
-
-Plants with interesting qualities.
-- bomb
-- mine
-- slime
-- gas
-- frost
-- bramble?
-- decoy
-
-Robots with more powerful weapons, that you can grab and use!
-
-Monsters
-
-Breath weapons
-- Gas and spark monster makes an easy weapon.
-- Slime barfer
-- ice breath
-- flame breath
-- water spitter
-Robots
-* turrets of course
-* walkers
-* sometimes explode!
-- shielders
-- repulsors
-- blasters (primitive)
-- rail-gun
-- missiles
-- repair drones
-Plants (grenades)
-- bomb fruit
-- gas fruit
-- slime fruit
-- bramble fruit?
-Pure tools
-- lance
-- drill
-- glaive
-- mine
-- grenade
-
-Different movement characteristics
-- forward speed
-- sidestep speed
-- backward speed
-- turning speed
-
-
-melee
-
-throw
-gas - hazard only for now, flamable later. Gas immunity
-slime - makes it easy to direct enemies into gas
-fire
-ice
-
-
-- Glaive! Activated, it zooms away, comes back, but is easy-ish to catch again. But it can kill you...
-
-- Basic shooter
-  - wanders, fires slow bullet occasionally at player
-- shotgunner
-- machine gunner
-- bomb thrower (also bombs can be caught and thrown!)
-- sniper
-
-- contact mines
-  - may be grabbed and kicked safely
-  - touching makes them boom, physical shrapnel
-
-behaviors:
-- go forward
-- scan to avoid walls
-- hug wall
-- wall skating?
-- scan for player(s)
-- fire a weapon at a target
-
-- stationary turret
-  - scan for players
-  - fire at them
-
-- patrolling turret
-  - slowly move, avoiding walls
-
-- The Living Statue
-  - Frozen and spike-shielded when player is in view
-  -
-
-- sleepy chaser
-  - sleep when far from players
-  - scan towards player when plr is close enough, to maybe wake up
-    - ordered scan, closest player first
-  - wake on contact or when player is visible
-  - chase to where player was last visible
-  - last-seen timer
-  - new good wall avoiding biz too
-
-- fast tunnel racer! finally.
-  - scans towards players
-  - if plr seen, fire at player and run away
-  - hard to hit/kill
-
-- juggernaut
-  - slow wanderer
-  - when player seen, shields and charges at player, until contact with infinite mass or max time.
-
-- shotgun
-
-v rapid-fire
-  - change to laser?
-- centipede
-
-- wall-hugger missile
-- tunnel lurker
-
-- rail gun (penetrates, accurate, laser scope)
-- summoner
-- turret
-
-- grenade launcher (explosive area of effect)
-- sniper
-
-- rocket launcher
-
-- ice beam
-
-- slime splasher, lowers traction a lot
-
-
-Better deaths/explosions
-- two-part models with spiky bits
-* Splashy everything like I have today
-* Physics-y everything like N++. Nice if you can afford it! Mostly only hits walls
-* shader tricks
-  * fat fragment shader, simply geometry (circle?)
-  * fancy vertex shader with numbered objects and parameterized explosions
-
-Idea: animate as many off-screen enemies as we can given our physics budget left over from on-screen ones.
 
