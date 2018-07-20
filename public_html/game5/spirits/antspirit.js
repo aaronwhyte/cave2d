@@ -135,7 +135,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       w.setWielderId(this.id);
       this.weapon = w;
     }
-    if (!this.scanner) {
+    if (!this.targetScanner) {
       let s = new TargetScanner(this.screen, this.team);
       this.screen.world.addSpirit(s);
       s.setWielderId(this.id);
@@ -145,7 +145,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       s.scanRad = 0.75;
       s.scanGap = 1.5;
       s.autoLockBreakTimeout = 60;
-      this.scanner = s;
+      this.targetScanner = s;
     }
   }
 
@@ -160,22 +160,22 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 
   if (this.distOutsideViewCircles < body.rad * AntSpirit.SLEEP_RADS) {
     // normal active biz
-    if (this.weapon && this.scanner) {
-      if (!this.scanner.lockedHitSpiritId) {
+    if (this.weapon && this.targetScanner) {
+      if (!this.targetScanner.lockedHitSpiritId) {
         // Nothing is locked, so maybe acquire a lock.
-        if (now - this.scanner.wideHitTime < 20) {
-          this.scanner.setLockedSpiritId(this.scanner.wideHitSpiritId);
+        if (now - this.targetScanner.wideHitTime < 20) {
+          this.targetScanner.setLockedSpiritId(this.targetScanner.wideHitSpiritId);
         }
       }
-      if (this.scanner.lockedHitSpiritId) {
-        this.scanner.doLockedScan();
+      if (this.targetScanner.lockedHitSpiritId) {
+        this.targetScanner.doLockedScan();
       }
-      let shouldFire = this.scanner.lockedHitTime === now &&
-          Math.abs(this.getAngleDiff(this.getAngleToPos(this.scanner.lockedHitPos))) < AntSpirit.MAX_FIRE_ANGLE_DIFF;
+      let shouldFire = this.targetScanner.lockedHitTime === now &&
+          Math.abs(this.getAngleDiff(this.getAngleToPos(this.targetScanner.lockedHitPos))) < AntSpirit.MAX_FIRE_ANGLE_DIFF;
       this.weapon.setButtonDown(shouldFire);
     }
-    if (this.scanner) {
-      this.scanner.setButtonDown(true);
+    if (this.targetScanner) {
+      this.targetScanner.setButtonDown(true);
     }
     let friction = this.getFriction();
     body.applyLinearFrictionAtTime(friction * time, now);
@@ -194,9 +194,9 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
     if (this.weapon) {
       this.weapon.setButtonDown(false);
     }
-    if (this.scanner) {
-      this.scanner.setButtonDown(false);
-      this.scanner.clearLockedSpiritId();
+    if (this.targetScanner) {
+      this.targetScanner.setButtonDown(false);
+      this.targetScanner.clearLockedSpiritId();
     }
     let friction = this.getFriction();
     body.applyLinearFrictionAtTime(friction * time, now);
@@ -242,26 +242,26 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
 
   // Decide which way to steer based on target lock.
   let chaseRot = 0;
-  let lockedSpirit = this.screen.getSpiritById(this.scanner.lockedHitSpiritId);
+  let lockedSpirit = this.screen.getSpiritById(this.targetScanner.lockedHitSpiritId);
   let lockedBody = null;
 
   if (lockedSpirit) {
     lockedBody = this.screen.getBodyById(lockedSpirit.bodyId);
     if (lockedBody) {
-      // this.screen.splashes.addDotSplash(now, this.scanner.lockedHitPos, 0.7, 10,
+      // this.screen.splashes.addDotSplash(now, this.targetScanner.lockedHitPos, 0.7, 10,
       //     1, 1, 1);
-      if (this.scanner.lockedHitPos.distance(this.getBodyPos()) < body.rad * 2) {
+      if (this.targetScanner.lockedHitPos.distance(this.getBodyPos()) < body.rad * 2) {
         // close to last-seen pos, so try last-known velocity
-        chaseRot = this.getAngleDiff(this.scanner.lockedHitVel.angle());
+        chaseRot = this.getAngleDiff(this.targetScanner.lockedHitVel.angle());
         lockedBody = null;
-        this.scanner.clearLockedSpiritId();
+        this.targetScanner.clearLockedSpiritId();
       } else {
         // far from last-seen position, so head to it.
-        chaseRot = this.getAngleDiff(this.getAngleToPos(this.scanner.lockedHitPos));
+        chaseRot = this.getAngleDiff(this.getAngleToPos(this.targetScanner.lockedHitPos));
       }
     }
   }
-  let targetVisible = lockedBody && now === this.scanner.lockedHitTime;
+  let targetVisible = lockedBody && now === this.targetScanner.lockedHitTime;
 
   if (targetVisible) {
     bestRot = chaseRot;
@@ -348,8 +348,8 @@ AntSpirit.prototype.explode = function() {
   if (this.weapon) {
     this.screen.removeSpiritId(this.weapon.id);
   }
-  if (this.scanner) {
-    this.screen.removeSpiritId(this.scanner.id);
+  if (this.targetScanner) {
+    this.screen.removeSpiritId(this.targetScanner.id);
   }
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
