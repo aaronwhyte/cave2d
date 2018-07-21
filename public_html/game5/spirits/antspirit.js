@@ -105,18 +105,6 @@ AntSpirit.prototype.getModelId = function() {
   return ModelIds.ANT;
 };
 
-AntSpirit.prototype.scan = function(pos, rot, dist, rad) {
-  let angle = this.getBodyAngPos() + rot;
-  return this.screen.scan(
-      this.screen.getHitGroups().ENEMY_SCAN,
-      pos,
-      this.scanVec.setXY(
-          Math.sin(angle) * dist,
-          Math.cos(angle) * dist),
-      rad,
-      this.scanResp);
-};
-
 /**
  * @override
  */
@@ -147,6 +135,11 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       s.autoLockBreakTimeout = 60;
       this.targetScanner = s;
     }
+    if (!this.clearPathScanner) {
+      let s = new ClearPathScanner(this.screen);
+      s.setWielderId(this.id);
+      this.clearPathScanner = s;
+    }
   }
 
   this.stress = this.stress || 0;
@@ -170,8 +163,9 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
       if (this.targetScanner.lockedHitSpiritId) {
         this.targetScanner.doLockedScan();
       }
+      let angleToTarget = this.getAngleDiff(this.getAngleToPos(this.targetScanner.lockedHitPos));
       let shouldFire = this.targetScanner.lockedHitTime === now &&
-          Math.abs(this.getAngleDiff(this.getAngleToPos(this.targetScanner.lockedHitPos))) < AntSpirit.MAX_FIRE_ANGLE_DIFF;
+          Math.abs(angleToTarget) < AntSpirit.MAX_FIRE_ANGLE_DIFF;
       this.weapon.setButtonDown(shouldFire);
     }
     if (this.targetScanner) {
@@ -220,11 +214,9 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
 
 AntSpirit.prototype.handleLoner = function(newVel, time) {
   let body = this.getBody();
-  let pos = this.getBodyPos();
   let now = this.now();
   let traction = AntSpirit.TRACTION;
   let scanDist = 3 * body.rad;
-  let distFrac, scanRot;
   let moreStress = 0.2;
 
   let bestFrac = 0; // lowest possible value
@@ -267,42 +259,10 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
     bestRot = chaseRot;
     bestFrac = 1;
   } else {
-    // Randomly pick a starting side for every pair of side-scans.
-    let lastSign = Math.sign(Math.random() - 0.5);
-    for (let i = 0; i <= maxIterations; i++) {
-      if (i === 0) {
-        distFrac = this.scan(pos, chaseRot + 0.5 * (Math.random() - 0.5), scanDist, body.rad);
-        if (distFrac < 0) {
-          bestFrac = 1;
-          bestRot = chaseRot;
-        } else {
-          // hit something
-          bestFrac = distFrac;
-        }
-      } else {
-        // Do a pair of scans to either side, in random order
-        for (let signMult = -1; signMult <= 1; signMult += 2) {
-          scanRot = chaseRot + signMult * lastSign * maxScanRotation * i / maxIterations;
-          distFrac = this.scan(pos, scanRot, scanDist, body.rad);
-          if (distFrac < 0) {
-            bestFrac = 1;
-            bestRot = scanRot;
-          } else {
-            // hit something
-            if (distFrac > bestFrac) {
-              // This is the longest scan so far. Remember it!
-              bestFrac = distFrac;
-              bestRot = scanRot;
-            }
-            // keep looking...
-          }
-        }
-      }
-      if (bestFrac === 1) {
-        // A clear path is definitely the best path.
-        break;
-      }
-    }
+    let hitGroup = this.screen.getHitGroups().ENEMY_SCAN;
+    this.clearPathScanner.scanForBestPath(hitGroup, scanDist, maxIterations, maxScanRotation, chaseRot);
+    bestRot = this.clearPathScanner.bestRotation;
+    bestFrac = this.clearPathScanner.bestDistFraction;
   }
 
   // turn...
