@@ -73,7 +73,6 @@ ClearPathScanner.prototype.scanForBestPath = function(hitGroup, scanDist, maxIte
     // hit something
     bestFrac = distFrac;
   }
-  console.log(distFrac);
 
   // Randomly pick a starting side for every pair of side-scans.
   let lastSign = Math.sign(Math.random() - 0.5);
