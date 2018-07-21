@@ -105,22 +105,37 @@ v searching
     v If there's a hit, do obstruction scan
 v less randomness, more regular sweeping
 
-- ClearPathScanner: class for finding a clear path
-  - short scan for obstructions in desired motion direction
-  - sweep-scan out to sides to find nearest unobstructed angle
-  - state updates to include
-    - unobstructed direction
-    - isObstructed, and then
-      - obstruction distance
-      - obstruction path ID (to get body ID or spirit ID etc)
-  - params:
+v ClearPathScanner: class for finding a clear path
+  v short scan for obstructions in desired motion direction
+  v sweep-scan out to sides to find nearest unobstructed angle
+  v state updates to include
+    v unobstructed direction
+    v isObstructed, and then
+      v obstruction distance
+      v obstruction path ID (to get body ID or spirit ID etc)
+  v params:
     * scan rad = body rad
     * there is no scan period. This scanner is on-demand.
-    - scan group
-    - number of scans to the side to do (chages with stress so we do need it)
-    - angle increments of the side scans
-    - scan length
-  - integrate into ant
+    v scan group
+    v number of scans to the side to do (chages with stress so we do need it)
+    v angle increments of the side scans
+    v scan length
+  v integrate into ant
+
+- better combat
+  - melee weapons scan and lash out at target in range
+    - scan for enemy first
+    - then for obstruction, since obstructions are more numerous
+  - player
+    - has melee weapon
+    - doesn't kill on contact
+  - non-fatal hit:
+    - stun
+    - N-frame white flash (need to handle render-time biz like that, not in world-time)
+    - force applies to attacker and defender, but mostly defender
+  - fatal hit
+    - changes spirit to corpse, with lots of knockback
+    - corpse turns to dust easily
 
 - hearing sense
   - SoundHistory class
@@ -144,16 +159,6 @@ v less randomness, more regular sweeping
         - copies the record to a local cache
       - tends towards sound until its score is 0 or until it is forgotton
   - if a target is seen, that clears the hearing record
-
-- better combat
-  - melee weapons scan and lash out at target in range
-  - non-fatal hit:
-    - stun
-    - N-frame white flash (need to handle render-time biz like that, not in world-time)
-    - force applies to attacker and defender, but mostly defender
-  - fatal hit
-    - changes spirit to corpse, with lots of knockback
-    - corpse turns to dust easily
 
 - Encapsulate behavior: WallAvoidance
   - uses ClearPathScanner
