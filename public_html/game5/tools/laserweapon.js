@@ -8,6 +8,8 @@ function LaserWeapon(screen) {
 LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
 
+LaserWeapon.WARM_UP_TIME = 10;
+LaserWeapon.COOL_DOWN_TIME = 7;
 
 LaserWeapon.prototype.getNextFireTime = function() {
   // let throttle = 0.9 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
@@ -16,8 +18,8 @@ LaserWeapon.prototype.getNextFireTime = function() {
   // let delay = Math.max(0, 24 - (calcDelayFromTime + this.id) % 32);
   // return calcDelayFromTime + delay;
 
-  let throttle = 7 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
-  return this.lastFireTime + throttle;
+  let throttle = LaserWeapon.COOL_DOWN_TIME + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
+  return Math.max(this.lastFireTime + throttle, this.lastButtonDownTime + LaserWeapon.WARM_UP_TIME);
 };
 
 /**
@@ -92,3 +94,16 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   return spiritId;
 };
 
+/** @override */
+LaserWeapon.prototype.onDraw = function() {
+  if (!this.buttonDown) return;
+  let pos = this.getBodyPos();
+  if (!pos) return;
+  let rad = 0.01 + 0.2 * ((this.now() - this.lastButtonDownTime) % LaserWeapon.WARM_UP_TIME) / LaserWeapon.WARM_UP_TIME;
+  let aimVec = this.getWielderSpirit().getAimVec();
+  let duration = 0.5;//2 * rad / 0.2;
+  this.screen.splashes.addDotSplash(this.now(),
+        this.vec2d.set(aimVec).rot(0.01 * (Math.random() - 0.5)).scaleToLength(this.getBody().rad + rad).add(pos),
+        rad * (5 + Math.random()), duration,
+        1 - 0.2 * Math.random(), 0, 0);
+};

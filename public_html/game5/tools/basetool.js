@@ -1,6 +1,7 @@
 /**
  * Base class for tools. Spirits own these and delegate management to these.
  * @param {Game5BaseScreen} screen  access to sound effects, the world, etc.
+ * @extends {BaseSpirit}
  * @constructor
  */
 function BaseTool(screen) {
@@ -11,12 +12,15 @@ function BaseTool(screen) {
   this.buttonDown = false;
   this.timeoutRunning = false;
   this.lastFireTime = -1000;
+  this.lastButtonDownTime = -1000;
   this.aimVec = new Vec2d(0, 1);
 }
 BaseTool.prototype = new BaseSpirit();
 BaseTool.prototype.constructor = BaseSpirit;
 
 BaseTool.FIRE_TIMEOUT_ID = 'bt.f';
+
+BaseTool.prototype.onDraw = function() {};
 
 BaseTool.prototype.setWielderId = function(id) {
   this.wielderId = id;
@@ -38,16 +42,20 @@ BaseTool.prototype.getNextFireTime = function() {
  * @param {boolean} b
  */
 BaseTool.prototype.setButtonDown = function(b) {
+  if (b == this.buttonDown) return;
   this.buttonDown = b;
-  if (this.buttonDown && !this.timeoutRunning) {
-    // The next fire time could still be in the future.
-    if (this.now() >= this.getNextFireTime()) {
-      this.fire();
-      this.lastFireTime = this.now();
+  if (this.buttonDown) {
+    this.lastButtonDownTime = this.now();
+    if (!this.timeoutRunning) {
+      // The next fire time could still be in the future.
+      if (this.now() >= this.getNextFireTime()) {
+        this.fire();
+        this.lastFireTime = this.now();
+      }
+      // Either way, create the timeout to re-check
+      // the button next time there's a chance to fire.
+      this.updateFireTimeout();
     }
-    // Either way, create the timeout to re-check
-    // the button next time there's a chance to fire.
-    this.updateFireTimeout();
   }
 };
 
@@ -72,7 +80,7 @@ BaseTool.prototype.onTimeout = function(world, timeoutVal) {
       this.fire();
       this.lastFireTime = now;
     } else {
-      console.warn('early fire?', now, nextFireTime);
+      //console.warn('early fire?', now, nextFireTime);
     }
     this.updateFireTimeout();
   }

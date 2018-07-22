@@ -8,10 +8,12 @@ function SlowShooter(screen) {
 SlowShooter.prototype = new BaseTool();
 SlowShooter.prototype.constructor = SlowShooter;
 
+SlowShooter.WARM_UP_TIME = 8;
+SlowShooter.COOL_DOWN_TIME = 40;
 
 SlowShooter.prototype.getNextFireTime = function() {
-  let throttle = 40 + 5 * Math.sin(2349.12983 * this.id + this.lastFireTime);
-  return this.lastFireTime + throttle;
+  let throttle = SlowShooter.COOL_DOWN_TIME + 2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
+  return Math.max(this.lastFireTime + throttle, this.lastButtonDownTime + SlowShooter.WARM_UP_TIME)
 };
 
 /**

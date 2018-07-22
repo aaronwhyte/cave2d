@@ -123,12 +123,15 @@ v ClearPathScanner: class for finding a clear path
   v integrate into ant
 
 - better combat
-  - melee weapons scan and lash out at target in range
-    - scan for enemy first
-    - then for obstruction, since obstructions are more numerous
-  - player
-    - has melee weapon
-    - doesn't kill on contact
+  v fire delay
+    v apply to laser for sure
+    v warm-up graphics for laser - throbbing red light?
+  - fix laser warmup graphics to use regular circle model draw, not a ton of overlapping splashes, or make splashes count
+  - player use of melee weapons aided by target scanner
+    - when the weapon is ready
+      - activate TargetScanner that matches weapon range/shape
+      - add TargetScanner onLock callback that the player can use to fire melee weapon?
+    - player doesn't kill on contact
   - non-fatal hit:
     - stun
     - N-frame white flash (need to handle render-time biz like that, not in world-time)

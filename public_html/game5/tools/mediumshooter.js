@@ -10,9 +10,13 @@ MediumShooter.prototype.constructor = MediumShooter;
 
 MediumShooter.RECOIL_FORCE = 0.5;
 
+MediumShooter.WARM_UP_TIME = 2;
+MediumShooter.COOL_DOWN_TIME = 4;
+
+
 MediumShooter.prototype.getNextFireTime = function() {
-  let throttle = 4 + 0.2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
-  return this.lastFireTime + throttle;
+  let throttle = MediumShooter.COOL_DOWN_TIME + 0.2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
+  return Math.max(this.lastFireTime + throttle, this.lastButtonDownTime + MediumShooter.WARM_UP_TIME)
 };
 
 /**

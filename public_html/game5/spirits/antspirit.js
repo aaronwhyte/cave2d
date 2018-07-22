@@ -321,6 +321,9 @@ AntSpirit.prototype.die = function() {
 
 AntSpirit.prototype.onDraw = function(world, renderer) {
   this.drawBody();
+  if (this.weapon) {
+    this.weapon.onDraw();
+  }
   if (this.distOutsideViewCircles < this.getBody().rad * AntSpirit.WAKE_RADS) {
     this.maybeWake();
   }
