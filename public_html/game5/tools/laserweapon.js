@@ -47,10 +47,11 @@ LaserWeapon.prototype.fire = function() {
       1.5 + Math.random() * 0.2
   );
   this.screen.sounds.zap(pos, this.now());
-  this.screen.splashes.addDotSplash(this.now(),
-      this.vec2d.set(aimVec).scaleToLength(rad * 1.5).add(pos),
-      rad * (5 + Math.random()), 2,
-      1 - 0.2 * Math.random(), 0, 0);
+  //
+  // this.screen.splashes.addDotSplash(this.now(),
+  //     this.vec2d.set(aimVec).scaleToLength(rad * 1.5).add(pos),
+  //     rad * (5 + Math.random()), 2,
+  //     1 - 0.2 * Math.random(), 0, 0);
 };
 
 LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
@@ -97,17 +98,37 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   return spiritId;
 };
 
-/** @override */
+/**
+ * Draws the muzzle-blob that
+ * grows before bursting into a laser pulse, and
+ * shrinks when the laster is turned off before the next (or first) shot.
+ * @override
+ */
 LaserWeapon.prototype.onDraw = function() {
-  if (!this.buttonDown) return;
+  // if (!this.buttonDown) return;
   let pos = this.getBodyPos();
   if (!pos) return;
-  let dotRad = 0.01 + ((this.now() - this.lastButtonDownTime) % LaserWeapon.WARM_UP_TIME) / LaserWeapon.WARM_UP_TIME;
+
+  let fraction;
+  if (this.buttonDown) {
+    // warm up - grow
+    fraction = (this.now() - Math.max(this.lastButtonDownTime, this.lastFireTime)) / LaserWeapon.WARM_UP_TIME;
+  } else {
+    // cool down - shrink from last growth size
+    fraction = (1 - (this.now() - this.lastButtonUpTime) / LaserWeapon.COOL_DOWN_TIME) *
+        (this.lastButtonUpTime - Math.max(this.lastButtonDownTime, this.lastFireTime)) / LaserWeapon.WARM_UP_TIME;
+  }
+  if (fraction <= 0 || fraction > 1) return;
+  let dotRad = 0.01 + fraction;
   let aimVec = this.getWielderSpirit().getAimVec();
+
+  // // add some tremble
+  // aimVec.rot(0.5 * (1 - Math.sqrt(fraction)) * (Math.random() - 0.5));
+
   let dotPosition = this.vec2d.set(aimVec)
       .scaleToLength(this.getBody().rad + dotRad)
       .add(pos);
-  let red = 1 - 0.2 * Math.random();
+  let red = (0.5 + 0.5 * fraction) * (1 - 0.2 * Math.random());
   this.color.setRGBA(red, 0, 0, 1);
 
   this.modelMatrix.toIdentity()
@@ -115,4 +136,7 @@ LaserWeapon.prototype.onDraw = function() {
       .multiply(this.mat44.toScaleOpXYZ(dotRad, dotRad, 1))
       .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
   this.screen.drawModel(ModelIds.CIRCLE_32, this.color, this.modelMatrix);
+
+  // let duration = 4 * dotRad;
+  // this.screen.splashes.addDotSplash(this.now(), dotPosition, dotRad, duration, red, 0, 0);
 };

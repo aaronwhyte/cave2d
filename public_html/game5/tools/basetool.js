@@ -13,6 +13,7 @@ function BaseTool(screen) {
   this.timeoutRunning = false;
   this.lastFireTime = -1000;
   this.lastButtonDownTime = -1000;
+  this.lastButtonUpTime = -1000;
   this.aimVec = new Vec2d(0, 1);
 }
 BaseTool.prototype = new BaseSpirit();
@@ -56,6 +57,8 @@ BaseTool.prototype.setButtonDown = function(b) {
       // the button next time there's a chance to fire.
       this.updateFireTimeout();
     }
+  } else {
+    this.lastButtonUpTime = this.now();
   }
 };
 
