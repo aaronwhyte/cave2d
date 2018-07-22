@@ -129,7 +129,7 @@ Sounds.prototype.wallThump = function(worldPos, mag) {
   let screenPos = this.getScreenPosForWorldPos(worldPos);
   let x = screenPos.x;
   let y = screenPos.y;
-  let vol = Math.min(1, mag * 0.3);
+  let vol = Math.min(1, mag * 0.2);
   if (vol > 0.15) {
     let dur = Math.clip(0.01 * mag*mag, 0.03, 0.1);
     let freq = Math.max(50, mag + 200 + 5 * Math.random());
