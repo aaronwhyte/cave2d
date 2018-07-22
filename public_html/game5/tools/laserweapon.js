@@ -4,6 +4,9 @@
  */
 function LaserWeapon(screen) {
   BaseTool.call(this, screen);
+  this.modelMatrix = new Matrix44();
+  this.mat44 = new Matrix44();
+  this.color = new Vec4(1, 1, 1);
 }
 LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
@@ -99,11 +102,17 @@ LaserWeapon.prototype.onDraw = function() {
   if (!this.buttonDown) return;
   let pos = this.getBodyPos();
   if (!pos) return;
-  let rad = 0.01 + 0.2 * ((this.now() - this.lastButtonDownTime) % LaserWeapon.WARM_UP_TIME) / LaserWeapon.WARM_UP_TIME;
+  let dotRad = 0.01 + ((this.now() - this.lastButtonDownTime) % LaserWeapon.WARM_UP_TIME) / LaserWeapon.WARM_UP_TIME;
   let aimVec = this.getWielderSpirit().getAimVec();
-  let duration = 0.5;//2 * rad / 0.2;
-  this.screen.splashes.addDotSplash(this.now(),
-        this.vec2d.set(aimVec).rot(0.01 * (Math.random() - 0.5)).scaleToLength(this.getBody().rad + rad).add(pos),
-        rad * (5 + Math.random()), duration,
-        1 - 0.2 * Math.random(), 0, 0);
+  let dotPosition = this.vec2d.set(aimVec)
+      .scaleToLength(this.getBody().rad + dotRad)
+      .add(pos);
+  let red = 1 - 0.2 * Math.random();
+  this.color.setRGBA(red, 0, 0, 1);
+
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(dotPosition.x, dotPosition.y, 0))
+      .multiply(this.mat44.toScaleOpXYZ(dotRad, dotRad, 1))
+      .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
+  this.screen.drawModel(ModelIds.CIRCLE_32, this.color, this.modelMatrix);
 };
