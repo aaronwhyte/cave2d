@@ -32,18 +32,18 @@ BaseTool.prototype.getWielderSpirit = function() {
 };
 
 /**
- * Default implementation Override me.
+ * Default implementation. Override me.
  * @returns {number}
  */
 BaseTool.prototype.getNextFireTime = function() {
-  return this.lastFireTime + 10; // just a random default fire rate
+  return this.lastFireTime + 10; // just an arbitrary default fire rate
 };
 
 /**
  * @param {boolean} b
  */
 BaseTool.prototype.setButtonDown = function(b) {
-  if (b == this.buttonDown) return;
+  if (b === this.buttonDown) return;
   this.buttonDown = b;
   if (this.buttonDown) {
     this.lastButtonDownTime = this.now();
