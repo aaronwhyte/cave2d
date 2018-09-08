@@ -122,25 +122,85 @@ v ClearPathScanner: class for finding a clear path
     v scan length
   v integrate into ant
 
-- better combat
+x better combat
   v fire delay
     v apply to laser for sure
     v warm-up graphics for laser - throbbing red light?
   v fix laser warmup graphics to use regular circle model draw, not a ton of overlapping splashes, or make splashes count
-  - player use of melee weapons aided by target scanner
-    - when the weapon is ready
-      - activate TargetScanner that matches weapon range/shape
-      - add TargetScanner onLock callback that the player can use to fire melee weapon?
-    - player doesn't kill on contact
-  - non-fatal hit:
-    - stun
-    - N-frame white flash (need to handle render-time biz like that, not in world-time)
-    - force applies to attacker and defender, but mostly defender
-  - fatal hit
-    - changes spirit to corpse, with lots of knockback
-    - corpse turns to dust easily
+  x melee weapon for player. What'll it be? Daggers? A Mace? No! A orbit-y rock thingy!
+  x player use of melee weapons aided by target scanner
+    x when the weapon is ready
+      x activate TargetScanner that matches weapon range/shape
+      x add TargetScanner onLock callback that the player can use to fire melee weapon?
+    x player doesn't kill on contact
+  x non-fatal hit:
+    x stun
+    x N-frame white flash (need to handle render-time biz like that, not in world-time)
+    x force applies to attacker and defender, but mostly defender
+  x fatal hit
+    x changes spirit to corpse, with lots of knockback
+    x corpse turns to dust easily
 
-- hearing sense
+
+We're changing gears!
+* New design: Dandy meets Gridrunner meets Legend of Dungeon.
+* Players have inventory.
+* Touch item to collect
+* primary, secondary, drop
+* select from inventory, like OS task switcher
+* all items have drawable icon
+
+ITEMS
+Hm. Some tools, like clearPathScanner, are not items.
+And some items, like a health powerup, are not tools.
+Plus, some items might have multiple aspects, even multiple tool modes.
+All Items will have an icon, and be renderable as world objects or inventory objects.
+Some types of items:
+* Collectible, stackable one-shots, like Dandy's health and bombs
+* In-inventory, but not droppable, like "empty-handed" or Gungeon-like starter-weapon. Maybe "settings"?
+* Consume-on-touch, like power-ups. Maybe these won't exist, but I do like classic power-ups.
+* If a tool-like item has a cool-down, dropping and picking it up again must not reset the cool-down, so
+  the inner Tool aspect should live with the Item, and not be re-created.
+
+Item class
+- icon
+- short text
+- properties
+  - isDroppable()
+  - getButtonCount() returns 0, 1, or 2 for now
+  - getButtonIcon(index)
+- interaction callbacks
+  - onPickup()
+  - onDrop()
+  - onSelect()
+  - onUnSelect()
+  - onButtonDown(index)
+  - onButtonUp(index)
+
+Inventory
+- Data structure
+  - fairly short ordered list (array) of items. 0th is the one the player is holding.
+  - remove(index) shuffles the rest over. Usually remove(0) but thieves or special attacks could cause other drops
+  - select(index) pulls that one up to 0 and shuffles affected items to the right
+  - add(item, index) pushes things to the right
+- touch in-world item to collect it into slot 0
+- drop button
+  - touch
+  - keyboard
+- selection pseudomode button
+  - reveals pack contents on screen (doesn't scroll yet but it could happen)
+  - selection indicator movement
+    - pointerlock stick left/right
+    - fire/secondary buttons also work?
+    - touch is more direct spacial model, where touchbar is below item icons
+  - release pseudomode selects the indicated item
+
+Primary Action Button
+- Position like game4
+- listen/unlisten etc. Probably hard to get right
+
+
+- hearing sense (for stealth elements of the game, if any)
   - SoundHistory class
     - backed by circular buffer
     - records are SoundEntry objs, pre-allocated to fill buffer
@@ -162,6 +222,13 @@ v ClearPathScanner: class for finding a clear path
         - copies the record to a local cache
       - tends towards sound until its score is 0 or until it is forgotton
   - if a target is seen, that clears the hearing record
+
+- more enemy behaviors
+  - smarter shooters try to keep some dist between selves and target
+  - weapon dictates willingness to fire off-center
+    - laser: dead-on only
+    - shotgun: wider is better
+  - lead target! Fire where the target is going
 
 - Encapsulate behavior: WallAvoidance
   - uses ClearPathScanner
