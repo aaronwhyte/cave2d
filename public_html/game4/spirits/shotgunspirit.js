@@ -106,7 +106,7 @@ ShotgunSpirit.prototype.getColor = function() {
 };
 
 ShotgunSpirit.prototype.getModelId = function() {
-  return ModelIds.SHOTGUN;
+  return ModelId.SHOTGUN;
 };
 
 ShotgunSpirit.prototype.onInputSumUpdate = function() {

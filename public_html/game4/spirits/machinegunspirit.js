@@ -99,7 +99,7 @@ MachineGunSpirit.prototype.onTimeout = function(world, timeoutVal) {
 };
 
 MachineGunSpirit.prototype.getModelId = function() {
-  return ModelIds.MACHINE_GUN;
+  return ModelId.MACHINE_GUN;
 };
 
 MachineGunSpirit.prototype.getColor = function() {

@@ -21,7 +21,7 @@ Splashes.Type = {
 Splashes.prototype.addPlayerSpawnSplash = function(now, pos, bodyRad, color) {
   let s = this.splash;
   s.reset();
-  s.modelId = ModelIds.TUBE_32;
+  s.modelId = ModelId.TUBE_32;
   let x = pos.x;
   let y = pos.y;
 
@@ -59,7 +59,7 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
 
   function addSplash(x, y, dx, dy, duration, rad) {
     s.reset(Splashes.Type.ENEMY_EXPLOSION, null);
-    s.modelId = ModelIds.CIRCLE_32;
+    s.modelId = ModelId.CIRCLE_32;
     s.startTime = now;
     s.duration = duration;
 
@@ -111,7 +111,7 @@ Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
 
   function addSplash(x, y, dx, dy, duration, rad) {
     s.reset(Splashes.Type.ENEMY_EXPLOSION, null);
-    s.modelId = ModelIds.CIRCLE_32;
+    s.modelId = ModelId.CIRCLE_32;
     s.startTime = now;
     s.duration = duration;
 
@@ -148,7 +148,7 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
 
   // giant tube explosion
   s.reset();
-  s.modelId = ModelIds.TUBE_32;
+  s.modelId = ModelId.TUBE_32;
 
   s.startTime = now;
   s.duration = 10;
@@ -178,7 +178,7 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
 
   function addSplash(x, y, dx, dy, duration, sizeFactor, delay) {
     s.reset();
-    s.modelId = ModelIds.CIRCLE_32;
+    s.modelId = ModelId.CIRCLE_32;
     s.startTime = now + (delay || 0) + 1;
     s.duration = duration;
 
@@ -225,7 +225,7 @@ Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
   // giant tube implosion
   let s = this.splash;
   s.reset(Splashes.Type.WALL_DAMAGE);
-  s.modelId = ModelIds.TUBE_32;
+  s.modelId = ModelId.TUBE_32;
 
   s.startTime = startTime;
   s.duration = Game5PlayScreen.EXIT_DURATION;
@@ -266,7 +266,7 @@ Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
 Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1, p1t1, rt1, color) {
   let s = this.splash;
   s.reset(Splashes.Type.SCAN);
-  s.modelId = ModelIds.CYLINDER_32;
+  s.modelId = ModelId.CYLINDER_32;
 
   s.startTime = now;
   s.duration = duration;
@@ -290,7 +290,7 @@ Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1
 Splashes.prototype.addDotSplash = function(now, pos, rad, duration, r, g, b) {
   let s = this.splash;
   s.reset(Splashes.Type.NOTE);
-  s.modelId = ModelIds.CIRCLE_32;
+  s.modelId = ModelId.CIRCLE_32;
   s.startTime = now;
   let x = pos.x;
   let y = pos.y;
@@ -311,7 +311,7 @@ Splashes.prototype.addDotSplash = function(now, pos, rad, duration, r, g, b) {
 Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
   let s = this.splash;
   s.reset(Splashes.Type.SCAN);
-  s.modelId = ModelIds.CYLINDER_32;
+  s.modelId = ModelId.CYLINDER_32;
 
   s.startTime = now;
   s.duration = 3;

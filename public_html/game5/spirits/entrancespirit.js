@@ -56,7 +56,7 @@ EntranceSpirit.prototype.getColor = function() {
 };
 
 EntranceSpirit.prototype.getModelId = function() {
-  return ModelIds.ENTRANCE;
+  return ModelId.ENTRANCE;
 };
 
 EntranceSpirit.prototype.toJSON = function() {

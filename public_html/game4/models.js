@@ -7,7 +7,7 @@ function Models(glyphs) {
 }
 
 
-let ModelIds = (function() {
+let ModelId = (function() {
   let i = 1;
   return {
     CIRCLE_32: i++,
@@ -44,14 +44,14 @@ let ModelIds = (function() {
 
 Models.prototype.createModel = function(id) {
   switch(id) {
-    case ModelIds.CIRCLE_32: return RigidModel.createCircle(32);
-    case ModelIds.SEPTAGON: return RigidModel.createCircle(7);
-    case ModelIds.SQUARE: return RigidModel.createSquare();
-    case ModelIds.TUBE_32: return RigidModel.createTube(32, false, false);
-    case ModelIds.CYLINDER_32: return RigidModel.createTube(32, true, true);
-    case ModelIds.LINE_SEGMENT: return RigidModel.createTube(9, false, false);
+    case ModelId.CIRCLE_32: return RigidModel.createCircle(32);
+    case ModelId.SEPTAGON: return RigidModel.createCircle(7);
+    case ModelId.SQUARE: return RigidModel.createSquare();
+    case ModelId.TUBE_32: return RigidModel.createTube(32, false, false);
+    case ModelId.CYLINDER_32: return RigidModel.createTube(32, true, true);
+    case ModelId.LINE_SEGMENT: return RigidModel.createTube(9, false, false);
 
-    case ModelIds.PAUSE_BUTTON: {
+    case ModelId.PAUSE_BUTTON: {
       let m = new RigidModel();
       for (let x = -1; x <= 1; x += 2) {
         let bar = RigidModel.createSquare().transformPositions(
@@ -64,22 +64,22 @@ Models.prototype.createModel = function(id) {
       return m;
     }
 
-    case ModelIds.JOIN_BUTTON: return this.createCharButton('?');
-    case ModelIds.MENU_BUTTON: return this.createCharButton('!');
-    case ModelIds.ONE_BUTTON: return this.createCharButton('1');
-    case ModelIds.TWO_BUTTON: return this.createCharButton('2');
+    case ModelId.JOIN_BUTTON: return this.createCharButton('?');
+    case ModelId.MENU_BUTTON: return this.createCharButton('!');
+    case ModelId.ONE_BUTTON: return this.createCharButton('1');
+    case ModelId.TWO_BUTTON: return this.createCharButton('2');
 
-    case ModelIds.TEST_BUTTON:
+    case ModelId.TEST_BUTTON:
       return RigidModel.createTriangle()
           .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
           .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2));
 
-    case ModelIds.UNTEST_BUTTON:
+    case ModelId.UNTEST_BUTTON:
       return RigidModel.createTriangle()
           .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.3, 1))
           .transformPositions(new Matrix44().toRotateZOp(Math.PI/2));
 
-    case ModelIds.ARROW: {
+    case ModelId.ARROW: {
       let model = new RigidModel();
       let arrowHead = RigidModel.createTriangle();
       arrowHead.vertexes[0].position.setXYZ(0, 0, 0);
@@ -92,7 +92,7 @@ Models.prototype.createModel = function(id) {
       return model;
     }
 
-    case ModelIds.STAR: {
+    case ModelId.STAR: {
       let model = RigidModel.createCircle(10);
       let inRad = 0.4;
       for (let i = 1; i < 10; i += 2) {
@@ -101,7 +101,7 @@ Models.prototype.createModel = function(id) {
       return model;
     }
 
-    case ModelIds.ACTIVATOR_GUN: {
+    case ModelId.ACTIVATOR_GUN: {
       let model = new RigidModel();
       let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
       let thick = 0.3;
@@ -115,7 +115,7 @@ Models.prototype.createModel = function(id) {
       return model.addRigidModel(body).addRigidModel(barrel);
     }
 
-    case ModelIds.ANT:
+    case ModelId.ANT:
       return RigidModel.createCircle(8)
           .addRigidModel(RigidModel.createSquare()
               .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
@@ -127,7 +127,7 @@ Models.prototype.createModel = function(id) {
               .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
           .setColorRGB(0.1, 0.8, 0.1);
 
-    case ModelIds.CENTIPEDE:
+    case ModelId.CENTIPEDE:
       return RigidModel.createCircle(8)
           .addRigidModel(RigidModel.createSquare()
               .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
@@ -139,19 +139,19 @@ Models.prototype.createModel = function(id) {
               .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
           .setColorRGB(1, 0.1, 0.1);
 
-    case ModelIds.ENTRANCE:
+    case ModelId.ENTRANCE:
       return RigidModel.createRingMesh(5, 0.8)
           .setColorRGB(0.7, 0.3, 0.7);
 
-    case ModelIds.EXIT:
+    case ModelId.EXIT:
       return RigidModel.createRingMesh(5, 0.8)
           .setColorRGB(0.2, 0.8, 0.2);
 
-    case ModelIds.INDICATOR:
+    case ModelId.INDICATOR:
       return RigidModel.createCircle(17)
           .setColorRGB(0.5, 0.5, 0.4);
 
-    case ModelIds.MACHINE_GUN: {
+    case ModelId.MACHINE_GUN: {
       let model = new RigidModel();
       let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
       let thick = 0.5;
@@ -165,7 +165,7 @@ Models.prototype.createModel = function(id) {
       return model.addRigidModel(body).addRigidModel(barrel);
     }
 
-    case ModelIds.PLAYER:
+    case ModelId.PLAYER:
       return RigidModel.createCircle(24)
           .setColorRGB(1, 1, 1)
           .addRigidModel(RigidModel.createCircle(12)
@@ -181,7 +181,7 @@ Models.prototype.createModel = function(id) {
               .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.37, -0.25))
               .setColorRGB(0, 0, 0));
 
-    case ModelIds.ROGUE_GUN: {
+    case ModelId.ROGUE_GUN: {
       let model = new RigidModel();
       let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
       let thick = 0.4;
@@ -195,7 +195,7 @@ Models.prototype.createModel = function(id) {
       return model.addRigidModel(body).addRigidModel(barrel);
     }
 
-    case ModelIds.SHOTGUN: {
+    case ModelId.SHOTGUN: {
       let model = new RigidModel();
       let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
       let thick = 0.65;

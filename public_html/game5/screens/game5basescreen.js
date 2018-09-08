@@ -91,11 +91,11 @@ Game5BaseScreen.prototype.getSpiritConfigs = function() {
     let st = Game5BaseScreen.SpiritType;
     let mi = Game5BaseScreen.MenuItem;
 
-    addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, ModelIds.ENTRANCE);
-    addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelIds.EXIT);
+    addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, ModelId.ENTRANCE);
+    addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelId.EXIT);
     nextColumn();
 
-    addToMenu(st.ANT, AntSpirit, mi.ANT, ModelIds.ANT);
+    addToMenu(st.ANT, AntSpirit, mi.ANT, ModelId.ANT);
     nextColumn();
 
     this.spiritConfigs = sc;
@@ -175,8 +175,8 @@ Game5BaseScreen.prototype.initWorld = function() {
   this.resolver = new Game5HitResolver(this, bouncer);
 
   // Prepare the drawing system
-  for (let name in ModelIds) {
-    let id = ModelIds[name];
+  for (let name in ModelId) {
+    let id = ModelId[name];
     this.addModel(id, this.models.createModel(id), Renderer.BATCH_MAX);
   }
 };

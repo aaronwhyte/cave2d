@@ -135,7 +135,7 @@ LaserWeapon.prototype.onDraw = function() {
       .multiply(this.mat44.toTranslateOpXYZ(dotPosition.x, dotPosition.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(dotRad, dotRad, 1))
       .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
-  this.screen.drawModel(ModelIds.CIRCLE_32, this.color, this.modelMatrix);
+  this.screen.drawModel(ModelId.CIRCLE_32, this.color, this.modelMatrix);
 
   // let duration = 4 * dotRad;
   // this.screen.splashes.addDotSplash(this.now(), dotPosition, dotRad, duration, red, 0, 0);

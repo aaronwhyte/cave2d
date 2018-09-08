@@ -111,7 +111,7 @@ PlayerSpirit.factory = function(screen, pos, dir) {
 };
 
 PlayerSpirit.prototype.getModelId = function() {
-  return ModelIds.PLAYER;
+  return ModelId.PLAYER;
 };
 
 PlayerSpirit.prototype.createBody = function(pos, dir) {
@@ -316,7 +316,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   this.modelMatrix2.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
       .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  this.screen.drawModel(ModelIds.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
+  this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
 };
 
 PlayerSpirit.prototype.explode = function() {

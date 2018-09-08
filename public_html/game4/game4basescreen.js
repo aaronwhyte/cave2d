@@ -106,21 +106,21 @@ Game4BaseScreen.prototype.getSpiritConfigs = function() {
     let st = Game4BaseScreen.SpiritType;
     let mi = Game4BaseScreen.MenuItem;
 
-    addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, ModelIds.ENTRANCE);
-    addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelIds.EXIT);
+    addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, ModelId.ENTRANCE);
+    addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelId.EXIT);
     nextColumn();
 
-    addToMenu(st.ANT, AntSpirit, mi.RED_ANT, ModelIds.ANT);
-    addToMenu(st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE, ModelIds.CENTIPEDE);
+    addToMenu(st.ANT, AntSpirit, mi.RED_ANT, ModelId.ANT);
+    addToMenu(st.CENTIPEDE, CentipedeSpirit, mi.CENTIPEDE, ModelId.CENTIPEDE);
     nextColumn();
 
-    addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, ModelIds.ACTIVATOR_GUN);
-    addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR, ModelIds.INDICATOR);
+    addToMenu(st.ACTIVATOR_GUN, ActivatorGunSpirit, mi.ACTIVATOR_GUN, ModelId.ACTIVATOR_GUN);
+    addToMenu(st.INDICATOR, IndicatorSpirit, mi.INDICATOR, ModelId.INDICATOR);
     nextColumn();
 
-    addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN, ModelIds.MACHINE_GUN);
-    addToMenu(st.SHOTGUN, ShotgunSpirit, mi.SHOTGUN, ModelIds.SHOTGUN);
-    addToMenu(st.ROGUE_GUN, RogueGunSpirit, mi.ROGUE_GUN, ModelIds.ROGUE_GUN);
+    addToMenu(st.MACHINE_GUN, MachineGunSpirit, mi.MACHINE_GUN, ModelId.MACHINE_GUN);
+    addToMenu(st.SHOTGUN, ShotgunSpirit, mi.SHOTGUN, ModelId.SHOTGUN);
+    addToMenu(st.ROGUE_GUN, RogueGunSpirit, mi.ROGUE_GUN, ModelId.ROGUE_GUN);
     nextColumn();
 
     this.spiritConfigs = sc;
@@ -204,8 +204,8 @@ Game4BaseScreen.prototype.initWorld = function() {
   this.resolver = new Game4HitResolver(this, bouncer);
 
   // Prepare the drawing system
-  for (let name in ModelIds) {
-    let id = ModelIds[name];
+  for (let name in ModelId) {
+    let id = ModelId[name];
     this.addModel(id, this.models.createModel(id), Renderer.BATCH_MAX);
   }
 };

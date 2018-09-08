@@ -109,7 +109,7 @@ CentipedeSpirit.factory = function(screen, pos, dir) {
 };
 
 CentipedeSpirit.prototype.getModelId = function() {
-  return ModelIds.CENTIPEDE;
+  return ModelId.CENTIPEDE;
 };
 
 CentipedeSpirit.prototype.scan = function(pos, rot, dist, rad) {

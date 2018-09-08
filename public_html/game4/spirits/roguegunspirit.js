@@ -102,7 +102,7 @@ RogueGunSpirit.prototype.getColor = function() {
 };
 
 RogueGunSpirit.prototype.getModelId = function() {
-  return ModelIds.ROGUE_GUN;
+  return ModelId.ROGUE_GUN;
 };
 
 RogueGunSpirit.prototype.onInputSumUpdate = function() {

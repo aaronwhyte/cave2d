@@ -79,5 +79,5 @@ IndicatorSpirit.prototype.getColor = function() {
 };
 
 IndicatorSpirit.prototype.getModelId = function() {
-  return ModelIds.INDICATOR;
+  return ModelId.INDICATOR;
 };

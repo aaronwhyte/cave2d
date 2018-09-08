@@ -49,7 +49,7 @@ ExitSpirit.factory = function(screen, pos) {
 };
 
 ExitSpirit.prototype.getModelId = function() {
-  return ModelIds.EXIT;
+  return ModelId.EXIT;
 };
 
 ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {

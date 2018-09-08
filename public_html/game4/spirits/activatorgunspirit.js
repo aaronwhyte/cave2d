@@ -107,7 +107,7 @@ ActivatorGunSpirit.prototype.getColor = function() {
 };
 
 ActivatorGunSpirit.prototype.getModelId = function() {
-  return ModelIds.ACTIVATOR_GUN;
+  return ModelId.ACTIVATOR_GUN;
 };
 
 ActivatorGunSpirit.prototype.onInputSumUpdate = function() {

@@ -116,7 +116,7 @@ BulletSpirit.prototype.drawTrail = function() {
           .multiply(this.mat44.toTranslateOpXYZ(this.segEndVec.x, this.segEndVec.y, 0))
           .multiply(this.mat44.toScaleOpXYZ(endRad, endRad, 1));
 
-      this.screen.drawModel(ModelIds.CYLINDER_32, this.color, this.modelMatrix, this.modelMatrix2);
+      this.screen.drawModel(ModelId.CYLINDER_32, this.color, this.modelMatrix, this.modelMatrix2);
     }
   }
   if (!trailWarm) {

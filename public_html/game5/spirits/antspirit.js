@@ -102,7 +102,7 @@ AntSpirit.prototype.getActiveTimeout = function() {
 };
 
 AntSpirit.prototype.getModelId = function() {
-  return ModelIds.ANT;
+  return ModelId.ANT;
 };
 
 /**
