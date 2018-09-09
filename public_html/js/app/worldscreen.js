@@ -9,7 +9,7 @@
  * @param {SoundFx} sfx
  * @param {boolean=} opt_useFans  true to avoid t-junctions in wall models by creating a lot more vertexes
  * @param {boolean=} opt_supportBatchDrawing  true to use a collection of BatchDrawers instead of drawing one-off stamps
- * @param {Object=} opt_models  a map from modelId to model, to use instead  of stamps
+ * @param {Object=} opt_models  a map from modelId to model, to use instead of stamps
  * @constructor
  * @extends Screen
  */
