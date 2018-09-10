@@ -163,26 +163,26 @@ Some types of items:
   the inner Tool aspect should live with the Item, and not be re-created.
 
 Item class
-- icon
-- short text
-- properties
-  - isDroppable()
-  - getButtonCount() returns 0, 1, or 2 for now
-  - getButtonIcon(index)
-- interaction callbacks
-  - onPickup()
-  - onDrop()
-  - onSelect()
-  - onUnSelect()
-  - onButtonDown(index)
-  - onButtonUp(index)
+v icon
+v short text
+v properties
+  v isDroppable()
+  v getButtonCount() returns 0, 1, or 2 for now
+  v getButtonIcon(index)
+v interaction callbacks
+  v onPickup()
+  v onDrop()
+  v onSelect()
+  v onUnSelect()
+  v onButtonDown(index)
+  v onButtonUp(index)
 
 Inventory
-- Data structure
-  - fairly short ordered list (array) of items. 0th is the one the player is holding.
-  - remove(index) shuffles the rest over. Usually remove(0) but thieves or special attacks could cause other drops
-  - select(index) pulls that one up to 0 and shuffles affected items to the right
-  - add(item, index) pushes things to the right
+v Data structure
+  v fairly short ordered list (array) of items. 0th is the one the player is holding.
+  v remove(index) shuffles the rest over. Usually remove(0) but thieves or special attacks could cause other drops
+  v select(index) pulls that one up to 0 and shuffles affected items to the right
+  v add(item, index) pushes things to the right
 - touch in-world item to collect it into slot 0
 - drop button
   - touch
@@ -198,6 +198,9 @@ Inventory
 Primary Action Button
 - Position like game4
 - listen/unlisten etc. Probably hard to get right
+
+
+
 
 
 - hearing sense (for stealth elements of the game, if any)

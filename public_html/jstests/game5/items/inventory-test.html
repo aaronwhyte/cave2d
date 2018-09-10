@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Game5 Inventory test</title>
+  <script src="../../../game5/items/inventory.js"></script>
+  <script src="../../../js/strings.js"></script>
+  <script src="../../../js/testing.js"></script>
+  <script>
+    addTest(function add() {
+      let inv = new Inventory();
+
+      // default add
+      inv.add('a');
+      assertStringifyEquals(['a'], inv.items);
+
+      // default add again
+      inv.add('b');
+      assertStringifyEquals(['b', 'a'], inv.items);
+
+      // append
+      inv.add('c', 2);
+      assertStringifyEquals(['b', 'a', 'c'], inv.items);
+
+      // explicit prepend
+      inv.add('d', 0);
+      assertStringifyEquals(['d', 'b', 'a', 'c'], inv.items);
+
+      // right in the middle
+      inv.add('e', 2);
+      assertStringifyEquals(['d', 'b', 'e', 'a', 'c'], inv.items);
+
+      // out of bounds
+      inv.add('x', -1);
+      inv.add('x', 6);
+      assertStringifyEquals(['d', 'b', 'e', 'a', 'c'], inv.items);
+    });
+
+    addTest(function remove() {
+      let inv = new Inventory();
+      inv.add('e');
+      inv.add('d');
+      inv.add('c');
+      inv.add('b');
+      inv.add('a');
+      assertStringifyEquals(['a', 'b', 'c', 'd', 'e'], inv.items);
+
+      // remove the middle
+      inv.remove(2);
+      assertStringifyEquals(['a', 'b', 'd', 'e'], inv.items);
+
+      // remove the front
+      inv.remove(0);
+      assertStringifyEquals(['b', 'd', 'e'], inv.items);
+
+      // remove the back
+      inv.remove(2);
+      assertStringifyEquals(['b', 'd'], inv.items);
+
+      // remove out of bounds
+      inv.remove(2);
+      inv.remove(3);
+      inv.remove(-1);
+      assertStringifyEquals(['b', 'd'], inv.items);
+    });
+
+    addTest(function select() {
+      let inv = new Inventory();
+      inv.add('e');
+      inv.add('d');
+      inv.add('c');
+      inv.add('b');
+      inv.add('a');
+      assertStringifyEquals(['a', 'b', 'c', 'd', 'e'], inv.items);
+
+      // select the middle
+      inv.select(2);
+      assertStringifyEquals(['c', 'a', 'b', 'd', 'e'], inv.items);
+
+      // select the same thing that's selected
+      inv.select(0);
+      assertStringifyEquals(['c', 'a', 'b', 'd', 'e'], inv.items);
+
+      // select the end
+      inv.select(4);
+      assertStringifyEquals(['e', 'c', 'a', 'b', 'd'], inv.items);
+
+      // select the item at 1 twice, returning it to the original position
+      inv.select(1);
+      assertStringifyEquals(['c', 'e', 'a', 'b', 'd'], inv.items);
+      inv.select(1);
+      assertStringifyEquals(['e', 'c', 'a', 'b', 'd'], inv.items);
+
+      // select out of bounds
+      inv.select(5);
+      inv.select(-1);
+      assertStringifyEquals(['e', 'c', 'a', 'b', 'd'], inv.items);
+    });
+
+    addTest(function get() {
+      let inv = new Inventory();
+      inv.add('b');
+      inv.add('a');
+      assertStringifyEquals(['a', 'b'], inv.items);
+
+      assertEquals(null, inv.get(-1));
+      assertEquals('a', inv.get(0));
+      assertEquals('b', inv.get(1));
+      assertEquals(null, inv.get(2));
+      assertStringifyEquals(['a', 'b'], inv.items);
+    });
+
+    addTest(function size() {
+      let inv = new Inventory();
+      assertEquals(0, inv.size());
+      inv.add('b');
+      inv.add('a');
+      assertEquals(2, inv.size());
+      inv.remove(0);
+      assertEquals(1, inv.size());
+      inv.remove(0);
+      assertEquals(0, inv.size());
+      inv.remove(0);
+      assertEquals(0, inv.size());
+    });
+  </script>
+</head>
+<body onload="runTests()"></body>
+</html>
