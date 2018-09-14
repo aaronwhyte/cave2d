@@ -45,3 +45,20 @@ Spirit.prototype.onDraw = function(world, renderer) {
 Spirit.prototype.setChangeListener = function(listener) {
   this.changeListener = listener;
 };
+
+Spirit.getJsoner = function() {
+  // static "this" - fancy
+  if (!this.jsoner) {
+    this.jsoner = new Jsoner(this.SCHEMA);
+  }
+  return this.jsoner;
+};
+
+Spirit.prototype.toJSON = function() {
+  return Spirit.getJsoner.apply(this.constructor).toJSON(this);
+};
+
+
+Spirit.prototype.setFromJSON = function(json) {
+  Spirit.getJsoner.apply(this.constructor).setFromJSON(json, this);
+};

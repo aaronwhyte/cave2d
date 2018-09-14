@@ -61,22 +61,6 @@ PlayerSpirit.SCHEMA = {
   5: "aim"
 };
 
-PlayerSpirit.getJsoner = function() {
-  if (!PlayerSpirit.jsoner) {
-    PlayerSpirit.jsoner = new Jsoner(PlayerSpirit.SCHEMA);
-  }
-  return PlayerSpirit.jsoner;
-};
-
-PlayerSpirit.prototype.toJSON = function() {
-  return PlayerSpirit.getJsoner().toJSON(this);
-};
-
-PlayerSpirit.prototype.setFromJSON = function(json) {
-  PlayerSpirit.getJsoner().setFromJSON(json, this);
-  return this;
-};
-
 /**
  * @param {ModelStamp} modelStamp
  * @returns {PlayerSpirit}

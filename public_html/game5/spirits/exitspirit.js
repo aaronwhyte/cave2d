@@ -87,13 +87,6 @@ ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
   }
 };
 
-ExitSpirit.getJsoner = function() {
-  if (!ExitSpirit.jsoner) {
-    ExitSpirit.jsoner = new Jsoner(ExitSpirit.SCHEMA);
-  }
-  return ExitSpirit.jsoner;
-};
-
 ExitSpirit.prototype.onDraw = function(world, renderer) {
   this.drawBody();
   // arrows and stars and orbits
@@ -164,12 +157,4 @@ ExitSpirit.prototype.handlePlayerSpirit = function(world, renderer, playerSpirit
     let pushAccelMag = Spring.getLandingAccel(p0, v0, maxA, ExitSpirit.TIMEOUT * 2);
     playerSpirit.addBodyVel(toSign.scaleToLength(1).scale(pushAccelMag));
   }
-};
-
-ExitSpirit.prototype.toJSON = function() {
-  return ExitSpirit.getJsoner().toJSON(this);
-};
-
-ExitSpirit.prototype.setFromJSON = function(json) {
-  ExitSpirit.getJsoner().setFromJSON(json, this);
 };
