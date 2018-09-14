@@ -8,11 +8,11 @@ function Jsoner(schema) {
 }
 
 Jsoner.prototype.toJSON = function(that) {
-  var json = [];
-  for (var fieldNum in this.schema) {
-    var fieldName = this.schema[fieldNum];
-    var thatVal = that[fieldName];
-    var jsonVal;
+  let json = [];
+  for (let fieldNum in this.schema) {
+    let fieldName = this.schema[fieldNum];
+    let thatVal = that[fieldName];
+    let jsonVal;
     if (thatVal && thatVal.toJSON) {
       jsonVal = thatVal.toJSON();
     } else if (thatVal == Infinity) {
@@ -29,13 +29,13 @@ Jsoner.prototype.toJSON = function(that) {
 };
 
 Jsoner.prototype.setFromJSON = function(json, that) {
-  for (var fieldNum in this.schema) {
+  for (let fieldNum in this.schema) {
     if (!(fieldNum in json)) {
       // keep defaults from constructor
       continue;
     }
-    var fieldName = this.schema[fieldNum];
-    var jsonVal = json[fieldNum];
+    let fieldName = this.schema[fieldNum];
+    let jsonVal = json[fieldNum];
     if (that[fieldName] && that[fieldName].setFromJSON) {
       that[fieldName].setFromJSON(jsonVal);
     } else if (typeof that[fieldName] == "number" && jsonVal == "Infinity") {
