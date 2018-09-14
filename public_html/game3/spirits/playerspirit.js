@@ -50,21 +50,6 @@ PlayerSpirit.SCHEMA = {
   3: "color"
 };
 
-PlayerSpirit.getJsoner = function() {
-  if (!PlayerSpirit.jsoner) {
-    PlayerSpirit.jsoner = new Jsoner(PlayerSpirit.SCHEMA);
-  }
-  return PlayerSpirit.jsoner;
-};
-
-PlayerSpirit.prototype.toJSON = function() {
-  return PlayerSpirit.getJsoner().toJSON(this);
-};
-
-PlayerSpirit.prototype.setFromJSON = function(json) {
-  PlayerSpirit.getJsoner().setFromJSON(json, this);
-};
-
 PlayerSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };

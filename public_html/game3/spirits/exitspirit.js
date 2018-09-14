@@ -64,13 +64,6 @@ ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
   world.addTimeout(world.now + ExitSpirit.TIMEOUT, this.id, -1);
 };
 
-ExitSpirit.getJsoner = function() {
-  if (!ExitSpirit.jsoner) {
-    ExitSpirit.jsoner = new Jsoner(ExitSpirit.SCHEMA);
-  }
-  return ExitSpirit.jsoner;
-};
-
 ExitSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };
@@ -88,12 +81,4 @@ ExitSpirit.prototype.onDraw = function(world, renderer) {
 
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
-};
-
-ExitSpirit.prototype.toJSON = function() {
-  return ExitSpirit.getJsoner().toJSON(this);
-};
-
-ExitSpirit.prototype.setFromJSON = function(json) {
-  ExitSpirit.getJsoner().setFromJSON(json, this);
 };

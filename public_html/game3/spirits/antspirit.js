@@ -50,21 +50,6 @@ AntSpirit.SCHEMA = {
   7: "health"
 };
 
-AntSpirit.getJsoner = function() {
-  if (!AntSpirit.jsoner) {
-    AntSpirit.jsoner = new Jsoner(AntSpirit.SCHEMA);
-  }
-  return AntSpirit.jsoner;
-};
-
-AntSpirit.prototype.toJSON = function() {
-  return AntSpirit.getJsoner().toJSON(this);
-};
-
-AntSpirit.prototype.setFromJSON = function(json) {
-  AntSpirit.getJsoner().setFromJSON(json, this);
-};
-
 AntSpirit.prototype.setModelStamp = function(modelStamp) {
   this.modelStamp = modelStamp;
 };
