@@ -39,21 +39,6 @@ ActivatorGunSpirit.prototype.isActivatable = function() {
   return true;
 };
 
-ActivatorGunSpirit.getJsoner = function() {
-  if (!ActivatorGunSpirit.jsoner) {
-    ActivatorGunSpirit.jsoner = new Jsoner(ActivatorGunSpirit.SCHEMA);
-  }
-  return ActivatorGunSpirit.jsoner;
-};
-
-ActivatorGunSpirit.prototype.toJSON = function() {
-  return ActivatorGunSpirit.getJsoner().toJSON(this);
-};
-
-ActivatorGunSpirit.prototype.setFromJSON = function(json) {
-  ActivatorGunSpirit.getJsoner().setFromJSON(json, this);
-};
-
 ActivatorGunSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 

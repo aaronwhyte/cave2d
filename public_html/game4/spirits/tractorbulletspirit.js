@@ -66,21 +66,6 @@ TractorBulletSpirit.SCHEMA = {
   4: "attraction"
 };
 
-TractorBulletSpirit.getJsoner = function() {
-  if (!TractorBulletSpirit.jsoner) {
-    TractorBulletSpirit.jsoner = new Jsoner(TractorBulletSpirit.SCHEMA);
-  }
-  return TractorBulletSpirit.jsoner;
-};
-
-TractorBulletSpirit.prototype.toJSON = function() {
-  return TractorBulletSpirit.getJsoner().toJSON(this);
-};
-
-TractorBulletSpirit.prototype.setFromJSON = function(json) {
-  TractorBulletSpirit.getJsoner().setFromJSON(json, this);
-};
-
 TractorBulletSpirit.prototype.onHitOther = function(pos) {
   // TODO splash
   this.destroyBody();

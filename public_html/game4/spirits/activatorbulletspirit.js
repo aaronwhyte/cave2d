@@ -66,13 +66,6 @@ ActivatorBulletSpirit.SCHEMA = {
   3: "color"
 };
 
-ActivatorBulletSpirit.getJsoner = function() {
-  if (!ActivatorBulletSpirit.jsoner) {
-    ActivatorBulletSpirit.jsoner = new Jsoner(ActivatorBulletSpirit.SCHEMA);
-  }
-  return ActivatorBulletSpirit.jsoner;
-};
-
 ActivatorBulletSpirit.prototype.setColorRGB = function(r, g, b) {
   this.color.setXYZ(r, g, b);
 };
@@ -157,12 +150,3 @@ ActivatorBulletSpirit.prototype.destroyBody = function() {
     this.bodyId = null;
   }
 };
-
-ActivatorBulletSpirit.prototype.toJSON = function() {
-  return ActivatorBulletSpirit.getJsoner().toJSON(this);
-};
-
-ActivatorBulletSpirit.prototype.setFromJSON = function(json) {
-  ActivatorBulletSpirit.getJsoner().setFromJSON(json, this);
-};
-

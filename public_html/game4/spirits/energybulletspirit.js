@@ -64,12 +64,6 @@ EnergyBulletSpirit.SCHEMA = {
   4: "energy"
 };
 
-EnergyBulletSpirit.getJsoner = function() {
-  if (!EnergyBulletSpirit.jsoner) {
-    EnergyBulletSpirit.jsoner = new Jsoner(EnergyBulletSpirit.SCHEMA);
-  }
-  return EnergyBulletSpirit.jsoner;
-};
 
 EnergyBulletSpirit.prototype.onHitEnergizable = function(otherSpirit, pos) {
   otherSpirit.addEnergy(this.energy);
@@ -144,12 +138,3 @@ EnergyBulletSpirit.prototype.destroyBody = function() {
     this.bodyId = null;
   }
 };
-
-EnergyBulletSpirit.prototype.toJSON = function() {
-  return EnergyBulletSpirit.getJsoner().toJSON(this);
-};
-
-EnergyBulletSpirit.prototype.setFromJSON = function(json) {
-  EnergyBulletSpirit.getJsoner().setFromJSON(json, this);
-};
-

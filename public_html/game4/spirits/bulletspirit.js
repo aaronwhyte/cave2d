@@ -69,13 +69,6 @@ BulletSpirit.SCHEMA = {
   3: "color"
 };
 
-BulletSpirit.getJsoner = function() {
-  if (!BulletSpirit.jsoner) {
-    BulletSpirit.jsoner = new Jsoner(BulletSpirit.SCHEMA);
-  }
-  return BulletSpirit.jsoner;
-};
-
 BulletSpirit.prototype.onDraw = function(world, renderer) {
   this.drawTrail();
 };
@@ -158,14 +151,6 @@ BulletSpirit.prototype.destroyBody = function() {
     this.screen.world.removeBodyId(this.bodyId);
     this.bodyId = null;
   }
-};
-
-BulletSpirit.prototype.toJSON = function() {
-  return BulletSpirit.getJsoner().toJSON(this);
-};
-
-BulletSpirit.prototype.setFromJSON = function(json) {
-  BulletSpirit.getJsoner().setFromJSON(json, this);
 };
 
 BulletSpirit.prototype.die = function() {

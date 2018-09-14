@@ -41,21 +41,6 @@ MachineGunSpirit.prototype.isActivatable = function() {
   return true;
 };
 
-MachineGunSpirit.getJsoner = function() {
-  if (!MachineGunSpirit.jsoner) {
-    MachineGunSpirit.jsoner = new Jsoner(MachineGunSpirit.SCHEMA);
-  }
-  return MachineGunSpirit.jsoner;
-};
-
-MachineGunSpirit.prototype.toJSON = function() {
-  return MachineGunSpirit.getJsoner().toJSON(this);
-};
-
-MachineGunSpirit.prototype.setFromJSON = function(json) {
-  MachineGunSpirit.getJsoner().setFromJSON(json, this);
-};
-
 MachineGunSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 

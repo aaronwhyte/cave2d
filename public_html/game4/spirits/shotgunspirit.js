@@ -43,21 +43,6 @@ ShotgunSpirit.prototype.isActivatable = function() {
   return true;
 };
 
-ShotgunSpirit.getJsoner = function() {
-  if (!ShotgunSpirit.jsoner) {
-    ShotgunSpirit.jsoner = new Jsoner(ShotgunSpirit.SCHEMA);
-  }
-  return ShotgunSpirit.jsoner;
-};
-
-ShotgunSpirit.prototype.toJSON = function() {
-  return ShotgunSpirit.getJsoner().toJSON(this);
-};
-
-ShotgunSpirit.prototype.setFromJSON = function(json) {
-  ShotgunSpirit.getJsoner().setFromJSON(json, this);
-};
-
 ShotgunSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 

@@ -69,21 +69,6 @@ CentipedeSpirit.SCHEMA = {
   9: "joinableAfterTime"
 };
 
-CentipedeSpirit.getJsoner = function() {
-  if (!CentipedeSpirit.jsoner) {
-    CentipedeSpirit.jsoner = new Jsoner(CentipedeSpirit.SCHEMA);
-  }
-  return CentipedeSpirit.jsoner;
-};
-
-CentipedeSpirit.prototype.toJSON = function() {
-  return CentipedeSpirit.getJsoner().toJSON(this);
-};
-
-CentipedeSpirit.prototype.setFromJSON = function(json) {
-  CentipedeSpirit.getJsoner().setFromJSON(json, this);
-};
-
 CentipedeSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 

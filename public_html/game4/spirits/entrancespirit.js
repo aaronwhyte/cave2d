@@ -44,25 +44,10 @@ EntranceSpirit.factory = function(screen, pos) {
   return spiritId;
 };
 
-EntranceSpirit.getJsoner = function() {
-  if (!EntranceSpirit.jsoner) {
-    EntranceSpirit.jsoner = new Jsoner(EntranceSpirit.SCHEMA);
-  }
-  return EntranceSpirit.jsoner;
-};
-
 EntranceSpirit.prototype.getColor = function() {
   return Renderer.COLOR_WHITE;
 };
 
 EntranceSpirit.prototype.getModelId = function() {
   return ModelId.ENTRANCE;
-};
-
-EntranceSpirit.prototype.toJSON = function() {
-  return EntranceSpirit.getJsoner().toJSON(this);
-};
-
-EntranceSpirit.prototype.setFromJSON = function(json) {
-  EntranceSpirit.getJsoner().setFromJSON(json, this);
 };

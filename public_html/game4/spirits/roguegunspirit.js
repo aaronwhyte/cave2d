@@ -39,21 +39,6 @@ RogueGunSpirit.prototype.isActivatable = function() {
   return true;
 };
 
-RogueGunSpirit.getJsoner = function() {
-  if (!RogueGunSpirit.jsoner) {
-    RogueGunSpirit.jsoner = new Jsoner(RogueGunSpirit.SCHEMA);
-  }
-  return RogueGunSpirit.jsoner;
-};
-
-RogueGunSpirit.prototype.toJSON = function() {
-  return RogueGunSpirit.getJsoner().toJSON(this);
-};
-
-RogueGunSpirit.prototype.setFromJSON = function(json) {
-  RogueGunSpirit.getJsoner().setFromJSON(json, this);
-};
-
 RogueGunSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 

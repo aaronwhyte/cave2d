@@ -30,21 +30,6 @@ IndicatorSpirit.prototype.isActivatable = function() {
   return true;
 };
 
-IndicatorSpirit.getJsoner = function() {
-  if (!IndicatorSpirit.jsoner) {
-    IndicatorSpirit.jsoner = new Jsoner(IndicatorSpirit.SCHEMA);
-  }
-  return IndicatorSpirit.jsoner;
-};
-
-IndicatorSpirit.prototype.toJSON = function() {
-  return IndicatorSpirit.getJsoner().toJSON(this);
-};
-
-IndicatorSpirit.prototype.setFromJSON = function(json) {
-  IndicatorSpirit.getJsoner().setFromJSON(json, this);
-};
-
 IndicatorSpirit.factory = function(screen, pos, dir) {
   let world = screen.world;
 
