@@ -28,11 +28,12 @@ PlayerSlot.prototype.isPlaying = function() {
 };
 
 /**
+ * Add a mapping from a state-name to a list of controls available in that state.
  * @param {String} stateName
  * @param {ControlMap} controlList
  * @returns {PlayerSlot}
  */
-PlayerSlot.prototype.add = function(stateName, controlList) {
+PlayerSlot.prototype.addControlState = function(stateName, controlList) {
   this.stateMap[stateName] = controlList;
   return this;
 };

@@ -26,9 +26,14 @@ Stamps.create = function(renderer) {
   // HUD icons
   stamps.pauseStamp = stamp(ModelId.PAUSE_BUTTON);
   stamps.joinButton = stamp(ModelId.JOIN_BUTTON);
-  stamps.button1 = stamp(ModelId.ONE_BUTTON);
-  stamps.button2 = stamp(ModelId.TWO_BUTTON);
+
+  stamps.action0 = stamp(ModelId.ACTION_0);
+  stamps.action1 = stamp(ModelId.ACTION_1);
+  stamps.dropItem = stamp(ModelId.DROP_ITEM);
+  stamps.equipItem = stamp(ModelId.EQUIP_ITEM);
+
   stamps.menuButton = stamp(ModelId.MENU_BUTTON);
+
   stamps.testStamp = stamp(ModelId.TEST_BUTTON);
   stamps.untestStamp = stamp(ModelId.UNTEST_BUTTON);
 

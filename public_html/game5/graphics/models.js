@@ -22,8 +22,10 @@ let ModelId = (function() {
     PAUSE_BUTTON: ++i,
     JOIN_BUTTON: ++i,
     MENU_BUTTON: ++i, // it's unjoin, really
-    ONE_BUTTON: ++i,
-    TWO_BUTTON: ++i,
+    ACTION_0: ++i,
+    ACTION_1: ++i,
+    DROP_ITEM: ++i,
+    EQUIP_ITEM: ++i,
 
     TEST_BUTTON: ++i,
     UNTEST_BUTTON: ++i,
@@ -73,8 +75,10 @@ Models.prototype.createModel = function(id) {
 
     case ModelId.JOIN_BUTTON: return this.createCharButton('?');
     case ModelId.MENU_BUTTON: return this.createCharButton('!');
-    case ModelId.ONE_BUTTON: return this.createCharButton('1');
-    case ModelId.TWO_BUTTON: return this.createCharButton('2');
+    case ModelId.ACTION_0: return this.createCharButton('0');
+    case ModelId.ACTION_1: return this.createCharButton('1');
+    case ModelId.DROP_ITEM: return this.createCharButton('-');
+    case ModelId.EQUIP_ITEM: return this.createCharButton('*');
 
     case ModelId.TEST_BUTTON:
       return RigidModel.createTriangle()

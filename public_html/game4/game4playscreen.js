@@ -101,7 +101,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
   let self = this;
   function createKeyboardSlot(name, up, right, down, left, b1, b2, menuKey) {
     return new PlayerSlot(name)
-        .add(ControlState.WAITING, new ControlMap()
+        .addControlState(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
                 .addTriggerKeyByName(up)
                 .addTriggerKeyByName(right)
@@ -111,7 +111,7 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(b2)
                 .addTriggerKeyByName(menuKey)
             ))
-        .add(ControlState.PLAYING, new ControlMap()
+        .addControlState(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, new KeyStick()
                 .setUpRightDownLeftByName(up, right, down, left))
             .add(ControlName.BUTTON_1, new KeyTrigger().addTriggerKeyByName(b1))
@@ -198,9 +198,9 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
     self.cuboidRules.push(menuRule);
 
     let slot = new PlayerSlot(name)
-        .add(ControlState.WAITING, new ControlMap()
+        .addControlState(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, joinTrigger))
-        .add(ControlState.PLAYING, new ControlMap()
+        .addControlState(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, stick)
             .add(ControlName.BUTTON_1, button1)
             .add(ControlName.BUTTON_2, button2)
@@ -213,14 +213,14 @@ Game4PlayScreen.prototype.configurePlayerSlots = function() {
     // Only join on mouse-click, since that's a good indication you have a mouse in hand,
     // and it starts the Pointer Lock process.
     return new PlayerSlot(name)
-        .add(ControlState.WAITING, new ControlMap()
+        .addControlState(ControlState.WAITING, new ControlMap()
             .add(ControlName.JOIN_TRIGGER, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger()
                     .addTriggerKeyByName(b1)
                     .addTriggerKeyByName(b2)
                     .addTriggerKeyByName(menuKey))))
-        .add(ControlState.PLAYING, new ControlMap()
+        .addControlState(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(100))
             .add(ControlName.BUTTON_1, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
