@@ -31,6 +31,8 @@ function PlayerSpirit(screen) {
   // combat
   this.toughness = 3;
   this.damage = 1;
+
+  this.inventory = new Inventory();
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -322,4 +324,36 @@ PlayerSpirit.prototype.explode = function() {
 
 PlayerSpirit.prototype.die = function() {
   this.screen.killPlayerSpirit(this);
+};
+
+/**
+ * Called after bouncing and damage exchange are done.
+ * @param {Vec2d} collisionVec
+ * @param {Number} mag the magnitude of the collision, kinda?
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
+ */
+PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+  if (otherBody.hitGroup === HitGroups.ITEM) {
+    // collect the item
+    let item = otherSpirit.getItem();
+    if (item) {
+      if (this.inventory.size()) {
+        this.inventory.get(0).onUnSelect();
+      }
+      this.inventory.add(item);
+      item.onPickup(this.screen, this);
+      item.onSelect();
+      if (item.tool) {
+        // TODO: pull this out to another function
+        this.screen.world.addSpirit(item.tool);
+        item.tool.setWielderId(this.id);
+        this.weapon = item.tool;
+      }
+    }
+    this.screen.removeByBodyId(otherBody.id);
+  } else {
+    // regular collision
+    BaseSpirit.prototype.onHitOther.apply(this, arguments);
+  }
 };

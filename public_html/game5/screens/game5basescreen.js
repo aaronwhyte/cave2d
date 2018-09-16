@@ -57,19 +57,33 @@ Game5BaseScreen.USE_FANS = false;
 // Adds support for BatchDrawer drawing.
 Game5BaseScreen.SUPPORT_BATCH_DRAWING = true;
 
+/**
+ * IDs of types of spirits, one per spirit class.
+ * @enum {number}
+ */
 Game5BaseScreen.SpiritType = {
   ENTRANCE: 1,
   EXIT: 2,
   PLAYER: 3,
   BULLET: 4,
-  ANT: 5
+  ANT: 5,
+  SLOW_SHOOTER: 6,
+  MEDIUM_SHOOTER: 7,
+  LASER_WEAPON: 8
 };
 
+/**
+ * IDs of menu item objects.
+ * @enum {String}
+ */
 Game5BaseScreen.MenuItem = {
   ENTRANCE: 'entrance',
   EXIT: 'exit',
   PLAYER: 'player',
-  ANT: 'ant'
+  ANT: 'ant',
+  SLOW_SHOOTER: 'slow_shooter',
+  MEDIUM_SHOOTER: 'medium_shooter',
+  LASER_WEAPON: 'laser_weapon',
 };
 
 Game5BaseScreen.prototype.getSpiritConfigs = function() {
@@ -98,6 +112,11 @@ Game5BaseScreen.prototype.getSpiritConfigs = function() {
     addToMenu(st.ANT, AntSpirit, mi.ANT, ModelId.ANT);
     nextColumn();
 
+    addToMenu(st.SLOW_SHOOTER, SlowShooterItemSpirit, mi.SLOW_SHOOTER, ModelId.SLOW_SHOOTER);
+    addToMenu(st.MEDIUM_SHOOTER, MediumShooterItemSpirit, mi.MEDIUM_SHOOTER, ModelId.MEDIUM_SHOOTER);
+    addToMenu(st.LASER_WEAPON, LaserWeaponItemSpirit, mi.LASER_WEAPON, ModelId.LASER_WEAPON);
+    nextColumn();
+
     this.spiritConfigs = sc;
   }
   return this.spiritConfigs;
@@ -111,47 +130,56 @@ Game5BaseScreen.prototype.getHitPairs = function() {
   if (!this.hitPairs) {
     let g = this.getHitGroups();
     this.hitPairs = [
-      [g.NEUTRAL, g.WALL],
-      [g.NEUTRAL, g.NEUTRAL],
+        // WALL doesn't hit itself
 
-      [g.CURSOR, g.EMPTY],
-      [g.CURSOR, g.WALL],
-      [g.CURSOR, g.NEUTRAL],
+        [g.NEUTRAL, g.WALL],
+        [g.NEUTRAL, g.NEUTRAL],
 
-      [g.PLAYER, g.WALL],
-      [g.PLAYER, g.NEUTRAL],
-      [g.PLAYER, g.CURSOR],
-      [g.PLAYER, g.PLAYER],
+        [g.CURSOR, g.EMPTY],
+        [g.CURSOR, g.WALL],
+        [g.CURSOR, g.NEUTRAL],
 
-      [g.PLAYER_FIRE, g.WALL],
-      [g.PLAYER_FIRE, g.PLAYER],
-      [g.PLAYER_FIRE, g.NEUTRAL],
+        [g.PLAYER, g.WALL],
+        [g.PLAYER, g.NEUTRAL],
+        [g.PLAYER, g.CURSOR],
+        [g.PLAYER, g.PLAYER],
 
-      [g.PLAYER_SCAN, g.WALL],
-      [g.PLAYER_SCAN, g.NEUTRAL],
-      [g.PLAYER_SCAN, g.PLAYER],
+        [g.PLAYER_FIRE, g.WALL],
+        [g.PLAYER_FIRE, g.PLAYER],
+        [g.PLAYER_FIRE, g.NEUTRAL],
 
-      [g.ENEMY, g.WALL],
-      [g.ENEMY, g.NEUTRAL],
-      [g.ENEMY, g.CURSOR],
-      [g.ENEMY, g.PLAYER],
-      [g.ENEMY, g.PLAYER_FIRE],
-      [g.ENEMY, g.PLAYER_SCAN],
-      [g.ENEMY, g.ENEMY],
+        [g.PLAYER_SCAN, g.WALL],
+        [g.PLAYER_SCAN, g.NEUTRAL],
+        [g.PLAYER_SCAN, g.PLAYER],
 
-      [g.ENEMY_FIRE, g.WALL],
-      [g.ENEMY_FIRE, g.NEUTRAL],
-      [g.ENEMY_FIRE, g.PLAYER],
+        [g.ENEMY, g.WALL],
+        [g.ENEMY, g.NEUTRAL],
+        [g.ENEMY, g.CURSOR],
+        [g.ENEMY, g.PLAYER],
+        [g.ENEMY, g.PLAYER_FIRE],
+        [g.ENEMY, g.PLAYER_SCAN],
+        [g.ENEMY, g.ENEMY],
 
-      [g.ENEMY_SCAN, g.WALL],
-      [g.ENEMY_SCAN, g.NEUTRAL],
-      [g.ENEMY_SCAN, g.PLAYER],
-      [g.ENEMY_SCAN, g.ENEMY],
+        [g.ENEMY_FIRE, g.WALL],
+        [g.ENEMY_FIRE, g.NEUTRAL],
+        [g.ENEMY_FIRE, g.PLAYER],
 
-      [g.PLAYER_WIDE_SCAN, g.ENEMY],
-      [g.ENEMY_WIDE_SCAN, g.PLAYER],
+        [g.ENEMY_SCAN, g.WALL],
+        [g.ENEMY_SCAN, g.NEUTRAL],
+        [g.ENEMY_SCAN, g.PLAYER],
+        [g.ENEMY_SCAN, g.ENEMY],
 
-      [g.EMPTY, g.EMPTY]
+        [g.PLAYER_WIDE_SCAN, g.ENEMY],
+        [g.ENEMY_WIDE_SCAN, g.PLAYER],
+
+        [g.ITEM, g.WALL],
+        [g.ITEM, g.NEUTRAL],
+        [g.ITEM, g.CURSOR],
+        [g.ITEM, g.PLAYER],
+        [g.ITEM, g.ITEM],
+
+
+        [g.EMPTY, g.EMPTY]
     ];
   }
   return this.hitPairs;

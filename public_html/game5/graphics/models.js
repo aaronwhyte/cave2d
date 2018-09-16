@@ -10,37 +10,37 @@ function Models(glyphs) {
  * @enum {number}
  */
 let ModelId = (function() {
-  let i = 1;
+  let i = 0;
   return {
-    CIRCLE_32: i++,
-    SEPTAGON: i++,
-    SQUARE: i++,
-    TUBE_32: i++,
-    CYLINDER_32: i++,
-    LINE_SEGMENT: i++,
+    CIRCLE_32: ++i,
+    SEPTAGON: ++i,
+    SQUARE: ++i,
+    TUBE_32: ++i,
+    CYLINDER_32: ++i,
+    LINE_SEGMENT: ++i,
 
-    PAUSE_BUTTON: i++,
-    JOIN_BUTTON: i++,
-    MENU_BUTTON: i++, // it's unjoin, really
-    ONE_BUTTON: i++,
-    TWO_BUTTON: i++,
+    PAUSE_BUTTON: ++i,
+    JOIN_BUTTON: ++i,
+    MENU_BUTTON: ++i, // it's unjoin, really
+    ONE_BUTTON: ++i,
+    TWO_BUTTON: ++i,
 
-    TEST_BUTTON: i++,
-    UNTEST_BUTTON: i++,
+    TEST_BUTTON: ++i,
+    UNTEST_BUTTON: ++i,
 
-    ARROW: i++,
-    STAR: i++,
+    ARROW: ++i,
+    STAR: ++i,
 
-    ACTIVATOR_GUN: i++,
-    ANT: i++,
-    CENTIPEDE: i++,
-    ENTRANCE: i++,
-    EXIT: i++,
-    INDICATOR: i++,
-    MACHINE_GUN: i++,
-    PLAYER: i++,
-    ROGUE_GUN: i++,
-    SHOTGUN: i++
+    ENTRANCE: ++i,
+    EXIT: ++i,
+
+    ANT: ++i,
+
+    PLAYER: ++i,
+
+    SLOW_SHOOTER: ++i,
+    MEDIUM_SHOOTER: ++i,
+    LASER_WEAPON: ++i
   };
 })();
 
@@ -108,20 +108,6 @@ Models.prototype.createModel = function(id) {
       return model;
     }
 
-    case ModelId.ACTIVATOR_GUN: {
-      let model = new RigidModel();
-      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-      let thick = 0.3;
-      let barrel = RigidModel.createSquare()
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
-          .addRigidModel(RigidModel.createCircle(9)
-              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
-              .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-          .setColorRGB(0.9, 0.9, 0.9);
-      return model.addRigidModel(body).addRigidModel(barrel);
-    }
-
     case ModelId.ANT:
       return RigidModel.createCircle(8)
           .addRigidModel(RigidModel.createSquare()
@@ -134,18 +120,6 @@ Models.prototype.createModel = function(id) {
               .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
           .setColorRGB(0.1, 0.8, 0.1);
 
-    case ModelId.CENTIPEDE:
-      return RigidModel.createCircle(8)
-          .addRigidModel(RigidModel.createSquare()
-              .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
-              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-              .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
-          .addRigidModel(RigidModel.createSquare()
-              .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
-              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-              .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
-          .setColorRGB(1, 0.1, 0.1);
-
     case ModelId.ENTRANCE:
       return RigidModel.createRingMesh(5, 0.8)
           .setColorRGB(0.7, 0.3, 0.7);
@@ -153,24 +127,6 @@ Models.prototype.createModel = function(id) {
     case ModelId.EXIT:
       return RigidModel.createRingMesh(5, 0.8)
           .setColorRGB(0.2, 0.8, 0.2);
-
-    case ModelId.INDICATOR:
-      return RigidModel.createCircle(17)
-          .setColorRGB(0.5, 0.5, 0.4);
-
-    case ModelId.MACHINE_GUN: {
-      let model = new RigidModel();
-      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
-      let thick = 0.5;
-      let barrel = RigidModel.createSquare()
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
-          .addRigidModel(RigidModel.createCircle(9)
-              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
-              .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
-          .setColorRGB(1, 1, 0);
-      return model.addRigidModel(body).addRigidModel(barrel);
-    }
 
     case ModelId.PLAYER:
       return RigidModel.createCircle(24)
@@ -188,7 +144,24 @@ Models.prototype.createModel = function(id) {
               .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.37, -0.25))
               .setColorRGB(0, 0, 0));
 
-    case ModelId.ROGUE_GUN: {
+/*
+TODO: Change all these item models to be item icons in standard item bubbles?
+ */
+    case ModelId.SLOW_SHOOTER: {
+      let model = new RigidModel();
+      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
+      let thick = 0.5;
+      let barrel = RigidModel.createSquare()
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
+          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
+          .addRigidModel(RigidModel.createCircle(9)
+              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
+              .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
+          .setColorRGB(1, 1, 0);
+      return model.addRigidModel(body).addRigidModel(barrel);
+    }
+
+    case ModelId.MEDIUM_SHOOTER: {
       let model = new RigidModel();
       let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
       let thick = 0.4;
@@ -202,7 +175,7 @@ Models.prototype.createModel = function(id) {
       return model.addRigidModel(body).addRigidModel(barrel);
     }
 
-    case ModelId.SHOTGUN: {
+    case ModelId.LASER_WEAPON: {
       let model = new RigidModel();
       let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
       let thick = 0.65;

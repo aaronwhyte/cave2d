@@ -1,0 +1,13 @@
+To add an item:
+- Graphics
+  - Add a modelId and model-getter to graphics/models.js
+- Game5BaseScreen constants
+  - Add to Game5BaseScreen.SpiritType
+- Item class
+  - Create an items/fooitem.js extending BaseItem
+  - Add that file to index.html and edit/index.html
+- Spirit class
+  - Add a class to to spirits/itemspirits.js, using constants from above
+- Update spirit configs (for deserialization) and editor menu
+  - Add to Game5BaseScreen.MenuItem
+  - Add to Game5BaseScreen.getSpiritConfigs

@@ -183,22 +183,61 @@ v Data structure
   v remove(index) shuffles the rest over. Usually remove(0) but thieves or special attacks could cause other drops
   v select(index) pulls that one up to 0 and shuffles affected items to the right
   v add(item, index) pushes things to the right
-- touch in-world item to collect it into slot 0
-- drop button
-  - touch
-  - keyboard
-- selection pseudomode button
-  - reveals pack contents on screen (doesn't scroll yet but it could happen)
-  - selection indicator movement
-    - pointerlock stick left/right
-    - fire/secondary buttons also work?
-    - touch is more direct spacial model, where touchbar is below item icons
-  - release pseudomode selects the indicated item
 
-Primary Action Button
-- Position like game4
-- listen/unlisten etc. Probably hard to get right
+Collectible Item spirits
+v BaseItemSpirit has common code and some params for concrete child classes
+  v Concrete child classes have their own editor-friendly ids and things.
+  v But because the classes are so small, cram them all into one file, items.js
 
+x Renders with a bubble(?) and the item icon, but they're a single stamp? try it.
+v Only players can interact with items for now. That'll be pretty action-game normal.
+v Document how to add items, because there are a lot of steps.
+
+Inventory Management UX
+v touch in-world item to add it to inventry position 0
+  v ItemSpirits actually have Items in them
+    v SlowShooter
+    v MediumShooter
+    v LaserWeapon
+  v PlayerSpirit collision code knows what to do with Item collisions
+    v PlayerSpirit has Inventory
+    v Item is extracted
+    v old selection us unselected
+    v Spirit is destroyed
+- player drops everything when they die
+- primary action button
+  - Position like game4
+  - listen/unlisten etc. Probably hard to get right
+- drop
+  - button (Should this be a pseudomode too? For drop direction, or throwing?)
+    - touch
+    - keyboard
+  - creates appropriate Spirit
+    - need Item to Spirit mapping
+- selection
+  - pseudomode button
+    - reveals pack contents on screen (doesn't scroll yet but it could happen)
+    - selection indicator movement
+      - pointerlock stick left/right
+      - fire/secondary buttons also work?
+      - touch is more direct spacial model, where touchbar is below item icons
+    - release pseudomode selects the indicated item
+  - unselect old item
+    - oldItem.onUnselect
+  - select new one
+    - inventory.select
+    - item.onSelect
+- animate item collection
+
+
+
+
+Data management idea
+Scalable, Flexible, Simple: Pick Two
+There's a lot of data that's embedded in code in various places.
+A spirit has a MenuItem val, SpiritType val, modelId, constructor, maybe item type and item constructor...
+A lot of the code is just creating mappings from one thing to the other, which is basically database indexing
+Maybe I should have an actual single JSON table, sort of like what I have for SpiritConfig but more declarative.
 
 
 
@@ -269,7 +308,7 @@ V .............. V
   v slow shooter
   v medium shooter - machine-gunny
   v laser 1.0 - long, straight, no bounce, frequent
-  - telegraph laser fire with sparks, add delay
+  v telegraph laser fire with sparks, add delay
   - shotgun - short wide, a bit bouncy, infrequent
   - magic missile - seeking, avoids walls. Infrequent!
   - rogue gun - medium, narrowish, very bouncy, low damage
