@@ -52,8 +52,6 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
 PlayerSpirit.ANGULAR_FRICTION = 0.3;
 
-PlayerSpirit.STOP_FIRING_AFTER_TIME = 10;
-
 PlayerSpirit.SCHEMA = {
   0: "type",
   1: "id",
@@ -124,7 +122,7 @@ PlayerSpirit.prototype.getCameraFocusPos = function() {
 
 /**
  *
- * @param {Controls} controls
+ * @param {ControlMap} controls
  */
 PlayerSpirit.prototype.handleInput = function(controls) {
   let playerBody = this.getBody();
@@ -142,12 +140,18 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   stick.getVal(this.stickVec);
   let stickMag = this.stickVec.magnitude();
 
+  let newAction0 = controls.get(ControlName.ACTION_0).getVal();
+  let newAction1 = controls.get(ControlName.ACTION_1).getVal();
+  let newDrop = controls.get(ControlName.DROP_ITEM).getVal();
+  let newEquip = controls.get(ControlName.EQUIP_ITEM).getVal();
+
+
   // Only shoot if the player moved/aimed recently
   if (stickMag > 0.001) {
     this.lastStickVecTime = now;
   }
   if (this.weapon) {
-    this.weapon.setButtonDown(now - this.lastStickVecTime < PlayerSpirit.STOP_FIRING_AFTER_TIME);
+    this.weapon.setButtonDown(newAction0);
   }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
@@ -159,6 +163,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
     speed *= this.keyMult * this.keyMult;
   }
+  if (newAction0) speed = 0;
 
   let traction = PlayerSpirit.TRACTION;
   // Half of traction's job is to stop you from sliding in the direction you're already going.
