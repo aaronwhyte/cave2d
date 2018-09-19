@@ -173,7 +173,7 @@ v interaction callbacks
   v onPickup()
   v onDrop()
   v onSelect()
-  v onUnSelect()
+  v onUnselect()
   v onButtonDown(index)
   v onButtonUp(index)
 
@@ -209,13 +209,13 @@ v button layout (create 'em all but hook them up to dummy down/up listeners)
   v secondary action
   v equip
   v drop
-- drop item
-  - button hookup
-  - on down, start drop/throw targetting pseudomode
-  - on up, actually drop/throw
-  - creates appropriate Spirit
-    - need Item to Spirit mapping? Linear search is fine for now.
-- player drops everything when they die
+v drop item
+  v button hookup
+  v on down, start drop/throw targetting pseudomode
+  v on up, actually drop/throw
+  v creates appropriate Spirit
+v player drops everything when they die
+- replace PlayerSpirit.weapon with PlayerSpirit.item.tool
 - selection
   - pseudomode button
     - reveals pack contents on screen (doesn't scroll yet but it could happen)
@@ -232,16 +232,21 @@ v button layout (create 'em all but hook them up to dummy down/up listeners)
 - animate item collection
 
 
-- primary action
+v primary action
 - secondary action
 
 
 Data management idea
 Scalable, Flexible, Simple: Pick Two
 There's a lot of data that's embedded in code in various places.
-A spirit has a MenuItem val, SpiritType val, modelId, constructor, maybe item type and item constructor...
+A spirit has a MenuItemName string, SpiritType string, modelId, constructor, maybe item type and item constructor...
 A lot of the code is just creating mappings from one thing to the other, which is basically database indexing
 Maybe I should have an actual single JSON table, sort of like what I have for SpiritConfig but more declarative.
+
+Or maybe each kind of thing should have a single KeyName that is used in lots of other tables:
+spiritConfig
+itemConfig?
+iconModelId
 
 
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items!

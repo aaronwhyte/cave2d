@@ -4,7 +4,7 @@
  */
 function BulletSpirit(screen) {
   BaseSpirit.call(this, screen);
-  this.type = Game5BaseScreen.SpiritType.BULLET;
+  this.type = Game5Key.BULLET;
 
   this.color = new Vec4();
 

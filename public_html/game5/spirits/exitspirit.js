@@ -5,7 +5,7 @@
 function ExitSpirit(screen) {
   BaseSpirit.call(this, screen);
 
-  this.type = Game5BaseScreen.SpiritType.EXIT;
+  this.type = Game5Key.EXIT;
 
   // temps
   this.vec2d = new Vec2d();

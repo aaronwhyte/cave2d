@@ -4,7 +4,7 @@
  */
 function AntSpirit(screen) {
   BaseSpirit.call(this, screen);
-  this.type = Game5BaseScreen.SpiritType.ANT;
+  this.type = Game5Key.ANT;
   this.team = Team.ENEMY;
 
   this.color = new Vec4().setRGBA(1, 1, 1, 1);

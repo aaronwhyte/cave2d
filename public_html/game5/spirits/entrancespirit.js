@@ -5,7 +5,7 @@
 function EntranceSpirit(screen) {
   BaseSpirit.call(this, screen);
 
-  this.type = Game5BaseScreen.SpiritType.ENTRANCE;
+  this.type = Game5Key.ENTRANCE;
 
   // temps
   this.vec2d = new Vec2d();

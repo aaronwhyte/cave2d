@@ -317,7 +317,7 @@ Game5PlayScreen.prototype.exitLevel = function() {
 Game5PlayScreen.prototype.snapCameraToEntrance = function() {
   for (let spiritId in this.world.spirits) {
     let spirit = this.world.spirits[spiritId];
-    if (spirit.type === Game5BaseScreen.SpiritType.ENTRANCE) {
+    if (spirit.type === Game5Key.ENTRANCE) {
       this.entranceSpirit = spirit;
       break;
     }

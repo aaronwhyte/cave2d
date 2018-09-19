@@ -60,7 +60,7 @@ Inventory.prototype.add = function(item, opt_index) {
  */
 Inventory.prototype.get = function(index) {
   if (index < 0 || index >= this.items.length) {
-    console.warn("ignoring bad index:", index);
+    // console.warn("ignoring bad index:", index);
     return null;
   } else {
     return this.items[index];

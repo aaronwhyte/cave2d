@@ -57,67 +57,34 @@ Game5BaseScreen.USE_FANS = false;
 // Adds support for BatchDrawer drawing.
 Game5BaseScreen.SUPPORT_BATCH_DRAWING = true;
 
-/**
- * IDs of types of spirits, one per spirit class.
- * @enum {number}
- */
-Game5BaseScreen.SpiritType = {
-  ENTRANCE: 1,
-  EXIT: 2,
-  PLAYER: 3,
-  BULLET: 4,
-  ANT: 5,
-  SLOW_SHOOTER: 6,
-  MEDIUM_SHOOTER: 7,
-  LASER_WEAPON: 8
-};
-
-/**
- * IDs of menu item objects.
- * @enum {String}
- */
-Game5BaseScreen.MenuItem = {
-  ENTRANCE: 'entrance',
-  EXIT: 'exit',
-  PLAYER: 'player',
-  ANT: 'ant',
-  SLOW_SHOOTER: 'slow_shooter',
-  MEDIUM_SHOOTER: 'medium_shooter',
-  LASER_WEAPON: 'laser_weapon',
-};
-
 Game5BaseScreen.prototype.getSpiritConfigs = function() {
   if (!this.spiritConfigs) {
-    let sc = {};
-    let column = 0;
-    let row = 0;
-    let self = this;
+    this.spiritConfigs = {};
+    let column = 0, row = 0, self = this;
 
     function nextColumn() {
       column++;
       row = 0;
     }
 
-    function addToMenu(spiritType, ctor, menuItem, modelId) {
-      sc[spiritType] = self.createSpiritConfig2(ctor, menuItem, column, row++, self.models.createModel(modelId));
+    function addToMenu(key) {
+      self.spiritConfigs[key] = self.createSpiritConfig2(
+          g5db.getSpiritCtor(key),
+          key, column, row++,
+          self.models.createModel(g5db.getModelId(key)));
     }
 
-    let st = Game5BaseScreen.SpiritType;
-    let mi = Game5BaseScreen.MenuItem;
-
-    addToMenu(st.ENTRANCE, EntranceSpirit, mi.ENTRANCE, ModelId.ENTRANCE);
-    addToMenu(st.EXIT, ExitSpirit, mi.EXIT, ModelId.EXIT);
+    addToMenu(Game5Key.ENTRANCE);
+    addToMenu(Game5Key.EXIT);
     nextColumn();
 
-    addToMenu(st.ANT, AntSpirit, mi.ANT, ModelId.ANT);
+    addToMenu(Game5Key.ANT);
     nextColumn();
 
-    addToMenu(st.SLOW_SHOOTER, SlowShooterItemSpirit, mi.SLOW_SHOOTER, ModelId.SLOW_SHOOTER);
-    addToMenu(st.MEDIUM_SHOOTER, MediumShooterItemSpirit, mi.MEDIUM_SHOOTER, ModelId.MEDIUM_SHOOTER);
-    addToMenu(st.LASER_WEAPON, LaserWeaponItemSpirit, mi.LASER_WEAPON, ModelId.LASER_WEAPON);
+    addToMenu(Game5Key.SLOW_SHOOTER);
+    addToMenu(Game5Key.MEDIUM_SHOOTER);
+    addToMenu(Game5Key.LASER_WEAPON);
     nextColumn();
-
-    this.spiritConfigs = sc;
   }
   return this.spiritConfigs;
 };

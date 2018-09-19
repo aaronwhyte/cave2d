@@ -3,7 +3,7 @@
  * @extends {BaseItem}
  */
 function SlowShooterItem() {
-  BaseItem.call(this, ModelId.SLOW_SHOOTER, ModelId.SLOW_SHOOTER, true, "slow shooter");
+  BaseItem.call(this, Game5Key.SLOW_SHOOTER, true, "slow shooter");
 }
 SlowShooterItem.prototype = new BaseItem();
 SlowShooterItem.prototype.constructor = SlowShooterItem;

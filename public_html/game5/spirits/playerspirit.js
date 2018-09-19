@@ -5,7 +5,7 @@
 function PlayerSpirit(screen) {
   BaseSpirit.call(this, screen);
 
-  this.type = Game5BaseScreen.SpiritType.PLAYER;
+  this.type = Game5Key.PLAYER;
   this.team = Team.PLAYER;
 
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
@@ -33,6 +33,12 @@ function PlayerSpirit(screen) {
   this.damage = 1;
 
   this.inventory = new Inventory();
+
+  // buttons
+  this.oldAction0 = false;
+  this.oldAction1 = false;
+  this.oldDrop = false;
+  this.oldEquip = false;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -145,13 +151,13 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   let newDrop = controls.get(ControlName.DROP_ITEM).getVal();
   let newEquip = controls.get(ControlName.EQUIP_ITEM).getVal();
 
-
-  // Only shoot if the player moved/aimed recently
-  if (stickMag > 0.001) {
-    this.lastStickVecTime = now;
-  }
   if (this.weapon) {
     this.weapon.setButtonDown(newAction0);
+  }
+
+  if (this.oldDrop && !newDrop) {
+    // drop button released
+    this.dropItem();
   }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
@@ -184,6 +190,12 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   } else {
     this.handleKeyboardAim(stick, stickMag, reverseness);
   }
+
+  // button history
+  this.oldAction0 = newAction0;
+  this.oldAction1 = newAction1;
+  this.oldDrop = newDrop;
+  this.oldEquip = newEquip;
 };
 
 PlayerSpirit.prototype.getAimVec = function() {
@@ -328,6 +340,9 @@ PlayerSpirit.prototype.explode = function() {
 };
 
 PlayerSpirit.prototype.die = function() {
+  while (this.inventory.size()) {
+    this.dropItem();
+  }
   this.screen.killPlayerSpirit(this);
 };
 
@@ -344,21 +359,53 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
     let item = otherSpirit.getItem();
     if (item) {
       if (this.inventory.size()) {
-        this.inventory.get(0).onUnSelect();
+        this.unselectItem(this.inventory.get(0));
       }
       this.inventory.add(item);
       item.onPickup(this.screen, this);
-      item.onSelect();
-      if (item.tool) {
-        // TODO: pull this out to another function
-        this.screen.world.addSpirit(item.tool);
-        item.tool.setWielderId(this.id);
-        this.weapon = item.tool;
-      }
+      this.selectItem(item);
+
+      this.screen.removeByBodyId(otherBody.id);
     }
-    this.screen.removeByBodyId(otherBody.id);
   } else {
     // regular collision
     BaseSpirit.prototype.onHitOther.apply(this, arguments);
+  }
+};
+
+PlayerSpirit.prototype.dropItem = function() {
+  if (!this.inventory.size()) return;
+  let item = this.inventory.get(0);
+  this.inventory.remove(0);
+  this.unselectItem(item);
+  item.onDrop();
+
+  // create new item spirit and add it to the world
+  let spiritCtor = g5db.getSpiritCtor(item.key);
+  let spiritId = spiritCtor.factory(this.screen, this.getBodyPos(), this.getBodyAngPos());
+  // TODO accelerate the item?
+
+
+  // select next item if any
+  item = this.inventory.get(0);
+  if (item) {
+    this.selectItem(item);
+  }
+};
+
+PlayerSpirit.prototype.selectItem = function(item) {
+  item.onSelect();
+  if (item.tool) {
+    this.screen.world.addSpirit(item.tool);
+    item.tool.setWielderId(this.id);
+    this.weapon = item.tool;
+  }
+};
+
+PlayerSpirit.prototype.unselectItem = function(item) {
+  item.onUnselect();
+  if (item.tool) {
+    this.weapon = null;
+    this.screen.world.removeSpiritId(item.tool.id);
   }
 };

@@ -65,7 +65,7 @@ Game5HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   let pos = this.getHitPos(time, collisionVec, b0, b1, vec);
   let otherBody, otherSpirit;
 
-  let ebb = this.screen.bodyIfSpiritType(Game5BaseScreen.SpiritType.ENERGY_BULLET, b0, b1);
+  let ebb = this.screen.bodyIfSpiritType(Game5Key.ENERGY_BULLET, b0, b1);
   if (ebb) {
     let ebbs = this.screen.getSpiritForBody(ebb);
     otherBody = this.screen.otherBody(ebb, b0, b1);

@@ -28,7 +28,7 @@ DrawPack.prototype.addModel = function(id, model, batchSize) {
 };
 
 /**
- * Draws a perviously added model, using a batchDrawer or a stamp, depending on how the model was added.
+ * Draws a previously added model, using a batchDrawer or a stamp, depending on how the model was added.
  * @param {number} id
  * @param {Vec4} color
  * @param {Matrix44} matrix
@@ -48,7 +48,7 @@ DrawPack.prototype.draw = function(id, color, matrix, matrix2) {
       }
       this.renderer.drawStamp();
     } else {
-      console.log('DrawPack has no batcher or stamp for id: ' + id);
+      throw Error('DrawPack has no batcher or stamp for id: ' + id);
     }
   }
 };
