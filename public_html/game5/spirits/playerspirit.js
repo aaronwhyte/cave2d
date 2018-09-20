@@ -91,11 +91,6 @@ PlayerSpirit.factory = function(screen, pos, dir) {
   let b = spirit.createBody(pos, dir);
   spirit.bodyId = world.addBody(b);
 
-  // let w = new PlayerGun(screen);
-  // world.addSpirit(w);
-  // w.setWielderId(spiritId);
-  // spirit.weapon = w;
-
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
   return spiritId;
 };
@@ -151,8 +146,9 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   let newDrop = controls.get(ControlName.DROP_ITEM).getVal();
   let newEquip = controls.get(ControlName.EQUIP_ITEM).getVal();
 
-  if (this.weapon) {
-    this.weapon.setButtonDown(newAction0);
+  let tool = this.getSelectedTool();
+  if (tool) {
+    tool.setButtonDown(newAction0);
   }
 
   if (this.oldDrop && !newDrop) {
@@ -196,6 +192,14 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   this.oldAction1 = newAction1;
   this.oldDrop = newDrop;
   this.oldEquip = newEquip;
+};
+
+PlayerSpirit.prototype.getSelectedTool = function() {
+  if (this.inventory.size()) {
+    let item = this.inventory.get(0);
+    return item && item.tool;
+  }
+  return null;
 };
 
 PlayerSpirit.prototype.getAimVec = function() {
@@ -334,9 +338,6 @@ PlayerSpirit.prototype.explode = function() {
     this.screen.addPlayerExplosionSplash(pos, this.color);
     this.screen.removeByBodyId(this.bodyId);
   }
-  if (this.weapon) {
-    this.screen.removeSpiritId(this.weapon.id);
-  }
 };
 
 PlayerSpirit.prototype.die = function() {
@@ -398,14 +399,11 @@ PlayerSpirit.prototype.selectItem = function(item) {
   if (item.tool) {
     this.screen.world.addSpirit(item.tool);
     item.tool.setWielderId(this.id);
-    this.weapon = item.tool;
   }
 };
 
 PlayerSpirit.prototype.unselectItem = function(item) {
-  item.onUnselect();
   if (item.tool) {
-    this.weapon = null;
     this.screen.world.removeSpiritId(item.tool.id);
   }
 };
