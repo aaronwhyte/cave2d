@@ -193,7 +193,7 @@ x Renders with a bubble(?) and the item icon, but they're a single stamp? try it
 v Only players can interact with items for now. That'll be pretty action-game normal.
 v Document how to add items, because there are a lot of steps.
 
-Inventory Management UX
+Inventory Management UX part 1
 v touch in-world item to add it to inventry position 0
   v ItemSpirits actually have Items in them
     v SlowShooter
@@ -215,7 +215,32 @@ v drop item
   v on up, actually drop/throw
   v creates appropriate Spirit
 v player drops everything when they die
-- replace PlayerSpirit.weapon with PlayerSpirit.item.tool
+v replace PlayerSpirit.weapon with PlayerSpirit.item.tool
+
+Item Simplification
+Now there are about 3 layers per item: ItemSpirit, Item, Tool (which is also a Spirit)
+But a single Spirit can do those jobs:
+* be a thing in the world with your own body and rendering and friction etc
+  * use world timeouts for friction
+  * draw self
+* remove your worldly body when entering inventory, and restore it when leaving, into the world
+* be a selected item with tool capabilities
+  * use the wielder's body and direction to decide where to fire from etc.
+  * use timers to manage fire cool-down time etc
+* be an unselected item in an Inventory list
+  * do not draw when asked to (usually but this could be neat for special items)
+  * continue to use world timeouts as you see fit, but probably be passive
+
+
+Inventory Management UX part 2
+- drop effects
+  - toss things a little when dropped. It should go faster than the player, to avoid re-pickup.
+    (don't do whole pseudomode yet)
+  - sound
+  - splash
+- pickup effects
+  - sound
+  - splash?
 - selection
   - pseudomode button
     - reveals pack contents on screen (doesn't scroll yet but it could happen)
