@@ -134,7 +134,7 @@ Vec2d.prototype.sign = function() {
 };
 
 /**
- * @returns {number} up is 0, right is PI/2
+ * @returns {number} up (0, 1) is 0, right (0, 1) is PI/2
  */
 Vec2d.prototype.angle = function() {
   return Math.atan2(this.x, this.y);
