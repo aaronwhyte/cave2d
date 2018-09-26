@@ -201,9 +201,9 @@ PlayerSpirit.prototype.getSelectedTool = function() {
   return null;
 };
 
-PlayerSpirit.prototype.getAimVec = function() {
-  return this.aim;
-};
+// PlayerSpirit.prototype.getAimVec = function() {
+//   return this.aim;
+// };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
