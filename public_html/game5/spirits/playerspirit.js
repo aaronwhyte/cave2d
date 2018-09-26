@@ -356,18 +356,15 @@ PlayerSpirit.prototype.die = function() {
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
   if (otherBody.hitGroup === HitGroups.ITEM) {
+    console.log('collect!');
     // collect the item
-    let item = otherSpirit.getItem();
-    if (item) {
-      if (this.inventory.size()) {
-        this.unselectItem(this.inventory.get(0));
-      }
-      this.inventory.add(item);
-      item.onPickup(this.screen, this);
-      this.selectItem(item);
-
-      this.screen.removeByBodyId(otherBody.id);
+    let item = otherSpirit;
+    item.disembody();
+    if (this.inventory.size()) {
+      this.inventory.get(0).unwield();
     }
+    this.inventory.add(item);
+    item.wield(this.id);
   } else {
     // regular collision
     BaseSpirit.prototype.onHitOther.apply(this, arguments);
@@ -375,35 +372,16 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
 };
 
 PlayerSpirit.prototype.dropItem = function() {
+  console.log('drop!');
   if (!this.inventory.size()) return;
-  let item = this.inventory.get(0);
-  this.inventory.remove(0);
-  this.unselectItem(item);
-  item.onDrop();
-
-  // create new item spirit and add it to the world
-  let spiritCtor = g5db.getSpiritCtor(item.key);
-  let spiritId = spiritCtor.factory(this.screen, this.getBodyPos(), this.getBodyAngPos());
-  // TODO accelerate the item?
-
+  let item = this.inventory.remove(0);
+  let dir = this.getBodyAngPos();
+  let vel = this.vec2d.setXY(0, Math.random() * 0.1 + 0.5).rot(dir);
+  item.embody(this.getBodyPos(), vel, dir, 0);
 
   // select next item if any
   item = this.inventory.get(0);
   if (item) {
     this.selectItem(item);
-  }
-};
-
-PlayerSpirit.prototype.selectItem = function(item) {
-  item.onSelect();
-  if (item.tool) {
-    this.screen.world.addSpirit(item.tool);
-    item.tool.setWielderId(this.id);
-  }
-};
-
-PlayerSpirit.prototype.unselectItem = function(item) {
-  if (item.tool) {
-    this.screen.world.removeSpiritId(item.tool.id);
   }
 };

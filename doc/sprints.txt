@@ -230,6 +230,42 @@ But a single Spirit can do those jobs:
 * be an unselected item in an Inventory list
   * do not draw when asked to (usually but this could be neat for special items)
   * continue to use world timeouts as you see fit, but probably be passive
+---
+There are two classes of Tools today:
+1) Those that gets wrapped in Items and ItemSpirits
+2) Those that do not, like ClearPathScanner and TargetScanner
+They're all Spirits.
+The latter two are not part of inventory and do not get dropped. They're always wielded.
+Tools from (1) have three modes:
+1.1) Wielded. This is the same as (2).
+1.2) Wrapped in a spirit that has its own body, a free world object
+1.3) In inventory, neither weilded nor a free world object.
+---
+All the serious code is in the "tools" dir. What else gets added by upper layers today?
+"BaseItem" adds basically no value.
+The ItemSpirits have a body-maker, and friction values and other super-simple things.
+Let's use the tersely-named Tool classes and just add stuff like body, friction, modelId.
+---
+Double Collapse Item Simplification Refactor 2018!!!!
+* Start from the tersely named Tool classes
+v state
+  v embodied
+  v wielderId
+v new API
+  v wield(wielderId) // wielding auto-disembodies
+  v unwield()
+  v embody(pos, vel, ang, angVel) // embodying auto-unwields
+  v disembody()
+v Factory support for editor
+v player pickup on touch
+v player drop button drops current item
+- player fire button works
+- Active/Passive loop
+  - Stop active/passive timeout loop if disembodied.
+  - Start it when embodied.
+- player item management
+- replace all old Item and ItemSpirit classes
+
 
 
 Inventory Management UX part 2

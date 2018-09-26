@@ -4,6 +4,7 @@
  */
 function MediumShooter(screen) {
   BaseTool.call(this, screen);
+  this.type = Game5Key.MEDIUM_SHOOTER;
 }
 MediumShooter.prototype = new BaseTool();
 MediumShooter.prototype.constructor = MediumShooter;
@@ -13,6 +14,20 @@ MediumShooter.RECOIL_FORCE = 0.5;
 MediumShooter.WARM_UP_TIME = 2;
 MediumShooter.COOL_DOWN_TIME = 4;
 
+MediumShooter.SCHEMA = {
+  0: "type",
+  1: "id",
+  2: "bodyId",
+  3: "color"
+};
+
+MediumShooter.factory = function(screen, pos, dir) {
+  return BaseTool.factoryHelper(screen, pos, dir, new MediumShooter(screen));
+};
+
+MediumShooter.prototype.getModelId = function() {
+  return ModelId.MEDIUM_SHOOTER;
+};
 
 MediumShooter.prototype.getNextFireTime = function() {
   let throttle = MediumShooter.COOL_DOWN_TIME + 0.2 * Math.sin(2349.12983 * this.id + this.lastFireTime);

@@ -1,5 +1,9 @@
 /**
- * Base class for tools. Spirits own these and delegate management to these.
+ * Base class for tools.
+ * A tool can exist in one of three states:<ul>
+ * <li>embodied, unwielded: free-floating object in the world, with a body, active/passive timeouts, friction, etc
+ * <li>disembodied, wielded: wielded by another spirit
+ * <li>disembodied, unwielded: in a container spirit but not doing anything. Player inventory, chest, etc
  * @param {Game5BaseScreen} screen  access to sound effects, the world, etc.
  * @extends {BaseSpirit}
  * @constructor
@@ -8,6 +12,8 @@ function BaseTool(screen) {
   BaseSpirit.call(this, screen);
 
   this.wielderId = null;
+  this.bodyId = null;
+
   this.vec2d = new Vec2d();
   this.buttonDown = false;
   this.timeoutRunning = false;
@@ -15,17 +21,112 @@ function BaseTool(screen) {
   this.lastButtonDownTime = -1000;
   this.lastButtonUpTime = -1000;
   this.aimVec = new Vec2d(0, 1);
+
+  this.modelMatrix = new Matrix44();
+  this.mat44 = new Matrix44();
+
+  this.color = new Vec4();
 }
 BaseTool.prototype = new BaseSpirit();
 BaseTool.prototype.constructor = BaseSpirit;
 
 BaseTool.FIRE_TIMEOUT_ID = 'bt.f';
 
-BaseTool.prototype.onDraw = function() {};
-
-BaseTool.prototype.setWielderId = function(id) {
-  this.wielderId = id;
+BaseTool.factoryHelper = function(screen, pos, dir, spirit) {
+  spirit.setColorRGB(1, 1, 1);
+  let b = spirit.createBody(pos, Vec2d.ZERO, dir, 0);
+  spirit.bodyId = screen.world.addBody(b);
+  let spiritId = screen.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  return spiritId;
 };
+
+// BaseTool.prototype.onDraw = function() {
+//   if (this.getModelId()) {
+//     this.drawBody();
+//   }
+// };
+//
+/**
+ * Tells this tool it is now wielded by another spirit.
+ * The following are all illegal, and throw errors:
+ * <ul>
+ * <li>wielding an embodied tool
+ * <li>wielding with a falsy id
+ * <li>wielding a tool that is already wielded by someone else
+ * </ul>
+ * Wielding a tool twice with the same ID is a no-op.
+ * @param wielderId
+ */
+BaseTool.prototype.wield = function(wielderId) {
+  if (this.bodyId) {
+    throw Error('wield() not allowed on an embodied tool');
+  }
+  if (!wielderId) {
+    throw Error('falsy wielderId ' + wielderId);
+  }
+  if (wielderId === this.wielderId) return; // no-op
+  if (this.wielderId) {
+    throw Error('wield() not allowed on already wielded tool');
+  }
+  this.wielderId = wielderId;
+};
+
+/**
+ * Indicates that the wielding spirit is no longer wielding it.
+ * Calling this on an unwielded tool is a no-op.
+ */
+BaseTool.prototype.unwield = function() {
+  this.wielderId = null;
+};
+
+/**
+ * Change from disembodied to embodied, adding the new body to the world.
+ * Calling this on an already-embodied tool will throw an error.
+ * @param {Vec2d} pos
+ * @param {Vec2d} vel
+ * @param {number} dir
+ * @param {number} angVel
+ */
+BaseTool.prototype.embody = function(pos, vel, dir, angVel) {
+  if (this.bodyId > 0) {
+    throw Error('cannot embody() when bodyId is already set:' + this.bodyId);
+  }
+  this.unwield();
+  let body = this.createBody(pos, vel, dir, angVel);
+  this.bodyId = this.screen.world.addBody(body);
+};
+
+BaseTool.prototype.disembody = function() {
+  this.screen.world.removeBodyId(this.bodyId);
+  this.bodyId = null;
+};
+
+/**
+ * Allocates and configures a body, but does not add it to the world.
+ * @param {Vec2d} pos
+ * @param {Vec2d} vel
+ * @param {number} dir
+ * @param {number} angVel
+ */
+BaseTool.prototype.createBody = function(pos, vel, dir, angVel) {
+  let b = Body.alloc();
+  let now = this.now();
+  b.shape = Body.Shape.CIRCLE;
+  b.turnable = true;
+  b.grip = 0.2;
+  b.setAngPosAtTime(dir, now);
+  b.setPosAtTime(pos, now);
+  b.setAngVelAtTime(angVel, now);
+  b.rad = 0.95;
+  b.hitGroup = HitGroups.ITEM;
+  let density = 1;
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.moi = b.mass * b.rad * b.rad / 2;
+  b.spiritId = this.id;
+  return b;
+};
+
 
 BaseTool.prototype.getWielderSpirit = function() {
   return this.screen.getSpiritById(this.wielderId);
@@ -90,16 +191,28 @@ BaseTool.prototype.onTimeout = function(world, timeoutVal) {
 };
 
 BaseTool.prototype.getBody = function() {
-  let s = this.getWielderSpirit();
-  return s && s.getBody();
+  if (this.bodyId) {
+    return BaseSpirit.prototype.getBody.apply(this);
+  } else {
+    let s = this.getWielderSpirit();
+    return s && s.getBody();
+  }
 };
 
 BaseTool.prototype.getBodyPos = function() {
-  let s = this.getWielderSpirit();
-  return s && s.getBodyPos();
+  if (this.bodyId) {
+    return BaseSpirit.prototype.getBodyPos.apply(this);
+  } else {
+    let s = this.getWielderSpirit();
+    return s && s.getBodyPos();
+  }
 };
 
 BaseTool.prototype.getBodyAngPos = function() {
-  let s = this.getWielderSpirit();
-  return s && s.getBodyAngPos();
+  if (this.bodyId) {
+    return BaseSpirit.prototype.getBodyAngPos.apply(this);
+  } else {
+    let s = this.getWielderSpirit();
+    return s && s.getBodyAngPos();
+  }
 };
