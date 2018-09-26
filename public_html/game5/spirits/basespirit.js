@@ -251,7 +251,7 @@ BaseSpirit.prototype.getColor = function() {
 };
 
 BaseSpirit.prototype.getModelId = function() {
-  return -1;
+  return g5db.getModelId(this.type);
 };
 
 BaseSpirit.prototype.drawBody = function() {
