@@ -9,12 +9,14 @@ function Inventory() {
 /**
  * Removes the item at the index, and shifts higher-numbered items to the left.
  * @param index
+ * @return the item removed
  */
 Inventory.prototype.remove = function(index) {
   if (index < 0 || index >= this.items.length) {
     console.warn("ignoring bad index:", index);
+    return null;
   } else {
-    this.items.splice(index, 1);
+    return this.items.splice(index, 1)[0];
   }
 };
 
