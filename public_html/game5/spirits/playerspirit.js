@@ -356,7 +356,6 @@ PlayerSpirit.prototype.die = function() {
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
   if (otherBody.hitGroup === HitGroups.ITEM) {
-    console.log('collect!');
     // collect the item
     let item = otherSpirit;
     item.disembody();
@@ -372,7 +371,6 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
 };
 
 PlayerSpirit.prototype.dropItem = function() {
-  console.log('drop!');
   if (!this.inventory.size()) return;
   let item = this.inventory.remove(0);
   let dir = this.getBodyAngPos();
