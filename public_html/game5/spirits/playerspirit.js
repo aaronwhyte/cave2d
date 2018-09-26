@@ -196,8 +196,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
 
 PlayerSpirit.prototype.getSelectedTool = function() {
   if (this.inventory.size()) {
-    let item = this.inventory.get(0);
-    return item && item.tool;
+    return this.inventory.get(0);
   }
   return null;
 };
