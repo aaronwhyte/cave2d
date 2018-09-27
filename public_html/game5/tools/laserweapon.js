@@ -117,7 +117,6 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
  * @override
  */
 LaserWeapon.prototype.onDraw = function() {
-  // if (!this.buttonDown) return;
   let pos = this.getBodyPos();
   if (!pos) return;
   this.color.setRGBA(1, 1, 1, 1);
@@ -135,7 +134,7 @@ LaserWeapon.prototype.onDraw = function() {
   if (fraction <= 0 || fraction > 1) return;
   let dotRad = 0.01 + fraction;
 
-  let dotPosition = this.vec2d.set(0, 1).rot(this.getBodyAngPos())
+  let dotPosition = this.vec2d.setXY(0, 1).rot(this.getBodyAngPos())
       .scaleToLength(this.getBody().rad + dotRad)
       .add(pos);
   let red = (0.5 + 0.5 * fraction) * (1 - 0.2 * Math.random());
