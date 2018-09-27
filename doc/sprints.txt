@@ -269,6 +269,9 @@ v Active/Passive loop
   v Stop active/passive timeout loop if disembodied.
   v Start it when embodied.
 
+v when player dies, throw inventory around semi-randomly
+v tighten player angular rotation using dampened spring biz
+
 
 Inventory Management UX part 2
 - drop effects

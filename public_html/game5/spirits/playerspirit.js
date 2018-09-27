@@ -56,7 +56,7 @@ PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
-PlayerSpirit.ANGULAR_FRICTION = 0.3;
+PlayerSpirit.ANGULAR_FRICTION = 0.01;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -153,7 +153,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
 
   if (this.oldDrop && !newDrop) {
     // drop button released
-    this.dropItem();
+    this.dropItem(0.5, 0, 0);
   }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
@@ -214,15 +214,19 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     if (body) {
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
       // Angle towards aim.
-      let aimAngle = this.destAim.angle();
-      let angleDiff = aimAngle - this.getBodyAngPos();
-      while (angleDiff > Math.PI) {
-        angleDiff -= 2 * Math.PI;
+      let destAngle = this.destAim.angle();
+      let currAngle = this.getBodyAngPos();
+      let curr2dest = destAngle - currAngle;
+      while (curr2dest > Math.PI) {
+        curr2dest -= 2 * Math.PI;
       }
-      while (angleDiff < -Math.PI) {
-        angleDiff += 2 * Math.PI;
+      while (curr2dest < -Math.PI) {
+        curr2dest += 2 * Math.PI;
       }
-      this.addBodyAngVel(duration * PlayerSpirit.AIM_ANGPOS_ACCEL * angleDiff);
+      destAngle = currAngle + curr2dest;
+      let angAccel = Spring.getLandingAccel(
+          -curr2dest, this.getBodyAngVel(), PlayerSpirit.AIM_ANGPOS_ACCEL, PlayerSpirit.FRICTION_TIMEOUT * 2);
+      this.addBodyAngVel(angAccel);
 
       let angularFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3), duration);
       body.applyAngularFrictionAtTime(angularFriction, now);
@@ -324,8 +328,9 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 PlayerSpirit.prototype.explode = function() {
   let body = this.getBody();
   // if (body) {
-  while (this.inventory.size()) {
-    this.dropItem();
+  let offset = 2 * Math.PI * Math.random();
+  for (let i = 0, n = this.inventory.size(); i < n; i++) {
+    this.dropItem(0.5 + Math.random(), offset + i * 2 * Math.PI / (n + Math.random() + 0.5), Math.random() - 0.5);
   }
   let now = this.now();
   let pos = this.getBodyPos();
@@ -365,12 +370,14 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
   }
 };
 
-PlayerSpirit.prototype.dropItem = function() {
+PlayerSpirit.prototype.dropItem = function(speed, opt_angleOffset, opt_angVelOffset) {
   if (!this.inventory.size()) return;
+  let angleOffset = opt_angleOffset || 0;
+  let angVelOffset = opt_angVelOffset || 0;
   let item = this.inventory.remove(0);
   let dir = this.getBodyAngPos();
-  let vel = this.vec2d.setXY(0, 0.5).rot(dir).add(this.getBodyVel());
-  item.embody(this.getBodyPos(), vel, dir, this.getBodyAngVel());
+  let vel = this.vec2d.setXY(0, speed).rot(dir + angleOffset).add(this.getBodyVel());
+  item.embody(this.getBodyPos(), vel, dir, this.getBodyAngVel() + angVelOffset);
 
   // auto-wield the next item
   if (this.inventory.size()) {
