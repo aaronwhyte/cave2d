@@ -22,32 +22,32 @@ Spring.applyDampenedSpring = function(
     b1, pos1,
     restLength, pullFactor, dampFraction, maxForce, maxDist,
     now) {
-  var forceMag = -1;
-  var p0p1 = Vec2d.alloc().set(pos1).subtract(pos0);
-  var beamLength = p0p1.magnitude();
+  let forceMag = -1;
+  let p0p1 = Vec2d.alloc().set(pos1).subtract(pos0);
+  let beamLength = p0p1.magnitude();
   if (beamLength < maxDist) {
-    var totalForceVec = Vec2d.alloc();
-    var minMass = Math.min(b0.mass, b1.mass);
+    let totalForceVec = Vec2d.alloc();
+    let minMass = Math.min(b0.mass, b1.mass);
 
     // pull
-    var pullDistFactor = restLength ? (beamLength - restLength) / restLength : beamLength;
-    var pullForceVec = p0p1.scaleToLength(-pullFactor * minMass * pullDistFactor);
+    let pullDistFactor = restLength ? (beamLength - restLength) / restLength : beamLength;
+    let pullForceVec = p0p1.scaleToLength(-pullFactor * minMass * pullDistFactor);
     totalForceVec.add(pullForceVec);
 
     // damping
     if (dampFraction && minMass && minMass !== Infinity) {
-      var vap0 = b0.getVelocityAtWorldPoint(now, pos0, Vec2d.alloc());
-      var vap1 = b1.getVelocityAtWorldPoint(now, pos1, Vec2d.alloc());
-      var velDiffAlongForceVec = vap1.subtract(vap0).projectOnto(pullForceVec);
-      var dampAccel = velDiffAlongForceVec.scale(-dampFraction);
-      var dampForceVec = dampAccel.scale(minMass);
+      let vap0 = b0.getVelocityAtWorldPoint(now, pos0, Vec2d.alloc());
+      let vap1 = b1.getVelocityAtWorldPoint(now, pos1, Vec2d.alloc());
+      let velDiffAlongForceVec = vap1.subtract(vap0).projectOnto(pullForceVec);
+      let dampAccel = velDiffAlongForceVec.scale(-dampFraction);
+      let dampForceVec = dampAccel.scale(minMass);
       totalForceVec.add(dampForceVec);
       vap0.free();
       vap1.free();
     }
 
     // apply forces
-    var x = beamLength / maxDist;
+    let x = beamLength / maxDist;
     if (x > 0) {
       totalForceVec.clipToMaxLength(maxForce * (1 - x * x));
       b1.applyForceAtWorldPosAndTime(totalForceVec, pos1, now);
@@ -73,12 +73,12 @@ Spring.applyDampenedSpring = function(
 Spring.getLandingAccel = function(p0, v0, maxA, pulsePeriod) {
   if (maxA <= 0) return 0;
   // Normalize so p0 is always positive.
-  var flipped = p0 < 0;
+  let flipped = p0 < 0;
   if (flipped) {
     p0 *= -1;
     v0 *= -1;
   }
-  var a;
+  let a;
   if (p0 === 0) {
     if (Math.abs(v0) <= maxA) {
       // cancel vel in one step
@@ -95,9 +95,9 @@ Spring.getLandingAccel = function(p0, v0, maxA, pulsePeriod) {
     } else {
       // v0 < 0 which means we're heading towards intercept already.
       // When will velocity equal zero if we decelerate hard?
-      var t = -v0 / maxA;
+      let t = -v0 / maxA;
       // At what pos will vel hit 0?
-      var p = 0.5 * maxA * t * t  + v0 * t + p0;
+      let p = 0.5 * maxA * t * t  + v0 * t + p0;
       if (p < 0) {
         // We'll pass the intercept point, so go ahead and decelerate hard.
         a = maxA;
@@ -109,7 +109,7 @@ Spring.getLandingAccel = function(p0, v0, maxA, pulsePeriod) {
     }
     // Make sure we don't overshoot due to linear movement between pulses.
     if (a < 0 && p0 + pulsePeriod * (v0 + a) < 0) {
-      var v1 = -p0 / pulsePeriod;
+      let v1 = -p0 / pulsePeriod;
       a = Math.max(-maxA, Math.min(maxA, v1 - v0));
     }
   }
