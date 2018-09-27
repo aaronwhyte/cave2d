@@ -25,6 +25,7 @@ function TargetScanner(screen) {
 TargetScanner.prototype = new BaseTool();
 TargetScanner.prototype.constructor = TargetScanner;
 
+TargetScanner.prototype.onDraw = function(){};
 
 TargetScanner.prototype.getNextFireTime = function() {
   // deterministic fuzzing

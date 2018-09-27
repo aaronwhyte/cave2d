@@ -19,6 +19,8 @@ function ClearPathScanner(screen) {
 ClearPathScanner.prototype = new BaseTool();
 ClearPathScanner.prototype.constructor = ClearPathScanner;
 
+ClearPathScanner.prototype.onDraw = function(){};
+
 /** @override */
 ClearPathScanner.prototype.getNextFireTime = function() {
   return -1;

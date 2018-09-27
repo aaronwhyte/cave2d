@@ -259,13 +259,15 @@ v new API
 v Factory support for editor
 v player pickup on touch
 v player drop button drops current item
-- player fire button works
-- Active/Passive loop
-  - Stop active/passive timeout loop if disembodied.
-  - Start it when embodied.
-- player item management
-- replace all old Item and ItemSpirit classes
-
+v player fire button works
+v Delete all old Item and ItemSpirit classes
+v port the remaining items
+  v slow shooter
+  v laser weapon
+V get ant shooting to work again
+v Active/Passive loop
+  v Stop active/passive timeout loop if disembodied.
+  v Start it when embodied.
 
 
 Inventory Management UX part 2

@@ -23,9 +23,9 @@ function Game5Db() {
   a(Game5Key.ANT, AntSpirit, ModelId.ANT);
 
   // items
-  // a(Game5Key.SLOW_SHOOTER, SlowShooter, ModelId.SLOW_SHOOTER);
+  a(Game5Key.SLOW_SHOOTER, SlowShooter, ModelId.SLOW_SHOOTER);
   a(Game5Key.MEDIUM_SHOOTER, MediumShooter, ModelId.MEDIUM_SHOOTER);
-  // a(Game5Key.LASER_WEAPON, LaserWeapon, ModelId.LASER_WEAPON);
+  a(Game5Key.LASER_WEAPON, LaserWeapon, ModelId.LASER_WEAPON);
 }
 
 Game5Db.prototype.getSpiritCtor = function(key) {

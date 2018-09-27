@@ -553,8 +553,10 @@ BaseSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
 BaseSpirit.prototype.doActiveTimeout = function(world) {
   if (!this.screen.isPlaying()) {
+    // editing
     this.doEditorActiveTimeout();
   } else {
+    // playing
     this.doPlayingActiveTimeout();
   }
 };

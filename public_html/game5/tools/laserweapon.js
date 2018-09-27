@@ -4,15 +4,24 @@
  */
 function LaserWeapon(screen) {
   BaseTool.call(this, screen);
-  this.modelMatrix = new Matrix44();
-  this.mat44 = new Matrix44();
-  this.color = new Vec4(1, 1, 1);
+  this.type = Game5Key.LASER_WEAPON;
 }
 LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
 
 LaserWeapon.WARM_UP_TIME = 10;
 LaserWeapon.COOL_DOWN_TIME = 7;
+
+LaserWeapon.SCHEMA = {
+  0: "type",
+  1: "id",
+  2: "bodyId",
+  3: "color"
+};
+
+LaserWeapon.factory = function(screen, pos, dir) {
+  return BaseTool.factoryHelper(screen, pos, dir, new LaserWeapon(screen));
+};
 
 LaserWeapon.prototype.getNextFireTime = function() {
   // let throttle = 0.9 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
@@ -32,12 +41,15 @@ LaserWeapon.prototype.fire = function() {
   let pos = this.getBodyPos();
   if (!pos) return;
 
+  let wielder = this.getWielderSpirit();
+  if (!wielder) return;
+
   // some aim wiggle
-  let aimVec = this.getWielderSpirit().getAimVec().rot(0.01 * (Math.random() - 0.5));
+  let aimVec = wielder.getAimVec().rot(0.01 * (Math.random() - 0.5));
 
   let rad = 0.17;
   // Start the bullet just inside the front of the wielder, not in the center
-  this.vec2d.set(aimVec).scaleToLength(this.getWielderSpirit().getBody().rad - rad * 1.001);
+  this.vec2d.set(aimVec).scaleToLength(wielder.getBody().rad - rad * 1.001);
   pos.add(this.vec2d);
 
   this.addBullet(
@@ -108,6 +120,8 @@ LaserWeapon.prototype.onDraw = function() {
   // if (!this.buttonDown) return;
   let pos = this.getBodyPos();
   if (!pos) return;
+  this.color.setRGBA(1, 1, 1, 1);
+  this.drawBody();
 
   let fraction;
   if (this.buttonDown) {
@@ -120,12 +134,8 @@ LaserWeapon.prototype.onDraw = function() {
   }
   if (fraction <= 0 || fraction > 1) return;
   let dotRad = 0.01 + fraction;
-  let aimVec = this.getWielderSpirit().getAimVec();
 
-  // // add some tremble
-  // aimVec.rot(0.5 * (1 - Math.sqrt(fraction)) * (Math.random() - 0.5));
-
-  let dotPosition = this.vec2d.set(aimVec)
+  let dotPosition = this.vec2d.set(0, 1).rot(this.getBodyAngPos())
       .scaleToLength(this.getBody().rad + dotRad)
       .add(pos);
   let red = (0.5 + 0.5 * fraction) * (1 - 0.2 * Math.random());
@@ -136,7 +146,4 @@ LaserWeapon.prototype.onDraw = function() {
       .multiply(this.mat44.toScaleOpXYZ(dotRad, dotRad, 1))
       .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
   this.screen.drawModel(ModelId.CIRCLE_32, this.color, this.modelMatrix);
-
-  // let duration = 4 * dotRad;
-  // this.screen.splashes.addDotSplash(this.now(), dotPosition, dotRad, duration, red, 0, 0);
 };

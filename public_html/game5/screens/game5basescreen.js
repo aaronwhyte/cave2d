@@ -81,9 +81,9 @@ Game5BaseScreen.prototype.getSpiritConfigs = function() {
     addToMenu(Game5Key.ANT);
     nextColumn();
 
-    // addToMenu(Game5Key.SLOW_SHOOTER);
+    addToMenu(Game5Key.SLOW_SHOOTER);
     addToMenu(Game5Key.MEDIUM_SHOOTER);
-    // addToMenu(Game5Key.LASER_WEAPON);
+    addToMenu(Game5Key.LASER_WEAPON);
     nextColumn();
   }
   return this.spiritConfigs;

@@ -25,7 +25,7 @@ function BaseTool(screen) {
   this.modelMatrix = new Matrix44();
   this.mat44 = new Matrix44();
 
-  this.color = new Vec4();
+  this.color = new Vec4(1, 1, 1);
 }
 BaseTool.prototype = new BaseSpirit();
 BaseTool.prototype.constructor = BaseSpirit;
@@ -41,12 +41,12 @@ BaseTool.factoryHelper = function(screen, pos, dir, spirit) {
   return spiritId;
 };
 
-// BaseTool.prototype.onDraw = function() {
-//   if (this.getModelId()) {
-//     this.drawBody();
-//   }
-// };
-//
+BaseTool.prototype.onDraw = function() {
+  if (this.wielderId || this.bodyId) {
+    this.drawBody();
+  }
+};
+
 /**
  * Tells this tool it is now wielded by another spirit.
  * The following are all illegal, and throw errors:
@@ -73,11 +73,11 @@ BaseTool.prototype.wield = function(wielderId) {
 };
 
 /**
- * Indicates that the wielding spirit is no longer wielding it.
- * Calling this on an unwielded tool is a no-op.
+ * Indicates that no spirit is wielding it this.
  */
 BaseTool.prototype.unwield = function() {
   this.wielderId = null;
+  this.setButtonDown(false);
 };
 
 /**
@@ -89,12 +89,13 @@ BaseTool.prototype.unwield = function() {
  * @param {number} angVel
  */
 BaseTool.prototype.embody = function(pos, vel, dir, angVel) {
-  if (this.bodyId > 0) {
+  if (this.bodyId) {
     throw Error('cannot embody() when bodyId is already set:' + this.bodyId);
   }
   this.unwield();
   let body = this.createBody(pos, vel, dir, angVel);
   this.bodyId = this.screen.world.addBody(body);
+  this.startTimeouts();
 };
 
 BaseTool.prototype.disembody = function() {
@@ -115,8 +116,9 @@ BaseTool.prototype.createBody = function(pos, vel, dir, angVel) {
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.2;
-  b.setAngPosAtTime(dir, now);
   b.setPosAtTime(pos, now);
+  b.setVelAtTime(vel, now);
+  b.setAngPosAtTime(dir, now);
   b.setAngVelAtTime(angVel, now);
   b.rad = 0.95;
   b.hitGroup = HitGroups.ITEM;
@@ -173,20 +175,23 @@ BaseTool.prototype.updateFireTimeout = function() {
 };
 
 BaseTool.prototype.onTimeout = function(world, timeoutVal) {
-  if (timeoutVal !== BaseTool.FIRE_TIMEOUT_ID) {
-    return;
+  if (this.bodyId) {
+    // embodied, so do body's friction and path-maintaining stuff
+    BaseSpirit.prototype.onTimeout.apply(this, arguments);
   }
-  this.timeoutRunning = false;
-  if (this.buttonDown) {
-    let now = this.now();
-    let nextFireTime = this.getNextFireTime();
-    if (now >= nextFireTime) {
-      this.fire();
-      this.lastFireTime = now;
-    } else {
-      //console.warn('early fire?', now, nextFireTime);
+  if (timeoutVal === BaseTool.FIRE_TIMEOUT_ID) {
+    this.timeoutRunning = false;
+    if (this.buttonDown) {
+      let now = this.now();
+      let nextFireTime = this.getNextFireTime();
+      if (now >= nextFireTime) {
+        this.fire();
+        this.lastFireTime = now;
+      } else {
+        //console.warn('early fire?', now, nextFireTime);
+      }
+      this.updateFireTimeout();
     }
-    this.updateFireTimeout();
   }
 };
 

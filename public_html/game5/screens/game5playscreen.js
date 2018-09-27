@@ -44,7 +44,7 @@ function Game5PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 Game5PlayScreen.prototype = new Game5BaseScreen();
 Game5PlayScreen.prototype.constructor = Game5PlayScreen;
 
-Game5PlayScreen.FRICTION = 0.02;
+Game5PlayScreen.FRICTION = 0.05;
 
 Game5PlayScreen.TOUCH_STICK_RADIUS = 60;
 

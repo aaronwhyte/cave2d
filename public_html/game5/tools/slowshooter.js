@@ -4,12 +4,24 @@
  */
 function SlowShooter(screen) {
   BaseTool.call(this, screen);
+  this.type = Game5Key.SLOW_SHOOTER;
 }
 SlowShooter.prototype = new BaseTool();
 SlowShooter.prototype.constructor = SlowShooter;
 
 SlowShooter.WARM_UP_TIME = 8;
 SlowShooter.COOL_DOWN_TIME = 40;
+
+SlowShooter.SCHEMA = {
+  0: "type",
+  1: "id",
+  2: "bodyId",
+  3: "color"
+};
+
+SlowShooter.factory = function(screen, pos, dir) {
+  return BaseTool.factoryHelper(screen, pos, dir, new SlowShooter(screen));
+};
 
 SlowShooter.prototype.getNextFireTime = function() {
   let throttle = SlowShooter.COOL_DOWN_TIME + 2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
@@ -24,6 +36,8 @@ SlowShooter.prototype.fire = function() {
   if (!pos) return;
 
   let wielder = this.getWielderSpirit();
+  if (!wielder) return;
+
   let now = this.now();
   let body = this.getBody();
 

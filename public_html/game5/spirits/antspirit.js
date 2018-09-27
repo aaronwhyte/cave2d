@@ -105,13 +105,13 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
         w = new SlowShooter(this.screen);
       }
       this.screen.world.addSpirit(w);
-      w.setWielderId(this.id);
+      w.wield(this.id);
       this.weapon = w;
     }
     if (!this.targetScanner) {
       let s = new TargetScanner(this.screen, this.team);
       this.screen.world.addSpirit(s);
-      s.setWielderId(this.id);
+      s.wield(this.id);
       s.coneWidth = Math.PI * 1.2;
       s.coneLen = 20;
       s.scanPeriod = 0.5;
@@ -122,7 +122,7 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
     }
     if (!this.clearPathScanner) {
       let s = new ClearPathScanner(this.screen);
-      s.setWielderId(this.id);
+      s.wield(this.id);
       this.clearPathScanner = s;
     }
   }

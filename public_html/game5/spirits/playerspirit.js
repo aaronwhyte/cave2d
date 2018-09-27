@@ -201,10 +201,6 @@ PlayerSpirit.prototype.getSelectedTool = function() {
   return null;
 };
 
-// PlayerSpirit.prototype.getAimVec = function() {
-//   return this.aim;
-// };
-
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
@@ -327,22 +323,22 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 
 PlayerSpirit.prototype.explode = function() {
   let body = this.getBody();
-  if (body) {
-    let now = this.now();
-    let pos = this.getBodyPos();
-    let x = pos.x;
-    let y = pos.y;
-
-    this.sounds.playerExplode(pos);
-    this.screen.addPlayerExplosionSplash(pos, this.color);
-    this.screen.removeByBodyId(this.bodyId);
-  }
-};
-
-PlayerSpirit.prototype.die = function() {
+  // if (body) {
   while (this.inventory.size()) {
     this.dropItem();
   }
+  let now = this.now();
+  let pos = this.getBodyPos();
+  let x = pos.x;
+  let y = pos.y;
+
+  this.sounds.playerExplode(pos);
+  this.screen.addPlayerExplosionSplash(pos, this.color);
+  this.screen.removeByBodyId(this.bodyId);
+  // }
+};
+
+PlayerSpirit.prototype.die = function() {
   this.screen.killPlayerSpirit(this);
 };
 
@@ -373,12 +369,12 @@ PlayerSpirit.prototype.dropItem = function() {
   if (!this.inventory.size()) return;
   let item = this.inventory.remove(0);
   let dir = this.getBodyAngPos();
-  let vel = this.vec2d.setXY(0, Math.random() * 0.1 + 0.5).rot(dir);
-  item.embody(this.getBodyPos(), vel, dir, 0);
+  let vel = this.vec2d.setXY(0, 0.5).rot(dir).add(this.getBodyVel());
+  item.embody(this.getBodyPos(), vel, dir, this.getBodyAngVel());
 
-  // select next item if any
-  item = this.inventory.get(0);
-  if (item) {
-    this.selectItem(item);
+  // auto-wield the next item
+  if (this.inventory.size()) {
+    this.inventory.get(0).wield(this.id);
   }
+
 };

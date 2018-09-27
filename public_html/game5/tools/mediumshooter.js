@@ -25,10 +25,6 @@ MediumShooter.factory = function(screen, pos, dir) {
   return BaseTool.factoryHelper(screen, pos, dir, new MediumShooter(screen));
 };
 
-MediumShooter.prototype.getModelId = function() {
-  return ModelId.MEDIUM_SHOOTER;
-};
-
 MediumShooter.prototype.getNextFireTime = function() {
   let throttle = MediumShooter.COOL_DOWN_TIME + 0.2 * Math.sin(2349.12983 * this.id + this.lastFireTime);
   return Math.max(this.lastFireTime + throttle, this.lastButtonDownTime + MediumShooter.WARM_UP_TIME)
@@ -42,6 +38,8 @@ MediumShooter.prototype.fire = function() {
   if (!pos) return;
 
   let wielder = this.getWielderSpirit();
+  if (!wielder) return;
+
   let now = this.now();
   let body = this.getBody();
 
