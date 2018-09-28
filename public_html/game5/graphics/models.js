@@ -75,8 +75,8 @@ Models.prototype.createModel = function(id) {
 
     case ModelId.JOIN_BUTTON: return this.createCharButton('?');
     case ModelId.MENU_BUTTON: return this.createCharButton('!');
-    case ModelId.ACTION_0: return this.createCharButton('0');
-    case ModelId.ACTION_1: return this.createCharButton('1');
+    case ModelId.ACTION_0: return this.createCharButton('A');
+    case ModelId.ACTION_1: return this.createCharButton('B');
     case ModelId.DROP_ITEM: return this.createCharButton('-');
     case ModelId.EQUIP_ITEM: return this.createCharButton('*');
 
@@ -148,9 +148,6 @@ Models.prototype.createModel = function(id) {
               .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.37, -0.25))
               .setColorRGB(0, 0, 0));
 
-/*
-TODO: Change all these item models to be item icons in standard item bubbles?
- */
     case ModelId.SLOW_SHOOTER: {
       let model = new RigidModel();
       let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
