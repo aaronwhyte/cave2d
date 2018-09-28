@@ -272,11 +272,11 @@ v Active/Passive loop
 v when player dies, throw inventory around semi-randomly
 v tighten player angular rotation using dampened spring biz
 
+v only show one action button for now
+v hide inventory button too
 
 Inventory Management UX part 2
 - drop effects
-  - toss things a little when dropped. It should go faster than the player, to avoid re-pickup.
-    (don't do whole pseudomode yet)
   - sound
   - splash
 - pickup effects
@@ -297,10 +297,12 @@ Inventory Management UX part 2
     - item.onSelect
 - animate item collection
 
-
-v primary action
-- secondary action
-
+multi-button tool support
+- tools declare button count
+- setButtonPressed(n, b) api takes button number as 1st param
+- setAllButtonsPressed(b)
+- only show correct number of action buttons
+  - dim unused slots but leave circle or something
 
 Data management idea
 Scalable, Flexible, Simple: Pick Two
@@ -313,7 +315,7 @@ Or maybe each kind of thing should have a single KeyName that is used in lots of
 spiritConfig
 itemConfig?
 iconModelId
-
+v do it
 
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items!
 

@@ -142,9 +142,9 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   let stickMag = this.stickVec.magnitude();
 
   let newAction0 = controls.get(ControlName.ACTION_0).getVal();
-  let newAction1 = controls.get(ControlName.ACTION_1).getVal();
+  let newAction1 = false;// TODO: controls.get(ControlName.ACTION_1).getVal();
   let newDrop = controls.get(ControlName.DROP_ITEM).getVal();
-  let newEquip = controls.get(ControlName.EQUIP_ITEM).getVal();
+  let newEquip = false;// TODO: controls.get(ControlName.EQUIP_ITEM).getVal();
 
   let tool = this.getSelectedTool();
   if (tool) {

@@ -241,9 +241,9 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
         .addControlState(ControlState.PLAYING, new ControlMap()
             .add(ControlName.STICK, stick)
             .add(ControlName.ACTION_0, action0Button)
-            .add(ControlName.ACTION_1, action1Button)
+    // TODO       .add(ControlName.ACTION_1, action1Button)
             .add(ControlName.DROP_ITEM, dropItemButton)
-            .add(ControlName.EQUIP_ITEM, equipItemButton)
+    // TODO       .add(ControlName.EQUIP_ITEM, equipItemButton)
             .add(ControlName.MENU, menuButton));
     slot.corner = new Vec4(-1, 1).transform(matrix);
     return slot;
