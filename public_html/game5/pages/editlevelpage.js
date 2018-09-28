@@ -55,7 +55,7 @@ EditLevelPage.prototype.appendDebugOptions = function(df) {
   let label = Dom.ce('label', debug);
   let e = Dom.ce('input', label);
   e.type = 'checkbox';
-  e.defaultChecked = true;
+  e.defaultChecked = SHOULD_DRAW_STATS_DEFAULT;
   let self = this;
   e.addEventListener('change', function (element) {
     self.screen.shouldDrawStats = element.target.checked;

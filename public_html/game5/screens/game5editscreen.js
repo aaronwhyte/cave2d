@@ -17,7 +17,7 @@ function Game5EditScreen(controller, canvas, renderer, stamps, sfx, adventureNam
     self.editor.setKeyboardTipTimeoutMs(ms);
   };
 
-  this.shouldDrawStats = true;
+  this.shouldDrawStats = SHOULD_DRAW_STATS_DEFAULT;
 }
 Game5EditScreen.prototype = new Game5BaseScreen();
 Game5EditScreen.prototype.constructor = Game5EditScreen;

@@ -61,7 +61,7 @@ TestLevelPage.prototype.appendDebugOptions = function(df) {
   label = Dom.ce('label', debug);
   e = Dom.ce('input', label);
   e.type = 'checkbox';
-  e.defaultChecked = true;
+  e.defaultChecked = SHOULD_DRAW_STATS_DEFAULT;
   e.addEventListener('change', function(element) {
     self.screen.shouldDrawStats = element.target.checked;
     self.requestAnimation();

@@ -5,7 +5,7 @@
 function Game5TestScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
   Game5PlayScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
-  this.shouldDrawStats = true;
+  this.shouldDrawStats = SHOULD_DRAW_STATS_DEFAULT;
 }
 Game5TestScreen.prototype = new Game5PlayScreen();
 Game5TestScreen.prototype.constructor = Game5TestScreen;
