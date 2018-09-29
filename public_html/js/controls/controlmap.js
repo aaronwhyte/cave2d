@@ -16,22 +16,22 @@ ControlMap.prototype.get = function(name) {
 };
 
 ControlMap.prototype.startListening = function() {
-  for (var i in this.map) {
+  for (let i in this.map) {
     this.map[i].startListening();
   }
   return this;
 };
 
 ControlMap.prototype.stopListening = function() {
-  for (var i in this.map) {
+  for (let i in this.map) {
     this.map[i].stopListening();
   }
   return this;
 };
 
 ControlMap.prototype.draw = function(renderer) {
-  for (var i in this.map) {
-    var control = this.map[i];
+  for (let i in this.map) {
+    let control = this.map[i];
     if (control.draw) {
       control.draw(renderer);
     }
@@ -40,8 +40,8 @@ ControlMap.prototype.draw = function(renderer) {
 };
 
 ControlMap.prototype.releaseControls = function() {
-  for (var i in this.map) {
-    var control = this.map[i];
+  for (let i in this.map) {
+    let control = this.map[i];
     if (control.release) {
       control.release();
     }
@@ -50,8 +50,8 @@ ControlMap.prototype.releaseControls = function() {
 };
 
 ControlMap.prototype.setPointerLockAllowed = function(allowed) {
-  for (var i in this.map) {
-    var control = this.map[i];
+  for (let i in this.map) {
+    let control = this.map[i];
     if (control.setPointerLockAllowed) {
       control.setPointerLockAllowed(allowed);
     }
