@@ -275,6 +275,8 @@ v tighten player angular rotation using dampened spring biz
 v only show one action button for now
 v hide inventory button too
 
+v rework keyboard aiming
+
 Inventory Management UX part 2
 - drop effects
   - sound

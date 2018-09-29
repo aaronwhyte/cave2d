@@ -15,7 +15,7 @@ function PlayerSpirit(screen) {
   this.destAim = new Vec2d();
 
   this.accel = new Vec2d();
-  this.keyMult = 0.25;
+  this.keyMult = PlayerSpirit.KEY_MULT_ADJUST;
 
   this.lastFrictionTime = this.now();
   this.lastInputTime = this.now();
@@ -48,14 +48,15 @@ PlayerSpirit.PLAYER_RAD = 0.99;
 PlayerSpirit.SPEED = 1.1;
 PlayerSpirit.TRACTION = 0.2;
 
-PlayerSpirit.KEY_MULT_ADJUST = 1/3;
+PlayerSpirit.KEY_MULT_ADJUST = 1/10;
+PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI * 0.05;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.AIM_ANGPOS_ACCEL = 0.1;
+PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI / 4;
 PlayerSpirit.ANGULAR_FRICTION = 0.01;
 
 PlayerSpirit.SCHEMA = {
@@ -161,11 +162,20 @@ PlayerSpirit.prototype.handleInput = function(controls) {
 
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
-    this.keyMult += PlayerSpirit.KEY_MULT_ADJUST * (stickMag ? 1 : -2);
+    // If there's stick movement, keyMult goes up. Otherwise it goes down, fast.
+    if (stickMag) {
+      this.keyMult += PlayerSpirit.KEY_MULT_ADJUST;
+    } else {
+      this.keyMult = PlayerSpirit.KEY_MULT_ADJUST;
+    }
+    // Max is 1, minimum is also the KEY_MULT_ADJUST constant.
     this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
     speed *= this.keyMult * this.keyMult;
   }
-  if (newAction0) speed = 0;
+  let aimOnly = newAction0 || newAction1;
+  if (aimOnly) {
+    speed = 0;
+  }
 
   let traction = PlayerSpirit.TRACTION;
   // Half of traction's job is to stop you from sliding in the direction you're already going.
@@ -184,7 +194,7 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   if (touchlike) {
     this.handleTouchlikeAim(stick, stickMag, reverseness);
   } else {
-    this.handleKeyboardAim(stick, stickMag, reverseness);
+    this.handleKeyboardAim(stick, stickMag, reverseness, aimOnly);
   }
 
   // button history
@@ -214,7 +224,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     if (body) {
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
       // Angle towards aim.
-      let destAngle = this.destAim.angle();
+      let destAngle = this.aim.angle();
       let currAngle = this.getBodyAngPos();
       let curr2dest = destAngle - currAngle;
       while (curr2dest > Math.PI) {
@@ -223,7 +233,6 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
       while (curr2dest < -Math.PI) {
         curr2dest += 2 * Math.PI;
       }
-      destAngle = currAngle + curr2dest;
       let angAccel = Spring.getLandingAccel(
           -curr2dest, this.getBodyAngVel(), PlayerSpirit.AIM_ANGPOS_ACCEL, PlayerSpirit.FRICTION_TIMEOUT * 2);
       this.addBodyAngVel(angAccel);
@@ -272,25 +281,29 @@ PlayerSpirit.prototype.handleTouchlikeAim = function(stick, stickMag, reversenes
 };
 
 
-PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness) {
-  // up/down/left/right buttons
-  let dist = 0;
-  if (stickMag) {
-    let correction = stick.getVal(this.vec2d).scaleToLength(1).subtract(this.destAim);
-    dist = correction.magnitude();
-    this.destAim.add(correction.scale(0.5 * Math.min(1, this.keyMult * this.keyMult)));
-  }
-  this.destAim.scaleToLength(1);
-  if (reverseness > 0.99) {
-    // 180 degree flip, precise or not, so set it instantly.
-    this.destAim.set(stick.getVal(this.vec2d)).scaleToLength(1);
+PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness, aimOnly) {
+  if ((stickMag && !aimOnly) || reverseness > 0.99) {
+    // instant aim
+    stick.getVal(this.destAim);
+    this.destAim.scaleToLength(1);
     this.aim.set(this.destAim);
+  } else if (stickMag) {
+    // gradual aim
+    stick.getVal(this.destAim);
+    let destAimAngle = this.destAim.angle();
+    let aimAngle = this.aim.angle();
+
+    let angleDiff = destAimAngle - aimAngle;
+    if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+    if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+    let maxMag = PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE * this.keyMult * this.keyMult;
+    if (Math.abs(angleDiff) > maxMag) {
+      angleDiff = Math.sign(angleDiff) * maxMag;
+    }
+    this.aim.rot(angleDiff).scaleToLength(1);
   } else {
-    dist = this.aim.distance(this.destAim);
-    let distContrib = dist * 0.25;
-    let smoothContrib = 0.1 / (dist + 0.1);
-    this.aim.slideByFraction(this.destAim, Math.min(1, smoothContrib + distContrib));
-    this.aim.scaleToLength(1);
+    this.destAim.set(this.aim);
   }
 };
 
