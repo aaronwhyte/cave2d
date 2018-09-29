@@ -49,7 +49,7 @@ PlayerSpirit.SPEED = 1.1;
 PlayerSpirit.TRACTION = 0.2;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
-PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI * 0.05;
+PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
 PlayerSpirit.FRICTION_TIMEOUT = 1;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
@@ -297,7 +297,7 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
     if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
     if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
 
-    let maxMag = PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE * this.keyMult * this.keyMult;
+    let maxMag = PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE * this.keyMult;
     if (Math.abs(angleDiff) > maxMag) {
       angleDiff = Math.sign(angleDiff) * maxMag;
     }
