@@ -334,7 +334,7 @@ Game5PlayScreen.prototype.snapCameraToEntrance = function() {
 Game5PlayScreen.prototype.handleInput = function () {
   for (let slotName in this.slots) {
     let slot = this.slots[slotName];
-    let controls = slot.getControlList();
+    let controls = slot.getControlMap();
     if (slot.stateName === ControlState.PLAYING) {
       if (controls.get(ControlName.MENU).getVal()) {
         // TODO: Don't make the menu instantly drop players
@@ -541,7 +541,7 @@ Game5PlayScreen.prototype.drawHud = function() {
   this.updateHudLayout();
   this.renderer.setBlendingEnabled(true);
   for (let slotName in this.slots) {
-    this.slots[slotName].getControlList().draw(this.renderer);
+    this.slots[slotName].getControlMap().draw(this.renderer);
   }
   for (let i = 0; i < this.widgets.length; i++) {
     this.widgets[i].draw(this.renderer);

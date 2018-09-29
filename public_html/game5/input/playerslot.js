@@ -30,11 +30,11 @@ PlayerSlot.prototype.isPlaying = function() {
 /**
  * Add a mapping from a state-name to a list of controls available in that state.
  * @param {String} stateName
- * @param {ControlMap} controlList
+ * @param {ControlMap} controlMap
  * @returns {PlayerSlot}
  */
-PlayerSlot.prototype.addControlState = function(stateName, controlList) {
-  this.stateMap[stateName] = controlList;
+PlayerSlot.prototype.addControlState = function(stateName, controlMap) {
+  this.stateMap[stateName] = controlMap;
   return this;
 };
 
@@ -68,14 +68,14 @@ PlayerSlot.prototype.setState = function(newStateName) {
 /**
  * @returns {ControlMap}
  */
-PlayerSlot.prototype.getControlList = function() {
+PlayerSlot.prototype.getControlMap = function() {
   return this.stateMap[this.stateName];
 };
 
 /**
  * @returns {ControlMap}
  */
-PlayerSlot.prototype.getControlListForState = function(stateName) {
+PlayerSlot.prototype.getControlMapForState = function(stateName) {
   return this.stateMap[stateName];
 };
 
@@ -84,7 +84,7 @@ PlayerSlot.prototype.getControlListForState = function(stateName) {
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.draw = function(renderer) {
-  let c = this.getControlList();
+  let c = this.getControlMap();
   if (c) c.draw(renderer);
   return this;
 };
@@ -93,7 +93,7 @@ PlayerSlot.prototype.draw = function(renderer) {
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.releaseControls = function() {
-  let c = this.getControlList();
+  let c = this.getControlMap();
   if (c) c.releaseControls();
   return this;
 };
@@ -156,5 +156,5 @@ PlayerSlot.prototype.killPlayerAtTime = function(now) {
 };
 
 PlayerSlot.prototype.setPointerLockAllowed = function(allowed) {
-  this.getControlList().setPointerLockAllowed(allowed);
+  this.getControlMap().setPointerLockAllowed(allowed);
 };
