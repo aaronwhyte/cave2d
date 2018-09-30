@@ -57,7 +57,7 @@ DrawPack.prototype.draw = function(id, color, matrix, matrix2) {
  * Flush all batchDrawers.
  */
 DrawPack.prototype.flush = function() {
-  for (let k of this.batchers.getKeys()) {
-    this.batchers.get(k).flush();
+  for (let b of this.batchers.values()) {
+    b.flush();
   }
 };

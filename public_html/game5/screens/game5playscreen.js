@@ -115,7 +115,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
   function createKeyboardSlot(name, up, right, down, left, action0, action1, drop, equip, menuKey) {
     return new PlayerSlot(name)
         .addControlState(ControlState.WAITING, new ControlMap()
-            .add(ControlName.JOIN_TRIGGER, new KeyTrigger()
+            .addControl(ControlName.JOIN_TRIGGER, new KeyTrigger()
                 .addTriggerKeyByName(up)
                 .addTriggerKeyByName(right)
                 .addTriggerKeyByName(down)
@@ -127,13 +127,13 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(menuKey)
             ))
         .addControlState(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, new KeyStick()
+            .addControl(ControlName.STICK, new KeyStick()
                 .setUpRightDownLeftByName(up, right, down, left))
-            .add(ControlName.ACTION_0, new KeyTrigger().addTriggerKeyByName(action0))
-            .add(ControlName.ACTION_1, new KeyTrigger().addTriggerKeyByName(action1))
-            .add(ControlName.DROP_ITEM, new KeyTrigger().addTriggerKeyByName(drop))
-            .add(ControlName.EQUIP_ITEM, new KeyTrigger().addTriggerKeyByName(equip))
-            .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
+            .addControl(ControlName.ACTION_0, new KeyTrigger().addTriggerKeyByName(action0))
+            .addControl(ControlName.ACTION_1, new KeyTrigger().addTriggerKeyByName(action1))
+            .addControl(ControlName.DROP_ITEM, new KeyTrigger().addTriggerKeyByName(drop))
+            .addControl(ControlName.EQUIP_ITEM, new KeyTrigger().addTriggerKeyByName(equip))
+            .addControl(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
   }
 
@@ -237,14 +237,14 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
 
     let slot = new PlayerSlot(name)
         .addControlState(ControlState.WAITING, new ControlMap()
-            .add(ControlName.JOIN_TRIGGER, joinTrigger))
+            .addControl(ControlName.JOIN_TRIGGER, joinTrigger))
         .addControlState(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, stick)
-            .add(ControlName.ACTION_0, action0Button)
-    // TODO       .add(ControlName.ACTION_1, action1Button)
-            .add(ControlName.DROP_ITEM, dropItemButton)
+            .addControl(ControlName.STICK, stick)
+            .addControl(ControlName.ACTION_0, action0Button)
+    // TODO       .addControl(ControlName.ACTION_1, action1Button)
+            .addControl(ControlName.DROP_ITEM, dropItemButton)
     // TODO       .add(ControlName.EQUIP_ITEM, equipItemButton)
-            .add(ControlName.MENU, menuButton));
+            .addControl(ControlName.MENU, menuButton));
     slot.corner = new Vec4(-1, 1).transform(matrix);
     return slot;
   }
@@ -257,7 +257,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
     // and it starts the Pointer Lock process.
     return new PlayerSlot(name)
         .addControlState(ControlState.WAITING, new ControlMap()
-            .add(ControlName.JOIN_TRIGGER, new MultiTrigger()
+            .addControl(ControlName.JOIN_TRIGGER, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger()
                     .addTriggerKeyByName(action0Key)
@@ -267,16 +267,16 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
                     .addTriggerKeyByName(menuKey)
                 )))
         .addControlState(ControlState.PLAYING, new ControlMap()
-            .add(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(100))
-            .add(ControlName.ACTION_0, new MultiTrigger()
+            .addControl(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(100))
+            .addControl(ControlName.ACTION_0, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger().addTriggerKeyByName(action0Key)))
-            .add(ControlName.ACTION_1, new MultiTrigger()
+            .addControl(ControlName.ACTION_1, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas).setListenToLeftButton(false))
                 .addTrigger(new KeyTrigger().addTriggerKeyByName(action1Key)))
-            .add(ControlName.DROP_ITEM, new KeyTrigger().addTriggerKeyByName(dropKey))
-            .add(ControlName.EQUIP_ITEM, new KeyTrigger().addTriggerKeyByName(equipKey))
-            .add(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
+            .addControl(ControlName.DROP_ITEM, new KeyTrigger().addTriggerKeyByName(dropKey))
+            .addControl(ControlName.EQUIP_ITEM, new KeyTrigger().addTriggerKeyByName(equipKey))
+            .addControl(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
   }
 
@@ -336,7 +336,7 @@ Game5PlayScreen.prototype.handleInput = function () {
     let slot = this.slots[slotName];
     let controls = slot.getControlMap();
     if (slot.stateName === ControlState.PLAYING) {
-      if (controls.get(ControlName.MENU).getVal()) {
+      if (controls.getControl(ControlName.MENU).getVal()) {
         // TODO: Don't make the menu instantly drop players
         this.playerDrop(slot);
       } else {
@@ -350,7 +350,7 @@ Game5PlayScreen.prototype.handleInput = function () {
         }
       }
     } else if (slot.stateName === ControlState.WAITING) {
-      if (controls.get(ControlName.JOIN_TRIGGER).getVal()) {
+      if (controls.getControl(ControlName.JOIN_TRIGGER).getVal()) {
         this.playerJoin(slot);
       }
     }

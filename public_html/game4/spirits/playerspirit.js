@@ -154,14 +154,14 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   let duration = now - this.lastInputTime;
   this.lastInputTime = now;
 
-  let stick = controls.get(ControlName.STICK);
+  let stick = controls.getControl(ControlName.STICK);
   let touchlike = stick.isTouchlike();
 
   ////////////
   // BUTTONS
 
-  let newKick = controls.get(ControlName.BUTTON_1).getVal();
-  let newGrab = controls.get(ControlName.BUTTON_2).getVal();
+  let newKick = controls.getControl(ControlName.BUTTON_1).getVal();
+  let newGrab = controls.getControl(ControlName.BUTTON_2).getVal();
   let kickDown = !this.oldKick && newKick;
   let kickUp = this.oldKick && !newKick;
   let grabDown = !this.oldGrab && newGrab;

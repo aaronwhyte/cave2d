@@ -3,57 +3,63 @@
  * @constructor
  */
 function ControlMap() {
-  this.map = {};
+  this.map = new Map();
 }
 
-ControlMap.prototype.add = function(name, control) {
-  this.map[name] = control;
+/**
+ * @param {String} name
+ * @param control
+ * @returns {ControlMap} this
+ */
+ControlMap.prototype.addControl = function(name, control) {
+  this.map.set(name, control);
   return this;
 };
 
-ControlMap.prototype.get = function(name) {
-  return this.map[name];
+/**
+ * @param {String} name
+ * @returns {*} control
+ */
+ControlMap.prototype.getControl = function(name) {
+  return this.map.get(name);
 };
 
 ControlMap.prototype.startListening = function() {
-  for (let i in this.map) {
-    this.map[i].startListening();
+  for (let c of this.map.values()) {
+    c.startListening();
   }
   return this;
 };
 
 ControlMap.prototype.stopListening = function() {
-  for (let i in this.map) {
-    this.map[i].stopListening();
+  for (let c of this.map.values()) {
+    c.stopListening();
   }
   return this;
 };
 
 ControlMap.prototype.draw = function(renderer) {
-  for (let i in this.map) {
-    let control = this.map[i];
-    if (control.draw) {
-      control.draw(renderer);
+  for (let c of this.map.values()) {
+    if (c.draw) {
+      c.draw(renderer);
     }
   }
   return this;
 };
 
 ControlMap.prototype.releaseControls = function() {
-  for (let i in this.map) {
-    let control = this.map[i];
-    if (control.release) {
-      control.release();
+  for (let c of this.map.values()) {
+    if (c.release) {
+      c.release();
     }
   }
   return this;
 };
 
 ControlMap.prototype.setPointerLockAllowed = function(allowed) {
-  for (let i in this.map) {
-    let control = this.map[i];
-    if (control.setPointerLockAllowed) {
-      control.setPointerLockAllowed(allowed);
+  for (let c of this.map.values()) {
+    if (c.setPointerLockAllowed) {
+      c.setPointerLockAllowed(allowed);
     }
   }
   return this;

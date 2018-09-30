@@ -32,7 +32,7 @@ PlayerSlot.prototype.isPlaying = function() {
  * @param {ControlMap} controlMap
  * @returns {PlayerSlot}
  */
-PlayerSlot.prototype.add = function(stateName, controlMap) {
+PlayerSlot.prototype.addControlState = function(stateName, controlMap) {
   this.stateMap[stateName] = controlMap;
   return this;
 };
