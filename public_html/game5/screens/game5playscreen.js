@@ -126,7 +126,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(equip)
                 .addTriggerKeyByName(menuKey)
             ))
-        .addControlState(ControlState.PLAYING, new ControlMap()
+        .addControlState(ControlState.PLAYING, new ControlMap(ControlMap.USE_EVENT_QUEUE)
             .addControl(ControlName.STICK, new KeyStick()
                 .setUpRightDownLeftByName(up, right, down, left))
             .addControl(ControlName.ACTION_0, new KeyTrigger().addTriggerKeyByName(action0))
@@ -238,7 +238,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
     let slot = new PlayerSlot(name)
         .addControlState(ControlState.WAITING, new ControlMap()
             .addControl(ControlName.JOIN_TRIGGER, joinTrigger))
-        .addControlState(ControlState.PLAYING, new ControlMap()
+        .addControlState(ControlState.PLAYING, new ControlMap(ControlMap.USE_EVENT_QUEUE)
             .addControl(ControlName.STICK, stick)
             .addControl(ControlName.ACTION_0, action0Button)
     // TODO       .addControl(ControlName.ACTION_1, action1Button)
@@ -266,7 +266,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
                     .addTriggerKeyByName(equipKey)
                     .addTriggerKeyByName(menuKey)
                 )))
-        .addControlState(ControlState.PLAYING, new ControlMap()
+        .addControlState(ControlState.PLAYING, new ControlMap(ControlMap.USE_EVENT_QUEUE)
             .addControl(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(100))
             .addControl(ControlName.ACTION_0, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
@@ -349,6 +349,7 @@ Game5PlayScreen.prototype.handleInput = function () {
           }
         }
       }
+      controls.clearEventQueue();
     } else if (slot.stateName === ControlState.WAITING) {
       if (controls.getControl(ControlName.JOIN_TRIGGER).getVal()) {
         this.playerJoin(slot);

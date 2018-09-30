@@ -277,6 +277,30 @@ v hide inventory button too
 
 v rework keyboard aiming
 
+v rework controls so that quick taps are never lost.
+  v ControlMap hold array of events
+    v ControlEvent class
+      v controlName (from map)
+      v eventType: triggerDown (bool), stickTouched (bool), stickMove (vec)
+      v boolean b
+      v vec2d vec
+  v as controls are added to map, map adds callback to controls
+  v as js event handlers fire, controls enqueue events through controlmap callback
+  x controlmap calls poll() on controls that support it, before giving controls to player
+(Did this for triggers but not sticks. Good enough for now.)
+
+- Mine thrower
+  - Explosive projectile spirit is different...
+    - Detonates on contact with anything, including player.
+    - Also detonates after a time. Does beep-beep-beep thing and blinks.
+    - orb with eight? little spikes and a blinky light
+  - A0:
+    - down: start aim
+    - up: throw explosive hard
+  - A1:
+    - down: start aim
+    - up: drop one right in front of you, so it comes to rest very close by.
+
 Inventory Management UX part 2
 - drop effects
   - sound
@@ -305,6 +329,29 @@ multi-button tool support
 - setAllButtonsPressed(b)
 - only show correct number of action buttons
   - dim unused slots but leave circle or something
+
+- Plasma gun
+  - A0: fast ray that does splash damage on impact
+  - A1: Slow plasma orb that floats without friction and does splash damage on impact
+  - Shoot the plasma orb with anything plasma and it does a super plasma explosion
+  - plasma ray
+  - plasma orb
+  - plasma shrapnel
+
+- smoke
+  - A0:
+    - down: yell "smoke bomb!" :-D
+    - up: local flash and burst of smoke. Player jumps backwards?
+  - A1:
+    - down: aim
+    - up: throw bomb
+  - smoke bomb
+    - explodes with remaining smoke when it takes damage
+    - begins to emit smoke and spin soon after release as it flies
+    - small puff when it runs out of smoke
+    - bounces off of things, does no damage itself
+  - smoke itself - blocks rayscans, shrinks
+
 
 Data management idea
 Scalable, Flexible, Simple: Pick Two

@@ -58,28 +58,3 @@ MultiTrigger.prototype.release = function() {
   this.val = false;
   this.oldVal = false;
 };
-
-MultiTrigger.prototype.addTriggerDownListener = function(fn) {
-  this.downPubSub.subscribe(fn);
-};
-
-MultiTrigger.prototype.removeTriggerDownListener = function(fn) {
-  this.downPubSub.unsubscribe(fn);
-};
-
-
-MultiTrigger.prototype.addTriggerUpListener = function(fn) {
-  this.upPubSub.subscribe(fn);
-};
-MultiTrigger.prototype.removeTriggerUpListener = function(fn) {
-  this.upPubSub.unsubscribe(fn);
-};
-
-
-MultiTrigger.prototype.publishTriggerDown = function(e) {
-  this.downPubSub.publish(e);
-};
-
-MultiTrigger.prototype.publishTriggerUp = function(e) {
-  this.upPubSub.publish(e);
-};

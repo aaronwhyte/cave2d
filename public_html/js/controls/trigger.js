@@ -47,3 +47,19 @@ Trigger.prototype.publishTriggerDown = function(e) {
 Trigger.prototype.publishTriggerUp = function(e) {
   this.upPubSub.publish(e);
 };
+
+/**
+ * @param {ControlMap} controlMap
+ * @param {string} controlName
+ */
+Trigger.prototype.registerEventQueue = function(controlMap, controlName) {
+  this.controlMap = controlMap;
+  this.controlName = controlName;
+  let self = this;
+  this.addTriggerDownListener(function() {
+    self.controlMap.enqueueEvent(self.controlName, ControlEvent.Type.PRESS).setBool(true);
+  });
+  this.addTriggerUpListener(function() {
+    self.controlMap.enqueueEvent(self.controlName, ControlEvent.Type.PRESS).setBool(false);
+  });
+};

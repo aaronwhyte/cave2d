@@ -33,12 +33,6 @@ function PlayerSpirit(screen) {
   this.damage = 1;
 
   this.inventory = new Inventory();
-
-  // buttons
-  this.oldAction0 = false;
-  this.oldAction1 = false;
-  this.oldDrop = false;
-  this.oldEquip = false;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -123,12 +117,13 @@ PlayerSpirit.prototype.getCameraFocusPos = function() {
 };
 
 /**
- *
- * @param {ControlMap} controls
+ * @param {ControlMap} controlMap
  */
-PlayerSpirit.prototype.handleInput = function(controls) {
+PlayerSpirit.prototype.handleInput = function(controlMap) {
   let playerBody = this.getBody();
-  if (!playerBody) return;
+  if (!playerBody) {
+    return;
+  }
 
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
@@ -137,24 +132,25 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   let duration = now - this.lastInputTime;
   this.lastInputTime = now;
 
-  let stick = controls.getControl(ControlName.STICK);
+  let stick = controlMap.getControl(ControlName.STICK);
   let touchlike = stick.isTouchlike();
   stick.getVal(this.stickVec);
   let stickMag = this.stickVec.magnitude();
 
-  let newAction0 = controls.getControl(ControlName.ACTION_0).getVal();
-  let newAction1 = false;// TODO: controls.get(ControlName.ACTION_1).getVal();
-  let newDrop = controls.getControl(ControlName.DROP_ITEM).getVal();
-  let newEquip = false;// TODO: controls.get(ControlName.EQUIP_ITEM).getVal();
-
   let tool = this.getSelectedTool();
-  if (tool) {
-    tool.setButtonDown(newAction0);
-  }
 
-  if (this.oldDrop && !newDrop) {
-    // drop button released
-    this.dropItem(0.5, 0, 0);
+  // process control event queue
+  let e;
+  while (e = controlMap.nextEvent()) {
+    if (e.controlName === ControlName.DROP_ITEM) {
+      if (e.bool) {
+        this.dropItem(0.5, 0, 0)
+      }
+    } else if (e.controlName === ControlName.ACTION_0) {
+      if (tool) {
+        tool.setButtonDown(e.bool);
+      }
+    }
   }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
@@ -172,7 +168,9 @@ PlayerSpirit.prototype.handleInput = function(controls) {
     this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
     speed *= this.keyMult * this.keyMult;
   }
-  let aimOnly = newAction0 || newAction1;
+  let action0 = controlMap.getControl(ControlName.ACTION_0).getVal();
+  let action1 = false;//TODO controlMap.getControl(ControlName.ACTION_1).getVal();
+  let aimOnly = action0 || action1;
   if (aimOnly) {
     speed = 0;
   }
@@ -196,12 +194,6 @@ PlayerSpirit.prototype.handleInput = function(controls) {
   } else {
     this.handleKeyboardAim(stick, stickMag, reverseness, aimOnly);
   }
-
-  // button history
-  this.oldAction0 = newAction0;
-  this.oldAction1 = newAction1;
-  this.oldDrop = newDrop;
-  this.oldEquip = newEquip;
 };
 
 PlayerSpirit.prototype.getSelectedTool = function() {
