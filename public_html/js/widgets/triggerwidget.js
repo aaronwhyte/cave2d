@@ -224,3 +224,7 @@ TriggerWidget.prototype.updateModelMatrix = function() {
       .multiply(this.mat44.toScaleOpXYZ(this.keyboardTipCuboid.rad.getX(), -this.keyboardTipCuboid.rad.getY(), 0.01));
   return this;
 };
+
+TriggerWidget.prototype.registerEventQueue = function(controlMap, controlName) {
+  this.trigger.registerEventQueue(controlMap, controlName);
+};
