@@ -150,7 +150,8 @@ Models.prototype.createModel = function(id) {
 
     case ModelId.SLOW_SHOOTER: {
       let model = new RigidModel();
-      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
+      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5)
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0.1));
       let thick = 0.5;
       let barrel = RigidModel.createSquare()
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
@@ -164,7 +165,8 @@ Models.prototype.createModel = function(id) {
 
     case ModelId.MEDIUM_SHOOTER: {
       let model = new RigidModel();
-      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
+      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5)
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0.1));
       let thick = 0.4;
       let barrel = RigidModel.createSquare()
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
@@ -178,7 +180,8 @@ Models.prototype.createModel = function(id) {
 
     case ModelId.LASER_WEAPON: {
       let model = new RigidModel();
-      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5);
+      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5)
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0.1));
       let thick = 0.65;
       let barrel = RigidModel.createSquare()
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
