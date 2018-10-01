@@ -50,7 +50,7 @@ PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI / 4;
+PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI / 2;
 PlayerSpirit.ANGULAR_FRICTION = 0.01;
 
 PlayerSpirit.SCHEMA = {
