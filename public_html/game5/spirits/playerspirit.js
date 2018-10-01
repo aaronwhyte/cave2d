@@ -166,7 +166,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     }
     // Max is 1, minimum is also the KEY_MULT_ADJUST constant.
     this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
-    speed *= this.keyMult * this.keyMult;
+    speed *= this.keyMult;
   }
   let action0 = controlMap.getControl(ControlName.ACTION_0).getVal();
   let action1 = false;//TODO controlMap.getControl(ControlName.ACTION_1).getVal();
