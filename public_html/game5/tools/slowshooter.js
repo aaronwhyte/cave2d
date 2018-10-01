@@ -9,7 +9,7 @@ function SlowShooter(screen) {
 SlowShooter.prototype = new BaseTool();
 SlowShooter.prototype.constructor = SlowShooter;
 
-SlowShooter.WARM_UP_TIME = 8;
+SlowShooter.WARM_UP_TIME = 0;
 SlowShooter.COOL_DOWN_TIME = 40;
 
 SlowShooter.SCHEMA = {

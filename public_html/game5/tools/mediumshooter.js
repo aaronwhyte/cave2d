@@ -11,7 +11,7 @@ MediumShooter.prototype.constructor = MediumShooter;
 
 MediumShooter.RECOIL_FORCE = 0.5;
 
-MediumShooter.WARM_UP_TIME = 2;
+MediumShooter.WARM_UP_TIME = 0;
 MediumShooter.COOL_DOWN_TIME = 4;
 
 MediumShooter.SCHEMA = {
@@ -89,7 +89,7 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 0;
-  spirit.damage = 1;
+  spirit.damage = 0.5;
   spirit.digChance = 2;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
