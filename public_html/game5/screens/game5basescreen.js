@@ -79,6 +79,7 @@ Game5BaseScreen.prototype.getSpiritConfigs = function() {
     nextColumn();
 
     addToMenu(Game5Key.ANT);
+    addToMenu(Game5Key.MINE);
     nextColumn();
 
     addToMenu(Game5Key.SLOW_SHOOTER);

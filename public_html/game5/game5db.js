@@ -17,6 +17,7 @@ function Game5Db() {
   // props
   a(Game5Key.ENTRANCE, EntranceSpirit, ModelId.ENTRANCE);
   a(Game5Key.EXIT, ExitSpirit, ModelId.EXIT);
+  a(Game5Key.MINE, MineSpirit, ModelId.MINE);
 
   // critters
   a(Game5Key.PLAYER, PlayerSpirit, ModelId.PLAYER);

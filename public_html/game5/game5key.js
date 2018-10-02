@@ -9,5 +9,7 @@ let Game5Key = {
   ANT: 5,
   SLOW_SHOOTER: 6,
   MEDIUM_SHOOTER: 7,
-  LASER_WEAPON: 8
+  LASER_WEAPON: 8,
+  MINE: 9,
+  MINE_THROWER: 10
 };

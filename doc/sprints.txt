@@ -290,16 +290,21 @@ v rework controls so that quick taps are never lost.
 (Did this for triggers but not sticks. Good enough for now.)
 
 - Mine thrower
-  - Explosive projectile spirit is different...
-    - Detonates on contact with anything, including player.
+  - MineSpirit is different...
+    v model: orb with eight? little spikes
+    v Detonates on contact with anything, including player
+      v adjust NEUTRAL
+    - Produces a bunch of breaker bullets that are on a team
+      - BreakerBulletSpirit
     - Also detonates after a time. Does beep-beep-beep thing and blinks.
-    - orb with eight? little spikes and a blinky light
+    - ooh, make the timeout configurable and optional, and make mines a proper level prop.
+  - MineThrowerSpirit
   - A0:
     - down: start aim
-    - up: throw explosive hard
+    - up: throw mine far
   - A1:
     - down: start aim
-    - up: drop one right in front of you, so it comes to rest very close by.
+    - up: drop mine right in front of you, so it comes to rest very close by.
 
 Inventory Management UX part 2
 - drop effects

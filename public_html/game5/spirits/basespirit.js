@@ -416,7 +416,7 @@ BaseSpirit.prototype.damagesTeam = function(otherTeam) {
   if (!this.damage) return false;
   return (this.team === Team.PLAYER && otherTeam === Team.ENEMY) ||
       (this.team === Team.ENEMY && otherTeam === Team.PLAYER) ||
-      (this.team === Team.NEUTRAL);
+      (this.team === Team.NEUTRAL || otherTeam === Team.NEUTRAL);
 };
 
 BaseSpirit.prototype.attacksTeam = function(otherTeam) {
