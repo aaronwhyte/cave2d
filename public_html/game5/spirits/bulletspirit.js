@@ -14,7 +14,7 @@ function BulletSpirit(screen) {
   this.modelMatrix2 = new Matrix44();
 
   // trail stuff
-  this.trail = new Trail(4);
+  this.trail = new Trail(10);
   this.segStartVec = new Vec2d();
   this.segEndVec = new Vec2d();
 
@@ -170,11 +170,18 @@ BulletSpirit.prototype.die = function() {
 BulletSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
   let body = this.getBody();
   if (!body) return;
+  let pos = this.getBodyPos();
 
   this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag + 0.5));
 
+  // digging is random but based on impact magnitude
+  if (this.wallDamageMultiplier) {
+    let rad = this.wallDamageMultiplier * Math.min(1, Math.max(mag, 0.3) * (0.25 + 0.75 * Math.random()));
+    this.screen.drawTerrainPill(pos, pos, rad, 1);
+  }
+
   // bounce or vanish?
-  this.applyDamage(mag * 0.7);
+  this.applyDamage(mag);
   if (this.health > 0) {
     // bounce
     this.addTrailSegment();
@@ -182,4 +189,5 @@ BulletSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
         this.color.getR(), this.color.getG(), this.color.getB());
     this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag * 2));
   }
+
 };

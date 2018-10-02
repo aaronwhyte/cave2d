@@ -47,7 +47,7 @@ LaserWeapon.prototype.fire = function() {
   // some aim wiggle
   let aimVec = wielder.getAimVec().rot(0.01 * (Math.random() - 0.5));
 
-  let rad = 0.25;
+  let rad = 0.2;
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(wielder.getBody().rad - rad * 1.001);
   pos.add(this.vec2d);
