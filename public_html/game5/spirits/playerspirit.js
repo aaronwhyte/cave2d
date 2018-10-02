@@ -331,21 +331,14 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 };
 
 PlayerSpirit.prototype.explode = function() {
-  let body = this.getBody();
-  // if (body) {
   let offset = 2 * Math.PI * Math.random();
   for (let i = 0, n = this.inventory.size(); i < n; i++) {
     this.dropItem(0.5 + Math.random(), offset + i * 2 * Math.PI / (n + Math.random() + 0.5), Math.random() - 0.5);
   }
-  let now = this.now();
   let pos = this.getBodyPos();
-  let x = pos.x;
-  let y = pos.y;
-
   this.sounds.playerExplode(pos);
   this.screen.addPlayerExplosionSplash(pos, this.color);
   this.screen.removeByBodyId(this.bodyId);
-  // }
 };
 
 PlayerSpirit.prototype.die = function() {

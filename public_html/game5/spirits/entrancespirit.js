@@ -28,7 +28,6 @@ EntranceSpirit.factory = function(screen, pos) {
   let world = screen.world;
 
   let spirit = new EntranceSpirit(screen);
-  let density = 1;
 
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
