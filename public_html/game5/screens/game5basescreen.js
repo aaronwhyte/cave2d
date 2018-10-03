@@ -185,6 +185,10 @@ Game5BaseScreen.prototype.addPlayerExplosionSplash = function(pos, color) {
   this.splashes.addPlayerExplosionSplash(this.world.now, pos, color);
 };
 
+Game5BaseScreen.prototype.addBombExplosionSplash = function(pos, color) {
+  this.splashes.addBombExplosionSplash(this.world.now, pos, color);
+};
+
 Game5BaseScreen.prototype.addEnemyExplosion = function(pos, rad, color) {
   this.splashes.addEnemyExplosion(this.world.now, pos, rad, color);
 };

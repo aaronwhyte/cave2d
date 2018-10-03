@@ -221,6 +221,73 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   }
 };
 
+Splashes.prototype.addBombExplosionSplash = function(now, pos, color) {
+  let x = pos.x;
+  let y = pos.y;
+  let s = this.splash;
+
+  // giant tube explosion
+  s.reset();
+  s.modelId = ModelId.TUBE_32;
+
+  s.startTime = now;
+  s.duration = 10;
+  let startRad = 2;
+  let endRad = 20;
+
+  s.startPose.pos.setXYZ(x, y, -0.5);
+  s.endPose.pos.setXYZ(x, y, 0);
+  s.startPose.scale.setXYZ(startRad, startRad, 1);
+  s.endPose.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose2.pos.setXYZ(x, y, 1);
+  s.endPose2.pos.setXYZ(x, y, 1);
+  s.startPose2.scale.setXYZ(-startRad, -startRad, 1);
+  s.endPose2.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+  s.startColor.set(color);
+  s.endColor.setXYZ(0, 0, 0);
+
+  this.splasher.addCopy(s);
+
+  // cloud particles
+  let self = this;
+  let particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
+
+  function addSplash(x, y, dx, dy, duration, sizeFactor, delay) {
+    s.reset();
+    s.modelId = ModelId.CIRCLE_32;
+    s.startTime = now + (delay || 0) + 1;
+    s.duration = duration;
+
+    s.startPose.pos.setXYZ(x, y, -Math.random());
+    s.endPose.pos.setXYZ(x + dx, y + dy, 1);
+    let startRad = sizeFactor;
+    let endRad = sizeFactor * 0.1;
+    s.startPose.scale.setXYZ(startRad, startRad, 1);
+    s.endPose.scale.setXYZ(endRad, endRad, 1);
+
+    s.startColor.set(color);
+    s.endColor.set(color).scale1(0.5);
+    self.splasher.addCopy(s);
+  }
+
+  // inner smoke ring
+  particles = 12;
+  explosionRad = 4;
+  dirOffset = 2 * Math.PI * Math.random();
+  for (i = 0; i < particles; i++) {
+    let r = Math.random() * 0.4 + (1 - 0.4 / 2);
+    duration = 30 * r;
+    dir = dirOffset + 2 * Math.PI * i / particles;
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    addSplash(x, y, dx, dy, duration, explosionRad/2);
+  }
+};
+
 Splashes.prototype.addExitSplash = function(x, y, startTime, duration) {
   // giant tube implosion
   let s = this.splash;

@@ -17,7 +17,9 @@ function MineSpirit(screen) {
 
   // combat
   this.toughness = 0.1;
-  this.damage = 0;
+  this.damage = 1;
+
+  this.shrapnelHitGroup = HitGroups.NEUTRAL;
 
   this.inventory = new Inventory();
 }
@@ -64,18 +66,69 @@ MineSpirit.prototype.createBody = function(pos, dir) {
 MineSpirit.prototype.die = function() {
   let pos = this.getBodyPos();
   this.sounds.playerExplode(pos);
-  this.screen.addPlayerExplosionSplash(pos, this.color);
+  this.screen.addBombExplosionSplash(pos, this.color);
+
+  // LET IT RAIN
+  let rad = this.getBody().rad * 0.8;
+  function r() {return 1 + Math.random() * 0.5};
+
+  let speed = 2;
+  let dist = 2;
+  let bullets = 7;
+  let dirOffset = Math.random() * 2 * Math.PI;
+  for (let i = 0, n = bullets; i < n; i++) {
+    let dir = dirOffset + 2 * Math.PI * (i + Math.random()) / n;
+    let vel = this.vec2d.setXY(0, speed * r()).rot(dir);
+    this.addBullet(pos, vel, rad, dist * r() / speed);
+  }
+
+  speed = 1;
+  dist = 10;
+  bullets = 5 + Math.floor(Math.random() * 3.5);
+  dirOffset = Math.random() * 2 * Math.PI;
+  rad = rad * 0.6;
+  for (let i = 0, n = bullets; i < n; i++) {
+    let dir = dirOffset + 2 * Math.PI * (i + Math.random()) / n;
+    let vel = this.vec2d.setXY(0, speed * r()).rot(dir);
+    this.addBullet(pos, vel, rad, dist * r() / speed);
+  }
+
   this.screen.removeByBodyId(this.bodyId);
 };
 
-// /**
-//  * Called after bouncing and damage exchange are done.
-//  * @param {Vec2d} collisionVec
-//  * @param {Number} mag the magnitude of the collision, kinda?
-//  * @param {Body} otherBody
-//  * @param {Spirit} otherSpirit
-//  */
-// MineSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-//   BaseSpirit.prototype.onHitOther.apply(this, arguments);
-//   //this.screen.addPlayerExplosionSplash(this.getBodyPos(), this.color);
-// };
+MineSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
+  console.log('mine bullet!', pos, vel, rad, duration);
+  let now = this.now();
+  let spirit = BulletSpirit.alloc(this.screen);
+  spirit.setColorRGB(Math.random() * 0.25 + 0.75, 0.5, 0);
+  let density = 1;
+
+  let b = Body.alloc();
+  b.shape = Body.Shape.CIRCLE;
+  b.setPosAtTime(pos, now);
+  b.setVelAtTime(vel, now);
+  b.rad = rad;
+
+  b.hitGroup = this.shrapnelHitGroup;
+
+  b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
+  b.pathDurationMax = duration;
+  spirit.bodyId = this.screen.world.addBody(b);
+
+  let spiritId = this.screen.world.addSpirit(spirit);
+  b.spiritId = spiritId;
+  spirit.addTrailSegment();
+  spirit.health = 0.1;
+  spirit.damage = 1;
+  spirit.wallDamageMultiplier = 2;
+  spirit.team = Team.NEUTRAL; // TODO configurable
+  spirit.trailDuration = 3;
+  spirit.headRadFraction = 1;
+  spirit.tailRadFraction = 0.5;
+
+  // bullet self-destruct timeout
+  this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
+
+  return spiritId;
+};
+
