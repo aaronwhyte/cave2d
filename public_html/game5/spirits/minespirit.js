@@ -8,7 +8,7 @@ function MineSpirit(screen) {
   this.type = Game5Key.MINE;
   this.team = Team.NEUTRAL;
 
-  this.color = new Vec4().setRGBA(1, 1, 1, 1);
+  this.color = new Vec4().setRGBA(0.8, 0.8, 0.8, 1);
 
   this.vec2d = new Vec2d();
   this.vec4 = new Vec4();
@@ -16,15 +16,19 @@ function MineSpirit(screen) {
   this.modelMatrix = new Matrix44();
 
   // combat
-  this.toughness = 0.1;
-  this.damage = 1;
+  this.toughness = 5;
+  this.damage = 0;
 
   this.shrapnelHitGroup = HitGroups.NEUTRAL;
+  this.retracted = false;
 
   this.inventory = new Inventory();
 }
 MineSpirit.prototype = new BaseSpirit();
 MineSpirit.prototype.constructor = MineSpirit;
+
+MineSpirit.SELF_DESTRUCT_DELAY = 10;
+MineSpirit.SELF_DESTRUCT_TIMEOUT_VAL = 9876543210;
 
 MineSpirit.SCHEMA = {
   0: "type",
@@ -45,7 +49,7 @@ MineSpirit.factory = function(screen, pos, dir) {
 };
 
 MineSpirit.prototype.createBody = function(pos, dir) {
-  let density = 1;
+  let density = 5;
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
@@ -57,20 +61,39 @@ MineSpirit.prototype.createBody = function(pos, dir) {
   b.turnable = true;
   b.moi = b.mass * b.rad * b.rad / 2;
   b.grip = 0.3;
-  b.elasticity = 0.25;
-  b.pathDurationMax = MineSpirit.FRICTION_TIMEOUT * 1.1;
+  b.elasticity = 0.1;
+  b.pathDurationMax = BaseSpirit.PASSIVE_TIMEOUT * 1.1;
   b.spiritId = this.id;
   return b;
+}
+
+MineSpirit.prototype.getModelId = function () {
+  return this.retracted ? ModelId.MINE_RETRACTED : ModelId.MINE;
 };
 
+MineSpirit.prototype.onTimeout = function(world, timeoutVal) {
+  if (timeoutVal === MineSpirit.SELF_DESTRUCT_TIMEOUT_VAL) {
+    this.die();
+  } else {
+    BaseSpirit.prototype.onTimeout.apply(this, arguments);
+  }
+};
+
+
 MineSpirit.prototype.die = function() {
+  let body = this.getBody();
+  if (!body) {
+    // what is dead cannot die
+    return;
+  }
+
   let pos = this.getBodyPos();
-  let bodyRad = this.getBody().rad;
+  let bodyRad = body.rad;
   this.sounds.playerExplode(pos);
   this.screen.addBombExplosionSplash(pos, this.color);
 
   // Clear some space
-  this.screen.drawTerrainPill(pos, pos, bodyRad * 3, 1);
+  this.screen.drawTerrainPill(pos, pos, bodyRad * 2.5, 1);
 
   // LET IT RAIN
   function r() {return 1 + Math.random() * 0.5}
@@ -88,7 +111,7 @@ MineSpirit.prototype.die = function() {
     this.addBullet(pos, vel, rad, dist / speed);
   }
 
-  bullets = 6 + Math.floor(Math.random() * 2);
+  bullets = 10 + Math.floor(Math.random() * 2);
   dirOffset = Math.random() * 2 * Math.PI;
   for (let i = 0, n = bullets; i < n; i++) {
     speed = 1.2 * r();
@@ -123,7 +146,7 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 1;
+  spirit.health = 1/rad;
   spirit.damage = rad * 2;
   spirit.wallDamageMultiplier = 2;
   spirit.team = Team.NEUTRAL; // TODO configurable
@@ -139,7 +162,12 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
 
 MineSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
   if (this.screen.isPlaying()) {
-    console.log('playing and dying');
-    this.die();
+    if (!this.retracted) {
+      // this.addBodyAngVel(0.1 * (Math.random() < 0.5 ? 1 : -1));
+      this.retracted = true;
+      this.screen.sounds.mineWarning(this.getBodyPos(), this.now());
+      this.screen.world.addTimeout(
+          this.now() + MineSpirit.SELF_DESTRUCT_DELAY, this.id, MineSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
+    }
   }
 };

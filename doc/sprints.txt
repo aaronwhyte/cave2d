@@ -294,10 +294,12 @@ v rework controls so that quick taps are never lost.
     v model: orb with eight? little spikes
     v Detonates on contact with anything, including player
       v adjust NEUTRAL
-    - Produces a bunch of breaker bullets that are on a team
-      - BreakerBulletSpirit
-    - Also detonates after a time. Does beep-beep-beep thing and blinks.
-    - ooh, make the timeout configurable and optional, and make mines a proper level prop.
+    v Produces a bunch of breaker bullets that are on a team
+      x BreakerBulletSpirit // used regular bullet! So flexible.
+    v Also detonates after a time. Does beep-beep-beep thing and blinks.
+      v Set health to 1, and explode instantly if killed
+      v But if gently touched, animate (spin?) and make a noise and set a timeout for boom-town.
+    v make mines a proper level prop.
   - MineThrowerSpirit
   - A0:
     - down: start aim
