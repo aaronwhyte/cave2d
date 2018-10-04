@@ -216,14 +216,14 @@ Models.prototype.createModel = function(id) {
     case ModelId.MINE_RETRACTED: {
       let model = RigidModel.createCircle(17)
           .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1));
-      model.setColorRGB(0.7, 0.7, 0.7);
+      model.setColorRGB(1, 0.2, 0.2);
       for (let i = 0, n = 8; i < n; i++) {
         let spike = new RigidModel.createSquare()
             .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 1))
             // .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2))
-            .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0.93, -0.1))
+            .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0.9, -0.1))
             .transformPositions(new Matrix44().toRotateZOp(i * 2 * Math.PI / n));
-        spike.setColorRGB(0.5, 0.5, 0.5);
+        spike.setColorRGB(0.8, 0.2, 0.2);
         model.addRigidModel(spike);
       }
       return model;

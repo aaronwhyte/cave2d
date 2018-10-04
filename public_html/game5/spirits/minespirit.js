@@ -100,7 +100,7 @@ MineSpirit.prototype.die = function() {
 
   let speed, dist, bullets, dirOffset, rad;
 
-  bullets = 12;
+  bullets = 8;
   dirOffset = Math.random() * 2 * Math.PI;
   rad = bodyRad * 0.9;
   for (let i = 0, n = bullets; i < n; i++) {
@@ -111,13 +111,13 @@ MineSpirit.prototype.die = function() {
     this.addBullet(pos, vel, rad, dist / speed);
   }
 
-  bullets = 10 + Math.floor(Math.random() * 2);
+  bullets = 3 + Math.floor(Math.random() * 3);
   dirOffset = Math.random() * 2 * Math.PI;
   for (let i = 0, n = bullets; i < n; i++) {
     speed = 1.2 * r();
     dist = 15 * r();
     rad = bodyRad * 0.4 * r();
-    let dir = dirOffset + 2 * Math.PI * (i + 0.5 * Math.random()) / n;
+    let dir = dirOffset + 2 * Math.PI * (i + 0.2 * Math.random()) / n;
     let vel = this.vec2d.setXY(0, speed).rot(dir);
     this.addBullet(pos, vel, rad, dist / speed);
   }
@@ -152,7 +152,7 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.team = Team.NEUTRAL; // TODO configurable
   spirit.trailDuration = 2;
   spirit.headRadFraction = 1;
-  spirit.tailRadFraction = 0.1;
+  spirit.tailRadFraction = 0.5;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
@@ -163,7 +163,7 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
 MineSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
   if (this.screen.isPlaying()) {
     if (!this.retracted) {
-      // this.addBodyAngVel(0.1 * (Math.random() < 0.5 ? 1 : -1));
+      this.addBodyAngVel(0.1 * (Math.random() < 0.5 ? 1 : -1));
       this.retracted = true;
       this.screen.sounds.mineWarning(this.getBodyPos(), this.now());
       this.screen.world.addTimeout(

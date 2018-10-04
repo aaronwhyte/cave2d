@@ -35,10 +35,10 @@ Sounds.prototype.mineWarning = function(worldPos, now) {
   let screenPos = this.getScreenPosForWorldPos(worldPos);
   let x = screenPos.x;
   let y = screenPos.y;
-  let freq = 800 + Math.sin(now / 10) * 200;
+  let freq = 800 + Math.sin(now / 10) * 100;
   let freq2 = freq * 4;
   let attack = 1/60;
-  let sustain = 10/60;
+  let sustain = 11/60;
   let decay = 0;
   // this.sfx.sound(x, y, 0, 2, 0, 2/60, 0, 300, 300, 'square', 0);
   this.sfx.sound(x, y, 0, 0.8, attack, sustain, decay, freq, freq2, 'sawtooth', 0);
