@@ -36,16 +36,18 @@ Game5HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   let s0 = this.screen.getSpiritForBody(b0);
   let s1 = this.screen.getSpiritForBody(b1);
 
-  if (s0 && s1) {
-    let damageTo0 = s1.damagesTeam(s0.team) ? s1.damage : 0;
-    let damageTo1 = s0.damagesTeam(s1.team) ? s0.damage : 0;
-    if (damageTo0) {
-      s0.applyDamage(damageTo0);
-      s0 = this.screen.getSpiritForBody(b0);
-    }
-    if (damageTo1) {
-      s1.applyDamage(damageTo1);
-      s1 = this.screen.getSpiritForBody(b1);
+  if (this.screen.isPlaying()) {
+    if (s0 && s1) {
+      let damageTo0 = s1.damagesTeam(s0.team) ? s1.damage : 0;
+      let damageTo1 = s0.damagesTeam(s1.team) ? s0.damage : 0;
+      if (damageTo0) {
+        s0.applyDamage(damageTo0);
+        s0 = this.screen.getSpiritForBody(b0);
+      }
+      if (damageTo1) {
+        s1.applyDamage(damageTo1);
+        s1 = this.screen.getSpiritForBody(b1);
+      }
     }
   }
   if (s0 || s1) {

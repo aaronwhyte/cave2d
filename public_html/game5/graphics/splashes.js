@@ -93,7 +93,7 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
   dirOffset = 2 * Math.PI * Math.random();
   particles = Math.floor(8 * rad);
   for (let i = 0; i < particles; i++) {
-    duration = 10 * (1 + Math.random());
+    duration = 16 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles);
     dx = Math.sin(dir) * explosionRad * 0.25;
     dy = Math.cos(dir) * explosionRad * 0.25;
@@ -225,32 +225,6 @@ Splashes.prototype.addBombExplosionSplash = function(now, pos, color) {
   let x = pos.x;
   let y = pos.y;
   let s = this.splash;
-
-  // giant tube explosion
-  s.reset();
-  s.modelId = ModelId.TUBE_32;
-
-  s.startTime = now;
-  s.duration = 10;
-  let startRad = 2;
-  let endRad = 20;
-
-  s.startPose.pos.setXYZ(x, y, -0.5);
-  s.endPose.pos.setXYZ(x, y, 0);
-  s.startPose.scale.setXYZ(startRad, startRad, 1);
-  s.endPose.scale.setXYZ(endRad, endRad, 1);
-
-  s.startPose2.pos.setXYZ(x, y, 1);
-  s.endPose2.pos.setXYZ(x, y, 1);
-  s.startPose2.scale.setXYZ(-startRad, -startRad, 1);
-  s.endPose2.scale.setXYZ(endRad, endRad, 1);
-
-  s.startPose.rotZ = 0;
-  s.endPose.rotZ = 0;
-  s.startColor.set(color);
-  s.endColor.setXYZ(0, 0, 0);
-
-  this.splasher.addCopy(s);
 
   // cloud particles
   let self = this;
