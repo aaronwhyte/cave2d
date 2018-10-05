@@ -70,7 +70,7 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(0, 1, 1);
-  let density = 4;
+  let density = 2;
 
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
@@ -88,8 +88,9 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 3;
+  spirit.health = 1.7;
   spirit.damage = 0.5;
+  spirit.wallDamageMultiplier = 0.8;
   spirit.team = wielder.team;
   spirit.trailDuration = 1.6;
   spirit.headRadFraction = 1;

@@ -90,8 +90,6 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.addTrailSegment();
   spirit.health = 0;
   spirit.damage = 1;
-  spirit.digChance = 0;
-  spirit.bounceChance = 0;
   spirit.team = wielder.team;
   spirit.trailDuration = 7;
   spirit.headRadFraction = 3;
