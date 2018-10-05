@@ -10,7 +10,7 @@ LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
 
 LaserWeapon.WARM_UP_TIME = 15;
-LaserWeapon.COOL_DOWN_TIME = 6;
+LaserWeapon.COOL_DOWN_TIME = 4.5;
 
 LaserWeapon.SCHEMA = {
   0: "type",
@@ -24,12 +24,6 @@ LaserWeapon.factory = function(screen, pos, dir) {
 };
 
 LaserWeapon.prototype.getNextFireTime = function() {
-  // let throttle = 0.9 + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
-  // let throttledTime = this.lastFireTime + throttle;
-  // let calcDelayFromTime = Math.max(this.now(), throttledTime);
-  // let delay = Math.max(0, 24 - (calcDelayFromTime + this.id) % 32);
-  // return calcDelayFromTime + delay;
-
   let throttle = LaserWeapon.COOL_DOWN_TIME + 0.1 * Math.sin(1232.7432 * this.id + this.lastFireTime);
   return Math.max(this.lastFireTime + throttle, this.lastButtonDownTime + LaserWeapon.WARM_UP_TIME);
 };
@@ -45,9 +39,9 @@ LaserWeapon.prototype.fire = function() {
   if (!wielder) return;
 
   // some aim wiggle
-  let aimVec = wielder.getAimVec().rot(0.01 * (Math.random() - 0.5));
+  let aimVec = wielder.getAimVec().rot(0.07 * (Math.random() - 0.5));
 
-  let rad = 0.2;
+  let rad = 0.18;
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(wielder.getBody().rad - rad * 1.001);
   pos.add(this.vec2d);
