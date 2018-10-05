@@ -12,7 +12,7 @@ MediumShooter.prototype.constructor = MediumShooter;
 MediumShooter.RECOIL_FORCE = 0.5;
 
 MediumShooter.WARM_UP_TIME = 0;
-MediumShooter.COOL_DOWN_TIME = 4;
+MediumShooter.COOL_DOWN_TIME = 3.5;
 
 MediumShooter.SCHEMA = {
   0: "type",
@@ -43,14 +43,14 @@ MediumShooter.prototype.fire = function() {
   let now = this.now();
   let body = this.getBody();
 
-  let aimVec = wielder.getAimVec();
+  let aimVec = wielder.getAimVec().rot(0.3 * (Math.random() - 0.5));
 
   let rad = 0.5;
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(body.rad - rad * 1.001);
   pos.add(this.vec2d);
   let speed = 1;
-  let dist = 50;
+  let dist = 18 + Math.random() + 5;
   let vel = this.vec2d.set(aimVec).scaleToLength(speed);
 
   this.addBullet(pos, vel, rad, dist / speed);
@@ -69,7 +69,7 @@ MediumShooter.prototype.fire = function() {
 MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
-  spirit.setColorRGB(1, 1, 0);
+  spirit.setColorRGB(0, 1, 1);
   let density = 4;
 
   let b = Body.alloc();
@@ -88,10 +88,8 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 1;
+  spirit.health = 3;
   spirit.damage = 0.5;
-  spirit.digChance = 2;
-  spirit.bounceChance = 0;
   spirit.team = wielder.team;
   spirit.trailDuration = 1.6;
   spirit.headRadFraction = 1;
