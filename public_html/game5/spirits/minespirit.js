@@ -8,7 +8,7 @@ function MineSpirit(screen) {
   this.type = Game5Key.MINE;
   this.team = Team.NEUTRAL;
 
-  this.color = new Vec4().setRGBA(0.8, 0.8, 0.8, 1);
+  this.color = new Vec4().setRGBA(1, 1, 1, 1);
 
   this.vec2d = new Vec2d();
   this.vec4 = new Vec4();

@@ -57,8 +57,8 @@ MediumShooter.prototype.fire = function() {
   this.screen.sounds.zup(pos, now);
   this.screen.splashes.addDotSplash(now,
       vel.scaleToLength(rad * 1.5).add(pos),
-      rad * (1.5 + Math.random()), 2,
-      0.8, 0.8, 0.8);
+      rad * (1.5 + Math.random()), 2 + Math.random(),
+      0, 0.8, 0.8);
 
   // recoil
   let forceVec = this.vec2d.set(wielder.getAimVec()).scaleToLength(-MediumShooter.RECOIL_FORCE);
