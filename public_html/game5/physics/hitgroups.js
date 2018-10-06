@@ -6,6 +6,7 @@ let HitGroups = {
   EMPTY: 0,
   WALL: 1,
   NEUTRAL: 2,
+  NEUTRAL_FIRE: 13,
   CURSOR: 3,
   PLAYER: 4,
   PLAYER_FIRE: 5,
@@ -15,5 +16,6 @@ let HitGroups = {
   PLAYER_SCAN: 9,
   PLAYER_WIDE_SCAN: 10,
   ENEMY_WIDE_SCAN: 11,
-  ITEM: 12
+  ITEM: 12,
+  // next:14
 };

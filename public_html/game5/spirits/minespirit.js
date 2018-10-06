@@ -19,7 +19,7 @@ function MineSpirit(screen) {
   this.toughness = 5;
   this.damage = 0;
 
-  this.shrapnelHitGroup = HitGroups.NEUTRAL;
+  this.shrapnelHitGroup = HitGroups.NEUTRAL_FIRE;
   this.retracted = false;
 
   this.inventory = new Inventory();
@@ -96,19 +96,19 @@ MineSpirit.prototype.die = function() {
   this.screen.drawTerrainPill(pos, pos, bodyRad * 2.5, 1);
 
   // LET IT RAIN
-  function r() {return 1 + Math.random() * 0.5}
+  function r() {return 1 + Math.random() * 0.3}
 
   let speed, dist, bullets, dirOffset, rad;
 
-  bullets = 8;
+  bullets = 10;
   dirOffset = Math.random() * 2 * Math.PI;
-  rad = bodyRad * 0.9;
+  rad = bodyRad * 0.8;
   for (let i = 0, n = bullets; i < n; i++) {
     speed = 0.8 * r();
     dist = 5 * r();
     let dir = dirOffset + 2 * Math.PI * i / n;
     let vel = this.vec2d.setXY(0, speed).rot(dir);
-    this.addBullet(pos, vel, rad, dist / speed);
+    this.addBullet(pos, vel, rad, dist / speed, 0.5);
   }
 
   bullets = 3 + Math.floor(Math.random() * 3);
@@ -119,13 +119,13 @@ MineSpirit.prototype.die = function() {
     rad = bodyRad * 0.4 * r();
     let dir = dirOffset + 2 * Math.PI * (i + 0.2 * Math.random()) / n;
     let vel = this.vec2d.setXY(0, speed).rot(dir);
-    this.addBullet(pos, vel, rad, dist / speed);
+    this.addBullet(pos, vel, rad, dist / speed, 2);
   }
 
   this.screen.removeByBodyId(this.bodyId);
 };
 
-MineSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
+MineSpirit.prototype.addBullet = function(pos, vel, rad, duration, health) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(Math.random() * 0.5 + 0.5, 0.4, 0);
@@ -146,7 +146,7 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 1/rad;
+  spirit.health = health;
   spirit.damage = rad * 2;
   spirit.wallDamageMultiplier = 2;
   spirit.team = Team.NEUTRAL; // TODO configurable

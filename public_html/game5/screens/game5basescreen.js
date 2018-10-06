@@ -103,12 +103,16 @@ Game5BaseScreen.prototype.getHitPairs = function() {
         [g.NEUTRAL, g.WALL],
         [g.NEUTRAL, g.NEUTRAL],
 
+        [g.NEUTRAL_FIRE, g.WALL],
+        [g.NEUTRAL_FIRE, g.NEUTRAL],
+
         [g.CURSOR, g.EMPTY],
         [g.CURSOR, g.WALL],
         [g.CURSOR, g.NEUTRAL],
 
         [g.PLAYER, g.WALL],
         [g.PLAYER, g.NEUTRAL],
+        [g.PLAYER, g.NEUTRAL_FIRE],
         [g.PLAYER, g.CURSOR],
         [g.PLAYER, g.PLAYER],
 
@@ -122,6 +126,7 @@ Game5BaseScreen.prototype.getHitPairs = function() {
 
         [g.ENEMY, g.WALL],
         [g.ENEMY, g.NEUTRAL],
+        [g.ENEMY, g.NEUTRAL_FIRE],
         [g.ENEMY, g.CURSOR],
         [g.ENEMY, g.PLAYER],
         [g.ENEMY, g.PLAYER_FIRE],
