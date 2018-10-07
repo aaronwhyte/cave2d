@@ -254,8 +254,8 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
 
   let slotList = [
     createKeyboardSlot('k1', Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, '.', ',', '/'),
-    createKeyboardSlot('k2', 'w', 'd', 's', 'a', 'x', 'z', 'q'),
-    createPointerLockSlot('pl', 'n', 'b', 'g'),
+    // createKeyboardSlot('k2', 'w', 'd', 's', 'a', 'x', 'z', 'q'),
+    createPointerLockSlot('pl', 'x', 'z', 'c'),
     createTouchSlot('t1', 0),
     createTouchSlot('t2', Math.PI / 2),
     createTouchSlot('t3', Math.PI),
