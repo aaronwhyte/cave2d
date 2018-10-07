@@ -145,6 +145,19 @@ Game5BaseScreen.prototype.getHitPairs = function() {
         [g.PLAYER_WIDE_SCAN, g.ENEMY],
         [g.ENEMY_WIDE_SCAN, g.PLAYER],
 
+        // This is obsolete, but some levels have bodies with this hit-group
+        // and I don't have a migration in place yet.
+        // TODO: migrate old items to be NEUTRAL I think.
+        [g.ITEM, g.WALL],
+        [g.ITEM, g.NEUTRAL],
+        [g.ITEM, g.NEUTRAL_FIRE],
+        [g.ITEM, g.CURSOR],
+        [g.ITEM, g.PLAYER],
+        [g.ITEM, g.PLAYER_FIRE],
+        [g.ITEM, g.ENEMY],
+        [g.ITEM, g.ENEMY_FIRE],
+        [g.ITEM, g.ENEMY_SCAN],
+
         [g.EMPTY, g.EMPTY]
     ];
   }

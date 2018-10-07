@@ -16,6 +16,6 @@ let HitGroups = {
   PLAYER_SCAN: 9,
   PLAYER_WIDE_SCAN: 10,
   ENEMY_WIDE_SCAN: 11,
-  ITEM: 12,
+  ITEM: 12 // obsolete
   // next:14
 };
