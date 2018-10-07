@@ -90,7 +90,7 @@ MineSpirit.prototype.die = function() {
   let pos = this.getBodyPos();
   let bodyRad = body.rad;
   this.sounds.playerExplode(pos);
-  this.screen.addBombExplosionSplash(pos, this.color);
+  this.screen.splashes.addBombExplosionSplash(this.now(), pos, this.color);
 
   // Clear some space
   this.screen.drawTerrainPill(pos, pos, bodyRad * 3, 1);

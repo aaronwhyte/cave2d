@@ -98,7 +98,7 @@ Game5BaseScreen.prototype.getHitPairs = function() {
   if (!this.hitPairs) {
     let g = this.getHitGroups();
     this.hitPairs = [
-        // WALL doesn't hit itself
+        // g.WALL doesn't hit itself
 
         [g.NEUTRAL, g.WALL],
         [g.NEUTRAL, g.NEUTRAL],
@@ -145,13 +145,6 @@ Game5BaseScreen.prototype.getHitPairs = function() {
         [g.PLAYER_WIDE_SCAN, g.ENEMY],
         [g.ENEMY_WIDE_SCAN, g.PLAYER],
 
-        [g.ITEM, g.WALL],
-        [g.ITEM, g.NEUTRAL],
-        [g.ITEM, g.CURSOR],
-        [g.ITEM, g.PLAYER],
-        [g.ITEM, g.ITEM],
-
-
         [g.EMPTY, g.EMPTY]
     ];
   }
@@ -184,22 +177,6 @@ Game5BaseScreen.prototype.initWorld = function() {
 
 Game5BaseScreen.prototype.getCamera = function() {
   return this.camera;
-};
-
-Game5BaseScreen.prototype.addPlayerExplosionSplash = function(pos, color) {
-  this.splashes.addPlayerExplosionSplash(this.world.now, pos, color);
-};
-
-Game5BaseScreen.prototype.addBombExplosionSplash = function(pos, color) {
-  this.splashes.addBombExplosionSplash(this.world.now, pos, color);
-};
-
-Game5BaseScreen.prototype.addEnemyExplosion = function(pos, rad, color) {
-  this.splashes.addEnemyExplosion(this.world.now, pos, rad, color);
-};
-
-Game5BaseScreen.prototype.addBulletMuzzleFlash = function(pos, angPos) {
-  this.splashes.addBulletMuzzleFlash(this.world.now, pos, angPos);
 };
 
 Game5BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {

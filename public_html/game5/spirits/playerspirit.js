@@ -30,7 +30,7 @@ function PlayerSpirit(screen) {
 
   // combat
   this.toughness = 3;
-  this.damage = 1;
+  // this.damage = 1;
 
   this.inventory = new Inventory();
 }
@@ -337,7 +337,7 @@ PlayerSpirit.prototype.explode = function() {
   }
   let pos = this.getBodyPos();
   this.sounds.playerExplode(pos);
-  this.screen.addPlayerExplosionSplash(pos, this.color);
+  this.screen.splashes.addPlayerExplosionSplash(this.now(), pos, this.color);
   this.screen.removeByBodyId(this.bodyId);
 };
 
@@ -353,7 +353,7 @@ PlayerSpirit.prototype.die = function() {
  * @param {Spirit} otherSpirit
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  if (otherBody.hitGroup === HitGroups.ITEM) {
+  if (otherSpirit && otherSpirit.isItem) {
     // collect the item
     let item = otherSpirit;
     item.disembody();

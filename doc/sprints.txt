@@ -325,6 +325,18 @@ v do it
 * some enemies need empty-handed behavior, including item-seeking
 * player can do something when empty handed? Dash and punch?
 
+v items join the world
+  v items are in neutral hitgroup
+    v remove item hitgroup
+    v add "isItem()" or something so collectors can know they hit something collectible
+  v items have health and can be destroyed
+    v item explosion v1
+
+- player can only hold one item
+  - move drop button down
+  - remove inventory button
+  - player only picks up items when empty-handed
+
 
 Inventory Management UX part 2
 - pickup effects

@@ -24,8 +24,16 @@ function BaseTool(screen) {
 
   this.modelMatrix = new Matrix44();
   this.mat44 = new Matrix44();
+  this.vec4 = new Vec4();
 
   this.color = new Vec4(1, 1, 1);
+
+  this.toughness = 1;
+  this.health = 1;
+  this.team = Team.NEUTRAL;
+  this.damage = 0.01;
+
+  this.isItem = true;
 }
 BaseTool.prototype = new BaseSpirit();
 BaseTool.prototype.constructor = BaseSpirit;
@@ -115,13 +123,13 @@ BaseTool.prototype.createBody = function(pos, vel, dir, angVel) {
   let now = this.now();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 0.2;
+  b.grip = 0.7;
   b.setPosAtTime(pos, now);
   b.setVelAtTime(vel, now);
   b.setAngPosAtTime(dir, now);
   b.setAngVelAtTime(angVel, now);
   b.rad = 0.95;
-  b.hitGroup = HitGroups.ITEM;
+  b.hitGroup = HitGroups.NEUTRAL;
   let density = 1;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
@@ -220,4 +228,14 @@ BaseTool.prototype.getBodyAngPos = function() {
     let s = this.getWielderSpirit();
     return s && s.getBodyAngPos();
   }
+};
+
+BaseTool.prototype.die = function() {
+  let body = this.getBody();
+  let pos = this.getBodyPos();
+  this.screen.splashes.addItemExplosion(
+      this.now(), pos, body.rad * 1.5, this.vec4.setRGBA(1, 1, 1, 1));
+  this.screen.sounds.antExplode(pos);
+  this.screen.world.removeBodyId(this.bodyId);
+  this.screen.world.removeSpiritId(this.id);
 };

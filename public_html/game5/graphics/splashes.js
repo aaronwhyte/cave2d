@@ -101,6 +101,46 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
   }
 };
 
+Splashes.prototype.addItemExplosion = function(now, pos, rad, color) {
+  // cloud particles
+  let s = this.splash;
+  let x = pos.x;
+  let y = pos.y;
+  let self = this;
+
+  let particles, explosionRad, dirOffset, dir, dx, dy, duration;
+
+  function addSplash(x, y, dx, dy, duration, rad) {
+    s.reset(Splashes.Type.ENEMY_EXPLOSION, null);
+    s.modelId = ModelId.STAR;
+    s.startTime = now;
+    s.duration = duration;
+
+    s.startPose.pos.setXYZ(x, y, -0.9);
+    s.endPose.pos.setXYZ(x + dx, y + dy, 0.9);
+    let startRad = rad;
+    let endRad = rad * 0.25;
+    s.startPose.scale.setXYZ(startRad, startRad, startRad);
+    let startRot = Math.random() * Math.PI * 2;
+    s.startPose.rotZ = startRot;
+    s.endPose.rotZ = startRot + (Math.random() - 0.5) * 2 * Math.PI;
+    s.endPose.scale.setXYZ(endRad, endRad, endRad);
+    s.startColor.set(color.setRGBA(Math.random(), Math.random(), Math.random(), 1));
+    s.endColor.set(color.setRGBA(Math.random(), Math.random(), Math.random(), 1));
+    self.splasher.addCopy(s);
+  }
+  dirOffset = 2 * Math.PI * Math.random();
+  particles = Math.floor(8 * rad);
+  explosionRad = rad * 5;
+  for (let i = 0; i < particles; i++) {
+    duration = 15 * (1 + 0.5 * Math.random());
+    dir = dirOffset + 2 * Math.PI * (i/particles);
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    addSplash(x + dx * 0.25, y + dy * 0.25, dx, dy, duration, rad);
+  }
+};
+
 Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
   let s = this.splash;
   let x = pos.x;

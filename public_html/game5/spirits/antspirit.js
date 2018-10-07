@@ -287,7 +287,8 @@ AntSpirit.prototype.handleLoner = function(newVel, time) {
 AntSpirit.prototype.explode = function() {
   let body = this.getBody();
   let pos = this.getBodyPos();
-  this.screen.addEnemyExplosion(pos, body.rad, this.vec4.setXYZ(0.1, 0.8 + Math.random() * 0.2, 0.1));
+  this.screen.splashes.addEnemyExplosion(
+      this.now(), pos, body.rad, this.vec4.setXYZ(0.1, 0.8 + Math.random() * 0.2, 0.1));
   this.screen.sounds.antExplode(pos);
 
   if (this.weapon) {
