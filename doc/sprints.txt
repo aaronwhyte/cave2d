@@ -322,7 +322,7 @@ v do it
 * items have health and can be destroyed
 * editor allows/requires stacking of enemies and items to make combos
 * powerups can also be stacked on enemies and items in the editor?
-* some enemies need empty-handed behavior, including item-seeking
+* some enemies need empty-handed behavior, including item-seeking?
 * player can do something when empty handed? Dash and punch?
 
 v items join the world
@@ -332,10 +332,14 @@ v items join the world
   v items have health and can be destroyed
     v item explosion v1
 
-- player can only hold one item
-  - move drop button down
-  - remove inventory button
-  - player only picks up items when empty-handed
+v player can only hold one item
+  v move drop button down
+  v remove inventory button
+  v player only picks up items when empty-handed
+v remove action1 button
+
+- enemies can be assigned items from editor
+  - need overlap detection when
 
 
 Inventory Management UX part 2
@@ -346,6 +350,10 @@ Inventory Management UX part 2
   - sound (from game 4)
   - splash?
 
+- change to just two players on keyboard
+  - mouse plus z x s
+  - arrows plus . / ;
+
 - Plasma gun
   - A0: fast ray that does splash damage on impact
   - A1: Slow plasma orb that floats without friction and does splash damage on impact
@@ -353,20 +361,6 @@ Inventory Management UX part 2
   - plasma ray
   - plasma orb
   - plasma shrapnel
-
-- smoke
-  - A0:
-    - down: yell "smoke bomb!" :-D
-    - up: local flash and burst of smoke. Player jumps backwards?
-  - A1:
-    - down: aim
-    - up: throw bomb
-  - smoke bomb
-    - explodes with remaining smoke when it takes damage
-    - begins to emit smoke and spin soon after release as it flies
-    - small puff when it runs out of smoke
-    - bounces off of things, does no damage itself
-  - smoke itself - blocks rayscans, shrinks
 
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items!
 

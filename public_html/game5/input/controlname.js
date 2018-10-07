@@ -7,7 +7,5 @@ let ControlName = {
   MENU: 'm',
 
   ACTION_0: '0',
-  ACTION_1: '1',
-  DROP_ITEM: 'd',
-  EQUIP_ITEM: 'e'
+  DROP_ITEM: 'd'
 };

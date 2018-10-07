@@ -112,7 +112,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
   /////////////
   // KEYBOARD
   /////////////
-  function createKeyboardSlot(name, up, right, down, left, action0, action1, drop, equip, menuKey) {
+  function createKeyboardSlot(name, up, right, down, left, action0, drop, menuKey) {
     return new PlayerSlot(name)
         .addControlState(ControlState.WAITING, new ControlMap()
             .addControl(ControlName.JOIN_TRIGGER, new KeyTrigger()
@@ -121,18 +121,14 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTriggerKeyByName(down)
                 .addTriggerKeyByName(left)
                 .addTriggerKeyByName(action0)
-                .addTriggerKeyByName(action1)
                 .addTriggerKeyByName(drop)
-                .addTriggerKeyByName(equip)
                 .addTriggerKeyByName(menuKey)
             ))
         .addControlState(ControlState.PLAYING, new ControlMap(ControlMap.USE_EVENT_QUEUE)
             .addControl(ControlName.STICK, new KeyStick()
                 .setUpRightDownLeftByName(up, right, down, left))
             .addControl(ControlName.ACTION_0, new KeyTrigger().addTriggerKeyByName(action0))
-            .addControl(ControlName.ACTION_1, new KeyTrigger().addTriggerKeyByName(action1))
             .addControl(ControlName.DROP_ITEM, new KeyTrigger().addTriggerKeyByName(drop))
-            .addControl(ControlName.EQUIP_ITEM, new KeyTrigger().addTriggerKeyByName(equip))
             .addControl(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
   }
@@ -202,33 +198,17 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
         .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
     self.cuboidRules.push(action0Rule);
 
-    let action1Button = button(self.stamps.action1);
-    let action1Rule = new CuboidRule(self.canvasCuboid, action1Button.getWidgetCuboid())
-        .setAspectRatio(new Vec4(1, 1))
-        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
-        .setTargetAnchor(new Vec4(-1, 3.1).transform(matrix), Vec4.ZERO)
-        .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
-    self.cuboidRules.push(action1Rule);
-
     let dropItemButton = button(self.stamps.dropItem);
     let dropItemRule = new CuboidRule(self.canvasCuboid, dropItemButton.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
         .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
-        .setTargetAnchor(new Vec4(-3.1, 3.1).transform(matrix), Vec4.ZERO)
+        .setTargetAnchor(new Vec4(-3.1, 1).transform(matrix), Vec4.ZERO)
         .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
     self.cuboidRules.push(dropItemRule);
 
-    let equipItemButton = button(self.stamps.equipItem);
-    let equipItemRule = new CuboidRule(self.canvasCuboid, equipItemButton.getWidgetCuboid())
-        .setAspectRatio(new Vec4(1, 1))
-        .setSourceAnchor(new Vec4(-1, 1).transform(matrix), Vec4.ZERO)
-        .setTargetAnchor(new Vec4(-3.1, 1).transform(matrix), Vec4.ZERO)
-        .setSizingMax(new Vec4(maxButtonRatio, maxButtonRatio), new Vec4(buttonRad, buttonRad));
-    self.cuboidRules.push(equipItemRule);
-
     let menuSizeFactor = 0.6;
     let menuButton = button(self.stamps.menuButton);
-    let menuRule = new CuboidRule(equipItemButton.getWidgetCuboid(), menuButton.getWidgetCuboid())
+    let menuRule = new CuboidRule(dropItemButton.getWidgetCuboid(), menuButton.getWidgetCuboid())
         .setAspectRatio(new Vec4(1, 1))
         .setSourceAnchor(new Vec4(1, 1).transform(matrix), Vec4.ZERO)
         .setTargetAnchor(new Vec4(-1.1, 0.7).transform(matrix), Vec4.ZERO)
@@ -241,9 +221,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
         .addControlState(ControlState.PLAYING, new ControlMap(ControlMap.USE_EVENT_QUEUE)
             .addControl(ControlName.STICK, stick)
             .addControl(ControlName.ACTION_0, action0Button)
-    // TODO       .addControl(ControlName.ACTION_1, action1Button)
             .addControl(ControlName.DROP_ITEM, dropItemButton)
-    // TODO       .add(ControlName.EQUIP_ITEM, equipItemButton)
             .addControl(ControlName.MENU, menuButton));
     slot.corner = new Vec4(-1, 1).transform(matrix);
     return slot;
@@ -252,7 +230,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
   /////////////////////////
   // POINTER AND KEYBOARD
   /////////////////////////
-  function createPointerLockSlot(name, action0Key, action1Key, dropKey, equipKey, menuKey) {
+  function createPointerLockSlot(name, action0Key, dropKey, menuKey) {
     // Only join on mouse-click, since that's a good indication you have a mouse in hand,
     // and it starts the Pointer Lock process.
     return new PlayerSlot(name)
@@ -261,9 +239,7 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger()
                     .addTriggerKeyByName(action0Key)
-                    .addTriggerKeyByName(action1Key)
                     .addTriggerKeyByName(dropKey)
-                    .addTriggerKeyByName(equipKey)
                     .addTriggerKeyByName(menuKey)
                 )))
         .addControlState(ControlState.PLAYING, new ControlMap(ControlMap.USE_EVENT_QUEUE)
@@ -271,19 +247,15 @@ Game5PlayScreen.prototype.configurePlayerSlots = function() {
             .addControl(ControlName.ACTION_0, new MultiTrigger()
                 .addTrigger(new MouseButtonTrigger(self.canvas))
                 .addTrigger(new KeyTrigger().addTriggerKeyByName(action0Key)))
-            .addControl(ControlName.ACTION_1, new MultiTrigger()
-                .addTrigger(new MouseButtonTrigger(self.canvas).setListenToLeftButton(false))
-                .addTrigger(new KeyTrigger().addTriggerKeyByName(action1Key)))
             .addControl(ControlName.DROP_ITEM, new KeyTrigger().addTriggerKeyByName(dropKey))
-            .addControl(ControlName.EQUIP_ITEM, new KeyTrigger().addTriggerKeyByName(equipKey))
             .addControl(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
   }
 
   let slotList = [
-    createKeyboardSlot('k1', Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, 'm', 'n', '.', ',', 'l'),
-    createKeyboardSlot('k2', 'w', 'd', 's', 'a', 'z', Key.Name.SHIFT, 'c', 'x', '1'),
-    createPointerLockSlot('pl', 'b', 'v', 'h', 'g', 'y'),
+    createKeyboardSlot('k1', Key.Name.UP, Key.Name.RIGHT, Key.Name.DOWN, Key.Name.LEFT, '.', ',', '/'),
+    createKeyboardSlot('k2', 'w', 'd', 's', 'a', 'x', 'z', 'q'),
+    createPointerLockSlot('pl', 'n', 'b', 'g'),
     createTouchSlot('t1', 0),
     createTouchSlot('t2', Math.PI / 2),
     createTouchSlot('t3', Math.PI),
