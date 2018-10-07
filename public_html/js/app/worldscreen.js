@@ -831,8 +831,11 @@ WorldScreen.prototype.approxViewportsFromCamera = function(v) {
       Math.abs(camera.getY() - v.y) * ppm / this.canvas.height);
 };
 
-WorldScreen.prototype.worldToJson = function() {
+WorldScreen.prototype.worldToJson = function(opt_ignoreTimeouts) {
   let worldJsoner = new WorldJsoner();
+  if (opt_ignoreTimeouts) {
+    worldJsoner.serializeTimeouts = false;
+  }
   let self = this;
   worldJsoner.setIsBodySerializableFn(function(body) {
     return body.hitGroup !== self.getWallHitGroup();

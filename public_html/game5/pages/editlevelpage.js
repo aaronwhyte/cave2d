@@ -19,7 +19,7 @@ EditLevelPage.prototype.maybeSaveLevel = function() {
     console.warn('No screen, cannot get JSON to save level: ' + this.levelName);
     return;
   }
-  this.jsonObj = this.screen.worldToJson();
+  this.jsonObj = this.screen.worldToJson(true);
   this.fileTree.setFile(this.levelDataPath, this.jsonObj);
 };
 

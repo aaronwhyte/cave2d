@@ -5,6 +5,7 @@ function WorldJsoner() {
   this.isBodySerializableFn = function(body) {
     return true;
   };
+  this.serializeTimeouts = true;
 }
 
 /**
@@ -75,9 +76,11 @@ WorldJsoner.prototype.worldToJson = function(world) {
     json.spirits.push(spirit.toJSON());
   }
   // timeouts
-  for (var e = world.queue.getFirst(); e; e = e.next[0]) {
-    if (e.type === WorldEvent.TYPE_TIMEOUT) {
-      json.timeouts.push(e.toJSON());
+  if (this.serializeTimeouts) {
+    for (var e = world.queue.getFirst(); e; e = e.next[0]) {
+      if (e.type === WorldEvent.TYPE_TIMEOUT) {
+        json.timeouts.push(e.toJSON());
+      }
     }
   }
   return json;
