@@ -157,6 +157,7 @@ Game5BaseScreen.prototype.getHitPairs = function() {
         [g.ITEM, g.ENEMY],
         [g.ITEM, g.ENEMY_FIRE],
         [g.ITEM, g.ENEMY_SCAN],
+        [g.ITEM, g.ITEM],
 
         [g.EMPTY, g.EMPTY]
     ];
