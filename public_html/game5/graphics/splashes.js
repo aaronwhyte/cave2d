@@ -208,15 +208,16 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   }
 
   // inner smoke ring
-  particles = 12;
-  explosionRad = 4;
+  particles = 20;
+  explosionRad = 5;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
     let r = Math.random() * 0.4 + (1 - 0.4 / 2);
     duration = 30 * r;
-    dir = dirOffset + 2 * Math.PI * i / particles;
-    dx = Math.sin(dir) * explosionRad;
-    dy = Math.cos(dir) * explosionRad;
+    dir = dirOffset + 2 * Math.PI * (i + Math.random()) / particles;
+    let distRand = Math.random() * 0.5 + 0.5;
+    dx = Math.sin(dir) * explosionRad * distRand;
+    dy = Math.cos(dir) * explosionRad * distRand;
     addSplash(x, y, dx, dy, duration, explosionRad/2);
   }
 };
@@ -250,15 +251,17 @@ Splashes.prototype.addBombExplosionSplash = function(now, pos, color) {
 
   // inner smoke ring
   particles = 12;
-  explosionRad = 4;
+  explosionRad = 4.5;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
     let r = Math.random() * 0.4 + (1 - 0.4 / 2);
     duration = 30 * r;
     dir = dirOffset + 2 * Math.PI * i / particles;
-    dx = Math.sin(dir) * explosionRad;
-    dy = Math.cos(dir) * explosionRad;
-    addSplash(x, y, dx, dy, duration, explosionRad/2);
+    dir = dirOffset + 2 * Math.PI * (i + Math.random() * 0.5) / particles;
+    let distRand = Math.random() * 0.1 + 0.9;
+    dx = Math.sin(dir) * explosionRad * distRand;
+    dy = Math.cos(dir) * explosionRad * distRand;
+    addSplash(x + dx * 0.25, y + dy * 0.25, dx, dy, duration, explosionRad/2);
   }
 };
 

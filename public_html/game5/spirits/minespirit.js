@@ -49,7 +49,7 @@ MineSpirit.factory = function(screen, pos, dir) {
 };
 
 MineSpirit.prototype.createBody = function(pos, dir) {
-  let density = 5;
+  let density = 10;
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.setPosAtTime(pos, this.now());
@@ -61,7 +61,7 @@ MineSpirit.prototype.createBody = function(pos, dir) {
   b.turnable = true;
   b.moi = b.mass * b.rad * b.rad / 2;
   b.grip = 0.3;
-  b.elasticity = 0.1;
+  b.elasticity = 0.2;
   b.pathDurationMax = BaseSpirit.PASSIVE_TIMEOUT * 1.1;
   b.spiritId = this.id;
   return b;
@@ -93,22 +93,22 @@ MineSpirit.prototype.die = function() {
   this.screen.addBombExplosionSplash(pos, this.color);
 
   // Clear some space
-  this.screen.drawTerrainPill(pos, pos, bodyRad * 2.5, 1);
+  this.screen.drawTerrainPill(pos, pos, bodyRad * 3, 1);
 
   // LET IT RAIN
   function r() {return 1 + Math.random() * 0.3}
 
   let speed, dist, bullets, dirOffset, rad;
 
-  bullets = 10;
+  bullets = 9;
   dirOffset = Math.random() * 2 * Math.PI;
   rad = bodyRad * 0.8;
   for (let i = 0, n = bullets; i < n; i++) {
-    speed = 0.8 * r();
+    speed = 1.5 * r();
     dist = 5 * r();
     let dir = dirOffset + 2 * Math.PI * i / n;
     let vel = this.vec2d.setXY(0, speed).rot(dir);
-    this.addBullet(pos, vel, rad, dist / speed, 0.5);
+    this.addBullet(pos, vel, rad, dist / speed, 2);
   }
 
   bullets = 3 + Math.floor(Math.random() * 3);
@@ -117,9 +117,9 @@ MineSpirit.prototype.die = function() {
     speed = 1.2 * r();
     dist = 15 * r();
     rad = bodyRad * 0.4 * r();
-    let dir = dirOffset + 2 * Math.PI * (i + 0.2 * Math.random()) / n;
+    let dir = dirOffset + 2 * Math.PI * (i + 0.5 * Math.random()) / n;
     let vel = this.vec2d.setXY(0, speed).rot(dir);
-    this.addBullet(pos, vel, rad, dist / speed, 2);
+    this.addBullet(pos, vel, rad, dist / speed, 0.5);
   }
 
   this.screen.removeByBodyId(this.bodyId);
@@ -128,7 +128,7 @@ MineSpirit.prototype.die = function() {
 MineSpirit.prototype.addBullet = function(pos, vel, rad, duration, health) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
-  spirit.setColorRGB(Math.random() * 0.5 + 0.5, 0.4, 0);
+  spirit.setColorRGB(Math.random() * 0.3 + 0.7, Math.random() * 0.2 + 0.2, 0);
   let density = 1;
 
   let b = Body.alloc();
@@ -150,9 +150,9 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration, health) {
   spirit.damage = rad * 2;
   spirit.wallDamageMultiplier = 2;
   spirit.team = Team.NEUTRAL; // TODO configurable
-  spirit.trailDuration = 2;
+  spirit.trailDuration = 3.5;
   spirit.headRadFraction = 1;
-  spirit.tailRadFraction = 0.5;
+  spirit.tailRadFraction = 0.1;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
