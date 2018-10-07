@@ -289,53 +289,50 @@ v rework controls so that quick taps are never lost.
   x controlmap calls poll() on controls that support it, before giving controls to player
 (Did this for triggers but not sticks. Good enough for now.)
 
-- Mine thrower
-  - MineSpirit is different...
-    v model: orb with eight? little spikes
-    v Detonates on contact with anything, including player
-      v adjust NEUTRAL
-    v Produces a bunch of breaker bullets that are on a team
-      x BreakerBulletSpirit // used regular bullet! So flexible.
-    v Also detonates after a time. Does beep-beep-beep thing and blinks.
-      v Set health to 1, and explode instantly if killed
-      v But if gently touched, animate (spin?) and make a noise and set a timeout for boom-town.
-    v make mines a proper level prop.
-  - MineThrowerSpirit
-  - A0:
-    - down: start aim
-    - up: throw mine far
-  - A1:
-    - down: start aim
-    - up: drop mine right in front of you, so it comes to rest very close by.
+v MineSpirit is different...
+  v model: orb with eight? little spikes
+  v Detonates on contact with anything, including player
+    v adjust NEUTRAL
+  v Produces a bunch of breaker bullets that are on a team
+    x BreakerBulletSpirit // used regular bullet! So flexible.
+  v Also detonates after a time. Does beep-beep-beep thing and blinks.
+    v Set health to 1, and explode instantly if killed
+    v But if gently touched, animate (spin?) and make a noise and set a timeout for boom-town.
+  v make mines a proper level prop.
+
+Data management idea
+Scalable, Flexible, Simple: Pick Two
+There's a lot of data that's embedded in code in various places.
+A spirit has a MenuItemName string, SpiritType string, modelId, constructor, maybe item type and item constructor...
+A lot of the code is just creating mappings from one thing to the other, which is basically database indexing
+Maybe I should have an actual single JSON table, sort of like what I have for SpiritConfig but more declarative.
+Or maybe each kind of thing should have a single KeyName that is used in lots of other tables:
+spiritConfig
+itemConfig?
+iconModelId
+v do it
+
+==================================================================================================
+2018-10-06 GAME DESIGN PIVOT
+* player can only hold one item
+* nobody picks up items unless they have room
+* enemies can see and touch items, like players
+* items only have one trigger
+* items can be held by any enemy or container
+* items have health and can be destroyed
+* editor allows/requires stacking of enemies and items to make combos
+* powerups can also be stacked on enemies and items in the editor?
+* some enemies need empty-handed behavior, including item-seeking
+* player can do something when empty handed? Dash and punch?
+
 
 Inventory Management UX part 2
-- drop effects
-  - sound
-  - splash
 - pickup effects
-  - sound
+  - sound (from game 4)
+  - splash (from game 4)
+- voluntary player drop effects (not for death or disarm drops)
+  - sound (from game 4)
   - splash?
-- selection
-  - pseudomode button
-    - reveals pack contents on screen (doesn't scroll yet but it could happen)
-    - selection indicator movement
-      - pointerlock stick left/right
-      - fire/secondary buttons also work?
-      - touch is more direct spacial model, where touchbar is below item icons
-    - release pseudomode selects the indicated item
-  - unselect old item
-    - oldItem.onUnselect
-  - select new one
-    - inventory.select
-    - item.onSelect
-- animate item collection
-
-multi-button tool support
-- tools declare button count
-- setButtonPressed(n, b) api takes button number as 1st param
-- setAllButtonsPressed(b)
-- only show correct number of action buttons
-  - dim unused slots but leave circle or something
 
 - Plasma gun
   - A0: fast ray that does splash damage on impact
@@ -358,20 +355,6 @@ multi-button tool support
     - small puff when it runs out of smoke
     - bounces off of things, does no damage itself
   - smoke itself - blocks rayscans, shrinks
-
-
-Data management idea
-Scalable, Flexible, Simple: Pick Two
-There's a lot of data that's embedded in code in various places.
-A spirit has a MenuItemName string, SpiritType string, modelId, constructor, maybe item type and item constructor...
-A lot of the code is just creating mappings from one thing to the other, which is basically database indexing
-Maybe I should have an actual single JSON table, sort of like what I have for SpiritConfig but more declarative.
-
-Or maybe each kind of thing should have a single KeyName that is used in lots of other tables:
-spiritConfig
-itemConfig?
-iconModelId
-v do it
 
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items!
 
@@ -432,7 +415,8 @@ V                V
 |                |
 V .............. V
 
-- weapons show up on carriers? Need special weapon graphics.
+
+v weapons show up on carriers? Need special weapon graphics.
   * iconic grx for every weapon
   * show it outside of creature, in fire direction
   * show it inside weapon-pickup bubble
@@ -440,15 +424,16 @@ V .............. V
 - weapons
   v slow shooter
   v medium shooter - machine-gunny
+    v became rogue gun - medium, narrowish, very bouncy, low damage
   v laser 1.0 - long, straight, no bounce, frequent
-  v telegraph laser fire with sparks, add delay
+  v telegraph laser fire
+    v sparks
+    v add delay
+    - warm-up sound!
   - shotgun - short wide, a bit bouncy, infrequent
-  - magic missile - seeking, avoids walls. Infrequent!
-  - rogue gun - medium, narrowish, very bouncy, low damage
+  - missile - seeking, avoids walls. Infrequent!
   - rocket - dumb, infrequent, explosive
-  - saw - really short, constant, cuts through walls.
-
-- level generation
+  - saw - really short, constant, cuts through walls, pulls you forward a bit
 
 - health framework
   - damage is floating point
@@ -493,4 +478,29 @@ Impl concepts:
     - zero:  dumbly go to where target is now.
     - positive but proportional to... dist?: lead the target
     - if negative, try to get to where target would have come from - go behind target
+
+- selection
+  - pseudomode button
+    - reveals pack contents on screen (doesn't scroll yet but it could happen)
+    - selection indicator movement
+      - pointerlock stick left/right
+      - fire/secondary buttons also work?
+      - touch is more direct spacial model, where touchbar is below item icons
+    - release pseudomode selects the indicated item
+  - unselect old item
+    - oldItem.onUnselect
+  - select new one
+    - inventory.select
+    - item.onSelect
+- animate item collection
+
+multi-button tool support
+- tools declare button count
+- setButtonPressed(n, b) api takes button number as 1st param
+- setAllButtonsPressed(b)
+- only show correct number of action buttons
+  - dim unused slots but leave circle or something
+
+- level generation
+
 
