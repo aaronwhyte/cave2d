@@ -44,9 +44,11 @@ WorldJsoner.prototype.loadWorldFromJson = function(world, json) {
   }
   // timeouts
   var e = new WorldEvent();
-  for (i = 0; i < json.timeouts.length; i++) {
-    e.setFromJSON(json.timeouts[i]);
-    world.loadTimeout(e);
+  if (json.timeouts) {
+    for (i = 0; i < json.timeouts.length; i++) {
+      e.setFromJSON(json.timeouts[i]);
+      world.loadTimeout(e);
+    }
   }
   // Stop spiritless bodies from haunting the world.
   // This can happen if there are obsolete spirits in a level.
