@@ -17,7 +17,7 @@ function MineSpirit(screen) {
 
   // combat
   this.toughness = 5;
-  this.damage = 0;
+  this.damage = 0.05;
 
   this.shrapnelHitGroup = HitGroups.NEUTRAL_FIRE;
   this.retracted = false;
