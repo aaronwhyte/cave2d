@@ -353,7 +353,7 @@ PlayerSpirit.prototype.die = function() {
  * @param {Spirit} otherSpirit
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  if (otherSpirit && otherSpirit.isItem) {
+  if (!this.inventory.size() && otherSpirit && otherSpirit.isItem) {
     // collect the item
     let item = otherSpirit;
     item.disembody();
