@@ -292,7 +292,10 @@ AntSpirit.prototype.explode = function() {
   this.screen.sounds.antExplode(pos);
 
   if (this.weapon) {
-    this.screen.removeSpiritId(this.weapon.id);
+    this.weapon.embody(
+        pos,
+        this.vec2d.setXY(0, Math.random()).rot(Math.random() * 2 * Math.PI).add(this.getBodyVel()),
+        this.getBodyAngPos(), this.getBodyAngVel() + Math.random() - 0.5)
   }
   if (this.targetScanner) {
     this.screen.removeSpiritId(this.targetScanner.id);

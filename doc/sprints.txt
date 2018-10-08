@@ -338,8 +338,10 @@ v player can only hold one item
   v player only picks up items when empty-handed
 v remove action1 button
 
+v enemies drop weapons when killed
+
 - enemies can be assigned items from editor
-  - need overlap detection when
+  - need overlap detection when adding spirits to the world. Treat initial overlaps as collision?
 
 
 Inventory Management UX part 2
