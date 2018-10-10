@@ -340,17 +340,18 @@ v remove action1 button
 
 v enemies drop weapons when killed
 
+Inventory Management UX part 2
+- pickup effects
+  v sound (from game 4)
+  - splash (from game 4)
+- voluntary player drop effects (not for death or disarm drops)
+  v sound (from game 4)
+  - splash?
+
+
 - enemies can be assigned items from editor
   - need overlap detection when adding spirits to the world. Treat initial overlaps as collision?
 
-
-Inventory Management UX part 2
-- pickup effects
-  - sound (from game 4)
-  - splash (from game 4)
-- voluntary player drop effects (not for death or disarm drops)
-  - sound (from game 4)
-  - splash?
 
 - change to just two players on keyboard
   - mouse plus z x s

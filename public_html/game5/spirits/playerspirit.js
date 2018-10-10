@@ -362,6 +362,7 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
     }
     this.inventory.add(item);
     item.wield(this.id);
+    this.screen.sounds.getItem(this.getBodyPos());
   } else {
     // regular collision
     BaseSpirit.prototype.onHitOther.apply(this, arguments);
@@ -381,5 +382,5 @@ PlayerSpirit.prototype.dropItem = function(speed, opt_angleOffset, opt_angVelOff
   if (this.inventory.size()) {
     this.inventory.get(0).wield(this.id);
   }
-
+  this.screen.sounds.dropItem(this.getBodyPos());
 };

@@ -227,10 +227,36 @@ Sounds.prototype.playerSpawn = function(worldPos) {
   let screenPos = this.getScreenPosForWorldPos(worldPos);
   let x = screenPos.x;
   let y = screenPos.y;
-  let freq = 100;
+  let freq = 50;
   for (let i = 0; i < 5; i++) {
     freq *= 2;
     this.sfx.sound(x, y, 0, 0.2, 0.01, 0.1, 0.15, freq, freq, 'sine', i * 0.05);
     this.sfx.sound(x, y, 0, 0.1, 0.01, 0.1, 0.15, freq+2, freq, 'square', i * 0.05);
   }
+};
+
+Sounds.prototype.getItem = function(worldPos) {
+  let screenPos = this.getScreenPosForWorldPos(worldPos);
+  let x = screenPos.x;
+  let y = screenPos.y;
+  let freq = 500;
+  let freq2 = freq * 2;
+  let attack = 0.01;
+  let sustain = 0;
+  let decay = 0.07;
+  this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay * 2, freq, freq2, 'sawtooth');
+  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq * 4, freq2 * 4, 'sine');
+};
+
+Sounds.prototype.dropItem = function(worldPos) {
+  let screenPos = this.getScreenPosForWorldPos(worldPos);
+  let x = screenPos.x;
+  let y = screenPos.y;
+  let freq = 1000;
+  let freq2 = freq / 4;
+  let attack = 0.07;
+  let sustain = 0;
+  let decay = 0.01;
+  this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay * 2, freq, freq2, 'sawtooth');
+  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq * 4, freq2 * 4, 'sine');
 };
