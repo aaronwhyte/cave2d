@@ -142,10 +142,10 @@ LaserWeapon.prototype.onDraw = function() {
     this.warble.start();
   }
   if (this.warble) {
-    this.warble.setGain(0.1 + 0.2 * fraction * fraction);
+    this.warble.setGain(0.2 + 0.1 * fraction * fraction);
     this.warble.setWorldPos(this.getBodyPos());
     this.warble.setWubFreq(20 + fraction * fraction * 40);
-    this.warble.setPitchFreq(50 + ((this.id * 91231) % 200) + fraction * fraction * 2000);
+    this.warble.setPitchFreq(100 + ((this.id * 91231) % 200) + fraction * fraction * 2000);
   }
   let dotRad = 0.3 + 0.7 * fraction;
 
