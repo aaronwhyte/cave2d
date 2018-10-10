@@ -229,7 +229,6 @@ Sounds.prototype.playerRelease = function(worldPos, df) {
 Sounds.PlayerSeekHum = function(sounds) {
   this.sounds = sounds;
   this.sfx = sounds.sfx;
-  this.worldPos = new Vec2d();
   let gp = this.sfx.createGainAndPanner();
   this.gain = gp.gain;
   this.panner = gp.panner;

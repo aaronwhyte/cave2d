@@ -9,7 +9,7 @@ function LaserWeapon(screen) {
 LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
 
-LaserWeapon.WARM_UP_TIME = 15;
+LaserWeapon.WARM_UP_TIME = 12;
 LaserWeapon.COOL_DOWN_TIME = 4.5;
 
 LaserWeapon.SCHEMA = {
@@ -105,7 +105,7 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
 /**
  * Draws the muzzle-blob that
  * grows before bursting into a laser pulse, and
- * shrinks when the laster is turned off before the next (or first) shot.
+ * shrinks when the laser is turned off before the next (or first) shot.
  * @override
  */
 LaserWeapon.prototype.onDraw = function() {
@@ -123,8 +123,31 @@ LaserWeapon.prototype.onDraw = function() {
     fraction = (1 - (this.now() - this.lastButtonUpTime) / LaserWeapon.COOL_DOWN_TIME) *
         (this.lastButtonUpTime - Math.max(this.lastButtonDownTime, this.lastFireTime)) / LaserWeapon.WARM_UP_TIME;
   }
-  if (fraction <= 0 || fraction > 1) return;
-  let dotRad = 0.01 + fraction;
+
+  let shouldWarble = this.buttonDown &&
+      this.now() - this.lastFireTime > LaserWeapon.COOL_DOWN_TIME &&
+      this.now() - this.lastButtonDownTime < LaserWeapon.WARM_UP_TIME;
+
+  if (this.warble && !shouldWarble) {
+    this.warble.stop();
+    this.warble = null;
+  }
+  if (fraction <= 0 || fraction > 1) {
+    return;
+  }
+
+  if (!this.warble && shouldWarble) {
+    this.warble = new Sounds.Warble(this.screen.sounds, 'square', 'sine');
+    this.warble.setGain(0.1);
+    this.warble.start();
+  }
+  if (this.warble) {
+    this.warble.setGain(0.1 + 0.2 * fraction * fraction);
+    this.warble.setWorldPos(this.getBodyPos());
+    this.warble.setWubFreq(20 + fraction * fraction * 40);
+    this.warble.setPitchFreq(50 + ((this.id * 91231) % 200) + fraction * fraction * 2000);
+  }
+  let dotRad = 0.3 + 0.7 * fraction;
 
   let dotPosition = this.vec2d.setXY(0, 1).rot(this.getBodyAngPos())
       .scaleToLength(this.getBody().rad + dotRad)

@@ -38,11 +38,14 @@ Sounds.prototype.mineWarning = function(worldPos, now) {
   let freq = 800 + Math.sin(now / 10) * 100;
   let freq2 = freq * 4;
   let attack = 1/60;
-  let sustain = 11/60;
+  let sustain = 5/60;
   let decay = 0;
+  let delay = attack + sustain + decay;
   // this.sfx.sound(x, y, 0, 2, 0, 2/60, 0, 300, 300, 'square', 0);
-  this.sfx.sound(x, y, 0, 0.8, attack, sustain, decay, freq, freq2, 'sawtooth', 0);
-  this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq/9, freq2/9, 'square', 0);
+  for (let i = 0; i < 3; i++) {
+    this.sfx.sound(x, y, 0, 0.8, attack, sustain, decay, freq, freq2, 'sawtooth', i * delay);
+    this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq / 9, freq2 / 9, 'square', i * delay);
+  }
 };
 
 Sounds.prototype.blop = function(worldPos, now) {
@@ -259,4 +262,63 @@ Sounds.prototype.dropItem = function(worldPos) {
   let decay = 0.01;
   this.sfx.sound(x, y, 0, 0.4, attack, sustain, decay * 2, freq, freq2, 'sawtooth');
   this.sfx.sound(x, y, 0, 0.3, attack, sustain, decay, freq * 4, freq2 * 4, 'sine');
+};
+
+
+/**
+ * @constructor
+ */
+Sounds.Warble = function(sounds, gainOscType, pitchOscType) {
+  this.sounds = sounds;
+  this.sfx = sounds.sfx;
+  let gp = this.sfx.createGainAndPanner();
+  this.gain = gp.gain;
+  this.panner = gp.panner;
+  if (this.gain) {
+    this.wobbleGain = this.sfx.createGain();
+    this.wobbleGain.connect(this.gain);
+
+    this.gainOsc = this.sfx.createOscillator();
+    this.gainOsc.type = gainOscType;
+    this.gainOsc.connect(this.wobbleGain.gain);
+
+    this.pitchOsc = this.sfx.createOscillator();
+    this.pitchOsc.type = pitchOscType;
+    this.pitchOsc.connect(this.wobbleGain);
+  }
+};
+
+Sounds.Warble.prototype.start = function() {
+  this.gain.gain.setValueAtTime(0, this.sfx.ctx.currentTime);
+  // this.gain.gain.linearRampToValueAtTime(0.1, this.sfx.ctx.currentTime + 0.1);
+  this.pitchOsc.start();
+  this.gainOsc.start();
+};
+
+Sounds.Warble.prototype.stop = function() {
+  let t = this.soon();
+  this.gain.gain.linearRampToValueAtTime(0, t);
+  this.pitchOsc.stop(t);
+  this.gainOsc.stop(t);
+};
+
+Sounds.Warble.prototype.soon = function() {
+  return this.sfx.ctx.currentTime + 0.04;
+};
+
+Sounds.Warble.prototype.setGain = function(x) {
+  this.gain.gain.linearRampToValueAtTime(x, this.soon());
+};
+
+Sounds.Warble.prototype.setPitchFreq = function(x) {
+  this.pitchOsc.frequency.linearRampToValueAtTime(x, this.soon());
+};
+
+Sounds.Warble.prototype.setWubFreq = function(x) {
+  this.gainOsc.frequency.linearRampToValueAtTime(x, this.soon());
+};
+
+Sounds.Warble.prototype.setWorldPos = function(worldPos) {
+  let screenPos = this.sounds.getScreenPosForWorldPos(worldPos);
+  this.panner.setPosition(screenPos.x, screenPos.y, 0);
 };

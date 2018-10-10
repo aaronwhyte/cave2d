@@ -348,6 +348,7 @@ Inventory Management UX part 2
   v sound (from game 4)
   - splash?
 
+v laser warm-up sound
 
 - enemies can be assigned items from editor
   - need overlap detection when adding spirits to the world. Treat initial overlaps as collision?
