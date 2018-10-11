@@ -473,18 +473,18 @@ Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1
 Splashes.prototype.addGrabSplash = function(now, pos, rad, dir) {
   let v = Vec2d.alloc();
   let color = Vec4.alloc(1, 1, 1, 0);
-  let baseRad = rad * 1.2;
-  let addRad = rad * 1.5;
-  let dur = 6;
+  let baseRad = rad * 1.5;
+  let addRad = rad * 1.2;
+  let dur = 7;
   let p0t0 = Vec4.alloc();
   let p1t0 = Vec4.alloc();
   let p0t1 = Vec4.alloc();
   let p1t1 = Vec4.alloc();
   let center = Vec4.alloc().setXYFromVec2d(pos);
 
-  let n = 8;
+  let n = 7;
   for (let i = 0; i < n; i++) {
-    let a = Math.PI * 2 * i / n + dir;
+    let a = Math.PI * 2 * (i + 0.5) / n + dir;
     p0t0.setXYFromVec2d(v.setXY(0, baseRad).rot(a)).add(center);
     p1t0.setXYFromVec2d(v.setXY(0, baseRad + addRad * 0.5).rot(a)).add(center);
     p0t1.setXYFromVec2d(v.setXY(0, baseRad + addRad).rot(a)).add(center);
