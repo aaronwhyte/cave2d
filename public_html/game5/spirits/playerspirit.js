@@ -350,12 +350,13 @@ PlayerSpirit.prototype.die = function() {
  * @param {Vec2d} collisionVec
  * @param {Number} mag the magnitude of the collision, kinda?
  * @param {Body} otherBody
- * @param {Spirit} otherSpirit
+ * @param {BaseSpirit} otherSpirit
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
   if (!this.inventory.size() && otherSpirit && otherSpirit.isItem) {
     // collect the item
     let item = otherSpirit;
+    this.screen.splashes.addGrabSplash(this.now(), this.getBodyPos(), this.getBody().rad, this.getBodyAngPos());
     item.disembody();
     if (this.inventory.size()) {
       this.inventory.get(0).unwield();

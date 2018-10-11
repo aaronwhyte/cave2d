@@ -340,31 +340,22 @@ v remove action1 button
 
 v enemies drop weapons when killed
 
-Inventory Management UX part 2
-- pickup effects
-  v sound (from game 4)
-  - splash (from game 4)
-- voluntary player drop effects (not for death or disarm drops)
-  v sound (from game 4)
-  - splash?
-
 v laser warm-up sound
+
+v change to just two players on keyboard
+  v mouse plus z x s
+  v arrows plus . / ;
+
+Inventory Management UX part 2
+v pickup effects
+  v sound (from game 4)
+  v splash (from game 4)
+v voluntary player drop effects (not for death or disarm drops)
+  v sound (from game 4)
+  x splash?
 
 - enemies can be assigned items from editor
   - need overlap detection when adding spirits to the world. Treat initial overlaps as collision?
-
-
-- change to just two players on keyboard
-  - mouse plus z x s
-  - arrows plus . / ;
-
-- Plasma gun
-  - A0: fast ray that does splash damage on impact
-  - A1: Slow plasma orb that floats without friction and does splash damage on impact
-  - Shoot the plasma orb with anything plasma and it does a super plasma explosion
-  - plasma ray
-  - plasma orb
-  - plasma shrapnel
 
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items!
 
@@ -439,11 +430,12 @@ v weapons show up on carriers? Need special weapon graphics.
   v telegraph laser fire
     v sparks
     v add delay
-    - warm-up sound!
+    v warm-up sound!
   - shotgun - short wide, a bit bouncy, infrequent
   - missile - seeking, avoids walls. Infrequent!
   - rocket - dumb, infrequent, explosive
   - saw - really short, constant, cuts through walls, pulls you forward a bit
+  - railgun. Instant but very slow recharge
 
 - health framework
   - damage is floating point

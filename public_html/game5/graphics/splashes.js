@@ -431,3 +431,71 @@ Splashes.prototype.addScanSplash = function(now, pos, vel, rad, dist) {
   this.splasher.addCopy(s);
 };
 
+/**
+ * @param {number} now
+ * @param {number} duration
+ *
+ * @param {Vec4} p0t0
+ * @param {Vec4} p1t0
+ * @param {number} rt0
+ *
+ * @param {Vec4} p0t1
+ * @param {Vec4} p1t1
+ * @param {number} rt1
+ *
+ * @param {Vec4} color
+ */
+Splashes.prototype.addMovingLine = function(now, duration, p0t0, p1t0, rt0, p0t1, p1t1, rt1, color) {
+  let s = this.splash;
+  s.reset(Splashes.Type.SCAN);
+  s.modelId = ModelId.CYLINDER_32;
+
+  s.startTime = now;
+  s.duration = duration;
+
+  s.startPose.pos.set(p0t0);
+  s.endPose.pos.set(p0t1);
+  s.startPose.scale.setXYZ(rt0, rt0, 1);
+  s.endPose.scale.setXYZ(rt1, rt1, 1);
+
+  s.startPose2.pos.set(p1t0);
+  s.endPose2.pos.set(p1t1);
+  s.startPose2.scale.setXYZ(rt0, rt0, 1);
+  s.endPose2.scale.setXYZ(rt1, rt1, 1);
+
+  s.startColor.set(color);
+  s.endColor.set(color);
+
+  this.splasher.addCopy(s);
+};
+
+
+Splashes.prototype.addGrabSplash = function(now, pos, rad, dir) {
+  let v = Vec2d.alloc();
+  let color = Vec4.alloc(1, 1, 1, 0);
+  let baseRad = rad * 1.2;
+  let addRad = rad * 1.5;
+  let dur = 6;
+  let p0t0 = Vec4.alloc();
+  let p1t0 = Vec4.alloc();
+  let p0t1 = Vec4.alloc();
+  let p1t1 = Vec4.alloc();
+  let center = Vec4.alloc().setXYFromVec2d(pos);
+
+  let n = 8;
+  for (let i = 0; i < n; i++) {
+    let a = Math.PI * 2 * i / n + dir;
+    p0t0.setXYFromVec2d(v.setXY(0, baseRad).rot(a)).add(center);
+    p1t0.setXYFromVec2d(v.setXY(0, baseRad + addRad * 0.5).rot(a)).add(center);
+    p0t1.setXYFromVec2d(v.setXY(0, baseRad + addRad).rot(a)).add(center);
+    p1t1.set(p0t1);
+    this.addMovingLine(now, dur, p0t0, p1t0, 0.15, p0t1, p1t1, 0.05, color);
+  }
+  v.free();
+  color.free();
+  p0t0.free();
+  p1t0.free();
+  p0t1.free();
+  p1t1.free();
+  center.free()
+};
