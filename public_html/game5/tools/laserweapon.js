@@ -10,7 +10,7 @@ LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
 
 LaserWeapon.WARM_UP_TIME = 12;
-LaserWeapon.COOL_DOWN_TIME = 4.5;
+LaserWeapon.COOL_DOWN_TIME = 6;
 
 LaserWeapon.SCHEMA = {
   0: "type",
@@ -125,8 +125,8 @@ LaserWeapon.prototype.onDraw = function() {
   }
 
   let shouldWarble = this.buttonDown &&
-      this.now() - this.lastFireTime > LaserWeapon.COOL_DOWN_TIME &&
-      this.now() - this.lastButtonDownTime < LaserWeapon.WARM_UP_TIME;
+      // this.lastFireTime + LaserWeapon.COOL_DOWN_TIME < this.now() &&
+      this.now() < this.lastButtonDownTime + LaserWeapon.WARM_UP_TIME;
 
   if (this.warble && !shouldWarble) {
     this.warble.stop();
