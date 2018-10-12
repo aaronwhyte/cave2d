@@ -51,7 +51,7 @@ AntSpirit.SCHEMA = {
   0: "type",
   1: "id",
   2: "bodyId",
-  3: "color",
+  3: "color"
 };
 
 AntSpirit.factory = function(screen, pos, dir) {
