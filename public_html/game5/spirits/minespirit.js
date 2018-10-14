@@ -150,7 +150,7 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration, health) {
   spirit.damage = rad * 2;
   spirit.wallDamageMultiplier = 2;
   spirit.team = Team.NEUTRAL; // TODO configurable
-  spirit.trailDuration = 3.5;
+  spirit.trailDuration = 8;
   spirit.headRadFraction = 1;
   spirit.tailRadFraction = 0.1;
 

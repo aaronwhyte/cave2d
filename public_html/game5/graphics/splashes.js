@@ -271,10 +271,10 @@ Splashes.prototype.addBombExplosionSplash = function(now, pos, color) {
   let self = this;
   let particles, explosionRad, dirOffset, i, dir, dx, dy, duration;
 
-  function addSplash(x, y, dx, dy, duration, sizeFactor, delay) {
+  function addSplash(x, y, dx, dy, duration, sizeFactor) {
     s.reset();
     s.modelId = ModelId.CIRCLE_32;
-    s.startTime = now + (delay || 0) + 1;
+    s.startTime = now;
     s.duration = duration;
 
     s.startPose.pos.setXYZ(x, y, -Math.random());
@@ -285,23 +285,22 @@ Splashes.prototype.addBombExplosionSplash = function(now, pos, color) {
     s.endPose.scale.setXYZ(endRad, endRad, 1);
 
     s.startColor.set(color);
-    s.endColor.set(color).scale1(0.5);
+    s.endColor.set(color).scale1(0.25);
     self.splasher.addCopy(s);
   }
 
-  // inner smoke ring
+  // smoke
   particles = 12;
   explosionRad = 4.5;
   dirOffset = 2 * Math.PI * Math.random();
   for (i = 0; i < particles; i++) {
-    let r = Math.random() * 0.4 + (1 - 0.4 / 2);
-    duration = 30 * r;
+    duration = 15 + Math.random() * 20;
     dir = dirOffset + 2 * Math.PI * i / particles;
     dir = dirOffset + 2 * Math.PI * (i + Math.random() * 0.5) / particles;
-    let distRand = Math.random() * 0.1 + 0.9;
+    let distRand = Math.random() * 0.5 + 0.5;
     dx = Math.sin(dir) * explosionRad * distRand;
     dy = Math.cos(dir) * explosionRad * distRand;
-    addSplash(x + dx * 0.25, y + dy * 0.25, dx, dy, duration, explosionRad/2);
+    addSplash(x + dx * 0.2, y + dy * 0.2, dx, dy, duration, 3);
   }
 };
 
