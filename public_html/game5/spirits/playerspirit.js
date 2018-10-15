@@ -39,18 +39,18 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-PlayerSpirit.SPEED = 1.1;
-PlayerSpirit.TRACTION = 0.2;
+PlayerSpirit.SPEED = 1.5;
+PlayerSpirit.TRACTION = 0.1;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
 PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
-PlayerSpirit.FRICTION_TIMEOUT = 1;
+PlayerSpirit.FRICTION_TIMEOUT = 0.5;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
 PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
-PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI / 2;
+PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI * 0.2;
 PlayerSpirit.ANGULAR_FRICTION = 0.01;
 
 PlayerSpirit.SCHEMA = {
@@ -226,7 +226,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
         curr2dest += 2 * Math.PI;
       }
       let angAccel = Spring.getLandingAccel(
-          -curr2dest, this.getBodyAngVel(), PlayerSpirit.AIM_ANGPOS_ACCEL, PlayerSpirit.FRICTION_TIMEOUT * 2);
+          -curr2dest, this.getBodyAngVel(), PlayerSpirit.AIM_ANGPOS_ACCEL, PlayerSpirit.FRICTION_TIMEOUT * 1.5);
       this.addBodyAngVel(angAccel);
 
       let angularFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3), duration);
