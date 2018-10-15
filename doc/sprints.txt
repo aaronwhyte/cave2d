@@ -354,33 +354,41 @@ v voluntary player drop effects (not for death or disarm drops)
   v sound (from game 4)
   x splash?
 
-- enemies can be assigned items from editor
-  - need overlap detection when adding spirits to the world. Treat initial overlaps as collision?
+empty-handed player actions
+- A: tractor beam with locking like game4, but it pulls stuff all the way into contact w player
+  - tractor-beam tool, for encapsulation and re-usabilitiy
+  - player has one that only works when they're empty-handed
+- B: Directed repulsor burst, aka force-push?
 
-- Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items!
-
-- hearing sense (for stealth elements of the game, if any)
-  - SoundHistory class
-    - backed by circular buffer
-    - records are SoundEntry objs, pre-allocated to fill buffer
-      - type
-      - location
-      - time
-      - radius (simulates effect of volume)
-    - lastSoundId starts at -1 and goes up by one each time
-  - Hearing module for spirits
-    - Spirits remember their own lastSoundId
-    - when active but busy (target locked) they just set this.lastSoundId = soundHistory.lastSoundId
-    - when just becoming active, also ignore prev sounds
-    - when bored, process unprocessed ones in order
-      - scoring: priority(type) - (age + distance / speed)
-    - copy the fields for their last highest
-    - each "bored" enemy
-      - looks at ALL of them
-        - decides on most attractive
-        - copies the record to a local cache
-      - tends towards sound until its score is 0 or until it is forgotton
+hearing sense for enemies
+* Sounds are instantaneous.
+* Critters process all the sounds they heard since the last time they heard sounds
+- SoundHistory class, with one instance per world
+  - backed by circular buffer big enough that we avoid dropping sounds. Big is fine.
+  - records are SoundEntry objs, pre-allocated to fill buffer
+    - type - what sound was it? Used for prioritization among sounds when picking things to react to.
+    - position
+    - time
+    - loudness
+    - soundId - unique identifier
+      - SOundHistory nextId starts at 1 and goes up by one each time
+- Hearing module for "hunting" spirits
+  - Spirit remembers processedSoundId, for the last soundId they processed. This only goes up.
+  - spirit states, for making sense of hearing sense:
+    - passive, ignoring sounds
+    - active
+      - searching, using sound to pick a distination location
+      - target locked, so maybe ignoring sounds unless they're very high priority
+  - when just becoming active, ignore prev sounds
+  - when bored, process unprocessed global ones in order
+    - first filter by dist and loudness. Could the critter have heard it?
+    - then, for winner-takes-all, take higest score: priority(type) * timeToTarget(which is distance / speed))
+  - There's an idea of "remembered sound", like one that is being searched for. It's priority score fades with age.
+  - copy the fields for the winner
+   - head towards the winning sound until its score is 0 or until it is forgotton?
   - if a target is seen, that clears the hearing record
+
+- Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items
 
 - more enemy behaviors
   - smarter shooters try to keep some dist between selves and target
@@ -435,7 +443,6 @@ v weapons show up on carriers? Need special weapon graphics.
   - missile - seeking, avoids walls. Infrequent!
   - rocket - dumb, infrequent, explosive
   - saw - really short, constant, cuts through walls, pulls you forward a bit
-  - railgun. Instant but very slow recharge
 
 - health framework
   - damage is floating point
@@ -481,6 +488,20 @@ Impl concepts:
     - positive but proportional to... dist?: lead the target
     - if negative, try to get to where target would have come from - go behind target
 
+Containers can be assigned items from editor
+* Cannot be a surprise when you run the level. Needs to be a real obvious editor thing.
+* Explicitly pick up item (not container?) and hold it over container.
+* On-hover cue lets you know something can happen there.
+* When it happens, it's an explicit state change.
+  * Needs undo/redo support
+* Needs opposite gesture, to remove an item from a container
+  * don'ts:
+    * grab-n-drag is probably not right, because it makes dragging containers hard
+    * I hate long-press
+  * How about a tap of the current "drag" button opens a details pane on the highlighted item?
+    That opens up tons of possibilities! Dropping inventory, tweaking stats, flipping bits, getting deets.
+* Congrats you reinvented crafting.
+
 - selection
   - pseudomode button
     - reveals pack contents on screen (doesn't scroll yet but it could happen)
@@ -504,5 +525,4 @@ multi-button tool support
   - dim unused slots but leave circle or something
 
 - level generation
-
 
