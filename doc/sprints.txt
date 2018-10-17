@@ -358,7 +358,33 @@ empty-handed player actions
 - A: tractor beam with locking like game4, but it pulls stuff all the way into contact w player
   - tractor-beam tool, for encapsulation and re-usabilitiy
   - player has one that only works when they're empty-handed
-- B: Directed repulsor burst, aka force-push?
+- B: shield?
+  - game2 graphics
+  - game2 sound, but duration and volume proportional to recent damage taken plus collisions
+  - needs drawback so you don't hold it down constantly
+    - makes a loud noise that attracts enemies?
+    - lowers traction?
+    - makes you bouncy? Kind of a good thing too sometimes, some prop interaction! YES.
+    - Only absorbs 75% of damage plus some inconvenient thing?
+    - prevents healing?
+  - it absorbs damage and sheds it at like 10%/frame
+    - but you can release that early and it bursts out as slightly damaging particles? Or a turbo-boost?
+  - can't pick up items while it is activated
+
+bumper prop
+- base spirit
+- different sizes, sounds (notes), colors.
+- infinite mass
+
+life management
+- life indicator - shadow selves that drag behind you! Or simpler indicators.
+- life-up stuff. Items you can eat? So you have to drop one, get the life, consume it, and pick up the weapon again.
+  - good because you can use life-ups to unlock some other biz like statues of centipedes?
+- eating life-up while full gives you temporary life boost and rapid-fire? Very Fracas2.
+- health framework
+  - damage is floating point
+  - health regenerates from fraction to whole number
+  - healing jumps you up by exactly 1
 
 hearing sense for enemies
 * Sounds are instantaneous.
@@ -390,12 +416,44 @@ hearing sense for enemies
 
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items
 
-- more enemy behaviors
-  - smarter shooters try to keep some dist between selves and target
-  - weapon dictates willingness to fire off-center
-    - laser: dead-on only
-    - shotgun: wider is better
-  - lead target! Fire where the target is going
+more enemies and weapons and behaviors
+- smarter shooters try to keep some dist between selves and target
+- weapon dictates willingness to fire off-center
+  - laser: dead-on only?
+  - shotgun: wider is better
+- lead target! Fire where the target is going
+
+weapons as the player sees them
+v slow shooter
+v medium shooter - machine-gunny
+  v became rogue gun - medium, narrowish, very bouncy, low damage
+v laser 1.0 - long, straight, no bounce, frequent
+v telegraph laser fire
+  v sparks
+  v add delay
+  v warm-up sound!
+- shotgun - short wide, a bit bouncy, infrequent
+- missile - seeking, avoids walls. Infrequent!
+- rocket - dumb, infrequent, explosive
+- ice for my frosty baby
+- slime
+- egg spawn
+- acid orbs
+- saw - really short, constant, cuts through walls, pulls you forward a bit
+
+
+
+V .............. V
+V                V
+|   WELCOME TO   |
+| THE MAYBE ZONE |
+|                |
+V .............. V
+
+more props:
+- blipper
+- portal
+- repulsor cannon
 
 - Encapsulate behavior: WallAvoidance
   - uses ClearPathScanner
@@ -415,51 +473,6 @@ hearing sense for enemies
         - randomly freak out instead since plans didn't work.
       - if unstressed, wanderers turn randomly
       - stress decreases thrust, to avoid ramming into walls
-
-
-V .............. V
-V                V
-|   WELCOME TO   |
-| THE LATER ZONE |
-|                |
-V .............. V
-
-
-v weapons show up on carriers? Need special weapon graphics.
-  * iconic grx for every weapon
-  * show it outside of creature, in fire direction
-  * show it inside weapon-pickup bubble
-
-- weapons
-  v slow shooter
-  v medium shooter - machine-gunny
-    v became rogue gun - medium, narrowish, very bouncy, low damage
-  v laser 1.0 - long, straight, no bounce, frequent
-  v telegraph laser fire
-    v sparks
-    v add delay
-    v warm-up sound!
-  - shotgun - short wide, a bit bouncy, infrequent
-  - missile - seeking, avoids walls. Infrequent!
-  - rocket - dumb, infrequent, explosive
-  - saw - really short, constant, cuts through walls, pulls you forward a bit
-
-- health framework
-  - damage is floating point
-  - health regenerates from fraction to whole number
-  - healing jumps you up by exactly 1
-This solves some problems:
-1) Not all weapons have to be all-or-nothing damage, (though maybe that would still be a good forced simplification)
-2) There can still be specific health-based modes
-3) Folks aren't walking around within a hair's-breadth of dying.
-4) Player is encouraged to concentrate attacks on an enemy long enough to drop it at least one full HP.
-5) health can still be displayed with integer chunks
-
-Fun props:
-- bumper
-- blipper
-- portal
-- repulsor cannon
 
 - target-intercept behavior, like tractor beam
   - search for target
@@ -487,6 +500,16 @@ Impl concepts:
     - zero:  dumbly go to where target is now.
     - positive but proportional to... dist?: lead the target
     - if negative, try to get to where target would have come from - go behind target
+
+
+
+
+V ............... V
+V                 V
+| NOT THIS GAME,  |
+|    BUCKAROO     |
+|                 |
+V ............... V
 
 Containers can be assigned items from editor
 * Cannot be a surprise when you run the level. Needs to be a real obvious editor thing.
