@@ -377,14 +377,22 @@ bumper prop
 - infinite mass
 
 life management
-- life indicator - shadow selves that drag behind you! Or simpler indicators.
-- life-up stuff. Items you can eat? So you have to drop one, get the life, consume it, and pick up the weapon again.
-  - good because you can use life-ups to unlock some other biz like statues of centipedes?
-- eating life-up while full gives you temporary life boost and rapid-fire? Very Fracas2.
+- life indicator
+  - re-use aim indicator, or perhaps the player's face(!) to indicate health.
+  - Use duplicate models sheared across Z, and occlusion, to draw three segments:
+    - current health
+    - recent health lost health
 - health framework
   - damage is floating point
   - health regenerates from fraction to whole number
   - healing jumps you up by exactly 1
+
+life props
+- life-up stuff. Items you can eat? So you have to drop one, get the life, consume it, and pick up the weapon again.
+  - good because you can use life-ups to unlock some other biz like statues of centipedes?
+- eating life-up while full gives you temporary life boost and rapid-fire? Very Fracas2.
+
+touch sense for enemies - turn to face source of damage
 
 hearing sense for enemies
 * Sounds are instantaneous.
@@ -415,6 +423,7 @@ hearing sense for enemies
   - if a target is seen, that clears the hearing record
 
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items
+
 
 more enemies and weapons and behaviors
 - smarter shooters try to keep some dist between selves and target
@@ -454,6 +463,10 @@ more props:
 - blipper
 - portal
 - repulsor cannon
+
+Emotions on player faces? I would like that.
+
+
 
 - Encapsulate behavior: WallAvoidance
   - uses ClearPathScanner
@@ -502,8 +515,6 @@ Impl concepts:
     - if negative, try to get to where target would have come from - go behind target
 
 
-
-
 V ............... V
 V                 V
 | NOT THIS GAME,  |
@@ -547,5 +558,15 @@ multi-button tool support
 - only show correct number of action buttons
   - dim unused slots but leave circle or something
 
-- level generation
-
+level generation
+- labyrinth
+- gridscape
+- tetronimoscape
+- woods
+- town
+- chambers and halls
+- caverns
+- tunnel
+- edge
+- tower
+- islands
