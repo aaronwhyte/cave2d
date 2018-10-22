@@ -41,9 +41,10 @@ IndicatorSpirit.factory = function(screen, pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.9;
+  b.elasticity = 0.99;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
-  b.rad = 0.7;
+  b.rad = 2;
   b.hitGroup = screen.getHitGroups().NEUTRAL;
   b.mass = (Math.PI * 4/3) * b.rad * b.rad * b.rad * density;
   b.moi = b.mass * b.rad * b.rad / 2;
