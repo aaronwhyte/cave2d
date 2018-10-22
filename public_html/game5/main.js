@@ -5,7 +5,7 @@ function main() {
   let basePath = ['game5'];
   app = new PlayApp('Game 5', basePath,
       'graphics/shaders/vertex-shader.glsl', 'graphics/shaders/fragment-shader.glsl',
-      'adventures/test1.json',
+      'adventures/test2.json',
       PlayLevelPage);
   app.start();
 }
