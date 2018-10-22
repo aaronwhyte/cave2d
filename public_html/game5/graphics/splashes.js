@@ -498,3 +498,49 @@ Splashes.prototype.addGrabSplash = function(now, pos, rad, dir) {
   p1t1.free();
   center.free()
 };
+
+Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, resultFraction) {
+  if (Math.random() < 0.5) return;
+  let s = this.splash;
+  s.reset(Splashes.Type.SCAN, null);
+  s.modelId = ModelId.CIRCLE_32;
+
+  s.startTime = now;
+
+  let x = pos.x;
+  let y = pos.y;
+  let hit = resultFraction >= 0;
+  let d = hit ? resultFraction : 1;
+  let dx = vel.x * d;
+  let dy = vel.y * d;
+
+  s.duration = 5 + Math.random();
+  let startDistFrac = 1;
+  let endRad = rad / 2;
+  let startRad = rad * 1.1;
+  let endDistFrac;
+  if (pulling) {
+    // fast pulling splashes
+    endDistFrac = resultFraction;
+    startRad = rad * (1.5 - resultFraction / 2);
+  } else if (hit && Math.random() < 0.9) {
+    // hit but not pulling - boring surface glitter
+    endDistFrac = 1 - 0.05 * Math.random();
+  } else {
+    // miss, and some non-hit-pulls. glitter field particle drifting towards player
+    startDistFrac = Math.random() * 0.7 + 0.3;
+    endDistFrac = startDistFrac - 0.05;
+  }
+  s.startPose.pos.setXYZ(x + dx * startDistFrac, y + dy * startDistFrac, 1);
+  s.endPose.pos.setXYZ(x + dx * endDistFrac, y + dy * endDistFrac, 0);
+  s.startPose.scale.setXYZ(startRad, startRad, 1);
+  s.endPose.scale.setXYZ(endRad, endRad, 1);
+
+  s.startPose.rotZ = 0;
+  s.endPose.rotZ = 0;
+
+  s.startColor.setXYZ(1, 1, 1);
+  s.endColor.setXYZ(0.5, 0.5, 0.5);
+
+  this.splasher.addCopy(s);
+};

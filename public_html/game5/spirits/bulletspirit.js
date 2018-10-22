@@ -48,6 +48,9 @@ BulletSpirit.prototype.reset = function(screen) {
 
   this.wallDamageMultiplier = 1;
 
+  // When force is applied to a bullet, detect that while drawing and update the trail
+  this.lastVel = new Vec2d();
+
   return this;
 };
 
@@ -72,6 +75,13 @@ BulletSpirit.SCHEMA = {
 };
 
 BulletSpirit.prototype.onDraw = function(world, renderer) {
+  if (this.getBody()) {
+    let vel = this.getBodyVel();
+    if (!vel.equals(this.lastVel)) {
+      // Somebody's bullet-bending!
+      this.addTrailSegment();
+    }
+  }
   this.drawTrail();
 };
 
@@ -80,6 +90,7 @@ BulletSpirit.prototype.addTrailSegment = function() {
   let body = this.getBody();
   this.rad = body.rad;
   this.trail.append(now, this.getBodyPos(), body.vel);
+  this.lastVel.set(body.vel);
 };
 
 BulletSpirit.prototype.drawTrail = function() {

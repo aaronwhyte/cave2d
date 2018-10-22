@@ -31,8 +31,6 @@ function PlayerSpirit(screen) {
   // combat
   this.toughness = 3;
   // this.damage = 1;
-
-  this.inventory = new Inventory();
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -87,6 +85,11 @@ PlayerSpirit.factory = function(screen, pos, dir) {
   spirit.bodyId = world.addBody(b);
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
+
+  let tb = new TractorBeam(screen);
+  spirit.tractorBeam = tb;
+  screen.world.addSpirit(tb);
+  tb.wield(spiritId);
   return spiritId;
 };
 
@@ -144,7 +147,11 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   while (e = controlMap.nextEvent()) {
     if (e.controlName === ControlName.DROP_ITEM) {
       if (e.bool) {
-        this.dropItem(0.5, 0, 0)
+        if (this.item) {
+          this.dropItem(0.5, 0, 0);
+        } else {
+          // TODO shield
+        }
       }
     } else if (e.controlName === ControlName.ACTION_0) {
       if (tool) {
@@ -197,10 +204,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
 };
 
 PlayerSpirit.prototype.getSelectedTool = function() {
-  if (this.inventory.size()) {
-    return this.inventory.get(0);
-  }
-  return null;
+  return this.item || this.tractorBeam;
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -331,14 +335,14 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 };
 
 PlayerSpirit.prototype.explode = function() {
-  let offset = 2 * Math.PI * Math.random();
-  for (let i = 0, n = this.inventory.size(); i < n; i++) {
-    this.dropItem(0.5 + Math.random(), offset + i * 2 * Math.PI / (n + Math.random() + 0.5), Math.random() - 0.5);
+  if (this.item) {
+    this.dropItem(0.5 + Math.random(), 2 * Math.PI * Math.random(), Math.random() - 0.5);
   }
   let pos = this.getBodyPos();
   this.sounds.playerExplode(pos);
   this.screen.splashes.addPlayerExplosionSplash(this.now(), pos, this.color);
   this.screen.removeByBodyId(this.bodyId);
+  this.screen.removeSpiritId(this.tractorBeam.id);
 };
 
 PlayerSpirit.prototype.die = function() {
@@ -353,17 +357,15 @@ PlayerSpirit.prototype.die = function() {
  * @param {BaseSpirit} otherSpirit
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  if (!this.inventory.size() && otherSpirit && otherSpirit.isItem) {
+  if (!this.item && otherSpirit && otherSpirit.isItem) {
     // collect the item
     let item = otherSpirit;
     this.screen.splashes.addGrabSplash(this.now(), this.getBodyPos(), this.getBody().rad, this.getBodyAngPos());
     item.disembody();
-    if (this.inventory.size()) {
-      this.inventory.get(0).unwield();
-    }
-    this.inventory.add(item);
+    this.item =item;
     item.wield(this.id);
     this.screen.sounds.getItem(this.getBodyPos());
+    this.tractorBeam.unwield();
   } else {
     // regular collision
     BaseSpirit.prototype.onHitOther.apply(this, arguments);
@@ -371,17 +373,16 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
 };
 
 PlayerSpirit.prototype.dropItem = function(speed, opt_angleOffset, opt_angVelOffset) {
-  if (!this.inventory.size()) return;
+  if (!this.item) return;
   let angleOffset = opt_angleOffset || 0;
   let angVelOffset = opt_angVelOffset || 0;
-  let item = this.inventory.remove(0);
+  let item = this.item;
+  this.item = null;
   let dir = this.getBodyAngPos();
   let vel = this.vec2d.setXY(0, speed).rot(dir + angleOffset).add(this.getBodyVel());
   item.embody(this.getBodyPos(), vel, dir, this.getBodyAngVel() + angVelOffset);
 
-  // auto-wield the next item
-  if (this.inventory.size()) {
-    this.inventory.get(0).wield(this.id);
-  }
+  this.tractorBeam.wield(this.id);
+
   this.screen.sounds.dropItem(this.getBodyPos());
 };
