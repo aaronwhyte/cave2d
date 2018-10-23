@@ -337,6 +337,8 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
 PlayerSpirit.prototype.explode = function() {
   if (this.item) {
     this.dropItem(0.5 + Math.random(), 2 * Math.PI * Math.random(), Math.random() - 0.5);
+  } else {
+    this.tractorBeam.unwield();
   }
   let pos = this.getBodyPos();
   this.sounds.playerExplode(pos);

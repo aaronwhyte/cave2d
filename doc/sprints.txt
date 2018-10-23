@@ -355,9 +355,10 @@ v voluntary player drop effects (not for death or disarm drops)
   x splash?
 
 empty-handed player actions
-- A: tractor beam with locking like game4, but it pulls stuff all the way into contact w player
-  - tractor-beam tool, for encapsulation and re-usabilitiy
-  - player has one that only works when they're empty-handed
+v A: tractor beam with locking like game4, but it pulls stuff all the way into contact w player
+  v tractor-beam tool, for encapsulation and re-usabilitiy
+  v player has one that only works when they're empty-handed
+  v sound
 - B: shield?
   - game2 graphics
   - game2 sound, but duration and volume proportional to recent damage taken plus collisions

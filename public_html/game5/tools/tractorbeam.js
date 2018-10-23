@@ -17,6 +17,11 @@ function TractorBeam(screen) {
   this.scanVel = Vec2d.alloc();
   this.forceVec = Vec2d.alloc();
   this.forcePos = Vec2d.alloc();
+  this.smoothDist = 2;
+  this.candidateRF = 2;
+  this.unsuitableRF = 2;
+
+  this.warble = null;
 }
 TractorBeam.prototype = new BaseTool();
 TractorBeam.prototype.constructor = TractorBeam;
@@ -25,6 +30,35 @@ TractorBeam.WARM_UP_TIME = 0;
 TractorBeam.COOL_DOWN_TIME = 0.7;
 
 TractorBeam.prototype.onDraw = function() {
+  let shouldWarble = this.buttonDown;
+
+  if (!shouldWarble && this.warble) {
+    this.warble.stop();
+    this.warble = null;
+  }
+  if (shouldWarble && !this.warble) {
+    this.warble = new Sounds.Warble(this.screen.sounds, 'sine', 'square');
+    this.warble.setGain(0.1);
+    this.warble.start();
+  }
+
+  let d = Math.min(this.candidateRF, this.unsuitableRF, 1);
+  let c = this.candidateRF < 2;
+
+  if (this.warble) {
+    this.warble.setGain(0.2 * (1 - 0.2 * d));
+    this.warble.setWorldPos(this.getBodyPos());
+    this.warble.setWubFreq((c ? 30 : 20) - 10 * d);
+    this.warble.setPitchFreq(140 + (c ? 440 - 440 * Math.sqrt(d) : 0));
+  }
+};
+
+TractorBeam.prototype.setButtonDown = function(b) {
+  BaseTool.prototype.setButtonDown.call(this, b);
+  if (!b && this.warble) {
+    this.warble.stop();
+    this.warble = null;
+  }
 };
 
 TractorBeam.prototype.getNextFireTime = function() {
@@ -69,9 +103,6 @@ TractorBeam.prototype.fire = function() {
     this.scanVel.setXY(0, this.scanDist * (1 - radUnit * radUnit)).rot(radUnit * this.scanFanAngle + aimAngle);
     this.scan();
   }
-  // TODO
-  // this.seekHum.setWorldPos(this.getBodyPos());
-  // this.seekHum.setDistanceFraction(Math.min(this.unsuitableRF + 0.5, this.candidateRF));
 };
 
 TractorBeam.prototype.scan = function() {
