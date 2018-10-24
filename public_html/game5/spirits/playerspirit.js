@@ -359,7 +359,7 @@ PlayerSpirit.prototype.die = function() {
  * @param {BaseSpirit} otherSpirit
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  if (!this.item && otherSpirit && otherSpirit.isItem) {
+  if (!this.item && otherSpirit && otherSpirit.isItem && this.tractorBeam.buttonDown) {
     // collect the item
     let item = otherSpirit;
     this.screen.splashes.addGrabSplash(this.now(), this.getBodyPos(), this.getBody().rad, this.getBodyAngPos());

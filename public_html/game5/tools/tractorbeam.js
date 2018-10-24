@@ -7,9 +7,9 @@
 function TractorBeam(screen) {
   BaseTool.call(this, screen);
   this.scanRad = 0.3;
-  this.scanFanAngle = Math.PI / 4;
-  this.scanForce = 0.4;
-  this.scanDist = 25;
+  this.scanFanAngle = Math.PI / 3;
+  this.scanForce = 0.3;
+  this.scanDist = 30;
 
   this.seekTargetBodyId = 0;
   
@@ -17,7 +17,6 @@ function TractorBeam(screen) {
   this.scanVel = Vec2d.alloc();
   this.forceVec = Vec2d.alloc();
   this.forcePos = Vec2d.alloc();
-  this.smoothDist = 2;
   this.candidateRF = 2;
   this.unsuitableRF = 2;
 
@@ -27,7 +26,7 @@ TractorBeam.prototype = new BaseTool();
 TractorBeam.prototype.constructor = TractorBeam;
 
 TractorBeam.WARM_UP_TIME = 0;
-TractorBeam.COOL_DOWN_TIME = 0.7;
+TractorBeam.COOL_DOWN_TIME = 0.6;
 
 TractorBeam.prototype.onDraw = function() {
   let shouldWarble = this.buttonDown;
@@ -42,14 +41,15 @@ TractorBeam.prototype.onDraw = function() {
     this.warble.start();
   }
 
-  let d = Math.min(this.candidateRF, this.unsuitableRF, 1);
-  let c = this.candidateRF < 2;
-
   if (this.warble) {
-    this.warble.setGain(0.2 * (1 - 0.2 * d));
+    let d = Math.min(this.candidateRF, this.unsuitableRF, 1);
+    let r = Math.sqrt(d);
+    let c = this.candidateRF < 2;
+
+    this.warble.setGain(0.2 * (1 - r * 0.5));
     this.warble.setWorldPos(this.getBodyPos());
     this.warble.setWubFreq((c ? 30 : 20) - 10 * d);
-    this.warble.setPitchFreq(140 + (c ? 440 - 440 * Math.sqrt(d) : 0));
+    this.warble.setPitchFreq(100 + (c ? 330 - 330 * r : 0));
   }
 };
 
@@ -59,6 +59,7 @@ TractorBeam.prototype.setButtonDown = function(b) {
     this.warble.stop();
     this.warble = null;
   }
+  this.seekTargetBodyId = 0;
 };
 
 TractorBeam.prototype.getNextFireTime = function() {
@@ -91,21 +92,21 @@ TractorBeam.prototype.fire = function() {
           .scaleToLength(this.scanDist * (1 - radUnit * radUnit))
           .rot(3 * seekBody.rad * (Math.random() - 0.5) / this.scanDist);
       this.scanPos.set(this.getBodyPos());
-      this.scan();
+      this.scan(true);
     } else {
       this.seekTargetBodyId = null;
     }
-  } else {
-    // random scan
-    let aimAngle = wielder.getAimVec().angle();
-    let radUnit = Math.random() - 0.5;
-    this.scanPos.setXY(radUnit * this.getBody().rad, 0).rot(aimAngle).add(this.getBodyPos());
-    this.scanVel.setXY(0, this.scanDist * (1 - radUnit * radUnit)).rot(radUnit * this.scanFanAngle + aimAngle);
-    this.scan();
   }
+  // random scan
+  let aimAngle = wielder.getAimVec().angle();
+  let radUnit = Math.random() - 0.5;
+  this.scanPos.setXY(radUnit * this.getBody().rad, 0).rot(aimAngle).add(this.getBodyPos());
+  this.scanVel.setXY(0, this.scanDist * (1 - radUnit * radUnit)).rot(radUnit * this.scanFanAngle + aimAngle);
+  let forceful = !seekBody;
+  this.scan(forceful);
 };
 
-TractorBeam.prototype.scan = function() {
+TractorBeam.prototype.scan = function(forceful) {
   let now = this.now();
   let rf = this.scanWithVel(HitGroups.NEUTRAL, this.scanPos, this.scanVel, this.scanRad);
   let pulling = false;
@@ -126,21 +127,23 @@ TractorBeam.prototype.scan = function() {
           this.candidateRF = rf;
           this.seekTargetBodyId = foundBody.id;
         }
-        // pull it closer
-        this.forcePos.set(this.scanVel).scale(rf).add(this.scanPos).scale(0.1)
-            .add(foundBody.getPosAtTime(now, this.vec2d)).scale(1 / (1 + 0.1));
-        this.forceVec.set(this.scanVel).scaleToLength(-(1 - rf * 0.9) * this.scanForce);
-        foundBody.applyForceAtWorldPosAndTime(this.forceVec, this.forcePos, now);
+        if (forceful) {
+          // pull it closer
+          this.forcePos.set(this.scanVel).scale(rf).add(this.scanPos).scale(0.1)
+              .add(foundBody.getPosAtTime(now, this.vec2d)).scale(1 / (1 + 0.1));
+          this.forceVec.set(this.scanVel).scaleToLength(-(1 - rf * 0.8) * this.scanForce);
+          foundBody.applyForceAtWorldPosAndTime(this.forceVec, this.forcePos, now);
 
-        // Apply opposite force to wielder
-        // this.getBody().applyForceAtWorldPosAndTime(this.forceVec.scale(-1), this.getBodyPos(), now);
+          // Apply opposite force to wielder
+          this.getBody().applyForceAtWorldPosAndTime(this.forceVec.scale(-1), this.getBodyPos(), now);
 
-        this.screen.splashes.addTractorSeekSplash(now, true, this.scanPos, this.scanVel, this.scanRad, rf);
-        pulling = true;
+          this.screen.splashes.addTractorSeekSplash(now, true, this.scanPos, this.scanVel, this.scanRad, rf);
+          pulling = true;
+        }
       }
     }
   }
-  if (!pulling) {
+  if (forceful && !pulling) {
     this.screen.splashes.addTractorSeekSplash(now, false, this.scanPos, this.scanVel, this.scanRad, rf);
   }
 };
