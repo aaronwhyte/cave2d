@@ -390,6 +390,15 @@ Body.prototype.applyForceAtWorldPosAndTime = function(force, worldPoint, now) {
   }
 
   // linear acceleration
+  this.applyForceAtTime(force, now);
+};
+
+/**
+ * Applies force to the center of the object - no torque
+ * @param force
+ * @param now
+ */
+Body.prototype.applyForceAtTime = function(force, now) {
   if (this.mass && this.mass !== Infinity) {
     let newVel = Vec2d.alloc()
         .set(force)

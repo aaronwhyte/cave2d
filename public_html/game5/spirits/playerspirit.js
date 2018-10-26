@@ -23,6 +23,7 @@ function PlayerSpirit(screen) {
   this.vec2d = new Vec2d();
   this.stickVec = new Vec2d();
   this.vec2d2 = new Vec2d();
+  this.forceVec = new Vec2d();
   this.vec4 = new Vec4();
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
@@ -364,7 +365,7 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
     let item = otherSpirit;
     this.screen.splashes.addGrabSplash(this.now(), this.getBodyPos(), this.getBody().rad, this.getBodyAngPos());
     item.disembody();
-    this.item =item;
+    this.item = item;
     item.wield(this.id);
     this.screen.sounds.getItem(this.getBodyPos());
     this.tractorBeam.unwield();
@@ -381,8 +382,17 @@ PlayerSpirit.prototype.dropItem = function(speed, opt_angleOffset, opt_angVelOff
   let item = this.item;
   this.item = null;
   let dir = this.getBodyAngPos();
-  let vel = this.vec2d.setXY(0, speed).rot(dir + angleOffset).add(this.getBodyVel());
-  item.embody(this.getBodyPos(), vel, dir, this.getBodyAngVel() + angVelOffset);
+  item.embody(this.getBodyPos(),
+      this.getBodyVel(),
+      dir + angleOffset,
+      this.getBodyAngVel() + angVelOffset);
+
+  let itemBody = item.getBody();
+  let now = this.now();
+  this.forceVec.setXY(0, speed * itemBody.mass).rot(dir);
+  itemBody.applyForceAtTime(this.forceVec, now);
+  this.getBody().applyForceAtTime(this.forceVec.scale(-1), now);
+
 
   this.tractorBeam.wield(this.id);
 
