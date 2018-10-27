@@ -10,9 +10,18 @@ function PlayerSpirit(screen) {
 
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   this.aimColor = new Vec4();
+  this.shieldColor = new Vec4();
 
   this.aim = new Vec2d(0, 1);
   this.destAim = new Vec2d();
+
+  this.shielded = false;
+  this.toolButtonDown = false;
+
+  this.lastDamage = 0;
+  this.lastDamageTime = 0;
+  this.lastShieldedDamage = 0;
+  this.lastShieldedDamageTime = 0;
 
   this.accel = new Vec2d();
   this.keyMult = PlayerSpirit.KEY_MULT_ADJUST;
@@ -39,7 +48,13 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 PlayerSpirit.PLAYER_RAD = 0.99;
 
 PlayerSpirit.SPEED = 1.5;
+
 PlayerSpirit.TRACTION = 0.1;
+PlayerSpirit.SHIELD_TRACTION = 0.01;
+
+PlayerSpirit.NORMAL_ELASTICITY = 0.25;
+PlayerSpirit.SHIELD_ELASTICTY = 0.99;
+PlayerSpirit.SHIELD_ABSORPTION = 0.9;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
 PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
@@ -110,7 +125,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   b.turnable = true;
   b.moi = b.mass * b.rad * b.rad / 2;
   b.grip = 0.3;
-  b.elasticity = 0.25;
+  b.elasticity = PlayerSpirit.NORMAL_ELASTICITY;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
   b.spiritId = this.id;
   return b;
@@ -147,22 +162,24 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   let e;
   while (e = controlMap.nextEvent()) {
     if (e.controlName === ControlName.DROP_ITEM) {
-      if (e.bool) {
-        if (this.item) {
+      if (this.item) {
+        if (e.bool) {
           this.dropItem(0.5, 0, 0);
-        } else {
-          // TODO shield
         }
+      } else {
+        this.setShielded(e.bool);
+        this.updateToolButton();
       }
     } else if (e.controlName === ControlName.ACTION_0) {
+      this.toolButtonDown = e.bool;
       if (tool) {
-        tool.setButtonDown(e.bool);
+        this.updateToolButton();
       }
     }
   }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
-  let speed = PlayerSpirit.SPEED;
+  let speed = PlayerSpirit.SPEED + Math.min(PlayerSpirit.SPEED, this.shielded ? 0 : this.getShieldedDamageFaded());
 
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
@@ -183,7 +200,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     speed = 0;
   }
 
-  let traction = PlayerSpirit.TRACTION;
+  let traction = this.shielded ? PlayerSpirit.SHIELD_TRACTION : PlayerSpirit.TRACTION;
   // Half of traction's job is to stop you from sliding in the direction you're already going.
   this.accel.set(playerBody.vel).scale(-traction);
 
@@ -206,6 +223,10 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
 
 PlayerSpirit.prototype.getSelectedTool = function() {
   return this.item || this.tractorBeam;
+};
+
+PlayerSpirit.prototype.updateToolButton = function() {
+  this.getSelectedTool().setButtonDown(this.toolButtonDown && !this.shielded);
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -304,7 +325,7 @@ PlayerSpirit.prototype.handleKeyboardAim = function(stick, stickMag, reverseness
   }
 };
 
-PlayerSpirit.prototype.onDraw = function(world, renderer) {
+PlayerSpirit.prototype.onDraw = function() {
   let body = this.getBody();
   if (!body) return;
   let bodyPos = this.getBodyPos();
@@ -323,7 +344,7 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
   p2 = this.vec2d2;
   let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
   let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
-  rad = 0.15;
+  rad = 0.4;
   p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
   p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
   this.modelMatrix.toIdentity()
@@ -333,6 +354,28 @@ PlayerSpirit.prototype.onDraw = function(world, renderer) {
       .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
       .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
   this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
+
+  // shield
+  if (this.shielded) {
+    this.updateShieldWarble();
+
+    let d = this.getShieldedDamageFaded();
+    this.shieldColor.setRGBA(
+        Math.max(0, d * 2 - 1),
+        1 - d ,
+        1,
+        1);
+    let r = Math.min(2, d) + 1 - Math.abs(1 - (d * 10) % 1);
+    let rad = PlayerSpirit.PLAYER_RAD + r * 0.05;
+    let rad2 = PlayerSpirit.PLAYER_RAD * 1.3 + r * 0.2;
+    this.modelMatrix.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.9))
+        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+    this.modelMatrix2.toIdentity()
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.9))
+        .multiply(this.mat44.toScaleOpXYZ(rad2, rad2, 1));
+    this.screen.drawModel(ModelId.TUBE_32, this.shieldColor, this.modelMatrix, this.modelMatrix2);
+  }
 };
 
 PlayerSpirit.prototype.explode = function() {
@@ -341,6 +384,7 @@ PlayerSpirit.prototype.explode = function() {
   } else {
     this.tractorBeam.unwield();
   }
+  this.setShielded(false);
   let pos = this.getBodyPos();
   this.sounds.playerExplode(pos);
   this.screen.splashes.addPlayerExplosionSplash(this.now(), pos, this.color);
@@ -369,9 +413,12 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
     item.wield(this.id);
     this.screen.sounds.getItem(this.getBodyPos());
     this.tractorBeam.unwield();
+    this.setShielded(false);
   } else {
     // regular collision
     BaseSpirit.prototype.onHitOther.apply(this, arguments);
+    this.lastHitTime = this.now();
+    this.lastHitMag = mag;
   }
 };
 
@@ -393,8 +440,65 @@ PlayerSpirit.prototype.dropItem = function(speed, opt_angleOffset, opt_angVelOff
   itemBody.applyForceAtTime(this.forceVec, now);
   this.getBody().applyForceAtTime(this.forceVec.scale(-1), now);
 
-
   this.tractorBeam.wield(this.id);
 
   this.screen.sounds.dropItem(this.getBodyPos());
+};
+
+PlayerSpirit.prototype.setShielded = function(s) {
+  if (s === this.shielded) return;
+  this.shielded = s;
+  if (this.shielded) {
+    // clear any lingering absorption damage
+    this.lastShieldedDamage = 0;
+  }
+  this.getBody().elasticity = s ? PlayerSpirit.SHIELD_ELASTICTY : PlayerSpirit.NORMAL_ELASTICITY;
+  if (s && !this.shieldWarble) {
+    this.shieldWarble = new Sounds.Warble(this.screen.sounds, 'square', 'sine');
+    this.shieldWarble.start();
+    this.updateShieldWarble();
+  } else if (this.shieldWarble) {
+    this.shieldWarble.stop();
+    this.shieldWarble = null;
+  }
+
+  // Unshielding while absorbing will hurt you? Is that "fun"?
+  // if (!this.shielded && this.health > 0) {
+  //   this.applyDamage(this.getShieldedDamageFaded());
+  // }
+};
+
+PlayerSpirit.prototype.updateShieldWarble = function() {
+  let maxD = 5;
+  let d = Math.min(maxD, Math.sqrt(1 + this.getShieldedDamageFaded() / (1 - PlayerSpirit.SHIELD_ABSORPTION)) - 1);
+  this.shieldWarble.setGain(0.05 + Math.min(2, d / maxD));
+  this.shieldWarble.setWorldPos(this.getBodyPos());
+  let baseFreq = 80 - d * 9;
+  this.shieldWarble.setPitchFreq(baseFreq);
+  this.shieldWarble.setWubFreq((8 + d * 0.5) * baseFreq * (1 + 0.01 * (d + 0.01) * (Math.random() - 0.5)));
+};
+
+PlayerSpirit.prototype.applyDamage = function(d) {
+  let absorb = this.shielded ? PlayerSpirit.SHIELD_ABSORPTION * d : 0;
+  let damage = d - absorb;
+  BaseSpirit.prototype.applyDamage.call(this, damage);
+  this.lastDamage = damage + this.getDamageFaded();
+  this.lastDamageTime = this.now();
+
+  if (this.shielded) {
+    this.lastShieldedDamage = absorb + this.getShieldedDamageFaded();
+    this.lastShieldedDamageTime = this.now();
+  }
+};
+
+PlayerSpirit.prototype.getDamageFaded = function() {
+  return Math.max(0, this.lastDamage - Math.pow(0.1 * (this.now() - this.lastDamageTime), 2));
+};
+
+PlayerSpirit.prototype.getShieldedDamageFaded = function() {
+  return Math.max(0, this.lastShieldedDamage - Math.pow(0.1 * (this.now() - this.lastShieldedDamageTime), 1.5));
+};
+
+PlayerSpirit.prototype.getFriction = function() {
+  return this.shielded ? Game5PlayScreen.FRICTION * 0.05 : Game5PlayScreen.FRICTION;
 };

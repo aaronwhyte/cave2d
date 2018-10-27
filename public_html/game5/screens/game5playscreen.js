@@ -346,9 +346,9 @@ Game5PlayScreen.prototype.playerSpawn = function(slot) {
   let spirit = this.world.spirits[spiritId];
 
   slot.setSpirit(spirit);
-  let r = 1 - 0.5 * Math.random();
-  let g = 1 - 0.5 * Math.random();
-  let b = 1 - 0.5 * Math.random();
+  let r = 0.8 - 0.5 * Math.random();
+  let g = 0.8 - 0.2 * Math.random();
+  let b = 0.2 + 0.6 * Math.random();
   spirit.setColorRGB(r, g, b);
 
   let body = spirit.getBody();
