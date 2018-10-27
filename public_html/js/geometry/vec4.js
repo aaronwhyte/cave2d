@@ -116,6 +116,20 @@ Vec4.prototype.setXYFromVec2d = function(vec2d) {
   return this;
 };
 
+Vec4.prototype.rotZ = function(rads) {
+  if (!rads) {
+    // no rotation
+    return this;
+  }
+  let sin = Math.sin(rads);
+  let cos = Math.cos(rads);
+  let nx = cos * this.v[0] + sin * this.v[1];
+  let ny = -sin * this.v[0] + cos * this.v[1];
+  this.v[0] = nx;
+  this.v[1] = ny;
+  return this;
+};
+
 Vec4.prototype.getIndex = function(i) {
   return this.v[i];
 };

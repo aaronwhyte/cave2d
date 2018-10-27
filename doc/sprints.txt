@@ -366,30 +366,28 @@ v B: shield?
     x makes a loud noise that attracts enemies?
     v lowers traction?
     v makes you bouncy? Kind of a good thing too sometimes, some prop interaction! YES.
-    v Only absorbs 75% of damage plus some inconvenient thing?
+    v Only absorbs XX% of damage plus some inconvenient thing?
     x prevents healing?
   v it absorbs damage and sheds it at like 10%/frame
-    x but you can release that early and it bursts out as slightly damaging particles? Or a turbo-boost?
+    v but you can release that early
+      x and it bursts out as slightly damaging particles?
+      v Or a turbo-boost?
   v can't pick up items while it is activated
   v can't tractor-beam either
 
-- regular player pain noise, one-shots
-
-bumper prop
-- base spirit
-- different sizes, sounds (notes), colors.
-- infinite mass
-
 life management
+- regular player pain noise, one-shots
 - life indicator
   - re-use aim indicator, or perhaps the player's face(!) to indicate health.
   - Use duplicate models sheared across Z, and occlusion, to draw three segments:
     - current health
     - recent health lost health
-- health framework
-  - damage is floating point
-  - health regenerates from fraction to whole number
-  - healing jumps you up by exactly 1
+- health regenerates from fraction to next whole number
+
+bumper prop
+- base spirit
+- different sizes, sounds (notes), colors.
+- infinite mass
 
 life props
 - life-up stuff. Items you can eat? So you have to drop one, get the life, consume it, and pick up the weapon again.

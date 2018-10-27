@@ -544,3 +544,23 @@ Splashes.prototype.addTractorSeekSplash = function(now, pulling, pos, vel, rad, 
 
   this.splasher.addCopy(s);
 };
+
+Splashes.prototype.addShieldBoostSplash = function(now, pos, vel, damage, color) {
+  let s = this.splash;
+  s.reset(Splashes.Type.NOTE);
+  s.modelId = ModelId.CIRCLE_32;
+  s.startTime = now + 0.5;
+  let d5 = Math.min(5, damage) / 5;
+  let rad = PlayerSpirit.PLAYER_RAD * 0.9;
+  s.duration = 15;
+  s.startPose.pos.setXYZ(pos.x, pos.y, 0.99);
+  s.endPose.pos.setXYZ(pos.x, pos.y, 0.999);
+
+  s.startPose.scale.setXYZ(rad, rad, 1);
+  s.endPose.scale.setXYZ(rad * 0.01, rad * 0.01, 1);
+
+  s.startColor.set(color).scale1(0.3 + Math.min(0.7, d5 * 5));
+  s.endColor.set(s.startColor).scale1(0.5);
+
+  this.splasher.addCopy(s);
+};
