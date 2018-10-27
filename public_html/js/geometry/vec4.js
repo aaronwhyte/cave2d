@@ -22,7 +22,7 @@ Vec4.prototype.reset = function(opt_x, opt_y, opt_z, opt_w) {
   this.v[0] = opt_x || 0;
   this.v[1] = opt_y || 0;
   this.v[2] = opt_z || 0;
-  this.v[3] = (typeof opt_w != 'undefined' ? opt_w : 1);
+  this.v[3] = (typeof opt_w !== 'undefined' ? opt_w : 1);
   return this;
 };
 
@@ -59,8 +59,8 @@ Vec4.prototype.transform = function(matrix) {
   Vec4.temp.reset();
   // In this case we want even "w" to be 0. It will get a 1 if the math works out.
   Vec4.temp.v[3] = 0;
-  for (var row = 0; row < 4; row++) {
-    for (var col = 0; col < 4; col++) {
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
       Vec4.temp.v[row] += this.v[col] * matrix.m[col + 4*row];
     }
   }
@@ -68,7 +68,7 @@ Vec4.prototype.transform = function(matrix) {
 };
 
 Vec4.prototype.add = function(that) {
-  for (var i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i++) {
     this.v[i] += that.v[i];
   }
   return this;
@@ -82,14 +82,14 @@ Vec4.prototype.addXYZ = function(x, y, z) {
 };
 
 Vec4.prototype.subtract = function(that) {
-  for (var i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i++) {
     this.v[i] -= that.v[i];
   }
   return this;
 };
 
 Vec4.prototype.set = function(that) {
-  for (var i = 0; i < 4; i++) {
+  for (let i = 0; i < 4; i++) {
     this.v[i] = that.v[i];
   }
   return this;
@@ -142,14 +142,14 @@ Vec4.prototype.getW = Vec4.prototype.getA = function() {
 };
 
 Vec4.prototype.scale1 = function(s) {
-  for (var i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i++) {
     this.v[i] *= s;
   }
   return this;
 };
 
 Vec4.prototype.scaleVec4 = function(that) {
-  for (var i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i++) {
     this.v[i] *= that.v[i];
   }
   return this;
@@ -163,22 +163,22 @@ Vec4.prototype.scaleXYZ = function(x, y, z) {
 };
 
 Vec4.prototype.abs = function() {
-  for (var i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i++) {
     this.v[i] = Math.abs(this.v[i]);
   }
   return this;
 };
 
 Vec4.prototype.sign = function() {
-  for (var i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i++) {
     this.v[i] = Math.sign(this.v[i]);
   }
   return this;
 };
 
 Vec4.prototype.dot = function(that) {
-  var dot = 0;
-  for (var i = 0; i < 3; i++) {
+  let dot = 0;
+  for (let i = 0; i < 3; i++) {
     dot += this.v[i] * that.v[i];
   }
   return dot;
@@ -196,7 +196,7 @@ Vec4.prototype.magnitude = function() {
  * Scales to the desired length, or 0 if the vector is {0, 0}
  */
 Vec4.prototype.scaleToLength = function(length) {
-  var m = this.magnitude();
+  let m = this.magnitude();
   if (m) {
     this.scale1(length / m);
   }
@@ -207,7 +207,7 @@ Vec4.prototype.scaleToLength = function(length) {
  * If the magnitude is over the max, this scales it down.
  */
 Vec4.prototype.clipToMaxLength = function(maxLength) {
-  var m = this.magnitude();
+  let m = this.magnitude();
   if (m > maxLength) {
     this.scale1(maxLength / m);
   }
@@ -215,7 +215,7 @@ Vec4.prototype.clipToMaxLength = function(maxLength) {
 };
 
 Vec4.prototype.setToInterpolation = function(a, b, t) {
-  for (var i = 0; i < 4; i++) {
+  for (let i = 0; i < 4; i++) {
     this.v[i] = a.v[i] * (1-t) + b.v[i] * t;
   }
   return this;
@@ -223,8 +223,8 @@ Vec4.prototype.setToInterpolation = function(a, b, t) {
 
 
 Vec4.prototype.equals = function(that, opt_slop) {
-  var slop = opt_slop || 0;
-  for (var i = 0; i < 4; i++) {
+  let slop = opt_slop || 0;
+  for (let i = 0; i < 4; i++) {
     if (Math.abs(this.v[i] - that.v[i]) > slop) return false;
   }
   return true;
@@ -258,7 +258,7 @@ Vec4.midpoint = function(a, b) {
 };
 
 Vec4.prototype.projectOnto = function(that) {
-  var coef = this.dot(that) / that.dot(that);
+  let coef = this.dot(that) / that.dot(that);
   return this.set(that).scale(coef);
 };
 
@@ -267,7 +267,7 @@ Vec4.prototype.toJSON = function() {
 };
 
 Vec4.prototype.setFromJSON = function(json) {
-  for (var i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i++) {
     this.v[i] = json[i];
   }
 };

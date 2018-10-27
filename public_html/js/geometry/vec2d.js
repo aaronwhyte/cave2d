@@ -141,7 +141,7 @@ Vec2d.prototype.angle = function() {
 };
 
 Vec2d.prototype.rot90Right = function() {
-  var tmp = this.x;
+  let tmp = this.x;
   this.x = -this.y;
   this.y = tmp;
   return this;
@@ -152,10 +152,10 @@ Vec2d.prototype.rot = function(rads) {
     // no rotation
     return this;
   }
-  var sin = Math.sin(rads);
-  var cos = Math.cos(rads);
-  var nx = cos * this.x + sin * this.y;
-  var ny = -sin * this.x + cos * this.y;
+  let sin = Math.sin(rads);
+  let cos = Math.cos(rads);
+  let nx = cos * this.x + sin * this.y;
+  let ny = -sin * this.x + cos * this.y;
   this.x = nx;
   this.y = ny;
   return this;
@@ -186,14 +186,14 @@ Vec2d.prototype.magnitude = function() {
 };
 
 Vec2d.prototype.distanceSquared = function(that) {
-  var dx = this.x - that.x;
-  var dy = this.y - that.y;
+  let dx = this.x - that.x;
+  let dy = this.y - that.y;
   return dx * dx + dy * dy;
 };
 
 Vec2d.prototype.distance = function(that) {
-  var dx = this.x - that.x;
-  var dy = this.y - that.y;
+  let dx = this.x - that.x;
+  let dy = this.y - that.y;
   return Math.sqrt(dx * dx + dy * dy);
 };
 
@@ -205,7 +205,7 @@ Vec2d.magnitude = function(x, y) {
  * Scales to the desired length, or 0 if the vector is {0, 0}
  */
 Vec2d.prototype.scaleToLength = function(length) {
-  var m = this.magnitude();
+  let m = this.magnitude();
   if (m) {
     this.scale(length / m);
   }
@@ -216,7 +216,7 @@ Vec2d.prototype.scaleToLength = function(length) {
  * If the magnitude is over the max, this scales it down.
  */
 Vec2d.prototype.clipToMaxLength = function(maxLength) {
-  var m = this.magnitude();
+  let m = this.magnitude();
   if (m > maxLength) {
     this.scale(maxLength / m);
   }
@@ -255,7 +255,7 @@ Vec2d.dirs = [
 
 // static func
 Vec2d.randDir = function() {
-  var dir = Vec2d.dirs[Math.floor(Math.random()*8)];
+  let dir = Vec2d.dirs[Math.floor(Math.random()*8)];
   return new Vec2d(dir.x, dir.y);
 };
 
@@ -283,20 +283,20 @@ Vec2d.midpoint = function(a, b) {
 };
 
 Vec2d.distance = function(x0, y0, x1, y1) {
-  var dx = x0 - x1;
-  var dy = y0 - y1;
+  let dx = x0 - x1;
+  let dy = y0 - y1;
   return Math.sqrt((dx * dx) + (dy * dy));
 };
 
 Vec2d.distanceSq = function(x0, y0, x1, y1) {
-  var dx = x0 - x1;
-  var dy = y0 - y1;
+  let dx = x0 - x1;
+  let dy = y0 - y1;
   return (dx * dx) + (dy * dy);
 };
 
 Vec2d.prototype.projectOnto = function(that) {
-  var denom = that.dot(that);
-  var coef;
+  let denom = that.dot(that);
+  let coef;
   if (denom) {
     coef = this.dot(that) / denom;
     return this.set(that).scale(coef);
