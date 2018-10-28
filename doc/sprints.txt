@@ -375,6 +375,10 @@ v B: shield?
   v can't pick up items while it is activated
   v can't tractor-beam either
 
+- fix persistent-sound bugs
+  - bug: wubs continue when paused
+  - bug: wubs go forever after exiting level
+
 life management
 - regular player pain noise, one-shots
 - life indicator
