@@ -58,6 +58,7 @@ PlayerSpirit.SHIELD_TRACTION = 0.01;
 PlayerSpirit.NORMAL_ELASTICITY = 0.25;
 PlayerSpirit.SHIELD_ELASTICTY = 0.99;
 PlayerSpirit.SHIELD_ABSORPTION = 0.95;
+PlayerSpirit.MAX_SHIELD_DAMAGE = 5;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
 PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
@@ -348,7 +349,7 @@ PlayerSpirit.prototype.onDraw = function() {
 
   let shieldDamage = this.getShieldedDamageFaded();
   let shieldColor = this.shieldColor.setRGBA(
-      Math.max(0, Math.min(4, shieldDamage * 2 - 1) / 4),
+      Math.max(0, Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, shieldDamage * 2 - 1) / PlayerSpirit.MAX_SHIELD_DAMAGE),
       Math.max(0, Math.min(1, 1 - shieldDamage)),
       1, 1);
 
@@ -387,7 +388,7 @@ PlayerSpirit.prototype.onDraw = function() {
   }
 
   // shield boost
-  if (!this.shielded && shieldDamage > 0 && now - this.boostSplashTime >= 2 - Math.min(1, shieldDamage / 4)) {
+  if (!this.shielded && shieldDamage > 0 && now - this.boostSplashTime >= 2 - shieldDamage / PlayerSpirit.MAX_SHIELD_DAMAGE) {
     this.boostSplashTime = now;
     this.screen.splashes.addShieldBoostSplash(now, bodyPos, this.getBodyVel(), shieldDamage, shieldColor);
   }
@@ -481,16 +482,15 @@ PlayerSpirit.prototype.setShielded = function(s) {
 };
 
 PlayerSpirit.prototype.updateShieldWarble = function() {
-  let maxD = 5;
   let base = this.getShieldedDamageFaded() + (this.shielded ? this.getHitMagFaded() : 0);
-  let d = Math.min(maxD, Math.sqrt(1 + base / (1 - PlayerSpirit.SHIELD_ABSORPTION)) - 1);
-  this.shieldWarble.setGain(0.05 + Math.min(2, d / maxD));
+  let d = Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, Math.sqrt(1 + base / (1 - PlayerSpirit.SHIELD_ABSORPTION)) - 1);
+  this.shieldWarble.setGain(0.05 + Math.min(2, d / PlayerSpirit.MAX_SHIELD_DAMAGE));
   this.shieldWarble.setWorldPos(this.getBodyPos());
   let baseFreq = 80 - d * 9;
   this.shieldWarble.setPitchFreq(baseFreq);
 
   this.shieldWarble.setWubFreq(
-      ((this.shielded ? 8 : 10 + this.getBodyVel().magnitude()) + d * 0.5) *
+      ((this.shielded ? 8 : (10 + this.getBodyVel().magnitude())) + d * 0.5) *
       baseFreq *
       (1 + 0.01 * (d + 0.01) * (Math.random() - 0.5)));
 };
@@ -503,7 +503,7 @@ PlayerSpirit.prototype.applyDamage = function(d) {
   this.lastDamageTime = this.now();
 
   if (this.shielded) {
-    this.lastShieldedDamage = absorb + this.getShieldedDamageFaded();
+    this.lastShieldedDamage = Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, absorb + this.getShieldedDamageFaded());
     this.lastShieldedDamageTime = this.now();
   }
 };
@@ -513,7 +513,7 @@ PlayerSpirit.prototype.getDamageFaded = function() {
 };
 
 PlayerSpirit.prototype.getShieldedDamageFaded = function() {
-  return Math.max(0, this.lastShieldedDamage - Math.pow(0.06 * (this.now() - this.lastShieldedDamageTime), 2));
+  return Math.max(0, this.lastShieldedDamage - Math.pow(0.1 * (this.now() - this.lastShieldedDamageTime), 2));
 };
 
 PlayerSpirit.prototype.getHitMagFaded = function() {
