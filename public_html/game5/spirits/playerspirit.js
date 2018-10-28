@@ -186,7 +186,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   let speed = PlayerSpirit.SPEED;
   let shieldDamage = this.getShieldedDamageFaded();
   if (shieldDamage && !this.shielded) {
-    speed += Math.min(PlayerSpirit.SPEED, 1 + shieldDamage / 2);
+    speed += 1 + shieldDamage / PlayerSpirit.MAX_SHIELD_DAMAGE;
   }
 
   // gradually ramp up key-based speed, for low-speed control.
@@ -388,8 +388,7 @@ PlayerSpirit.prototype.onDraw = function() {
   }
 
   // shield boost
-  if (!this.shielded && shieldDamage > 0 && now - this.boostSplashTime >= 2 - shieldDamage / PlayerSpirit.MAX_SHIELD_DAMAGE) {
-    this.boostSplashTime = now;
+  if (!this.shielded && shieldDamage > 0) {
     this.screen.splashes.addShieldBoostSplash(now, bodyPos, this.getBodyVel(), shieldDamage, shieldColor);
   }
 
@@ -513,11 +512,11 @@ PlayerSpirit.prototype.getDamageFaded = function() {
 };
 
 PlayerSpirit.prototype.getShieldedDamageFaded = function() {
-  return Math.max(0, this.lastShieldedDamage - Math.pow(0.1 * (this.now() - this.lastShieldedDamageTime), 2));
+  return Math.max(0, this.lastShieldedDamage - Math.pow(0.08 * (this.now() - this.lastShieldedDamageTime), 2));
 };
 
 PlayerSpirit.prototype.getHitMagFaded = function() {
-  return Math.max(0, Math.min(5, this.lastHitMag)/5 - Math.pow(0.5 * (this.now() - this.lastHitTime), 2));
+  return Math.max(0, Math.min(5, this.lastHitMag) / 5 - Math.pow(0.5 * (this.now() - this.lastHitTime), 2));
 };
 
 PlayerSpirit.prototype.getFriction = function() {
