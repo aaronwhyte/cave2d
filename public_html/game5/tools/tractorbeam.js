@@ -94,7 +94,7 @@ TractorBeam.prototype.fire = function() {
       this.scanPos.set(this.getBodyPos());
       this.scan(true);
     } else {
-      this.seekTargetBodyId = null;
+      this.seekTargetBodyId = 0;
     }
   }
   // random scan

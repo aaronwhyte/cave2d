@@ -24,7 +24,6 @@ function PlayerSpirit(screen) {
   this.lastShieldedDamageTime = 0;
   this.lastHitMag = 0;
   this.lastHitTime = 0;
-  this.boostSplashTime = 0;
 
   this.accel = new Vec2d();
   this.keyMult = PlayerSpirit.KEY_MULT_ADJUST;
@@ -348,10 +347,12 @@ PlayerSpirit.prototype.onDraw = function() {
   this.screen.drawModel(this.getModelId(), this.color, this.modelMatrix, null);
 
   let shieldDamage = this.getShieldedDamageFaded();
+  let damageFrac = shieldDamage / PlayerSpirit.MAX_SHIELD_DAMAGE;
   let shieldColor = this.shieldColor.setRGBA(
-      Math.max(0, Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, shieldDamage * 2 - 1) / PlayerSpirit.MAX_SHIELD_DAMAGE),
-      Math.max(0, Math.min(1, 1 - shieldDamage)),
-      1, 1);
+      Math.min(1, 3 * damageFrac * damageFrac),
+      1 - Math.min(1, 3 * damageFrac),
+      1 - Math.min(1, damageFrac * damageFrac),
+      1);
 
   let p1, p2, rad;
 
@@ -375,8 +376,8 @@ PlayerSpirit.prototype.onDraw = function() {
   // shield
   if (this.shielded || shieldDamage > 0) {
     this.updateShieldWarble();
-    let r = Math.min(2, shieldDamage) + 1 - Math.abs(1 - (shieldDamage * 10) % 1);
-    let rad = PlayerSpirit.PLAYER_RAD + r * 0.05;
+    let r = damageFrac + 1 - Math.abs(1 - (shieldDamage * 10) % 1);
+    let rad = PlayerSpirit.PLAYER_RAD * 1.05;
     let rad2 = this.shielded ? PlayerSpirit.PLAYER_RAD * 1.3 + r * 0.2 : PlayerSpirit.PLAYER_RAD;
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.9))
@@ -428,7 +429,8 @@ PlayerSpirit.prototype.die = function() {
  * @param {BaseSpirit} otherSpirit
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  if (!this.item && otherSpirit && otherSpirit.isItem && this.tractorBeam.buttonDown) {
+  if (!this.item && otherSpirit && otherSpirit.isItem &&
+      this.tractorBeam.buttonDown && otherBody.id === this.tractorBeam.seekTargetBodyId) {
     // collect the item
     let item = otherSpirit;
     this.screen.splashes.addGrabSplash(this.now(), this.getBodyPos(), this.getBody().rad, this.getBodyAngPos());
@@ -474,7 +476,7 @@ PlayerSpirit.prototype.setShielded = function(s) {
   this.shielded = s;
   this.getBody().elasticity = s ? PlayerSpirit.SHIELD_ELASTICTY : PlayerSpirit.NORMAL_ELASTICITY;
   if (s && !this.shieldWarble) {
-    this.shieldWarble = new Sounds.Warble(this.screen.sounds, 'square', 'sine');
+    this.shieldWarble = new Sounds.Warble(this.screen.sounds, 'sawtooth', 'sawtooth');
     this.shieldWarble.start();
     this.updateShieldWarble();
   }
@@ -482,16 +484,12 @@ PlayerSpirit.prototype.setShielded = function(s) {
 
 PlayerSpirit.prototype.updateShieldWarble = function() {
   let base = this.getShieldedDamageFaded() + (this.shielded ? this.getHitMagFaded() : 0);
-  let d = Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, Math.sqrt(1 + base / (1 - PlayerSpirit.SHIELD_ABSORPTION)) - 1);
-  this.shieldWarble.setGain(0.05 + Math.min(2, d / PlayerSpirit.MAX_SHIELD_DAMAGE));
+  let d = Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, base);
+  this.shieldWarble.setGain(0.1 + Math.min(2, d));
   this.shieldWarble.setWorldPos(this.getBodyPos());
-  let baseFreq = 80 - d * 9;
+  let baseFreq = (300 - 30 * d) * (this.shielded ? 1 : 1.5);
   this.shieldWarble.setPitchFreq(baseFreq);
-
-  this.shieldWarble.setWubFreq(
-      ((this.shielded ? 8 : (10 + this.getBodyVel().magnitude())) + d * 0.5) *
-      baseFreq *
-      (1 + 0.01 * (d + 0.01) * (Math.random() - 0.5)));
+  this.shieldWarble.setWubFreq(100 - 10 * d);
 };
 
 PlayerSpirit.prototype.applyDamage = function(d) {
