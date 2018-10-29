@@ -284,6 +284,10 @@ Game5PlayScreen.prototype.startExit = function(pos) {
 
 Game5PlayScreen.prototype.exitLevel = function() {
   this.controller.exitLevel(this.createGameState());
+
+  for (let slotName in this.slots) {
+    this.slots[slotName].getControlMap().stopListening();
+  }
 };
 
 Game5PlayScreen.prototype.snapCameraToEntrance = function() {

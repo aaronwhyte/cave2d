@@ -57,25 +57,27 @@ PointerLockStick.prototype.setCanvas = function(canvas) {
 };
 
 PointerLockStick.prototype.startListening = function() {
+  if (this.listening) return;
   for (var i = 0; i < PointerLockStick.BROWSER_PREFIXES.length; i++) {
     var prefix = PointerLockStick.BROWSER_PREFIXES[i];
     document.addEventListener('on' + prefix + 'pointerlockchange', this.lockChangeListener, false);
     document.addEventListener(prefix + 'pointerlockerror', this.lockErrorListener, false);
   }
   document.body.addEventListener('mousemove', this.mouseMoveListener);
-  this.elem.addEventListener('click', this.clickListener);
+  document.body.addEventListener('click', this.clickListener);
   this.listening = true;
   return this;
 };
 
 PointerLockStick.prototype.stopListening = function() {
+  if (!this.listening) return;
   for (var i = 0; i < PointerLockStick.BROWSER_PREFIXES.length; i++) {
     var prefix = PointerLockStick.BROWSER_PREFIXES[i];
     document.removeEventListener('on' + prefix + 'pointerlockchange', this.lockChangeListener, false);
     document.removeEventListener(prefix + 'pointerlockerror', this.lockErrorListener, false);
   }
   document.body.removeEventListener('mousemove', this.mouseMoveListener);
-  this.elem.removeEventListener('click', this.clickListener);
+  document.body.removeEventListener('click', this.clickListener);
   this.release();
   this.listening = false;
   return this;
@@ -103,8 +105,8 @@ PointerLockStick.prototype.getVal = function(out) {
 };
 
 PointerLockStick.prototype.requestLock = function() {
-  if (this.elem.requestPointerLock && this.pointerLockAllowed) {
-    this.elem.requestPointerLock();
+  if (document.body.requestPointerLock && this.pointerLockAllowed) {
+    document.body.requestPointerLock();
   }
 };
 
@@ -122,7 +124,7 @@ PointerLockStick.prototype.onLockChange = function(e) {
 };
 
 PointerLockStick.prototype.onLockError = function(e) {
-  console.warn('PointerLockStick.onLockError: ' + e);
+  console.warn('PointerLockStick.onLockError: ', e);
 };
 
 PointerLockStick.prototype.onMouseMove = function(e) {

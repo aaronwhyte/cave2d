@@ -23,6 +23,7 @@ ExportPage.prototype = new Page();
 ExportPage.prototype.constructor = ExportPage;
 
 ExportPage.prototype.enterDoc = function() {
+  this.exitPointerLock();
   Page.prototype.enterDoc.call(this);
   if (this.rootNode) {
     throw Error('this.rootNode should be falsey, but it is ' + this.rootNode);

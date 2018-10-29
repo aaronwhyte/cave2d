@@ -379,7 +379,8 @@ v B: shield?
 v fix persistent-sound bugs
   v bug: wubs continue when paused
   v bug: wubs go forever after exiting level
-- retain mouse lock across levels
+v retain mouse lock across levels
+v fix weird locking when clocking the pause menu background on a leven other than the first
 </BUG BREAK>
 
 life management

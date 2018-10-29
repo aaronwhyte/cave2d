@@ -264,6 +264,10 @@ Game4PlayScreen.prototype.startExit = function(pos) {
 
 Game4PlayScreen.prototype.exitLevel = function() {
   this.controller.exitLevel(this.createGameState());
+
+  for (let slotName in this.slots) {
+    this.slots[slotName].getControlMap().stopListening();
+  }
 };
 
 Game4PlayScreen.prototype.snapCameraToEntrance = function() {

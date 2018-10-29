@@ -21,6 +21,7 @@ AdventureListPage.TOUCHDATE = 'TOUCHDATE';
 
 AdventureListPage.prototype.enterDoc = function() {
   Page.prototype.enterDoc.call(this);
+  this.exitPointerLock();
   if (this.rootNode) {
     throw Error('this.rootNode should be falsey, but it is ' + this.rootNode);
   }
