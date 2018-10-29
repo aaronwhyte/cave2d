@@ -13,6 +13,7 @@ VictoryPage.prototype.constructor = VictoryPage;
 
 VictoryPage.prototype.enterDoc = function() {
   Page.prototype.enterDoc.call(this);
+  this.exitPointerLock();
   var df = document.createDocumentFragment();
 
   this.div = Dom.ce('div', df);
