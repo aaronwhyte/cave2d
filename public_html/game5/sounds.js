@@ -20,9 +20,16 @@ Sounds.prototype.now = function() {
   return this.sfx.ctx.currentTime;
 };
 
-Sounds.prototype.getMasterGain = function(newGain) {
+Sounds.prototype.getMasterGain = function() {
   let gainNode = this.sfx.getMasterGain();
   return gainNode.gain.value;
+};
+
+/**
+ * Detatches all nodes which silences everything.
+ */
+Sounds.prototype.disconnect = function() {
+  this.sfx.disconnect();
 };
 
 Sounds.prototype.getScreenPosForWorldPos = function(worldPos) {

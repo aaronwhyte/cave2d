@@ -20,7 +20,7 @@ Sounds.prototype.now = function() {
   return this.sfx.ctx.currentTime;
 };
 
-Sounds.prototype.getMasterGain = function(newGain) {
+Sounds.prototype.getMasterGain = function() {
   let gainNode = this.sfx.getMasterGain();
   return gainNode.gain.value;
 };
@@ -30,6 +30,12 @@ Sounds.prototype.getScreenPosForWorldPos = function(worldPos) {
   return this.vec2d.setXY(this.vec4.v[0], this.vec4.v[1]);
 };
 
+/**
+ * Detatches all nodes which silences everything.
+ */
+Sounds.prototype.disconnect = function() {
+  this.sfx.disconnect();
+};
 
 Sounds.prototype.bwip = function(worldPos, now) {
   let screenPos = this.getScreenPosForWorldPos(worldPos);

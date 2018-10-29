@@ -27,6 +27,7 @@ function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans,
   this.mat44 = new Matrix44();
 
   this.sounds = new Sounds(sfx, this.viewMatrix);
+  this.oldMasterGain = this.sounds.getMasterGain();
   this.useFans = !!opt_useFans;
   this.isBatchDrawingSupported = !!opt_supportBatchDrawing;
   if (this.isBatchDrawingSupported) {
@@ -341,9 +342,12 @@ WorldScreen.prototype.setPaused = function(paused) {
   if (this.paused) {
     // pause
     this.showPauseMenu();
+    this.oldMasterGain = this.sounds.getMasterGain();
+    this.sounds.setMasterGain(0);
   } else {
     // resume
     this.hidePauseMenu();
+    this.sounds.setMasterGain(this.oldMasterGain);
     this.controller.requestAnimation();
   }
 };
@@ -438,6 +442,9 @@ WorldScreen.prototype.drawScreen = function(visibility, startTimeMs) {
 WorldScreen.prototype.destroyScreen = function() {
   this.setScreenListening(false);
   this.unloadLevel();
+  if (this.sounds.disconnect) {
+    this.sounds.disconnect();
+  }
   this.destroyed = true;
 };
 

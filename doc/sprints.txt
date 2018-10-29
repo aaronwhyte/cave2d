@@ -375,9 +375,12 @@ v B: shield?
   v can't pick up items while it is activated
   v can't tractor-beam either
 
-- fix persistent-sound bugs
-  - bug: wubs continue when paused
-  - bug: wubs go forever after exiting level
+<BUG BREAK>
+v fix persistent-sound bugs
+  v bug: wubs continue when paused
+  v bug: wubs go forever after exiting level
+- retain mouse lock across levels
+</BUG BREAK>
 
 life management
 - regular player pain noise, one-shots
@@ -398,7 +401,7 @@ life props
   - good because you can use life-ups to unlock some other biz like statues of centipedes?
 - eating life-up while full gives you temporary life boost and rapid-fire? Very Fracas2.
 
-touch sense for enemies - turn to face source of damage
+- touch sense for enemies - turn to face source of damage if not locked
 
 hearing sense for enemies
 * Sounds are instantaneous.
