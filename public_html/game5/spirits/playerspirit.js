@@ -165,14 +165,11 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   let e;
   while (e = controlMap.nextEvent()) {
     if (e.controlName === ControlName.DROP_ITEM) {
-      if (this.item) {
-        if (e.bool) {
-          this.dropItem(0.5, 0, 0);
-        }
-      } else {
-        this.setShielded(e.bool);
-        this.updateToolButton();
+      if (this.item && e.bool) {
+        this.dropItem(0.5, 0, 0);
       }
+      this.setShielded(e.bool);
+      this.updateToolButton();
     } else if (e.controlName === ControlName.ACTION_0) {
       this.toolButtonDown = e.bool;
       if (tool) {

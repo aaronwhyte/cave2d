@@ -380,10 +380,13 @@ v fix persistent-sound bugs
   v bug: wubs continue when paused
   v bug: wubs go forever after exiting level
 v retain mouse lock across levels
-v fix weird locking when clocking the pause menu background on a leven other than the first
+v fix weird locking when clocking the pause menu background on a level other than the first
+v break pointer lock on victory pages
 </BUG BREAK>
 
-life management
+v make shield more effective by instantly switching it on when dropping stuff.
+
+life management?
 - regular player pain noise, one-shots
 - life indicator
   - re-use aim indicator, or perhaps the player's face(!) to indicate health.
