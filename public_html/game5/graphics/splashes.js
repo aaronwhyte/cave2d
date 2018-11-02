@@ -262,6 +262,43 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   }
 };
 
+Splashes.prototype.addShieldShatterSplash = function(now, pos, color) {
+  let x = pos.x;
+  let y = pos.y;
+  let s = this.splash;
+
+  // sparkle particles
+  let particles = 30;
+  let r = Math.random();
+  for (let i = 0; i < particles; i++) {
+    let a = r + Math.PI * 2 * i / particles;
+    let dx = Math.sin(a);
+    let dy = Math.cos(a);
+
+    s.reset();
+    s.modelId = ModelId.SQUARE;
+    s.startTime = now;
+    s.duration = 15 + Math.random() * 20;
+
+    let rad = PlayerSpirit.PLAYER_RAD * 1.05;
+    let rad2 = PlayerSpirit.PLAYER_RAD * 1.3 + 0.1;
+    let avgRad = (rad2 + rad) / 2;
+    let d = avgRad + Math.random();
+    s.startPose.pos.setXYZ(x + dx * avgRad, y + dy * avgRad, -0.9);
+    s.endPose.pos.setXYZ(x + dx * d, y + dy * d, -0.9);
+    let startRad = (rad2 - rad);
+    let endRad = startRad * 0.1;
+    s.startPose.scale.setXYZ(startRad, startRad, 1);
+    s.endPose.scale.setXYZ(endRad, endRad, 1);
+    s.startPose.rotZ = -a;
+    s.endPose.rotZ = -a;
+
+    s.startColor.set(color);
+    s.endColor.set(color).scale1(0.8);
+    this.splasher.addCopy(s);
+  }
+};
+
 Splashes.prototype.addBombExplosionSplash = function(now, pos, color) {
   let x = pos.x;
   let y = pos.y;

@@ -387,23 +387,18 @@ v break pointer lock on victory pages
 v make shield more effective by instantly switching it on when dropping stuff.
 
 life management?
-- regular player pain noise, one-shots
-- life indicator
-  - re-use aim indicator, or perhaps the player's face(!) to indicate health.
-  - Use duplicate models sheared across Z, and occlusion, to draw three segments:
-    - current health
-    - recent health lost health
-- health regenerates from fraction to next whole number
+v No visible player health.
+v shield absorbs 100% damage
+v one hit kills player
+v Make shield shatter when faded shield damage maxes out, killing player and maybe throwing energy around.
+- nonfatal damage still needs grx and sound tho
+
+- giant spikeball enemy, rolls around killing whatev it hits, can't get into narrow spaces
 
 bumper prop
 - base spirit
 - different sizes, sounds (notes), colors.
 - infinite mass
-
-life props
-- life-up stuff. Items you can eat? So you have to drop one, get the life, consume it, and pick up the weapon again.
-  - good because you can use life-ups to unlock some other biz like statues of centipedes?
-- eating life-up while full gives you temporary life boost and rapid-fire? Very Fracas2.
 
 - touch sense for enemies - turn to face source of damage if not locked
 

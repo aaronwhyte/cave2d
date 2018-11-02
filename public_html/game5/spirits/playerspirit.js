@@ -41,8 +41,7 @@ function PlayerSpirit(screen) {
   this.modelMatrix2 = new Matrix44();
 
   // combat
-  this.toughness = 3;
-  // this.damage = 1;
+  this.toughness = 1;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -56,8 +55,8 @@ PlayerSpirit.SHIELD_TRACTION = 0.01;
 
 PlayerSpirit.NORMAL_ELASTICITY = 0.25;
 PlayerSpirit.SHIELD_ELASTICTY = 0.99;
-PlayerSpirit.SHIELD_ABSORPTION = 0.95;
-PlayerSpirit.MAX_SHIELD_DAMAGE = 5;
+PlayerSpirit.SHIELD_ABSORPTION = 1;
+PlayerSpirit.MAX_SHIELD_DAMAGE = 10;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
 PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
@@ -280,6 +279,11 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
       body.setVelAtTime(newVel, now);
       body.invalidatePath();
+
+      if (this.getShieldedDamageFaded() > 0.95 * PlayerSpirit.MAX_SHIELD_DAMAGE) {
+        this.screen.splashes.addShieldShatterSplash(now, this.getBodyPos(), this.shieldColor);
+        this.die();
+      }
     }
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
   }
@@ -482,11 +486,12 @@ PlayerSpirit.prototype.setShielded = function(s) {
 PlayerSpirit.prototype.updateShieldWarble = function() {
   let base = this.getShieldedDamageFaded() + (this.shielded ? this.getHitMagFaded() : 0);
   let d = Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, base);
+  let f = d / PlayerSpirit.MAX_SHIELD_DAMAGE;
   this.shieldWarble.setGain(0.1 + Math.min(2, d));
   this.shieldWarble.setWorldPos(this.getBodyPos());
-  let baseFreq = (300 - 30 * d) * (this.shielded ? 1 : 1.5);
+  let baseFreq = (300 - f * (250 + 40 * Math.random())) * (this.shielded ? 1 : 1.5);
   this.shieldWarble.setPitchFreq(baseFreq);
-  this.shieldWarble.setWubFreq(100 - 10 * d);
+  this.shieldWarble.setWubFreq(100 - f * (90 + 5 * Math.random()));
 };
 
 PlayerSpirit.prototype.applyDamage = function(d) {
@@ -507,7 +512,7 @@ PlayerSpirit.prototype.getDamageFaded = function() {
 };
 
 PlayerSpirit.prototype.getShieldedDamageFaded = function() {
-  return Math.max(0, this.lastShieldedDamage - Math.pow(0.08 * (this.now() - this.lastShieldedDamageTime), 2));
+  return Math.max(0, this.lastShieldedDamage - Math.pow(0.1 * (this.now() - this.lastShieldedDamageTime), 3));
 };
 
 PlayerSpirit.prototype.getHitMagFaded = function() {
