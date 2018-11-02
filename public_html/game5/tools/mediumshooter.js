@@ -88,7 +88,7 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 1.7;
+  spirit.health = 2;
   spirit.damage = 0.5;
   spirit.wallDamageMultiplier = 0.8;
   spirit.team = wielder.team;
