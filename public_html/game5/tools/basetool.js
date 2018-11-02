@@ -28,7 +28,7 @@ function BaseTool(screen) {
 
   this.color = new Vec4(1, 1, 1);
 
-  this.toughness = 2;
+  this.toughness = 1;
   this.health = 1;
   this.team = Team.NEUTRAL;
   this.damage = 0.0;
