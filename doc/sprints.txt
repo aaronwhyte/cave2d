@@ -392,15 +392,11 @@ v shield absorbs 100% damage
 v one hit kills player
 v Make shield shatter when faded shield damage maxes out, killing player and maybe throwing energy around.
 - nonfatal damage still needs grx and sound tho
+- heal towards 1 HP when partially damaged
 
-- giant spikeball enemy, rolls around killing whatev it hits, can't get into narrow spaces
-
-bumper prop
-- base spirit
-- different sizes, sounds (notes), colors.
-- infinite mass
-
-- touch sense for enemies - turn to face source of damage if not locked
+- shotgun
+- grenade (bounces off walls)
+- missile launcher
 
 hearing sense for enemies
 * Sounds are instantaneous.
@@ -429,6 +425,16 @@ hearing sense for enemies
   - copy the fields for the winner
    - head towards the winning sound until its score is 0 or until it is forgotton?
   - if a target is seen, that clears the hearing record
+
+
+- giant spikeball enemy, rolls around killing whatev it hits, can't get into narrow spaces
+
+bumper prop
+- base spirit
+- different sizes, sounds (notes), colors.
+- infinite mass
+
+- touch sense for enemies - turn to face source of damage if not locked
 
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items
 
