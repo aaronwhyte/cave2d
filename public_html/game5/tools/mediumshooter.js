@@ -43,17 +43,18 @@ MediumShooter.prototype.fire = function() {
   let now = this.now();
   let body = this.getBody();
 
-  let aimVec = wielder.getAimVec().rot(0.3 * (Math.random() - 0.5));
+  let aimVec = wielder.getAimVec().rot(0.2 * (Math.random() - 0.5));
 
   let rad = 0.5;
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(body.rad - rad * 1.001);
   pos.add(this.vec2d);
-  let speed = 1;
-  let dist = 18 + Math.random() + 5;
-  let vel = this.vec2d.set(aimVec).scaleToLength(speed);
 
+  let speed = 0.9;
+  let dist = 15 + Math.random() + 5;
+  let vel = this.vec2d.set(aimVec).scaleToLength(speed);
   this.addBullet(pos, vel, rad, dist / speed);
+
   this.screen.sounds.zup(pos, now);
   this.screen.splashes.addDotSplash(now,
       vel.scaleToLength(rad * 1.5).add(pos),
@@ -92,7 +93,7 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.damage = 0.5;
   spirit.wallDamageMultiplier = 0.8;
   spirit.team = wielder.team;
-  spirit.trailDuration = 1.6;
+  spirit.trailDuration = 2;
   spirit.headRadFraction = 1;
   spirit.tailRadFraction = 0.2;
 

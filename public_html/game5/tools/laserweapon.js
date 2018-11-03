@@ -10,7 +10,7 @@ LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
 
 LaserWeapon.WARM_UP_TIME = 12;
-LaserWeapon.COOL_DOWN_TIME = 6;
+LaserWeapon.COOL_DOWN_TIME = 8;
 
 LaserWeapon.SCHEMA = {
   0: "type",
@@ -46,12 +46,11 @@ LaserWeapon.prototype.fire = function() {
   this.vec2d.set(aimVec).scaleToLength(wielder.getBody().rad - rad * 1.001);
   pos.add(this.vec2d);
 
-  this.addBullet(
-      pos,
-      this.vec2d.set(aimVec).scaleToLength(20),
-      rad,
-      1.5 + Math.random() * 0.2
-  );
+  let speed = 10;
+  let dist = 30 + 5 * Math.random();
+  let vel = this.vec2d.set(aimVec).scaleToLength(speed);
+  this.addBullet(pos, vel, rad, dist / speed);
+
   this.screen.sounds.zap(pos, this.now());
   //
   // this.screen.splashes.addDotSplash(this.now(),
