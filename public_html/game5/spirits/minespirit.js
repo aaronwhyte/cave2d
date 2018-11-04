@@ -16,8 +16,8 @@ function MineSpirit(screen) {
   this.modelMatrix = new Matrix44();
 
   // combat
-  this.toughness = 4;
-  this.damage = 0;
+  this.toughness = 5;
+  this.damage = 0.05;
 
   this.shrapnelHitGroup = HitGroups.NEUTRAL_FIRE;
   this.retracted = false;
