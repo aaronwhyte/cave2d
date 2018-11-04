@@ -363,7 +363,7 @@ PlayerSpirit.prototype.onDraw = function() {
   p2 = this.vec2d2;
   let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
   let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
-  rad = 0.2;
+  rad = 0.4;
   p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
   p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
   this.modelMatrix.toIdentity()
@@ -512,7 +512,7 @@ PlayerSpirit.prototype.getDamageFaded = function() {
 };
 
 PlayerSpirit.prototype.getShieldedDamageFaded = function() {
-  return Math.max(0, this.lastShieldedDamage - Math.pow(0.07 * (this.now() - this.lastShieldedDamageTime), 2));
+  return Math.max(0, this.lastShieldedDamage - Math.pow(0.1 * (this.now() - this.lastShieldedDamageTime), 3));
 };
 
 PlayerSpirit.prototype.getHitMagFaded = function() {

@@ -48,12 +48,9 @@ SlowShooter.prototype.fire = function() {
   // Start the bullet just inside the front of the wielder, not in the center
   this.vec2d.set(aimVec).scaleToLength(body.rad - rad * 1.001);
   pos.add(this.vec2d);
+  let vel = this.vec2d.set(aimVec).scaleToLength(0.7);
 
-  let speed = 0.7;
-  let dist = 100;
-  let vel = this.vec2d.set(aimVec).scaleToLength(speed);
-  this.addBullet(pos, vel, rad, dist / speed);
-
+  this.addBullet(pos, vel, rad, 100);
   this.screen.sounds.bew(pos, now);
   this.screen.splashes.addDotSplash(now,
       vel.scaleToLength(rad * 1.5).add(pos),
