@@ -181,6 +181,46 @@ Splashes.prototype.addBulletHitExplosion = function(now, pos, rad, color) {
   }
 };
 
+Splashes.prototype.addPlayerHurtExplosion = function(now, pos, rad, color) {
+  let s = this.splash;
+  let x = pos.x;
+  let y = pos.y;
+  let self = this;
+
+  let particles, explosionRad, dirOffset, dir, dx, dy, duration;
+
+  function addSplash(x, y, dx, dy, duration, rad) {
+    s.reset(Splashes.Type.ENEMY_EXPLOSION, null);
+    s.modelId = ModelId.STAR;
+    s.startTime = now;
+    s.duration = duration;
+
+    s.startPose.pos.setXYZ(x, y, -0.9);
+    s.endPose.pos.setXYZ(x + dx, y + dy, 0.9);
+    let startRad = rad;
+    let endRad = rad / 4;
+    s.startPose.scale.setXYZ(startRad, startRad, startRad);
+    let startRot = Math.random() * Math.PI * 2;
+    s.startPose.rotZ = startRot;
+    s.endPose.rotZ = startRot + (Math.random() - 0.5);
+    s.endPose.scale.setXYZ(endRad, endRad, endRad);
+    s.startColor.set(color);
+    s.endColor.set(color);
+    self.splasher.addCopy(s);
+  }
+
+  particles = 3;
+  explosionRad = rad * 2;
+  dirOffset = 2 * Math.PI * Math.random();
+  for (let i = 0; i < particles; i++) {
+    duration = 6 * (1 + Math.random());
+    dir = dirOffset + 2 * Math.PI * (i/particles);
+    dx = Math.sin(dir) * explosionRad;
+    dy = Math.cos(dir) * explosionRad;
+    addSplash(x, y, dx, dy, duration, rad * 0.8);
+  }
+};
+
 Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
   let x = pos.x;
   let y = pos.y;

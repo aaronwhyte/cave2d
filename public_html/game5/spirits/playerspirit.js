@@ -24,6 +24,8 @@ function PlayerSpirit(screen) {
   this.lastShieldedDamageTime = 0;
   this.lastHitMag = 0;
   this.lastHitTime = 0;
+  this.lastPain = 0;
+  this.lastPainTime = 0;
 
   this.accel = new Vec2d();
   this.keyMult = PlayerSpirit.KEY_MULT_ADJUST;
@@ -41,7 +43,7 @@ function PlayerSpirit(screen) {
   this.modelMatrix2 = new Matrix44();
 
   // combat
-  this.toughness = 1;
+  this.toughness = 1.1;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -56,7 +58,7 @@ PlayerSpirit.SHIELD_TRACTION = 0.01;
 PlayerSpirit.NORMAL_ELASTICITY = 0.25;
 PlayerSpirit.SHIELD_ELASTICTY = 0.99;
 PlayerSpirit.SHIELD_ABSORPTION = 1;
-PlayerSpirit.MAX_SHIELD_DAMAGE = 10;
+PlayerSpirit.MAX_SHIELD_DAMAGE = 20;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
 PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
@@ -345,8 +347,17 @@ PlayerSpirit.prototype.onDraw = function() {
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
       .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(now)));
-  this.screen.drawModel(this.getModelId(), this.color, this.modelMatrix, null);
+  let pain = Math.min(1, 2 * this.getPainFaded());
+  this.vec4.setXYZ(
+      Math.max(pain, this.color.getX()),
+      Math.max(pain, this.color.getY()),
+      Math.max(pain, this.color.getZ()));
+  this.screen.drawModel(this.getModelId(), this.vec4, this.modelMatrix, null);
 
+  // aim color
+  this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
+
+  // shield color
   let shieldDamage = this.getShieldedDamageFaded();
   let damageFrac = shieldDamage / PlayerSpirit.MAX_SHIELD_DAMAGE;
   let shieldColor = this.shieldColor.setRGBA(
@@ -358,7 +369,6 @@ PlayerSpirit.prototype.onDraw = function() {
   let p1, p2, rad;
 
   // aim guide
-  this.aimColor.set(this.color).scale1(0.5 + Math.random() * 0.3);
   p1 = this.vec2d;
   p2 = this.vec2d2;
   let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
@@ -494,25 +504,43 @@ PlayerSpirit.prototype.updateShieldWarble = function() {
   this.shieldWarble.setWubFreq(100 - f * (90 + 5 * Math.random()));
 };
 
+/**
+ * The player's shield absorbs damage, and the player heals over time.
+ * @param {number} d
+ */
 PlayerSpirit.prototype.applyDamage = function(d) {
+  let now = this.now();
   let absorb = this.shielded ? PlayerSpirit.SHIELD_ABSORPTION * d : 0;
   let damage = d - absorb;
-  BaseSpirit.prototype.applyDamage.call(this, damage);
   this.lastDamage = damage + this.getDamageFaded();
-  this.lastDamageTime = this.now();
+  this.lastDamageTime = now;
+
+  this.lastPain = damage + this.getPainFaded();
+  this.lastPainTime = now;
 
   if (this.shielded) {
     this.lastShieldedDamage = Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, absorb + this.getShieldedDamageFaded());
-    this.lastShieldedDamageTime = this.now();
+    this.lastShieldedDamageTime = now;
+  }
+
+  if (this.getDamageFaded() > this.toughness) {
+    this.die();
+  } else if (damage) {
+    this.screen.splashes.addPlayerHurtExplosion(now, this.getBodyPos(), damage * 3, this.vec4.setXYZ(1, 1, 1));
+    this.screen.sounds.playerHurt(this.getBodyPos(), damage);
   }
 };
 
+PlayerSpirit.prototype.getPainFaded = function() {
+  return Math.min(1, Math.max(0, this.lastPain - 0.1 * (this.now() - this.lastPainTime)));
+};
+
 PlayerSpirit.prototype.getDamageFaded = function() {
-  return Math.max(0, this.lastDamage - Math.pow(0.1 * (this.now() - this.lastDamageTime), 2));
+  return Math.max(0, this.lastDamage - 0.01 * (this.now() - this.lastDamageTime));
 };
 
 PlayerSpirit.prototype.getShieldedDamageFaded = function() {
-  return Math.max(0, this.lastShieldedDamage - Math.pow(0.1 * (this.now() - this.lastShieldedDamageTime), 3));
+  return Math.max(0, this.lastShieldedDamage - Math.pow(0.07 * (this.now() - this.lastShieldedDamageTime), 2));
 };
 
 PlayerSpirit.prototype.getHitMagFaded = function() {
