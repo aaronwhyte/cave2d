@@ -50,9 +50,9 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-PlayerSpirit.SPEED = 1.5;
+PlayerSpirit.SPEED = 1.2;
 
-PlayerSpirit.TRACTION = 0.1;
+PlayerSpirit.TRACTION = 0.2;
 PlayerSpirit.SHIELD_TRACTION = 0.01;
 
 PlayerSpirit.NORMAL_ELASTICITY = 0.25;
@@ -523,11 +523,12 @@ PlayerSpirit.prototype.applyDamage = function(d) {
     this.lastShieldedDamageTime = now;
   }
 
+  if (damage) {
+    this.screen.splashes.addPlayerHurtExplosion(now, this.getBodyPos(), this.getDamageFaded(), this.vec4.setXYZ(1, 1, 1));
+    this.screen.sounds.playerHurt(this.getBodyPos(), this.getDamageFaded());
+  }
   if (this.getDamageFaded() > this.toughness) {
     this.die();
-  } else if (damage) {
-    this.screen.splashes.addPlayerHurtExplosion(now, this.getBodyPos(), damage * 3, this.vec4.setXYZ(1, 1, 1));
-    this.screen.sounds.playerHurt(this.getBodyPos(), damage);
   }
 };
 

@@ -89,7 +89,7 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 2;
-  spirit.damage = 0.6;
+  spirit.damage = 0.4;
   spirit.team = wielder.team;
   spirit.trailDuration = 1.6;
   spirit.headRadFraction = 1;
