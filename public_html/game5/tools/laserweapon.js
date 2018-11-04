@@ -162,3 +162,11 @@ LaserWeapon.prototype.onDraw = function() {
       .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
   this.screen.drawModel(ModelId.CIRCLE_32, this.color, this.modelMatrix);
 };
+
+LaserWeapon.prototype.die = function() {
+  if (this.warble) {
+    this.warble.stop();
+    this.warble = null;
+  }
+ BaseTool.prototype.die.apply(this);
+};
