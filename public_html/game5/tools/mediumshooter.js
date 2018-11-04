@@ -89,12 +89,14 @@ MediumShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 2;
-  spirit.damage = 0.5;
-  spirit.wallDamageMultiplier = 0.8;
+  spirit.damage = 0.6;
   spirit.team = wielder.team;
   spirit.trailDuration = 1.6;
   spirit.headRadFraction = 1;
   spirit.tailRadFraction = 0.2;
+
+  spirit.wallDamageMultiplier = 0;
+  spirit.bounceChance = 0.7;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);

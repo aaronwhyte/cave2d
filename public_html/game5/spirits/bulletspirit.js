@@ -40,13 +40,14 @@ BulletSpirit.prototype.reset = function(screen) {
   this.segStartVec.reset();
   this.segEndVec.reset();
 
-  this.toughness = 1;
+  this.toughness = 0;
   this.damage = 1;
   this.trailDuration = 0.8;
   this.headRadFraction = 1;
   this.tailRadFraction = 0.25;
 
   this.wallDamageMultiplier = 1;
+  this.bounceChance = 0;
 
   // When force is applied to a bullet, detect that while drawing and update the trail
   this.lastVel = new Vec2d();
@@ -192,13 +193,14 @@ BulletSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
   }
 
   // bounce or vanish?
-  this.applyDamage(mag);
-  if (this.health > 0) {
+  if (otherSpirit && this.damagesTeam(otherSpirit.team) || Math.random() >= this.bounceChance) {
+    // vanish
+    this.die();
+  } else {
     // bounce
     this.addTrailSegment();
     this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * (1 + Math.min(mag, 2)), 4,
         this.color.getR(), this.color.getG(), this.color.getB());
     this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag * 2));
   }
-
 };

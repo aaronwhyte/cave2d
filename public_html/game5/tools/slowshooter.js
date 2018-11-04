@@ -84,15 +84,15 @@ SlowShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 1.5;
   spirit.damage = 1;
   spirit.digChance = 2;
-  spirit.bounceChance = 0;
   spirit.team = wielder.team;
   spirit.trailDuration = 1;
   spirit.headRadFraction = 1;
   spirit.tailRadFraction = 1;
 
+  spirit.wallDamageMultiplier = 0;
+  spirit.bounceChance = 0;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);

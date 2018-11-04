@@ -88,13 +88,14 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 0;
   spirit.damage = 1;
   spirit.team = wielder.team;
   spirit.trailDuration = 7;
   spirit.headRadFraction = 3;
   spirit.tailRadFraction = 0;
 
+  spirit.wallDamageMultiplier = 1;
+  spirit.bounceChance = 0;
 
   // bullet self-destruct timeout
   this.screen.world.addTimeout(now + duration, spiritId, BulletSpirit.SELF_DESTRUCT_TIMEOUT_VAL);
