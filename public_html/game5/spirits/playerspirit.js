@@ -347,7 +347,7 @@ PlayerSpirit.prototype.onDraw = function() {
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
       .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(now)));
-  let pain = Math.min(1, 2 * this.getPainFaded());
+  let pain = Math.min(1, 2 * this.getPainFaded() + 3 * this.getDamageFaded());
   this.vec4.setXYZ(
       Math.max(pain, this.color.getX()),
       Math.max(pain, this.color.getY()),

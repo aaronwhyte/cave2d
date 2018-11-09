@@ -59,14 +59,14 @@ Sounds.prototype.playerHurt = function(worldPos, damage) {
   let screenPos = this.getScreenPosForWorldPos(worldPos);
   let x = screenPos.x;
   let y = screenPos.y;
-  let freq = 50 * damage + Math.random() * 10;
+  let freq = 30 + 20 * damage + Math.random() * 10;
   let freq2 = freq * (16 + 16 * damage);
   let attack = 0;
-  let sustain = (4 + damage) / 60;
+  let sustain = (3 + damage * 3) / 60;
   let decay = 0;
   let delay = attack + sustain + decay;
-  this.sfx.sound(x, y, 0, damage * 0.7, attack, sustain, decay, freq, freq2, 'square', 0);
-  this.sfx.sound(x, y, 0, damage * 0.7, attack, sustain, decay, freq2, freq, 'sine', delay);
+  this.sfx.sound(x, y, 0, damage, attack, sustain, decay, freq, freq2, 'square', 0);
+  this.sfx.sound(x, y, 0, damage, attack, sustain, decay, freq2, freq, 'sine', delay);
 };
 
 Sounds.prototype.blop = function(worldPos) {

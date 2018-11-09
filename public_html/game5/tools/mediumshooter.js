@@ -12,7 +12,7 @@ MediumShooter.prototype.constructor = MediumShooter;
 MediumShooter.RECOIL_FORCE = 0.5;
 
 MediumShooter.WARM_UP_TIME = 0;
-MediumShooter.COOL_DOWN_TIME = 3.5;
+MediumShooter.COOL_DOWN_TIME = 4.1;
 
 MediumShooter.SCHEMA = {
   0: "type",

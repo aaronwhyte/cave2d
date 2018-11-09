@@ -15,6 +15,7 @@ let ModelId = (function() {
     CIRCLE_32: ++i,
     SEPTAGON: ++i,
     SQUARE: ++i,
+    TRIANGLE: ++i,
     TUBE_32: ++i,
     CYLINDER_32: ++i,
     LINE_SEGMENT: ++i,
@@ -59,6 +60,7 @@ Models.prototype.createModel = function(id) {
     case ModelId.CIRCLE_32: return RigidModel.createCircle(32);
     case ModelId.SEPTAGON: return RigidModel.createCircle(7);
     case ModelId.SQUARE: return RigidModel.createSquare();
+    case ModelId.TRIANGLE: return RigidModel.createTriangle();
     case ModelId.TUBE_32: return RigidModel.createTube(32, false, false);
     case ModelId.CYLINDER_32: return RigidModel.createTube(32, true, true);
     case ModelId.LINE_SEGMENT: return RigidModel.createTube(9, false, false);
