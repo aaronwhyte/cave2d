@@ -387,16 +387,15 @@ v break pointer lock on victory pages
 v make shield more effective by instantly switching it on when dropping stuff.
 
 life management?
-v No visible player health.
+v No visible player health? That's kinda bullshit tho.
 v shield absorbs 100% damage
 v one hit kills player
 v Make shield shatter when faded shield damage maxes out, killing player and maybe throwing energy around.
-- nonfatal damage still needs grx and sound tho
-- heal towards 1 HP when partially damaged
+v nonfatal damage still needs grx and sound tho
+v heal towards max HP when partially damaged
+v OK 1.1 hits kills player.
 
-- shotgun
-- grenade (bounces off walls)
-- missile launcher
+- touch sense for enemies - turn to face source of damage, if not target locked
 
 hearing sense for enemies
 * Sounds are instantaneous.
@@ -409,7 +408,7 @@ hearing sense for enemies
     - time
     - loudness
     - soundId - unique identifier
-      - SOundHistory nextId starts at 1 and goes up by one each time
+      - SoundHistory nextId starts at 1 and goes up by one each time
 - Hearing module for "hunting" spirits
   - Spirit remembers processedSoundId, for the last soundId they processed. This only goes up.
   - spirit states, for making sense of hearing sense:
@@ -426,16 +425,14 @@ hearing sense for enemies
    - head towards the winning sound until its score is 0 or until it is forgotton?
   - if a target is seen, that clears the hearing record
 
-
-- giant spikeball enemy, rolls around killing whatev it hits, can't get into narrow spaces
+- shotgun
+- grenade (bounces off walls)
+- missile launcher
 
 bumper prop
 - base spirit
 - different sizes, sounds (notes), colors.
 - infinite mass
-
-- touch sense for enemies - turn to face source of damage if not locked
-
 - Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items
 
 
@@ -445,25 +442,6 @@ more enemies and weapons and behaviors
   - laser: dead-on only?
   - shotgun: wider is better
 - lead target! Fire where the target is going
-
-weapons as the player sees them
-v slow shooter
-v medium shooter - machine-gunny
-  v became rogue gun - medium, narrowish, very bouncy, low damage
-v laser 1.0 - long, straight, no bounce, frequent
-v telegraph laser fire
-  v sparks
-  v add delay
-  v warm-up sound!
-- shotgun - short wide, a bit bouncy, infrequent
-- missile - seeking, avoids walls. Infrequent!
-- rocket - dumb, infrequent, explosive
-- ice for my frosty baby
-- slime
-- egg spawn
-- acid orbs
-- saw - really short, constant, cuts through walls, pulls you forward a bit
-
 
 
 V .............. V
@@ -479,7 +457,6 @@ more props:
 - repulsor cannon
 
 Emotions on player faces? I would like that.
-
 
 
 - Encapsulate behavior: WallAvoidance
