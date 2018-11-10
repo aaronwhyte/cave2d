@@ -11,20 +11,23 @@ body {
   margin-left:auto;
   margin-right:auto;
   padding:0.5em;
+  background:#222220;
+  color:#bbb;
 }
 
 .gloriousBrand {
   font-size:500%;
   font-weight:bolder;
-  color: #f19;
+  color: #e19;
   text-align:center;
   padding:0;
   margin:0;
 }
 
 h1 {
-  font-size:x-large;
-  margin:1.2em 0 0.5em;
+  font-size:xx-large;
+  margin:1.5em 0 0.5em;
+  color:#5b5;
 }
 
 h2 {
@@ -37,7 +40,7 @@ h3 {
 
 a {
   font-weight:bold;
-  text-decoration:none;
+  color:#49e;
 }
 
 div {
@@ -68,27 +71,27 @@ The idea was to complete, multi-level, arcade-ish game with all the little thing
 until I coded it myself: Startup, player controls, weapons, enemy behavior, explosions, sounds, pause menu,
 level progression, death, victory, etc.
 <p>
-To make the levels I wrote a <a href="game2/edit">level editor</a>, for creating and testing levels. It's not connected
+To make the levels I wrote a <a href="game2/edit">game2 editor</a>, for creating and testing levels. It's not connected
 to the main game; I used it to make levels, then I exported them to JSON, and copied that into the cave2d.com
 source code. But it's kinda fun to play with on its own.
 
 <h2><a href="game3">Game 3: Abandoned rolling platformer</a></h2>
 This is more of a platformer demo. Roll around the test level, using left and right swipes or arrows,
 and the shift key for turbo if you're using a keyboard. <br>
-There's a <a href="game3/edit">level editor</a> too.
+[<a href="game3/edit">game3 editor</a>]
 
 <h2><a href="game4">Game 4: Abandoned multi-player tractor beam stuff</a></h2>
 Keyboard mappings are kind of wonky because I tried to fit three players onto one keyboard/mouse.<br>
 Try a tablet (or phone) instead if you have one.<br>
 Enemies don't really want to hurt you, but their touch is deadly.<br>
-[<a href="game4/edit">editor</a>]
+[<a href="game4/edit">game4 editor</a>]
 
 <h2><a href="game5">Game 5: Work in progress.</a></h2>
-Kind of a mix of game2 and game4, plus more stuff, like mines, and enemies that shoot, and drop weapons.<br>
+Kind of a mix of game2 and game4, plus more stuff, like mines, and enemies that shoot and drop weapons.<br>
 On a tablet with a friend, try sitting across from each other.<br>
 Solo on a laptop, try the mouse/trackpad plus Z and X.<br>
 These are test levels, but they're kind of in an order that makes sense.<br>
-[<a href="game5/edit">editor</a>]
+[<a href="game5/edit">game5 editor</a>]
 
 <h1>Editor Tests</h1>
 
@@ -294,7 +297,7 @@ Later this was replaced by BitGrid, but I kept the basic vision of a fingerpaint
 <div><a href="test7">Test 7 - QuadTreeGrid &amp; HallPainter</a><br>You can draw a cave map with a mouse or touchscreen.</div>
 <div><a href="test6">Test 6 - QuadTree Moon</a><br>Demos quadtree editing by adding a circle and deleting a circle, at 60fps</div>
 
-<h1>Graphics</h1>
+<h1>Early graphics</h1>
 I didn't end up using any of this for the games, but it was fun to write.
 <div><a href="test5">Test 5 - Timeshift</a><br>Shifts the subtree's time as a function of time. Draws a clock that makes random, uneven progress.</div>
 <div><a href="test4">Test 4 - Scale</a><br>Changes the size of a drawing tree over time. Looks like a hungry hydra.</div>
