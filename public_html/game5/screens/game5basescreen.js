@@ -37,7 +37,7 @@ function Game5BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.splashes = new Splashes(this.splasher);
 
-  this.levelColorVector.setRGBA(0.2, 0.3, 0.9, 1);
+  this.levelColorVector.setRGBA(0.5 - Math.random() * 0.2, 0.5 - Math.random() * 0.2, 0.5 - Math.random() * 0.2, 1);
 
   this.timeMultiplier = 1;
 
