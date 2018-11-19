@@ -395,6 +395,28 @@ v nonfatal damage still needs grx and sound tho
 v heal towards max HP when partially damaged
 v OK 1.1 hits kills player.
 
+NOTES
+Weapons that are good for the enemies are not good for the player and vice versa.
+Player reflexes are slow but player shots should be fast.
+Enemy computer reflexes are instant but enemies should project and slow their attacks so player can evade.
+Player weapons should auto-aim a bit more than they do, or precise aim should be less of a concern.
+Player is smart enough to use interesting weapons, but enemies not so much?
+Shield is not that much fun but might make an interesting item to activate.
+Make empty drop do repulsor pulse, more like game4? That was a winner.
+Make pain provide turbo directly, not shield?
+
+End game5, begin game6! Everything below here was slated for Game5 but then I was all like "ship it!",
+so this stuff, if it happens, will happen in a later game. There's so much of it! And none of it
+actually covers the main complaints from strangers who commented, which amount to "what are the rules"
+and "what are the controls". And one "How do I get rid of player 2?"
+I think the playthough video probably helped, but I need to address those issues next.
+
+V                              V
+|                              |
+| ABANDONED GAME 5 STUFF BELOW |
+|                              |
+V                              V
+
 - touch sense for enemies - turn to face source of damage, if not target locked
 
 hearing sense for enemies
@@ -425,24 +447,56 @@ hearing sense for enemies
    - head towards the winning sound until its score is 0 or until it is forgotton?
   - if a target is seen, that clears the hearing record
 
-- shotgun
-- grenade (bounces off walls)
-- missile launcher
+- weapon graphics overhaul
+  - weapon sights identify weapon, not overdraw on body
+    - slow shooter
+    - medium (rename to bouncy)
+    - laser
 
-bumper prop
-- base spirit
-- different sizes, sounds (notes), colors.
-- infinite mass
-- Make ad-hoc multi-group rayscans, so I don't need to waste a hit-group slot on groups that will never exist as items
+- persistent-effect weapons
+  - ice
+    - effects - frozen, no traction, some friction, ok elasticity, no action, shots cancelled
+    - graphics - ice colored, frost aura
+    - frozen-ness accounting and recovery speed
+    - shatter effect when killed while frozen
+    - heat attacks melt ice instead of doing damage
+  - slime
+    - effects - low traction, some friction, low elasticity
+    - graphics - green aura, sheds globules that actually bounce once
+    - slimed-ness accounting and recovery
+    - bumping something transfers slime to it based on magnitude up to 1/4.
+  - combined ice and slime
+    - combined grx is green ice
+    - combined effect is same as ice until ice melts
+    - ice stops slime recovery
+    - iced slime does not transfer on collision
+    - greener shatter effect when killed while frozen & slimed
 
+- new weapons
+  - melee
+  - shotgun
+  - grenades (bounces off walls, timed fuse)
+  - missiles
+  - tau cannon
+  - fireball with charge shot
+  - flame thrower
+  - slime squirter
+  - ice beam
 
-more enemies and weapons and behaviors
-- smarter shooters try to keep some dist between selves and target
-- weapon dictates willingness to fire off-center
-  - laser: dead-on only?
-  - shotgun: wider is better
-- lead target! Fire where the target is going
-
+let 1000 enemies bloom
+- stationary turrets with different weapons
+  - laser
+  - missile
+  - ice
+- melee enemy
+- slow-shooter enemy
+- laser enemy
+- bouncy shot enemt
+- delete ants
+- shotgun enemy
+- slime enemy
+- ice enemy (snowballer)
+- flame enemy
 
 V .............. V
 V                V
