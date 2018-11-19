@@ -1,0 +1,55 @@
+=== How to draw stuff ===
+
+== Spirits ==
+
+Since the same spirit model can be drawn multiple times per frame, spirits use batch drawing,
+managed by the screen object.
+
+0) Ignore stamps.js
+
+1) In models.js, append to the ModelId enum.
+
+2) In the same file, add a corresponding RigidModel return value to Models.createModel()
+
+3) For simple spirit drawing, implement getModelId() in the spirit class, and that's it.
+
+4) For more complex spirit drawing, override onDraw().
+
+5) To draw a batch model instance manually use
+   screen.drawModel(modelId, color, modelMatrix, opt_modelMatrix2).
+
+   The screen manages calls to an internal drawPack, appending draw commands
+   and flushing the drawpack buffers, if any, when the screen is done drawing things.
+   That calls through to the renderer, but from spirit classes, there's no need to get
+   as deep as the Renderer class.
+
+
+== Splashes ==
+
+Add the splash effect to splashes.js. It's hard.
+The screen has a Splashes instance. Call screen.splashes.addWhateverYouSplashIs(<params>).
+Splashes use batched drawing, like spirits, since there are often lots of them on screen per frame.
+
+
+== Widgets ==
+
+Widgets do not use batch drawing, since there are usually only a couple on screen per frame.
+Also, they were written long before batch drawing was added.
+A widget takes a ModelStamp object, and calls the renderer directly.
+How to create a ModelStamp:
+
+1) In stamps.js, add a stamp field, in Stamps.create().
+
+2) The screen instance will have a stamps field which was created using Stamps.create.
+   Get the stamp from there and pass it to the widget.
+
+
+== Draw a ModelStamp directly ==
+
+To draw immediately using a ModelStamp and a Renderer:
+    renderer
+        .setColorVector(colorVec4)
+        .setStamp(stamp)
+        .setModelMatrix(modelMatrix)
+        .drawStamp();
+This is unbatched. It is fine if there are very few of each stamp to draw each frame.
