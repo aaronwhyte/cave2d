@@ -1,0 +1,87 @@
+2018-11-19
+make nest for game 6
+v copy game5 to game6
+v rename stuff
+v playable again
+- an adventure
+
+2018-11-19
+intro page
+- new page & screen classes, standard
+- it's the first level I guess?
+- "let it begin" button helps decide what kind of interface the user wants, and unlocks sound probably
+  - key/mouse
+  - touch
+
+main menu
+- shows existing joined player slots, with good default player
+- "players & controls"
+- instructions
+- "play!" if there's at least one player
+
+
+player add/drop menu
+- possible players are represented as slots
+  - 3 keyboard/mouse slots
+  - 4 touchscreen slots
+- show list of existing controls
+  - pause key (editable?? not yet)
+  - 3 keyboard/mouse slots
+    - one slot at a time in a list
+    - actions
+      - name
+      - description
+      - trigger: key or mouse button
+    - movement
+      - 4 keys (wasd, ijkl, arrows, etc)
+        - names for arrow keys
+      - or mouse
+    - edit button (placeholder for now)
+  - 4 touch pad slots, each with own minimap
+    - buttons
+      - in arc in corner of quadrant
+      - marked with symbols
+    - movement zone
+      - rect overlap resolution:
+        - home quadrant always wins
+        - In unowned quadrant, short-sided region wins.
+        - In square screen (??) neither gets it. Just don't explode. This Should Never Happen.
+  - every slot has clear joined/dropped state and a join drop button
+  - unusable types are greyed out and below usable ones?
+
+That fixes some problems:
+* What keys do I press?
+* Which one is tractor beam?
+* How do I get rid of player 2?
+* How do I _add_ player 2?
+
+Editable controls
+- individual keyboard/mouse slot editor
+  - list of all controls in slot
+    - action buttons
+    - movement type selector
+      - mouse
+      - keyboard
+        - movement keys
+  - click trigger to open for edit
+      - accept keypress or mouse button
+        - if already taken by other slot, still OK to steal it. Allow cross-player-slot conflicts, but highlight them.
+        - if key already taken by *this* slot, delete prev key use.
+  - "back to menu" button
+- touchscreen slots all shown/editable at once, WYSIWYG
+  - starts paused
+    - symbols are explained here
+    - "edit" button
+    - "back" button
+  - pause button is always visible when unpaused
+  - home quadrant cannot change. There are 4 and that's that.
+  - player action buttons
+    - in arc in corner of quadrant
+    - marked with symbols
+    - allow dragging within quadrant
+    - show symbol meaning nearby
+  - movement rect starts in corner of quadrant, and extends in extends in X OR Y direction
+    - let player switch axis by touching curved arrow in the elbow
+  - constant preview of movement zones
+- auto save/load prefs
+  - LocalStorage s27n
