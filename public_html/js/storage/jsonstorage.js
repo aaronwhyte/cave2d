@@ -1,10 +1,9 @@
 /**
- * @param {Object} json
  * @constructor
  * @extends StorageLike
  */
-function JsonStorage(json) {
-  this.s = json;
+function JsonStorage() {
+  this.s = {};
 }
 
 /**
@@ -24,7 +23,7 @@ JsonStorage.prototype.keys = function() {
  */
 JsonStorage.prototype.get = function(key) {
   var val = this.s[key];
-  return (typeof val == 'undefined') ? null : JSON.stringify(val);
+  return (typeof val === 'undefined') ? null : val;
 };
 
 /**
@@ -32,7 +31,7 @@ JsonStorage.prototype.get = function(key) {
  * @param {String} val
  */
 JsonStorage.prototype.set = function(key, val) {
-  this.s[key] = val;
+  this.s[key] = (typeof val === 'string') ? val : String(val);
 };
 
 /**

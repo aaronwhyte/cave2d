@@ -11,6 +11,10 @@ function Sounds(sfx, viewMatrix) {
   this.vec2d = new Vec2d();
 }
 
+Sounds.prototype.getMasterGain = function() {
+  return this.sfx.getMasterGain();
+};
+
 Sounds.prototype.getScreenPosForWorldPos = function(worldPos) {
   this.vec4.setXYZ(worldPos.x, worldPos.y, 0).transform(this.viewMatrix);
   return this.vec2d.setXY(this.vec4.v[0], this.vec4.v[1]);

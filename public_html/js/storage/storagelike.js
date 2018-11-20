@@ -22,7 +22,9 @@ StorageLike.prototype.get = function(key) {
 
 /**
  * @param {String} key
- * @param {String} val
+ * @param {*} val  Any String value will be taken as-is, but non-String values will be cast to String.
+ *                 That means an object will become "[Object object]" or something, so serialize before calling set.
+ *                 This is the behavior of LocalStorage.
  */
 StorageLike.prototype.set = function(key, val) {
   throw "unimplemented";

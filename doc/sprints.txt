@@ -1,9 +1,14 @@
-2018-11-19
+DONE 2018-11-19
 make nest for game 6
 v copy game5 to game6
 v rename stuff
 v playable again
-- an adventure
+v an adventure
+
+DONE 2018-11-19
+Fix JsonStorage?
+Not sure what's going on there but the test fails, and getting mutates return values, so that's not good.
+
 
 2018-11-19
 intro page

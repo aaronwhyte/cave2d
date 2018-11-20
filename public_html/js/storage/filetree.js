@@ -1,5 +1,8 @@
 /**
  * Stores key/value pairs, where keys are arrays of strings, and values are JSON.
+ * <p>
+ * Internally, this stores keys and values as serialized Strings, in a storageLike.
+ * This limitation comes from localStorage, which is only a String-to-String map.
  * @param {StorageLike} storageLike
  * @constructor
  */
@@ -12,7 +15,7 @@ FileTree.prototype.pathString = function(pathArray) {
     throw 'path is not array: ' + JSON.stringify(pathArray);
   }
   for (var i = 0; i < pathArray.length; i++) {
-    if (typeof pathArray[i] != 'string') {
+    if (typeof pathArray[i] !== 'string') {
       throw 'element ' + i + ' is not string in path' + JSON.stringify(pathArray);
     }
   }
@@ -24,8 +27,8 @@ FileTree.prototype.setFile = function(pathArray, jsonVal) {
 };
 
 FileTree.prototype.getFile = function(pathArray) {
-  var txt = this.s.get(this.pathString(pathArray));
-  return JSON.parse(txt);
+  var jsonVal = this.s.get(this.pathString(pathArray));
+  return JSON.parse(jsonVal);
 };
 
 FileTree.prototype.isFile = function(pathArray) {
@@ -61,12 +64,12 @@ FileTree.prototype.listDescendants = function(pathArray) {
  */
 FileTree.prototype.listChildren = function(pathArray) {
   var retval = [];
-  var foundSet = new ObjSet();
+  var foundSet = new Set();
   var keyStrings = this.s.keys();
   for (var i = 0; i < keyStrings.length; i++) {
     var keyArray = JSON.parse(keyStrings[i]);
     var fragment = keyArray[pathArray.length];
-    if (!foundSet.contains(fragment) &&
+    if (!foundSet.has(fragment) &&
         this.isAncestorOf(pathArray, keyArray)) {
       retval.push(keyArray[pathArray.length]);
       foundSet.add(fragment);
@@ -182,15 +185,25 @@ FileTree.prototype.moveDescendants = function(fromPath, toPath) {
   return true;
 };
 
-
-
 FileTree.prototype.isAncestorOf = function(ancestorArray, checkPathArray) {
   if (checkPathArray.length <= ancestorArray.length) return false;
-  if (ancestorArray.length == 0) return true;
+  if (ancestorArray.length === 0) return true;
   for (var seg = 0; seg < ancestorArray.length; seg++) {
-    if (ancestorArray[seg] != checkPathArray[seg]) {
+    if (ancestorArray[seg] !== checkPathArray[seg]) {
       return false;
     }
   }
   return true;
+};
+
+/**
+ * Treats each key as a file path (a serialized array), and each value as a deserialized value.
+ * @param json
+ */
+FileTree.prototype.setFromJson = function(json) {
+  for (let pathString in json) {
+    let pathArray = JSON.parse(pathString);
+    let fileJson = json[pathString];
+    this.setFile(pathArray, fileJson);
+  }
 };

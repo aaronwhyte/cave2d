@@ -34,7 +34,9 @@ PlayApp.prototype.getFileTree = function() {
 PlayApp.prototype.onDataFileLoaded = function() {
   var jsonText = this.dataFileLoader.getTextByPath(this.dataFilePath);
   var jsonObj = JSON.parse(jsonText);
-  this.fileTree = new FileTree(new JsonStorage(jsonObj));
+  this.fileTree = new FileTree(new JsonStorage())
+  debugger;
+  this.fileTree.setFromJson(jsonObj);
 
   // Start on the first (only) adventure's first (zeroeth) level.
   var adventureNames = this.fileTree.listChildren(BaseApp.path(this.basePath).concat(BaseApp.PATH_ADVENTURES));

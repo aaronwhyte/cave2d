@@ -9,12 +9,12 @@
 <script>
 
 function createStorage() {
-  return new JsonStorage({});
+  return new JsonStorage();
 }
 
 addTest(function emptyStorage() {
   var s = createStorage();
-  assertJsonEquals([], s.keys());
+  assertStringifyEquals([], s.keys());
 });
 
 addTest(function getSetRemove() {
@@ -25,12 +25,12 @@ addTest(function getSetRemove() {
 
   s.set('a', 'foo');
   s.set('b', 'bar');
-  assertJsonEquals(['a', 'b'], s.keys().sort());
+  assertStringifyEquals(['a', 'b'], s.keys().sort());
   assertEquals('foo', s.get('a'));
   assertEquals('bar', s.get('b'));
 
   s.remove('a');
-  assertJsonEquals(['b'], s.keys().sort());
+  assertStringifyEquals(['b'], s.keys().sort());
   assertEquals(null, s.get('a'));
   assertEquals('bar', s.get('b'));
 
@@ -43,14 +43,14 @@ addTest(function clear() {
   s.set('a', 'foo');
   s.clear();
   assertEquals(null, s.get('a'));
-  assertJsonEquals([], s.keys());
+  assertStringifyEquals([], s.keys());
 });
 
 addTest(function setGetJson() {
   var s = createStorage();
   var json = {a: true, b:[1, 2, 3], c:'x y'};
   s.set('a', JSON.stringify(json));
-  assertJsonEquals(json, JSON.parse(s.get('a')));
+  assertStringifyEquals(json, JSON.parse(s.get('a')));
 });
 
 </script>
