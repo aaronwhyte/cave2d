@@ -22,11 +22,11 @@ LempelZiv.prototype.encodeToIntegers = function(str) {
   for (var i = 0; i < str.length; i++) {
     var c = str.charAt(i);
     var wc = w + c;
-    if (dict.contains(wc)) {
+    if (dict.has(wc)) {
       w = wc;
     } else {
       result.push(dict.get(w));
-      dict.set(wc, dict.length + 1);
+      dict.set(wc, dict.size + 1);
       w = String(c);
     }
   }
@@ -57,10 +57,10 @@ LempelZiv.prototype.decodeFromIntegers = function(ints) {
     if (k == LempelZiv.STOPCODE) {
       break;
     }
-    if (dict.contains(k)) {
+    if (dict.has(k)) {
       entry = dict.get(k);
     } else {
-      if (k === dict.length + 1) {
+      if (k === dict.size + 1) {
         entry = w + w.charAt(0);
       } else {
         throw Error('could not decode integer ' + k);
@@ -69,7 +69,7 @@ LempelZiv.prototype.decodeFromIntegers = function(ints) {
     result += entry;
 
     // Add w+entry[0] to the dictionary.
-    dict.set(dict.length + 1, w + entry.charAt(0));
+    dict.set(dict.size + 1, w + entry.charAt(0));
 
     w = entry;
   }
@@ -82,7 +82,7 @@ LempelZiv.prototype.decodeFromIntegers = function(ints) {
 LempelZiv.prototype.encodeToBitQueue = function(str, opt_bitQueue) {
   var ints = this.encodeToIntegers(str);
   var bitQueue = opt_bitQueue || new BitQueue();
-  var highestValuePossible = this.createEncodingDictionary().length + 1; // +1 for stopcode
+  var highestValuePossible = this.createEncodingDictionary().size + 1; // +1 for stopcode
   for (var i = 0; i < ints.length; i++) {
     var bitsNeeded = Number(highestValuePossible).toString(2).length;
     bitQueue.enqueueNumber(ints[i], bitsNeeded);
@@ -92,7 +92,7 @@ LempelZiv.prototype.encodeToBitQueue = function(str, opt_bitQueue) {
 };
 
 LempelZiv.prototype.decodeFromBitQueue = function(bitQueue) {
-  var highestValuePossible = this.createEncodingDictionary().length + 1; // +1 for stopcode
+  var highestValuePossible = this.createEncodingDictionary().size + 1; // +1 for stopcode
   var ints = [];
   var num = -1;
   while (num != LempelZiv.STOPCODE) {
