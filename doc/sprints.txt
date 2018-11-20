@@ -6,9 +6,11 @@ v playable again
 v an adventure
 
 DONE 2018-11-19
-Fix JsonStorage?
-Not sure what's going on there but the test fails, and getting mutates return values, so that's not good.
-
+Misc fixes and stuff
+v Fix JsonStorage?
+  Not sure what's going on there but the test fails, and getting mutates return values, so that's not good.
+v replace & delete ObjSet
+v replace & delete ArraySet
 
 2018-11-19
 intro page
