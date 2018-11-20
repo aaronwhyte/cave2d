@@ -40,9 +40,7 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   var fullScreenButton, restartButton, resumeButton, i;
   Game3BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].startListening();
-    }
+    this.listeners.forEach((v) => { v.startListening() });
 
     fullScreenButton = document.querySelector('#fullScreenButton');
     fullScreenButton.addEventListener('click', this.fullScreenFn);
@@ -63,9 +61,7 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   } else {
     // TODO use ListenerTracker
 
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].stopListening();
-    }
+    this.listeners.forEach((v) => { v.stopListening() });
 
     fullScreenButton = document.querySelector('#fullScreenButton');
     fullScreenButton.removeEventListener('click', this.fullScreenFn);

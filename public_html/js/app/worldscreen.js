@@ -49,7 +49,7 @@ function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans,
   this.scanReq = new ScanRequest();
   this.scanResp = new ScanResponse();
 
-  this.listeners = new ArraySet();
+  this.listeners = new Set();
   this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
   this.addListener(this.eventDistributor);
   this.resizeFn = this.getResizeFn();
@@ -378,14 +378,13 @@ WorldScreen.prototype.getResizeFn = function() {
  */
 WorldScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
-  let list = this.listeners.getValues();
-  for (let i = 0; i < list.length; i++) {
-    if (listen) {
-      list[i].startListening();
-    } else {
-      list[i].stopListening();
-    }
-  }
+  this.listeners.forEach(function(listener) {
+      if (listen) {
+        listener.startListening();
+      } else {
+        listener.stopListening();
+      }
+    });
   if (listen) {
     window.addEventListener('resize', this.resizeFn);
   } else {

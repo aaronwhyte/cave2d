@@ -29,7 +29,7 @@ function MousePointer(canvas, viewMatrix, queueing) {
   this.vec4 = new Vec4();
   this.canvasToClip = new Matrix44();
 
-  var self = this;
+  let self = this;
   this.mouseDownListener = function(e) {
     self.onMouseDown(e);
   };
@@ -40,7 +40,7 @@ function MousePointer(canvas, viewMatrix, queueing) {
     self.onMouseUp(e);
   };
 
-  this.domEventListeners = new ArraySet();
+  this.domEventListeners = new Set();
 
   this.listening = false;
 }
@@ -83,7 +83,7 @@ MousePointer.prototype.addListener = function(fn) {
  * @param {Function} fn
  */
 MousePointer.prototype.removeListener = function(fn) {
-  this.domEventListeners.remove(fn);
+  this.domEventListeners.delete(fn);
 };
 
 MousePointer.prototype.getQueueSize = function() {
@@ -104,7 +104,7 @@ MousePointer.prototype.setViewMatrix = function(viewMatrix) {
   viewMatrix.getInverse(this.inverseViewMatrix);
   if (!this.listening) return;
 
-  var e = PointerEvent.alloc();
+  let e = PointerEvent.alloc();
   e.type = PointerEvent.TYPE_MOVE;
   e.pointerId = MousePointer.MOUSE_ID;
   e.time = Date.now();
@@ -147,7 +147,7 @@ MousePointer.prototype.onMouseUp = function(e) {
 };
 
 MousePointer.prototype.down = function(x, y) {
-  var e = PointerEvent.alloc();
+  let e = PointerEvent.alloc();
   e.type = PointerEvent.TYPE_DOWN;
   e.pointerId = MousePointer.MOUSE_ID;
   e.time = Date.now();
@@ -162,7 +162,7 @@ MousePointer.prototype.down = function(x, y) {
 };
 
 MousePointer.prototype.move = function(x, y) {
-  var e = PointerEvent.alloc();
+  let e = PointerEvent.alloc();
   e.type = PointerEvent.TYPE_MOVE;
   e.pointerId = MousePointer.MOUSE_ID;
   e.time = Date.now();
@@ -183,7 +183,7 @@ MousePointer.prototype.enqueue = function(e) {
 };
 
 MousePointer.prototype.up = function(x, y) {
-  var e = PointerEvent.alloc();
+  let e = PointerEvent.alloc();
   e.type = PointerEvent.TYPE_UP;
   e.pointerId = MousePointer.MOUSE_ID;
   e.time = Date.now();
@@ -198,10 +198,7 @@ MousePointer.prototype.up = function(x, y) {
 };
 
 MousePointer.prototype.callListeners = function(e) {
-  var listeners = this.domEventListeners.vals;
-  for (var i = 0; i < listeners.length; i++) {
-    listeners[i](e);
-  }
+  this.domEventListeners.forEach((v) => v(e));
 };
 
 /**

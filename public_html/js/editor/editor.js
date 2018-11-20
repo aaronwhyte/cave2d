@@ -24,7 +24,11 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
 
   this.initWidgets(glyphs.initStamps(renderer.gl), editorStamps);
 
-  this.topLeftTriggers = [this.addTriggerWidget, this.removeTriggerWidget];
+  if (host.addItem) {
+    this.topLeftTriggers = [this.addTriggerWidget, this.removeTriggerWidget];
+  } else {
+    this.topLeftTriggers = [];
+  }
   this.bottomLeftTriggers = [this.fillTriggerWidget, this.digTriggerWidget, this.gripTriggerWidget];
   this.leftTriggers = this.topLeftTriggers.concat(this.bottomLeftTriggers);
 

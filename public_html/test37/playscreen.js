@@ -5,7 +5,7 @@
 function PlayScreen(controller, canvas, renderer, glyphs, stamps, sfx) {
   BaseScreen.call(this, controller, canvas, renderer, glyphs, stamps, sfx);
 
-  this.listeners = new ArraySet();
+  this.listeners = new Set();
   this.splasher = new Splasher();
   this.splash = new Splash();
 
@@ -110,9 +110,7 @@ PlayScreen.prototype.setScreenListening = function(listen) {
   var fsb, rb, i;
   BaseScreen.prototype.setScreenListening.call(this, listen);
   if (listen) {
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].startListening();
-    }
+    this.listeners.forEach((v) => { v.startListening() });
     fsb = document.querySelector('#fullScreenButton');
     fsb.addEventListener('click', this.fullScreenFn);
     fsb.addEventListener('touchend', this.fullScreenFn);
@@ -122,9 +120,7 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     rb.addEventListener('touchend', this.pauseDownFn);
 
   } else {
-    for (i = 0; i < this.listeners.vals.length; i++) {
-      this.listeners.vals[i].stopListening();
-    }
+    this.listeners.forEach((v) => { v.stopListening() });
     fsb = document.querySelector('#fullScreenButton');
     fsb.removeEventListener('click', this.fullScreenFn);
     fsb.removeEventListener('touchend', this.fullScreenFn);

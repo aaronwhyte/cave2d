@@ -65,7 +65,7 @@ LayeredEventDistributor.prototype.addEventListenerToLayer = function(eventName, 
   } else {
     var layer = this.layers[layerNum];
     if (!layer[eventName]) {
-      layer[eventName] = new ArraySet();
+      layer[eventName] = new Set();
     }
     layer[eventName].add(listenerFn);
   }
@@ -77,7 +77,7 @@ LayeredEventDistributor.prototype.removeEventListenerFromLayer = function(eventN
   } else {
     var layer = this.layers[layerNum];
     if (layer[eventName]) {
-      layer[eventName].remove(listenerFn);
+      layer[eventName].delete(listenerFn);
     }
   }
 };
@@ -92,22 +92,22 @@ LayeredEventDistributor.prototype.getFakeLayerElement = function(layerNum) {
  * @param e
  */
 LayeredEventDistributor.prototype.handleEvent = function(name, e) {
+  let canvas = this.canvas;
   this.nowHandlingEvents = true;
   var stop = false;
   for (var layerNum = 0; !stop && layerNum < this.layerCount; layerNum++) {
     var layer = this.layers[layerNum];
     var listeners = layer[name];
     if (listeners) {
-      for (var i = 0; i < listeners.vals.length; i++) {
-        var fn = listeners.vals[i];
+      listeners.forEach(function(fn) {
         // Call the function using the canvas element as the "this".
-        var result = fn.call(this.canvas, e);
+        var result = fn.call(canvas, e);
         if (result === false) {
           // The handler returned false, so don't distribute the event to any more layers
           // (but finish this layer).
           stop = true;
         }
-      }
+      });
     }
   }
   this.nowHandlingEvents = false;
@@ -115,9 +115,9 @@ LayeredEventDistributor.prototype.handleEvent = function(name, e) {
   // Those actions are deferred until nnnow.
   for (var i = 0; i < this.deferred.length; i++) {
     var d = this.deferred[i];
-    if (d[0] == LayeredEventDistributor.ADD_LISTENER) {
+    if (d[0] === LayeredEventDistributor.ADD_LISTENER) {
       this.addEventListenerToLayer(d[1], d[2], d[3]);
-    } else if (d[0] == LayeredEventDistributor.REMOVE_LISTENER) {
+    } else if (d[0] === LayeredEventDistributor.REMOVE_LISTENER) {
       this.removeEventListenerFromLayer(d[1], d[2], d[3]);
     }
   }

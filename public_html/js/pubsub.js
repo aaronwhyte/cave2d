@@ -4,7 +4,7 @@
  * @constructor
  */
 PubSub = function() {
-  this.subs = new ArraySet();
+  this.subs = new Set();
 };
 
 /**
@@ -20,7 +20,7 @@ PubSub.prototype.subscribe = function(func) {
  * @param {Object} func
  */
 PubSub.prototype.unsubscribe = function(func) {
-  this.subs.remove(func);
+  this.subs.delete(func);
 };
 
 /**
@@ -28,9 +28,9 @@ PubSub.prototype.unsubscribe = function(func) {
  * passing all arguments along.  Calls the functions in the global context.
  */
 PubSub.prototype.publish = function(/* whatever */) {
-  for (var i = 0, n = this.subs.vals.length; i < n; ++i) {
-    this.subs.vals[i].apply(null, arguments);
-  }
+  this.subs.forEach((v) => {
+    v.apply(null, arguments)
+  });
 };
 
 /**

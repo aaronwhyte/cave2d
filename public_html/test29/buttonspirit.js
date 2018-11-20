@@ -19,14 +19,12 @@ function ButtonSpirit() {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 
-  this.overlapIds = new ArraySet();
-
-  this.clicked = false;
+  this.overlapIds = new Set();
 }
 ButtonSpirit.prototype = new Spirit();
 ButtonSpirit.prototype.constructor = ButtonSpirit;
 
-ButtonSpirit.POINTER_RADIUS = 0.0;
+ButtonSpirit.POINTER_RADIUS = 0.2;
 
 ButtonSpirit.prototype.setMultiPointer = function(multiPointer) {
   this.multiPointer = multiPointer;
@@ -42,7 +40,7 @@ ButtonSpirit.prototype.setOnClick = function(func) {
 
 ButtonSpirit.prototype.lookForClick = function(world, renderer) {
   // I don't trust a long-lived cache, so re-initialize it now.
-  this.overlapIds.reset();
+  this.overlapIds.clear();
   for (var pointerId in this.multiPointer.oldPositions) {
     var oldPos = this.multiPointer.oldPositions[pointerId];
     if (oldPos && this.isOverlapping(world, oldPos)) {
@@ -52,50 +50,26 @@ ButtonSpirit.prototype.lookForClick = function(world, renderer) {
   // Process all events.
   for (var i = 0, n = this.multiPointer.getQueueSize(); i < n; i++) {
     var e = this.multiPointer.getPointerEventFromTail(i);
-    if (this.processPointerEvent(world, renderer, e)) {
-      break;
-    }
-  }
-
-  this.overlapIds.reset();
-  for (var pointerId in this.multiPointer.positions) {
-    var pos = this.multiPointer.positions[pointerId];
-    if (pos && this.isOverlapping(world, pos)) {
-      this.overlapIds.add(pointerId);
-    }
-  }
-};
-
-/**
- * @param {World} world
- * @param {Renderer} renderer
- * @param {PointerEvent} e
- * @returns {boolean} true if a new overlap is detected
- */
-ButtonSpirit.prototype.processPointerEvent = function(world, renderer, e) {
-  if (this.overlapIds.contains(e.pointerId)) {
-    // Look for an 'up' or a move-out to clear the overlap.
-    if (e.type == PointerEvent.TYPE_UP) {
-      this.overlapIds.remove(e.pointerId);
-    } else if (e.type == PointerEvent.TYPE_MOVE && !this.isOverlapping(world, e.pos)) {
-      this.overlapIds.remove(e.pointerId);
-    }
-  } else {
-    // Look for a down or move-in to start a new overlap.
-    if (e.type == PointerEvent.TYPE_DOWN || e.type == PointerEvent.TYPE_MOVE) {
-      if (this.isOverlapping(world, e.pos)) {
-        this.vec4.setXYZ(e.pos.x, e.pos.y, 0);
-        this.vec4.transform(renderer.getViewMatrix());
-        if (!this.clicked) {
+    if (this.overlapIds.has(e.pointerId)) {
+      // Look for an 'up' or a move-out to clear the overlap.
+      if (e.type === PointerEvent.TYPE_UP) {
+        this.overlapIds.delete(e.pointerId);
+      } else if (e.type === PointerEvent.TYPE_MOVE && !this.isOverlapping(world, e.pos)) {
+        this.overlapIds.delete(e.pointerId);
+      }
+    } else {
+      // Look for a down or move-in to start a new overlap.
+      if (e.type === PointerEvent.TYPE_DOWN || e.type === PointerEvent.TYPE_MOVE) {
+        if (this.isOverlapping(world, e.pos)) {
+          this.vec4.setXYZ(e.pos.x, e.pos.y, 0);
+          this.vec4.transform(renderer.getViewMatrix());
           this.onClick(world, this.vec4.v[0], this.vec4.v[1]);
-          this.clicked = true;
+          // Only allow one per frame.
+          break;
         }
-        // Only allow one per frame.
-        return true;
       }
     }
   }
-  return false;
 };
 
 ButtonSpirit.prototype.onDraw = function(world, renderer) {
@@ -107,11 +81,11 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
     life = 1 - (Date.now() - this.lastSoundMs) / this.soundLength;
     var t = Date.now() / 300;
     this.color.setXYZ(
-            1 + life * Math.sin(t + 0),
-            1 + life * Math.sin(t + 2*Math.PI/3),
-            1 + life * Math.sin(t + 2*2*Math.PI/3));
+        0.5 + life * 0.5 * Math.sin(t + 0),
+        0.5 + life * 0.5 * Math.sin(t + 2*Math.PI/3),
+        0.5 + life * 0.5 * Math.sin(t + 2*2*Math.PI/3));
   } else {
-    this.color.setXYZ(1, 1, 1);
+    this.color.setXYZ(0.5, 0.5, 0.5);
   }
   var body = this.getBody(world);
   var bodyPos = body.getPosAtTime(world.now, this.vec2d);
@@ -119,10 +93,9 @@ ButtonSpirit.prototype.onDraw = function(world, renderer) {
       .setStamp(this.modelStamp)
       .setColorVector(this.color);
   this.modelMatrix.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0);
+  this.modelMatrix.multiply(this.mat44.toScaleOpXYZ(1, 1, 1+life));
   renderer.setModelMatrix(this.modelMatrix);
   renderer.drawStamp();
-
-  this.clicked = false;
 };
 
 ButtonSpirit.prototype.getBody = function(world) {

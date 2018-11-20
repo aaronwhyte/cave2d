@@ -49,7 +49,7 @@ function MultiPointer(canvas, viewMatrix, queueing) {
     self.onMouseUp(e);
   };
 
-  this.domEventListeners = new ArraySet();
+  this.domEventListeners = new Set();
 
   this.listening = false;
 }
@@ -111,7 +111,7 @@ MultiPointer.prototype.addListener = function(fn) {
  * @param {Function} fn
  */
 MultiPointer.prototype.removeListener = function(fn) {
-  this.domEventListeners.remove(fn);
+  this.domEventListeners.delete(fn);
 };
 
 MultiPointer.prototype.getQueueSize = function() {
@@ -274,10 +274,7 @@ MultiPointer.prototype.up = function(id, x, y) {
 };
 
 MultiPointer.prototype.callListeners = function(e) {
-  var listeners = this.domEventListeners.vals;
-  for (var i = 0; i < listeners.length; i++) {
-    listeners[i](e);
-  }
+  this.domEventListeners.forEach((v) => v(e));
 };
 
 /**

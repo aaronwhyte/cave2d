@@ -41,7 +41,7 @@ function Game3BaseScreen(controller, canvas, renderer, glyphs, stamps, sfx, adve
   this.scanReq = new ScanRequest();
   this.scanResp = new ScanResponse();
 
-  this.listeners = new ArraySet();
+  this.listeners = new Set();
   this.eventDistributor = new LayeredEventDistributor(this.canvas, 3);
   this.addListener(this.eventDistributor);
   this.resizeFn = this.getResizeFn();

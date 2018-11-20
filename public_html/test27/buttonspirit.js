@@ -19,7 +19,7 @@ function ButtonSpirit() {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 
-  this.overlapIds = new ArraySet();
+  this.overlapIds = new Set();
 }
 ButtonSpirit.prototype = new Spirit();
 ButtonSpirit.prototype.constructor = ButtonSpirit;
@@ -40,7 +40,7 @@ ButtonSpirit.prototype.setOnClick = function(func) {
 
 ButtonSpirit.prototype.lookForClick = function(world, renderer) {
   // I don't trust a long-lived cache, so re-initialize it now.
-  this.overlapIds.reset();
+  this.overlapIds.clear();
   for (var pointerId in this.multiPointer.oldPositions) {
     var oldPos = this.multiPointer.oldPositions[pointerId];
     if (oldPos && this.isOverlapping(world, oldPos)) {
@@ -50,16 +50,16 @@ ButtonSpirit.prototype.lookForClick = function(world, renderer) {
   // Process all events.
   for (var i = 0, n = this.multiPointer.getQueueSize(); i < n; i++) {
     var e = this.multiPointer.getPointerEventFromTail(i);
-    if (this.overlapIds.contains(e.pointerId)) {
+    if (this.overlapIds.has(e.pointerId)) {
       // Look for an 'up' or a move-out to clear the overlap.
-      if (e.type == PointerEvent.TYPE_UP) {
-        this.overlapIds.remove(e.pointerId);
-      } else if (e.type == PointerEvent.TYPE_MOVE && !this.isOverlapping(world, e.pos)) {
-        this.overlapIds.remove(e.pointerId);
+      if (e.type === PointerEvent.TYPE_UP) {
+        this.overlapIds.delete(e.pointerId);
+      } else if (e.type === PointerEvent.TYPE_MOVE && !this.isOverlapping(world, e.pos)) {
+        this.overlapIds.delete(e.pointerId);
       }
     } else {
       // Look for a down or move-in to start a new overlap.
-      if (e.type == PointerEvent.TYPE_DOWN || e.type == PointerEvent.TYPE_MOVE) {
+      if (e.type === PointerEvent.TYPE_DOWN || e.type === PointerEvent.TYPE_MOVE) {
         if (this.isOverlapping(world, e.pos)) {
           this.vec4.setXYZ(e.pos.x, e.pos.y, 0);
           this.vec4.transform(renderer.getViewMatrix());

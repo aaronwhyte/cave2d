@@ -57,7 +57,7 @@ LayeredEventDistributor.prototype.stopListening = function() {
 LayeredEventDistributor.prototype.addEventListenerToLayer = function(eventName, listenerFn, layerNum) {
   var layer = this.layers[layerNum];
   if (!layer[eventName]) {
-    layer[eventName] = new ArraySet();
+    layer[eventName] = new Set();
   }
   layer[eventName].add(listenerFn);
 };
@@ -65,7 +65,7 @@ LayeredEventDistributor.prototype.addEventListenerToLayer = function(eventName, 
 LayeredEventDistributor.prototype.removeEventListenerFromLayer = function(eventName, listenerFn, layerNum) {
   var layer = this.layers[layerNum];
   if (layer[eventName]) {
-    layer[eventName].remove(listenerFn);
+    layer[eventName].delete(listenerFn);
   }
 };
 
@@ -79,21 +79,21 @@ LayeredEventDistributor.prototype.getFakeLayerElement = function(layerNum) {
  * @param e
  */
 LayeredEventDistributor.prototype.handleEvent = function(name, e) {
+  let canvas = this.canvas;
   var stop = false;
   for (var layerNum = 0; !stop && layerNum < this.layerCount; layerNum++) {
     var layer = this.layers[layerNum];
     var listeners = layer[name];
     if (listeners) {
-      for (var i = 0; i < listeners.vals.length; i++) {
-        var fn = listeners.vals[i];
+      listeners.forEach(function(fn) {
         // Call the function using the canvas element as the "this".
-        var result = fn.call(this.canvas, e);
+        let result = fn.call(canvas, e);
         if (result === false) {
           // The handler returned false, so don't distribute the event to any more layers
           // (but finish this layer).
           stop = true;
         }
-      }
+      });
     }
   }
 };
