@@ -13,7 +13,12 @@ v replace & delete ObjSet
 v replace & delete ArraySet
 v replace & delete my Map class
 
-2018-11-19
+DONE 2018-11-20
+Let a player play entirely with the mouse, to (eventually) free up the keyboard for more players.
+v add mouse right/left buttons to pointerlocked controller. Except Safari where right-click is unblockable?
+v fix MouseButtonTrigger button detection when both buttons are held.
+v remove right-click context menu on the canvas on Safari
+
 intro page
 - new page & screen classes, standard
 - it's the first level I guess?
