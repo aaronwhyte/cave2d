@@ -77,6 +77,9 @@ ScreenPage.prototype.enterDoc = function() {
   this.canvas.addEventListener('touchend', Dom.pd);
   window.addEventListener('scroll', Dom.pd);
 
+  // prevent right-click context menu
+  this.canvas.addEventListener('contextmenu', Dom.pd);
+
   // load level
   this.jsonObj = this.fileTree.getFile(this.levelDataPath);
 };
