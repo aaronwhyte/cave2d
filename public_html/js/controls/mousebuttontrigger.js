@@ -6,28 +6,24 @@
 function MouseButtonTrigger(elem) {
   Trigger.call(this);
   this.elem = elem || document;
-  var self = this;
+  let self = this;
 
   this.listenToLeftButton = true;
 
   this.downListener = function(e) {
     if (!e) e = window.event;
-    if (MouseButtonTrigger.isLeftButton(e) == self.listenToLeftButton) {
+    if (MouseButtonTrigger.isLeftButton(e) === self.listenToLeftButton) {
       self.val = true;
       self.publishTriggerDown(e);
-
-      // For LayeredEventDistributor
-      return false;
+      return false; // tells LayeredEventDistributor this was handled
     }
   };
   this.upListener = function(e) {
     if (!e) e = window.event;
-    if (MouseButtonTrigger.isLeftButton(e) == self.listenToLeftButton) {
+    if (MouseButtonTrigger.isLeftButton(e) === self.listenToLeftButton) {
       self.val = false;
       self.publishTriggerUp(e);
-
-      // For LayeredEventDistributor
-      return false;
+      return false; // tells LayeredEventDistributor this was handled
     }
   };
 }
@@ -45,12 +41,10 @@ MouseButtonTrigger.prototype.setListenToLeftButton = function(b) {
 };
 
 MouseButtonTrigger.isLeftButton = function(e) {
-  if (e.buttons) {
-    return !!(e.buttons & 1);
-  } else if ((typeof e.button) != 'undefined') {
-    return e.button == 0;
+  if ((typeof e.button) !== 'undefined') {
+    return e.button === 0;
   } else {
-    return e.which == 1;
+    return e.which === 1;
   }
 };
 

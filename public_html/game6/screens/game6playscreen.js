@@ -231,23 +231,33 @@ Game6PlayScreen.prototype.configurePlayerSlots = function() {
   // POINTER AND KEYBOARD
   /////////////////////////
   function createPointerLockSlot(name, action0Key, dropKey, menuKey) {
-    // Only join on mouse-click, since that's a good indication you have a mouse in hand,
+    // Join on mouse-click too, since that's a good indication you have a mouse in hand,
     // and it starts the Pointer Lock process.
     return new PlayerSlot(name)
         .addControlState(ControlState.WAITING, new ControlMap()
-            .addControl(ControlName.JOIN_TRIGGER, new MultiTrigger()
-                .addTrigger(new MouseButtonTrigger(self.canvas))
-                .addTrigger(new KeyTrigger()
-                    .addTriggerKeyByName(action0Key)
-                    .addTriggerKeyByName(dropKey)
-                    .addTriggerKeyByName(menuKey)
-                )))
+            .addControl(ControlName.JOIN_TRIGGER,
+                new MultiTrigger()
+                    .addTrigger(new MouseButtonTrigger())
+                    .addTrigger(new MouseButtonTrigger().setListenToLeftButton(false))
+                    .addTrigger(new KeyTrigger()
+                        .addTriggerKeyByName(action0Key)
+                        .addTriggerKeyByName(dropKey)
+                        .addTriggerKeyByName(menuKey)
+                  )
+            )
+        )
         .addControlState(ControlState.PLAYING, new ControlMap(ControlMap.USE_EVENT_QUEUE)
             .addControl(ControlName.STICK, new PointerLockStick(self.canvas).setRadius(100))
-            .addControl(ControlName.ACTION_0, new MultiTrigger()
-                .addTrigger(new MouseButtonTrigger(self.canvas))
-                .addTrigger(new KeyTrigger().addTriggerKeyByName(action0Key)))
-            .addControl(ControlName.DROP_ITEM, new KeyTrigger().addTriggerKeyByName(dropKey))
+            .addControl(ControlName.ACTION_0,
+                new MultiTrigger()
+                    .addTrigger(new MouseButtonTrigger())
+                    .addTrigger(new KeyTrigger().addTriggerKeyByName(action0Key))
+            )
+            .addControl(ControlName.DROP_ITEM,
+                new MultiTrigger()
+                    .addTrigger(new MouseButtonTrigger().setListenToLeftButton(false))
+                    .addTrigger(new KeyTrigger().addTriggerKeyByName(dropKey))
+            )
             .addControl(ControlName.MENU, new KeyTrigger().addTriggerKeyByName(menuKey))
         );
   }
