@@ -57,8 +57,9 @@ TestLevelPage.prototype.maybeCreateScreen = function() {
   this.screen.initWidgets();
   this.screen.updateHudLayout();
   this.screen.initWorld();
-  if (this.jsonObj) {
-    this.screen.loadWorldFromJson(this.jsonObj);
+  let levelObj = this.getLevelJsonObj();
+  if (levelObj) {
+    this.screen.loadWorldFromJson(levelObj);
   } else {
     this.screen.createDefaultWorld();
   }

@@ -19,8 +19,8 @@ EditLevelPage.prototype.maybeSaveLevel = function() {
     console.warn('No screen, cannot get JSON to save level: ' + this.levelName);
     return;
   }
-  this.jsonObj = this.screen.worldToJson();
-  this.fileTree.setFile(this.levelDataPath, this.jsonObj);
+  this.setLevelJsonObj(this.screen.worldToJson());
+  this.fileTree.setFile(this.levelDataPath, this.getLevelJsonObj());
 };
 
 EditLevelPage.prototype.refreshPauseMenu = function() {
@@ -55,8 +55,9 @@ EditLevelPage.prototype.maybeCreateScreen = function() {
   this.screen.initEditor();
   this.screen.updateHudLayout();
   this.screen.initWorld();
-  if (this.jsonObj) {
-    this.screen.loadWorldFromJson(this.jsonObj);
+  let levelObj = this.getLevelJsonObj();
+  if (levelObj) {
+    this.screen.loadWorldFromJson(levelObj);
   } else {
     this.screen.createDefaultWorld();
   }

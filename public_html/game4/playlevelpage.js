@@ -41,7 +41,7 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
     console.log('no renderer');
     return;
   }
-  if (!this.jsonObj) {
+  if (!this.getLevelJsonObj()) {
     console.log('no jsonObj');
     return;
   }
@@ -51,7 +51,7 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
       this.adventureName, this.levelName);
   this.screen.updateHudLayout();
   this.screen.initWorld();
-  this.screen.loadWorldFromJson(this.jsonObj);
+  this.screen.loadWorldFromJson(this.getLevelJsonObj());
   this.screen.configurePlayerSlots();
   this.screen.setPaused(this.paused);
   this.screen.snapCameraToEntrance();

@@ -1,13 +1,13 @@
 /**
  * WebGL page baseclass
  * @param {BaseApp} app
- * @param {String} gameTitle
- * @param {Array.<String>} basePath of the game
- * @param {FileTree} fileTree
- * @param {String} adventureName
- * @param {String} levelName
+ * @param {String} gameTitle  Used in the pause menu only
+ * @param {Array.<String>} basePath  The root path of the game in the fileTree
+ * @param {FileTree} fileTree The whole localStorage-like file system
+ * @param {String} adventureName  The name of the adventure, used as part of the FileTree path.
+ * @param {String} levelName  The level name used as part of the FileTree path.
  * @param {*} startingGameState  Whatever state the game wants to preserve when changing levels.
- *      Child classes might use it.
+ *      Child classes can use it for keeping track of the active player slots, for instance.
  * @constructor
  * @extends (Page)
  */
@@ -36,6 +36,10 @@ function ScreenPage(app, gameTitle, basePath, fileTree, adventureName, levelName
 ScreenPage.prototype = new Page();
 ScreenPage.prototype.constructor = ScreenPage;
 
+/**
+ * Creates the canvas element and the pause menu DOM, generates sound-unlocker,
+ * prevents pinching and scrolling and right-click context menus, and load
+ */
 ScreenPage.prototype.enterDoc = function() {
   Page.prototype.enterDoc.call(this);
   if (this.canvas || this.pauseMenuDiv) {
@@ -79,9 +83,25 @@ ScreenPage.prototype.enterDoc = function() {
 
   // prevent right-click context menu
   this.canvas.addEventListener('contextmenu', Dom.pd);
+};
 
-  // load level
-  this.jsonObj = this.fileTree.getFile(this.levelDataPath);
+/**
+ * @returns {Object} The level JSON object
+ */
+ScreenPage.prototype.getLevelJsonObj = function() {
+  if (!this.jsonObj) {
+    this.jsonObj = this.fileTree.getFile(this.levelDataPath);
+  }
+  return this.jsonObj;
+};
+
+/**
+ * Saves the level JSON to storage.
+ * @param jsonObj The new level JSON object
+ */
+ScreenPage.prototype.setLevelJsonObj = function(jsonObj) {
+  this.jsonObj = jsonObj;
+  this.fileTree.setFile(this.levelDataPath, this.jsonObj);
 };
 
 /**
