@@ -8,7 +8,7 @@
  * @param {String} levelName
  * @param {*} startingGameState
  * @constructor
- * @extends (Page)
+ * @extends (ScreenPage)
  */
 function PlayLevelPage(app, gameTitle, basePath, fileTree, adventureName, levelName, startingGameState) {
   ScreenPage.call(this, app, gameTitle, basePath, fileTree, adventureName, levelName, startingGameState);
@@ -18,14 +18,8 @@ PlayLevelPage.prototype.constructor = PlayLevelPage;
 
 PlayLevelPage.prototype.refreshPauseMenu = function() {
   let df = document.createDocumentFragment();
-  let e;
   this.appendTitle(df);
   this.appendFullScreenButton(df);
-
-  // Dom.ce('br', df);
-  // e = Dom.ce('button', df, 'smallButton');
-  // e.id = 'restartButton';
-  // e.innerHTML = Strings.textToHtml('restart level');
 
   Dom.ce('br', df);
   this.appendResumeButton(df, 'play');
@@ -65,9 +59,3 @@ PlayLevelPage.prototype.exitLevel = function(exitGameState) {
   this.screen = null;
   this.app.exitLevel(this.adventureName, this.levelName, exitGameState);
 };
-
-// PlayLevelPage.prototype.restartLevel = function() {
-//   this.screen.destroyScreen();
-//   this.screen = null;
-//   this.app.restartLevel(this.startingGameState);
-// };

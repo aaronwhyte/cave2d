@@ -7,7 +7,7 @@
  * @param {String} adventureName
  * @param {String} levelName
  * @constructor
- * @extends (Page)
+ * @extends (ScreenPage)
  */
 function PlayLevelPage(app, gameTitle, basePath, fileTree, adventureName, levelName) {
   ScreenPage.call(this, app, gameTitle, basePath, fileTree, adventureName, levelName);
