@@ -46,10 +46,6 @@ PlayScreen.prototype.setScreenListening = function(listen) {
     fullScreenButton.addEventListener('click', this.fullScreenFn);
     fullScreenButton.addEventListener('touchend', this.fullScreenFn);
 
-    restartButton = document.querySelector('#restartButton');
-    restartButton.addEventListener('click', this.restartFn);
-    restartButton.addEventListener('touchend', this.restartFn);
-
     resumeButton = document.querySelector('#resumeButton');
     resumeButton.addEventListener('click', this.pauseDownFn);
     resumeButton.addEventListener('touchend', this.pauseDownFn);
