@@ -50,8 +50,6 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
   this.screen.setPaused(this.paused);
   this.screen.snapCameraToEntrance();
   this.screen.restoreGameState(this.startingGameState);
-
-  this.requestAnimation();
 };
 
 PlayLevelPage.prototype.exitLevel = function(exitGameState) {

@@ -50,8 +50,6 @@ PlayLevelPage.prototype.maybeCreateScreen = function() {
   this.screen.loadWorldFromJson(this.getLevelJsonObj());
   this.screen.setPaused(this.paused);
   this.screen.snapCameraToPlayers();
-
-  this.requestAnimation();
 };
 
 PlayLevelPage.prototype.exitLevel = function() {

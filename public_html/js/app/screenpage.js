@@ -37,6 +37,25 @@ ScreenPage.prototype = new Page();
 ScreenPage.prototype.constructor = ScreenPage;
 
 /**
+ * Child class, create this.screen.
+ * Called after this.renderer has been created.
+ */
+ScreenPage.prototype.maybeCreateScreen = function() {
+  throw 'implement maybeCreateScreen';
+};
+
+ScreenPage.prototype.refreshPauseMenu = function() {
+  throw 'implement refreshPauseMenu';
+};
+
+/**
+ * Called from exitDoc, mostly so editors can have a chance at storing the level
+ * before the world vanishes.
+ */
+ScreenPage.prototype.maybeSaveLevel = function() {
+};
+
+/**
  * Creates the canvas element and the pause menu DOM, generates sound-unlocker,
  * prevents pinching and scrolling and right-click context menus, and load
  */
@@ -142,17 +161,9 @@ ScreenPage.prototype.exitDoc = function() {
   this.oldMetaViewportContent = null;
 };
 
-ScreenPage.prototype.maybeSaveLevel = function() {
-  throw "implement maybeSaveLevel";
-};
-
 ScreenPage.prototype.setPaused = function(paused) {
   this.paused = paused;
   if (this.screen) this.screen.setPaused(this.paused);
-};
-
-ScreenPage.prototype.refreshPauseMenu = function() {
-  throw 'implement refreshPauseMenu';
 };
 
 ScreenPage.prototype.appendTitle = function(df) {
@@ -200,10 +211,7 @@ ScreenPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentSha
   this.renderer = new Renderer(this.canvas, gl, program);
 
   this.maybeCreateScreen();
-};
-
-ScreenPage.prototype.maybeCreateScreen = function() {
-  throw 'implement maybeCreateScreen';
+  this.requestAnimation();
 };
 
 ScreenPage.prototype.requestAnimation = function() {

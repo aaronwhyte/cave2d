@@ -80,6 +80,4 @@ EditLevelPage.prototype.maybeCreateScreen = function() {
     this.screen.createDefaultWorld();
   }
   this.screen.startRecordingChanges();
-
-  this.requestAnimation();
 };

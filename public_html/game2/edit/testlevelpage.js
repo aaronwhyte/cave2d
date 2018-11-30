@@ -63,6 +63,4 @@ TestLevelPage.prototype.maybeCreateScreen = function() {
   } else {
     this.screen.createDefaultWorld();
   }
-
-  this.requestAnimation();
 };
