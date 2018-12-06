@@ -24,8 +24,8 @@ intro page
 * Will include Printer-based text thingy hovering in the screen
 * World will come from editor, unless/until I get procgen working
 * whole screen is also listener to determine what input device is default for plr.
-- nest class
-- custom-made world runs in the bg
+v nest class
+v custom-made world runs in the bg
 - print game title
 - print "press mouse button, touchscreen, keyboard, or gamepad to begin"
 

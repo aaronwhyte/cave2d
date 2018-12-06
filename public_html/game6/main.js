@@ -6,7 +6,7 @@ function main() {
   app = new PlayApp('Game 6', basePath,
       'graphics/shaders/vertex-shader.glsl', 'graphics/shaders/fragment-shader.glsl',
       'adventures/test1.json',
-      PlayLevelPage);
+      IntroPage);
   app.start();
 }
 
