@@ -18,27 +18,17 @@ function Game6BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.camera = new Camera(0.02, Infinity, Game6BaseScreen.CAMERA_VIEW_DIST);
   this.camera.followFraction = 0.25;
-
   this.viewableWorldRect = new Rect();
   this.pixelsPerMeter = 100;
-
   this.exitStartTime = 0;
   this.exitEndTime = 0;
-
   this.vec2d = new Vec2d();
-
   this.lastPathRefreshTime = -Infinity;
-
   this.hudViewMatrix = new Matrix44();
-
   this.sounds.setMasterGain(0.5);
-
   this.models = models;
-
   this.splashes = new Splashes(this.splasher);
-
   this.levelColorVector.setRGBA(0.5 - Math.random() * 0.2, 0.5 - Math.random() * 0.2, 0.5 - Math.random() * 0.2, 1);
-
   this.timeMultiplier = 1;
 
   this.shouldDrawScans = false;
@@ -144,20 +134,6 @@ Game6BaseScreen.prototype.getHitPairs = function() {
 
         [g.PLAYER_WIDE_SCAN, g.ENEMY],
         [g.ENEMY_WIDE_SCAN, g.PLAYER],
-
-        // This is obsolete, but some levels have bodies with this hit-group
-        // and I don't have a migration in place yet.
-        // TODO: migrate old items to be NEUTRAL I think.
-        [g.ITEM, g.WALL],
-        [g.ITEM, g.NEUTRAL],
-        [g.ITEM, g.NEUTRAL_FIRE],
-        [g.ITEM, g.CURSOR],
-        [g.ITEM, g.PLAYER],
-        [g.ITEM, g.PLAYER_FIRE],
-        [g.ITEM, g.ENEMY],
-        [g.ITEM, g.ENEMY_FIRE],
-        [g.ITEM, g.ENEMY_SCAN],
-        [g.ITEM, g.ITEM],
 
         [g.EMPTY, g.EMPTY]
     ];
