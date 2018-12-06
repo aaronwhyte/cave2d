@@ -744,6 +744,9 @@ WorldScreen.prototype.now = function() {
   return this.world.now;
 };
 
+/**
+ * Draws all the spirits in the world.
+ */
 WorldScreen.prototype.drawSpirits = function() {
   let t = performance.now();
   for (let id in this.world.spirits) {
@@ -755,6 +758,13 @@ WorldScreen.prototype.drawSpirits = function() {
   this.spiritDrawMs += performance.now() - t;
 };
 
+/**
+ * Alters the terrain using a pill-shaped stroke.
+ * @param pos0
+ * @param pos1
+ * @param rad
+ * @param color
+ */
 WorldScreen.prototype.drawTerrainPill = function(pos0, pos1, rad, color) {
   let changedCellIds = this.tileGrid.drawTerrainPill(pos0, pos1, rad, color);
   if (changedCellIds.length) {
@@ -791,6 +801,7 @@ WorldScreen.prototype.drawTilesOverlappingCircles = function(circles) {
 
 /**
  * Draws all the spirits in cells that overlap the circles in the array. Array values may be null.
+ * Also draws all spirits that do not have bodies, because their positions are unknown.
  */
 WorldScreen.prototype.drawSpiritsOverlappingCircles = function(circles) {
   let t = performance.now();

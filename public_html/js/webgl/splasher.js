@@ -9,10 +9,19 @@ function Splasher() {
   this.drawMs = 0;
 }
 
+/**
+ * Copies the fields in the splash to a new splash managed by this splasher.
+ * @param {Splash} copyMe
+ */
 Splasher.prototype.addCopy = function(copyMe) {
   this.splashes.push(Splash.alloc().set(copyMe));
 };
 
+/**
+ * Use the bad kind of drawing where a splash knows its stamp and draws immediately, no batching.
+ * @param {Renderer} renderer
+ * @param {number} now
+ */
 Splasher.prototype.draw = function(renderer, now) {
   let t = performance.now();
   for (let i = 0; i < this.splashes.length;) {
@@ -37,6 +46,11 @@ Splasher.prototype.draw = function(renderer, now) {
   this.drawMs += performance.now() - t;
 };
 
+/**
+ * Use the good kind of drawing where splashes know modelIds and can use batched drawing.
+ * @param {Screen} screen
+ * @param {number} now
+ */
 Splasher.prototype.drawWithModelIds = function(screen, now) {
   let t = performance.now();
   for (let i = 0; i < this.splashes.length;) {

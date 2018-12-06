@@ -53,6 +53,7 @@ ScreenPage.prototype.refreshPauseMenu = function() {
  * before the world vanishes.
  */
 ScreenPage.prototype.maybeSaveLevel = function() {
+  // empty by default
 };
 
 /**
