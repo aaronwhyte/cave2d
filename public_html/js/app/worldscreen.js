@@ -68,7 +68,7 @@ function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans,
   this.statRenderDrawCount = 0;
   this.glyphs = new Glyphs(new GlyphMaker(0.5, 1), true);
   this.glyphs.initStamps(this.renderer.gl);
-  this.printer = new Printer(this.renderer, this.glyphs.stamps);
+  this.statPrinter = new Printer(this.renderer, this.glyphs.stamps);
   let mat4 = new Matrix44();
   this.printerStartMatrix = new Matrix44()
       .multiply(mat4.toTranslateOpXYZ(20, 20, -0.95))
@@ -993,7 +993,7 @@ WorldScreen.prototype.drawStats = function() {
     ;
     this.renderer.setViewMatrix(this.viewMatrix).setColorVector(Renderer.COLOR_WHITE);
     let drawCount = this.renderer.drawCount;
-    this.printer.printMultiLine(this.printerStartMatrix, this.printerNextCharMatrix, this.printerNextLineMatrix, txt);
+    this.statPrinter.printMultiLine(this.printerStartMatrix, this.printerNextCharMatrix, this.printerNextLineMatrix, txt);
     this.statRenderDrawCount += this.renderer.drawCount - drawCount;
   }
 };
