@@ -44,11 +44,13 @@ Game6IntroScreen.prototype.setScreenListening = function(listen) {
 };
 
 Game6IntroScreen.prototype.initPauseButtons = function() {
-  this.pauseKeyTrigger = new KeyTrigger();
-  this.pauseKeyTrigger
-      .addTriggerKeyByName(Key.Name.SPACE)
-      .addTriggerDownListener(this.pauseDownFn);
-  this.addListener(this.pauseKeyTrigger);
+  // There are no pause buttons!
+
+  // this.pauseKeyTrigger = new KeyTrigger();
+  // this.pauseKeyTrigger
+  //     .addTriggerKeyByName(Key.Name.SPACE)
+  //     .addTriggerDownListener(this.pauseDownFn);
+  // this.addListener(this.pauseKeyTrigger);
 };
 
 Game6IntroScreen.prototype.startExit = function(pos) {
@@ -114,16 +116,16 @@ Game6IntroScreen.prototype.drawText = function() {
   let off = 7;
   let size = 10;
   let titleY = this.canvas.height / width - sep;
-  let delay = 10;
+  let delay = 20;
   let start = 50;
 
   let ds = 0.1;
 
-  this.drawGlyph('G', -2 * sep - off, titleY, size, start,          -2,   -1,  ds,  0.1, -0.1, 0.01);
-  this.drawGlyph('A', -1 * sep - off, titleY, size, start + delay,  -0.3,  2,  ds,  0.3,   0,     0);
-  this.drawGlyph('M',  - off,         titleY, size, start + 2*delay, 0,    -2,  ds,    0.0,     -0.04,  0);
-  this.drawGlyph('E', sep - off,      titleY, size, start + 3*delay, 0.2, -2,  ds,  0.04, 0.1,     0.04);
-  this.drawGlyph('6', 2 * sep + off,  titleY, size, start + 5.75*delay, 0.3,  0.2, 0,    0, 0,    -0.015);
+  this.drawGlyph('G', -2 * sep - off, titleY, size, start,          -2,  -1,  ds,  0.1, -0.13, 0.01);
+  this.drawGlyph('A', -1 * sep - off, titleY, size, start + delay,  -0.3, 2,  ds,  0.3,   0,     0);
+  this.drawGlyph('M',  - off,         titleY, size, start + 2*delay, 0,  -3,  ds,    0.0,     -0.15,  0);
+  this.drawGlyph('E', sep - off,      titleY, size, start + 3*delay, 1,  -2,  ds,  -0.1, 0.1,     0);
+  this.drawGlyph('6', 2 * sep + off,  titleY, size, start + 5.5*delay, 0.3,  0.2, 0,    0, 0,    -0.015);
 };
 
 Game6IntroScreen.prototype.drawGlyph = function(c, x0, y0, s0, t0, dx, dy, ds, drx, dry, drz) {
