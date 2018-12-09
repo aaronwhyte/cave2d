@@ -72,6 +72,8 @@ void main(void) {
       gl_Position *= uViewMatrix;
       vColor = aVertexColor * uModelColor;
     }
+    // coord debug?
+    // vColor.xyz = gl_Position.xyz;
 
 //    vec2 distort = vec2(0, 0);
 //

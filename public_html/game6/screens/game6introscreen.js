@@ -8,8 +8,13 @@ function Game6IntroScreen(controller, canvas, renderer, stamps, sfx, adventureNa
 
   Game6BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
 
+  this.vec4 = new Vec4();
+  this.textMatrix = new Matrix44();
   this.updateViewMatrix();
   this.initPauseButtons();
+  this.introGlyphs = new Glyphs(new GlyphMaker(0.5, 90), false);
+  this.introGlyphs.initModels();
+  this.introGlyphs.initStamps(this.renderer.gl);
 }
 Game6IntroScreen.prototype = new Game6BaseScreen();
 Game6IntroScreen.prototype.constructor = Game6IntroScreen;
@@ -77,6 +82,8 @@ Game6IntroScreen.prototype.drawScene = function() {
   this.drawTiles();
   this.drawSpirits();
 
+  this.drawText();
+
   this.splasher.drawWithModelIds(this, this.world.now);
   this.flushBatchDrawers();
 
@@ -84,6 +91,66 @@ Game6IntroScreen.prototype.drawScene = function() {
   if (!this.paused) {
     this.controller.requestAnimation();
   }
+};
+
+Game6IntroScreen.prototype.drawText = function() {
+  if (!this.startTime) {
+    this.startTime = this.now();
+  }
+  // Squish all the text drawing into the front of the z buffer.
+  let squish = 10000;
+  let width = 0.04 * Math.min(this.canvas.width * 0.25, this.canvas.height * 0.33);
+  this.viewMatrix
+      .toIdentity()
+      .multiply(this.mat44.toScaleOpXYZ(
+          width / this.canvas.width,
+          width / this.canvas.height,
+          1 / squish))
+      .multiply(this.mat44.toTranslateOpXYZ(0, 0, -squish * 0.9))
+  ;
+  this.renderer.setViewMatrix(this.viewMatrix);
+
+  let sep = 30;
+  let off = 7;
+  let size = 10;
+  let titleY = this.canvas.height / width - sep;
+
+  this.drawGlyph('G', -2 * sep - off, titleY, size, 60,  -2,   -3, 0.1,  0.02, -0.04, 0.01);
+  this.drawGlyph('A', -1 * sep - off, titleY, size, 70,  -0.3,  2, 0.2,  0.03,   0,     0);
+  this.drawGlyph('M',  - off,         titleY, size, 80,  0.2, -5, 0.15, -0.04, 0.04,     0.04);
+  this.drawGlyph('E', sep - off,      titleY, size, 90,   0,    2, 0,    0.0,     -0.04,  0);
+  this.drawGlyph('6', 2 * sep + off,  titleY, size, 120,  0.3,  0.2, 0,    0, 0,    -0.01);
+};
+
+Game6IntroScreen.prototype.drawGlyph = function(c, x0, y0, s0, t0, dx, dy, ds, drx, dry, drz) {
+  let t = 0.015 * Math.pow(Math.max(0, this.startTime + t0 - this.now()), 2);
+
+  let x = x0 + dx * t;
+  let y = y0 + dy * t;
+  let s = s0 + ds * t;
+  let rx = drx * t;
+  let ry = dry * t;
+  let rz = drz * t;
+
+  this.textMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(x, y, 0))
+      .multiply(this.mat44.toScaleOpXYZ(s, s, s))
+      .multiply(this.mat44.toRotateXOp(rx))
+      .multiply(this.mat44.toRotateYOp(ry))
+      .multiply(this.mat44.toRotateZOp(rz))
+  ;
+  let b = Math.max(0, 1 - t / 20);
+  let n = -this.now() * 0.05;
+  this.renderer
+      .setColorVector(this.vec4.setXYZ(b*b, b*b, b*b))
+      // .setColorVector(this.vec4.setXYZ(
+      //     b * (0.9 + 0.1 * (Math.sin(t0 * 0.1 + n) * 0.5 + 0.5)),
+      //     b * (0.2 * (Math.sin(t0*0.1 + 2 * Math.PI * 0.33 + n*0.8731231) / 2 + 0.5)),
+      //     Math.pow(b * (0.9 + 0.1 * (Math.sin(t0*0.1 + 2 * Math.PI * 0.66 + n * 0.7298712) / 2 + 0.5)), 10)
+      // ))
+      .setStamp(this.introGlyphs.stamps[c])
+      .setModelMatrix(this.textMatrix)
+      .drawStamp();
 };
 
 Game6IntroScreen.prototype.isPlaying = function() {

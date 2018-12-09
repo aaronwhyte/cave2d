@@ -588,18 +588,18 @@ WorldScreen.prototype.updateViewMatrix = function() {
   // scale
   this.viewMatrix.toIdentity();
   let pixelsPerMeter = this.getPixelsPerMeter();
+  let camera = this.getCamera();
+  let squish = 1000;
   this.viewMatrix
       .multiply(this.mat44.toScaleOpXYZ(
           pixelsPerMeter / this.canvas.width,
           pixelsPerMeter / this.canvas.height,
-          0.2));
-
-  // center
-  let camera = this.getCamera();
-  this.viewMatrix.multiply(this.mat44.toTranslateOpXYZ(
-      -camera.getX(),
-      -camera.getY(),
-      0));
+          1 / squish))
+      .multiply(this.mat44.toTranslateOpXYZ(
+          -camera.getX(),
+          -camera.getY(),
+          0.9 * squish))
+  ;
 };
 
 //////////////////////
