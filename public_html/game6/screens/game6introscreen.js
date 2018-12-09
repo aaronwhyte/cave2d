@@ -12,7 +12,7 @@ function Game6IntroScreen(controller, canvas, renderer, stamps, sfx, adventureNa
   this.textMatrix = new Matrix44();
   this.updateViewMatrix();
   this.initPauseButtons();
-  this.introGlyphs = new Glyphs(new GlyphMaker(0.5, 30), false);
+  this.introGlyphs = new Glyphs(new GlyphMaker(0.5, 1), false);
   this.introGlyphs.initModels();
   this.introGlyphs.initStamps(this.renderer.gl);
 }
@@ -114,18 +114,20 @@ Game6IntroScreen.prototype.drawText = function() {
   let off = 7;
   let size = 10;
   let titleY = this.canvas.height / width - sep;
-  let delay = 7;
-  let start = 10;
+  let delay = 10;
+  let start = 50;
 
-  this.drawGlyph('G', -2 * sep - off, titleY, size, start,          -2,   -3,  -1,  0.02, -0.04, 0.01);
-  this.drawGlyph('A', -1 * sep - off, titleY, size, start + delay,  -0.3,  2,  -1,  0.03,   0,     0);
-  this.drawGlyph('M',  - off,         titleY, size, start + 2*delay, 0,    2,  -1,    0.0,     -0.04,  0);
-  this.drawGlyph('E', sep - off,      titleY, size, start + 3*delay, 0.2, -5,  -1,  0.04, 0.04,     0.04);
+  let ds = 0.1;
+
+  this.drawGlyph('G', -2 * sep - off, titleY, size, start,          -2,   -1,  ds,  0.1, -0.1, 0.01);
+  this.drawGlyph('A', -1 * sep - off, titleY, size, start + delay,  -0.3,  2,  ds,  0.3,   0,     0);
+  this.drawGlyph('M',  - off,         titleY, size, start + 2*delay, 0,    -2,  ds,    0.0,     -0.04,  0);
+  this.drawGlyph('E', sep - off,      titleY, size, start + 3*delay, 0.2, -2,  ds,  0.04, 0.1,     0.04);
   this.drawGlyph('6', 2 * sep + off,  titleY, size, start + 5.75*delay, 0.3,  0.2, 0,    0, 0,    -0.015);
 };
 
 Game6IntroScreen.prototype.drawGlyph = function(c, x0, y0, s0, t0, dx, dy, ds, drx, dry, drz) {
-  let t = 0.06 * Math.pow(Math.max(0, this.startTime + t0 - this.now()), 2.4);
+  let t = 0.02 * Math.pow(Math.max(0, this.startTime + t0 - this.now()), 2);
 
   let x = x0 + dx * t;
   let y = y0 + dy * t;
