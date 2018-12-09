@@ -12,7 +12,7 @@ function Game6IntroScreen(controller, canvas, renderer, stamps, sfx, adventureNa
   this.textMatrix = new Matrix44();
   this.updateViewMatrix();
   this.initPauseButtons();
-  this.introGlyphs = new Glyphs(new GlyphMaker(0.5, 90), false);
+  this.introGlyphs = new Glyphs(new GlyphMaker(0.5, 30), false);
   this.introGlyphs.initModels();
   this.introGlyphs.initStamps(this.renderer.gl);
 }
@@ -114,20 +114,22 @@ Game6IntroScreen.prototype.drawText = function() {
   let off = 7;
   let size = 10;
   let titleY = this.canvas.height / width - sep;
+  let delay = 7;
+  let start = 10;
 
-  this.drawGlyph('G', -2 * sep - off, titleY, size, 60,  -2,   -3, 0.1,  0.02, -0.04, 0.01);
-  this.drawGlyph('A', -1 * sep - off, titleY, size, 70,  -0.3,  2, 0.2,  0.03,   0,     0);
-  this.drawGlyph('M',  - off,         titleY, size, 80,  0.2, -5, 0.15, -0.04, 0.04,     0.04);
-  this.drawGlyph('E', sep - off,      titleY, size, 90,   0,    2, 0,    0.0,     -0.04,  0);
-  this.drawGlyph('6', 2 * sep + off,  titleY, size, 120,  0.3,  0.2, 0,    0, 0,    -0.01);
+  this.drawGlyph('G', -2 * sep - off, titleY, size, start,          -2,   -3,  -1,  0.02, -0.04, 0.01);
+  this.drawGlyph('A', -1 * sep - off, titleY, size, start + delay,  -0.3,  2,  -1,  0.03,   0,     0);
+  this.drawGlyph('M',  - off,         titleY, size, start + 2*delay, 0,    2,  -1,    0.0,     -0.04,  0);
+  this.drawGlyph('E', sep - off,      titleY, size, start + 3*delay, 0.2, -5,  -1,  0.04, 0.04,     0.04);
+  this.drawGlyph('6', 2 * sep + off,  titleY, size, start + 5.75*delay, 0.3,  0.2, 0,    0, 0,    -0.015);
 };
 
 Game6IntroScreen.prototype.drawGlyph = function(c, x0, y0, s0, t0, dx, dy, ds, drx, dry, drz) {
-  let t = 0.015 * Math.pow(Math.max(0, this.startTime + t0 - this.now()), 2);
+  let t = 0.06 * Math.pow(Math.max(0, this.startTime + t0 - this.now()), 2.4);
 
   let x = x0 + dx * t;
   let y = y0 + dy * t;
-  let s = s0 + ds * t;
+  let s = Math.max(0, s0 + ds * t);
   let rx = drx * t;
   let ry = dry * t;
   let rz = drz * t;
@@ -139,10 +141,10 @@ Game6IntroScreen.prototype.drawGlyph = function(c, x0, y0, s0, t0, dx, dy, ds, d
       .multiply(this.mat44.toRotateYOp(ry))
       .multiply(this.mat44.toRotateZOp(rz))
   ;
-  let b = Math.max(0, 1 - t / 20);
+  let b = Math.max(0, 1 - t / 10);
   let n = -this.now() * 0.05;
   this.renderer
-      .setColorVector(this.vec4.setXYZ(b*b, b*b, b*b))
+      .setColorVector(this.vec4.setXYZ(b, b*b, b))
       // .setColorVector(this.vec4.setXYZ(
       //     b * (0.9 + 0.1 * (Math.sin(t0 * 0.1 + n) * 0.5 + 0.5)),
       //     b * (0.2 * (Math.sin(t0*0.1 + 2 * Math.PI * 0.33 + n*0.8731231) / 2 + 0.5)),
