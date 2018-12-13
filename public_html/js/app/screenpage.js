@@ -85,16 +85,17 @@ ScreenPage.prototype.enterDoc = function() {
   this.sfx.setListenerXYZ(0, 0, 2);
 
   // On-event sound unlocker.
-  let resumeButton = document.querySelector('#resumeButton');
   let soundUnlock = this.unlockSound.bind(this);
-  resumeButton.addEventListener('touchend', soundUnlock);
-  resumeButton.addEventListener('touchstart', soundUnlock);
+  let resumeButton = document.querySelector('#resumeButton');
+  if (resumeButton) {
+    resumeButton.addEventListener('touchend', soundUnlock);
+    resumeButton.addEventListener('touchstart', soundUnlock);
+  }
   this.canvas.addEventListener('touchend', soundUnlock);
   this.canvas.addEventListener('touchstart', soundUnlock);
   // for Chrome 2018-05 era
   this.canvas.addEventListener('keydown', soundUnlock);
   this.canvas.addEventListener('mousedown', soundUnlock);
-
   // prevent default on a lot of pinch and scroll events on mobile
   this.canvas.addEventListener('touchstart', Dom.pd);
   this.canvas.addEventListener('touchmove', Dom.pd);

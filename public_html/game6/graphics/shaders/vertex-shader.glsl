@@ -6,7 +6,7 @@ uniform lowp int uType;
 
 uniform lowp int uBatching;
 
-//uniform highp float uTime;
+uniform mediump float uTime;
 
 uniform mat4 uViewMatrix;
 
@@ -35,8 +35,8 @@ attribute lowp float aVertexGroup;
 attribute lowp float aVertexInstance;
 
 varying lowp vec4 vColor;
-varying mediump vec2 vPosReal;
-varying mediump vec2 vPosWarped;
+varying mediump vec4 vPosReal;
+varying mediump vec4 vPosWarped;
 
 
 void main(void) {
@@ -51,24 +51,23 @@ void main(void) {
 
       if (aVertexGroup == 0.0) {
         gl_Position = aVertexPosition * iModelMatrix;
-        vPosReal = (aVertexPosition * iModelMatrix).xy;
+        vPosReal = (aVertexPosition * iModelMatrix);
       } else {
         gl_Position = aVertexPosition * iModelMatrix2;
-        vPosReal = (aVertexPosition * iModelMatrix2).xy;
+        vPosReal = (aVertexPosition * iModelMatrix2);
       }
-      vPosWarped = gl_Position.xy;
+      vPosWarped = gl_Position;
       gl_Position *= uViewMatrix;
-      vColor = aVertexColor * iModelColor;
       vColor = aVertexColor * iModelColor;
     } else {
       if (aVertexGroup == 0.0) {
         gl_Position = aVertexPosition * uModelMatrix;
-        vPosReal = (aVertexPosition * uModelMatrix).xy;
+        vPosReal = (aVertexPosition * uModelMatrix);
       } else {
         gl_Position = aVertexPosition * uModelMatrix2;
-        vPosReal = (aVertexPosition * uModelMatrix2).xy;
+        vPosReal = (aVertexPosition * uModelMatrix2);
       }
-      vPosWarped = gl_Position.xy;
+      vPosWarped = gl_Position;
       gl_Position *= uViewMatrix;
       vColor = aVertexColor * uModelColor;
     }

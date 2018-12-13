@@ -13,7 +13,7 @@
  * @constructor
  * @extends Screen
  */
-function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans, opt_supportBatchDrawing, opt_models) {
+function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans, opt_supportBatchDrawing, opt_models, opt_wall3d) {
   if (!controller) return; // generating prototype
   Screen.call(this);
 
@@ -22,6 +22,7 @@ function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans,
   this.renderer = renderer;
   this.stamps = opt_stamps;
   this.models = opt_models || null;
+  this.wall3d = opt_wall3d || false;
 
   this.viewMatrix = new Matrix44();
   this.mat44 = new Matrix44();
@@ -364,6 +365,7 @@ WorldScreen.prototype.initWorld = function() {
   this.resolver = new HitResolver();
   this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
+  this.tileGrid.wall3d = this.wall3d;
 };
 
 WorldScreen.prototype.getResizeFn = function() {
@@ -598,8 +600,7 @@ WorldScreen.prototype.updateViewMatrix = function() {
       .multiply(this.mat44.toTranslateOpXYZ(
           -camera.getX(),
           -camera.getY(),
-          0.9 * squish))
-  ;
+          0.9 * squish));
 };
 
 //////////////////////
@@ -650,6 +651,10 @@ WorldScreen.prototype.getViewDist = function() {
 
 WorldScreen.prototype.getViewMatrix = function() {
   return this.viewMatrix;
+};
+
+WorldScreen.prototype.getInvertableViewMatrix = function() {
+  return this.getViewMatrix();
 };
 
 WorldScreen.prototype.getPopupEventTarget = function() {
@@ -877,6 +882,7 @@ WorldScreen.prototype.loadWorldFromJson = function(json) {
   worldJsoner.loadWorldFromJson(this.world, json);
   this.bitGrid = BitGrid.fromJSON(json.terrain);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
+  this.tileGrid.wall3d = this.wall3d;
   this.tileGrid.flushTerrainChanges();
   if (this.editor) {
     this.editor.onLoadWorldFromJson(json);

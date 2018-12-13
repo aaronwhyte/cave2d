@@ -65,7 +65,7 @@ Renderer.prototype.initAttributesAndUniforms = function() {
   // this.createUniform('uWarpData');
   //
   // this.createUniform('uTexture');
-  // this.createUniform('uTime');
+  this.createUniform('uTime');
   //
   // this.createUniform('uPolyLineData');
   // this.createUniform('uPolyLineHeadIndex');
@@ -255,7 +255,7 @@ Renderer.prototype.setBatching = function(b) {
 };
 
 Renderer.prototype.setTime = function(t) {
-  // this.gl.uniform1f(this.uTime, t);
+  if (this.uTime) this.gl.uniform1f(this.uTime, t);
   return this;
 };
 

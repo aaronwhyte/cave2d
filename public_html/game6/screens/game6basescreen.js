@@ -10,7 +10,8 @@ function Game6BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   WorldScreen.call(this, controller, canvas, renderer, stamps, sfx,
       Game6BaseScreen.USE_FANS,
       Game6BaseScreen.SUPPORT_BATCH_DRAWING,
-      models);
+      models,
+      true);
   if (!controller) return; // generating prototype
 
   this.adventureName = adventureName;
@@ -30,6 +31,8 @@ function Game6BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.splashes = new Splashes(this.splasher);
   this.levelColorVector.setRGBA(0.5 - Math.random() * 0.2, 0.5 - Math.random() * 0.2, 0.5 - Math.random() * 0.2, 1);
   this.timeMultiplier = 1;
+
+  this.invertableViewMatrix = new Matrix44();
 
   this.shouldDrawScans = false;
 }
@@ -165,6 +168,9 @@ Game6BaseScreen.prototype.initWorld = function() {
   }
 };
 
+/**
+ * @returns {Camera}
+ */
 Game6BaseScreen.prototype.getCamera = function() {
   return this.camera;
 };
@@ -173,3 +179,33 @@ Game6BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
   this.splashes.addScanSplash(this.world.now, pos, vel, rad, dist);
 };
 
+Game6BaseScreen.prototype.updateViewMatrix = function() {
+  // scale
+  this.viewMatrix.toIdentity();
+  let pixelsPerMeter = this.getPixelsPerMeter();
+  let camera = this.getCamera();
+  let squish = 1000;
+  this.viewMatrix
+      .multiply(this.mat44.toScaleOpXYZ(
+          pixelsPerMeter / this.canvas.width,
+          pixelsPerMeter / this.canvas.height * 0.9,
+          1 / squish))
+      .multiply(this.mat44.toTranslateOpXYZ(
+          -camera.getX(),
+          -camera.getY(),
+          0.9 * squish));
+
+  // I'm not sure why, but shearing breaks the matrix inversion that is done to map
+  // editor screen-coords to world-coords.
+  // So remember the intertable part separately from the sheared part.
+  this.invertableViewMatrix.set(this.viewMatrix);
+
+  this.viewMatrix
+      .multiply(this.mat44.toShearZOpXY(0, -0.6))
+      // .multiply(this.mat44.toRotateZOp(Math.PI / 4))
+  ;
+};
+
+Game6BaseScreen.prototype.getInvertableViewMatrix = function() {
+  return this.invertableViewMatrix;
+};

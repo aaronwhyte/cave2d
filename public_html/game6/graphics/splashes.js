@@ -59,45 +59,45 @@ Splashes.prototype.addEnemyExplosion = function(now, pos, rad, color) {
 
   function addSplash(x, y, dx, dy, duration, rad) {
     s.reset(Splashes.Type.ENEMY_EXPLOSION, null);
-    s.modelId = ModelId.CIRCLE_32;
+    s.modelId = ModelId.SPHERE_3;
     s.startTime = now;
     s.duration = duration;
 
-    s.startPose.pos.setXYZ(x, y, -0.9);
-    s.endPose.pos.setXYZ(x + dx, y + dy, 0.9);
+    s.startPose.pos.setXYZ(x, y, 0);
+    s.endPose.pos.setXYZ(x + dx, y + dy, 0);
     let startRad = rad;
-    let endRad = rad / 4;
+    let endRad = rad / 8;
     s.startPose.scale.setXYZ(startRad, startRad, startRad);
     let startRot = Math.random() * Math.PI * 2;
     s.startPose.rotZ = startRot;
     s.endPose.rotZ = startRot + (Math.random() - 0.5) * 2 * Math.PI;
     s.endPose.scale.setXYZ(endRad, endRad, endRad);
     s.startColor.set(color);
-    s.endColor.set(color).scale1(0.5);
+    s.endColor.set(color).scale1(0.2);
     self.splasher.addCopy(s);
   }
 
-  particles = Math.floor(8 * rad);
+  particles = Math.floor(12 * rad);
   explosionRad = rad * 8;
   dirOffset = 2 * Math.PI * Math.random();
   // outer
   for (let i = 0; i < particles; i++) {
     let erad = explosionRad * 0.8 * (0.8 + 0.4 * Math.random());
-    duration = 1.4 * erad * (0.5 + Math.random());
+    duration = 2 * erad * (0.5 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles) + Math.random() * 0.3;
-    dx = Math.sin(dir) * erad;
-    dy = Math.cos(dir) * erad;
+    dx = Math.sin(dir) * erad * 2;
+    dy = Math.cos(dir) * erad * 2;
     addSplash(x, y, dx, dy, duration, rad * 0.8);
   }
   // middle cloud
   dirOffset = 2 * Math.PI * Math.random();
-  particles = Math.floor(8 * rad);
+  particles = Math.floor(10 * rad);
   for (let i = 0; i < particles; i++) {
-    duration = 16 * (1 + Math.random());
+    duration = 15 * (1 + Math.random());
     dir = dirOffset + 2 * Math.PI * (i/particles);
-    dx = Math.sin(dir) * explosionRad * 0.25;
-    dy = Math.cos(dir) * explosionRad * 0.25;
-    addSplash(x, y, dx, dy, duration, rad * (1.2 + Math.random() / 2));
+    dx = Math.sin(dir) * explosionRad * 0.3;
+    dy = Math.cos(dir) * explosionRad * 0.3;
+    addSplash(x, y, dx, dy, duration, rad * (2 + Math.random() / 2));
   }
 };
 
@@ -258,7 +258,7 @@ Splashes.prototype.addPlayerExplosionSplash = function(now, pos, color) {
 
   function addSplash(x, y, dx, dy, duration, sizeFactor, delay) {
     s.reset();
-    s.modelId = ModelId.CIRCLE_32;
+    s.modelId = ModelId.SPHERE_3;
     s.startTime = now + (delay || 0) + 1;
     s.duration = duration;
 
@@ -350,19 +350,19 @@ Splashes.prototype.addBombExplosionSplash = function(now, pos, color) {
 
   function addSplash(x, y, dx, dy, duration, sizeFactor) {
     s.reset();
-    s.modelId = ModelId.CIRCLE_32;
+    s.modelId = ModelId.SPHERE_3;
     s.startTime = now;
     s.duration = duration;
 
-    s.startPose.pos.setXYZ(x, y, -Math.random());
-    s.endPose.pos.setXYZ(x + dx, y + dy, 1);
+    s.startPose.pos.setXYZ(x, y, 0);
+    s.endPose.pos.setXYZ(x + dx, y + dy, 2);
     let startRad = sizeFactor;
     let endRad = sizeFactor * 0.1;
-    s.startPose.scale.setXYZ(startRad, startRad, 1);
-    s.endPose.scale.setXYZ(endRad, endRad, 1);
+    s.startPose.scale.setXYZ(startRad, startRad, startRad);
+    s.endPose.scale.setXYZ(endRad, endRad, endRad);
 
     s.startColor.set(color);
-    s.endColor.set(color).scale1(0.25);
+    s.endColor.set(color).scale1(0.5);
     self.splasher.addCopy(s);
   }
 

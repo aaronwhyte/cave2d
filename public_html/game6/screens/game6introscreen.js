@@ -11,8 +11,7 @@ function Game6IntroScreen(controller, canvas, renderer, stamps, sfx, adventureNa
   this.vec4 = new Vec4();
   this.textMatrix = new Matrix44();
   this.updateViewMatrix();
-  this.initPauseButtons();
-  this.introGlyphs = new Glyphs(new GlyphMaker(0.5, 1), false);
+  this.introGlyphs = new Glyphs(new GlyphMaker(0.5, 1.25), false);
   this.introGlyphs.initModels();
   this.introGlyphs.initStamps(this.renderer.gl);
 }
@@ -36,6 +35,10 @@ Game6IntroScreen.prototype.setScreenListening = function(listen) {
   if (listen === this.listening) return;
 
   Game6BaseScreen.prototype.setScreenListening.call(this, listen);
+
+  Events.setListening(listen, document, 'keypress', function() {
+    console.log('keypress I guess');
+  });
 
   let buttonEvents = ['click', 'touchEnd'];
   Events.setListening(listen, document.querySelector('#fullScreenButton'),
@@ -78,7 +81,9 @@ Game6IntroScreen.prototype.onHitEvent = function(e) {
 
 Game6IntroScreen.prototype.drawScene = function() {
   this.getCamera().setXY(0, 0);
+  this.getCamera().setViewDist(20);
   this.updateViewMatrix();
+
   this.renderer.setViewMatrix(this.viewMatrix);
   this.renderer.setTime(this.now());
   this.drawTiles();
@@ -100,7 +105,7 @@ Game6IntroScreen.prototype.drawText = function() {
     this.startTime = this.now();
   }
   // Squish all the text drawing into the front of the z buffer.
-  let squish = 10000;
+  let squish = 1000;
   let width = 0.04 * Math.min(this.canvas.width * 0.25, this.canvas.height * 0.33);
   this.viewMatrix
       .toIdentity()
@@ -112,9 +117,9 @@ Game6IntroScreen.prototype.drawText = function() {
   ;
   this.renderer.setViewMatrix(this.viewMatrix);
 
-  let sep = 30;
+  let sep = 32;
   let off = 7;
-  let size = 10;
+  let size = 11;
   let titleY = this.canvas.height / width - sep;
   let delay = 20;
   let start = 50;
@@ -134,11 +139,13 @@ Game6IntroScreen.prototype.drawGlyph = function(c, x0, y0, s0, t0, dx, dy, ds, d
   let x = x0 + dx * t;
   let y = y0 + dy * t;
   let s = Math.max(0, s0 + ds * t);
-  let rx = drx * t;
-  let ry = dry * t;
-  let rz = drz * t;
+  let rx = -0.5 + drx * t;
+  // let ry = Math.sin(x0 + this.now()/10) + dry * t;
+  let ry = -x0/500 + dry * t;
+  let rz = -x0/500 + drz * t;
 
   this.textMatrix.toIdentity()
+      .multiply(this.mat44.toScaleOpXYZ(1, 1, 0.1))
       .multiply(this.mat44.toTranslateOpXYZ(x, y, 0))
       .multiply(this.mat44.toScaleOpXYZ(s, s, s))
       .multiply(this.mat44.toRotateXOp(rx))
@@ -148,7 +155,7 @@ Game6IntroScreen.prototype.drawGlyph = function(c, x0, y0, s0, t0, dx, dy, ds, d
   let b = Math.max(0, 1 - t / 10);
   let n = -this.now() * 0.05;
   this.renderer
-      .setColorVector(this.vec4.setXYZ(b, b*b, b))
+      .setColorVector(this.vec4.setXYZ(0.5 + 0.5 * b, 0.5 - 0.5 * b, 0.5 - 0.5 * b*b))
       // .setColorVector(this.vec4.setXYZ(
       //     b * (0.9 + 0.1 * (Math.sin(t0 * 0.1 + n) * 0.5 + 0.5)),
       //     b * (0.2 * (Math.sin(t0*0.1 + 2 * Math.PI * 0.33 + n*0.8731231) / 2 + 0.5)),

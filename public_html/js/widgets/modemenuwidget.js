@@ -260,8 +260,11 @@ ModeMenuWidget.prototype.validateStamps = function(gl) {
         this.getItemOffset(g, r, itemOffset);
         let itemModel = new RigidModel()
             .addRigidModel(item.model)
-            .transformPositions(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y, 1))
-            .transformPositions(this.mat44.toTranslateOpXYZ(itemOffset.getX(), itemOffset.getY(), 0));
+            .transformPositions(this.mat44.toScaleOpXYZ(this.itemScale.x, this.itemScale.y,
+                0.1
+                //(this.itemScale.x + this.itemScale.y) / 20
+                ))
+            .transformPositions(this.mat44.toTranslateOpXYZ(itemOffset.getX(), itemOffset.getY(), 0.1));
         menuModel.addRigidModel(itemModel);
       }
     }
