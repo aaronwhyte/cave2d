@@ -19,13 +19,5 @@ IntroPage.prototype.maybeCreateScreen = function() {
 };
 
 IntroPage.prototype.refreshPauseMenu = function() {
-  let df = document.createDocumentFragment();
-  let e;
-  this.appendTitle(df);
-  this.appendFullScreenButton(df);
-
-  Dom.ce('br', df);
-  this.appendResumeButton(df, 'unpause');
-  this.setPauseMenuContent(df);
+  // there isn't one
 };
-
