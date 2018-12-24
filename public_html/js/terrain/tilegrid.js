@@ -48,14 +48,14 @@ TileGrid.prototype.drawTerrainPill = function(p1, p2, rad, color) {
  * Draws the visible tiles using the renderer.
  */
 TileGrid.prototype.drawTiles = function(worldX, worldY, pixelsPerCell) {
-  var cx = this.getCellIndexAtWorld(worldX);
-  var cy = this.getCellIndexAtWorld(worldY);
-  var cellsPerScreenX = this.renderer.canvas.width / pixelsPerCell;
-  var cellsPerScreenY = this.renderer.canvas.height / pixelsPerCell;
-  var rx = Math.ceil(cellsPerScreenX);
-  var ry = Math.ceil(cellsPerScreenY);
-  for (var dy = -ry; dy <= ry; dy++) {
-    for (var dx = -rx; dx <= rx; dx++) {
+  let cx = this.getCellIndexAtWorld(worldX);
+  let cy = this.getCellIndexAtWorld(worldY);
+  let cellsPerScreenX = this.renderer.canvas.width / pixelsPerCell;
+  let cellsPerScreenY = this.renderer.canvas.height / pixelsPerCell;
+  let rx = Math.ceil(cellsPerScreenX);
+  let ry = Math.ceil(cellsPerScreenY);
+  for (let dy = -ry; dy <= ry; dy++) {
+    for (let dx = -rx; dx <= rx; dx++) {
       this.drawTileAtCellXY(cx + dx, cy + dy);
     }
   }
@@ -66,8 +66,8 @@ TileGrid.prototype.drawTiles = function(worldX, worldY, pixelsPerCell) {
  */
 TileGrid.prototype.drawTilesOverlappingCircles = function(circles) {
   this.cellIdsToDraw.clear();
-  for (var i = 0; i < circles.length; i++) {
-    var circle = circles[i];
+  for (let i = 0; i < circles.length; i++) {
+    let circle = circles[i];
     if (!circle) continue;
     this.addCellIdsOverlappingCircle(this.cellIdsToDraw, circle);
   }
@@ -115,7 +115,7 @@ TileGrid.prototype.drawTileAtCellXY = function(cx, cy) {
 };
 
 TileGrid.prototype.drawTileAtCellId = function(cellId) {
-  var tile = this.tiles[cellId];
+  let tile = this.tiles[cellId];
   if (!tile) {
     tile = this.loadCellId(cellId);
   }
@@ -135,7 +135,7 @@ TileGrid.prototype.getStampAtCellId = function(cellId) {
   this.world.pauseRecordingChanges();
   this.loadCellId(cellId);
   this.world.resumeRecordingChanges();
-  var tile = this.tiles[cellId];
+  let tile = this.tiles[cellId];
   return tile && tile.stamp;
 };
 
@@ -144,9 +144,9 @@ TileGrid.prototype.startRecordingChanges = function() {
 };
 
 TileGrid.prototype.stopRecordingChanges = function() {
-  var changes = this.bitGrid.stopRecordingChanges();
-  for (var i = 0; i < changes.length; i++) {
-    var c = changes[i];
+  let changes = this.bitGrid.stopRecordingChanges();
+  for (let i = 0; i < changes.length; i++) {
+    let c = changes[i];
     // TODO: Decorate changes with before and after rects, in world coords
   }
   return changes;
@@ -162,9 +162,9 @@ TileGrid.prototype.applyChanges = function(changes) {
  */
 TileGrid.prototype.flushTerrainChanges = function() {
   this.world.pauseRecordingChanges();
-  var changedCellIds = this.bitGrid.flushChangedCellIds();
+  let changedCellIds = this.bitGrid.flushChangedCellIds();
   if (changedCellIds.length) {
-    for (var i = 0; i < changedCellIds.length; i++) {
+    for (let i = 0; i < changedCellIds.length; i++) {
       this.changeTerrain(changedCellIds[i]);
     }
   }
@@ -183,7 +183,7 @@ TileGrid.prototype.flushTerrainChanges = function() {
  * @param cellId
  */
 TileGrid.prototype.changeTerrain = function(cellId) {
-  var center = Vec2d.alloc();
+  let center = Vec2d.alloc();
   this.bitGrid.cellIdToIndexVec(cellId, center);
   this.loadCellXY(center.x - 1, center.y);
   this.loadCellXY(center.x + 1, center.y);
@@ -199,7 +199,7 @@ TileGrid.prototype.loadCellXY = function(cx, cy) {
 };
 
 TileGrid.prototype.loadCellId = function(cellId) {
-  var tile = this.tiles[cellId];
+  let tile = this.tiles[cellId];
   if (!tile) {
     this.tiles[cellId] = tile = {
       cellId: cellId,
@@ -210,10 +210,10 @@ TileGrid.prototype.loadCellId = function(cellId) {
   if (!tile.bodyIds) {
     tile.bodyIds = [];
     // Create wall bodies and remember their IDs.
-    var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
-    for (var r = 0; r < rects.length; r++) {
-      var rect = rects[r];
-      var body = this.createWallBody(rect);
+    let rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    for (let r = 0; r < rects.length; r++) {
+      let rect = rects[r];
+      let body = this.createWallBody(rect);
       tile.bodyIds.push(this.world.addBody(body));
     }
   }
@@ -225,15 +225,15 @@ TileGrid.prototype.unloadCellXY = function(cx, cy) {
 };
 
 TileGrid.prototype.unloadCellId = function(cellId) {
-  var tile = this.tiles[cellId];
+  let tile = this.tiles[cellId];
   if (!tile) return;
   if (tile.stamp) {
     tile.stamp.dispose(this.renderer.gl);
     tile.stamp = null;
   }
   if (tile.bodyIds) {
-    for (var i = 0; i < tile.bodyIds.length; i++) {
-      var id = tile.bodyIds[i];
+    for (let i = 0; i < tile.bodyIds.length; i++) {
+      let id = tile.bodyIds[i];
       this.world.removeBodyId(id);
     }
     tile.bodyIds = null;
@@ -244,7 +244,7 @@ TileGrid.prototype.unloadCellId = function(cellId) {
  * Creates a body, but does not add it to the world.
  */
 TileGrid.prototype.createWallBody = function(rect) {
-  var b = Body.alloc();
+  let b = Body.alloc();
   b.shape = Body.Shape.RECT;
   b.setPosAtTime(rect.pos, this.world.now);
   b.rectRad.set(rect.rad);
@@ -261,54 +261,54 @@ TileGrid.prototype.createWallBody = function(rect) {
  * @returns {ModelStamp}
  */
 TileGrid.prototype.createTileStampForCellId = function(cellId) {
-  var tileModel = new RigidModel();
+  let tileModel = new RigidModel();
 
   if (!this.useFans) {
     // Use minimal rects, just like the bodies
-    var rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
-    for (var i = 0; i < rects.length; i++) {
+    let rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    for (let i = 0; i < rects.length; i++) {
       tileModel.addRigidModel(this.createWallModel(rects[i]));
     }
   } else {
     // Create more rects and a lot more edge vertexes - more of a mesh.
-    var fans = this.bitGrid.getFansOfColorForCellId(0, cellId);
-    for (var i = 0; i < fans.length; i++) {
-      var fanModel = RigidModel.createFromFanVecs(fans[i]);
+    let fans = this.bitGrid.getFansOfColorForCellId(0, cellId);
+    for (let i = 0; i < fans.length; i++) {
+      let fanModel = RigidModel.createFromFanVecs(fans[i]);
       tileModel.addRigidModel(fanModel);
     }
   }
-  var cy = Math.floor(cellId / BitGrid.COLUMNS);
-  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  let cy = Math.floor(cellId / BitGrid.COLUMNS);
+  let cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
 
   //tileModel.addRigidModel(this.createFloorModelForCellXY(cx, cy));
   return tileModel.createModelStamp(this.renderer.gl);
 };
 
 TileGrid.prototype.createWallModel = function(rect) {
-  var transformation = this.mat44
+  let transformation = this.mat44
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
       .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
-  var wallModel = RigidModel.createSquare().transformPositions(transformation);
+  let wallModel = RigidModel.createSquare().transformPositions(transformation);
   wallModel.setColorRGB(1, 1, 1);
   return wallModel;
 };
 
 TileGrid.prototype.createFloorModelForCellXY = function(cx, cy) {
-  var x = (cx + 0.5) * this.bitGrid.cellWorldSize - this.bitGrid.bitWorldSize/2;
-  var y = (cy + 0.5) * this.bitGrid.cellWorldSize - this.bitGrid.bitWorldSize/2;
-  var r = this.bitGrid.cellWorldSize / 2;
+  let x = (cx + 0.5) * this.bitGrid.cellWorldSize - this.bitGrid.bitWorldSize/2;
+  let y = (cy + 0.5) * this.bitGrid.cellWorldSize - this.bitGrid.bitWorldSize/2;
+  let r = this.bitGrid.cellWorldSize / 2;
   this.rect.setPosXY(x, y);
-  var transformation = new Matrix44()
+  let transformation = new Matrix44()
       .toTranslateOpXYZ(x, y, 0.999)
       .multiply(new Matrix44().toScaleOpXYZ(r, r, 1));
-  var wallModel = RigidModel.createSquare().transformPositions(transformation);
+  let wallModel = RigidModel.createSquare().transformPositions(transformation);
   // TODO: color options?
   wallModel.setColorRGB(0.25, 0.18, 0.25);
   return wallModel;
 };
 
 TileGrid.prototype.unloadAllCells = function() {
-  for (var cellId in this.tiles) {
+  for (let cellId in this.tiles) {
     this.unloadCellId(cellId);
   }
 };
