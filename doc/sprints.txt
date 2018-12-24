@@ -29,13 +29,18 @@ v custom-made world runs in the bg
 v print game title
 v print "PRESS TO BEGIN"
 
+space and planetoid
+- invert wall and void
+- background tunnel tiles
+  - maintain dist-from-wall grid
+  - maintain secondary dist-from-space grid
+  - draw based
 
 main menu
 - shows existing joined player slots, with good default player
 - "players & controls"
 - instructions
 - "play!" if there's at least one player
-
 
 player add/drop menu
 - possible players are represented as slots
