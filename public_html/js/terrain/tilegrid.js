@@ -23,8 +23,6 @@ function TileGrid(bitGrid, renderer, world, hitGroup, opt_useFans) {
   this.v1 = new Vec2d();
   this.rect = new Rect();
   this.mat44 = new Matrix44();
-
-  this.wall3d = false;
 }
 
 TileGrid.prototype.setWallGrip = function(grip) {
@@ -279,20 +277,19 @@ TileGrid.prototype.createTileStampForCellId = function(cellId) {
       tileModel.addRigidModel(fanModel);
     }
   }
-  // var cy = Math.floor(cellId / BitGrid.COLUMNS);
-  // var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
-  // tileModel.addRigidModel(this.createFloorModelForCellXY(cx, cy));
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
 
+  //tileModel.addRigidModel(this.createFloorModelForCellXY(cx, cy));
   return tileModel.createModelStamp(this.renderer.gl);
 };
 
 TileGrid.prototype.createWallModel = function(rect) {
   var transformation = this.mat44
       .toTranslateOpXYZ(rect.pos.x, rect.pos.y, 0)
-      .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1.25));
-  let wallModel = (this.wall3d ? RigidModel.createCube() : RigidModel.createSquare())
-      .transformPositions(transformation)
-      .setColorRGB(1, 1, 1);
+      .multiply(new Matrix44().toScaleOpXYZ(rect.rad.x, rect.rad.y, 1));
+  var wallModel = RigidModel.createSquare().transformPositions(transformation);
+  wallModel.setColorRGB(1, 1, 1);
   return wallModel;
 };
 

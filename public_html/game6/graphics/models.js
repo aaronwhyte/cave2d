@@ -19,10 +19,6 @@ let ModelId = (function() {
     TUBE_32: ++i,
     CYLINDER_32: ++i,
     LINE_SEGMENT: ++i,
-    CUBE: ++i,
-    SPHERE_2: ++i,
-    SPHERE_3: ++i,
-    SPHERE_4: ++i,
 
     PAUSE_BUTTON: ++i,
     JOIN_BUTTON: ++i,
@@ -68,19 +64,6 @@ Models.prototype.createModel = function(id) {
     case ModelId.TUBE_32: return RigidModel.createTube(32, false, false);
     case ModelId.CYLINDER_32: return RigidModel.createTube(32, true, true);
     case ModelId.LINE_SEGMENT: return RigidModel.createTube(9, false, false);
-    case ModelId.CUBE: return RigidModel.createCube();
-    case ModelId.SPHERE_2: return RigidModel.createOctahedron()
-        .createQuadrupleTriangleModel()
-        .sphereize(Vec4.ZERO, 1);
-    case ModelId.SPHERE_3: return RigidModel.createOctahedron()
-        .createQuadrupleTriangleModel()
-        .createQuadrupleTriangleModel()
-        .sphereize(Vec4.ZERO, 1);
-    case ModelId.SPHERE_4: return RigidModel.createOctahedron()
-        .createQuadrupleTriangleModel()
-        .createQuadrupleTriangleModel()
-        .createQuadrupleTriangleModel()
-        .sphereize(Vec4.ZERO, 1);
 
     case ModelId.PAUSE_BUTTON: {
       let m = new RigidModel();
@@ -135,15 +118,15 @@ Models.prototype.createModel = function(id) {
     }
 
     case ModelId.ANT:
-      return this.createModel(ModelId.SPHERE_3)
-          .addRigidModel(RigidModel.createCube()
-              .transformPositions(new Matrix44().toScaleOpXYZ(0.2, 0.5, 0.2))
+      return RigidModel.createCircle(8)
+          .addRigidModel(RigidModel.createSquare()
+              .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
               .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-              .transformPositions(new Matrix44().toRotateZOp(Math.PI / 6)))
-          .addRigidModel(RigidModel.createCube()
-              .transformPositions(new Matrix44().toScaleOpXYZ(0.2, 0.5, 0.2))
+              .transformPositions(new Matrix44().toRotateZOp(Math.PI / 8)))
+          .addRigidModel(RigidModel.createSquare()
+              .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.4, 1))
               .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-              .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 6)))
+              .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
           .setColorRGB(0.1, 0.8, 0.1);
 
     case ModelId.ENTRANCE:
@@ -151,11 +134,11 @@ Models.prototype.createModel = function(id) {
           .setColorRGB(0.7, 0.3, 0.7);
 
     case ModelId.EXIT:
-      return this.createModel(ModelId.SPHERE_4)
+      return RigidModel.createRingMesh(5, 0.8)
           .setColorRGB(0.2, 0.8, 0.2);
 
     case ModelId.PLAYER:
-      return this.createModel(ModelId.SPHERE_3)
+      return RigidModel.createCircle(24)
           .setColorRGB(1, 1, 1)
           .addRigidModel(RigidModel.createCircle(12)
               .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
@@ -172,95 +155,79 @@ Models.prototype.createModel = function(id) {
 
     case ModelId.SLOW_SHOOTER: {
       let model = new RigidModel();
-      let body = this.createModel(ModelId.SPHERE_3).setColorRGB(0.5, 0.5, 0.5);
+      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5)
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0.1));
       let thick = 0.5;
-      let barrel = RigidModel.createCube()
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, thick))
+      let barrel = RigidModel.createSquare()
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
+          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
+          .addRigidModel(RigidModel.createCircle(9)
+              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
+              .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
           .setColorRGB(1, 1, 0);
-      return model.addRigidModel(body).addRigidModel(barrel)
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.99, 0.99, 0.99, ));
+      return model.addRigidModel(body).addRigidModel(barrel);
     }
 
     case ModelId.MEDIUM_SHOOTER: {
       let model = new RigidModel();
-      let body = this.createModel(ModelId.SPHERE_3).setColorRGB(0.5, 0.5, 0.5);
+      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5)
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0.1));
       let thick = 0.4;
-      let barrel = RigidModel.createCube()
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, thick))
+      let barrel = RigidModel.createSquare()
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
+          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
+          .addRigidModel(RigidModel.createCircle(9)
+              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
+              .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
           .setColorRGB(0.5, 1, 1);
-      return model.addRigidModel(body).addRigidModel(barrel)
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.99, 0.99, 0.99, ));
+      return model.addRigidModel(body).addRigidModel(barrel);
     }
 
     case ModelId.LASER_WEAPON: {
       let model = new RigidModel();
-      let body = this.createModel(ModelId.SPHERE_3).setColorRGB(0.5, 0.5, 0.5);
+      let body = RigidModel.createCircle(17).setColorRGB(0.5, 0.5, 0.5)
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0.1));
       let thick = 0.65;
-      let barrel = RigidModel.createCube()
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
-          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, thick))
+      let barrel = RigidModel.createSquare()
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, -0.1))
+          .transformPositions(new Matrix44().toScaleOpXYZ(thick, 0.6, 1))
+          .addRigidModel(RigidModel.createCircle(9)
+              .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1))
+              .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
           .setColorRGB(1, 0.2, 0.2);
-      return model.addRigidModel(body).addRigidModel(barrel)
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.99, 0.99, 0.99, ));
+      return model.addRigidModel(body).addRigidModel(barrel);
     }
 
     case ModelId.MINE_THROWER:
     case ModelId.MINE: {
-      let model = this.createModel(ModelId.SPHERE_3)
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0));
+      let model = RigidModel.createCircle(17)
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1));
       model.setColorRGB(0.7, 0.7, 0.7);
-      for (let i = 0, n = 10; i < n; i++) {
-        let spike = new RigidModel.createCube()
-            .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 0.16))
-            .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1.15, -0.1))
-            .transformPositions(new Matrix44().toRotateXOp(((i % 2) - 0.5) *Math.PI / 3))
+      for (let i = 0, n = 8; i < n; i++) {
+        let spike = new RigidModel.createSquare()
+            .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 1))
+            // .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2))
+            .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1.1, -0.1))
             .transformPositions(new Matrix44().toRotateZOp(i * 2 * Math.PI / n));
-        spike.setColorRGB(0.7, 0.7, 0.7);
+        spike.setColorRGB(0.5, 0.5, 0.5);
         model.addRigidModel(spike);
       }
-      let spike = new RigidModel.createCube()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 0.16))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1.15, -0.1))
-          .transformPositions(new Matrix44().toRotateXOp(-Math.PI / 2));
-      spike.setColorRGB(0.7, 0.7, 0.7);
-      model.addRigidModel(spike);
-      spike = new RigidModel.createCube()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 0.16))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1.15, -0.1))
-          .transformPositions(new Matrix44().toRotateXOp(Math.PI / 2));
-      spike.setColorRGB(0.7, 0.7, 0.7);
-      model.addRigidModel(spike);
-
-      model.transformPositions(new Matrix44().toRotateYOp(0.05));
       return model;
     }
 
     case ModelId.MINE_RETRACTED: {
-      let model = this.createModel(ModelId.SPHERE_3)
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, 0));
+      let model = RigidModel.createCircle(17)
+          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0, -0.1));
       model.setColorRGB(1, 0.2, 0.2);
-      for (let i = 0, n = 10; i < n; i++) {
-        let spike = new RigidModel.createCube()
-            .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 0.16))
+      for (let i = 0, n = 8; i < n; i++) {
+        let spike = new RigidModel.createSquare()
+            .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 1))
+            // .transformPositions(new Matrix44().toRotateZOp(-Math.PI/2))
             .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0.9, -0.1))
-            .transformPositions(new Matrix44().toRotateXOp(((i % 2) - 0.5) *Math.PI / 3))
             .transformPositions(new Matrix44().toRotateZOp(i * 2 * Math.PI / n));
         spike.setColorRGB(0.8, 0.2, 0.2);
         model.addRigidModel(spike);
       }
-      let spike = new RigidModel.createCube()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 0.16))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0.9, -0.1))
-          .transformPositions(new Matrix44().toRotateXOp(-Math.PI / 2));
-      spike.setColorRGB(0.8, 0.2, 0.2);
-      spike = new RigidModel.createCube()
-          .transformPositions(new Matrix44().toScaleOpXYZ(0.16, 0.2, 0.16))
-          .transformPositions(new Matrix44().toTranslateOpXYZ(0, 0.9, -0.1))
-          .transformPositions(new Matrix44().toRotateXOp(Math.PI / 2));
-      spike.setColorRGB(0.8, 0.2, 0.2);
-      model.addRigidModel(spike);
       return model;
     }
 

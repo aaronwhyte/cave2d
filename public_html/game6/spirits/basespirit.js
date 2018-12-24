@@ -261,7 +261,7 @@ BaseSpirit.prototype.drawBody = function() {
   if (this.distOutsideViewCircles < 2 * body.rad) {
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
-        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, body.rad))
+        .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
         .multiply(this.mat44.toRotateZOp(-this.getBodyAngPos()));
     this.screen.drawModel(this.getModelId(), this.getColor(), this.modelMatrix);
   }

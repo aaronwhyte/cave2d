@@ -344,8 +344,8 @@ PlayerSpirit.prototype.onDraw = function() {
   let bodyPos = this.getBodyPos();
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
-      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, body.rad))
-      //.multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
+      .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
+      .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(now)));
   let pain = Math.min(1, 2 * this.getPainFaded() + 3 * this.getDamageFaded());
   this.vec4.setXYZ(
@@ -377,11 +377,11 @@ PlayerSpirit.prototype.onDraw = function() {
   p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
   p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
   this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0))
-      .multiply(this.mat44.toScaleOpXYZ(rad, rad, rad));
+      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
   this.modelMatrix2.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0))
-      .multiply(this.mat44.toScaleOpXYZ(rad, rad, rad));
+      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
   this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
 
   // shield
@@ -391,10 +391,10 @@ PlayerSpirit.prototype.onDraw = function() {
     let rad = PlayerSpirit.PLAYER_RAD * 1.05;
     let rad2 = this.shielded ? PlayerSpirit.PLAYER_RAD * 1.3 + r * 0.2 : PlayerSpirit.PLAYER_RAD;
     this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
     this.modelMatrix2.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.9))
         .multiply(this.mat44.toScaleOpXYZ(rad2, rad2, 1));
     this.screen.drawModel(ModelId.TUBE_32, this.shieldColor, this.modelMatrix, this.modelMatrix2);
   }

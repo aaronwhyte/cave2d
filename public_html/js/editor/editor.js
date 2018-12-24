@@ -46,7 +46,7 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
   this.host.addListener(this.trackball);
 
   // mouse for pointing and panning
-  this.mousePointer = new MousePointer(this.canvas, this.getHostInvertableViewMatrix(), false);
+  this.mousePointer = new MousePointer(this.canvas, this.host.getViewMatrix(), false);
   this.host.addListener(this.mousePointer);
 
   // arrow keys for panning
@@ -95,14 +95,6 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
 
   this.ongoingEditGesture = false;
 }
-
-Editor.prototype.getHostInvertableViewMatrix = function() {
-  if (this.host.getInvertableViewMatrix) {
-    return this.host.getInvertableViewMatrix();
-  } else {
-    return this.host.getViewMatrix();
-  }
-};
 
 /**
  * Hacky static cache to allow the editor to save stuff (like ChangeStack) in RAM while the user toggles between edit
@@ -331,7 +323,7 @@ Editor.prototype.handleInput = function() {
   this.trackball.reset();
 
   // mouse pointer movement
-  this.mousePointer.setViewMatrix(this.getHostInvertableViewMatrix());
+  this.mousePointer.setViewMatrix(this.host.getViewMatrix());
   if (!this.mousePointer.eventCoords.equals(this.oldMouseEventCoords) || this.panTriggerWidget.getVal()) {
 
     // TODO: don't do this here, but fix test37 and test38 to make the call themselves.
@@ -365,7 +357,7 @@ Editor.prototype.handleInput = function() {
 
     this.host.camera.follow(this.cursorPos);
     this.host.updateViewMatrix();
-    this.mousePointer.setViewMatrix(this.getHostInvertableViewMatrix());
+    this.mousePointer.setViewMatrix(this.host.getViewMatrix());
 
     this.cursorVel.scale(0.95 - 0.2 * slowness);
   }
@@ -373,7 +365,7 @@ Editor.prototype.handleInput = function() {
   if (!this.cameraVel.isZero()) {
     this.host.camera.add(this.cameraVel);
     this.host.updateViewMatrix();
-    this.mousePointer.setViewMatrix(this.getHostInvertableViewMatrix());
+    this.mousePointer.setViewMatrix(this.host.getViewMatrix());
 
     if (!this.panTriggerWidget.getVal()) {
       // The camera is making the world drift beneath the mouse.
@@ -504,11 +496,11 @@ Editor.prototype.drawScene = function() {
         .setStamp(this.stamps.indicator)
         .setColorVector(this.getIndicatorColorVector());
     this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.98))
         .multiply(this.mat44.toScaleOpXYZ(innerRad, innerRad, 1));
     this.renderer.setModelMatrix(this.modelMatrix);
     this.modelMatrix2.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
+        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, -0.98))
         .multiply(this.mat44.toScaleOpXYZ(outerRad, outerRad, 1));
     this.renderer.setModelMatrix2(this.modelMatrix2);
     this.renderer.drawStamp();
@@ -520,7 +512,7 @@ Editor.prototype.drawScene = function() {
   let ft = this.fillTriggerWidget.getVal();
   let rt = this.removeTriggerWidget.getVal();
   let any = ft || dt || gt || rt;
-  let coef = 20 * (any ? 1 : 0.8);
+  let coef = any ? 1 : 0.8;
   this.renderer
       .setStamp(this.stamps.cursor)
       .setColorVector(this.colorVector.setRGBA(
@@ -531,12 +523,12 @@ Editor.prototype.drawScene = function() {
   let outerCursorRad = this.cursorRad;
   let innerCursorRad = this.cursorRad * 0.9;
   this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, 0))
+      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
       .multiply(this.mat44.toRotateZOp(-this.cursorDir))
       .multiply(this.mat44.toScaleOpXYZ(outerCursorRad, outerCursorRad, 1));
   this.renderer.setModelMatrix(this.modelMatrix);
   this.modelMatrix2.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, 0))
+      .multiply(this.mat44.toTranslateOpXYZ(this.cursorPos.x, this.cursorPos.y, -0.99))
       .multiply(this.mat44.toRotateZOp(-this.cursorDir))
       .multiply(this.mat44.toScaleOpXYZ(innerCursorRad, innerCursorRad, 1));
   this.renderer.setModelMatrix2(this.modelMatrix2);
