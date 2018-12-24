@@ -26,8 +26,8 @@ intro page
 * whole screen is also listener to determine what input device is default for plr.
 v nest class
 v custom-made world runs in the bg
-- print game title
-- print "press mouse button, touchscreen, keyboard, or gamepad to begin"
+v print game title
+v print "PRESS TO BEGIN"
 
 
 main menu

@@ -15,6 +15,7 @@ function Game6IntroScreen(controller, canvas, renderer, stamps, sfx, adventureNa
   this.introGlyphs = new Glyphs(new GlyphMaker(0.5, 1), false);
   this.introGlyphs.initModels();
   this.introGlyphs.initStamps(this.renderer.gl);
+  this.printer = new Printer(this.renderer, this.introGlyphs.stamps);
 }
 Game6IntroScreen.prototype = new Game6BaseScreen();
 Game6IntroScreen.prototype.constructor = Game6IntroScreen;
@@ -121,11 +122,31 @@ Game6IntroScreen.prototype.drawText = function() {
 
   let ds = 0.1;
 
-  this.drawGlyph('G', -2 * sep - off, titleY, size, start,          -2,  -1,  ds,  0.1, -0.13, 0.01);
-  this.drawGlyph('A', -1 * sep - off, titleY, size, start + delay,  -0.3, 2,  ds,  0.3,   0,     0);
-  this.drawGlyph('M',  - off,         titleY, size, start + 2*delay, 0,  -3,  ds,    0.0,     -0.15,  0);
-  this.drawGlyph('E', sep - off,      titleY, size, start + 3*delay, 1,  -2,  ds,  -0.1, 0.1,     0);
-  this.drawGlyph('6', 2 * sep + off,  titleY, size, start + 5.5*delay, 0.3,  0.2, 0,    0, 0,    -0.015);
+  this.drawGlyph('G', -2 * sep - off, titleY, size, start,              -2,  -1, ds,  0.1, -0.13,  0.01);
+  this.drawGlyph('A', -1 * sep - off, titleY, size, start + delay,    -0.3,   2, ds,  0.3,  0,     0);
+  this.drawGlyph('M',  - off,         titleY, size, start + 2*delay,     0,  -3, ds,  0.0, -0.15,  0);
+  this.drawGlyph('E', sep - off,      titleY, size, start + 3*delay,     1,  -2, ds, -0.1,  0.1,   0);
+  this.drawGlyph('6', 2 * sep + off,  titleY, size, start + 5.5*delay, 0.3, 0.2,  0,  0,    0,    -0.015);
+
+
+  // subtitle
+  if (!this.startMatrix) this.startMatrix = new Matrix44();
+  if (!this.nextCharMatrix) this.nextCharMatrix = new Matrix44();
+  let text = 'PRESS TO BEGIN';
+  let letterSize = 4;
+  let spacingFraction = 3.1;
+  this.startMatrix.toIdentity()
+      .multiply(this.mat44.toScaleOpXYZ(
+          letterSize,
+          letterSize,
+          1 / squish))
+      .multiply(this.mat44.toTranslateOpXYZ(
+          -spacingFraction * (text.length - 1) / 2,
+          (-this.canvas.height / width) / letterSize + spacingFraction * 1.5,
+          0))
+  ;
+  this.nextCharMatrix.toTranslateOpXYZ(spacingFraction, 0, 0);
+  this.printer.printLine(this.startMatrix, this.nextCharMatrix, text);
 };
 
 Game6IntroScreen.prototype.drawGlyph = function(c, x0, y0, s0, t0, dx, dy, ds, drx, dry, drz) {
