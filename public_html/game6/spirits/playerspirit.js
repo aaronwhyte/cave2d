@@ -50,10 +50,10 @@ PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 
-PlayerSpirit.SPEED = 1.2;
+PlayerSpirit.SPEED = 3;
 
-PlayerSpirit.TRACTION = 0.2;
-PlayerSpirit.SHIELD_TRACTION = 0.01;
+PlayerSpirit.TRACTION = 0.01;
+PlayerSpirit.SHIELD_TRACTION = 0;
 
 PlayerSpirit.NORMAL_ELASTICITY = 0.25;
 PlayerSpirit.SHIELD_ELASTICTY = 0.99;
