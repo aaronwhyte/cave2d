@@ -84,11 +84,10 @@ Game6IntroScreen.prototype.drawScene = function() {
   this.renderer.setTime(this.now());
   this.drawTiles();
   this.drawSpirits();
-
-  this.drawText();
-
   this.splasher.drawWithModelIds(this, this.world.now);
   this.flushBatchDrawers();
+
+  this.drawText();
 
   // Animate whenever this thing draws.
   if (!this.paused) {
@@ -143,8 +142,7 @@ Game6IntroScreen.prototype.drawText = function() {
       .multiply(this.mat44.toTranslateOpXYZ(
           -spacingFraction * (text.length - 1) / 2,
           (-this.canvas.height / width) / letterSize + spacingFraction * 1.5,
-          0))
-  ;
+          0));
   this.nextCharMatrix.toTranslateOpXYZ(spacingFraction, 0, 0);
   this.printer.printLine(this.startMatrix, this.nextCharMatrix, text);
 };
