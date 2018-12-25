@@ -367,6 +367,7 @@ WorldScreen.prototype.initWorld = function() {
   this.resolver = new HitResolver();
   this.bitGrid = new BitGrid(this.bitSize);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
+  this.tileGrid.setWallColor(this.tileGridWallColor);
 };
 
 WorldScreen.prototype.getResizeFn = function() {
