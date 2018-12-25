@@ -152,6 +152,7 @@ Game6BaseScreen.prototype.getCursorHitGroup = function() {
 Game6BaseScreen.prototype.initWorld = function() {
   WorldScreen.prototype.initWorld.call(this);
   this.lastPathRefreshTime = -Infinity;
+  this.tileGridWallColor = 1;
 
   // Wrap the default resolver in one that knows how to do awesome game stuff.
   let bouncer = this.resolver;

@@ -30,7 +30,12 @@ v print game title
 v print "PRESS TO BEGIN"
 
 space and planetoid
-- invert wall and void
+v invert wall and void
+  v world loader
+  v editor
+  v mine painting
+  v bullet painting
+  v new intro level
 - background tunnel tiles
   - maintain dist-from-wall grid
   - maintain secondary dist-from-space grid

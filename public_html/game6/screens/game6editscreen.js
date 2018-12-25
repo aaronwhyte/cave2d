@@ -31,6 +31,8 @@ Game6EditScreen.prototype.initEditor = function() {
   this.editor = new Editor(this, this.canvas, this.renderer, this.glyphs,
       EditorStamps.create(this.renderer), this.getSpiritConfigs(), new ChangeStack(2000));
   this.editor.gripAccelFraction = 0.25;
+  this.editor.digTileColor = 0;
+  this.editor.fillTileColor = 1;
 };
 
 Game6EditScreen.prototype.initWorld = function() {

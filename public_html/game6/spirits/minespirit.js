@@ -93,7 +93,7 @@ MineSpirit.prototype.die = function() {
   this.screen.splashes.addBombExplosionSplash(this.now(), pos, this.color);
 
   // Clear some space
-  this.screen.drawTerrainPill(pos, pos, bodyRad * 3, 1);
+  this.screen.drawTerrainPill(pos, pos, bodyRad * 3, 0);
 
   // LET IT RAIN
   function r() {return 1 + Math.random() * 0.3}

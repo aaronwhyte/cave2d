@@ -189,7 +189,7 @@ BulletSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
   // digging is random but based on impact magnitude
   if (this.wallDamageMultiplier) {
     let rad = this.wallDamageMultiplier * Math.min(1, Math.max(mag, 0.3) * (0.25 + 0.75 * Math.random()));
-    this.screen.drawTerrainPill(pos, pos, rad, 1);
+    this.screen.drawTerrainPill(pos, pos, rad, 0);
   }
 
   // bounce or vanish?

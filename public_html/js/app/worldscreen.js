@@ -34,7 +34,9 @@ function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans,
     this.drawPack = new DrawPack(this.renderer);
   }
 
-  // Temps for drawing spirits overlapping circles
+  this.tileGridWallColor = 0;
+
+      // Temps for drawing spirits overlapping circles
   this.cellIdSet = new Set();
   this.spiritIdSet = new Set();
 
@@ -173,6 +175,7 @@ function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans,
 
   this.canvasCuboid = new Cuboid();
   this.cuboidRules = [];
+  
 }
 
 WorldScreen.EventLayer = {
@@ -877,6 +880,7 @@ WorldScreen.prototype.loadWorldFromJson = function(json) {
   worldJsoner.loadWorldFromJson(this.world, json);
   this.bitGrid = BitGrid.fromJSON(json.terrain);
   this.tileGrid = new TileGrid(this.bitGrid, this.renderer, this.world, this.getWallHitGroup(), this.useFans);
+  this.tileGrid.setWallColor(this.tileGridWallColor);
   this.tileGrid.flushTerrainChanges();
   if (this.editor) {
     this.editor.onLoadWorldFromJson(json);

@@ -23,10 +23,24 @@ function TileGrid(bitGrid, renderer, world, hitGroup, opt_useFans) {
   this.v1 = new Vec2d();
   this.rect = new Rect();
   this.mat44 = new Matrix44();
+
+  this.wallColor = 0;
 }
 
 TileGrid.prototype.setWallGrip = function(grip) {
   this.wallGrip = grip;
+  return this;
+};
+
+/**
+ * Zero for the default - tunnels in an endless ground,
+ * or one for walls in an endless void.
+ * This should only be set once, before any stuff is added to the grid.
+ * @param {number} color 0 or 1
+ * @returns {TileGrid}
+ */
+TileGrid.prototype.setWallColor = function(color) {
+  this.wallColor = color;
   return this;
 };
 
@@ -210,7 +224,7 @@ TileGrid.prototype.loadCellId = function(cellId) {
   if (!tile.bodyIds) {
     tile.bodyIds = [];
     // Create wall bodies and remember their IDs.
-    let rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    let rects = this.bitGrid.getRectsOfColorForCellId(this.wallColor, cellId);
     for (let r = 0; r < rects.length; r++) {
       let rect = rects[r];
       let body = this.createWallBody(rect);
@@ -265,13 +279,13 @@ TileGrid.prototype.createTileStampForCellId = function(cellId) {
 
   if (!this.useFans) {
     // Use minimal rects, just like the bodies
-    let rects = this.bitGrid.getRectsOfColorForCellId(0, cellId);
+    let rects = this.bitGrid.getRectsOfColorForCellId(this.wallColor, cellId);
     for (let i = 0; i < rects.length; i++) {
       tileModel.addRigidModel(this.createWallModel(rects[i]));
     }
   } else {
     // Create more rects and a lot more edge vertexes - more of a mesh.
-    let fans = this.bitGrid.getFansOfColorForCellId(0, cellId);
+    let fans = this.bitGrid.getFansOfColorForCellId(this.wallColor, cellId);
     for (let i = 0; i < fans.length; i++) {
       let fanModel = RigidModel.createFromFanVecs(fans[i]);
       tileModel.addRigidModel(fanModel);

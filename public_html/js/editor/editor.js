@@ -94,6 +94,9 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
   this.buildMenu();
 
   this.ongoingEditGesture = false;
+
+  this.digTileColor = 0;
+  this.fillTileColor = 1;
 }
 
 /**
@@ -386,10 +389,10 @@ Editor.prototype.handleInput = function() {
   }
 
   if (this.digTriggerWidget.getVal()) {
-    this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 1);
+    this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, this.digTileColor);
     this.ongoingEditGesture = true;
   } else if (this.fillTriggerWidget.getVal()) {
-    this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, 0);
+    this.host.drawTerrainPill(oldCursorPos, this.cursorPos, this.cursorRad, this.fillTileColor);
     this.ongoingEditGesture = true;
   }
 
