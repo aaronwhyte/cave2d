@@ -36,6 +36,37 @@ v invert wall and void
   v mine painting
   v bullet painting
   v new intro level
+
+convert player from game6
+v remove shield
+v use thrust while flying, no (or very little) traction
+v remove tractor beam
+
+prototype player controls & transformation
+- button to switch modes for now
+- driving
+  - movement along wall is fast and traction-y and sticks to wall
+  - ram stuff that you hit frontally. "ram" is a distinct action that enemies have different reactions to.
+  - button-down immediately jumps off of wall.
+    - Maybe short ramming phase too?
+    - Use hold/release for something?
+      - continued ram?
+      - continued wall-grab aim for wall-to-wall jumps?
+      - fast accel?
+- flying
+  - hold button down to charge & aim weap (and small fire?) (no power for thrust tho)
+  - indicator shows where fire will go
+  - indicator also shows if release into point-blank wall will trigger transformation to driving mode
+- motion streaks like nobody's business, like game4
+
+Some enemies
+- ones you can shoot or ram
+- ones you must ram
+- ones that you ram into the air and then shoot
+- ones that you shoot down and then ram
+
+
+space and planetoid II
 - background tunnel tiles
   - maintain dist-from-wall grid
   - maintain secondary dist-from-space grid

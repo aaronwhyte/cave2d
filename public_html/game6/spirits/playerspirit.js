@@ -10,18 +10,14 @@ function PlayerSpirit(screen) {
 
   this.color = new Vec4().setRGBA(1, 1, 1, 1);
   this.aimColor = new Vec4();
-  this.shieldColor = new Vec4();
 
   this.aim = new Vec2d(0, 1);
   this.destAim = new Vec2d();
 
-  this.shielded = false;
   this.toolButtonDown = false;
 
   this.lastDamage = 0;
   this.lastDamageTime = 0;
-  this.lastShieldedDamage = 0;
-  this.lastShieldedDamageTime = 0;
   this.lastHitMag = 0;
   this.lastHitTime = 0;
   this.lastPain = 0;
@@ -49,16 +45,14 @@ PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
+PlayerSpirit.CAMERA_AIM_OFFSET = 3;
+PlayerSpirit.CAMERA_VEL_MULTIPLIER = 8;
+PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 20;
 
-PlayerSpirit.SPEED = 3;
+PlayerSpirit.FLYING_TRACTION = 0.01;
+PlayerSpirit.FLYING_THRUST = 0.03;
 
-PlayerSpirit.TRACTION = 0.01;
-PlayerSpirit.SHIELD_TRACTION = 0;
-
-PlayerSpirit.NORMAL_ELASTICITY = 0.25;
-PlayerSpirit.SHIELD_ELASTICTY = 0.99;
-PlayerSpirit.SHIELD_ABSORPTION = 1;
-PlayerSpirit.MAX_SHIELD_DAMAGE = 20;
+PlayerSpirit.ELASTICITY = 0.25;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
 PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
@@ -106,10 +100,11 @@ PlayerSpirit.factory = function(screen, pos, dir) {
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
 
-  let tb = new TractorBeam(screen);
-  spirit.tractorBeam = tb;
-  screen.world.addSpirit(tb);
-  tb.wield(spiritId);
+  // TODO: weapon instead, and maybe two because one for flying and one for driving, but maybe not.
+  // let tb = new TractorBeam(screen);
+  // spirit.tractorBeam = tb;
+  // screen.world.addSpirit(tb);
+  // tb.wield(spiritId);
   return spiritId;
 };
 
@@ -129,14 +124,20 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
   b.turnable = true;
   b.moi = b.mass * b.rad * b.rad / 2;
   b.grip = 0.3;
-  b.elasticity = PlayerSpirit.NORMAL_ELASTICITY;
+  b.elasticity = PlayerSpirit.ELASTICITY;
   b.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.1;
   b.spiritId = this.id;
   return b;
 };
 
 PlayerSpirit.prototype.getCameraFocusPos = function() {
-  return this.vec2d.set(this.aim).scaleToLength(PlayerSpirit.PLAYER_RAD * 3).add(this.getBodyPos());
+  return this.vec2d
+      .set(this.aim).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
+      .add(this.vec2d2
+          .set(this.getBodyVel())
+          .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
+          .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
+      .add(this.getBodyPos());
 };
 
 /**
@@ -167,9 +168,8 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   while (e = controlMap.nextEvent()) {
     if (e.controlName === ControlName.DROP_ITEM) {
       if (this.item && e.bool) {
-        this.dropItem(0.5, 0, 0);
+        // TODO: button 2?
       }
-      this.setShielded(e.bool);
       this.updateToolButton();
     } else if (e.controlName === ControlName.ACTION_0) {
       this.toolButtonDown = e.bool;
@@ -180,11 +180,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
-  let speed = PlayerSpirit.SPEED;
-  let shieldDamage = this.getShieldedDamageFaded();
-  if (shieldDamage && !this.shielded) {
-    speed += 1 + shieldDamage / PlayerSpirit.MAX_SHIELD_DAMAGE;
-  }
+  let speed = PlayerSpirit.FLYING_THRUST;
 
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
@@ -199,21 +195,22 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     speed *= this.keyMult;
   }
   let action0 = controlMap.getControl(ControlName.ACTION_0).getVal();
-  let action1 = false;//TODO controlMap.getControl(ControlName.ACTION_1).getVal();
+  let action1 = false; // TODO controlMap.getControl(ControlName.ACTION_1).getVal();
   let aimOnly = action0 || action1;
   if (aimOnly) {
     speed = 0;
   }
 
-  let traction = this.shielded ? PlayerSpirit.SHIELD_TRACTION : PlayerSpirit.TRACTION;
-  // Half of traction's job is to stop you from sliding in the direction you're already going.
-  this.accel.set(playerBody.vel).scale(-traction);
+  if (!stick.isTouched()) {
+    this.accel.setXY(0, 0);
+  } else {
+    let traction = PlayerSpirit.FLYING_TRACTION;
+    // TODO: Make traction help with course-correct but don't slow you down along desired traj.
+    this.accel.set(playerBody.vel).scale(-traction);
 
-  // The other half of traction's job is to get you going where you want.
-  // vec2d is the stick input right now.
-  this.stickVec.scale(speed * traction);
-  this.accel.add(this.stickVec);
-  // this.accel.debugIfNaN();
+    this.stickVec.scale(speed);
+    this.accel.add(this.stickVec);
+  }
   playerBody.addVelAtTime(this.accel, this.now());
 
   ////////
@@ -227,11 +224,14 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
 };
 
 PlayerSpirit.prototype.getSelectedTool = function() {
-  return this.item || this.tractorBeam;
+  return this.item;
 };
 
 PlayerSpirit.prototype.updateToolButton = function() {
-  this.getSelectedTool().setButtonDown(this.toolButtonDown && !this.shielded);
+  let tool = this.getSelectedTool();
+  if (tool) {
+    tool.setButtonDown(this.toolButtonDown);
+  }
 };
 
 PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
@@ -281,11 +281,6 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
 
       body.setVelAtTime(newVel, now);
       body.invalidatePath();
-
-      if (this.getShieldedDamageFaded() > 0.95 * PlayerSpirit.MAX_SHIELD_DAMAGE) {
-        this.screen.splashes.addShieldShatterSplash(now, this.getBodyPos(), this.shieldColor);
-        this.die();
-      }
     }
     world.addTimeout(now + PlayerSpirit.FRICTION_TIMEOUT, this.id, PlayerSpirit.FRICTION_TIMEOUT_ID);
   }
@@ -357,15 +352,6 @@ PlayerSpirit.prototype.onDraw = function() {
   // aim color
   this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
 
-  // shield color
-  let shieldDamage = this.getShieldedDamageFaded();
-  let damageFrac = shieldDamage / PlayerSpirit.MAX_SHIELD_DAMAGE;
-  let shieldColor = this.shieldColor.setRGBA(
-      Math.min(1, 3 * damageFrac * damageFrac),
-      1 - Math.min(1, 3 * damageFrac),
-      1 - Math.min(1, damageFrac * damageFrac),
-      1);
-
   let p1, p2, rad;
 
   // aim guide
@@ -383,49 +369,17 @@ PlayerSpirit.prototype.onDraw = function() {
       .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
       .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
   this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
-
-  // shield
-  if (this.shielded || shieldDamage > 0) {
-    this.updateShieldWarble();
-    let r = damageFrac + 1 - Math.abs(1 - (shieldDamage * 10) % 1);
-    let rad = PlayerSpirit.PLAYER_RAD * 1.05;
-    let rad2 = this.shielded ? PlayerSpirit.PLAYER_RAD * 1.3 + r * 0.2 : PlayerSpirit.PLAYER_RAD;
-    this.modelMatrix.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.9))
-        .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-    this.modelMatrix2.toIdentity()
-        .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0.9))
-        .multiply(this.mat44.toScaleOpXYZ(rad2, rad2, 1));
-    this.screen.drawModel(ModelId.TUBE_32, this.shieldColor, this.modelMatrix, this.modelMatrix2);
-  }
-
-  // shield boost
-  if (!this.shielded && shieldDamage > 0) {
-    this.screen.splashes.addShieldBoostSplash(now, bodyPos, this.getBodyVel(), shieldDamage, shieldColor);
-  }
-
-  if (this.shieldWarble && !this.shielded && shieldDamage === 0) {
-    this.shieldWarble.stop();
-    this.shieldWarble = null;
-  }
 };
 
 PlayerSpirit.prototype.explode = function() {
-  if (this.item) {
-    this.dropItem(0.5 + Math.random(), 2 * Math.PI * Math.random(), Math.random() - 0.5);
-  } else {
-    this.tractorBeam.unwield();
-  }
-  this.setShielded(false);
-  if (this.shieldWarble) {
-    this.shieldWarble.stop();
-    this.shieldWarble = null;
-  }
+  let tool = this.getSelectedTool();
   let pos = this.getBodyPos();
   this.sounds.playerExplode(pos);
   this.screen.splashes.addPlayerExplosionSplash(this.now(), pos, this.color);
   this.screen.removeByBodyId(this.bodyId);
-  this.screen.removeSpiritId(this.tractorBeam.id);
+  if (tool) {
+    this.screen.removeSpiritId(tool.id);
+  }
 };
 
 PlayerSpirit.prototype.die = function() {
@@ -440,88 +394,22 @@ PlayerSpirit.prototype.die = function() {
  * @param {BaseSpirit} otherSpirit
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  if (!this.item && otherSpirit && otherSpirit.isItem &&
-      this.tractorBeam.buttonDown && otherBody.id === this.tractorBeam.seekTargetBodyId) {
-    // collect the item
-    let item = otherSpirit;
-    this.screen.splashes.addGrabSplash(this.now(), this.getBodyPos(), this.getBody().rad, this.getBodyAngPos());
-    item.disembody();
-    this.item = item;
-    item.wield(this.id);
-    this.screen.sounds.getItem(this.getBodyPos());
-    this.tractorBeam.unwield();
-    this.setShielded(false);
-  } else {
-    // regular collision
-    BaseSpirit.prototype.onHitOther.apply(this, arguments);
-    this.lastHitTime = this.now();
-    this.lastHitMag = mag;
-  }
-};
-
-PlayerSpirit.prototype.dropItem = function(speed, opt_angleOffset, opt_angVelOffset) {
-  if (!this.item) return;
-  let angleOffset = opt_angleOffset || 0;
-  let angVelOffset = opt_angVelOffset || 0;
-  let item = this.item;
-  this.item = null;
-  let dir = this.getBodyAngPos();
-  item.embody(this.getBodyPos(),
-      this.getBodyVel(),
-      dir + angleOffset,
-      this.getBodyAngVel() + angVelOffset);
-
-  let itemBody = item.getBody();
-  let now = this.now();
-  this.forceVec.setXY(0, speed * itemBody.mass).rot(dir);
-  itemBody.applyForceAtTime(this.forceVec, now);
-  this.getBody().applyForceAtTime(this.forceVec.scale(-1), now);
-
-  this.tractorBeam.wield(this.id);
-
-  this.screen.sounds.dropItem(this.getBodyPos());
-};
-
-PlayerSpirit.prototype.setShielded = function(s) {
-  if (s === this.shielded) return;
-  this.shielded = s;
-  this.getBody().elasticity = s ? PlayerSpirit.SHIELD_ELASTICTY : PlayerSpirit.NORMAL_ELASTICITY;
-  if (s && !this.shieldWarble) {
-    this.shieldWarble = new Sounds.Warble(this.screen.sounds, 'sawtooth', 'sawtooth');
-    this.shieldWarble.start();
-    this.updateShieldWarble();
-  }
-};
-
-PlayerSpirit.prototype.updateShieldWarble = function() {
-  let base = this.getShieldedDamageFaded() + (this.shielded ? this.getHitMagFaded() : 0);
-  let d = Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, base);
-  let f = d / PlayerSpirit.MAX_SHIELD_DAMAGE;
-  this.shieldWarble.setGain(0.1 + Math.min(2, d));
-  this.shieldWarble.setWorldPos(this.getBodyPos());
-  let baseFreq = (300 - f * (250 + 40 * Math.random())) * (this.shielded ? 1 : 1.5);
-  this.shieldWarble.setPitchFreq(baseFreq);
-  this.shieldWarble.setWubFreq(100 - f * (90 + 5 * Math.random()));
+  // regular collision
+  BaseSpirit.prototype.onHitOther.apply(this, arguments);
+  this.lastHitTime = this.now();
+  this.lastHitMag = mag;
 };
 
 /**
- * The player's shield absorbs damage, and the player heals over time.
  * @param {number} d
  */
-PlayerSpirit.prototype.applyDamage = function(d) {
+PlayerSpirit.prototype.applyDamage = function(damage) {
   let now = this.now();
-  let absorb = this.shielded ? PlayerSpirit.SHIELD_ABSORPTION * d : 0;
-  let damage = d - absorb;
   this.lastDamage = damage + this.getDamageFaded();
   this.lastDamageTime = now;
 
   this.lastPain = damage + this.getPainFaded();
   this.lastPainTime = now;
-
-  if (this.shielded) {
-    this.lastShieldedDamage = Math.min(PlayerSpirit.MAX_SHIELD_DAMAGE, absorb + this.getShieldedDamageFaded());
-    this.lastShieldedDamageTime = now;
-  }
 
   if (damage) {
     this.screen.splashes.addPlayerHurtExplosion(now, this.getBodyPos(), this.getDamageFaded(), this.vec4.setXYZ(1, 1, 1));
@@ -540,14 +428,10 @@ PlayerSpirit.prototype.getDamageFaded = function() {
   return Math.max(0, this.lastDamage - 0.01 * (this.now() - this.lastDamageTime));
 };
 
-PlayerSpirit.prototype.getShieldedDamageFaded = function() {
-  return Math.max(0, this.lastShieldedDamage - Math.pow(0.07 * (this.now() - this.lastShieldedDamageTime), 2));
-};
-
 PlayerSpirit.prototype.getHitMagFaded = function() {
   return Math.max(0, Math.min(5, this.lastHitMag) / 5 - Math.pow(0.5 * (this.now() - this.lastHitTime), 2));
 };
 
 PlayerSpirit.prototype.getFriction = function() {
-  return this.shielded ? Game6PlayScreen.FRICTION * 0.05 : Game6PlayScreen.FRICTION;
+  return 0;//this.isPlaying() ? 0 : Game6PlayScreen.FRICTION;
 };
