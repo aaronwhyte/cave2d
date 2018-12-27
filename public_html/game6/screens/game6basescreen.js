@@ -12,8 +12,10 @@ function Game6BaseScreen(controller, canvas, renderer, stamps, sfx, adventureNam
       Game6BaseScreen.SUPPORT_BATCH_DRAWING,
       models);
   if (!controller) return; // generating prototype
+
+  // override WorldScreen default value, to hep make this a walls-in-space level
   this.tileGridWallColor = 1;
-  
+
   this.adventureName = adventureName;
   this.levelName = levelName;
 
