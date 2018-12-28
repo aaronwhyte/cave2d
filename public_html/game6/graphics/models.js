@@ -39,7 +39,8 @@ let ModelId = (function() {
 
     ANT: ++i,
 
-    PLAYER: ++i,
+    PLAYER_FLYING: ++i,
+    PLAYER_DRIVING: ++i,
 
     SLOW_SHOOTER: ++i,
     MEDIUM_SHOOTER: ++i,
@@ -137,21 +138,21 @@ Models.prototype.createModel = function(id) {
       return RigidModel.createRingMesh(5, 0.8)
           .setColorRGB(0.2, 0.8, 0.2);
 
-    case ModelId.PLAYER:
+    case ModelId.PLAYER_FLYING:
       return RigidModel.createCircle(24)
-          .setColorRGB(1, 1, 1)
-          .addRigidModel(RigidModel.createCircle(12)
-              .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
-              .transformPositions(new Matrix44().toTranslateOpXYZ(-0.32, 0.23, -0.25))
-              .setColorRGB(0, 0, 0))
-          .addRigidModel(RigidModel.createCircle(12)
-              .transformPositions(new Matrix44().toScaleOpXYZ(0.15, 0.15, 1))
-              .transformPositions(new Matrix44().toTranslateOpXYZ(0.32, 0.23, -0.25))
-              .setColorRGB(0, 0, 0))
-          .addRigidModel(RigidModel.createSquare()
-              .transformPositions(new Matrix44().toScaleOpXYZ(0.4, 0.07, 1))
-              .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.37, -0.25))
-              .setColorRGB(0, 0, 0));
+          .setColorRGB(0.25, 0.5, 0.5)
+          .addRigidModel(RigidModel.createTriangle()
+              .transformPositions(new Matrix44().toScaleOpXYZ(0.5, 0.7, 1))
+              .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.2, -0.1))
+              .setColorRGB(0.5, 1, 1));
+
+    case ModelId.PLAYER_DRIVING:
+      return RigidModel.createCircle(24)
+          .setColorRGB(0.5, 0.5, 0.25)
+          .addRigidModel(RigidModel.createTriangle()
+              .transformPositions(new Matrix44().toScaleOpXYZ(0.7, 0.4, 1))
+              .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.4, -0.1))
+              .setColorRGB(1, 1, 0.5));
 
     case ModelId.SLOW_SHOOTER: {
       let model = new RigidModel();

@@ -40,9 +40,14 @@ function PlayerSpirit(screen) {
 
   // combat
   this.toughness = 1.1;
+
+  this.mode = PlayerSpirit.MODE_FLYING;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
+
+PlayerSpirit.MODE_FLYING = 1;
+PlayerSpirit.MODE_DRIVING = 2;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
 PlayerSpirit.CAMERA_AIM_OFFSET = 3;
@@ -51,6 +56,9 @@ PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 20;
 
 PlayerSpirit.FLYING_TRACTION = 0.01;
 PlayerSpirit.FLYING_THRUST = 0.03;
+
+PlayerSpirit.DRIVING_TRACTION = 0.3;
+PlayerSpirit.DRIVING_THRUST = 1;
 
 PlayerSpirit.ELASTICITY = 0.25;
 
@@ -63,7 +71,7 @@ PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI * 0.2;
-PlayerSpirit.ANGULAR_FRICTION = 0.01;
+PlayerSpirit.ANGULAR_FRICTION = 0.4;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -109,7 +117,14 @@ PlayerSpirit.factory = function(screen, pos, dir) {
 };
 
 PlayerSpirit.prototype.getModelId = function() {
-  return ModelId.PLAYER;
+  switch(this.mode) {
+    case PlayerSpirit.MODE_FLYING:
+      return ModelId.PLAYER_FLYING;
+    case PlayerSpirit.MODE_DRIVING:
+      return ModelId.PLAYER_DRIVING;
+    default:
+      return ModelId.SQUARE;
+  }
 };
 
 PlayerSpirit.prototype.createBody = function(pos, dir) {
@@ -131,13 +146,17 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
 };
 
 PlayerSpirit.prototype.getCameraFocusPos = function() {
-  return this.vec2d
-      .set(this.aim).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
-      .add(this.vec2d2
-          .set(this.getBodyVel())
-          .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
-          .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
-      .add(this.getBodyPos());
+  if (this.mode === PlayerSpirit.MODE_FLYING) {
+    return this.vec2d
+        .set(this.aim).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
+        .add(this.vec2d2
+            .set(this.getBodyVel())
+            .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
+            .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
+        .add(this.getBodyPos());
+  } else {
+    return this.vec2d.set(this.getBodyPos());
+  }
 };
 
 /**
@@ -152,8 +171,16 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   if (this.changeListener) {
     this.changeListener.onBeforeSpiritChange(this);
   }
+
+  if (this.mode === PlayerSpirit.MODE_FLYING) {
+    this.handleInputFlying(controlMap, playerBody);
+  } else if (this.mode === PlayerSpirit.MODE_DRIVING){
+    this.handleInputDriving(controlMap, playerBody);
+  }
+};
+
+PlayerSpirit.prototype.handleInputFlying = function(controlMap, playerBody) {
   let now = this.now();
-  let duration = now - this.lastInputTime;
   this.lastInputTime = now;
 
   let stick = controlMap.getControl(ControlName.STICK);
@@ -167,8 +194,8 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   let e;
   while (e = controlMap.nextEvent()) {
     if (e.controlName === ControlName.DROP_ITEM) {
-      if (this.item && e.bool) {
-        // TODO: button 2?
+      if (e.bool) {
+        this.switchModes();
       }
       this.updateToolButton();
     } else if (e.controlName === ControlName.ACTION_0) {
@@ -180,7 +207,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   }
 
   let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
-  let speed = PlayerSpirit.FLYING_THRUST;
+  let thrust = PlayerSpirit.FLYING_THRUST;
 
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
@@ -192,23 +219,22 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     }
     // Max is 1, minimum is also the KEY_MULT_ADJUST constant.
     this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
-    speed *= this.keyMult;
+    thrust *= this.keyMult;
   }
   let action0 = controlMap.getControl(ControlName.ACTION_0).getVal();
-  let action1 = false; // TODO controlMap.getControl(ControlName.ACTION_1).getVal();
+  let action1 = false;
   let aimOnly = action0 || action1;
   if (aimOnly) {
-    speed = 0;
+    thrust = 0;
   }
 
   if (!stick.isTouched()) {
     this.accel.setXY(0, 0);
   } else {
     let traction = PlayerSpirit.FLYING_TRACTION;
-    // TODO: Make traction help with course-correct but don't slow you down along desired traj.
     this.accel.set(playerBody.vel).scale(-traction);
 
-    this.stickVec.scale(speed);
+    this.stickVec.scale(thrust);
     this.accel.add(this.stickVec);
   }
   playerBody.addVelAtTime(this.accel, this.now());
@@ -221,6 +247,88 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   } else {
     this.handleKeyboardAim(stick, stickMag, reverseness, aimOnly);
   }
+};
+
+PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
+  let now = this.now();
+  this.lastInputTime = now;
+
+  let stick = controlMap.getControl(ControlName.STICK);
+  let touchlike = stick.isTouchlike();
+
+  // Force the stickVec onto the 1D left/right line.
+  stick.getVal(this.stickVec);
+  let stickMag = this.stickVec.magnitude();
+  this.stickVec.projectOnto(this.vec2d.setXY(1, 0).rot(this.getBodyAngPos()));
+
+  // // Keep the original magnitude though?
+  // this.stickVec.scaleToLength(stickMag);
+
+  let tool = this.getSelectedTool();
+
+  // process control event queue
+  let e;
+  while (e = controlMap.nextEvent()) {
+    if (e.controlName === ControlName.DROP_ITEM) {
+      if (e.bool) {
+        this.switchModes();
+      }
+      this.updateToolButton();
+    } else if (e.controlName === ControlName.ACTION_0) {
+      this.toolButtonDown = e.bool;
+      if (tool) {
+        this.updateToolButton();
+      }
+    }
+  }
+
+  let thrust = PlayerSpirit.DRIVING_THRUST;
+
+  // gradually ramp up key-based speed, for low-speed control.
+  if (!touchlike) {
+    // If there's stick movement, keyMult goes up. Otherwise it goes down, fast.
+    if (stickMag) {
+      this.keyMult += PlayerSpirit.KEY_MULT_ADJUST;
+    } else {
+      this.keyMult = PlayerSpirit.KEY_MULT_ADJUST;
+    }
+    // Max is 1, minimum is also the KEY_MULT_ADJUST constant.
+    this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
+    thrust *= this.keyMult;
+  }
+
+  let traction = PlayerSpirit.DRIVING_TRACTION;
+
+  // Rayscan to find out how close we are to the ground and how to rotate to keep facing it.
+  let bodyPos = this.getBodyPos();
+  let side = 2;
+  let bodyRad = this.getBody().rad;
+  let scanRad = bodyRad / 2;
+  for (let i = -side; i <= side; i++) {
+    let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / side, 0);
+    let scanVel = this.vec2d2.setXY(1.5 * bodyRad * i / side, bodyRad * 5);
+
+    scanPos.rot(this.getBodyAngPos()).add(bodyPos);
+    scanVel.rot(this.getBodyAngPos());
+    let distFrac = this.screen.scan(
+        HitGroups.NEUTRAL,
+        scanPos,
+        scanVel,
+        scanRad,
+        this.scanResp);
+    if (distFrac < 0) distFrac = 1;
+    if (distFrac >= 0) {
+      playerBody.applyForceAtWorldPosAndTime(scanVel.scale(4 * (distFrac - 0.25) / (side * 2 + 1)), scanPos, now);
+    }
+  }
+  this.accel.set(playerBody.vel).scale(-traction);
+  this.stickVec.scale(thrust * traction);
+  this.accel.add(this.stickVec);
+  playerBody.addVelAtTime(this.accel, this.now());
+};
+
+PlayerSpirit.prototype.switchModes = function() {
+  this.mode = this.mode === PlayerSpirit.MODE_FLYING ? PlayerSpirit.MODE_DRIVING : PlayerSpirit.MODE_FLYING;
 };
 
 PlayerSpirit.prototype.getSelectedTool = function() {
@@ -246,19 +354,21 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     let body = this.getBody();
     if (body) {
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
-      // Angle towards aim.
-      let destAngle = this.aim.angle();
-      let currAngle = this.getBodyAngPos();
-      let curr2dest = destAngle - currAngle;
-      while (curr2dest > Math.PI) {
-        curr2dest -= 2 * Math.PI;
+      if (this.mode === PlayerSpirit.MODE_FLYING) {
+        // Angle towards aim.
+        let destAngle = this.aim.angle();
+        let currAngle = this.getBodyAngPos();
+        let curr2dest = destAngle - currAngle;
+        while (curr2dest > Math.PI) {
+          curr2dest -= 2 * Math.PI;
+        }
+        while (curr2dest < -Math.PI) {
+          curr2dest += 2 * Math.PI;
+        }
+        let angAccel = Spring.getLandingAccel(
+            -curr2dest, this.getBodyAngVel(), PlayerSpirit.AIM_ANGPOS_ACCEL, PlayerSpirit.FRICTION_TIMEOUT * 1.5);
+        this.addBodyAngVel(angAccel);
       }
-      while (curr2dest < -Math.PI) {
-        curr2dest += 2 * Math.PI;
-      }
-      let angAccel = Spring.getLandingAccel(
-          -curr2dest, this.getBodyAngVel(), PlayerSpirit.AIM_ANGPOS_ACCEL, PlayerSpirit.FRICTION_TIMEOUT * 1.5);
-      this.addBodyAngVel(angAccel);
 
       let angularFriction = 1 - Math.pow(1 - (this.screen.isPlaying() ? PlayerSpirit.ANGULAR_FRICTION : 0.3), duration);
       body.applyAngularFrictionAtTime(angularFriction, now);
@@ -340,7 +450,6 @@ PlayerSpirit.prototype.onDraw = function() {
   this.modelMatrix.toIdentity()
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
-      .multiply(this.mat44.toShearZOpXY(-this.aim.x, -this.aim.y))
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(now)));
   let pain = Math.min(1, 2 * this.getPainFaded() + 3 * this.getDamageFaded());
   this.vec4.setXYZ(

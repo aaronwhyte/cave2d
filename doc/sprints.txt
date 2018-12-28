@@ -43,9 +43,13 @@ v use thrust while flying, no (or very little) traction
 v remove tractor beam
 
 prototype player controls & transformation
-- button to switch modes for now
+v button to switch modes for now
 - driving
-  - movement along wall is fast and traction-y and sticks to wall
+  - sticks to wall
+    - at least two rayscans determine dists to wall
+    - apply force at point based on dist to wall.
+  - movement along wall is fast and traction-y, not very floaty
+  - no movement that is not along wall?
   - ram stuff that you hit frontally. "ram" is a distinct action that enemies have different reactions to.
   - button-down immediately jumps off of wall.
     - Maybe short ramming phase too?
