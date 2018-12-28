@@ -138,6 +138,8 @@ Game6BaseScreen.prototype.getHitPairs = function() {
         [g.PLAYER_WIDE_SCAN, g.ENEMY],
         [g.ENEMY_WIDE_SCAN, g.PLAYER],
 
+        [g.WALL_SCAN, g.WALL],
+
         [g.EMPTY, g.EMPTY]
     ];
   }

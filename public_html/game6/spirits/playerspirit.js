@@ -57,7 +57,7 @@ PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 20;
 PlayerSpirit.FLYING_TRACTION = 0.01;
 PlayerSpirit.FLYING_THRUST = 0.03;
 
-PlayerSpirit.DRIVING_TRACTION = 0.3;
+PlayerSpirit.DRIVING_TRACTION = 0.4;
 PlayerSpirit.DRIVING_THRUST = 1;
 
 PlayerSpirit.ELASTICITY = 0.25;
@@ -108,11 +108,10 @@ PlayerSpirit.factory = function(screen, pos, dir) {
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
 
-  // TODO: weapon instead, and maybe two because one for flying and one for driving, but maybe not.
-  // let tb = new TractorBeam(screen);
-  // spirit.tractorBeam = tb;
-  // screen.world.addSpirit(tb);
-  // tb.wield(spiritId);
+  // let tool = new PlayerGun(screen);
+  // spirit.tractorBeam = tool;
+  // screen.world.addSpirit(tool);
+  // tool.wield(spiritId);
   return spiritId;
 };
 
@@ -301,34 +300,49 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
 
   // Rayscan to find out how close we are to the ground and how to rotate to keep facing it.
   let bodyPos = this.getBodyPos();
-  let side = 2;
   let bodyRad = this.getBody().rad;
+  let bodyAngle = this.getBodyAngPos();
   let scanRad = bodyRad / 2;
-  for (let i = -side; i <= side; i++) {
-    let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / side, 0);
-    let scanVel = this.vec2d2.setXY(1.5 * bodyRad * i / side, bodyRad * 5);
 
-    scanPos.rot(this.getBodyAngPos()).add(bodyPos);
-    scanVel.rot(this.getBodyAngPos());
+  let side = 2;
+  let groundCount = 0;
+  for (let i = -side; i <= side; i++) {
+    let ang = Math.PI / 7 * i / side;
+    let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / side, 0).rot(ang + bodyAngle).add(bodyPos);
+    let scanVel = this.vec2d2.setXY(0, bodyRad * 3).rot(ang);
+
+    // scanPos.rot(this.getBodyAngPos()).add(bodyPos);
+    scanVel.rot(bodyAngle);
     let distFrac = this.screen.scan(
-        HitGroups.NEUTRAL,
+        HitGroups.WALL_SCAN,
         scanPos,
         scanVel,
         scanRad,
         this.scanResp);
-    if (distFrac < 0) distFrac = 1;
     if (distFrac >= 0) {
-      playerBody.applyForceAtWorldPosAndTime(scanVel.scale(4 * (distFrac - 0.25) / (side * 2 + 1)), scanPos, now);
+      groundCount++;
+      playerBody.applyForceAtTime(scanVel.scale(4 * (distFrac - 0.4) / (side * 2 + 1)), now);
     }
+    if (distFrac < 0) distFrac = 1;
+    playerBody.addAngVelAtTime(ang * (2 - distFrac) / 2, now);
   }
-  this.accel.set(playerBody.vel).scale(-traction);
-  this.stickVec.scale(thrust * traction);
-  this.accel.add(this.stickVec);
-  playerBody.addVelAtTime(this.accel, this.now());
+  if (groundCount) {
+    this.accel.set(playerBody.vel).scale(-traction);
+    this.stickVec.scale(thrust * traction);
+    this.accel.add(this.stickVec);
+    playerBody.addVelAtTime(this.accel, this.now());
+  }
+
+  // this.destAim.setXY(0, -1).rot(this.getBodyAngPos());
+  // this.aim.set(this.destAim);
 };
 
 PlayerSpirit.prototype.switchModes = function() {
   this.mode = this.mode === PlayerSpirit.MODE_FLYING ? PlayerSpirit.MODE_DRIVING : PlayerSpirit.MODE_FLYING;
+  if (this.mode === PlayerSpirit.MODE_FLYING) {
+    this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
+    this.aim.set(this.destAim);
+  }
 };
 
 PlayerSpirit.prototype.getSelectedTool = function() {
@@ -458,26 +472,26 @@ PlayerSpirit.prototype.onDraw = function() {
       Math.max(pain, this.color.getZ()));
   this.screen.drawModel(this.getModelId(), this.vec4, this.modelMatrix, null);
 
-  // aim color
-  this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
-
-  let p1, p2, rad;
-
-  // aim guide
-  p1 = this.vec2d;
-  p2 = this.vec2d2;
-  let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
-  let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
-  rad = 0.4;
-  p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
-  p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
-      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  this.modelMatrix2.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
-      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
+  // // aim color
+  // this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
+  //
+  // let p1, p2, rad;
+  //
+  // // aim guide
+  // p1 = this.vec2d;
+  // p2 = this.vec2d2;
+  // let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
+  // let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
+  // rad = 0.4;
+  // p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
+  // p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
+  // this.modelMatrix.toIdentity()
+  //     .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+  //     .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  // this.modelMatrix2.toIdentity()
+  //     .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+  //     .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  // this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
 };
 
 PlayerSpirit.prototype.explode = function() {

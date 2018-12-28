@@ -45,13 +45,15 @@ v remove tractor beam
 prototype player controls & transformation
 v button to switch modes for now
 - driving
-  - sticks to wall
-    - at least two rayscans determine dists to wall
-    - apply force at point based on dist to wall.
-  - movement along wall is fast and traction-y, not very floaty
-  - no movement that is not along wall?
-  - ram stuff that you hit frontally. "ram" is a distinct action that enemies have different reactions to.
-  - button-down immediately jumps off of wall.
+  v sticks to wall
+    v at least two rayscans determine dists to wall
+    v apply force at point based on dist to wall.
+  v movement along wall is fast and traction-y, not very floaty
+  v no movement that is not along wall
+  v button-down immediately jumps off of wall (or just changes modes?)
+  - allow rotation when in drive mode in open space
+- ramming
+  - ram stuff that you hit frontally while driving. "ram" is a distinct action that enemies have different reactions to.
     - Maybe short ramming phase too?
     - Use hold/release for something?
       - continued ram?
