@@ -45,6 +45,7 @@ let ModelId = (function() {
     SLOW_SHOOTER: ++i,
     MEDIUM_SHOOTER: ++i,
     LASER_WEAPON: ++i,
+    PLAYER_GUN: ++i,
     MINE: ++i,
     MINE_RETRACTED: ++i,
     MINE_THROWER: ++i
@@ -151,7 +152,7 @@ Models.prototype.createModel = function(id) {
           .setColorRGB(0.5, 0.5, 0.25)
           .addRigidModel(RigidModel.createTriangle()
               .transformPositions(new Matrix44().toScaleOpXYZ(0.7, 0.4, 1))
-              .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.4, -0.1))
+              .transformPositions(new Matrix44().toTranslateOpXYZ(0, -0.1, -0.1))
               .setColorRGB(1, 1, 0.5));
 
     case ModelId.SLOW_SHOOTER: {
@@ -197,6 +198,10 @@ Models.prototype.createModel = function(id) {
               .transformPositions(new Matrix44().toScaleOpXYZ(thick, thick, 1)))
           .setColorRGB(1, 0.2, 0.2);
       return model.addRigidModel(body).addRigidModel(barrel);
+    }
+
+    case ModelId.PLAYER_GUN: {
+      return new RigidModel(); // empty
     }
 
     case ModelId.MINE_THROWER:

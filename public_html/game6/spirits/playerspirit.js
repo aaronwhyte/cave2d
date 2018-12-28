@@ -108,10 +108,10 @@ PlayerSpirit.factory = function(screen, pos, dir) {
 
   world.addTimeout(world.now, spiritId, PlayerSpirit.FRICTION_TIMEOUT_ID);
 
-  // let tool = new PlayerGun(screen);
-  // spirit.tractorBeam = tool;
-  // screen.world.addSpirit(tool);
-  // tool.wield(spiritId);
+  let tool = new PlayerGun(screen);
+  spirit.item = tool;
+  screen.world.addSpirit(tool);
+  tool.wield(spiritId);
   return spiritId;
 };
 
@@ -351,6 +351,7 @@ PlayerSpirit.prototype.getSelectedTool = function() {
 
 PlayerSpirit.prototype.updateToolButton = function() {
   let tool = this.getSelectedTool();
+  console.log('tool', tool);
   if (tool) {
     tool.setButtonDown(this.toolButtonDown);
   }

@@ -4,6 +4,7 @@
  */
 function PlayerGun(screen) {
   BaseTool.call(this, screen);
+  this.type = Game6Key.PLAYER_GUN;
 }
 PlayerGun.prototype = new BaseTool();
 PlayerGun.prototype.constructor = PlayerGun;
@@ -26,7 +27,10 @@ PlayerGun.prototype.fire = function() {
   let now = this.now();
   let body = this.getBody();
 
-  let aimVec = wielder.getAimVec();
+  let aimVec = wielder.getAimVec()
+  if (wielder.mode === PlayerSpirit.MODE_DRIVING) {
+    aimVec.scale(-1);
+  }
 
   let rad = 0.4;
   // Start the bullet just inside the front of the wielder, not in the center
@@ -74,7 +78,7 @@ PlayerGun.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.addTrailSegment();
   spirit.health = 0;
   spirit.damage = 1;
-  spirit.digChance = 2;
+  spirit.wallDamageMultiplier = 0;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;
   spirit.trailDuration = 1;

@@ -27,6 +27,7 @@ function Game6Db() {
   a(Game6Key.SLOW_SHOOTER, SlowShooter, ModelId.SLOW_SHOOTER);
   a(Game6Key.MEDIUM_SHOOTER, MediumShooter, ModelId.MEDIUM_SHOOTER);
   a(Game6Key.LASER_WEAPON, LaserWeapon, ModelId.LASER_WEAPON);
+  a(Game6Key.PLAYER_GUN, PlayerGun, ModelId.PLAYER_GUN);
 }
 
 Game6Db.prototype.getSpiritCtor = function(key) {
