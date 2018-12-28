@@ -351,7 +351,6 @@ PlayerSpirit.prototype.getSelectedTool = function() {
 
 PlayerSpirit.prototype.updateToolButton = function() {
   let tool = this.getSelectedTool();
-  console.log('tool', tool);
   if (tool) {
     tool.setButtonDown(this.toolButtonDown);
   }
