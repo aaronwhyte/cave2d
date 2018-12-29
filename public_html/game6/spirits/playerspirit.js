@@ -42,6 +42,7 @@ function PlayerSpirit(screen) {
   this.toughness = 1.1;
 
   this.mode = PlayerSpirit.MODE_FLYING;
+  this.turnTowardsAim = true;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -57,10 +58,10 @@ PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 20;
 PlayerSpirit.FLYING_TRACTION = 0.01;
 PlayerSpirit.FLYING_THRUST = 0.03;
 
-PlayerSpirit.DRIVING_TRACTION = 0.4;
-PlayerSpirit.DRIVING_THRUST = 1;
+PlayerSpirit.DRIVING_TRACTION = 0.5;
+PlayerSpirit.DRIVING_THRUST = 1.2;
 
-PlayerSpirit.ELASTICITY = 0.25;
+PlayerSpirit.ELASTICITY = 0.5;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
 PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
@@ -71,7 +72,7 @@ PlayerSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 PlayerSpirit.STOPPING_ANGVEL = 0.01;
 
 PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI * 0.2;
-PlayerSpirit.ANGULAR_FRICTION = 0.4;
+PlayerSpirit.ANGULAR_FRICTION = 0.6;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -145,7 +146,8 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
 };
 
 PlayerSpirit.prototype.getCameraFocusPos = function() {
-  if (this.mode === PlayerSpirit.MODE_FLYING) {
+  // if (this.mode === PlayerSpirit.MODE_FLYING) {
+  if (this.turnTowardsAim) {
     return this.vec2d
         .set(this.aim).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
         .add(this.vec2d2
@@ -154,7 +156,13 @@ PlayerSpirit.prototype.getCameraFocusPos = function() {
             .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
         .add(this.getBodyPos());
   } else {
-    return this.vec2d.set(this.getBodyPos());
+    return this.vec2d
+        .set(this.aim).scaleToLength(-PlayerSpirit.CAMERA_AIM_OFFSET)
+        // .add(this.vec2d2
+        //     .set(this.getBodyVel())
+        //     .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
+        //     .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
+        .add(this.getBodyPos());
   }
 };
 
@@ -181,6 +189,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
 PlayerSpirit.prototype.handleInputFlying = function(controlMap, playerBody) {
   let now = this.now();
   this.lastInputTime = now;
+  this.turnTowardsAim = true;
 
   let stick = controlMap.getControl(ControlName.STICK);
   let touchlike = stick.isTouchlike();
@@ -270,9 +279,20 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
   while (e = controlMap.nextEvent()) {
     if (e.controlName === ControlName.DROP_ITEM) {
       if (e.bool) {
+        // jump off the wall
         this.switchModes();
+        let onWall = !this.turnTowardsAim;
+        if (onWall) {
+          let newAngle = this.getBodyAngPos() + Math.PI;
+          this.setBodyAngPos(newAngle);
+          let jumpMagnitude = 0.1;
+          this.addBodyVel(this.vec2d.setXY(0, jumpMagnitude).rot(newAngle));
+          this.aim.set(this.vec2d);
+          this.destAim.set(this.vec2d);
+        }
+        return;
       }
-      this.updateToolButton();
+      // this.updateToolButton();
     } else if (e.controlName === ControlName.ACTION_0) {
       this.toolButtonDown = e.bool;
       if (tool) {
@@ -307,9 +327,9 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
   let side = 2;
   let groundCount = 0;
   for (let i = -side; i <= side; i++) {
-    let ang = Math.PI / 7 * i / side;
+    let ang = Math.PI / 6  * i / side;
     let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / side, 0).rot(ang + bodyAngle).add(bodyPos);
-    let scanVel = this.vec2d2.setXY(0, bodyRad * 3).rot(ang);
+    let scanVel = this.vec2d2.setXY(0, bodyRad * 3.3 - scanRad).rot(ang);
 
     // scanPos.rot(this.getBodyAngPos()).add(bodyPos);
     scanVel.rot(bodyAngle);
@@ -321,20 +341,31 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
         this.scanResp);
     if (distFrac >= 0) {
       groundCount++;
-      playerBody.applyForceAtTime(scanVel.scale(4 * (distFrac - 0.4) / (side * 2 + 1)), now);
+      let pushFactor = 6;
+      playerBody.applyForceAtTime(scanVel.scale(pushFactor * (distFrac - 0.5) / (side * 2 + 1)), now);
     }
     if (distFrac < 0) distFrac = 1;
-    playerBody.addAngVelAtTime(ang * (2 - distFrac) / 2, now);
+    let turnFactor = 7;
+    playerBody.addAngVelAtTime(turnFactor * ang * (2 - distFrac) / (side * 2 + 1), now);
   }
   if (groundCount) {
+    this.turnTowardsAim = false;
     this.accel.set(playerBody.vel).scale(-traction);
     this.stickVec.scale(thrust * traction);
     this.accel.add(this.stickVec);
     playerBody.addVelAtTime(this.accel, this.now());
-  }
 
-  // this.destAim.setXY(0, -1).rot(this.getBodyAngPos());
-  // this.aim.set(this.destAim);
+    this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
+    this.aim.set(this.destAim);
+  } else {
+    // this.switchModes();
+    this.turnTowardsAim = true;
+    if (touchlike) {
+      this.handleTouchlikeAim(stick, stickMag, 0);
+    } else {
+      this.handleKeyboardAim(stick, stickMag, 0, true);
+    }
+  }
 };
 
 PlayerSpirit.prototype.switchModes = function() {
@@ -368,8 +399,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     let body = this.getBody();
     if (body) {
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
-      if (this.mode === PlayerSpirit.MODE_FLYING) {
-        // Angle towards aim.
+      if (this.turnTowardsAim) {
         let destAngle = this.aim.angle();
         let currAngle = this.getBodyAngPos();
         let curr2dest = destAngle - currAngle;
@@ -472,16 +502,17 @@ PlayerSpirit.prototype.onDraw = function() {
       Math.max(pain, this.color.getZ()));
   this.screen.drawModel(this.getModelId(), this.vec4, this.modelMatrix, null);
 
-  // // aim color
-  // this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
-  //
-  // let p1, p2, rad;
-  //
   // // aim guide
+  // this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
+  // let p1, p2, rad;
   // p1 = this.vec2d;
   // p2 = this.vec2d2;
   // let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
   // let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
+  // if (this.mode === PlayerSpirit.MODE_DRIVING) {
+  //   p1Dist *= -1;
+  //   p2Dist *= -1;
+  // }
   // rad = 0.4;
   // p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
   // p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
@@ -510,11 +541,21 @@ PlayerSpirit.prototype.die = function() {
 };
 
 /**
+ * Called before bouncing and damage exchange are done.
+ * @param {Vec2d} collisionVec
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
+ */
+PlayerSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, otherSpirit) {
+  // TODO gather collectibles
+};
+
+/**
  * Called after bouncing and damage exchange are done.
  * @param {Vec2d} collisionVec
  * @param {Number} mag the magnitude of the collision, kinda?
  * @param {Body} otherBody
- * @param {BaseSpirit} otherSpirit
+ * @param {Spirit} otherSpirit
  */
 PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
   // regular collision
@@ -524,7 +565,7 @@ PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, other
 };
 
 /**
- * @param {number} d
+ * @param {number} damage
  */
 PlayerSpirit.prototype.applyDamage = function(damage) {
   let now = this.now();

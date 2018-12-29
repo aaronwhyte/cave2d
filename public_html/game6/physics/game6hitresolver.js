@@ -22,6 +22,12 @@ function Game6HitResolver(screen, bouncer) {
  * @param {Body} b1
  */
 Game6HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
+  let s0 = this.screen.getSpiritForBody(b0);
+  let s1 = this.screen.getSpiritForBody(b1);
+
+  if (s0) s0.onBeforeHitOther(collisionVec, b1, s1);
+  if (s1) s1.onBeforeHitOther(collisionVec, b0, s0);
+
   // To prevent object interpenetration, do this.
   // To encourage it, don't do this. :-p
   let bounced = this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
@@ -33,9 +39,6 @@ Game6HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
 
   // Plan effects on "the other":
   // damage, healing, activation, ice, slime, acceleration, teleport, etc.
-  let s0 = this.screen.getSpiritForBody(b0);
-  let s1 = this.screen.getSpiritForBody(b1);
-
   if (this.screen.isPlaying()) {
     if (s0 && s1) {
       let damageTo0 = s1.damagesTeam(s0.team) ? s1.damage : 0;

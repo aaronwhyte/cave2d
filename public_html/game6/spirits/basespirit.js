@@ -438,6 +438,16 @@ BaseSpirit.prototype.applyDamage = function(damage) {
 };
 
 /**
+ * Called before bouncing and damage exchange are done.
+ * @param {Vec2d} collisionVec
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
+ */
+BaseSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, otherSpirit) {
+  // override me
+};
+
+/**
  * Called after bouncing and damage exchange are done.
  * @param {Vec2d} collisionVec
  * @param {Number} mag the magnitude of the collision, kinda?

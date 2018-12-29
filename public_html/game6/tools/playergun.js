@@ -12,7 +12,7 @@ PlayerGun.prototype.constructor = PlayerGun;
 PlayerGun.RECOIL_FORCE = 0;
 
 PlayerGun.prototype.getNextFireTime = function() {
-  let throttle = 2 * (1 + 0.05 * Math.sin(2349.12983 * this.id + this.lastFireTime));
+  let throttle = 4 * (1 + 0.05 * Math.sin(2349.12983 * this.id + this.lastFireTime));
   return this.lastFireTime + throttle;
 };
 
@@ -27,7 +27,7 @@ PlayerGun.prototype.fire = function() {
   let now = this.now();
   let body = this.getBody();
 
-  let aimVec = wielder.getAimVec()
+  let aimVec = wielder.getAimVec();
   if (wielder.mode === PlayerSpirit.MODE_DRIVING) {
     aimVec.scale(-1);
   }
