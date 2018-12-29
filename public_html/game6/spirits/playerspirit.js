@@ -150,19 +150,20 @@ PlayerSpirit.prototype.getCameraFocusPos = function() {
   if (this.turnTowardsAim) {
     return this.vec2d
         .set(this.aim).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
-        .add(this.vec2d2
-            .set(this.getBodyVel())
-            .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
-            .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
-        .add(this.getBodyPos());
-  } else {
-    return this.vec2d
-        .set(this.aim).scaleToLength(-PlayerSpirit.CAMERA_AIM_OFFSET)
         // .add(this.vec2d2
         //     .set(this.getBodyVel())
         //     .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
         //     .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
         .add(this.getBodyPos());
+  } else {
+    return this.vec2d.set(this.getBodyPos());
+    // return this.vec2d
+    //     .set(this.aim).scaleToLength(-PlayerSpirit.CAMERA_AIM_OFFSET)
+    //     // .add(this.vec2d2
+    //     //     .set(this.getBodyVel())
+    //     //     .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
+    //     //     .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
+    //     .add(this.getBodyPos());
   }
 };
 
@@ -267,7 +268,9 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
   // Force the stickVec onto the 1D left/right line.
   stick.getVal(this.stickVec);
   let stickMag = this.stickVec.magnitude();
-  this.stickVec.projectOnto(this.vec2d.setXY(1, 0).rot(this.getBodyAngPos()));
+
+  // Experiment with NOT preventing non-wall movement!
+  // this.stickVec.projectOnto(this.vec2d.setXY(1, 0).rot(this.getBodyAngPos()));
 
   // // Keep the original magnitude though?
   // this.stickVec.scaleToLength(stickMag);
@@ -326,6 +329,8 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
 
   let side = 2;
   let groundCount = 0;
+  let angAccel = 0;
+  this.accel.set(playerBody.vel).scale(-traction);
   for (let i = -side; i <= side; i++) {
     let ang = Math.PI / 6  * i / side;
     let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / side, 0).rot(ang + bodyAngle).add(bodyPos);
@@ -342,18 +347,18 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
     if (distFrac >= 0) {
       groundCount++;
       let pushFactor = 6;
-      playerBody.applyForceAtTime(scanVel.scale(pushFactor * (distFrac - 0.5) / (side * 2 + 1)), now);
+      this.accel.add(scanVel.scale(pushFactor * (distFrac - 0.5) / (side * 2 + 1) / playerBody.mass));
     }
     if (distFrac < 0) distFrac = 1;
     let turnFactor = 7;
-    playerBody.addAngVelAtTime(turnFactor * ang * (2 - distFrac) / (side * 2 + 1), now);
+    angAccel += turnFactor * ang * (2 - distFrac) / (side * 2 + 1);
   }
   if (groundCount) {
     this.turnTowardsAim = false;
-    this.accel.set(playerBody.vel).scale(-traction);
     this.stickVec.scale(thrust * traction);
     this.accel.add(this.stickVec);
-    playerBody.addVelAtTime(this.accel, this.now());
+    playerBody.addAngVelAtTime(angAccel, now);
+    playerBody.addVelAtTime(this.accel, now);
 
     this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
     this.aim.set(this.destAim);
