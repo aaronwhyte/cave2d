@@ -40,20 +40,14 @@ function PlayerSpirit(screen) {
 
   // combat
   this.toughness = 1.1;
-
-  this.mode = PlayerSpirit.MODE_FLYING;
-  this.turnTowardsAim = true;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
-PlayerSpirit.MODE_FLYING = 1;
-PlayerSpirit.MODE_DRIVING = 2;
-
 PlayerSpirit.PLAYER_RAD = 0.99;
-PlayerSpirit.CAMERA_AIM_OFFSET = 3;
-PlayerSpirit.CAMERA_VEL_MULTIPLIER = 8;
-PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 20;
+PlayerSpirit.CAMERA_AIM_OFFSET = -3;
+PlayerSpirit.CAMERA_VEL_MULTIPLIER = 2;
+PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 3;
 
 PlayerSpirit.FLYING_TRACTION = 0.01;
 PlayerSpirit.FLYING_THRUST = 0.03;
@@ -64,7 +58,7 @@ PlayerSpirit.DRIVING_THRUST = 1.2;
 PlayerSpirit.ELASTICITY = 0.5;
 
 PlayerSpirit.KEY_MULT_ADJUST = 1/10;
-PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI / 30;
+PlayerSpirit.MAX_KEYBOARD_DEST_AIM_ADJUSTMENT_ANGLE = Math.PI * 0.1;
 PlayerSpirit.FRICTION_TIMEOUT = 0.5;
 PlayerSpirit.FRICTION_TIMEOUT_ID = 10;
 
@@ -117,14 +111,7 @@ PlayerSpirit.factory = function(screen, pos, dir) {
 };
 
 PlayerSpirit.prototype.getModelId = function() {
-  switch(this.mode) {
-    case PlayerSpirit.MODE_FLYING:
-      return ModelId.PLAYER_FLYING;
-    case PlayerSpirit.MODE_DRIVING:
-      return ModelId.PLAYER_DRIVING;
-    default:
-      return ModelId.SQUARE;
-  }
+  return ModelId.PLAYER_DRIVING;
 };
 
 PlayerSpirit.prototype.createBody = function(pos, dir) {
@@ -146,25 +133,13 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
 };
 
 PlayerSpirit.prototype.getCameraFocusPos = function() {
-  // if (this.mode === PlayerSpirit.MODE_FLYING) {
-  if (this.turnTowardsAim) {
-    return this.vec2d
-        .set(this.aim).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
-        // .add(this.vec2d2
-        //     .set(this.getBodyVel())
-        //     .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
-        //     .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
-        .add(this.getBodyPos());
-  } else {
-    return this.vec2d.set(this.getBodyPos());
-    // return this.vec2d
-    //     .set(this.aim).scaleToLength(-PlayerSpirit.CAMERA_AIM_OFFSET)
-    //     // .add(this.vec2d2
-    //     //     .set(this.getBodyVel())
-    //     //     .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
-    //     //     .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
-    //     .add(this.getBodyPos());
-  }
+  return this.vec2d
+      .set(this.aim).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
+      .add(this.vec2d2
+          .set(this.getBodyVel())
+          .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
+          .clipToMaxLength(PlayerSpirit.CAMERA_VEL_OFFSET_MAX))
+      .add(this.getBodyPos());
 };
 
 /**
@@ -180,20 +155,12 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     this.changeListener.onBeforeSpiritChange(this);
   }
 
-  if (this.mode === PlayerSpirit.MODE_FLYING) {
-    this.handleInputFlying(controlMap, playerBody);
-  } else if (this.mode === PlayerSpirit.MODE_DRIVING){
-    this.handleInputDriving(controlMap, playerBody);
-  }
-};
-
-PlayerSpirit.prototype.handleInputFlying = function(controlMap, playerBody) {
   let now = this.now();
   this.lastInputTime = now;
-  this.turnTowardsAim = true;
 
   let stick = controlMap.getControl(ControlName.STICK);
   let touchlike = stick.isTouchlike();
+
   stick.getVal(this.stickVec);
   let stickMag = this.stickVec.magnitude();
 
@@ -202,101 +169,7 @@ PlayerSpirit.prototype.handleInputFlying = function(controlMap, playerBody) {
   // process control event queue
   let e;
   while (e = controlMap.nextEvent()) {
-    if (e.controlName === ControlName.DROP_ITEM) {
-      if (e.bool) {
-        this.switchModes();
-      }
-      this.updateToolButton();
-    } else if (e.controlName === ControlName.ACTION_0) {
-      this.toolButtonDown = e.bool;
-      if (tool) {
-        this.updateToolButton();
-      }
-    }
-  }
-
-  let stickDotAim = stickMag ? this.stickVec.dot(this.aim) / stickMag : 0; // aim is always length 1
-  let thrust = PlayerSpirit.FLYING_THRUST;
-
-  // gradually ramp up key-based speed, for low-speed control.
-  if (!touchlike) {
-    // If there's stick movement, keyMult goes up. Otherwise it goes down, fast.
-    if (stickMag) {
-      this.keyMult += PlayerSpirit.KEY_MULT_ADJUST;
-    } else {
-      this.keyMult = PlayerSpirit.KEY_MULT_ADJUST;
-    }
-    // Max is 1, minimum is also the KEY_MULT_ADJUST constant.
-    this.keyMult = Math.max(PlayerSpirit.KEY_MULT_ADJUST, Math.min(1, this.keyMult));
-    thrust *= this.keyMult;
-  }
-  let action0 = controlMap.getControl(ControlName.ACTION_0).getVal();
-  let action1 = false;
-  let aimOnly = action0 || action1;
-  if (aimOnly) {
-    thrust = 0;
-  }
-
-  if (!stick.isTouched()) {
-    this.accel.setXY(0, 0);
-  } else {
-    let traction = PlayerSpirit.FLYING_TRACTION;
-    this.accel.set(playerBody.vel).scale(-traction);
-
-    this.stickVec.scale(thrust);
-    this.accel.add(this.stickVec);
-  }
-  playerBody.addVelAtTime(this.accel, this.now());
-
-  ////////
-  // AIM
-  let reverseness = Math.max(0, -stickDotAim);
-  if (touchlike) {
-    this.handleTouchlikeAim(stick, stickMag, reverseness);
-  } else {
-    this.handleKeyboardAim(stick, stickMag, reverseness, aimOnly);
-  }
-};
-
-PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
-  let now = this.now();
-  this.lastInputTime = now;
-
-  let stick = controlMap.getControl(ControlName.STICK);
-  let touchlike = stick.isTouchlike();
-
-  // Force the stickVec onto the 1D left/right line.
-  stick.getVal(this.stickVec);
-  let stickMag = this.stickVec.magnitude();
-
-  // Experiment with NOT preventing non-wall movement!
-  // this.stickVec.projectOnto(this.vec2d.setXY(1, 0).rot(this.getBodyAngPos()));
-
-  // // Keep the original magnitude though?
-  // this.stickVec.scaleToLength(stickMag);
-
-  let tool = this.getSelectedTool();
-
-  // process control event queue
-  let e;
-  while (e = controlMap.nextEvent()) {
-    if (e.controlName === ControlName.DROP_ITEM) {
-      if (e.bool) {
-        // jump off the wall
-        this.switchModes();
-        let onWall = !this.turnTowardsAim;
-        if (onWall) {
-          let newAngle = this.getBodyAngPos() + Math.PI;
-          this.setBodyAngPos(newAngle);
-          let jumpMagnitude = 0.1;
-          this.addBodyVel(this.vec2d.setXY(0, jumpMagnitude).rot(newAngle));
-          this.aim.set(this.vec2d);
-          this.destAim.set(this.vec2d);
-        }
-        return;
-      }
-      // this.updateToolButton();
-    } else if (e.controlName === ControlName.ACTION_0) {
+    if (e.controlName === ControlName.ACTION_0) {
       this.toolButtonDown = e.bool;
       if (tool) {
         this.updateToolButton();
@@ -346,7 +219,7 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
         this.scanResp);
     if (distFrac >= 0) {
       groundCount++;
-      let pushFactor = 6;
+      let pushFactor = 1.5;
       this.accel.add(scanVel.scale(pushFactor * (distFrac - 0.5) / (side * 2 + 1) / playerBody.mass));
     }
     if (distFrac < 0) distFrac = 1;
@@ -363,21 +236,13 @@ PlayerSpirit.prototype.handleInputDriving = function(controlMap, playerBody) {
     this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
     this.aim.set(this.destAim);
   } else {
-    // this.switchModes();
+    // flying!
     this.turnTowardsAim = true;
     if (touchlike) {
       this.handleTouchlikeAim(stick, stickMag, 0);
     } else {
       this.handleKeyboardAim(stick, stickMag, 0, true);
     }
-  }
-};
-
-PlayerSpirit.prototype.switchModes = function() {
-  this.mode = this.mode === PlayerSpirit.MODE_FLYING ? PlayerSpirit.MODE_DRIVING : PlayerSpirit.MODE_FLYING;
-  if (this.mode === PlayerSpirit.MODE_FLYING) {
-    this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
-    this.aim.set(this.destAim);
   }
 };
 
@@ -507,27 +372,23 @@ PlayerSpirit.prototype.onDraw = function() {
       Math.max(pain, this.color.getZ()));
   this.screen.drawModel(this.getModelId(), this.vec4, this.modelMatrix, null);
 
-  // // aim guide
-  // this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
-  // let p1, p2, rad;
-  // p1 = this.vec2d;
-  // p2 = this.vec2d2;
-  // let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
-  // let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
-  // if (this.mode === PlayerSpirit.MODE_DRIVING) {
-  //   p1Dist *= -1;
-  //   p2Dist *= -1;
-  // }
-  // rad = 0.4;
-  // p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
-  // p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
-  // this.modelMatrix.toIdentity()
-  //     .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
-  //     .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  // this.modelMatrix2.toIdentity()
-  //     .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
-  //     .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  // this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
+  // aim guide
+  this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
+  let p1, p2, rad;
+  p1 = this.vec2d;
+  p2 = this.vec2d2;
+  let p1Dist = -PlayerSpirit.PLAYER_RAD * 3.5;
+  let p2Dist = -PlayerSpirit.PLAYER_RAD * 2;
+  rad = 0.4;
+  p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
+  p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
+  this.modelMatrix.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  this.modelMatrix2.toIdentity()
+      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
 };
 
 PlayerSpirit.prototype.explode = function() {

@@ -9,10 +9,10 @@ function PlayerGun(screen) {
 PlayerGun.prototype = new BaseTool();
 PlayerGun.prototype.constructor = PlayerGun;
 
-PlayerGun.RECOIL_FORCE = 0;
+PlayerGun.RECOIL_FORCE = -0.3;
 
 PlayerGun.prototype.getNextFireTime = function() {
-  let throttle = 4 * (1 + 0.05 * Math.sin(2349.12983 * this.id + this.lastFireTime));
+  let throttle = 2 * (1 + 0.05 * Math.sin(2349.12983 * this.id + this.lastFireTime));
   return this.lastFireTime + throttle;
 };
 
