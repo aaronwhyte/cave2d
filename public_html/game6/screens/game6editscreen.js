@@ -86,7 +86,9 @@ Game6EditScreen.prototype.initWidgets = function() {
 };
 
 Game6EditScreen.prototype.createDefaultWorld = function() {
-  this.tileGrid.drawTerrainPill(Vec2d.ZERO, Vec2d.ZERO, 9.8, 1);
+  let radius = 34;
+  let center = new Vec2d(0, Math.floor(-radius - 1.5 * PlayerSpirit.PLAYER_RAD));
+  this.tileGrid.drawTerrainPill(center, center, radius, 1);
 };
 
 Game6EditScreen.prototype.onHitEvent = function(e) {
