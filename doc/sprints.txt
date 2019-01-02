@@ -52,31 +52,101 @@ v driving
   v no movement that is not along wall
   v button-down immediately jumps off of wall (or just changes modes?)
   v allow rotation when in drive mode in open space
-- ramming
-  - ram stuff that you hit frontally while driving. "ram" is a distinct action that enemies have different reactions to.
-    - Maybe short ramming phase too?
-    - Use hold/release for something?
-      - continued ram?
-      - continued wall-grab aim for wall-to-wall jumps?
-      - fast accel?
+
+v remove mode-switch button - make it part of natural motion! One button only: fire.
+
+enemies and levels are lessons
+- lesson: drive and shoot
+  - open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
+    - They can shoot when you get close enough. No prob, just keep driving.
+  - ground-based turrets on a wall that faces another wall
+  - ground hoppers that launch up when you approach, then dive at you
+- lesson: dodge while on the ground
+  - enemies that float above and drop bombs (sense of gravity, planet center, altitude)
+  - ground rockets that launch up when you approach, then dive & explode
+- lesson: leave the ground briefly when needed
+  - flying enemies drop ground-hugging missiles, forcing you to jump over them
+  - explosive effects that hug the ground
+  - rolling bullets like donkey-kong barrels
+- lesson: take cover
+  - tough enemy that has a player-following rapid-fire phase. Hide behind stuff when that gets going, and fire when they pause.
+    (example: Big Bandit in Nuclear Throne)
+  - stationary enemy that contantly fires at you when you're anywhere close and in line of sight. Rotating field of view maybe?
+  - hovering enemy that fires a periodic burst
+- lesson: fly and shoot the ground
+  - turrets positioned so there's no opposite wall to shoot from
+  - wall-runners that chase you
+- lesson: wall jump & get a good angle
+  - wide tunnels with turrets and wall-runners
+  - levels with interesting interior arenas
+  - indoor mazes where you need to get to a certain spot to be able to shoot a thing to get to the next spot etc.
+- lesson: run and fire backwards
+  - tough flying enemies that chase you around the planet, that fire ground-huggers or something to keep you off the ground.
+  - seeker missiles that have a big blast radius
+- lesson: maneuver swarming enemies into kill-zones
+  - flying enemies that chase you - force them into bottleneck opening
+  - ground-based critters that that chase you: Use wavy ground to aim ground-gun at them.
+- lesson: Fly and shoot flying things
+  - space enemies (Defender ships?) that stay at your altitude so you need to fly and shoot sideways to get them.
+  - flying chasers that come out of the ground, that are easy to shoot as you fly away
+- lesson: be careful what you shoot
+  - high explosives in close quarters
+  - enemies that change when they die
+    - enemies that explode
+    - enemies that turn into more, smaller enemies (asteroids, slimes, defender diamonds)
+    - enemies that turn into obstacles when shot - centipede
+  - enemies that are altered by being shot
+    - drivers become flyers
+    - drivers leap across to opposite wall
+    - flyers become drivers
+    - sleepers become attackers
+- lesson: some things you cannot fight
+  - indestructible chasers that are too big to fit through small openings
+  - indestructible guards that laser you on sight
+
+
+- land on contact, not on longer-range scan
+
+plr grx and snd
+- driving
+  - ground-effect (particles?)
+  - driving sound
+  - trail
+  - launch sound
 - flying
-  - hold button down to charge & aim weap (and small fire?) (no power for thrust tho)
-  - indicator shows where fire will go
-  - indicator also shows if release into point-blank wall will trigger transformation to driving mode
-- motion streaks like nobody's business, like game4
+  - thrust particles
+  - thrust/speed sound
+  - trail
 
-Some enemies
-- ones you can shoot or ram
-- ones you must ram
-- ones that you ram into the air and then shoot
-- ones that you shoot down and then ram
-
-
-space and planetoid II
-- background tunnel tiles
-  - maintain dist-from-wall grid
-  - maintain secondary dist-from-space grid
-  - draw based
+complications
+- fire-keydown effects
+  - charge first shot when not firing, so timing first shot can be crucial
+    - special enemies that can only be hit with charge-shot
+    - charge when not firing but only launch charge when releasing, to give player chance to aim well?
+      - holding down fire drains charge shot so player must decide between occasional charged shots or steady stream
+- indestructible targets can be destroyed when the player is very powered up
+  - powering up comes from maxing out your combo bonus
+    - combo bonus from gathering collectibles enemies drop
+      - enemies drop collectibles
+- power-ups for general game perversion
+  - ramming power
+  - rapid fire (maybe don't start off as such a blaster)
+  - shield
+  - super-controlled flight
+  - explosive shells - for digging?
+  - forward-firing seeker missiles
+  - one-time explosive burst
+  - bouncy bullets
+  - gravity-following bombs
+- fun props
+  - neutral mines (hi game 5!) that are a benefit or a hazard. They don't blow walls tho.
+  - mines that DO blow up walls, for level transformation
+  - Orbs that bullets bounce off of
+  - Orbs that will throw you pinball-like
+  - Destructible orbs that you can walk across
+  - teleporters obviously
+  - spikey/zappy orbs that restrict movement
+  - periodic zappers, like Caves of Mars, especially when you're running away
 
 main menu
 - shows existing joined player slots, with good default player
