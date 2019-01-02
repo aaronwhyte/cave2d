@@ -12,6 +12,7 @@ function PlayerSpirit(screen) {
   this.aimColor = new Vec4();
 
   this.aim = new Vec2d(0, 1);
+  this.weaponAim = new Vec2d();
   this.destAim = new Vec2d();
 
   this.toolButtonDown = false;
@@ -45,15 +46,13 @@ PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
-PlayerSpirit.CAMERA_AIM_OFFSET = -3;
-PlayerSpirit.CAMERA_VEL_MULTIPLIER = 2;
+PlayerSpirit.CAMERA_AIM_OFFSET = 5;
+PlayerSpirit.CAMERA_VEL_MULTIPLIER = 3;
 PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 3;
 
 PlayerSpirit.FLYING_TRACTION = 0.01;
-PlayerSpirit.FLYING_THRUST = 0.03;
-
 PlayerSpirit.DRIVING_TRACTION = 0.5;
-PlayerSpirit.DRIVING_THRUST = 1.2;
+PlayerSpirit.THRUST = 1.2;
 
 PlayerSpirit.ELASTICITY = 0.5;
 
@@ -134,7 +133,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
 
 PlayerSpirit.prototype.getCameraFocusPos = function() {
   return this.vec2d
-      .set(this.aim).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
+      .set(this.getAimVec()).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
       .add(this.vec2d2
           .set(this.getBodyVel())
           .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
@@ -177,7 +176,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     }
   }
 
-  let thrust = PlayerSpirit.DRIVING_THRUST;
+  let thrust = PlayerSpirit.THRUST;
 
   // gradually ramp up key-based speed, for low-speed control.
   if (!touchlike) {
@@ -192,24 +191,23 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     thrust *= this.keyMult;
   }
 
-  let traction = PlayerSpirit.DRIVING_TRACTION;
-
   // Rayscan to find out how close we are to the ground and how to rotate to keep facing it.
   let bodyPos = this.getBodyPos();
   let bodyRad = this.getBody().rad;
   let bodyAngle = this.getBodyAngPos();
-  let scanRad = bodyRad / 2;
 
-  let side = 2;
   let groundCount = 0;
   let angAccel = 0;
-  this.accel.set(playerBody.vel).scale(-traction);
-  for (let i = -side; i <= side; i++) {
-    let ang = Math.PI / 6  * i / side;
-    let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / side, 0).rot(ang + bodyAngle).add(bodyPos);
-    let scanVel = this.vec2d2.setXY(0, bodyRad * 3.3 - scanRad).rot(ang);
+  this.accel.reset();
 
-    // scanPos.rot(this.getBodyAngPos()).add(bodyPos);
+  // Focus on the ground
+  let scansPerSide = 2;
+  let scanRad = bodyRad / 2;
+  for (let i = -scansPerSide; i <= scansPerSide; i++) {
+    let ang = Math.PI / 6 * i / scansPerSide;
+    let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / scansPerSide, 0).rot(ang + bodyAngle).add(bodyPos);
+    let scanVel = this.vec2d2.setXY(0, bodyRad * 3 - scanRad).rot(ang);
+
     scanVel.rot(bodyAngle);
     let distFrac = this.screen.scan(
         HitGroups.WALL_SCAN,
@@ -219,31 +217,32 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
         this.scanResp);
     if (distFrac >= 0) {
       groundCount++;
-      let pushFactor = 1.5;
-      this.accel.add(scanVel.scale(pushFactor * (distFrac - 0.5) / (side * 2 + 1) / playerBody.mass));
+      let pushFactor = 4;
+      this.accel.add(scanVel.scale(pushFactor * (distFrac - 0.62) / (scansPerSide * 2 + 1) / playerBody.mass));
     }
     if (distFrac < 0) distFrac = 1;
     let turnFactor = 7;
-    angAccel += turnFactor * ang * (2 - distFrac) / (side * 2 + 1);
+    angAccel += turnFactor * ang * (2 - distFrac) / (scansPerSide * 2 + 1);
   }
-  if (groundCount) {
-    this.turnTowardsAim = false;
-    this.stickVec.scale(thrust * traction);
-    this.accel.add(this.stickVec);
-    playerBody.addAngVelAtTime(angAccel, now);
-    playerBody.addVelAtTime(this.accel, now);
-
-    this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
-    this.aim.set(this.destAim);
-  } else {
-    // flying!
-    this.turnTowardsAim = true;
+  this.flying = groundCount === 0;
+  let traction;
+  if (this.flying) {
+    traction = PlayerSpirit.FLYING_TRACTION;
     if (touchlike) {
       this.handleTouchlikeAim(stick, stickMag, 0);
     } else {
       this.handleKeyboardAim(stick, stickMag, 0, true);
     }
+  } else {
+    traction = PlayerSpirit.DRIVING_TRACTION;
+    this.destAim.setXY(0, 1).rot(this.getBodyAngPos());
+    this.aim.set(this.destAim);
   }
+  this.accel.add(this.vec2d.set(playerBody.vel).scale(-traction));
+  this.stickVec.scale(thrust * traction);
+  this.accel.add(this.stickVec);
+  playerBody.addAngVelAtTime(angAccel, now);
+  playerBody.addVelAtTime(this.accel, now);
 };
 
 PlayerSpirit.prototype.getSelectedTool = function() {
@@ -269,7 +268,7 @@ PlayerSpirit.prototype.onTimeout = function(world, timeoutVal) {
     let body = this.getBody();
     if (body) {
       body.pathDurationMax = PlayerSpirit.FRICTION_TIMEOUT * 1.01;
-      if (this.turnTowardsAim) {
+      if (this.flying) {
         let destAngle = this.aim.angle();
         let currAngle = this.getBodyAngPos();
         let curr2dest = destAngle - currAngle;
@@ -372,23 +371,23 @@ PlayerSpirit.prototype.onDraw = function() {
       Math.max(pain, this.color.getZ()));
   this.screen.drawModel(this.getModelId(), this.vec4, this.modelMatrix, null);
 
-  // aim guide
-  this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
-  let p1, p2, rad;
-  p1 = this.vec2d;
-  p2 = this.vec2d2;
-  let p1Dist = -PlayerSpirit.PLAYER_RAD * 3.5;
-  let p2Dist = -PlayerSpirit.PLAYER_RAD * 2;
-  rad = 0.4;
-  p1.set(this.aim).scaleToLength(p1Dist).add(bodyPos);
-  p2.set(this.aim).scaleToLength(p2Dist).add(bodyPos);
-  this.modelMatrix.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
-      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  this.modelMatrix2.toIdentity()
-      .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
-      .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
+  // // aim guide
+  // this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
+  // let p1, p2, rad;
+  // p1 = this.vec2d;
+  // p2 = this.vec2d2;
+  // let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
+  // let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
+  // rad = 0.4;
+  // p1.set(this.getAimVec()).scaleToLength(p1Dist).add(bodyPos);
+  // p2.set(this.getAimVec()).scaleToLength(p2Dist).add(bodyPos);
+  // this.modelMatrix.toIdentity()
+  //     .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
+  //     .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  // this.modelMatrix2.toIdentity()
+  //     .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
+  //     .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
+  // this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
 };
 
 PlayerSpirit.prototype.explode = function() {
@@ -464,4 +463,8 @@ PlayerSpirit.prototype.getHitMagFaded = function() {
 
 PlayerSpirit.prototype.getFriction = function() {
   return 0;//this.isPlaying() ? 0 : Game6PlayScreen.FRICTION;
+};
+
+PlayerSpirit.prototype.getAimVec = function() {
+  return this.weaponAim.set(this.aim).scale(-1);
 };

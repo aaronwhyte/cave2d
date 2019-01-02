@@ -28,9 +28,6 @@ PlayerGun.prototype.fire = function() {
   let body = this.getBody();
 
   let aimVec = wielder.getAimVec();
-  if (wielder.mode === PlayerSpirit.MODE_DRIVING) {
-    aimVec.scale(-1);
-  }
 
   let rad = 0.4;
   // Start the bullet just inside the front of the wielder, not in the center
@@ -49,7 +46,7 @@ PlayerGun.prototype.fire = function() {
 
   // recoil
   if (PlayerGun.RECOIL_FORCE) {
-    let forceVec = this.vec2d.set(wielder.getAimVec()).scaleToLength(-PlayerGun.RECOIL_FORCE);
+    let forceVec = this.vec2d.set(wielder.getAimVec()).scaleToLength(PlayerGun.RECOIL_FORCE);
     body.applyForceAtWorldPosAndTime(forceVec, pos, now);
   }
 };
