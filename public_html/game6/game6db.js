@@ -22,6 +22,7 @@ function Game6Db() {
   // critters
   a(Game6Key.PLAYER, PlayerSpirit, ModelId.PLAYER);
   a(Game6Key.ANT, AntSpirit, ModelId.ANT);
+  a(Game6Key.FLOATER, FloaterSpirit, ModelId.FLOATER);
 
   // items
   a(Game6Key.SLOW_SHOOTER, SlowShooter, ModelId.SLOW_SHOOTER);

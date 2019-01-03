@@ -38,6 +38,7 @@ let ModelId = (function() {
     EXIT: ++i,
 
     ANT: ++i,
+    FLOATER: ++i,
 
     PLAYER_FLYING: ++i,
     PLAYER_DRIVING: ++i,
@@ -130,6 +131,10 @@ Models.prototype.createModel = function(id) {
               .transformPositions(new Matrix44().toTranslateOpXYZ(0, 1, 0))
               .transformPositions(new Matrix44().toRotateZOp(-Math.PI / 8)))
           .setColorRGB(0.1, 0.8, 0.1);
+
+    case ModelId.FLOATER:
+      return RigidModel.createCircle(4)
+          .setColorRGB(0.8, 0.4, 0.8);
 
     case ModelId.ENTRANCE:
       return RigidModel.createRingMesh(5, 0.8)

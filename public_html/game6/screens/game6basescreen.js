@@ -72,12 +72,8 @@ Game6BaseScreen.prototype.getSpiritConfigs = function() {
     nextColumn();
 
     addToMenu(Game6Key.ANT);
+    addToMenu(Game6Key.FLOATER);
     addToMenu(Game6Key.MINE);
-    nextColumn();
-
-    addToMenu(Game6Key.SLOW_SHOOTER);
-    addToMenu(Game6Key.MEDIUM_SHOOTER);
-    addToMenu(Game6Key.LASER_WEAPON);
     nextColumn();
   }
   return this.spiritConfigs;

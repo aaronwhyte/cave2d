@@ -55,27 +55,48 @@ v driving
 
 v remove mode-switch button - make it part of natural motion! One button only: fire.
 
+enemy components, from below
+- movement
+  - Stay between dist D0 and D1 from walls, scan dist limit D2. Floater, maybe roller.
+    - tend to scan in dir of known ground but also randomize to find closer ground. Ground-lock?
+    - or just totally randomly scan
+    - needs to be editable on the fly
+    - maybe too simple to break into separate class
+  - Stay within D dist of a position and R radians from an angle. Turret, floater.
+  - Fly and avoid walls. Done? Good for free-roaming hunters.
+  - Fast ground-hugger:
+    - Maintain dist from ground with push/pull regardless of angle? - short leg
+    - Maintain angle from ground with turning for thrust dir - hypotenuse
+  - chasing wall-runner - pursues player but maintains wall dist and avoids collisions?
+- aim/firing
+  - check to see if players are visible within D and R. Assume there are few targets, so scan directly at them
+  - periodic burst
+  - bullet-hell and patterns to force player to maneuver a certain way
+
+
 enemies and levels are lessons
 - lesson: drive and shoot
-  - open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
+  - Floaters: open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
+    - basic editor-compat existence
+    - motion behavior
     - They can shoot when you get close enough. No prob, just keep driving.
   - ground-based turrets on a wall that faces another wall
   - ground hoppers that launch up when you approach, then dive at you
-- lesson: dodge while on the ground
-  - enemies that float above and drop bombs (sense of gravity, planet center, altitude)
-  - ground rockets that launch up when you approach, then dive & explode
 - lesson: leave the ground briefly when needed
   - flying enemies drop ground-hugging missiles, forcing you to jump over them
   - explosive effects that hug the ground
   - rolling bullets like donkey-kong barrels
+- lesson: fly and shoot the ground
+  - turrets positioned so there's no opposite wall to shoot from
+  - wall-runners that chase you
+
+- lesson: dodge while on the ground
+  - seeker emeny shots that are too hard to dodge in the air, but that burst when they hit the ground, so ground-dodge
 - lesson: take cover
   - tough enemy that has a player-following rapid-fire phase. Hide behind stuff when that gets going, and fire when they pause.
     (example: Big Bandit in Nuclear Throne)
   - stationary enemy that contantly fires at you when you're anywhere close and in line of sight. Rotating field of view maybe?
   - hovering enemy that fires a periodic burst
-- lesson: fly and shoot the ground
-  - turrets positioned so there's no opposite wall to shoot from
-  - wall-runners that chase you
 - lesson: wall jump & get a good angle
   - wide tunnels with turrets and wall-runners
   - levels with interesting interior arenas

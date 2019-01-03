@@ -50,7 +50,7 @@ BaseTool.factoryHelper = function(screen, pos, dir, spirit) {
 };
 
 BaseTool.prototype.onDraw = function() {
-  if (this.wielderId || this.bodyId) {
+  if (this.bodyId) {
     this.drawBody();
   }
 };

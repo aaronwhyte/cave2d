@@ -11,6 +11,7 @@ let Game6Key = {
   MEDIUM_SHOOTER: 7,
   LASER_WEAPON: 8,
   MINE: 9,
-  MINE_THROWER: 10,
-  PLAYER_GUN: 11
+  PLAYER_GUN: 11,
+
+  FLOATER: 12
 };
