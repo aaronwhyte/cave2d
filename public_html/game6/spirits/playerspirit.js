@@ -133,7 +133,7 @@ PlayerSpirit.prototype.createBody = function(pos, dir) {
 
 PlayerSpirit.prototype.getCameraFocusPos = function() {
   return this.vec2d
-      .set(this.getAimVec()).scaleToLength(PlayerSpirit.CAMERA_AIM_OFFSET)
+      .set(this.getAimVec()).scaleToLength(this.flying ? 0 : PlayerSpirit.CAMERA_AIM_OFFSET)
       .add(this.vec2d2
           .set(this.getBodyVel())
           .scale(PlayerSpirit.CAMERA_VEL_MULTIPLIER)
@@ -202,7 +202,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
 
   // Focus on the ground
   let scansPerSide = 2;
-  let scanRad = bodyRad / 2;
+  let scanRad = bodyRad * 0.9;
   for (let i = -scansPerSide; i <= scansPerSide; i++) {
     let ang = Math.PI / 6 * i / scansPerSide;
     let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / scansPerSide, 0).rot(ang + bodyAngle).add(bodyPos);
@@ -217,7 +217,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
         this.scanResp);
     if (distFrac >= 0) {
       groundCount++;
-      let pushFactor = 4;
+      let pushFactor = 4.1;
       this.accel.add(scanVel.scale(pushFactor * (distFrac - 0.62) / (scansPerSide * 2 + 1) / playerBody.mass));
     }
     if (distFrac < 0) distFrac = 1;
