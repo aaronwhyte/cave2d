@@ -10,7 +10,7 @@ LaserWeapon.prototype = new BaseTool();
 LaserWeapon.prototype.constructor = LaserWeapon;
 
 LaserWeapon.WARM_UP_TIME = 12;
-LaserWeapon.COOL_DOWN_TIME = 6;
+LaserWeapon.COOL_DOWN_TIME = 18;
 
 LaserWeapon.SCHEMA = {
   0: "type",
