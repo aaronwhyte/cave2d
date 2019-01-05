@@ -26,10 +26,8 @@ function FloaterSpirit(screen) {
 FloaterSpirit.prototype = new BaseSpirit();
 FloaterSpirit.prototype.constructor = FloaterSpirit;
 
-FloaterSpirit.ACTIVE_TIMEOUT = 1.3;
+FloaterSpirit.ACTIVE_TIMEOUT = 3.1;
 
-FloaterSpirit.THRUST = 1;
-FloaterSpirit.TRACTION = 0.05;
 FloaterSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 FloaterSpirit.STOPPING_ANGVEL = 0.01;
 
@@ -55,7 +53,7 @@ FloaterSpirit.factory = function(screen, pos, dir) {
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 0.2;
+  b.grip = 1;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.95;
@@ -121,13 +119,33 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
 
   if (this.distOutsideViewCircles < body.rad * FloaterSpirit.SLEEP_RADS) {
     // normal active biz
-    // TODO: scan for walls to make sure we're the right distance from one
+    // scan for walls to make sure we're the right distance from one
+    let dir = this.getBodyAngPos() + (Math.random() - 0.5) * 2 * Math.PI; // full circle
+    let distFrac = this.scan(
+        HitGroups.WALL_SCAN,
+        this.getBodyPos(),
+        dir,
+        20,
+        body.rad);
+
+    if (distFrac >= 0) {
+      let a;
+      if (distFrac < 0.5) {
+        a = -0.1;
+      } else {
+        a = 0.05 * (distFrac - 0.5);
+      }
+      this.accel.setXY(0.2 * (Math.random() - 0.5), a).rot(dir);
+    } else {
+      this.accel.setXY(0, -0.01).rot(dir);
+    }
+
     // TODO: maintain approximate position
     // TODO: scan for player(s) to shoot at 'em
     let friction = this.getFriction();
     body.applyLinearFrictionAtTime(friction * time, now);
     let newVel = this.vec2d.set(this.getBodyVel());
-
+    newVel.add(this.accel);
     let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
     body.pathDurationMax = timeoutDuration * 1.01;
     body.setVelAtTime(newVel, now);
@@ -165,19 +183,18 @@ FloaterSpirit.prototype.explode = function() {
   this.screen.splashes.addEnemyExplosion(
       this.now(), pos, body.rad, this.vec4.setXYZ(0.1, 0.8 + Math.random() * 0.2, 0.1));
   this.screen.sounds.antExplode(pos);
-
-  if (this.weapon) {
-    this.screen.removeSpiritId(this.weapon.id);
-  }
-  if (this.targetScanner) {
-    this.screen.removeSpiritId(this.targetScanner.id);
-  }
-  this.screen.world.removeBodyId(this.bodyId);
-  this.screen.world.removeSpiritId(this.id);
 };
 
 FloaterSpirit.prototype.die = function() {
   this.explode();
+  if (this.weapon) {
+    this.weapon.die();
+  }
+  if (this.targetScanner) {
+    this.targetScanner.die();
+  }
+  this.screen.world.removeBodyId(this.bodyId);
+  this.screen.world.removeSpiritId(this.id);
 };
 
 FloaterSpirit.prototype.onDraw = function(world, renderer) {
@@ -204,4 +221,8 @@ FloaterSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, othe
   // this.lastThumpSoundTime = now;
 
   this.maybeWake();
+};
+
+FloaterSpirit.prototype.getFriction = function() {
+  return this.screen.isPlaying() ? 0.1 : 0.3;
 };

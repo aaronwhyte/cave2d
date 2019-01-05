@@ -77,8 +77,8 @@ enemy components, from below
 enemies and levels are lessons
 - lesson: drive and shoot
   - Floaters: open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
-    - basic editor-compat existence
-    - motion behavior
+    v basic editor-compat existence
+    v motion behavior
     - They can shoot when you get close enough. No prob, just keep driving.
   - ground-based turrets on a wall that faces another wall
   - ground hoppers that launch up when you approach, then dive at you

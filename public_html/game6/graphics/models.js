@@ -134,6 +134,7 @@ Models.prototype.createModel = function(id) {
 
     case ModelId.FLOATER:
       return RigidModel.createCircle(4)
+          .transformPositions(new Matrix44().toScaleOpXYZ(1.2, 1.2, 1))
           .setColorRGB(0.8, 0.4, 0.8);
 
     case ModelId.ENTRANCE:
