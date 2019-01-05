@@ -17,16 +17,16 @@
   <script src="../../js/url.js"></script>
   <script>
     addTest(function serializeDeserializeSomething() {
-      var bg1 = new BitGrid(1);
+      let bg1 = new BitGrid(1);
       bg1.drawPill(new Segment(new Vec2d(-100, -200), new Vec2d(300, 0)), 50, 1);
-      var json1 = bg1.toJSON();
+      let json1 = bg1.toJSON();
 
-      var bg2 = BitGrid.fromJSON(json1);
-      var json2 = bg2.toJSON();
+      let bg2 = BitGrid.fromJSON(json1);
+      let json2 = bg2.toJSON();
       assertStringifyEquals(json1, json2);
 
-      var jsonStr = JSON.stringify(json1);
-      var s = new Squisher();
+      let jsonStr = JSON.stringify(json1);
+      let s = new Squisher();
       console.log([jsonStr.length, s.squish(jsonStr).length, jsonStr, s.squish(jsonStr)].join('\n'));
       // 7678 naive JSON
       // 2853 naive JSON squished
@@ -35,34 +35,34 @@
     });
 
     addTest(function serializeDeserializeNothing() {
-      var bg1 = new BitGrid(1);
-      var json1 = bg1.toJSON();
+      let bg1 = new BitGrid(1);
+      let json1 = bg1.toJSON();
 
-      var bg2 = BitGrid.fromJSON(json1);
-      var json2 = bg2.toJSON();
+      let bg2 = BitGrid.fromJSON(json1);
+      let json2 = bg2.toJSON();
       assertStringifyEquals(json1, json2);
       assertStringifyEquals(json1.cells, {});
       console.log(JSON.stringify(json1));
     });
 
     addTest(function drawAndUndrawPill() {
-      var bg = new BitGrid(1);
+      let bg = new BitGrid(1);
       bg.drawPill(new Segment(new Vec2d(-100, -200), new Vec2d(300, 0)), 50, 1);
       bg.drawPill(new Segment(new Vec2d(-100, -200), new Vec2d(300, 0)), 50, 0);
       assertStringifyEquals(bg.cells, {});
     });
 
     addTest(function recordChanges() {
-      var bg = new BitGrid(1);
+      let bg = new BitGrid(1);
       bg.startRecordingChanges();
       bg.drawPill(new Segment(new Vec2d(-100, 0), new Vec2d(100, 0)), 50, 1);
       bg.drawPill(new Segment(new Vec2d(0, -100), new Vec2d(0, 100)), 50, 0);
-      var changeOps = bg.stopRecordingChanges();
+      let changeOps = bg.stopRecordingChanges();
 
-      var snapshot = bg.toJSON();
+      let snapshot = bg.toJSON();
 
       // undo it all
-      for (var i = changeOps.length - 1; i >= 0; i--) {
+      for (let i = changeOps.length - 1; i >= 0; i--) {
         bg.applyChanges([changeOps[i].createReverse()]);
       }
       // the result should be blank.
