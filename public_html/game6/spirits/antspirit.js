@@ -290,7 +290,10 @@ AntSpirit.prototype.explode = function() {
   this.screen.splashes.addEnemyExplosion(
       this.now(), pos, body.rad, this.vec4.setXYZ(0.1, 0.8 + Math.random() * 0.2, 0.1));
   this.screen.sounds.antExplode(pos);
+};
 
+AntSpirit.prototype.die = function() {
+  this.explode();
   if (this.weapon) {
     this.weapon.die();
   }
@@ -299,10 +302,6 @@ AntSpirit.prototype.explode = function() {
   }
   this.screen.world.removeBodyId(this.bodyId);
   this.screen.world.removeSpiritId(this.id);
-};
-
-AntSpirit.prototype.die = function() {
-  this.explode();
 };
 
 AntSpirit.prototype.onDraw = function(world, renderer) {

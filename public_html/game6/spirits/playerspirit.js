@@ -391,18 +391,19 @@ PlayerSpirit.prototype.onDraw = function() {
 };
 
 PlayerSpirit.prototype.explode = function() {
-  let tool = this.getSelectedTool();
   let pos = this.getBodyPos();
   this.sounds.playerExplode(pos);
   this.screen.splashes.addPlayerExplosionSplash(this.now(), pos, this.color);
-  this.screen.removeByBodyId(this.bodyId);
-  if (tool) {
-    this.screen.removeSpiritId(tool.id);
-  }
 };
 
 PlayerSpirit.prototype.die = function() {
   this.screen.killPlayerSpirit(this);
+
+  let tool = this.getSelectedTool();
+  if (tool) {
+    tool.die();
+  }
+  this.screen.removeByBodyId(this.bodyId);
 };
 
 /**
