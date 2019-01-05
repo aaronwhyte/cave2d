@@ -224,8 +224,6 @@ BitGrid.prototype.getTinyRectsOfColorForCellId = function(color, cellId) {
  */
 BitGrid.prototype.allocBitRectsOfColorForCellId = function(color, cellId) {
   let bx, by;
-  let cy = Math.floor(cellId / BitGrid.COLUMNS);
-  let cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
   let bitRects = [];
   let cell = this.cells[cellId];
   if (this.cellEqualsColor(cell, color)) {
@@ -320,7 +318,7 @@ BitGrid.prototype.deleteCellAtIndexXY = function(cx, cy) {
 };
 
 BitGrid.prototype.cellEqualsColor = function(cell, color) {
-  return !Array.isArray(cell) && ((color == 0 && !cell) || (color == 1 && cell === 1));
+  return !Array.isArray(cell) && ((color === 0 && !cell) || (color === 1 && cell === 1));
 };
 
 /**
@@ -383,13 +381,13 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
             : (newRowVal & (BitGrid.ROW_OF_ONES ^ (1 << bx)));
       }
     }
-    if (newRowVal == 0) {
+    if (newRowVal === 0) {
       zeroRows++;
-    } else if (newRowVal == BitGrid.ROW_OF_ONES) {
+    } else if (newRowVal === BitGrid.ROW_OF_ONES) {
       oneRows++;
     }
 
-    if (newRowVal != oldRowVal) {
+    if (newRowVal !== oldRowVal) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
         let originalVal = Array.isArray(cell) ? cell.concat() : cell;
@@ -410,9 +408,9 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   }
 
   // Simplify the grid?
-  if (zeroRows == BitGrid.BITS) {
+  if (zeroRows === BitGrid.BITS) {
     this.deleteCellAtIndexXY(cx, cy);
-  } else if (oneRows == BitGrid.BITS) {
+  } else if (oneRows === BitGrid.BITS) {
     this.setCellAtIndexXY(cx, cy, 1);
   }
   pixelCenter.free();
@@ -442,13 +440,13 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
             : (newRowVal & (BitGrid.ROW_OF_ONES ^ (1 << bx)));
       }
     }
-    if (newRowVal == 0) {
+    if (newRowVal === 0) {
       zeroRows++;
-    } else if (newRowVal == BitGrid.ROW_OF_ONES) {
+    } else if (newRowVal === BitGrid.ROW_OF_ONES) {
       oneRows++;
     }
 
-    if (newRowVal != oldRowVal) {
+    if (newRowVal !== oldRowVal) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
         this.changedCells[cellId] = this.copyCell(cell);
@@ -468,9 +466,9 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   }
 
   // Simplify the grid?
-  if (zeroRows == BitGrid.BITS) {
+  if (zeroRows === BitGrid.BITS) {
     this.deleteCellAtIndexXY(cx, cy);
-  } else if (oneRows == BitGrid.BITS) {
+  } else if (oneRows === BitGrid.BITS) {
     this.setCellAtIndexXY(cx, cy, 1);
   }
   pixelCenter.free();
@@ -499,14 +497,14 @@ BitGrid.prototype.toJSON = function() {
 
   function enqueueQuad(startX, startY, size) {
     let startColor = (cell[startY] & (1 << startX)) ? 1 : 0;
-    if (size == 1) {
+    if (size === 1) {
       bitQueue.enqueueNumber(startColor, 1);
       return;
     }
     for (let by = startY; by < startY + size; by++) {
       for (let bx = startX; bx < startX + size; bx++) {
         let pixel = (cell[by] & (1 << bx)) ? 1 : 0;
-        if (pixel != startColor) {
+        if (pixel !== startColor) {
           // non-uniform square. Lets get quadruple recursive!
           bitQueue.enqueueNumber(BitGrid.DETAILED, 1);
           let half = size/2;
@@ -554,13 +552,13 @@ BitGrid.fromJSON = function(json) {
 
   function dequeueQuad(startX, startY, size) {
     let color;
-    if (size == 1) {
+    if (size === 1) {
       color = bitQueue.dequeueNumber(1);
       plot(startX, startY, color);
       return;
     }
     let kind = bitQueue.dequeueNumber(1);
-    if (kind == BitGrid.SOLID) {
+    if (kind === BitGrid.SOLID) {
       color = bitQueue.dequeueNumber(1);
       for (let by = startY; by < startY + size; by++) {
         for (let bx = startX; bx < startX + size; bx++) {
