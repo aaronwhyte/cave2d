@@ -34,8 +34,8 @@ BitGrid.BITS = 32;
 BitGrid.COLUMNS = 0x4000000;
 
 BitGrid.ROW_OF_ONES = (function() {
-  let row = 0;
-  for (let i = 0; i < BitGrid.BITS; i++) {
+  var row = 0;
+  for (var i = 0; i < BitGrid.BITS; i++) {
     row |= (1 << i);
   }
   return row;
@@ -53,8 +53,8 @@ BitGrid.prototype.startRecordingChanges = function() {
 
 BitGrid.prototype.stopRecordingChanges = function() {
   if (!this.changeOpBefores) throw Error("BitGrid was not recording changes");
-  let retval = [];
-  for (let cellId in this.changeOpBefores) {
+  var retval = [];
+  for (var cellId in this.changeOpBefores) {
     retval.push(new ChangeOp(BitGrid.CHANGE_TYPE, cellId,
         this.copyCell(this.changeOpBefores[cellId]),
         this.copyCell(this.cells[cellId]),
@@ -73,9 +73,9 @@ BitGrid.prototype.copyCell = function(cell) {
 };
 
 BitGrid.prototype.applyChanges = function(changeOps) {
-  for (let i = 0; i < changeOps.length; i++) {
-    let changeOp = changeOps[i];
-    let cellId = changeOp.id;
+  for (var i = 0; i < changeOps.length; i++) {
+    var changeOp = changeOps[i];
+    var cellId = changeOp.id;
     // Record changedCells, to support caller.flushChangedCellIds.
     this.changedCells[cellId] = this.copyCell(this.cells[cellId]);
 
@@ -90,15 +90,15 @@ BitGrid.prototype.applyChanges = function(changeOps) {
 
 BitGrid.prototype.cellIdToIndexVec = function(cellId, out) {
   if (!out) out = new Vec2d();
-  let cy = Math.floor(cellId / BitGrid.COLUMNS);
-  let cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
   out.setXY(cx, cy);
   return out;
 };
 
 BitGrid.prototype.flushChangedCellIds = function() {
-  let changedIds = [];
-  for (let id in this.changedCells) {
+  var changedIds = [];
+  for (var id in this.changedCells) {
     // TODO: Arrays are never equal. Is this just optimization for primitive cells?
     if (this.changedCells[id] !== this.cells[id]) {
       changedIds.push(id);
@@ -117,12 +117,12 @@ BitGrid.prototype.flushChangedCellIds = function() {
  * @returns {Array}
  */
 BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
-  let brs = this.allocBitRectsOfColorForCellId(color, cellId);
-  let cellWorldX = this.getCellWorldX(cellId);
-  let cellWorldY = this.getCellWorldY(cellId);
-  let rects = [];
-  for (let i = 0; i < brs.length; i++) {
-    let br = brs[i];
+  var brs = this.allocBitRectsOfColorForCellId(color, cellId);
+  var cellWorldX = this.getCellWorldX(cellId);
+  var cellWorldY = this.getCellWorldY(cellId);
+  var rects = [];
+  for (var i = 0; i < brs.length; i++) {
+    var br = brs[i];
     rects.push(br.createWorldRect(cellWorldX, cellWorldY, this.bitWorldSize));
     br.free();
   }
@@ -138,19 +138,19 @@ BitGrid.prototype.getRectsOfColorForCellId = function(color, cellId) {
  * @returns {Array}
  */
 BitGrid.prototype.getFansOfColorForCellId = function(color, cellId) {
-  let cell = this.cells[cellId];
-  let brs = this.allocBitRectsOfColorForCellId(color, cellId);
+  var cell = this.cells[cellId];
+  var brs = this.allocBitRectsOfColorForCellId(color, cellId);
   if (Array.isArray(cell)) {
     // Detailed cell.
     // Subdivide the inside, to avoid long midpoint-to-corner triangle edges.
     // Make the slices at regular x/y values, so the corner vertexes line up.
     this.splitEveryNBits(brs, BitGrid.MAX_FAN_RECT_BITS);
   }
-  let cellWorldX = this.getCellWorldX(cellId);
-  let cellWorldY = this.getCellWorldY(cellId);
-  let rects = [];
-  for (let i = 0; i < brs.length; i++) {
-    let br = brs[i];
+  var cellWorldX = this.getCellWorldX(cellId);
+  var cellWorldY = this.getCellWorldY(cellId);
+  var rects = [];
+  for (var i = 0; i < brs.length; i++) {
+    var br = brs[i];
     rects.push(br.createWorldFan(cell, color, cellWorldX, cellWorldY, this.bitWorldSize));
     br.free();
   }
@@ -162,15 +162,15 @@ BitGrid.prototype.getFansOfColorForCellId = function(color, cellId) {
  * @param n
  */
 BitGrid.prototype.splitEveryNBits = function(brs, n) {
-  let loops = 0;
-  for (let i = 0; i < brs.length;) {
-    let br = brs[i];
+  var loops = 0;
+  for (var i = 0; i < brs.length;) {
+    var br = brs[i];
     if (Math.floor(br.x0 / n) !== Math.floor(br.x1 / n)) {
-      let newX0 = br.x0 - (br.x0 % n) + n;
+      var newX0 = br.x0 - (br.x0 % n) + n;
       brs.push(BitRect.alloc(newX0, br.y0, br.x1, br.y1));
       br.x1 = newX0 - 1;
     } else if (Math.floor(br.y0 / n) !== Math.floor(br.y1 / n)) {
-      let newY0 = br.y0 - (br.y0 % n) + n;
+      var newY0 = br.y0 - (br.y0 % n) + n;
       brs.push(BitRect.alloc(br.x0, newY0, br.x1, br.y1));
       br.y1 = newY0 - 1;
     } else {
@@ -188,21 +188,21 @@ BitGrid.prototype.splitEveryNBits = function(brs, n) {
  * @returns {Array}
  */
 BitGrid.prototype.getTinyRectsOfColorForCellId = function(color, cellId) {
-  let self = this;
+  var self = this;
   function createRect(bx, by) {
-    let wx = cx * self.cellWorldSize + (bx) * self.bitWorldSize;
-    let wy = cy * self.cellWorldSize + (by) * self.bitWorldSize;
+    var wx = cx * self.cellWorldSize + (bx) * self.bitWorldSize;
+    var wy = cy * self.cellWorldSize + (by) * self.bitWorldSize;
     return new Rect(wx, wy, self.bitWorldSize/2, self.bitWorldSize/2);
   }
-  let cy = Math.floor(cellId / BitGrid.COLUMNS);
-  let cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
-  let rects = [];
-  let cell = this.cells[cellId];
-  let isArray = Array.isArray(cell);
-  for (let by = 0; by < BitGrid.BITS; by++) {
-    for (let bx = 0; bx < BitGrid.BITS; bx++) {
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  var rects = [];
+  var cell = this.cells[cellId];
+  var isArray = Array.isArray(cell);
+  for (var by = 0; by < BitGrid.BITS; by++) {
+    for (var bx = 0; bx < BitGrid.BITS; bx++) {
       if (isArray) {
-        let bit = (cell[by] >> bx) & 1;
+        var bit = (cell[by] >> bx) & 1;
         if (bit === color) {
           rects.push(createRect(bx, by))
         }
@@ -223,22 +223,23 @@ BitGrid.prototype.getTinyRectsOfColorForCellId = function(color, cellId) {
  * @returns {Array.<BitRect>} array of BitRects, of course.
  */
 BitGrid.prototype.allocBitRectsOfColorForCellId = function(color, cellId) {
-  let bx, by;
-  let cy = Math.floor(cellId / BitGrid.COLUMNS);
-  let bitRects = [];
-  let cell = this.cells[cellId];
+  var bx, by;
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  var bitRects = [];
+  var cell = this.cells[cellId];
   if (this.cellEqualsColor(cell, color)) {
     bitRects.push(BitRect.alloc(0, 0, BitGrid.BITS - 1, BitGrid.BITS - 1));
   } else if (Array.isArray(cell)) {
 
     // key: starting X bit position. Value: {startY, endX}
-    let oldRects = {};
+    var oldRects = {};
     for (by = 0; by < BitGrid.BITS; by++) {
-      let newRects = {};
-      let runStartX = -1;
+      var newRects = {};
+      var runStartX = -1;
       // Record newRects in this row.
       for (bx = 0; bx < BitGrid.BITS; bx++) {
-        let bit = (cell[by] >> bx) & 1;
+        var bit = (cell[by] >> bx) & 1;
         if (bit === color) {
           // Color match.
           if (runStartX < 0) {
@@ -254,10 +255,10 @@ BitGrid.prototype.allocBitRectsOfColorForCellId = function(color, cellId) {
           runStartX = -1;
         }
       }
-      let isLastRow = by === BitGrid.BITS - 1;
+      var isLastRow = by === BitGrid.BITS - 1;
       for (bx = 0; bx < BitGrid.BITS; bx++) {
-        let oldRect = oldRects[bx];
-        let newRect = newRects[bx];
+        var oldRect = oldRects[bx];
+        var newRect = newRects[bx];
         // Harvest unmatched old ones.
         if (oldRect && newRect && oldRect.endX === newRect.endX) {
           // This is a merge, unless we're on the last row, in which case we harvest.
@@ -319,7 +320,7 @@ BitGrid.prototype.deleteCellAtIndexXY = function(cx, cy) {
 };
 
 BitGrid.prototype.cellEqualsColor = function(cell, color) {
-  return !Array.isArray(cell) && ((color === 0 && !cell) || (color === 1 && cell === 1));
+  return !Array.isArray(cell) && ((color == 0 && !cell) || (color == 1 && cell === 1));
 };
 
 /**
@@ -327,8 +328,8 @@ BitGrid.prototype.cellEqualsColor = function(cell, color) {
  * @returns {number} the world position of the left edge (?) of the cell.
  */
 BitGrid.prototype.getCellWorldX = function(cellId) {
-  let cy = Math.floor(cellId / BitGrid.COLUMNS);
-  let cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
   return this.cellWorldSize * cx;
 };
 
@@ -337,20 +338,20 @@ BitGrid.prototype.getCellWorldX = function(cellId) {
  * @returns {number} the world position of the top edge (?) of the cell.
  */
 BitGrid.prototype.getCellWorldY = function(cellId) {
-  let cy = Math.floor(cellId / BitGrid.COLUMNS);
+  var cy = Math.floor(cellId / BitGrid.COLUMNS);
   return this.cellWorldSize * cy;
 };
 
 BitGrid.prototype.drawPill = function(seg, rad, color) {
   // bounding rect
-  let rect = seg.getBoundingRect(this.rect).pad(rad);
-  let cx0 = this.getCellIndexX(rect.getMinX());
-  let cy0 = this.getCellIndexY(rect.getMinY());
-  let cx1 = this.getCellIndexX(rect.getMaxX());
-  let cy1 = this.getCellIndexY(rect.getMaxY());
-  for (let cx = cx0; cx <= cx1; cx++) {
-    for (let cy = cy0; cy <= cy1; cy++) {
-      let cell = this.getCellAtIndexXY(cx, cy);
+  var rect = seg.getBoundingRect(this.rect).pad(rad);
+  var cx0 = this.getCellIndexX(rect.getMinX());
+  var cy0 = this.getCellIndexY(rect.getMinY());
+  var cx1 = this.getCellIndexX(rect.getMaxX());
+  var cy1 = this.getCellIndexY(rect.getMaxY());
+  for (var cx = cx0; cx <= cx1; cx++) {
+    for (var cy = cy0; cy <= cy1; cy++) {
+      var cell = this.getCellAtIndexXY(cx, cy);
       if (!this.cellEqualsColor(cell, color)) {
         this.drawPillOnCellIndexXY(seg, rad, color, cx, cy);
       }
@@ -359,22 +360,22 @@ BitGrid.prototype.drawPill = function(seg, rad, color) {
 };
 
 BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
-  let pixelCenter = Vec2d.alloc();
-  let cell = this.getCellAtIndexXY(cx, cy);
+  var pixelCenter = Vec2d.alloc();
+  var cell = this.getCellAtIndexXY(cx, cy);
 
-  let cellId = this.getCellIdAtIndexXY(cx, cy);
-  let clean = !(cellId in this.changedCells);
+  var cellId = this.getCellIdAtIndexXY(cx, cy);
+  var clean = !(cellId in this.changedCells);
 
-  let radSquared = rad * rad;
-  let isArray = Array.isArray(cell);
-  let startingColor = isArray ? 0.5 : (cell ? 1 : 0);
-  let zeroRows = 0;
-  let oneRows = 0;
-  for (let by = 0; by < BitGrid.BITS; by++) {
-    let oldRowVal = isArray ? cell[by] : (startingColor ? BitGrid.ROW_OF_ONES : 0);
-    let newRowVal = oldRowVal;
+  var radSquared = rad * rad;
+  var isArray = Array.isArray(cell);
+  var startingColor = isArray ? 0.5 : (cell ? 1 : 0);
+  var zeroRows = 0;
+  var oneRows = 0;
+  for (var by = 0; by < BitGrid.BITS; by++) {
+    var oldRowVal = isArray ? cell[by] : (startingColor ? BitGrid.ROW_OF_ONES : 0);
+    var newRowVal = oldRowVal;
     pixelCenter.y = cy * this.cellWorldSize + by * this.bitWorldSize;
-    for (let bx = 0; bx < BitGrid.BITS; bx++) {
+    for (var bx = 0; bx < BitGrid.BITS; bx++) {
       pixelCenter.x = cx * this.cellWorldSize + bx * this.bitWorldSize;
       if (seg.distanceToPointSquared(pixelCenter) <= radSquared) {
         newRowVal = color
@@ -382,16 +383,16 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
             : (newRowVal & (BitGrid.ROW_OF_ONES ^ (1 << bx)));
       }
     }
-    if (newRowVal === 0) {
+    if (newRowVal == 0) {
       zeroRows++;
-    } else if (newRowVal === BitGrid.ROW_OF_ONES) {
+    } else if (newRowVal == BitGrid.ROW_OF_ONES) {
       oneRows++;
     }
 
-    if (newRowVal !== oldRowVal) {
+    if (newRowVal != oldRowVal) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
-        let originalVal = Array.isArray(cell) ? cell.concat() : cell;
+        var originalVal = Array.isArray(cell) ? cell.concat() : cell;
         this.changedCells[cellId] = originalVal;
         if (this.changeOpBefores && !(cellId in this.changeOpBefores)) {
           this.changeOpBefores[cellId] = originalVal;
@@ -409,31 +410,31 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   }
 
   // Simplify the grid?
-  if (zeroRows === BitGrid.BITS) {
+  if (zeroRows == BitGrid.BITS) {
     this.deleteCellAtIndexXY(cx, cy);
-  } else if (oneRows === BitGrid.BITS) {
+  } else if (oneRows == BitGrid.BITS) {
     this.setCellAtIndexXY(cx, cy, 1);
   }
   pixelCenter.free();
 };
 
 BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
-  let pixelCenter = Vec2d.alloc();
-  let cell = this.getCellAtIndexXY(cx, cy);
+  var pixelCenter = Vec2d.alloc();
+  var cell = this.getCellAtIndexXY(cx, cy);
 
-  let cellId = this.getCellIdAtIndexXY(cx, cy);
-  let clean = !(cellId in this.changedCells);
+  var cellId = this.getCellIdAtIndexXY(cx, cy);
+  var clean = !(cellId in this.changedCells);
 
-  let radSquared = rad * rad;
-  let isArray = Array.isArray(cell);
-  let startingColor = isArray ? 0.5 : (cell ? 1 : 0);
-  let zeroRows = 0;
-  let oneRows = 0;
-  for (let by = 0; by < BitGrid.BITS; by++) {
-    let oldRowVal = isArray ? cell[by] : (startingColor ? BitGrid.ROW_OF_ONES : 0);
-    let newRowVal = oldRowVal;
+  var radSquared = rad * rad;
+  var isArray = Array.isArray(cell);
+  var startingColor = isArray ? 0.5 : (cell ? 1 : 0);
+  var zeroRows = 0;
+  var oneRows = 0;
+  for (var by = 0; by < BitGrid.BITS; by++) {
+    var oldRowVal = isArray ? cell[by] : (startingColor ? BitGrid.ROW_OF_ONES : 0);
+    var newRowVal = oldRowVal;
     pixelCenter.y = cy * this.cellWorldSize + by * this.bitWorldSize;
-    for (let bx = 0; bx < BitGrid.BITS; bx++) {
+    for (var bx = 0; bx < BitGrid.BITS; bx++) {
       pixelCenter.x = cx * this.cellWorldSize + bx * this.bitWorldSize;
       if (seg.distanceToPointSquared(pixelCenter) <= radSquared) {
         newRowVal = color
@@ -441,13 +442,13 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
             : (newRowVal & (BitGrid.ROW_OF_ONES ^ (1 << bx)));
       }
     }
-    if (newRowVal === 0) {
+    if (newRowVal == 0) {
       zeroRows++;
-    } else if (newRowVal === BitGrid.ROW_OF_ONES) {
+    } else if (newRowVal == BitGrid.ROW_OF_ONES) {
       oneRows++;
     }
 
-    if (newRowVal !== oldRowVal) {
+    if (newRowVal != oldRowVal) {
       // If it was clean to start with, then preserve the clean value in changedCells.
       if (clean) {
         this.changedCells[cellId] = this.copyCell(cell);
@@ -467,18 +468,18 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   }
 
   // Simplify the grid?
-  if (zeroRows === BitGrid.BITS) {
+  if (zeroRows == BitGrid.BITS) {
     this.deleteCellAtIndexXY(cx, cy);
-  } else if (oneRows === BitGrid.BITS) {
+  } else if (oneRows == BitGrid.BITS) {
     this.setCellAtIndexXY(cx, cy, 1);
   }
   pixelCenter.free();
 };
 
 BitGrid.prototype.createCellArray = function(color) {
-  let cell = new Array(BitGrid.BITS);
-  let rowVal = color ? BitGrid.ROW_OF_ONES : 0;
-  for (let i = 0; i < BitGrid.BITS; i++) {
+  var cell = new Array(BitGrid.BITS);
+  var rowVal = color ? BitGrid.ROW_OF_ONES : 0;
+  for (var i = 0; i < BitGrid.BITS; i++) {
     cell[i] = rowVal;
   }
   return cell;
@@ -494,21 +495,19 @@ BitGrid.DETAILED = 0;
  * @returns {{bitWorldSize: *, cells: {}}}
  */
 BitGrid.prototype.toJSON = function() {
-  let cell, bitqueue;
-
   function enqueueQuad(startX, startY, size) {
-    let startColor = (cell[startY] & (1 << startX)) ? 1 : 0;
-    if (size === 1) {
+    var startColor = (cell[startY] & (1 << startX)) ? 1 : 0;
+    if (size == 1) {
       bitQueue.enqueueNumber(startColor, 1);
       return;
     }
-    for (let by = startY; by < startY + size; by++) {
-      for (let bx = startX; bx < startX + size; bx++) {
-        let pixel = (cell[by] & (1 << bx)) ? 1 : 0;
-        if (pixel !== startColor) {
+    for (var by = startY; by < startY + size; by++) {
+      for (var bx = startX; bx < startX + size; bx++) {
+        var pixel = (cell[by] & (1 << bx)) ? 1 : 0;
+        if (pixel != startColor) {
           // non-uniform square. Lets get quadruple recursive!
           bitQueue.enqueueNumber(BitGrid.DETAILED, 1);
-          let half = size/2;
+          var half = size/2;
           enqueueQuad(startX, startY, half);
           enqueueQuad(startX + half, startY, half);
           enqueueQuad(startX, startY + half, half);
@@ -522,13 +521,13 @@ BitGrid.prototype.toJSON = function() {
     bitQueue.enqueueNumber(startColor, 1);
   }
 
-  let json = {
+  var json = {
     bitWorldSize: this.bitWorldSize,
-    cells: {}
+    cells:{}
   };
-  for (let cellId in this.cells) {
-    cell = this.cells[cellId];
-    bitQueue = new BitQueue();
+  for (var cellId in this.cells) {
+    var cell = this.cells[cellId];
+    var bitQueue = new BitQueue();
     if (Array.isArray(cell)) {
       enqueueQuad(0, 0, BitGrid.BITS);
     } else {
@@ -542,8 +541,6 @@ BitGrid.prototype.toJSON = function() {
 };
 
 BitGrid.fromJSON = function(json) {
-  let cell;
-
   function plot(x, y, c) {
     if (c) {
       cell[y] |= 1 << x;
@@ -553,23 +550,23 @@ BitGrid.fromJSON = function(json) {
   }
 
   function dequeueQuad(startX, startY, size) {
-    let color;
-    if (size === 1) {
+    var color;
+    if (size == 1) {
       color = bitQueue.dequeueNumber(1);
       plot(startX, startY, color);
       return;
     }
-    let kind = bitQueue.dequeueNumber(1);
-    if (kind === BitGrid.SOLID) {
+    var kind = bitQueue.dequeueNumber(1);
+    if (kind == BitGrid.SOLID) {
       color = bitQueue.dequeueNumber(1);
-      for (let by = startY; by < startY + size; by++) {
-        for (let bx = startX; bx < startX + size; bx++) {
+      for (var by = startY; by < startY + size; by++) {
+        for (var bx = startX; bx < startX + size; bx++) {
           plot(bx, by, color);
         }
       }
     } else {
       // DETAILED
-      let half = size/2;
+      var half = size/2;
       dequeueQuad(startX, startY, half);
       dequeueQuad(startX + half, startY, half);
       dequeueQuad(startX, startY + half, half);
@@ -577,13 +574,13 @@ BitGrid.fromJSON = function(json) {
     }
   }
 
-  let bitGrid = new BitGrid(json.bitWorldSize);
-  for (let cellId32 in json.cells) {
-    let cellId = parseInt(cellId32, 32);
-    let cellBytes = atob(json.cells[cellId32]);
-    let bitQueue = new BitQueue();
+  var bitGrid = new BitGrid(json.bitWorldSize);
+  for (var cellId32 in json.cells) {
+    var cellId = parseInt(cellId32, 32);
+    var cellBytes = atob(json.cells[cellId32]);
+    var bitQueue = new BitQueue();
     bitQueue.enqueueBytes(cellBytes);
-    cell = bitGrid.createCellArray(0);
+    var cell = bitGrid.createCellArray(0);
     dequeueQuad(0, 0, 32);
     bitGrid.cells[cellId] = cell;
 
