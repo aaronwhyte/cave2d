@@ -1,7 +1,17 @@
 /**
  * An very big grid of pixels, optimized for memory, speed, and serialization size.
- * It has over 67 million rows and columns, each holding a 32x32 subgrid of pixels.
+ * It has over 67 million rows and columns, each cell holding a 32x32 subgrid of pixels.
  * Values are 0 and 1, defaulting to 0.
+ * <p>
+ * The cell at cell coords 0,0 is in the +x +y quadrant, and includes pixels with x=0 and y=0, and positive values,
+ * but no negative values.
+ * <p>
+ * Pixels are organized by their centers, and the pixel at 0,0 has it's center there, though its body
+ * extends into all four cartesian quadrants.
+ * <p>
+ * Pill-drawing will color a pixel if the drawing segment overlaps the <b>center</b> of the pixel. So it is possible
+ * for a long skinny segment to not color any pixels, or to color a non-contiguous set of pixels.
+ *
  * @constructor
  */
 function BitGrid(pixelSize) {
@@ -340,6 +350,15 @@ BitGrid.prototype.getCellWorldY = function(cellId) {
   return this.cellWorldSize * cy;
 };
 
+/**
+ * Draws a color in the grid using a pill-shape specified in world coordinates.
+ * A pixel will be colored only if the drawing segment overlaps the <b>center</b> of the pixel.
+ * It is possible for a long skinny segment to not color any pixels, or to color a non-contiguous set of pixels.
+ *
+ * @param {Segment} seg  The center-line of the pill shape
+ * @param {number} rad  The distance from the segment that the pill covers
+ * @param {number} color  The color to use, either 0 or 1
+ */
 BitGrid.prototype.drawPill = function(seg, rad, color) {
   // bounding rect
   let rect = seg.getBoundingRect(this.rect).pad(rad);
