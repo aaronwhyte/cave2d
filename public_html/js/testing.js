@@ -1,5 +1,5 @@
 function log(text, color) {
-  var div = document.querySelector('#log');
+  let div = document.querySelector('#log');
   if (!div) {
     div = document.createElement('div');
     div.id = 'log';
@@ -17,18 +17,18 @@ function logln(text, color) {
   log(text + '\n', color);
 }
 
-var TEST_FUNC_NAME_RE = /(function )?(test[a-zA-Z0-9_$]*)/;
+let TEST_FUNC_NAME_RE = /(function )?(test[a-zA-Z0-9_$]*)/;
 function getTestFunctionNameFromStack() {
-  var caller = arguments.callee.caller;
+  let caller = arguments.callee.caller;
   while (caller) {
-    var m = TEST_FUNC_NAME_RE.exec(caller.toString());
+    let m = TEST_FUNC_NAME_RE.exec(caller.toString());
     if (m) return m[2];
     caller = caller.caller;
   }
   return 'did not find test function name';
 }
 
-var failed = false;
+let failed = false;
 function fail(message) {
   failed = true;
   logln('FAILED: ' + message, '#800');
@@ -36,7 +36,7 @@ function fail(message) {
 
 function assertEquals(expected, actual) {
   if (expected !== actual) {
-    var msg = 'expected: ' + expected + ', actual: ' + actual;
+    let msg = 'expected: ' + expected + ', actual: ' + actual;
     fail(msg);
     throw msg;
   }
@@ -47,30 +47,35 @@ function assertTrue(val) {
 }
 
 function assertStringifyEquals(expected, actual) {
-  var expectedStr = JSON.stringify(expected);
-  var actualStr = JSON.stringify(actual);
+  let expectedStr = JSON.stringify(expected);
+  let actualStr = JSON.stringify(actual);
   if (expectedStr !== actualStr) {
-    var msg = 'expected:\n' + expectedStr + '\nactual:\n' + actualStr;
+    let msg = 'expected:\n' + expectedStr + '\nactual:\n' + actualStr;
     fail(msg);
     throw msg;
   }
 }
 
-var tests = [];
+const tests = [];
 function addTest(testFunc) {
   tests.push(testFunc);
 }
 
 function runTests() {
-  for (var i = 0; i < tests.length; i++) {
+  for (let i = 0; i < tests.length; i++) {
     failed = false;
-    var test = tests[i];
+    let test = tests[i];
     logln(test.name + '...');
     tests[i]();
     if (!failed) {
       logln('passed', '#080');
     }
   }
-  logln('Finished all tests.');
+  const colors = ['red', '#f80', '#bb0', 'green', 'blue', 'purple', 'brown', 'black'];
+  const text = 'All tests passed with flying colors!';
+  for (let i = 0; i < text.length; i++) {
+    let color = colors[Math.floor(colors.length * i / text.length)];
+    log(text.charAt(i), color);
+  }
 }
 
