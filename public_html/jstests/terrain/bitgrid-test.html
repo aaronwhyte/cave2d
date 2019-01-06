@@ -142,7 +142,7 @@
       let bg = new BitGrid(1);
       let p0 = new Vec2d(-100, 0.5);
       let p1 = new Vec2d(100, 0.5);
-      bg.drawPill(new Segment(vec, vec), 0.49, 1);
+      bg.drawPill(new Segment(p0, p1), 0.49, 1);
 
       let cellCount = 0;
       for (let cellId in bg.cells) {
