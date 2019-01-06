@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>DistGrid test</title>
+  <script src="../../js/strings.js"></script>
+  <script src="../../js/testing.js"></script>
+  <script src="../../js/geometry/vec2d.js"></script>
+  <script src="../../js/terrain/distgrid.js"></script>
+  <script>
+    const LITTLE = 0.00001;
+
+    addTest(function worldToPixelValues() {
+      let dg = new DistGrid(10);
+      function t(wx, wy, px, py) {
+        assertStringifyEquals(new Vec2d(px, py), dg.worldToPixel(new Vec2d(wx, wy), new Vec2d()));
+      }
+      t(0, 0, 0, 0);
+      t(10, -20, 1, -2);
+      t(5 - LITTLE, 5 - LITTLE, 0, 0);
+      t(5, 5, 1, 1);
+      t(-5, -5, 0, 0);
+      t(-5 - LITTLE, -5 - LITTLE, -1, -1);
+    });
+
+    addTest(function pixelToWorldValues() {
+      let dg = new DistGrid(10);
+      function t(px, py, wx, wy) {
+        assertStringifyEquals(new Vec2d(wx, wy), dg.pixelToWorld(new Vec2d(px, py), new Vec2d()));
+      }
+      t(0, 0, 0, 0);
+      t(1, -2, 10, -20);
+      // I don't expect there's a use for fractional pixel values, but for now the behavior is still well-defined.
+      t(1.23, -2.34, 12.3, -23.4);
+    });
+
+    addTest(function setGetDelete() {
+      let dg = new DistGrid(10);
+      assertEquals(null, dg.getXY(1, 2));
+
+      dg.setXY(1, 2, 3, 5);
+      let p = dg.getXY(1, 2);
+      assertEquals(3, p.nearPixelX);
+      assertEquals(5, p.nearPixelY);
+      assertTrue(p.pixelDist - Math.sqrt(2*2 + 3*3) < LITTLE);
+
+      // Since this should re-use the same object, a query through the old reference must work.
+      dg.setXY(1, 2, 1, 2);
+      assertEquals(1, p.nearPixelX);
+      assertEquals(2, p.nearPixelY);
+      assertEquals(0, p.pixelDist);
+
+      dg.deleteXY(2, 1);
+      assertTrue(dg.getXY(1, 2) != null);
+
+      dg.deleteXY(1, 2);
+      assertEquals(null, dg.getXY(1, 2));
+    });
+  </script>
+</head>
+<body onload="runTests()"></body>
+</html>

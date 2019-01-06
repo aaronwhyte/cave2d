@@ -55,6 +55,29 @@ v driving
 
 v remove mode-switch button - make it part of natural motion! One button only: fire.
 
+ALTITUDE
+Create and maintain a grid of info about the space around the ground.
+For each grid square, know the coords of the nearest ground square, and cache the vector to it.
+v code & unit test nest
+v steady-state data and APIs
+  v data structure
+  v set/get/delete
+- flood-fill algorithm
+  - stack of starting spaces
+  - API for adding starting space coords
+  - stack of deferred spaces
+  - max dist
+  - step() Perform one operation
+  - isDone()
+  - runUntilDone()
+
+(In the case of a tie, adjust the position of the current space by some repeatable function of the x and y coord,
+where the larger dimension's offset divided by the smaller one is a fraction that is too large to be the slope
+of and two point we'd care to compare, by making the smaller one very small indeed.
+So if the max dist we care about is 17, then the ratio could be 18:1 or higher. Like 0.1 and 0.001, or 100:1.)
+
+
+
 enemy components, from below
 - movement
   - Stay between dist D0 and D1 from walls, scan dist limit D2. Floater, maybe roller.
