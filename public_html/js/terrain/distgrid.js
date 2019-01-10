@@ -6,7 +6,12 @@
 function DistGrid(pixelSize) {
   this.pixelSize = pixelSize;
   this.pixels = new Map();
-  // TODO:
+
+  this.startKeys = new Set();
+  this.deferredKeys = new Set();
+
+  this.currentFillDist = 0;
+  this.maxFillDist = 3;
 }
 
 // It's got over 67 million columns.
@@ -36,10 +41,31 @@ DistGrid.prototype.worldToPixel = function(worldIn, pixelOut) {
   return pixelOut;
 };
 
+/**
+ * @param {number} px
+ * @param {number} py
+ * @returns {number} a single numeric key for the (rounded-to-integer) coords
+ */
 DistGrid.prototype.keyAtPixelXY = function(px, py) {
   return DistGrid.COLUMNS * Math.round(py) + Math.round(px) + DistGrid.COLUMNS / 2;
 };
 
+/**
+ * @param {number} keyIn
+ * @param {Vec2d} vecOut
+ * @returns {Vec2d} vecOut
+ */
+DistGrid.prototype.keyToPixelVec = function(keyIn, vecOut) {
+  let y = Math.floor(keyIn / DistGrid.COLUMNS);
+  return vecOut.setXY(keyIn - (y + 0.5) * DistGrid.COLUMNS, y);
+};
+
+/**
+ * @param {number} x
+ * @param {number} y
+ * @param {number} nearPixelX
+ * @param {number} nearPixelY
+ */
 DistGrid.prototype.setXY = function(x, y, nearPixelX, nearPixelY) {
   let key = this.keyAtPixelXY(x, y);
   let val = this.pixels.get(key);
@@ -51,12 +77,16 @@ DistGrid.prototype.setXY = function(x, y, nearPixelX, nearPixelY) {
   val.setXYD(nearPixelX, nearPixelY, pixelDist);
 };
 
+/**
+ * @param {number} x
+ * @param {number} y
+ * @return {DistPixel}
+ */
 DistGrid.prototype.getXY = function(x, y) {
   return this.pixels.get(this.keyAtPixelXY(x, y)) || null;
 };
 
 /**
- * Deletes a key with
  * @param {number} x
  * @param {number} y
  */
@@ -64,20 +94,100 @@ DistGrid.prototype.deleteXY = function(x, y) {
   this.pixels.delete(this.keyAtPixelXY(x, y));
 };
 
+/**
+ * @param {number} x
+ * @param {number} y
+ */
+DistGrid.prototype.addStartXY = function(x, y) {
+  this.startKeys.add(this.keyAtPixelXY(x, y));
+};
+
+DistGrid.prototype.step = function() {
+  if (!this.startKeys.size) {
+    if (!this.deferredKeys.size) {
+      return 0;
+    } else {
+      // swap start and deferred sets
+      let temp = this.startKeys;
+      this.startKeys = this.deferredKeys;
+      this.deferredKeys = temp;
+      // bump the fill level up by one
+      this.currentFillDist++;
+      if (this.currentFillDist > this.maxFillDist) {
+        throw Error('this.currentFillDist > this.maxFillDist: ' + this.currentFillDist + ' > ' + this.maxFillDist);
+      }
+    }
+  }
+
+  // pick one random key
+  let key;
+  for (key of this.startKeys) {
+    break;
+  }
+
+  // Look at the 3x3 neighborhood
+  let lowDist = Infinity;
+  let lowPos = Vec2d.alloc();
+  let centerPos = this.keyToPixelVec(key, Vec2d.alloc());
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (!dx && !dy) continue; // handle self later
+      let sx = centerPos.x + dx;
+      let sy = centerPos.y + dy;
+      let scanKey = this.keyAtPixelXY(sx, sy);
+      let scanPixel = this.pixels.get(scanKey);
+      if (scanPixel) {
+        let dist = Vec2d.distance(centerPos.x, centerPos.y, scanPixel.nearPixelX, scanPixel.nearPixelY);
+        if (dist < lowDist && dist <= this.currentFillDist) {
+          lowDist = dist;
+          lowPos.setXY(scanPixel.nearPixelX, scanPixel.nearPixelY);
+        }
+      }
+    }
+  }
+
+  // Handle the center pixel: fill, defer, or drop
+  if (lowDist !== Infinity) {
+    // fill
+    this.pixels.set(key, new DistPixel(lowPos.x, lowPos.y, lowDist));
+    // make sure to scan neighbors this round too
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue; // handle self later
+        let sx = centerPos.x + dx;
+        let sy = centerPos.y + dy;
+        let scanKey = this.keyAtPixelXY(sx, sy);
+        if (!this.pixels.has(scanKey) && !this.deferredKeys.has(scanKey)) {
+          // Make sure it's queued for processing this round.
+          this.startKeys.add(scanKey);
+        }
+      }
+    }
+  } else if (this.currentFillDist < this.maxFillDist) {
+    this.deferredKeys.add(key);
+  } else {
+    // drop
+  }
+  this.startKeys.delete(key);
+
+  centerPos.free();
+  lowPos.free();
+  return this.startKeys.size + this.deferredKeys.size;
+};
 
 
 /**
+ * Holds the values for a single pixel in a DistGrid.
  * @constructor
  */
-function DistPixel(opt_px, opt_py, opt_pd) {
-  this.nearPixelX = opt_px || null;
-  this.nearPixelY = opt_py || null;
-  this.pixelDist = opt_pd || null;
+function DistPixel(nearPixelX, nearPixelY, pixelDist) {
+  this.nearPixelX = nearPixelX;
+  this.nearPixelY = nearPixelY;
+  this.pixelDist = pixelDist;
 }
 
 /**
- *
- * @param nearPixelX The pixel coords of the
+ * @param nearPixelX
  * @param nearPixelY
  * @param pixelDist
  */

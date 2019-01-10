@@ -55,6 +55,35 @@
       dg.deleteXY(1, 2);
       assertEquals(null, dg.getXY(1, 2));
     });
+
+    addTest(function keyCoordConversion() {
+      let dg = new DistGrid(10);
+      let vec = new Vec2d(1234567, -4567890);
+      let key = dg.keyAtPixelXY(vec.x, vec.y);
+      assertStringifyEquals(vec, dg.keyToPixelVec(key, new Vec2d()));
+    });
+
+    addTest(function fillNothing() {
+      let dg = new DistGrid(10);
+      assertEquals(0, dg.step());
+    });
+
+    addTest(function fillFromOneGroundAndOneStart() {
+      let dg = new DistGrid(10);
+      dg.currentFillDist = 1;
+      dg.maxFillDist = 3;
+      dg.setXY(0, 0, 0, 0); // ground
+      dg.addStartXY(0, 1);
+      let maxSteps = 10000;
+      let steps = 0;
+      while(dg.step()) {
+        steps++;
+        if (steps >= maxSteps) break;
+      }
+      // There should be a 5x5 grid in the center, plus four "3" squares at the cardinal directions
+      assertEquals(29, dg.pixels.size);
+    });
+
   </script>
 </head>
 <body onload="runTests()"></body>
