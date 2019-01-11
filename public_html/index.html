@@ -95,6 +95,13 @@ effects, infinite lives, and fully destructible terrain.
 <h2><a href="game1">Game 1: Early Demo</a></h2>
 This has one level of basic combat, and infinite digging through destructible terrain.
 
+<h1>Terrain Tests</h1>
+
+<h2><a href="test42">Test 42 - DistGrid</a></h2>
+This test shows a 2d canvas slow-motion visualizer for the DistGrid floodfill.
+The red points are ground, and from there, DistGrid looks at surrounding "space" points and marks each one
+with the ground point that it is closest to.
+
 <h1>Editor Tests</h1>
 
 <h2><a href="test41">Test 41 - Undo and Redo</a></h2>
@@ -106,9 +113,6 @@ recording the world whenever a change ended, and undo/redo slowed down, too.<br>
 So, I rewrote it to track <i>changes</i> in terrain, bodies, spirits, timeouts, and the world time. Only the
 changed things are updated when there's an undo/redo. It's more complex than I wanted, but it seems to be
 working, and it's fast.
-
-<h1>Early Editor tests</h1>
-These were all done as part of the Game 2 work.
 
 <h2><a href="test37">Test 37 - Mouse and Trigger Improvements</a></h2>
 Now the cursor follows the mouse, because

@@ -12,6 +12,9 @@ function DistGrid(pixelSize) {
 
   this.currentFillDist = 0;
   this.maxFillDist = 3;
+  this.lastSetKey = null;
+  this.setCount = 0;
+  this.lastVisitKey = null;
 }
 
 // It's got over 67 million columns.
@@ -125,53 +128,58 @@ DistGrid.prototype.step = function() {
     break;
   }
 
-  // Look at the 3x3 neighborhood
-  let lowDist = Infinity;
-  let lowPos = Vec2d.alloc();
-  let centerPos = this.keyToPixelVec(key, Vec2d.alloc());
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      if (!dx && !dy) continue; // handle self later
-      let sx = centerPos.x + dx;
-      let sy = centerPos.y + dy;
-      let scanKey = this.keyAtPixelXY(sx, sy);
-      let scanPixel = this.pixels.get(scanKey);
-      if (scanPixel) {
-        let dist = Vec2d.distance(centerPos.x, centerPos.y, scanPixel.nearPixelX, scanPixel.nearPixelY);
-        if (dist < lowDist && dist <= this.currentFillDist) {
-          lowDist = dist;
-          lowPos.setXY(scanPixel.nearPixelX, scanPixel.nearPixelY);
-        }
-      }
-    }
-  }
+  if (!this.pixels.has(key)) {
 
-  // Handle the center pixel: fill, defer, or drop
-  if (lowDist !== Infinity) {
-    // fill
-    this.pixels.set(key, new DistPixel(lowPos.x, lowPos.y, lowDist));
-    // make sure to scan neighbors this round too
+    // Look at the 3x3 neighborhood
+    let lowDist = Infinity;
+    let lowPos = Vec2d.alloc();
+    let centerPos = this.keyToPixelVec(key, Vec2d.alloc());
     for (let dy = -1; dy <= 1; dy++) {
       for (let dx = -1; dx <= 1; dx++) {
         if (!dx && !dy) continue; // handle self later
         let sx = centerPos.x + dx;
         let sy = centerPos.y + dy;
         let scanKey = this.keyAtPixelXY(sx, sy);
-        if (!this.pixels.has(scanKey) && !this.deferredKeys.has(scanKey)) {
-          // Make sure it's queued for processing this round.
-          this.startKeys.add(scanKey);
+        let scanPixel = this.pixels.get(scanKey);
+        if (scanPixel) {
+          let dist = Vec2d.distance(centerPos.x, centerPos.y, scanPixel.nearPixelX, scanPixel.nearPixelY);
+          if (dist < lowDist && dist <= this.currentFillDist) {
+            lowDist = dist;
+            lowPos.setXY(scanPixel.nearPixelX, scanPixel.nearPixelY);
+          }
         }
       }
     }
-  } else if (this.currentFillDist < this.maxFillDist) {
-    this.deferredKeys.add(key);
-  } else {
-    // drop
+
+    // Handle the center pixel: fill, defer, or drop
+    this.lastVisitKey = key;
+    if (lowDist !== Infinity) {
+      // fill
+      this.pixels.set(key, new DistPixel(lowPos.x, lowPos.y, lowDist));
+      this.lastSetKey = key;
+      this.setCount++;
+      // make sure to scan neighbors this round too
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue; // handle self later
+          let sx = centerPos.x + dx;
+          let sy = centerPos.y + dy;
+          let scanKey = this.keyAtPixelXY(sx, sy);
+          if (!this.pixels.has(scanKey) && !this.deferredKeys.has(scanKey)) {
+            // Make sure it's queued for processing this round.
+            this.startKeys.add(scanKey);
+          }
+        }
+      }
+    } else if (this.currentFillDist < this.maxFillDist) {
+      this.deferredKeys.add(key);
+    } else {
+      // drop
+    }
+    centerPos.free();
+    lowPos.free();
   }
   this.startKeys.delete(key);
-
-  centerPos.free();
-  lowPos.free();
   return this.startKeys.size + this.deferredKeys.size;
 };
 
