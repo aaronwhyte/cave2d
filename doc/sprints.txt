@@ -62,21 +62,15 @@ v code & unit test nest
 v steady-state data and APIs
   v data structure
   v set/get/delete
-- flood-fill algorithm
-  - stack of starting spaces
-  - API for adding starting space coords
-  - stack of deferred spaces
-  - max dist
-  - step() Perform one operation
-  - isDone()
-  - runUntilDone()
-
-(In the case of a tie, adjust the position of the current space by some repeatable function of the x and y coord,
-where the larger dimension's offset divided by the smaller one is a fraction that is too large to be the slope
-of and two point we'd care to compare, by making the smaller one very small indeed.
-So if the max dist we care about is 17, then the ratio could be 18:1 or higher. Like 0.1 and 0.001, or 100:1.)
-
-
+v flood-fill algorithm
+  v stack of starting spaces
+  v API for adding starting space coords
+  v stack of deferred spaces
+  v max dist
+  v step() Perform one operation
+  v isDone()
+  v stepUntilDone()
+-
 
 enemy components, from below
 - movement

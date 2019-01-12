@@ -105,6 +105,10 @@ DistGrid.prototype.addStartXY = function(x, y) {
   this.startKeys.add(this.keyAtPixelXY(x, y));
 };
 
+DistGrid.prototype.stepUntilDone = function() {
+  while (this.step());
+};
+
 DistGrid.prototype.step = function() {
   if (!this.startKeys.size) {
     if (!this.deferredKeys.size) {
