@@ -2,7 +2,7 @@ let canvas, ctx, dg;
 let v = new Vec2d();
 
 const scale = 10;
-const maxDist = 15;
+const maxDist = 20;
 const speed = 10;
 
 function plot(x, y, c) {
@@ -25,9 +25,9 @@ function main() {
   dg.maxFillDist = maxDist;
 
   // make some ground and nearby start-points
-  for (let i = 0; i < 20; i++) {
-    let x = Math.floor(canvas.width * (Math.random() * 0.4 + 0.3) / scale);
-    let y = Math.floor(canvas.height * (Math.random() * 0.4 + 0.3) / scale);
+  for (let i = 0; i < 40; i++) {
+    let x = Math.floor(canvas.width * (Math.random() * 0.5 + 0.25) / scale);
+    let y = Math.floor(canvas.height * (Math.random() * 0.5 + 0.25) / scale);
     dg.setXY(x, y, x, y);
     dg.startKeys.delete(dg.keyAtPixelXY(x, y));
     if (!dg.getXY(x, y - 1)) {
@@ -42,13 +42,14 @@ let lastSetCount = 0;
 
 function step() {
   let steps = 0;
-  while (steps < speed && dg.step()) {
+  let startTime = performance.now();
+  while (performance.now() - startTime < 15 && steps < speed && dg.step()) {
     steps++;
     let key, pixel;
     key = dg.lastVisitKey;
     dg.keyToPixelVec(key, v);
     pixel = dg.getXY(v.x, v.y);
-    if (!pixel) plot(v.x, v.y, 'rgba(255, 255, 255, 0.1');
+    if (!pixel) plot(v.x, v.y, 'rgba(255, 100, 255, 0.2');
 
     if (lastSetCount !== dg.setCount) {
       lastSetCount = dg.setCount;
@@ -60,6 +61,7 @@ function step() {
         let style = 'rgb(' + [0, 256 - c, c].join(', ') + ')';
         plot(v.x, v.y, style);
         line(v.x, v.y, pixel.nearPixelX, pixel.nearPixelY);
+        plot(pixel.nearPixelX, pixel.nearPixelY, 'red');
       }
     }
   }
