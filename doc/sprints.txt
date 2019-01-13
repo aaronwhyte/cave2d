@@ -70,7 +70,11 @@ v flood-fill algorithm
   v step() Perform one operation
   v isDone()
   v stepUntilDone()
--
+- Play screen creates distgrid from map
+  v BitGrid.getXY(x,y)
+  - PlayScreen populates DistGrid ground and start points
+  - step step step! Maybe with in-world sparks so I can see it happen?
+- Floater uses distgrid
 
 enemy components, from below
 - movement

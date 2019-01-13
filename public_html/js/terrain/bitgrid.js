@@ -298,6 +298,29 @@ BitGrid.prototype.allocBitRectsOfColorForCellId = function(color, cellId) {
 };
 
 /**
+ * Gets the value of the bit at integer cordinates x, y. These aren't world coords.
+ * @param {number} x
+ * @param {number} y
+ * @returns {number} 0 or 1
+ */
+BitGrid.prototype.getPixelXY = function(x, y) {
+  // cx and cy are the cell's index in the grid of cells
+  let cx = Math.floor(x / BitGrid.BITS);
+  let cy = Math.floor(y / BitGrid.BITS);
+  let cell = this.getCellAtIndexXY(cx, cy);
+  if (Array.isArray(cell)) {
+    // This is a detailed cell.
+    // bx and by are the bit column and row within the cell
+    let bx = x - cx * BitGrid.BITS;
+    let by = y - cy * BitGrid.BITS;
+    let row = cell[by];
+    return (row & (1 << bx)) ? 1 : 0;
+  }
+  // This is a solid cell (1), or it's unset and undefined (0).
+  return cell === 1 ? 1 : 0;
+};
+
+/**
  * @returns {Number} the grid cell X index that corresponds with world coord X.
  */
 BitGrid.prototype.getCellIndexX = function(x) {

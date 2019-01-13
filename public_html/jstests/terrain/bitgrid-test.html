@@ -151,6 +151,29 @@
       assertEquals(0, cellCount);
     });
 
+    addTest(function getBitXY() {
+      let bg = new BitGrid(1);
+      let vec = new Vec2d();
+      function plot(x, y, color) {
+        vec.setXY(x, y);
+        bg.drawPill(new Segment(vec, vec), 0, color);
+      }
+      function tripleCheck(x, y) {
+        assertEquals(0, bg.getPixelXY(x, y));
+        plot(x, y, 1);
+        assertEquals(1, bg.getPixelXY(x, y));
+        plot(x, y, 0);
+        assertEquals(0, bg.getPixelXY(x, y));
+      }
+      tripleCheck(0, 0);
+      tripleCheck(1, 2);
+      tripleCheck(-3, 4);
+      tripleCheck(-5, -6);
+      tripleCheck(7, -8);
+    });
+
+
+
   </script>
 </head>
 <body onload="runTests()"></body>
