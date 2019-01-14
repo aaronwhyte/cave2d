@@ -78,11 +78,7 @@
       let vec = new Vec2d(0, 0);
       bg.drawPill(new Segment(vec, vec), 0, 1);
 
-      let cellCount = 0;
-      for (let cellId in bg.cells) {
-        cellCount++;
-      }
-      assertEquals(1, cellCount);
+      assertEquals(1, Object.keys(bg.cells).length);
 
       for (let cellId in bg.cells) {
         let rects = bg.getRectsOfColorForCellId(1, cellId);
@@ -98,11 +94,8 @@
     addTest(function oneTripleWideRect() {
       let bg = new BitGrid(1);
       bg.drawPill(new Segment(new Vec2d(0, 0), new Vec2d(2, 0)), 0, 1);
-      let cellCount = 0;
-      for (let cellId in bg.cells) {
-        cellCount++;
-      }
-      assertEquals(1, cellCount);
+
+      assertEquals(1, Object.keys(bg.cells).length);
 
       for (let cellId in bg.cells) {
         let rects = bg.getRectsOfColorForCellId(1, cellId);
@@ -121,11 +114,7 @@
       // A cell is painted only if its center is inside the pill.
       bg.drawPill(new Segment(vec, vec), 1.0001 * 0.1 * Math.sqrt(2), 1);
 
-      let cellCount = 0;
-      for (let cellId in bg.cells) {
-        cellCount++;
-      }
-      assertEquals(1, cellCount);
+      assertEquals(1, Object.keys(bg.cells).length);
 
       for (let cellId in bg.cells) {
         let rects = bg.getRectsOfColorForCellId(1, cellId);
@@ -144,11 +133,7 @@
       let p1 = new Vec2d(100, 0.5);
       bg.drawPill(new Segment(p0, p1), 0.49, 1);
 
-      let cellCount = 0;
-      for (let cellId in bg.cells) {
-        cellCount++;
-      }
-      assertEquals(0, cellCount);
+      assertEquals(0, Object.keys(bg.cells).length);
     });
 
     addTest(function getPixelXY() {
