@@ -30,6 +30,24 @@ function BitGrid(pixelSize) {
   // Its scope is longer than changedCells - changeOps's scope is a undoable/redoable gesture. And it is optional,
   // since it's only important when editing, and therefore undoing, is happening.
   this.changeOpBefores = null;
+
+  // temp variable
+  this.cellXY = new Vec2d();
+
+  // This is kinda gross but it prevents a static include-order dependency between vec2d and bitgrid.
+  // It's fine.
+  if (!BitGrid.NEIGHBOR_VECS) {
+    BitGrid.NEIGHBOR_VECS = [
+      new Vec2d(-1, 1),
+      new Vec2d(0, 1),
+      new Vec2d(1, 1),
+      new Vec2d(1, 0),
+      new Vec2d(1, -1),
+      new Vec2d(0, -1),
+      new Vec2d(-1, -1),
+      new Vec2d(-1, 0)
+    ];
+  }
 }
 
 /**
@@ -374,6 +392,15 @@ BitGrid.prototype.getCellWorldY = function(cellId) {
 };
 
 /**
+ * @param cellId
+ * @returns {number} the world position of the top edge (?) of the cell.
+ */
+BitGrid.prototype.getCellWorldY = function(cellId) {
+  let cy = Math.floor(cellId / BitGrid.COLUMNS);
+  return this.cellWorldSize * cy;
+};
+
+/**
  * Draws a color in the grid using a pill-shape specified in world coordinates.
  * A pixel will be colored only if the drawing segment overlaps the <b>center</b> of the pixel.
  * It is possible for a long skinny segment to not color any pixels, or to color a non-contiguous set of pixels.
@@ -456,6 +483,88 @@ BitGrid.prototype.drawPillOnCellIndexXY = function(seg, rad, color, cx, cy) {
   }
   pixelCenter.free();
 };
+
+/**
+ * Populates a DistGrid's ground pixels (ones nearest to themselves) and start pixels,
+ * with only the BitGrid 0's next to 1's and 1's next to 0's.
+ * The caller decides whether 0's or 1's represent ground.
+ * @param {DistGrid} distGrid
+ * @param {number} groundColor 0 for tunnels-in-infinite-ground, or 1 for ground-in-infinite-space
+ */
+BitGrid.prototype.populateDistGridWithBorders = function(distGrid, groundColor) {
+  for (let cellId in this.cells) {
+    this.populateDistGridWithBordersInCellId(distGrid, groundColor, cellId);
+  }
+};
+
+/**
+ * Called from populateDistGridWithBorders().
+ * Works its magic on just one cell, plus the immediately-neighboring pixels.
+ * @param {DistGrid} distGrid
+ * @param {number} groundColor 0 for tunnels-in-infinite-ground, or 1 for ground-in-infinite-space
+ * @param {number} cellId
+ */
+BitGrid.prototype.populateDistGridWithBordersInCellId = function(distGrid, groundColor, cellId) {
+  let self = this;
+
+  function add(x, y, color) {
+    if (color === groundColor) {
+      distGrid.setXY(x, y, x, y);
+    } else {
+      distGrid.addStartXY(x, y);
+    }
+  }
+
+  function scanPixelRect(x0, y0, x1, y1) {
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        if (self.getPixelXY(x, y)) {
+          // scan the eight neighbors for 0's
+          let foundZero = false;
+          for (let i = 0; i < BitGrid.NEIGHBOR_VECS.length; i++) {
+            let nv = BitGrid.NEIGHBOR_VECS[i];
+            if (self.getPixelXY(x + nv.x, y + nv.y) === 0) {
+              foundZero = true;
+              add(x + nv.x, y + nv.y, 0);
+            }
+          }
+          if (foundZero) {
+            add(x, y, 1);
+          }
+        }
+      }
+    }
+  }
+
+  let cellXY = this.cellXY;
+  let cell = this.cells[cellId];
+  this.cellIdToIndexVec(cellId, cellXY);
+  if (Array.isArray(cell)) {
+    // Scan the whole thing
+    scanPixelRect(
+        cellXY.x * BitGrid.BITS,
+        cellXY.y * BitGrid.BITS,
+        (cellXY.x + 1) * (BitGrid.BITS) - 1,
+        (cellXY.y + 1) * (BitGrid.BITS) - 1);
+  } else if (cell === 1) {
+    // Maybe scan along the edges and corners, depending on the neighboring cells.
+    for (let i = 0; i < BitGrid.NEIGHBOR_VECS.length; i++) {
+      let nv = BitGrid.NEIGHBOR_VECS[i];
+      let neighborId = this.getCellIdAtIndexXY(cellXY.x + nv.x, cellXY.y + nv.y);
+      let neighborCell = this.cells[neighborId];
+      if (Array.isArray(neighborCell) || neighborCell !== 1) {
+        // Scan the edge of this cell, because the neighbor contains zeros.
+        // This isn't optimally efficient but it's kind of rare and it should work.
+        scanPixelRect(
+            cellXY.x * BitGrid.BITS + (nv.x === 1 ? BitGrid.BITS - 1 : 0),
+            cellXY.y * BitGrid.BITS + (nv.y === 1 ? BitGrid.BITS - 1 : 0),
+            cellXY.x * BitGrid.BITS + (nv.x === -1 ? 0 : BitGrid.BITS - 1),
+            cellXY.y * BitGrid.BITS + (nv.y === -1 ? 0 : BitGrid.BITS - 1));
+      }
+    }
+  }
+};
+
 
 BitGrid.prototype.createCellArray = function(color) {
   let cell = new Array(BitGrid.BITS);

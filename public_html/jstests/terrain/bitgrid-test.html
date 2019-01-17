@@ -11,6 +11,7 @@
   <script src="../../js/app/changeop.js"></script>
   <script src="../../js/terrain/bitrect.js"></script>
   <script src="../../js/terrain/bitgrid.js"></script>
+  <script src="../../js/terrain/distgrid.js"></script>
   <script src="../../js/geometry/vec2d.js"></script>
   <script src="../../js/geometry/segment.js"></script>
   <script src="../../js/geometry/rect.js"></script>
@@ -137,10 +138,11 @@
     });
 
     addTest(function getPixelXY() {
-      let bg = new BitGrid(1);
+      let pixelSize = 10;
+      let bg = new BitGrid(pixelSize);
       let vec = new Vec2d();
       function plot(x, y, color) {
-        vec.setXY(x, y);
+        vec.setXY(x * pixelSize, y * pixelSize);
         bg.drawPill(new Segment(vec, vec), 0, color);
       }
       function tripleCheck(x, y) {
@@ -151,13 +153,90 @@
         assertEquals(0, bg.getPixelXY(x, y));
       }
       tripleCheck(0, 0);
-      tripleCheck(1, 2);
-      tripleCheck(-3, 4);
-      tripleCheck(-5, -6);
-      tripleCheck(7, -8);
+      tripleCheck(10, 20);
+      tripleCheck(-30, 40);
+      tripleCheck(-50, -60);
+      tripleCheck(70, -80);
     });
 
+    addTest(function cellIdToIndexVec() {
+      let bg = new BitGrid(10);
+      let cellId = bg.getCellIdAtIndexXY(2, 3);
+      let v = bg.cellIdToIndexVec(cellId);
+      assertEquals(2, v.x);
+      assertEquals(3, v.y);
+    });
 
+    addTest(function populateDistGridZeroPixels() {
+      let bg = new BitGrid(1);
+      let dg = new DistGrid(1);
+      let ground = 1;
+
+      bg.populateDistGridWithBorders(dg, ground);
+      assertEquals(0, dg.pixels.size);
+      assertEquals(0, dg.startKeys.size);
+    });
+
+    addTest(function populateDistGridOnePixel() {
+      let pixelSize = 10;
+      let bg = new BitGrid(pixelSize);
+      let dg = new DistGrid(pixelSize);
+      let ground = 1;
+      let vec = new Vec2d();
+
+      function plot(x, y, color) {
+        // drawPill is in world coords, not grid pixel coords
+        vec.setXY(x * pixelSize, y * pixelSize);
+        bg.drawPill(new Segment(vec, vec), 0, color);
+      }
+
+      plot(250, 350, 1);
+      assertEquals(1, bg.getPixelXY(250, 350));
+
+      bg.populateDistGridWithBorders(dg, ground);
+
+      // check the ground pixel
+      assertEquals(1, dg.pixels.size);
+      let g = dg.getXY(250, 350);
+      assertEquals(250, g.nearPixelX);
+      assertEquals(350, g.nearPixelY);
+      assertEquals(0, g.pixelDist);
+
+      // check the start-keys
+      assertEquals(8, dg.startKeys.size);
+      for (let i = 0; i < BitGrid.NEIGHBOR_VECS.length; i++) {
+        let nv = BitGrid.NEIGHBOR_VECS[i];
+        assertTrue(dg.startKeys.has(dg.keyAtPixelXY(250 + nv.x, 350 + nv.y)));
+      }
+    });
+
+    addTest(function populateDistGridOneWholeCell() {
+      let pixelSize = 1;
+      let bg = new BitGrid(pixelSize);
+      let dg = new DistGrid(pixelSize);
+      let ground = 1;
+      let vec = new Vec2d();
+
+      function plot(x, y, color) {
+        // drawPill is in world coords, not grid pixel coords
+        vec.setXY(x * pixelSize, y * pixelSize);
+        bg.drawPill(new Segment(vec, vec), 0, color);
+      }
+
+      for (let y = 0; y < BitGrid.BITS; y++) {
+        for (let x = 0; x < BitGrid.BITS; x++) {
+          plot(x, y, ground);
+        }
+      }
+
+      bg.populateDistGridWithBorders(dg, ground);
+
+      // check the ground pixels
+      assertEquals((BitGrid.BITS - 1) * 4, dg.pixels.size);
+
+      // check the start-keys
+      assertEquals((BitGrid.BITS + 1) * 4, dg.startKeys.size);
+    });
 
   </script>
 </head>

@@ -73,6 +73,10 @@ v flood-fill algorithm
 - Play screen creates distgrid from map
   v BitGrid.getXY(x,y)
   - PlayScreen populates DistGrid ground and start points
+    v BitGrid does the heavy lifting
+      v algo
+      v tests
+    - playscreen calls it
   - step step step! Maybe with in-world sparks so I can see it happen?
 - Floater uses distgrid
 
