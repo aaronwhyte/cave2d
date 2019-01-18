@@ -84,4 +84,5 @@ TestLevelPage.prototype.maybeCreateScreen = function() {
   }
   this.screen.configurePlayerSlots();
   this.screen.snapCameraToEntrance();
+  this.screen.initDistGrid();
 };

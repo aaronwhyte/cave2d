@@ -174,3 +174,24 @@ Game6BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
   this.splashes.addScanSplash(this.world.now, pos, vel, rad, dist);
 };
 
+Game6BaseScreen.prototype.initDistGrid = function() {
+  this.distGrid = new DistGrid(this.bitGrid.bitWorldSize);
+  this.distGrid.maxFillDist = 50;
+  this.bitGrid.populateDistGridWithBorders(this.distGrid, 1);
+};
+
+Game6BaseScreen.prototype.processDistGrid = function() {
+  if (this.distGrid) {
+    let setCount = this.distGrid.setCount;
+    for (let i = 0; this.distGrid.setCount < setCount + 10 && this.distGrid.step(); i++) {
+      if (this.distGrid.setCount !== setCount) {
+        let key = this.distGrid.lastSetKey;
+        this.distGrid.keyToPixelVec(key, this.vec2d);
+        let pixel = this.distGrid.getXY(this.vec2d.x, this.vec2d.y);
+        this.distGrid.pixelToWorld(this.vec2d, this.vec2d);
+        this.splashes.addDotSplash(this.now(), this.vec2d, this.distGrid.pixelSize / 2, 15, 0, 1, 1);
+      }
+    }
+  }
+};
+

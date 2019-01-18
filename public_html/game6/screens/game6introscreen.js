@@ -78,6 +78,7 @@ Game6IntroScreen.prototype.onHitEvent = function(e) {
 };
 
 Game6IntroScreen.prototype.drawScene = function() {
+  this.processDistGrid();
   this.getCamera().setXY(0, 0);
   this.updateViewMatrix();
   this.renderer.setViewMatrix(this.viewMatrix);

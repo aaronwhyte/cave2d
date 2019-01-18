@@ -425,6 +425,7 @@ Game6PlayScreen.prototype.distFromViewCenter = function(v) {
 };
 
 Game6PlayScreen.prototype.drawScene = function() {
+  this.processDistGrid();
   this.updateViewCircles();
   this.positionCamera();
   this.updateViewMatrix();

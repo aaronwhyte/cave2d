@@ -16,6 +16,7 @@ IntroPage.prototype.maybeCreateScreen = function() {
       this.adventureName, this.levelName);
   this.screen.initWorld();
   this.screen.loadWorldFromJson(this.getLevelJsonObj());
+  this.screen.initDistGrid();
 };
 
 IntroPage.prototype.refreshPauseMenu = function() {
