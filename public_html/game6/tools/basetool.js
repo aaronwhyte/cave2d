@@ -231,11 +231,8 @@ BaseTool.prototype.getBodyAngPos = function() {
 };
 
 BaseTool.prototype.die = function() {
-  // let body = this.getBody();
-  // let pos = this.getBodyPos();
-  // this.screen.splashes.addItemExplosion(
-  //     this.now(), pos, body.rad * 1.5, this.vec4.setRGBA(1, 1, 1, 1));
-  // this.screen.sounds.antExplode(pos);
-  this.screen.world.removeBodyId(this.bodyId);
+  if (this.screen.world.bodies[this.bodyId]) {
+    this.screen.world.removeBodyId(this.bodyId);
+  }
   this.screen.world.removeSpiritId(this.id);
 };

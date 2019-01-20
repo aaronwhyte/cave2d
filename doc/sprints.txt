@@ -79,16 +79,17 @@ v Play screen creates distgrid from map
     v distgrid start and ground
     v distgrid step step step! Maybe with in-world sparks so I can see it happen?
 
-- fix "couldn't find or remove bodyId null" thing
+v fix "couldn't find or remove bodyId null" thing
+
+- Floater uses distgrid
+- floaters release coins
+- coins fall to ground
 
 - player stuff
   - fire button makes player flap, not fire, when flying
   - player falls towards ground naturally
   - flaps are more effective near ground?
 
-- Floater uses distgrid
-- floaters release coins
-- coins fall to ground
 
 enemy components, from below
 - movement
