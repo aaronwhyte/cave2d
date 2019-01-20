@@ -24,6 +24,8 @@ function TileGrid(bitGrid, renderer, world, hitGroup, opt_useFans) {
   this.rect = new Rect();
   this.mat44 = new Matrix44();
 
+  this.flushNum = 1;
+
   this.wallColor = 0;
 }
 
@@ -175,6 +177,7 @@ TileGrid.prototype.applyChanges = function(changes) {
  * @returns {Array.<number>} Freshly allocated array of cell IDs that changed
  */
 TileGrid.prototype.flushTerrainChanges = function() {
+  this.flushNum++;
   this.world.pauseRecordingChanges();
   let changedCellIds = this.bitGrid.flushChangedCellIds();
   if (changedCellIds.length) {
@@ -194,7 +197,7 @@ TileGrid.prototype.flushTerrainChanges = function() {
 /**
  * The cell at the cellId definitely changes, so unload it and reload it.
  * Make sure the four cardinal neighbors are also loaded.
- * @param cellId
+ * @param {number} cellId
  */
 TileGrid.prototype.changeTerrain = function(cellId) {
   let center = Vec2d.alloc();
@@ -203,7 +206,14 @@ TileGrid.prototype.changeTerrain = function(cellId) {
   this.loadCellXY(center.x + 1, center.y);
   this.loadCellXY(center.x, center.y - 1);
   this.loadCellXY(center.x, center.y + 1);
-  this.unloadCellXY(center.x, center.y);
+
+  // Before unloading and reloading this, make sure it hasn't been loaded
+  // already as part of this set of changes. Otherwise, this can
+  // unload and reload the center tile for no reason.
+  let centerTile = this.tiles[cellId];
+  if (!centerTile || this.flushNum !== centerTile.flushNum) {
+    this.unloadCellXY(center.x, center.y);
+  }
   this.loadCellXY(center.x, center.y);
   center.free();
 };
@@ -218,7 +228,8 @@ TileGrid.prototype.loadCellId = function(cellId) {
     this.tiles[cellId] = tile = {
       cellId: cellId,
       stamp: null,
-      bodyIds: null
+      bodyIds: null,
+      flushNum: this.flushNum
     };
   }
   if (!tile.bodyIds) {
@@ -252,6 +263,7 @@ TileGrid.prototype.unloadCellId = function(cellId) {
     }
     tile.bodyIds = null;
   }
+  tile.flushNum = -1;
 };
 
 /**
