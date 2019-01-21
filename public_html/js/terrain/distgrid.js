@@ -15,6 +15,8 @@ function DistGrid(pixelSize) {
   this.lastSetKey = null;
   this.setCount = 0;
   this.lastVisitKey = null;
+
+  this.vec2d = new Vec2d();
 }
 
 // It's got over 67 million columns.
@@ -77,7 +79,7 @@ DistGrid.prototype.setXY = function(x, y, nearPixelX, nearPixelY) {
     this.pixels.set(key, val);
   }
   let pixelDist = Vec2d.distance(x, y, nearPixelX, nearPixelY);
-  val.setXYD(nearPixelX, nearPixelY, pixelDist);
+  val.setXYXYD(x, y, nearPixelX, nearPixelY, pixelDist);
 };
 
 /**
@@ -87,6 +89,15 @@ DistGrid.prototype.setXY = function(x, y, nearPixelX, nearPixelY) {
  */
 DistGrid.prototype.getXY = function(x, y) {
   return this.pixels.get(this.keyAtPixelXY(x, y)) || null;
+};
+
+/**
+ * @param {Vec2d} v A world position
+ * @return {DistPixel} The pixel overlapping that world point, or null
+ */
+DistGrid.prototype.getPixelAtWorldVec = function(v) {
+  let p = this.worldToPixel(v, this.vec2d);
+  return this.getXY(p.x, p.y);
 };
 
 /**
@@ -159,7 +170,7 @@ DistGrid.prototype.step = function() {
     this.lastVisitKey = key;
     if (lowDist !== Infinity) {
       // fill
-      this.pixels.set(key, new DistPixel(lowPos.x, lowPos.y, lowDist));
+      this.pixels.set(key, new DistPixel(centerPos.x, centerPos.y, lowPos.x, lowPos.y, lowDist));
       this.lastSetKey = key;
       this.setCount++;
       // make sure to scan neighbors this round too
@@ -192,19 +203,25 @@ DistGrid.prototype.step = function() {
  * Holds the values for a single pixel in a DistGrid.
  * @constructor
  */
-function DistPixel(nearPixelX, nearPixelY, pixelDist) {
-  this.nearPixelX = nearPixelX;
-  this.nearPixelY = nearPixelY;
-  this.pixelDist = pixelDist;
+function DistPixel(pixelX, pixelY, nearPixelX, nearPixelY, pixelDist) {
+  this.setXYXYD(pixelX, pixelY, nearPixelX, nearPixelY, pixelDist);
 }
 
 /**
+ * @param pixelX
+ * @param pixelY
  * @param nearPixelX
  * @param nearPixelY
  * @param pixelDist
  */
-DistPixel.prototype.setXYD = function(nearPixelX, nearPixelY, pixelDist) {
+DistPixel.prototype.setXYXYD = function(pixelX, pixelY, nearPixelX, nearPixelY, pixelDist) {
+  this.pixelX = pixelX;
+  this.pixelY = pixelY;
   this.nearPixelX = nearPixelX;
   this.nearPixelY = nearPixelY;
   this.pixelDist = pixelDist;
+};
+
+DistPixel.prototype.getPixelToGround = function(vecOut) {
+  return vecOut.setXY(this.nearPixelX - this.pixelX, this.nearPixelY - this.pixelY);
 };

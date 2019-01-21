@@ -17,6 +17,7 @@ function FloaterSpirit(screen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
   this.accel = new Vec2d();
+  this.stress = 0;
 
   this.distOutsideViewCircles = 0;
 
@@ -83,32 +84,6 @@ FloaterSpirit.prototype.getModelId = function() {
  * @override
  */
 FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
-  if (this.screen.isPlaying()) {
-    if (!this.weapon) {
-      let w = new SlowShooter(this.screen);
-      this.screen.world.addSpirit(w);
-      w.wield(this.id);
-      this.weapon = w;
-    }
-    // if (!this.targetScanner) {
-    //   let s = new TargetScanner(this.screen, this.team);
-    //   this.screen.world.addSpirit(s);
-    //   s.wield(this.id);
-    //   s.coneWidth = Math.PI * 1.2;
-    //   s.coneLen = 20;
-    //   s.scanPeriod = 0.5;
-    //   s.scanRad = 0.75;
-    //   s.scanGap = 1.5;
-    //   s.autoLockBreakTimeout = 60;
-    //   this.targetScanner = s;
-    // }
-    // if (!this.clearPathScanner) {
-    //   let s = new ClearPathScanner(this.screen);
-    //   s.wield(this.id);
-    //   this.clearPathScanner = s;
-    // }
-  }
-
   let now = this.now();
   let time = Math.max(0, Math.min(this.getActiveTimeout(), now - this.lastControlTime));
   this.lastControlTime = now;
@@ -118,32 +93,61 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
   // this.distOutsideViewCircles = this.screen.distFromViewCenter(this.getBodyPos()) - 5; // fun debugging
 
   if (this.distOutsideViewCircles < body.rad * FloaterSpirit.SLEEP_RADS) {
-    // normal active biz
-    // scan for walls to make sure we're the right distance from one
-    let dir = this.getBodyAngPos() + (Math.random() - 0.5) * 2 * Math.PI; // full circle
-    let distFrac = this.scan(
-        HitGroups.WALL_SCAN,
-        this.getBodyPos(),
-        dir,
-        20,
-        body.rad);
-
-    if (distFrac >= 0) {
-      let a;
-      if (distFrac < 0.5) {
-        a = -0.1;
-      } else {
-        a = 0.05 * (distFrac - 0.5);
-      }
-      this.accel.setXY(0.2 * (Math.random() - 0.5), a).rot(dir);
-    } else {
-      this.accel.setXY(0, -0.01).rot(dir);
-    }
-
-    // TODO: maintain approximate position
-    // TODO: scan for player(s) to shoot at 'em
+    let dg = this.screen.distGrid;
     let friction = this.getFriction();
+
+    let px = dg.getPixelAtWorldVec(this.getBodyPos());
+    if (px) {
+      let targetDist = 10;
+      let relaxWhenWithinDist = 2;
+      let distFactor = px.pixelDist * dg.pixelSize - targetDist;
+      if (Math.abs(distFactor) < relaxWhenWithinDist) {
+        distFactor = 0;
+      } else {
+        distFactor -= Math.sign(distFactor) * relaxWhenWithinDist;
+      }
+
+      let accelMagToGround = distFactor * 0.1;
+      if (accelMagToGround >= 0) {
+        this.stress = 0;
+      } else {
+        this.stress += time;
+      }
+      px.getPixelToGround(this.accel).scaleToLength(accelMagToGround);
+      if (this.stress > 30) {
+        // stressed!
+        this.accel.scale(0.5).add(this.vec2d.setXY(0, 0.2).rot(Math.random() * 2 * Math.PI));
+        this.addBodyAngVel(0.1 * time * (Math.random() - 0.5), now);
+      } else {
+        this.accel.add(this.vec2d.setXY(0, 0.06).rot(this.getBodyAngPos()));
+        this.addBodyAngVel(0.05 * time * (Math.random() - 0.5), now);
+      }
+    } else {
+      friction = 0.9;
+    }
+    // normal active biz
+    // // scan for walls to make sure we're the right distance from one
+    // let dir = this.getBodyAngPos() + (Math.random() - 0.5) * 2 * Math.PI; // full circle
+    // let distFrac = this.scan(
+    //     HitGroups.WALL_SCAN,
+    //     this.getBodyPos(),
+    //     dir,
+    //     20,
+    //     body.rad);
+    //
+    // if (distFrac >= 0) {
+    //   let a;
+    //   if (distFrac < 0.5) {
+    //     a = -0.1;
+    //   } else {
+    //     a = 0.05 * (distFrac - 0.5);
+    //   }
+    // } else {
+    //   this.accel.setXY(0, -0.01).rot(dir);
+    // }
+
     body.applyLinearFrictionAtTime(friction * time, now);
+    body.applyAngularFrictionAtTime(friction * time, now);
     let newVel = this.vec2d.set(this.getBodyVel());
     newVel.add(this.accel);
     let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());

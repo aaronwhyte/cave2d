@@ -81,15 +81,18 @@ v Play screen creates distgrid from map
 
 v fix "couldn't find or remove bodyId null" thing
 
-- Floater uses distgrid
-- floaters release coins
+v Floater uses distgrid to float! The whole reason I started this distgrid biz!
+
+Coins
 - coins fall to ground
+- floaters release coins when they are killed
 
 - player stuff
   - fire button makes player flap, not fire, when flying
+  - hold after flapping to glide? also to prevent landing??
   - player falls towards ground naturally
   - flaps are more effective near ground?
-
+  - player frickin DIES when too far from ground? Make fill dist pretty far I guess.
 
 enemy components, from below
 - movement
