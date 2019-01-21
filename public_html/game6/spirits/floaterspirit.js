@@ -111,15 +111,15 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
       if (accelMagToGround >= 0) {
         this.stress = 0;
       } else {
-        this.stress += time;
+        this.stress += 1;
       }
       px.getPixelToGround(this.accel).scaleToLength(accelMagToGround);
-      if (this.stress > 30) {
+      if (this.stress > 100) {
         // stressed!
         this.accel.scale(0.5).add(this.vec2d.setXY(0, 0.2).rot(Math.random() * 2 * Math.PI));
         this.addBodyAngVel(0.1 * time * (Math.random() - 0.5), now);
       } else {
-        this.accel.add(this.vec2d.setXY(0, 0.06).rot(this.getBodyAngPos()));
+        this.accel.add(this.vec2d.setXY(0, 0.1).rot(this.getBodyAngPos()));
         this.addBodyAngVel(0.05 * time * (Math.random() - 0.5), now);
       }
     } else {
