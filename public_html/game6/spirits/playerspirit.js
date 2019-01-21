@@ -41,6 +41,9 @@ function PlayerSpirit(screen) {
 
   // combat
   this.toughness = 1.1;
+
+  this.flying = false;
+  this.doLandingCheck = false;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -50,9 +53,9 @@ PlayerSpirit.CAMERA_AIM_OFFSET = 5;
 PlayerSpirit.CAMERA_VEL_MULTIPLIER = 3;
 PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 3;
 
-PlayerSpirit.FLYING_TRACTION = 0.01;
+PlayerSpirit.FLYING_TRACTION = 0;//0.01;
 PlayerSpirit.DRIVING_TRACTION = 0.5;
-PlayerSpirit.THRUST = 1.2;
+PlayerSpirit.THRUST = 1;
 
 PlayerSpirit.ELASTICITY = 0.5;
 
@@ -195,39 +198,58 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
   let bodyPos = this.getBodyPos();
   let bodyRad = this.getBody().rad;
   let bodyAngle = this.getBodyAngPos();
-
   let groundCount = 0;
   let angAccel = 0;
   this.accel.reset();
+  if (!this.flying || this.doLandingCheck) {
+    this.doLandingCheck = false;
+    let scansPerSide = 2;
+    let scanRad = bodyRad * 0.9;
+    for (let i = -scansPerSide; i <= scansPerSide; i++) {
+      let ang = Math.PI / 6 * i / scansPerSide;
+      let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / scansPerSide, 0).rot(ang + bodyAngle).add(bodyPos);
+      let scanVel = this.vec2d2.setXY(0, bodyRad * 3 - scanRad).rot(ang);
 
-  // Focus on the ground
-  let scansPerSide = 2;
-  let scanRad = bodyRad * 0.9;
-  for (let i = -scansPerSide; i <= scansPerSide; i++) {
-    let ang = Math.PI / 6 * i / scansPerSide;
-    let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / scansPerSide, 0).rot(ang + bodyAngle).add(bodyPos);
-    let scanVel = this.vec2d2.setXY(0, bodyRad * 3 - scanRad).rot(ang);
-
-    scanVel.rot(bodyAngle);
-    let distFrac = this.screen.scan(
-        HitGroups.WALL_SCAN,
-        scanPos,
-        scanVel,
-        scanRad,
-        this.scanResp);
-    if (distFrac >= 0) {
-      groundCount++;
-      let pushFactor = 4.1;
-      this.accel.add(scanVel.scale(pushFactor * (distFrac - 0.62) / (scansPerSide * 2 + 1) / playerBody.mass));
+      scanVel.rot(bodyAngle);
+      let distFrac = this.screen.scan(
+          HitGroups.WALL_SCAN,
+          scanPos,
+          scanVel,
+          scanRad,
+          this.scanResp);
+      if (distFrac >= 0) {
+        groundCount++;
+        let pushFactor = 3.5;
+        this.accel.add(scanVel.scale(pushFactor * (distFrac - 0.62) / (scansPerSide * 2 + 1) / playerBody.mass));
+      }
+      if (distFrac < 0) distFrac = 1;
+      let turnFactor = 7;
+      angAccel += turnFactor * ang * (2 - distFrac) / (scansPerSide * 2 + 1);
     }
-    if (distFrac < 0) distFrac = 1;
-    let turnFactor = 7;
-    angAccel += turnFactor * ang * (2 - distFrac) / (scansPerSide * 2 + 1);
+    this.flying = groundCount === 0;
+    if (this.flying) {
+      this.setToolButton(false);
+    } else {
+      this.updateToolButton();
+    }
   }
-  this.flying = groundCount === 0;
+
   let traction;
   if (this.flying) {
     traction = PlayerSpirit.FLYING_TRACTION;
+    // gravity
+    let dg = this.screen.distGrid;
+    let px = dg.getPixelAtWorldVec(this.getBodyPos());
+    let maxGravDist = 15;
+    if (px) {
+      let dist = px.pixelDist * dg.pixelSize;
+      if (dist <= maxGravDist) {
+        let gravFrac = (maxGravDist - dist) / maxGravDist;
+        px.getPixelToGround(this.vec2d).scaleToLength(0.02 * gravFrac);
+        this.accel.add(this.vec2d);
+      }
+    }
+    // flying aim
     if (touchlike) {
       this.handleTouchlikeAim(stick, stickMag, 0);
     } else {
@@ -250,9 +272,16 @@ PlayerSpirit.prototype.getSelectedTool = function() {
 };
 
 PlayerSpirit.prototype.updateToolButton = function() {
+  this.setToolButton(this.toolButtonDown);
+  if (this.flying) {
+    this.setToolButton(false);
+  }
+};
+
+PlayerSpirit.prototype.setToolButton = function(b) {
   let tool = this.getSelectedTool();
   if (tool) {
-    tool.setButtonDown(this.toolButtonDown);
+    tool.setButtonDown(b);
   }
 };
 
@@ -414,6 +443,10 @@ PlayerSpirit.prototype.die = function() {
  */
 PlayerSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, otherSpirit) {
   // TODO gather collectibles
+  if (otherBody.hitGroup === HitGroups.WALL) {
+    this.doLandingCheck = true;
+    this.setBodyAngPos(this.getBodyVel().angle());
+  }
 };
 
 /**
@@ -463,7 +496,7 @@ PlayerSpirit.prototype.getHitMagFaded = function() {
 };
 
 PlayerSpirit.prototype.getFriction = function() {
-  return 0;//this.isPlaying() ? 0 : Game6PlayScreen.FRICTION;
+  return this.screen.isPlaying() ? Game6PlayScreen.FRICTION : 0.3;
 };
 
 PlayerSpirit.prototype.getAimVec = function() {

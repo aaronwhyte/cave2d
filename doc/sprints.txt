@@ -83,52 +83,47 @@ v fix "couldn't find or remove bodyId null" thing
 
 v Floater uses distgrid to float! The whole reason I started this distgrid biz!
 
-Coins
-- coins fall to ground
-- floaters release coins when they are killed
-
-- player stuff
-  - fire button makes player flap, not fire, when flying
-  - hold after flapping to glide? also to prevent landing??
-  - player falls towards ground naturally
-  - flaps are more effective near ground?
-  - player frickin DIES when too far from ground? Make fill dist pretty far I guess.
+v player stuff
+  v land on contact only
+    v orient towards ground when landing
+  v fire button makes player "flap" and fire once (not rapid-fire) when flying.
+  v player falls towards ground naturally
+  x switch player fire to gravity-following bomb?
+  x player frickin DIES when too far from ground? Make fill dist pretty far I guess.
+  x player uses DistGrid to maintain height *and orientation* when driving, not rayscans? mmmmmmmaybe not.
+  x hold after flapping to glide, and release to brake?
+  x flaps are more effective near ground?
 
 enemy components, from below
 - movement
-  - Stay between dist D0 and D1 from walls, scan dist limit D2. Floater, maybe roller.
-    - tend to scan in dir of known ground but also randomize to find closer ground. Ground-lock?
-    - or just totally randomly scan
+  - Stay between dist D0 and D1 from ground.
     - needs to be editable on the fly
     - maybe too simple to break into separate class
-  - Stay within D dist of a position and R radians from an angle. Turret, floater.
+  - Stay within D dist of a position and R radians from an angle. Turret.
   - Fly and avoid walls. Done? Good for free-roaming hunters.
-  - Fast ground-hugger:
-    - Maintain dist from ground with push/pull regardless of angle? - short leg
-    - Maintain angle from ground with turning for thrust dir - hypotenuse
-  - chasing wall-runner - pursues player but maintains wall dist and avoids collisions?
 - aim/firing
-  - check to see if players are visible within D and R. Assume there are few targets, so scan directly at them
+  - check to see if players are visible within D and R. Assume there are few targets, so scan directly at players
   - periodic burst
   - bullet-hell and patterns to force player to maneuver a certain way
 
 
 enemies and levels are lessons
-- lesson: drive and shoot
-  - Floaters: open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
+- lesson: drive and shoot, easy
+  v Floaters: open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
     v basic editor-compat existence
     v motion behavior
-    - They can shoot when you get close enough. No prob, just keep driving.
-  - ground-based turrets on a wall that faces another wall
-  - ground hoppers that launch up when you approach, then dive at you
+  - plops with angles that you can hit
+- lesson: fly to find a good anglem easy
+  - floaters around multiple planetoids so you need to visit the surface of each one
+  - plops on the ground near spawn, so you need to jump to another conveniently located wall.
+  - plops inside the entrance to a cave so you need to fly
+  - plops alternating along a corridor so you kinda need to flip from wall to wall
+- lesson: fly and bomb, easy
+  - Plops with no opposite wall
 - lesson: leave the ground briefly when needed
   - flying enemies drop ground-hugging missiles, forcing you to jump over them
   - explosive effects that hug the ground
   - rolling bullets like donkey-kong barrels
-- lesson: fly and shoot the ground
-  - turrets positioned so there's no opposite wall to shoot from
-  - wall-runners that chase you
-
 - lesson: dodge while on the ground
   - seeker emeny shots that are too hard to dodge in the air, but that burst when they hit the ground, so ground-dodge
 - lesson: take cover
@@ -164,9 +159,6 @@ enemies and levels are lessons
   - indestructible chasers that are too big to fit through small openings
   - indestructible guards that laser you on sight
 
-
-- land on contact, not on longer-range scan
-
 plr grx and snd
 - driving
   - ground-effect (particles?)
@@ -181,16 +173,18 @@ plr grx and snd
 complications
 - fire-keydown effects
   - charge first shot when not firing, so timing first shot can be crucial
-    - special enemies that can only be hit with charge-shot
-    - charge when not firing but only launch charge when releasing, to give player chance to aim well?
-      - holding down fire drains charge shot so player must decide between occasional charged shots or steady stream
+    - special enemies that can only be hit with tht precision charge-shot
 - indestructible targets can be destroyed when the player is very powered up
   - powering up comes from maxing out your combo bonus
     - combo bonus from gathering collectibles enemies drop
       - enemies drop collectibles
+        - ground-coins fall to ground
+        - floaters release ground-coins when they are killed
+        - player collects coins
+        - floating coins just hang out in space
 - power-ups for general game perversion
   - ramming power
-  - rapid fire (maybe don't start off as such a blaster)
+  - rapid fire (maybe don't start off as such a hyperblaster)
   - shield
   - super-controlled flight
   - explosive shells - for digging?
@@ -200,7 +194,8 @@ complications
   - gravity-following bombs
 - fun props
   - neutral mines (hi game 5!) that are a benefit or a hazard. They don't blow walls tho.
-  - mines that DO blow up walls, for level transformation
+  - mines that DO blow up walls, for level transformation? (recompute distgrid!)
+    - efficient distgrid healing?
   - Orbs that bullets bounce off of
   - Orbs that will throw you pinball-like
   - Destructible orbs that you can walk across
@@ -244,8 +239,7 @@ player add/drop menu
   - unusable types are greyed out and below usable ones?
 
 That fixes some problems:
-* What keys do I press?
-* Which one is tractor beam?
+* What key(s) do I press?
 * How do I get rid of player 2?
 * How do I _add_ player 2?
 

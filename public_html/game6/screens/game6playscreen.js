@@ -44,7 +44,7 @@ function Game6PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 Game6PlayScreen.prototype = new Game6BaseScreen();
 Game6PlayScreen.prototype.constructor = Game6PlayScreen;
 
-Game6PlayScreen.FRICTION = 0.005;
+Game6PlayScreen.FRICTION = 0.02;
 
 Game6PlayScreen.TOUCH_STICK_RADIUS = 60;
 
