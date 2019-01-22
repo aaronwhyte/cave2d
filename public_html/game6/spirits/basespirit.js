@@ -257,8 +257,8 @@ BaseSpirit.prototype.getModelId = function() {
 BaseSpirit.prototype.drawBody = function() {
   let body = this.getBody();
   let pos = this.getBodyPos();
-  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(pos);
-  if (this.distOutsideViewCircles < 2 * body.rad) {
+  this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(pos);
+  if (this.distOutsideVisibleWorld < 2 * body.rad) {
     this.modelMatrix.toIdentity()
         .multiply(this.mat44.toTranslateOpXYZ(pos.x, pos.y, 0))
         .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))

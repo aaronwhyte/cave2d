@@ -145,7 +145,21 @@ Rect.prototype.getHeight = function() {
   return this.rad.y * 2;
 };
 
+Rect.prototype.getAspectRatio = function() {
+  return this.rad.x / this.rad.y;
+};
+
 Rect.prototype.overlapsRectXYXY = function(x, y, rx, ry) {
   return Math.abs(this.pos.x - x) <= this.rad.x + rx &&
          Math.abs(this.pos.y - y) <= this.rad.y + ry;
+};
+
+/**
+ * @param {Vec2d} v
+ * @returns {number} the approximate dist of the vec outside the rect, or 0 if it overlaps the rect
+ */
+Rect.prototype.distanceToVec = function(v) {
+  let xDist = Math.abs(this.pos.x - v.x) - this.rad.x;
+  let yDist = Math.abs(this.pos.y - v.y) - this.rad.y;
+  return Math.max(xDist, yDist, 0);
 };

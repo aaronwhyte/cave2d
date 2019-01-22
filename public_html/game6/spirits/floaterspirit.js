@@ -19,7 +19,7 @@ function FloaterSpirit(screen) {
   this.accel = new Vec2d();
   this.stress = 0;
 
-  this.distOutsideViewCircles = 0;
+  this.distOutsideVisibleWorld = 0;
 
   this.toughness = 1;
   this.damage = 1;
@@ -89,10 +89,10 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
   this.lastControlTime = now;
 
   let body = this.getBody();
-  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(this.getBodyPos());
-  // this.distOutsideViewCircles = this.screen.distFromViewCenter(this.getBodyPos()) - 5; // fun debugging
+  this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
+  console.log(this.distOutsideVisibleWorld);
 
-  if (this.distOutsideViewCircles < body.rad * FloaterSpirit.SLEEP_RADS) {
+  if (this.distOutsideVisibleWorld < body.rad * FloaterSpirit.SLEEP_RADS) {
     let dg = this.screen.distGrid;
     let friction = this.getFriction();
 
@@ -203,7 +203,7 @@ FloaterSpirit.prototype.die = function() {
 
 FloaterSpirit.prototype.onDraw = function(world, renderer) {
   this.drawBody();
-  if (this.distOutsideViewCircles < this.getBody().rad * FloaterSpirit.WAKE_RADS) {
+  if (this.distOutsideVisibleWorld < this.getBody().rad * FloaterSpirit.WAKE_RADS) {
     this.maybeWake();
   }
 };

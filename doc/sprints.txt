@@ -94,6 +94,10 @@ v player stuff
   x hold after flapping to glide, and release to brake?
   x flaps are more effective near ground?
 
+(title idea: That's Not How Gravity Works")
+
+v Remove circle rendering/clipping from game6
+
 enemy components, from below
 - movement
   - Stay between dist D0 and D1 from ground.
@@ -113,14 +117,14 @@ enemies and levels are lessons
     v basic editor-compat existence
     v motion behavior
   - plops with angles that you can hit
-- lesson: fly to find a good anglem easy
+- lesson: fly to find a good angle, easy
   - floaters around multiple planetoids so you need to visit the surface of each one
-  - plops on the ground near spawn, so you need to jump to another conveniently located wall.
-  - plops inside the entrance to a cave so you need to fly
+  - plops on the ground require flight to get around, but are hittable from disconnected surfaces
+  - plops inside the entrance to a cave so you need to fly to back of cave first
   - plops alternating along a corridor so you kinda need to flip from wall to wall
-- lesson: fly and bomb, easy
+- lesson: fly and fire
   - Plops with no opposite wall
-- lesson: leave the ground briefly when needed
+- lesson: leave the ground to evade
   - flying enemies drop ground-hugging missiles, forcing you to jump over them
   - explosive effects that hug the ground
   - rolling bullets like donkey-kong barrels
@@ -149,7 +153,7 @@ enemies and levels are lessons
   - enemies that change when they die
     - enemies that explode
     - enemies that turn into more, smaller enemies (asteroids, slimes, defender diamonds)
-    - enemies that turn into obstacles when shot - centipede
+    - enemies that turn into obstacles when shot - centipede drops fungus?
   - enemies that are altered by being shot
     - drivers become flyers
     - drivers leap across to opposite wall

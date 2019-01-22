@@ -170,27 +170,43 @@ Game6BaseScreen.prototype.getCamera = function() {
   return this.camera;
 };
 
+
+Game6BaseScreen.prototype.distOutsideVisibleWorld = function(pos) {
+  return 0;
+};
+
+
 Game6BaseScreen.prototype.addScanSplash = function(pos, vel, rad, dist) {
   this.splashes.addScanSplash(this.world.now, pos, vel, rad, dist);
 };
 
 Game6BaseScreen.prototype.initDistGrid = function() {
   this.distGrid = new DistGrid(this.bitGrid.bitWorldSize);
-  this.distGrid.maxFillDist = 50;
+  this.distGrid.maxFillDist = 30;
   this.bitGrid.populateDistGridWithBorders(this.distGrid, 1);
 };
 
 Game6BaseScreen.prototype.processDistGrid = function() {
   if (this.distGrid) {
     this.distGrid.stepUntilDone();
+    //
     // let setCount = this.distGrid.setCount;
-    // for (let i = 0; this.distGrid.setCount < setCount + 100 && this.distGrid.step(); i++) {
+    // let fillDist = this.distGrid.currentFillDist;
+    // let startTime = performance.now();
+    // for (let i = 0;
+    //      // this.distGrid.setCount < setCount + 100 &&
+    //      this.distGrid.currentFillDist < fillDist + 1 &&
+    //          performance.now() < startTime + 8 &&
+    //      this.distGrid.step();
+    //      i++) {
     //   if (this.distGrid.setCount !== setCount) {
     //     let key = this.distGrid.lastSetKey;
     //     this.distGrid.keyToPixelVec(key, this.vec2d);
     //     let pixel = this.distGrid.getXY(this.vec2d.x, this.vec2d.y);
     //     this.distGrid.pixelToWorld(this.vec2d, this.vec2d);
-    //     this.splashes.addDotSplash(this.now(), this.vec2d, this.distGrid.pixelSize / 2, 3, 0, 1, 1);
+    //     // if (Math.random() < 0.1) {
+    //       this.splashes.addDotSplash(this.now(), this.vec2d, this.distGrid.pixelSize / 2, 3, 0, 1, 1);
+    //     // }
     //   }
     // }
   }

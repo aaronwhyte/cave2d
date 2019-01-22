@@ -13,13 +13,6 @@ function Game6PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
   this.slots = {};
   this.widgets = [];
 
-  this.viewCircles = [];
-
-  this.defaultViewCircle = new Circle();
-  this.defaultViewCircle.rad =
-      Game6PlayScreen.PLAYER_VIEW_RADIUS
-      * Game6PlayScreen.STARTING_VIEW_FRACTION;
-
   let self = this;
 
   this.keyTipRevealer = function() {
@@ -51,9 +44,8 @@ Game6PlayScreen.TOUCH_STICK_RADIUS = 60;
 Game6PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 Game6PlayScreen.EXIT_DURATION = 30 * Game6PlayScreen.EXIT_WARP_MULTIPLIER;
 
-Game6PlayScreen.PLAYER_VIEW_RADIUS = 36;
+Game6PlayScreen.PLAYER_VIEW_RADIUS = 30;
 Game6PlayScreen.STARTING_VIEW_FRACTION = 0.5;
-Game6PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC = 0.6;
 
 Game6PlayScreen.prototype.updateHudLayout = function() {
 };
@@ -308,13 +300,6 @@ Game6PlayScreen.prototype.snapCameraToEntrance = function() {
       break;
     }
   }
-  if (this.entranceSpirit) {
-    this.defaultViewCircle.pos.set(this.entranceSpirit.getBodyPos());
-  }
-  let pos = this.defaultViewCircle.pos;
-  if (pos) {
-    this.camera.set(pos);
-  }
 };
 
 Game6PlayScreen.prototype.handleInput = function () {
@@ -353,9 +338,9 @@ Game6PlayScreen.prototype.playerJoin = function(slot) {
 
 Game6PlayScreen.prototype.playerSpawn = function(slot) {
   slot.releaseControls();
-  slot.setRespawnPos(this.defaultViewCircle.pos);
+  slot.setRespawnPos(new Vec2d()); // TODO no!
 
-  let pos = new Vec2d(0, 0.5).rot(Math.PI * 2 * Math.random()).add(this.defaultViewCircle.pos);
+  let pos = new Vec2d(0, 0.5).rot(Math.PI * 2 * Math.random());
   let spiritId = PlayerSpirit.factory(this, pos, 0);
   let spirit = this.world.spirits[spiritId];
 
@@ -389,7 +374,6 @@ Game6PlayScreen.prototype.playerDrop = function(slot) {
   slot.setRespawnPos(slot.camera.cameraPos);
   slot.killPlayerAtTime(this.now());
   slot.setState(ControlState.WAITING);
-  this.defaultViewCircle.rad = 0.01;
 };
 
 Game6PlayScreen.prototype.onHitEvent = function(e) {
@@ -403,44 +387,20 @@ Game6PlayScreen.prototype.onHitEvent = function(e) {
   }
 };
 
-Game6PlayScreen.prototype.distOutsideViewCircles = function(v) {
-  let min = Infinity;
-  for (let i = 0; i < this.viewCircles.length; i++) {
-    let c = this.viewCircles[i];
-    // let ds = Math.max(0, c.pos.distance(v) - c.rad);
-    let ds = c.pos.distance(v) - c.rad;
-    if (ds < min) min = ds;
-  }
-  return min;
-};
-
-Game6PlayScreen.prototype.distFromViewCenter = function(v) {
-  let min = Infinity;
-  for (let i = 0; i < this.viewCircles.length; i++) {
-    let c = this.viewCircles[i];
-    let ds = c.pos.distance(v);
-    if (ds < min) min = ds;
-  }
-  return min;
-};
-
 Game6PlayScreen.prototype.drawScene = function() {
   this.processDistGrid();
   this.updateViewCircles();
   this.positionCamera();
   this.updateViewMatrix();
-  // this.updateWarps();
   this.renderer.setViewMatrix(this.viewMatrix);
   this.renderer.setTime(this.now());
 
-  this.renderer.setCircleMode(this.viewCircles);
-  this.drawTilesOverlappingCircles(this.viewCircles);
-  this.drawSpiritsOverlappingCircles(this.viewCircles);
+  this.drawTiles();
+  this.drawSpirits(); // TODO: Make a better spirit drawer that only draws stuff that's on the screen.
 
   this.splasher.drawWithModelIds(this, this.world.now);
   this.flushBatchDrawers();
 
-  this.renderer.setNormalMode();
   this.drawHud();
 
   // Animate whenever this thing draws.
@@ -457,21 +417,13 @@ Game6PlayScreen.prototype.updateViewCircles = function() {
   for (let slotName in this.slots) {
     let slot = this.slots[slotName];
     if (slot.updateViewCircle(now)) {
-      this.viewCircles[count] = slot.circle;
       count++;
     }
   }
-  if (count === 0) {
-    // Everyone left. Expand the default view circle from near-zero
-    // so there's something to look at.
-    this.defaultViewCircle.rad =
-        0.97 * this.defaultViewCircle.rad +
-        0.03 * Game6PlayScreen.PLAYER_VIEW_RADIUS
-          * Game6PlayScreen.STARTING_VIEW_FRACTION;
-    this.viewCircles[0] = this.defaultViewCircle;
-  } else {
-    this.viewCircles.length = count;
-  }
+};
+
+Game6PlayScreen.prototype.distOutsideVisibleWorld = function(pos) {
+  return this.viewableWorldRect.distanceToVec(pos);
 };
 
 Game6PlayScreen.prototype.positionCamera = function() {
@@ -492,22 +444,24 @@ Game6PlayScreen.prototype.positionCamera = function() {
   }
 
   if (players === 0) {
-    this.viewableWorldRect.setPos(this.defaultViewCircle.pos);
+    this.viewableWorldRect.setPos(Vec2d.ZERO); // TODO: noperoo!
   }
 
-  let pad = Game6PlayScreen.PLAYER_VIEW_RADIUS * Game6PlayScreen.PLAYER_VIEW_MIN_VISIBLE_FRAC;
+  let pad = Game6PlayScreen.PLAYER_VIEW_RADIUS;
   this.viewableWorldRect.padXY(pad, pad);
+  let playerAspectRatio = this.viewableWorldRect.getAspectRatio();
+  let canvasAspectRatio = this.canvas.width / this.canvas.height;
+  if (playerAspectRatio < canvasAspectRatio) {
+    let newViewableWidth = this.canvas.width * this.viewableWorldRect.getHeight() / this.canvas.height;
+    this.viewableWorldRect.rad.x = 0.5 * newViewableWidth;
+  } else {
+    let newViewableHeight = this.canvas.height * this.viewableWorldRect.getWidth() / this.canvas.width;
+    this.viewableWorldRect.rad.y = 0.5 * newViewableHeight;
+  }
 
-  let destPixelsPerMeter = Math.min(
+  this.pixelsPerMeter = Math.min(
       2 * this.canvas.width / this.viewableWorldRect.getWidth(),
       2 * this.canvas.height / this.viewableWorldRect.getHeight());
-  if (destPixelsPerMeter < this.pixelsPerMeter) {
-    // zoom out quickly
-    this.pixelsPerMeter = destPixelsPerMeter;
-  } else {
-    // zoom in slowly
-    this.pixelsPerMeter = (this.pixelsPerMeter * 29 + destPixelsPerMeter) / 30;
-  }
 
   // gently update the camera position
   this.camera.follow(this.viewableWorldRect.pos);
@@ -537,6 +491,7 @@ Game6PlayScreen.prototype.drawHud = function() {
   this.pauseTouchWidget.draw(this.renderer);
   this.renderer.setBlendingEnabled(false);
 };
+
 Game6PlayScreen.prototype.isPlaying = function() {
   return true;
 };
