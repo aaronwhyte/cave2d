@@ -90,7 +90,6 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
 
   let body = this.getBody();
   this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
-  console.log(this.distOutsideVisibleWorld);
 
   if (this.distOutsideVisibleWorld < body.rad * FloaterSpirit.SLEEP_RADS) {
     let dg = this.screen.distGrid;
