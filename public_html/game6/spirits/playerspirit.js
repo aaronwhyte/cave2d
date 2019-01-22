@@ -240,7 +240,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     // gravity
     let dg = this.screen.distGrid;
     let px = dg.getPixelAtWorldVec(this.getBodyPos());
-    let maxGravDist = 15;
+    let maxGravDist = dg.maxFillDist * dg.pixelSize; //15;
     if (px) {
       let dist = px.pixelDist * dg.pixelSize;
       if (dist <= maxGravDist) {
