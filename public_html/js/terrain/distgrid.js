@@ -137,7 +137,7 @@ DistGrid.prototype.step = function() {
     }
   }
 
-  // pick one random key
+  // pick one arbitrary key
   let key;
   for (key of this.startKeys) {
     break;
