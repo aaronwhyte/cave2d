@@ -44,8 +44,7 @@ Game6PlayScreen.TOUCH_STICK_RADIUS = 60;
 Game6PlayScreen.EXIT_WARP_MULTIPLIER = 0.1;
 Game6PlayScreen.EXIT_DURATION = 30 * Game6PlayScreen.EXIT_WARP_MULTIPLIER;
 
-Game6PlayScreen.PLAYER_VIEW_RADIUS = 30;
-Game6PlayScreen.STARTING_VIEW_FRACTION = 0.5;
+Game6PlayScreen.PLAYER_VIEW_RADIUS = 24;
 
 Game6PlayScreen.prototype.updateHudLayout = function() {
 };
