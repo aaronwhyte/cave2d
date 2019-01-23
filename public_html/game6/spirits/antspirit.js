@@ -22,7 +22,7 @@ function AntSpirit(screen) {
   // Between 0 and 1.
   this.stress = 0;
 
-  this.distOutsideViewCircles = 0;
+  this.distOutsideVisibleWorld = 0;
 
   this.toughness = 1;
   this.damage = 0;
@@ -133,10 +133,10 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
   this.lastControlTime = now;
 
   let body = this.getBody();
-  this.distOutsideViewCircles = this.screen.distOutsideViewCircles(this.getBodyPos());
-  // this.distOutsideViewCircles = this.screen.distFromViewCenter(this.getBodyPos()) - 5; // fun debugging
+  this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
+  // this.distOutsideVisibleWorld = this.screen.distFromViewCenter(this.getBodyPos()) - 5; // fun debugging
 
-  if (this.distOutsideViewCircles < body.rad * AntSpirit.SLEEP_RADS) {
+  if (this.distOutsideVisibleWorld < body.rad * AntSpirit.SLEEP_RADS) {
     // normal active biz
     if (this.weapon && this.targetScanner) {
       if (!this.targetScanner.lockedHitSpiritId) {
@@ -309,7 +309,7 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
   if (this.weapon) {
     this.weapon.onDraw();
   }
-  if (this.distOutsideViewCircles < this.getBody().rad * AntSpirit.WAKE_RADS) {
+  if (this.distOutsideVisibleWorld < this.getBody().rad * AntSpirit.WAKE_RADS) {
     this.maybeWake();
   }
 };
