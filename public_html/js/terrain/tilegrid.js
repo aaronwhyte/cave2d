@@ -138,7 +138,7 @@ TileGrid.prototype.drawTileAtCellId = function(cellId) {
   if (!tile.stamp) {
     tile.stamp = this.createTileStampForCellId(cellId);
   }
-  if (tile.stamp) {
+  if (tile.stamp && tile.stamp !== ModelStamp.EMPTY_STAMP) {
     this.renderer.setStamp(tile.stamp).drawStamp();
   }
 };
@@ -287,27 +287,32 @@ TileGrid.prototype.createWallBody = function(rect) {
  * @returns {ModelStamp}
  */
 TileGrid.prototype.createTileStampForCellId = function(cellId) {
-  let tileModel = new RigidModel();
+  let tileModel = null;
 
   if (!this.useFans) {
     // Use minimal rects, just like the bodies
     let rects = this.bitGrid.getRectsOfColorForCellId(this.wallColor, cellId);
-    for (let i = 0; i < rects.length; i++) {
-      tileModel.addRigidModel(this.createWallModel(rects[i]));
+    if (rects.length) {
+      tileModel = new RigidModel();
+      for (let i = 0; i < rects.length; i++) {
+        tileModel.addRigidModel(this.createWallModel(rects[i]));
+      }
     }
   } else {
     // Create more rects and a lot more edge vertexes - more of a mesh.
     let fans = this.bitGrid.getFansOfColorForCellId(this.wallColor, cellId);
-    for (let i = 0; i < fans.length; i++) {
-      let fanModel = RigidModel.createFromFanVecs(fans[i]);
-      tileModel.addRigidModel(fanModel);
+    if (fans.length) {
+      tileModel = new RigidModel();
+      for (let i = 0; i < fans.length; i++) {
+        tileModel.addRigidModel(RigidModel.createFromFanVecs(fans[i]));
+      }
     }
   }
   let cy = Math.floor(cellId / BitGrid.COLUMNS);
   let cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
 
   //tileModel.addRigidModel(this.createFloorModelForCellXY(cx, cy));
-  return tileModel.createModelStamp(this.renderer.gl);
+  return tileModel ? tileModel.createModelStamp(this.renderer.gl) : ModelStamp.EMPTY_STAMP;
 };
 
 TileGrid.prototype.createWallModel = function(rect) {

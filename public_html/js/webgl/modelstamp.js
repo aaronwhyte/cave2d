@@ -23,6 +23,8 @@ function ModelStamp(glType, posBuff, colorBuff, groupBuff, indexBuff, indexCount
 
 ModelStamp.nextId = 1;
 
+ModelStamp.EMPTY_STAMP = 'EMPTY_STAMP';
+
 
 ModelStamp.prototype.prepareToDraw = function(gl, aVertexPosition, aVertexColor, aVertexGroup, aVertexInstance) {
   gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuff);
