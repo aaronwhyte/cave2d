@@ -426,7 +426,8 @@ PlayerSpirit.prototype.explode = function() {
 };
 
 PlayerSpirit.prototype.die = function() {
-  this.screen.killPlayerSpirit(this);
+  this.explode();
+  this.screen.removeSpiritFromSlot(this);
 
   let tool = this.getSelectedTool();
   if (tool) {

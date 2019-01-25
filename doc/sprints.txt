@@ -98,12 +98,11 @@ v player stuff
 
 v Remove circle rendering/clipping from game6
 
-- fix player corpses lying around
+v fix player corpses lying around
 v ants work again
 v fix one draw per empty tile. Don't load tiles that don't have content?
-- smoother multiplayer camerawork using the view-rect itself?
 
-- cool terrain using a reverse distgrid for computing ground-pixl depth
+- cool terrain using a reverse distgrid for computing ground-pixel depth
 - some kinda air rendering using existing distgrid
 
 enemy components, from below
@@ -181,6 +180,8 @@ plr grx and snd
   - thrust particles
   - thrust/speed sound
   - trail
+- smoother multiplayer camerawork using the view-rect itself
+
 
 complications
 - fire-keydown effects

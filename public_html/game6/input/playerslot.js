@@ -146,11 +146,10 @@ PlayerSlot.prototype.getSpawnFraction = function(now) {
   return Math.max(0, Math.min(1, (now - this.timeOfSpawn)  / PlayerSlot.SPAWN_TIME));
 };
 
-PlayerSlot.prototype.killPlayerAtTime = function(now) {
+PlayerSlot.prototype.removeSpiritFromSlot = function(now) {
   if (this.spirit) {
     this.timeOfDeath = now;
     this.deathPos.set(this.camera.cameraPos);
-    this.spirit.explode();
     this.spirit = null;
   }
 };

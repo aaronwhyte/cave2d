@@ -354,9 +354,14 @@ Game6PlayScreen.prototype.playerSpawn = function(slot) {
   this.splashes.addPlayerSpawnSplash(this.now(), pos, body.rad, spirit.color);
 };
 
-Game6PlayScreen.prototype.killPlayerSpirit = function(spirit) {
+/**
+ * @param {PlayerSpirit} spirit
+ */
+Game6PlayScreen.prototype.removeSpiritFromSlot = function(spirit) {
   let slot = this.getSlotForPlayerSpirit(spirit);
-  slot.killPlayerAtTime(this.now());
+  if (slot) {
+    slot.removeSpiritFromSlot(this.now());
+  }
 };
 
 Game6PlayScreen.prototype.getSlotForPlayerSpirit = function(spirit) {
@@ -370,8 +375,12 @@ Game6PlayScreen.prototype.getSlotForPlayerSpirit = function(spirit) {
 };
 
 Game6PlayScreen.prototype.playerDrop = function(slot) {
+  let spirit = slot.spirit;
   slot.setRespawnPos(slot.camera.cameraPos);
-  slot.killPlayerAtTime(this.now());
+  slot.removeSpiritFromSlot(this.now());
+  if (spirit) {
+    spirit.die();
+  }
   slot.setState(ControlState.WAITING);
 };
 
