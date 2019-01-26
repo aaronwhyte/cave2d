@@ -49,13 +49,13 @@ PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
 
 PlayerSpirit.PLAYER_RAD = 0.99;
-PlayerSpirit.CAMERA_AIM_OFFSET = 5;
-PlayerSpirit.CAMERA_VEL_MULTIPLIER = 3;
+PlayerSpirit.CAMERA_AIM_OFFSET = 3;
+PlayerSpirit.CAMERA_VEL_MULTIPLIER = 2;
 PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 3;
 
 PlayerSpirit.FLYING_TRACTION = 0;//0.01;
 PlayerSpirit.DRIVING_TRACTION = 0.5;
-PlayerSpirit.THRUST = 1;
+PlayerSpirit.THRUST = 1.3;
 
 PlayerSpirit.ELASTICITY = 0.5;
 
@@ -206,7 +206,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     let scansPerSide = 2;
     let scanRad = bodyRad * 0.9;
     for (let i = -scansPerSide; i <= scansPerSide; i++) {
-      let ang = Math.PI / 6 * i / scansPerSide;
+      let ang = Math.PI / 4 * i / scansPerSide;
       let scanPos = this.vec2d.setXY(i * (bodyRad - scanRad) / scansPerSide, 0).rot(ang + bodyAngle).add(bodyPos);
       let scanVel = this.vec2d2.setXY(0, bodyRad * 3 - scanRad).rot(ang);
 
@@ -219,18 +219,23 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
           this.scanResp);
       if (distFrac >= 0) {
         groundCount++;
-        let pushFactor = 3.5;
-        this.accel.add(scanVel.scale(pushFactor * (distFrac - 0.62) / (scansPerSide * 2 + 1) / playerBody.mass));
+        let pushFactor = 5 * (Math.min(distFrac, 1) - 0.55);
+        this.accel.add(scanVel.scale(pushFactor / (scansPerSide * 2 + 1) / playerBody.mass));
       }
       if (distFrac < 0) distFrac = 1;
-      let turnFactor = 7;
+      let turnFactor = 1.5;
       angAccel += turnFactor * ang * (2 - distFrac) / (scansPerSide * 2 + 1);
     }
+
     this.flying = groundCount === 0;
     if (this.flying) {
       this.setToolButton(false);
     } else {
       this.updateToolButton();
+      // The accel represents only the ground-scan results at this point.
+      // Now is the time to do some spring damping.
+      this.vec2d.set(this.getBodyVel()).projectOnto(this.accel).scale(-0.2);
+      this.accel.add(this.vec2d);
     }
   }
 
@@ -444,7 +449,7 @@ PlayerSpirit.prototype.die = function() {
  */
 PlayerSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, otherSpirit) {
   // TODO gather collectibles
-  if (otherBody.hitGroup === HitGroups.WALL) {
+  if (this.flying && otherBody.hitGroup === HitGroups.WALL) {
     this.doLandingCheck = true;
     this.setBodyAngPos(this.getBodyVel().angle());
   }
