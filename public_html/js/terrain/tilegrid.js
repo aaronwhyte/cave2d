@@ -252,8 +252,10 @@ TileGrid.prototype.unloadCellXY = function(cx, cy) {
 TileGrid.prototype.unloadCellId = function(cellId) {
   let tile = this.tiles[cellId];
   if (!tile) return;
-  if (tile.stamp && tile.stamp !== ModelStamp.EMPTY_STAMP) {
-    tile.stamp.dispose(this.renderer.gl);
+  if (tile.stamp) {
+    if (tile.stamp !== ModelStamp.EMPTY_STAMP) {
+      tile.stamp.dispose(this.renderer.gl);
+    }
     tile.stamp = null;
   }
   if (tile.bodyIds) {
@@ -308,10 +310,6 @@ TileGrid.prototype.createTileStampForCellId = function(cellId) {
       }
     }
   }
-  let cy = Math.floor(cellId / BitGrid.COLUMNS);
-  let cx = cellId - cy * BitGrid.COLUMNS - BitGrid.COLUMNS / 2;
-
-  //tileModel.addRigidModel(this.createFloorModelForCellXY(cx, cy));
   return tileModel ? tileModel.createModelStamp(this.renderer.gl) : ModelStamp.EMPTY_STAMP;
 };
 
