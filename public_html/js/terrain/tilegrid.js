@@ -252,7 +252,7 @@ TileGrid.prototype.unloadCellXY = function(cx, cy) {
 TileGrid.prototype.unloadCellId = function(cellId) {
   let tile = this.tiles[cellId];
   if (!tile) return;
-  if (tile.stamp) {
+  if (tile.stamp && tile.stamp !== ModelStamp.EMPTY_STAMP) {
     tile.stamp.dispose(this.renderer.gl);
     tile.stamp = null;
   }
