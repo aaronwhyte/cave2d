@@ -4,7 +4,7 @@
 function Spring() {}
 
 /**
- *
+ * Applies a dampened spring force between two bodies, where the spring is anchored at pos0 and pos1.
  * @param {Body} b0
  * @param {Vec2d} pos0
  * @param {Body} b1
