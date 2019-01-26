@@ -70,6 +70,8 @@ PlayerSpirit.STOPPING_ANGVEL = 0.01;
 PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI * 0.2;
 PlayerSpirit.ANGULAR_FRICTION = 0.6;
 
+PlayerSpirit.GRAVITY_ACCEL = 0.03;
+
 PlayerSpirit.SCHEMA = {
   0: "type",
   1: "id",
@@ -250,7 +252,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
       let dist = px.pixelDist * dg.pixelSize;
       if (dist <= maxGravDist) {
         let gravFrac = (maxGravDist - dist) / maxGravDist;
-        px.getPixelToGround(this.vec2d).scaleToLength(0.02 * gravFrac);
+        px.getPixelToGround(this.vec2d).scaleToLength(PlayerSpirit.GRAVITY_ACCEL * gravFrac);
         this.accel.add(this.vec2d);
       }
     }
