@@ -100,6 +100,43 @@ DistGrid.prototype.getPixelAtWorldVec = function(v) {
   return this.getXY(p.x, p.y);
 };
 
+DistGrid.prototype.getStepFromPxToWorldDist = function(px, d) {
+  let targetPixelDist = d / this.pixelSize + px.pixelDist;
+  if (targetPixelDist > this.maxFillDist) {
+    console.log('targetPixelDist > this.maxFillDist', targetPixelDist, this.maxFillDist);
+    return null;
+  }
+  let centerPx = px;
+  let highestNeighbor = centerPx;
+  let climbing = true;
+  let step = 0;
+  let retVal = null;
+  while (climbing) {
+    step++;
+    climbing = false;
+    centerPx = highestNeighbor;
+    for (let dy = -1; dy <= 1; dy++) {
+      let sy = centerPx.pixelY + dy;
+      for (let dx = -1; dx <= 1; dx++) {
+        let sx = centerPx.pixelX + dx;
+        let scanPx = this.getXY(sx, sy);
+        if (scanPx.pixelDist > highestNeighbor.pixelDist) {
+          climbing = true;
+          highestNeighbor = scanPx;
+          if (step === 1) {
+            retVal = scanPx;
+          }
+        }
+        if (scanPx.pixelDist >= targetPixelDist) {
+          return retVal;
+        }
+      }
+    }
+  }
+  return null;
+};
+
+
 /**
  * @param {number} x
  * @param {number} y
@@ -222,6 +259,11 @@ DistPixel.prototype.setXYXYD = function(pixelX, pixelY, nearPixelX, nearPixelY, 
   this.pixelDist = pixelDist;
 };
 
+/**
+ * Sets vecOut to a pixel-coord vec from this pixel to the nearest ground pixel.
+ * @param {Vec2d} vecOut
+ * @returns {Vec2d}
+ */
 DistPixel.prototype.getPixelToGround = function(vecOut) {
   return vecOut.setXY(this.nearPixelX - this.pixelX, this.nearPixelY - this.pixelY);
 };

@@ -56,7 +56,8 @@ FloaterSpirit.factory = function(screen, pos, dir) {
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 1;
+  b.grip = 0.25;
+  b.elasticity = 0.5;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.95;
@@ -114,17 +115,32 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
         distAboveTarget -= Math.sign(distAboveTarget) * relaxWhenWithinDist;
       }
 
-      let accelMagToGround = distAboveTarget * 0.1;
-      px.getPixelToGround(this.accel).scaleToLength(accelMagToGround);
-      this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos()));
-      this.addBodyAngVel(0.03 * (Math.random() - 0.5), now);
+      if (distAboveTarget < 0) {
+        // Is there an obvious climb to the target dist?
+        let stepPx = dg.getStepFromPxToWorldDist(px, targetHeight - relaxWhenWithinDist - px.pixelDist * dg.pixelSize);
+        if (stepPx) {
+          this.accel.set(stepPx.getPixelToGround(this.vec2d).scale(-1)).scaleToLength(0.1);
+          this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos() + Math.random() - 0.5));
+          this.addBodyAngVel(0.03 * (Math.random() - 0.5));
+        } else {
+          // No obvious climb. Roll along the ground?
+          px.getPixelToGround(this.accel).rot(-Math.PI / 4).scaleToLength(0.1);
+          this.addBodyAngVel(0.1);
+          friction = 0.3;
+        }
+      } else {
+        let accelMagToGround = distAboveTarget * 0.1;
+        px.getPixelToGround(this.accel).scaleToLength(accelMagToGround);
+        this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos() + Math.random() - 0.5));
+        this.addBodyAngVel(0.03 * (Math.random() - 0.5));
+      }
     } else if (this.nearbyPx) {
-      // Too high! Head towards a known DistGrid pixel.
+      // Left the the DistGrid, but we know of a place that is on the grid, so head over there.
       dg.pixelToWorld(this.vec2d.setXY(this.nearbyPx.pixelX, this.nearbyPx.pixelY), this.vec2d);
       this.vec2d.subtract(this.getBodyPos()).scaleToLength(0.05);
       this.accel.add(this.vec2d);
     } else {
-      // Started out lost in space! Do cheap random scan for a DistGrid pixel, at increasing distances.
+      // Never been on the DistGrid! Do cheap random scan for a DistGrid pixel, at increasing distances.
       this.pxScans++;
       this.vec2d.setXY(0, Math.random() * this.pxScans).rot(Math.random() * 2 * Math.PI);
       this.vec2d.add(this.getBodyPos());
