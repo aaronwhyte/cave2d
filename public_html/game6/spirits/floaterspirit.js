@@ -17,12 +17,14 @@ function FloaterSpirit(screen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
   this.accel = new Vec2d();
-  this.stress = 0;
 
   this.distOutsideVisibleWorld = 0;
 
   this.toughness = 1;
   this.damage = 1;
+
+  this.nearbyPx = null;
+  this.pxScans = 0;
 }
 FloaterSpirit.prototype = new BaseSpirit();
 FloaterSpirit.prototype.constructor = FloaterSpirit;
@@ -33,10 +35,10 @@ FloaterSpirit.STOPPING_SPEED_SQUARED = 0.01 * 0.01;
 FloaterSpirit.STOPPING_ANGVEL = 0.01;
 
 // Sleep when this many rads away from a player view bubble.
-FloaterSpirit.SLEEP_RADS = 10;
+FloaterSpirit.SLEEP_RADS = 15;
 
 // Wake up with this many rads away from a player view bubble.
-FloaterSpirit.WAKE_RADS = 2;
+FloaterSpirit.WAKE_RADS = 10;
 
 FloaterSpirit.SCHEMA = {
   0: "type",
@@ -85,11 +87,11 @@ FloaterSpirit.prototype.getModelId = function() {
  */
 FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
   let now = this.now();
-  let time = Math.max(0, Math.min(this.getActiveTimeout(), now - this.lastControlTime));
   this.lastControlTime = now;
 
   let body = this.getBody();
   this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
+  this.accel.reset();
 
   if (this.distOutsideVisibleWorld < body.rad * FloaterSpirit.SLEEP_RADS) {
     let dg = this.screen.distGrid;
@@ -97,56 +99,44 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
 
     let px = dg.getPixelAtWorldVec(this.getBodyPos());
     if (px) {
-      let targetDist = 10;
+      this.nearbyPx = px;
+      let targetHeight = 9;
       let relaxWhenWithinDist = 2;
-      let distFactor = px.pixelDist * dg.pixelSize - targetDist;
-      if (Math.abs(distFactor) < relaxWhenWithinDist) {
-        distFactor = 0;
+
+      // distAboveTarget represents the spirit's world distance above the target band.
+      // It is zero when within +-relaxWithinDist of targetHeight,
+      // positive when too far from the ground,
+      // and negative when too close to the ground.
+      let distAboveTarget = px.pixelDist * dg.pixelSize - targetHeight;
+      if (Math.abs(distAboveTarget) < relaxWhenWithinDist) {
+        distAboveTarget = 0;
       } else {
-        distFactor -= Math.sign(distFactor) * relaxWhenWithinDist;
+        distAboveTarget -= Math.sign(distAboveTarget) * relaxWhenWithinDist;
       }
 
-      let accelMagToGround = distFactor * 0.1;
-      if (accelMagToGround >= 0) {
-        this.stress = 0;
-      } else {
-        this.stress += 1;
-      }
+      let accelMagToGround = distAboveTarget * 0.1;
       px.getPixelToGround(this.accel).scaleToLength(accelMagToGround);
-      if (this.stress > 100) {
-        // stressed!
-        this.accel.scale(0.5).add(this.vec2d.setXY(0, 0.2).rot(Math.random() * 2 * Math.PI));
-        this.addBodyAngVel(0.1 * time * (Math.random() - 0.5), now);
-      } else {
-        this.accel.add(this.vec2d.setXY(0, 0.1).rot(this.getBodyAngPos()));
-        this.addBodyAngVel(0.05 * time * (Math.random() - 0.5), now);
-      }
+      this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos()));
+      this.addBodyAngVel(0.03 * (Math.random() - 0.5), now);
+    } else if (this.nearbyPx) {
+      // Too high! Head towards a known DistGrid pixel.
+      dg.pixelToWorld(this.vec2d.setXY(this.nearbyPx.pixelX, this.nearbyPx.pixelY), this.vec2d);
+      this.vec2d.subtract(this.getBodyPos()).scaleToLength(0.05);
+      this.accel.add(this.vec2d);
     } else {
-      friction = 0.9;
+      // Started out lost in space! Do cheap random scan for a DistGrid pixel, at increasing distances.
+      this.pxScans++;
+      this.vec2d.setXY(0, Math.random() * this.pxScans).rot(Math.random() * 2 * Math.PI);
+      this.vec2d.add(this.getBodyPos());
+      let px = dg.getPixelAtWorldVec(this.vec2d);
+      if (px) {
+        this.nearbyPx = px;
+        this.pxScans = 0;
+      }
     }
-    // normal active biz
-    // // scan for walls to make sure we're the right distance from one
-    // let dir = this.getBodyAngPos() + (Math.random() - 0.5) * 2 * Math.PI; // full circle
-    // let distFrac = this.scan(
-    //     HitGroups.WALL_SCAN,
-    //     this.getBodyPos(),
-    //     dir,
-    //     20,
-    //     body.rad);
-    //
-    // if (distFrac >= 0) {
-    //   let a;
-    //   if (distFrac < 0.5) {
-    //     a = -0.1;
-    //   } else {
-    //     a = 0.05 * (distFrac - 0.5);
-    //   }
-    // } else {
-    //   this.accel.setXY(0, -0.01).rot(dir);
-    // }
 
-    body.applyLinearFrictionAtTime(friction * time, now);
-    body.applyAngularFrictionAtTime(friction * time, now);
+    body.applyLinearFrictionAtTime(friction, now);
+    body.applyAngularFrictionAtTime(friction, now);
     let newVel = this.vec2d.set(this.getBodyVel());
     newVel.add(this.accel);
     let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
@@ -160,9 +150,9 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
     if (this.weapon) {
       this.weapon.setButtonDown(false);
     }
-    let friction = this.getFriction();
-    body.applyLinearFrictionAtTime(friction * time, now);
-    body.applyAngularFrictionAtTime(friction * time, now);
+    let friction = 0.5;
+    body.applyLinearFrictionAtTime(friction, now);
+    body.applyAngularFrictionAtTime(friction, now);
     let stopped = this.maybeStop();
     if (stopped) {
       // Assume the next timeout will be the passive one.

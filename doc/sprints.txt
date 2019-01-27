@@ -102,9 +102,6 @@ v fix player corpses lying around
 v ants work again
 v fix one draw per empty tile. Don't load tiles that don't have content?
 
-- cool terrain using a reverse distgrid for computing ground-pixel depth
-- some kinda air rendering using existing distgrid
-
 enemy components, from below
 - movement
   - Stay between dist D0 and D1 from ground.
@@ -118,44 +115,57 @@ enemy components, from below
   - bullet-hell and patterns to force player to maneuver a certain way
 
 
-enemies and levels are lessons
-- lesson: drive and shoot, easy
+Enemies and levels are lessons
+These are the tasks that are the core of the game!
+- lesson 1: drive and shoot, easy
   v Floaters: open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
     v basic editor-compat existence
-    v motion behavior
-  - plops with angles that you can hit
-- lesson: fly to find a good angle, easy
+    v basic motion behavior
+    - complete motion
+      v lost-in-space
+        v scan for a populated distgrid pixel if none is known
+        v head towards the last known distgrid pixel
+      - escaping from tunnel
+        - Check when we're below minimum desired height
+        - detect by looking at neighboring pixels and seeing we're at a local maxima
+        - switch behavior mode to...
+          - ant-like tunnel following
+          - switch back to floating when hitting a pixel with the minimum desired height
+  - Plops with angles that you can hit
+    - basic editor-compat existence
+- lesson 2: fly to find a good angle, easy
   - floaters around multiple planetoids so you need to visit the surface of each one
   - plops on the ground require flight to get around, but are hittable from disconnected surfaces
   - plops inside the entrance to a cave so you need to fly to back of cave first
   - plops alternating along a corridor so you kinda need to flip from wall to wall
-- lesson: fly and fire
+- lesson 3: fly and fire
   - Plops with no opposite wall
-- lesson: leave the ground to evade
+- lesson 4: leave the ground to evade
   - flying enemies drop ground-hugging missiles, forcing you to jump over them
   - explosive effects that hug the ground
+  - wall-walking enemies
   - rolling bullets like donkey-kong barrels
-- lesson: dodge while on the ground
+- lesson 5: dodge while on the ground
   - seeker emeny shots that are too hard to dodge in the air, but that burst when they hit the ground, so ground-dodge
-- lesson: take cover
+- lesson 6: take cover
   - tough enemy that has a player-following rapid-fire phase. Hide behind stuff when that gets going, and fire when they pause.
     (example: Big Bandit in Nuclear Throne)
   - stationary enemy that contantly fires at you when you're anywhere close and in line of sight. Rotating field of view maybe?
   - hovering enemy that fires a periodic burst
-- lesson: wall jump & get a good angle
+- lesson 7: wall jump & get a good angle
   - wide tunnels with turrets and wall-runners
   - levels with interesting interior arenas
   - indoor mazes where you need to get to a certain spot to be able to shoot a thing to get to the next spot etc.
-- lesson: run and fire backwards
+- lesson 8: run and fire backwards
   - tough flying enemies that chase you around the planet, that fire ground-huggers or something to keep you off the ground.
   - seeker missiles that have a big blast radius
-- lesson: maneuver swarming enemies into kill-zones
+- lesson 9: maneuver swarming enemies into kill-zones
   - flying enemies that chase you - force them into bottleneck opening
   - ground-based critters that that chase you: Use wavy ground to aim ground-gun at them.
-- lesson: Fly and shoot flying things
+- lesson 10: Fly and shoot flying things
   - space enemies (Defender ships?) that stay at your altitude so you need to fly and shoot sideways to get them.
   - flying chasers that come out of the ground, that are easy to shoot as you fly away
-- lesson: be careful what you shoot
+- lesson 11: be careful what you shoot
   - high explosives in close quarters
   - enemies that change when they die
     - enemies that explode
@@ -166,7 +176,7 @@ enemies and levels are lessons
     - drivers leap across to opposite wall
     - flyers become drivers
     - sleepers become attackers
-- lesson: some things you cannot fight
+- lesson 12: some things you cannot fight
   - indestructible chasers that are too big to fit through small openings
   - indestructible guards that laser you on sight
 
@@ -180,6 +190,9 @@ plr grx and snd
   - thrust particles
   - thrust/speed sound
   - trail
+- terrain
+  - some kinda air rendering using existing distgrid
+  - cool terrain using a reverse distgrid for computing ground-pixel depth
 - smoother multiplayer camerawork using the view-rect itself
 
 
