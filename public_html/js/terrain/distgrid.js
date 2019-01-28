@@ -120,15 +120,17 @@ DistGrid.prototype.getStepFromPxToWorldDist = function(px, d) {
       for (let dx = -1; dx <= 1; dx++) {
         let sx = centerPx.pixelX + dx;
         let scanPx = this.getXY(sx, sy);
-        if (scanPx.pixelDist > highestNeighbor.pixelDist) {
-          climbing = true;
-          highestNeighbor = scanPx;
-          if (step === 1) {
-            retVal = scanPx;
+        if (scanPx) {
+          if (scanPx.pixelDist > highestNeighbor.pixelDist) {
+            climbing = true;
+            highestNeighbor = scanPx;
+            if (step === 1) {
+              retVal = scanPx;
+            }
           }
-        }
-        if (scanPx.pixelDist >= targetPixelDist) {
-          return retVal;
+          if (scanPx.pixelDist >= targetPixelDist) {
+            return retVal;
+          }
         }
       }
     }

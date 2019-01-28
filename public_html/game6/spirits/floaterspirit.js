@@ -57,7 +57,7 @@ FloaterSpirit.factory = function(screen, pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.25;
-  b.elasticity = 0.5;
+  b.elasticity = 0.9;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.95;
@@ -119,20 +119,36 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
         // Is there an obvious climb to the target dist?
         let stepPx = dg.getStepFromPxToWorldDist(px, targetHeight - relaxWhenWithinDist - px.pixelDist * dg.pixelSize);
         if (stepPx) {
-          this.accel.set(stepPx.getPixelToGround(this.vec2d).scale(-1)).scaleToLength(0.1);
+          // climbing
+          let accelMagToGround = distAboveTarget * 0.03;
+          this.accel.add(px.getPixelToGround(this.vec2d).scaleToLength(accelMagToGround));
           this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos() + Math.random() - 0.5));
           this.addBodyAngVel(0.03 * (Math.random() - 0.5));
         } else {
-          // No obvious climb. Roll along the ground?
-          px.getPixelToGround(this.accel).rot(-Math.PI / 4).scaleToLength(0.1);
-          this.addBodyAngVel(0.1);
+          // Rolling. No obvious climb.
+          // But go in the direction we're already going, which is what...
+          let clockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(-Math.PI * 0.5));
+          let counterClockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(Math.PI * 0.5));
+          let turnSign = clockwiseDist < counterClockwiseDist ? 1 : -1;
+          px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.3).scaleToLength(0.08);
+          this.addBodyAngVel(turnSign * 0.05);
           friction = 0.3;
         }
       } else {
-        let accelMagToGround = distAboveTarget * 0.1;
-        px.getPixelToGround(this.accel).scaleToLength(accelMagToGround);
-        this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos() + Math.random() - 0.5));
-        this.addBodyAngVel(0.03 * (Math.random() - 0.5));
+        // Floating
+        // Follow ground contour
+        let clockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(-Math.PI * 0.5));
+        let counterClockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(Math.PI * 0.5));
+        let turnSign = clockwiseDist < counterClockwiseDist ? 1 : -1;
+        px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.5).scaleToLength(0.02);
+
+        // Maintain height
+        let accelMagToGround = distAboveTarget * 0.03;
+        this.accel.add(px.getPixelToGround(this.vec2d).scaleToLength(accelMagToGround));
+
+        // Turn and move "forward" a bit too.
+        this.addBodyAngVel(0.002 * turnSign);
+        this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos()));
       }
     } else if (this.nearbyPx) {
       // Left the the DistGrid, but we know of a place that is on the grid, so head over there.

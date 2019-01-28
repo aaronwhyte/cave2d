@@ -121,18 +121,17 @@ These are the tasks that are the core of the game!
   v Floaters: open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
     v basic editor-compat existence
     v basic motion behavior
-    - complete motion
+    v complete motion
       v lost-in-space
         v scan for a populated distgrid pixel if none is known
         v head towards the last known distgrid pixel
-      - escaping from tunnel
-        - Check when we're below minimum desired height
-        - detect by looking at neighboring pixels and seeing we're at a local maxima
-        - switch behavior mode to...
-          - ant-like tunnel following
-          - switch back to floating when hitting a pixel with the minimum desired height
+      v escaping from tunnel
+        v Check when we're below minimum desired height
+        v detect by looking at neighboring pixels and seeing we're at a local maxima
+        v switch behavior mode to rolling along wall!
   - Plops with angles that you can hit
     - basic editor-compat existence
+    - find some ground and stay there.
 - lesson 2: fly to find a good angle, easy
   - floaters around multiple planetoids so you need to visit the surface of each one
   - plops on the ground require flight to get around, but are hittable from disconnected surfaces
@@ -141,12 +140,12 @@ These are the tasks that are the core of the game!
 - lesson 3: fly and fire
   - Plops with no opposite wall
 - lesson 4: leave the ground to evade
+  - wall-walking enemies! Floaters but without any floating.
   - flying enemies drop ground-hugging missiles, forcing you to jump over them
   - explosive effects that hug the ground
-  - wall-walking enemies
   - rolling bullets like donkey-kong barrels
 - lesson 5: dodge while on the ground
-  - seeker emeny shots that are too hard to dodge in the air, but that burst when they hit the ground, so ground-dodge
+  - missiles that are too hard to dodge in the air, but that burst when they hit the ground, so ground-dodge
 - lesson 6: take cover
   - tough enemy that has a player-following rapid-fire phase. Hide behind stuff when that gets going, and fire when they pause.
     (example: Big Bandit in Nuclear Throne)
