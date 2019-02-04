@@ -87,119 +87,159 @@ FloaterSpirit.prototype.getModelId = function() {
  * @override
  */
 FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
-  let now = this.now();
-  this.lastControlTime = now;
+  this.lastControlTime = this.now();
 
   let body = this.getBody();
   this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
   this.accel.reset();
 
   if (this.distOutsideVisibleWorld < body.rad * FloaterSpirit.SLEEP_RADS) {
+    // Close enough to what the players see: look busy!
     let dg = this.screen.distGrid;
-    let friction = this.getFriction();
-
     let px = dg.getPixelAtWorldVec(this.getBodyPos());
     if (px) {
-      this.nearbyPx = px;
-      let targetHeight = 9;
-      let relaxWhenWithinDist = 2;
-
-      // distAboveTarget represents the spirit's world distance above the target band.
-      // It is zero when within +-relaxWithinDist of targetHeight,
-      // positive when too far from the ground,
-      // and negative when too close to the ground.
-      let distAboveTarget = px.pixelDist * dg.pixelSize - targetHeight;
-      if (Math.abs(distAboveTarget) < relaxWhenWithinDist) {
-        distAboveTarget = 0;
-      } else {
-        distAboveTarget -= Math.sign(distAboveTarget) * relaxWhenWithinDist;
-      }
-
-      if (distAboveTarget < 0) {
-        // Is there an obvious climb to the target dist?
-        let stepPx = dg.getStepFromPxToWorldDist(px, targetHeight - relaxWhenWithinDist - px.pixelDist * dg.pixelSize);
-        if (stepPx) {
-          // climbing
-          let accelMagToGround = distAboveTarget * 0.03;
-          this.accel.add(px.getPixelToGround(this.vec2d).scaleToLength(accelMagToGround));
-          this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos() + Math.random() - 0.5));
-          this.addBodyAngVel(0.03 * (Math.random() - 0.5));
-        } else {
-          // Rolling. No obvious climb.
-          // But go in the direction we're already going, which is what...
-          let clockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(-Math.PI * 0.5));
-          let counterClockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(Math.PI * 0.5));
-          let turnSign = clockwiseDist < counterClockwiseDist ? 1 : -1;
-          px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.3).scaleToLength(0.08);
-          this.addBodyAngVel(turnSign * 0.05);
-          friction = 0.3;
-        }
-      } else {
-        // Floating
-        // Follow ground contour
-        let clockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(-Math.PI * 0.5));
-        let counterClockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(Math.PI * 0.5));
-        let turnSign = clockwiseDist < counterClockwiseDist ? 1 : -1;
-        px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.5).scaleToLength(0.02);
-
-        // Maintain height
-        let accelMagToGround = distAboveTarget * 0.03;
-        this.accel.add(px.getPixelToGround(this.vec2d).scaleToLength(accelMagToGround));
-
-        // Turn and move "forward" a bit too.
-        this.addBodyAngVel(0.002 * turnSign);
-        this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos()));
-      }
-    } else if (this.nearbyPx) {
-      // Left the the DistGrid, but we know of a place that is on the grid, so head over there.
-      dg.pixelToWorld(this.vec2d.setXY(this.nearbyPx.pixelX, this.nearbyPx.pixelY), this.vec2d);
-      this.vec2d.subtract(this.getBodyPos()).scaleToLength(0.05);
-      this.accel.add(this.vec2d);
+      this.activeOnAPixel(dg, px);
     } else {
-      // Never been on the DistGrid! Do cheap random scan for a DistGrid pixel, at increasing distances.
-      this.pxScans++;
-      this.vec2d.setXY(0, Math.random() * this.pxScans).rot(Math.random() * 2 * Math.PI);
-      this.vec2d.add(this.getBodyPos());
-      let px = dg.getPixelAtWorldVec(this.vec2d);
-      if (px) {
-        this.nearbyPx = px;
-        this.pxScans = 0;
-      }
+      this.activeOffPixel(dg);
     }
-
-    body.applyLinearFrictionAtTime(friction, now);
-    body.applyAngularFrictionAtTime(friction, now);
-    let newVel = this.vec2d.set(this.getBodyVel());
-    newVel.add(this.accel);
-    let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
-    body.pathDurationMax = timeoutDuration * 1.01;
-    body.setVelAtTime(newVel, now);
-    body.invalidatePath();
-    this.scheduleActiveTimeout(now + timeoutDuration);
-
   } else {
-    // brakes only
-    if (this.weapon) {
-      this.weapon.setButtonDown(false);
-    }
-    let friction = 0.5;
-    body.applyLinearFrictionAtTime(friction, now);
-    body.applyAngularFrictionAtTime(friction, now);
-    let stopped = this.maybeStop();
-    if (stopped) {
-      // Assume the next timeout will be the passive one.
-      let timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT;
-      body.pathDurationMax = timeoutDuration * 1.01;
-      body.invalidatePath();
-      // Do not schedule another active timeout.
+    // Slow down, and maybe stop and switch to the passive timeout cycle.
+    this.activeBrakesOnly();
+  }
+};
+
+/**
+ * The spirit is active and on a DistGrid pixel, so do active biz (accel, friction, new timeout).
+ * Either relax near the target dist, or go up to target dist, or walk along the nearest wall, or head (down)
+ * towards the target dist
+ * @param {DistGrid} dg
+ * @param {DistPixel} px
+ */
+FloaterSpirit.prototype.activeOnAPixel = function(dg, px) {
+  this.nearbyPx = px;
+  let targetHeight = 9;
+  let relaxWhenWithinDist = 2;
+  let friction = this.getFriction();
+
+  // distAboveTarget represents the spirit's world distance above the target band.
+  // It is zero when within +-relaxWithinDist of targetHeight,
+  // positive when too far from the ground,
+  // and negative when too close to the ground.
+  let distAboveTarget = px.pixelDist * dg.pixelSize - targetHeight;
+  if (Math.abs(distAboveTarget) < relaxWhenWithinDist) {
+    distAboveTarget = 0;
+  } else {
+    distAboveTarget -= Math.sign(distAboveTarget) * relaxWhenWithinDist;
+  }
+
+  if (distAboveTarget < 0) {
+    // Is there an obvious climb to the target dist?
+    let stepPx = dg.getStepFromPxToWorldDist(px, targetHeight - relaxWhenWithinDist - px.pixelDist * dg.pixelSize);
+    if (stepPx) {
+      // climbing
+      let accelMagToGround = distAboveTarget * 0.03;
+      this.accel.add(px.getPixelToGround(this.vec2d).scaleToLength(accelMagToGround));
+      this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos() + Math.random() - 0.5));
+      this.addBodyAngVel(0.03 * (Math.random() - 0.5));
     } else {
-      // keep braking
-      let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
-      body.pathDurationMax = timeoutDuration * 1.01;
-      body.invalidatePath();
-      this.scheduleActiveTimeout(now + timeoutDuration);
+      // Rolling. No obvious climb.
+      // But go in the direction we're already going, which is what...
+      let clockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(-Math.PI * 0.5));
+      let counterClockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(Math.PI * 0.5));
+      let turnSign = clockwiseDist < counterClockwiseDist ? 1 : -1;
+      px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.3).scaleToLength(0.08);
+      this.addBodyAngVel(turnSign * 0.05);
+      friction = 0.3;
+    }
+  } else {
+    // Floating
+    // Follow ground contour
+    let clockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(-Math.PI * 0.5));
+    let counterClockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(Math.PI * 0.5));
+    let turnSign = clockwiseDist < counterClockwiseDist ? 1 : -1;
+    px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.5).scaleToLength(0.02);
+
+    // Maintain height
+    let accelMagToGround = distAboveTarget * 0.03;
+    this.accel.add(px.getPixelToGround(this.vec2d).scaleToLength(accelMagToGround));
+
+    // Turn and move "forward" a bit too.
+    this.addBodyAngVel(0.002 * turnSign);
+    this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos()));
+  }
+  this.activeFrictionAndAccel(friction, this.accel);
+};
+
+/**
+ * Not on a distGrid pixel, to go to the last known one, or find one sort of nearby.
+ * @param {DistGrid} dg
+ */
+FloaterSpirit.prototype.activeOffPixel = function(dg) {
+  if (this.nearbyPx) {
+    // Body is off the DistGrid, but we know of a place that is on the grid, so head over there.
+    dg.pixelToWorld(this.vec2d.setXY(this.nearbyPx.pixelX, this.nearbyPx.pixelY), this.vec2d);
+    this.vec2d.subtract(this.getBodyPos()).scaleToLength(0.05);
+    this.accel.add(this.vec2d);
+  } else {
+    // Never been on the DistGrid! Do cheap random scan for a DistGrid pixel, at increasing distances.
+    this.pxScans++;
+    this.vec2d.setXY(0, Math.random() * this.pxScans).rot(Math.random() * 2 * Math.PI);
+    this.vec2d.add(this.getBodyPos());
+    let px = dg.getPixelAtWorldVec(this.vec2d);
+    if (px) {
+      this.nearbyPx = px;
+      this.pxScans = 0;
     }
   }
+  this.activeFrictionAndAccel(this.getFriction(), this.accel);
+};
+
+/**
+ * Slow down and try to stop. If stopped, don't schedule another active timeout - switch to passive.
+ */
+FloaterSpirit.prototype.activeBrakesOnly = function() {
+  let body = this.getBody();
+  let now = this.now();
+  if (this.weapon) {
+    this.weapon.setButtonDown(false);
+  }
+  let friction = 0.5;
+  body.applyLinearFrictionAtTime(friction, now);
+  body.applyAngularFrictionAtTime(friction, now);
+  let stopped = this.maybeStop();
+  if (stopped) {
+    // Assume the next timeout will be the passive one.
+    let timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT;
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.invalidatePath();
+    // Do not schedule another active timeout.
+  } else {
+    // keep braking
+    let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.invalidatePath();
+    this.scheduleActiveTimeout(now + timeoutDuration);
+  }
+};
+
+/**
+ * Apply friction and acceleration, and schedule another active timeout.
+ * Do not try to stop the active timeout.
+ * @param friction
+ * @param accel
+ */
+FloaterSpirit.prototype.activeFrictionAndAccel = function(friction, accel) {
+  let body = this.getBody();
+  let now = this.now();
+  body.applyLinearFrictionAtTime(friction, now);
+  body.applyAngularFrictionAtTime(friction, now);
+  let newVel = this.vec2d.set(this.getBodyVel());
+  newVel.add(this.accel);
+  let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
+  body.pathDurationMax = timeoutDuration * 1.01;
+  body.setVelAtTime(newVel, now);
+  body.invalidatePath();
+  this.scheduleActiveTimeout(now + timeoutDuration);
 };
 
 FloaterSpirit.prototype.explode = function() {
