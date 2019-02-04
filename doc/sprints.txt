@@ -94,13 +94,21 @@ v player stuff
   x hold after flapping to glide, and release to brake?
   x flaps are more effective near ground?
 
-(title idea: That's Not How Gravity Works")
+(title idea: "That's Not How Gravity Works")
 
 v Remove circle rendering/clipping from game6
 
 v fix player corpses lying around
 v ants work again
 v fix one draw per empty tile. Don't load tiles that don't have content?
+
+- give enemies a "stun" counter.
+- player weapon stuns most enemies
+- stunned enemies fall to ground
+- player touches stunned enemies to fully neutralize 'em
+
+- make player gun into non-lethal paralyzer/freezer
+- make it clear what you can touch to eliminate, vs touch will hurt you
 
 enemy components, from below
 - movement
@@ -110,7 +118,9 @@ enemy components, from below
   - Stay within D dist of a position and R radians from an angle. Turret.
   - Fly and avoid walls. Done? Good for free-roaming hunters.
 - aim/firing
-  - check to see if players are visible within D and R. Assume there are few targets, so scan directly at players
+  - check to see if players are visible within D and R
+    - first check for any player in that zone
+    - if found, then do line-of-sight check using obstructions
   - periodic burst
   - bullet-hell and patterns to force player to maneuver a certain way
 
@@ -138,19 +148,23 @@ These are the tasks that are the core of the game!
   - plops inside the entrance to a cave so you need to fly to back of cave first
   - plops alternating along a corridor so you kinda need to flip from wall to wall
 - lesson 3: fly and fire
-  - Plops with no opposite wall
+  - change flying fire to...
+    - more of a gas-ejection, energy-wave, or flame-thrust deal - slower, wider, short range.
+    - maybe it just paralyzes or freezes enemies and drops them to the ground where they can be defeated by touch
+    - maybe player ONLY non-lethals enemies with shots, and then has to touch them in time to finish the job.
+  - Plops with no opposite wall must be shot from the air
 - lesson 4: leave the ground to evade
-  - wall-walking enemies! Floaters but without any floating.
-  - flying enemies drop ground-hugging missiles, forcing you to jump over them
-  - explosive effects that hug the ground
-  - rolling bullets like donkey-kong barrels
-- lesson 5: dodge while on the ground
+  - wall-walking enemies! Floaters but without any floating. Ground-to-ground
+  - flying enemies drop ground-hugging missiles, forcing you to jump over them.
+  - explosive effects that hug the ground, or bramble maybe
+- lesson 5: dodge air-to-ground fire
   - missiles that are too hard to dodge in the air, but that burst when they hit the ground, so ground-dodge
-- lesson 6: take cover
+- lesson 6: take cover from
   - tough enemy that has a player-following rapid-fire phase. Hide behind stuff when that gets going, and fire when they pause.
     (example: Big Bandit in Nuclear Throne)
   - stationary enemy that contantly fires at you when you're anywhere close and in line of sight. Rotating field of view maybe?
   - hovering enemy that fires a periodic burst
+  - sniper that will definitely kill ya
 - lesson 7: wall jump & get a good angle
   - wide tunnels with turrets and wall-runners
   - levels with interesting interior arenas
@@ -182,6 +196,7 @@ These are the tasks that are the core of the game!
 plr grx and snd
 - driving
   - ground-effect (particles?)
+  - Walking legs??
   - driving sound
   - trail
   - launch sound
