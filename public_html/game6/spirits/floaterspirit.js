@@ -25,6 +25,7 @@ function FloaterSpirit(screen) {
 
   this.nearbyPx = null;
   this.pxScans = 0;
+  this.grounded = false;
 }
 FloaterSpirit.prototype = new BaseSpirit();
 FloaterSpirit.prototype.constructor = FloaterSpirit;
@@ -39,6 +40,8 @@ FloaterSpirit.SLEEP_RADS = 15;
 
 // Wake up with this many rads away from a player view bubble.
 FloaterSpirit.WAKE_RADS = 10;
+
+FloaterSpirit.ELASTICITY = 0.7;
 
 FloaterSpirit.SCHEMA = {
   0: "type",
@@ -57,7 +60,7 @@ FloaterSpirit.factory = function(screen, pos, dir) {
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
   b.grip = 0.25;
-  b.elasticity = 0.9;
+  b.elasticity = FloaterSpirit.ELASTICITY;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());
   b.rad = 0.95;
@@ -90,6 +93,7 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
   this.lastControlTime = this.now();
 
   let body = this.getBody();
+  body.elasticity = FloaterSpirit.ELASTICITY;
   this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
   this.accel.reset();
 
@@ -98,7 +102,11 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
     let dg = this.screen.distGrid;
     let px = dg.getPixelAtWorldVec(this.getBodyPos());
     if (px) {
-      this.activeOnAPixel(dg, px);
+      if (this.getStun()) {
+        this.activeStunnedOnPixel(dg, px);
+      } else {
+        this.activeOnAPixel(dg, px);
+      }
     } else {
       this.activeOffPixel(dg);
     }
@@ -166,6 +174,21 @@ FloaterSpirit.prototype.activeOnAPixel = function(dg, px) {
     // Turn and move "forward" a bit too.
     this.addBodyAngVel(0.002 * turnSign);
     this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos()));
+  }
+  this.activeFrictionAndAccel(friction, this.accel);
+};
+
+/**
+ * The spirit is stunned, so try to fall to the ground and lie there.
+ * @param {DistGrid} dg
+ * @param {DistPixel} px
+ */
+FloaterSpirit.prototype.activeStunnedOnPixel = function(dg, px) {
+  let friction = this.getFriction();
+  let gravity = 0.05 * this.getActiveTimeout();
+  if (!this.grounded && px) {
+    this.nearbyPx = px;
+    px.getPixelToGround(this.accel).scaleToLength(gravity);
   }
   this.activeFrictionAndAccel(friction, this.accel);
 };
@@ -270,6 +293,17 @@ FloaterSpirit.prototype.onDraw = function(world, renderer) {
 };
 
 /**
+ * @param {Vec2d} collisionVec
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
+ */
+FloaterSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, otherSpirit) {
+  if (otherSpirit && otherSpirit.stun) {
+    this.setStunDuration(otherSpirit.stun);
+  }
+};
+
+/**
  * Called after bouncing and damage exchange are done.
  * @param {Vec2d} collisionVec
  * @param {Number} mag the magnitude of the collision, kinda?
@@ -277,13 +311,22 @@ FloaterSpirit.prototype.onDraw = function(world, renderer) {
  * @param {Spirit} otherSpirit
  */
 FloaterSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  // let body = this.getBody();
-  // if (!body) return;
-  // let now = this.now();
-  // if (this.lastThumpSoundTime + BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME < this.now()) {
-  //   this.screen.sounds.wallThump(this.getBodyPos(), mag);
-  // }
-  // this.lastThumpSoundTime = now;
+  let body = this.getBody();
+  if (!body) return;
+  this.grounded = false;
+  let now = this.now();
+  if (this.lastThumpSoundTime + BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME < this.now()) {
+    this.screen.sounds.wallThump(this.getBodyPos(), mag);
+  }
+  this.lastThumpSoundTime = now;
+
+  if (this.getStun() && otherBody.mass === Infinity) {
+    if (this.getBodyVel().magnitudeSquared() < Math.random() * Math.random()) {
+      this.setBodyVel(Vec2d.ZERO);
+      this.setBodyAngVel(0);
+      this.grounded = true;
+    }
+  }
 
   this.maybeWake();
 };

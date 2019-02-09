@@ -74,7 +74,9 @@ PlayerGun.prototype.addBullet = function(pos, vel, rad, duration) {
   b.spiritId = spiritId;
   spirit.addTrailSegment();
   spirit.health = 0;
-  spirit.damage = 1;
+  spirit.damage = 0;
+  spirit.stun = 30 * 4;
+
   spirit.wallDamageMultiplier = 0;
   spirit.bounceChance = 0;
   spirit.team = wielder.team;

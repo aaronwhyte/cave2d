@@ -102,13 +102,17 @@ v fix player corpses lying around
 v ants work again
 v fix one draw per empty tile. Don't load tiles that don't have content?
 
-- give enemies a "stun" counter.
+v give enemies a "stun" counter.
 - player weapon stuns most enemies
+  v floater
+  - everyone
 - stunned enemies fall to ground
+  v floater
+  - everyone
+v make player gun into non-lethal paralyzer/freezer
+- make it clear what you can touch to eliminate, vs touch will hurt you
 - player touches stunned enemies to fully neutralize 'em
 
-- make player gun into non-lethal paralyzer/freezer
-- make it clear what you can touch to eliminate, vs touch will hurt you
 
 enemy components, from below
 - movement

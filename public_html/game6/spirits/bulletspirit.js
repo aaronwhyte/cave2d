@@ -42,6 +42,7 @@ BulletSpirit.prototype.reset = function(screen) {
 
   this.toughness = 0;
   this.damage = 1;
+  this.stun = 15;
   this.trailDuration = 0.8;
   this.headRadFraction = 1;
   this.tailRadFraction = 0.25;
