@@ -41,6 +41,9 @@ FloaterSpirit.SLEEP_RADS = 15;
 // Wake up with this many rads away from a player view bubble.
 FloaterSpirit.WAKE_RADS = 10;
 
+FloaterSpirit.PRE_UNSTUN_BLINK_TIME = 33;
+FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME = 10;
+
 FloaterSpirit.ELASTICITY = 0.7;
 
 FloaterSpirit.SCHEMA = {
@@ -82,8 +85,34 @@ FloaterSpirit.prototype.getActiveTimeout = function() {
   return FloaterSpirit.ACTIVE_TIMEOUT;
 };
 
-FloaterSpirit.prototype.getModelId = function() {
-  return ModelId.FLOATER;
+/**
+ * @override
+ */
+FloaterSpirit.prototype.getColor = function() {
+  // let s = this.getStun();
+  // let b = 1;
+  // if (!s) {
+  //   b = 1;
+  // } else {
+  //   b = 0;
+  // }
+  // let c = 0.5 + 0.5 * b;
+  // return this.color.setRGBA(c, 1, c, 1);
+
+
+  let blinkStun = FloaterSpirit.PRE_UNSTUN_BLINK_TIME;
+  let s = this.getStun();
+  let b = 1;
+  if (!s) {
+    return this.color.setRGBA(1, 1, 1, 1);
+  } else if (s > blinkStun) {
+    b = 0;
+  } else {
+    b = Math.max(0, (blinkStun - s) / blinkStun - Math.random());
+    // b = Math.pow((blinkStun - s) / blinkStun, 4);
+  }
+  let c = 0.5 + b; // 0.5 - 1.5
+  return this.color.setRGBA(c, c, c, 1);
 };
 
 /**
@@ -186,9 +215,14 @@ FloaterSpirit.prototype.activeOnAPixel = function(dg, px) {
 FloaterSpirit.prototype.activeStunnedOnPixel = function(dg, px) {
   let friction = this.getFriction();
   let gravity = 0.05 * this.getActiveTimeout();
-  if (!this.grounded && px) {
+
+  let wakeFactor = Math.max(0, FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME - this.getStun())
+      / FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME;
+
+  if ((wakeFactor || !this.grounded) && px) {
     this.nearbyPx = px;
     px.getPixelToGround(this.accel).scaleToLength(gravity);
+    this.addBodyAngVel(0.5 * (Math.random() - 0.5) * wakeFactor);
   }
   this.activeFrictionAndAccel(friction, this.accel);
 };
@@ -321,7 +355,8 @@ FloaterSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, othe
   this.lastThumpSoundTime = now;
 
   if (this.getStun() && otherBody.mass === Infinity) {
-    if (this.getBodyVel().magnitudeSquared() < Math.random() * Math.random()) {
+    if (this.getStun() > FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME &&
+        this.getBodyVel().magnitudeSquared() < Math.random() * Math.random()) {
       this.setBodyVel(Vec2d.ZERO);
       this.setBodyAngVel(0);
       this.grounded = true;

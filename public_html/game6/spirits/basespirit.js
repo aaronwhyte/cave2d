@@ -28,6 +28,9 @@ function BaseSpirit(screen) {
   this.nextActiveTime = -1;
   this.nextPassiveTime = -1;
 
+  // Spirit is stunned until this time.
+  this.stunUntil = -Infinity;
+
   BaseSpirit.prototype.reset.call(this, screen);
 }
 BaseSpirit.prototype = new Spirit();
@@ -617,4 +620,25 @@ BaseSpirit.prototype.maybeWake = function() {
 BaseSpirit.prototype.startTimeouts = function() {
   this.scheduleActiveTimeout(this.now());
   this.schedulePassiveTimeout(this.now() + BaseSpirit.PASSIVE_TIMEOUT * Math.random());
+};
+
+/**
+ * @param {number} duration  the spirit will be stunned until this time from now, plus any pre-existing stun time.
+ */
+BaseSpirit.prototype.addStunDuration = function(duration) {
+  this.stunUntil = Math.max(this.now(), this.stunUntil) + duration;
+};
+
+/**
+ * @param {number} duration  the spirit will be stunned until this time from now. Zero to unstun.
+ */
+BaseSpirit.prototype.setStunDuration = function(duration) {
+  this.stunUntil = this.now() + duration;
+};
+
+/**
+ * @returns {number} zero means the spirit is no longer stunned
+ */
+BaseSpirit.prototype.getStun = function() {
+  return Math.max(0, this.stunUntil - this.now());
 };
