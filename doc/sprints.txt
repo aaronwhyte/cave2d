@@ -102,17 +102,30 @@ v fix player corpses lying around
 v ants work again
 v fix one draw per empty tile. Don't load tiles that don't have content?
 
+overhaul collision resolution
+* Remove "damage" as a floating-point thing.
+* Use discrete state switches, with some time-based transitions.
+* Centralize logic and use standardized Spirit query and effect methods
+v everything and walls
+  v most things bounce
+  v some fire vanishes
+  v player can "land"
+v enemy fire and player
+v player fire and enemies
+v player and enemies
+  v stunned enemy dies
+  v unstunned enemy kills player
+
 v give enemies a "stun" counter.
-- player weapon stuns most enemies
+v player weapon stuns most enemies
   v floater
-  - everyone
+  v everyone
 - stunned enemies fall to ground
   v floater
   - everyone
 v make player gun into non-lethal paralyzer/freezer
-- make it clear what you can touch to eliminate, vs touch will hurt you
-- player touches stunned enemies to fully neutralize 'em
-
+v make it clear what you can touch to eliminate, vs touch will hurt you
+v pre-unstun indication
 
 enemy components, from below
 - movement

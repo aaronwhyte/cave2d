@@ -126,6 +126,10 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
   this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
   this.accel.reset();
 
+  if (!this.getStun()) {
+    this.grounded = false;
+  }
+
   if (this.distOutsideVisibleWorld < body.rad * FloaterSpirit.SLEEP_RADS) {
     // Close enough to what the players see: look busy!
     let dg = this.screen.distGrid;
@@ -326,16 +330,6 @@ FloaterSpirit.prototype.onDraw = function(world, renderer) {
   }
 };
 
-/**
- * @param {Vec2d} collisionVec
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
- */
-FloaterSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, otherSpirit) {
-  if (otherSpirit && otherSpirit.stun) {
-    this.setStunDuration(otherSpirit.stun);
-  }
-};
 
 /**
  * Called after bouncing and damage exchange are done.
@@ -344,7 +338,7 @@ FloaterSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, oth
  * @param {Body} otherBody
  * @param {Spirit} otherSpirit
  */
-FloaterSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+FloaterSpirit.prototype.onAfterHitWall = function(collisionVec, mag, otherBody, otherSpirit) {
   let body = this.getBody();
   if (!body) return;
   this.grounded = false;
@@ -354,7 +348,7 @@ FloaterSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, othe
   }
   this.lastThumpSoundTime = now;
 
-  if (this.getStun() && otherBody.mass === Infinity) {
+  if (this.getStun()) {
     if (this.getStun() > FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME &&
         this.getBodyVel().magnitudeSquared() < Math.random() * Math.random()) {
       this.setBodyVel(Vec2d.ZERO);

@@ -41,13 +41,11 @@ BulletSpirit.prototype.reset = function(screen) {
   this.segEndVec.reset();
 
   this.toughness = 0;
-  this.damage = 1;
   this.stun = 15;
   this.trailDuration = 0.8;
   this.headRadFraction = 1;
   this.tailRadFraction = 0.25;
 
-  this.wallDamageMultiplier = 1;
   this.bounceChance = 0;
 
   // When force is applied to a bullet, detect that while drawing and update the trail
@@ -180,21 +178,15 @@ BulletSpirit.prototype.die = function() {
   this.destroyBody();
 };
 
-BulletSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+BulletSpirit.prototype.onAfterHitWall = function(collisionVec, mag) {
   let body = this.getBody();
   if (!body) return;
   let pos = this.getBodyPos();
 
   this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag + 0.5));
 
-  // digging is random but based on impact magnitude
-  if (this.wallDamageMultiplier) {
-    let rad = this.wallDamageMultiplier * Math.min(1, Math.max(mag, 0.3) * (0.25 + 0.75 * Math.random()));
-    this.screen.drawTerrainPill(pos, pos, rad, 0);
-  }
-
   // bounce or vanish?
-  if (otherSpirit && this.damagesTeam(otherSpirit.team) || Math.random() >= this.bounceChance) {
+  if (Math.random() >= this.bounceChance) {
     // vanish
     this.die();
   } else {

@@ -22,64 +22,72 @@ function Game6HitResolver(screen, bouncer) {
  * @param {Body} b1
  */
 Game6HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
+  this.linearForce.reset();
+  this.rubForce.reset();
   let s0 = this.screen.getSpiritForBody(b0);
   let s1 = this.screen.getSpiritForBody(b1);
 
-  if (s0) s0.onBeforeHitOther(collisionVec, b1, s1);
-  if (s1) s1.onBeforeHitOther(collisionVec, b0, s0);
+  this.collide(time, collisionVec, b0, b1, s0, s1) ||
+  this.collide(time, collisionVec, b1, b0, s1, s0) ||
+  this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
+};
 
-  // To prevent object interpenetration, do this.
-  // To encourage it, don't do this. :-p
-  let bounced = this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
-  if (!bounced) {
-    this.linearForce.reset();
-    this.rubForce.reset();
+/**
+ * @param {number} time
+ * @param {Vec2d} collisionVec
+ * @param {Body} b0
+ * @param {Body} b1
+ * @param {BaseSpirit} s0
+ * @param {BaseSpirit} s1
+ * @return {boolean} true iff the collision has been resolved.
+ */
+Game6HitResolver.prototype.collide = function(time, collisionVec, b0, b1, s0, s1) {
+  // editor mode, or no spirits?
+  if (!this.screen.isPlaying() || (!s0 && !s1)) {
+    this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
+    return true;
   }
-  let mag;
 
-  // Plan effects on "the other":
-  // damage, healing, activation, ice, slime, acceleration, teleport, etc.
-  if (this.screen.isPlaying()) {
-    if (s0 && s1) {
-      let damageTo0 = s1.damagesTeam(s0.team) ? s1.damage : 0;
-      let damageTo1 = s0.damagesTeam(s1.team) ? s0.damage : 0;
-      if (damageTo0) {
-        s0.applyDamage(damageTo0);
-        s0 = this.screen.getSpiritForBody(b0);
+  // wall?
+  if (b0.hitGroup === HitGroups.WALL) {
+    s1 && s1.onBeforeHitWall(collisionVec);
+    this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
+    s1 && s1.onAfterHitWall(collisionVec, this.linearForce.magnitude() + this.rubForce.magnitude());
+    return true;
+  }
+
+  // player hits enemy or enemy fire?
+  if (s0 && s0.type === Game6Key.PLAYER && s1 && s1.team === Team.ENEMY) {
+    // impact
+    this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
+    if (s1.getStun()) {
+      // stunned enemy dies
+      s1.die();
+    } else {
+      // enemy bullet dies
+      if (s1.type === Game6Key.BULLET) {
+        s1.die();
       }
-      if (damageTo1) {
-        s1.applyDamage(damageTo1);
-        s1 = this.screen.getSpiritForBody(b1);
-      }
+      // player dies
+      s0.die();
     }
-  }
-  if (s0 || s1) {
-    mag = this.linearForce.magnitude() + this.rubForce.magnitude();
-    if (s0) s0.onHitOther(collisionVec, mag, b1, s1);
-    if (s1) s1.onHitOther(collisionVec, mag, b0, s0);
+    return true;
   }
 
-
-  // Mutate each simultaneously:
-  // apply damage, handle death
-  // bounce unless vetoed
-  // apply special effects
-
-  let vec = Vec2d.alloc();
-  mag = this.linearForce.magnitude() + this.rubForce.magnitude();
-  let pos = this.getHitPos(time, collisionVec, b0, b1, vec);
-  let otherBody, otherSpirit;
-
-  let ebb = this.screen.bodyIfSpiritType(Game6Key.ENERGY_BULLET, b0, b1);
-  if (ebb) {
-    let ebbs = this.screen.getSpiritForBody(ebb);
-    otherBody = this.screen.otherBody(ebb, b0, b1);
-    otherSpirit = this.screen.getSpiritForBody(otherBody);
-    if (otherSpirit && otherSpirit.getEnergyCapacity()) {
-      ebbs.onHitEnergizable(otherSpirit, pos);
+  // player bullet hits anything
+  if (s0 && s0.type === Game6Key.BULLET && s0.team === Team.PLAYER) {
+    // impact
+    this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
+    if (s1 && s1.team === Team.ENEMY) {
+      // stuns enemy
+      s1.stunForDuration(s0.stun);
     }
+    // bullet always dies
+    s0.die();
+    return true;
   }
-  vec.free();
+
+  return false;
 };
 
 Game6HitResolver.prototype.getHitPos = function(time, collisionVec, b0, b1, out) {

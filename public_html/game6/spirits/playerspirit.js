@@ -17,12 +17,8 @@ function PlayerSpirit(screen) {
 
   this.toolButtonDown = false;
 
-  this.lastDamage = 0;
-  this.lastDamageTime = 0;
   this.lastHitMag = 0;
   this.lastHitTime = 0;
-  this.lastPain = 0;
-  this.lastPainTime = 0;
 
   this.accel = new Vec2d();
   this.keyMult = PlayerSpirit.KEY_MULT_ADJUST;
@@ -400,30 +396,7 @@ PlayerSpirit.prototype.onDraw = function() {
       .multiply(this.mat44.toTranslateOpXYZ(bodyPos.x, bodyPos.y, 0))
       .multiply(this.mat44.toScaleOpXYZ(body.rad, body.rad, 1))
       .multiply(this.mat44.toRotateZOp(-body.getAngPosAtTime(now)));
-  let pain = Math.min(1, 2 * this.getPainFaded() + 3 * this.getDamageFaded());
-  this.vec4.setXYZ(
-      Math.max(pain, this.color.getX()),
-      Math.max(pain, this.color.getY()),
-      Math.max(pain, this.color.getZ()));
-  this.screen.drawModel(this.getModelId(), this.vec4, this.modelMatrix, null);
-
-  // // aim guide
-  // this.aimColor.set(this.vec4).scale1(0.5 + Math.random() * 0.3);
-  // let p1, p2, rad;
-  // p1 = this.vec2d;
-  // p2 = this.vec2d2;
-  // let p1Dist = PlayerSpirit.PLAYER_RAD * 3.5;
-  // let p2Dist = PlayerSpirit.PLAYER_RAD * 2;
-  // rad = 0.4;
-  // p1.set(this.getAimVec()).scaleToLength(p1Dist).add(bodyPos);
-  // p2.set(this.getAimVec()).scaleToLength(p2Dist).add(bodyPos);
-  // this.modelMatrix.toIdentity()
-  //     .multiply(this.mat44.toTranslateOpXYZ(p1.x, p1.y, 0.9))
-  //     .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  // this.modelMatrix2.toIdentity()
-  //     .multiply(this.mat44.toTranslateOpXYZ(p2.x, p2.y, 0.9))
-  //     .multiply(this.mat44.toScaleOpXYZ(rad, rad, 1));
-  // this.screen.drawModel(ModelId.LINE_SEGMENT, this.aimColor, this.modelMatrix, this.modelMatrix2);
+  this.screen.drawModel(this.getModelId(), this.color, this.modelMatrix, null);
 };
 
 PlayerSpirit.prototype.explode = function() {
@@ -443,64 +416,11 @@ PlayerSpirit.prototype.die = function() {
   this.screen.removeByBodyId(this.bodyId);
 };
 
-/**
- * Called before bouncing and damage exchange are done.
- * @param {Vec2d} collisionVec
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
- */
-PlayerSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, otherSpirit) {
-  // TODO gather collectibles
-  if (this.flying && otherBody.hitGroup === HitGroups.WALL) {
+PlayerSpirit.prototype.onBeforeHitWall = function(collisionVec) {
+  if (this.flying) {
     this.doLandingCheck = true;
     this.setBodyAngPos(this.getBodyVel().angle());
   }
-};
-
-/**
- * Called after bouncing and damage exchange are done.
- * @param {Vec2d} collisionVec
- * @param {Number} mag the magnitude of the collision, kinda?
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
- */
-PlayerSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  // regular collision
-  BaseSpirit.prototype.onHitOther.apply(this, arguments);
-  this.lastHitTime = this.now();
-  this.lastHitMag = mag;
-};
-
-/**
- * @param {number} damage
- */
-PlayerSpirit.prototype.applyDamage = function(damage) {
-  let now = this.now();
-  this.lastDamage = damage + this.getDamageFaded();
-  this.lastDamageTime = now;
-
-  this.lastPain = damage + this.getPainFaded();
-  this.lastPainTime = now;
-
-  if (damage) {
-    this.screen.splashes.addPlayerHurtExplosion(now, this.getBodyPos(), this.getDamageFaded(), this.vec4.setXYZ(1, 1, 1));
-    this.screen.sounds.playerHurt(this.getBodyPos(), this.getDamageFaded());
-  }
-  if (this.getDamageFaded() > this.toughness) {
-    this.die();
-  }
-};
-
-PlayerSpirit.prototype.getPainFaded = function() {
-  return Math.min(1, Math.max(0, this.lastPain - 0.1 * (this.now() - this.lastPainTime)));
-};
-
-PlayerSpirit.prototype.getDamageFaded = function() {
-  return Math.max(0, this.lastDamage - 0.01 * (this.now() - this.lastDamageTime));
-};
-
-PlayerSpirit.prototype.getHitMagFaded = function() {
-  return Math.max(0, Math.min(5, this.lastHitMag) / 5 - Math.pow(0.5 * (this.now() - this.lastHitTime), 2));
 };
 
 PlayerSpirit.prototype.getFriction = function() {

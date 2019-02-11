@@ -5,6 +5,8 @@
 function BaseSpirit(screen) {
   Spirit.call(this);
 
+  this.type = -1;
+
   this.tempBodyPos = new Vec2d();
   this.tempAnglePos = new Vec2d();
   this.tempBodyVel = new Vec2d();
@@ -441,16 +443,6 @@ BaseSpirit.prototype.applyDamage = function(damage) {
 };
 
 /**
- * Called before bouncing and damage exchange are done.
- * @param {Vec2d} collisionVec
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
- */
-BaseSpirit.prototype.onBeforeHitOther = function(collisionVec, otherBody, otherSpirit) {
-  // override me
-};
-
-/**
  * Called after bouncing and damage exchange are done.
  * @param {Vec2d} collisionVec
  * @param {Number} mag the magnitude of the collision, kinda?
@@ -623,22 +615,23 @@ BaseSpirit.prototype.startTimeouts = function() {
 };
 
 /**
- * @param {number} duration  the spirit will be stunned until this time from now, plus any pre-existing stun time.
+ * @param {number} duration  the spirit will be stunned until this time from now. If already
+ * stunned for longer, then this has no effect.
  */
-BaseSpirit.prototype.addStunDuration = function(duration) {
-  this.stunUntil = Math.max(this.now(), this.stunUntil) + duration;
+BaseSpirit.prototype.stunForDuration = function(duration) {
+  this.stunUntil = Math.max(this.stunUntil, this.now() + duration);
 };
 
 /**
- * @param {number} duration  the spirit will be stunned until this time from now. Zero to unstun.
- */
-BaseSpirit.prototype.setStunDuration = function(duration) {
-  this.stunUntil = this.now() + duration;
-};
-
-/**
- * @returns {number} zero means the spirit is no longer stunned
+ * @returns {number} remaining time this will be stunned. Zero means the spirit is no longer stunned.
+ * Never returns a negative number.
  */
 BaseSpirit.prototype.getStun = function() {
   return Math.max(0, this.stunUntil - this.now());
+};
+
+BaseSpirit.prototype.onBeforeHitWall = function(collisionVec) {
+};
+
+BaseSpirit.prototype.onAfterHitWall = function(collisionVec, forceMagnitude) {
 };
