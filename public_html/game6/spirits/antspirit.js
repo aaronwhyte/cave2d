@@ -136,38 +136,46 @@ AntSpirit.prototype.doPlayingActiveTimeout = function() {
   this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
   // this.distOutsideVisibleWorld = this.screen.distFromViewCenter(this.getBodyPos()) - 5; // fun debugging
 
+  let dg = this.screen.distGrid;
+  let px = dg.getPixelAtWorldVec(this.getBodyPos());
+  if (px) this.nearbyPx = px;
+
   if (this.distOutsideVisibleWorld < body.rad * AntSpirit.SLEEP_RADS) {
-    // normal active biz
-    if (this.weapon && this.targetScanner) {
-      if (!this.targetScanner.lockedHitSpiritId) {
-        // Nothing is locked, so maybe acquire a lock.
-        if (now - this.targetScanner.wideHitTime < 20) {
-          this.targetScanner.setLockedSpiritId(this.targetScanner.wideHitSpiritId);
+    if (this.getStun()) {
+      if (this.weapon) this.weapon.setButtonDown(false);
+      this.activeStunnedOnPixel(dg, px);
+    } else {
+      // normal active biz
+      if (this.weapon && this.targetScanner) {
+        if (!this.targetScanner.lockedHitSpiritId) {
+          // Nothing is locked, so maybe acquire a lock.
+          if (now - this.targetScanner.wideHitTime < 20) {
+            this.targetScanner.setLockedSpiritId(this.targetScanner.wideHitSpiritId);
+          }
         }
+        if (this.targetScanner.lockedHitSpiritId) {
+          this.targetScanner.doLockedScan();
+        }
+        let angleToTarget = this.getAngleDiff(this.getAngleToPos(this.targetScanner.lockedHitPos));
+        let shouldFire = this.targetScanner.lockedHitTime === now &&
+            Math.abs(angleToTarget) < AntSpirit.MAX_FIRE_ANGLE_DIFF;
+        this.weapon.setButtonDown(shouldFire);
       }
-      if (this.targetScanner.lockedHitSpiritId) {
-        this.targetScanner.doLockedScan();
+      if (this.targetScanner) {
+        this.targetScanner.setButtonDown(true);
       }
-      let angleToTarget = this.getAngleDiff(this.getAngleToPos(this.targetScanner.lockedHitPos));
-      let shouldFire = this.targetScanner.lockedHitTime === now &&
-          Math.abs(angleToTarget) < AntSpirit.MAX_FIRE_ANGLE_DIFF;
-      this.weapon.setButtonDown(shouldFire);
+      let friction = this.getFriction();
+      body.applyLinearFrictionAtTime(friction * time, now);
+      let newVel = this.vec2d.set(body.vel);
+
+      this.handleLoner(newVel, time);
+
+      let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
+      body.pathDurationMax = timeoutDuration * 1.01;
+      body.setVelAtTime(newVel, now);
+      body.invalidatePath();
+      this.scheduleActiveTimeout(now + timeoutDuration);
     }
-    if (this.targetScanner) {
-      this.targetScanner.setButtonDown(true);
-    }
-    let friction = this.getFriction();
-    body.applyLinearFrictionAtTime(friction * time, now);
-    let newVel = this.vec2d.set(body.vel);
-
-    this.handleLoner(newVel, time);
-
-    let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
-    body.pathDurationMax = timeoutDuration * 1.01;
-    body.setVelAtTime(newVel, now);
-    body.invalidatePath();
-    this.scheduleActiveTimeout(now + timeoutDuration);
-
   } else {
     // brakes only
     if (this.weapon) {
@@ -312,23 +320,4 @@ AntSpirit.prototype.onDraw = function(world, renderer) {
   if (this.distOutsideVisibleWorld < this.getBody().rad * AntSpirit.WAKE_RADS) {
     this.maybeWake();
   }
-};
-
-/**
- * Called after bouncing and damage exchange are done.
- * @param {Vec2d} collisionVec
- * @param {Number} mag the magnitude of the collision, kinda?
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
- */
-AntSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
-  // let body = this.getBody();
-  // if (!body) return;
-  // let now = this.now();
-  // if (this.lastThumpSoundTime + BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME < this.now()) {
-  //   this.screen.sounds.wallThump(this.getBodyPos(), mag);
-  // }
-  // this.lastThumpSoundTime = now;
-
-  this.maybeWake();
 };

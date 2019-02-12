@@ -120,9 +120,9 @@ v give enemies a "stun" counter.
 v player weapon stuns most enemies
   v floater
   v everyone
-- stunned enemies fall to ground
+v stunned enemies fall to ground
   v floater
-  - everyone
+  v everyone
 v make player gun into non-lethal paralyzer/freezer
 v make it clear what you can touch to eliminate, vs touch will hurt you
 v pre-unstun indication

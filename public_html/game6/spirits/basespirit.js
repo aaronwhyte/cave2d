@@ -48,6 +48,11 @@ BaseSpirit.PASSIVE_TIMEOUT_VAL = 1001;
 
 BaseSpirit.PASSIVE_TIMEOUT = 1000;
 
+BaseSpirit.PRE_UNSTUN_BLINK_TIME = 33;
+BaseSpirit.PRE_UNSTUN_JIGGLE_TIME = 10;
+
+
+
 /**
  * Returned by the default getActiveTimeout(), which van be overridden.
  * @type {number}
@@ -251,9 +256,24 @@ BaseSpirit.prototype.getAngleDiff = function(toAngle) {
   return angleDiff;
 };
 
+/**
+ * @override
+ */
 BaseSpirit.prototype.getColor = function() {
-  return this.color;
+  let blinkStun = BaseSpirit.PRE_UNSTUN_BLINK_TIME;
+  let s = this.getStun();
+  let b = 1;
+  if (!s) {
+    return this.color.setRGBA(1, 1, 1, 1);
+  } else if (s > blinkStun) {
+    b = 0;
+  } else {
+    b = Math.max(0, (blinkStun - s) / blinkStun - Math.random());
+  }
+  let c = 0.5 + b; // 0.5 - 1.5
+  return this.color.setRGBA(c, c, c, 1);
 };
+
 
 BaseSpirit.prototype.getModelId = function() {
   return g5db.getModelId(this.type);
@@ -635,3 +655,70 @@ BaseSpirit.prototype.onBeforeHitWall = function(collisionVec) {
 
 BaseSpirit.prototype.onAfterHitWall = function(collisionVec, forceMagnitude) {
 };
+
+/**
+ * Apply friction and acceleration, and schedule another active timeout.
+ * Do not try to stop the active timeout.
+ * @param friction
+ */
+BaseSpirit.prototype.activeFrictionAndAccel = function(friction) {
+  let body = this.getBody();
+  let now = this.now();
+  body.applyLinearFrictionAtTime(friction, now);
+  body.applyAngularFrictionAtTime(friction, now);
+  let newVel = this.vec2d.set(this.getBodyVel());
+  newVel.add(this.accel);
+  let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
+  body.pathDurationMax = timeoutDuration * 1.01;
+  body.setVelAtTime(newVel, now);
+  body.invalidatePath();
+  this.scheduleActiveTimeout(now + timeoutDuration);
+};
+
+/**
+ * @param {Vec2d} collisionVec
+ * @param {Number} mag the magnitude of the collision, kinda?
+ * @param {Body} otherBody
+ * @param {Spirit} otherSpirit
+ */
+BaseSpirit.prototype.onAfterHitWall = function(collisionVec, mag, otherBody, otherSpirit) {
+  let body = this.getBody();
+  if (!body) return;
+  this.grounded = false;
+  let now = this.now();
+  if (this.lastThumpSoundTime + BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME < this.now()) {
+    this.screen.sounds.wallThump(this.getBodyPos(), mag);
+  }
+  this.lastThumpSoundTime = now;
+
+  if (this.getStun()) {
+    if (this.getStun() > BaseSpirit.PRE_UNSTUN_JIGGLE_TIME &&
+        this.getBodyVel().magnitudeSquared() < Math.random() * Math.random()) {
+      this.setBodyVel(Vec2d.ZERO);
+      this.setBodyAngVel(0);
+      this.grounded = true;
+    }
+  }
+  this.maybeWake();
+};
+
+/**
+ * The spirit is stunned, so try to fall to the ground and lie there.
+ * @param {DistGrid} dg
+ * @param {DistPixel} px
+ */
+BaseSpirit.prototype.activeStunnedOnPixel = function(dg, px) {
+  let friction = this.getFriction();
+  let gravity = 0.07 * this.getActiveTimeout();
+
+  let wakeFactor = Math.max(0, BaseSpirit.PRE_UNSTUN_JIGGLE_TIME - this.getStun())
+      / BaseSpirit.PRE_UNSTUN_JIGGLE_TIME;
+
+  if ((wakeFactor || !this.grounded) && px) {
+    this.nearbyPx = px;
+    px.getPixelToGround(this.accel).scaleToLength(gravity);
+    this.addBodyAngVel(0.5 * (Math.random() - 0.5) * wakeFactor);
+  }
+  this.activeFrictionAndAccel(friction, this.accel);
+};
+

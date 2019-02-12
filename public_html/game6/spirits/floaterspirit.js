@@ -41,9 +41,6 @@ FloaterSpirit.SLEEP_RADS = 15;
 // Wake up with this many rads away from a player view bubble.
 FloaterSpirit.WAKE_RADS = 10;
 
-FloaterSpirit.PRE_UNSTUN_BLINK_TIME = 33;
-FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME = 10;
-
 FloaterSpirit.ELASTICITY = 0.7;
 
 FloaterSpirit.SCHEMA = {
@@ -83,36 +80,6 @@ FloaterSpirit.factory = function(screen, pos, dir) {
  */
 FloaterSpirit.prototype.getActiveTimeout = function() {
   return FloaterSpirit.ACTIVE_TIMEOUT;
-};
-
-/**
- * @override
- */
-FloaterSpirit.prototype.getColor = function() {
-  // let s = this.getStun();
-  // let b = 1;
-  // if (!s) {
-  //   b = 1;
-  // } else {
-  //   b = 0;
-  // }
-  // let c = 0.5 + 0.5 * b;
-  // return this.color.setRGBA(c, 1, c, 1);
-
-
-  let blinkStun = FloaterSpirit.PRE_UNSTUN_BLINK_TIME;
-  let s = this.getStun();
-  let b = 1;
-  if (!s) {
-    return this.color.setRGBA(1, 1, 1, 1);
-  } else if (s > blinkStun) {
-    b = 0;
-  } else {
-    b = Math.max(0, (blinkStun - s) / blinkStun - Math.random());
-    // b = Math.pow((blinkStun - s) / blinkStun, 4);
-  }
-  let c = 0.5 + b; // 0.5 - 1.5
-  return this.color.setRGBA(c, c, c, 1);
 };
 
 /**
@@ -159,7 +126,7 @@ FloaterSpirit.prototype.doPlayingActiveTimeout = function() {
 FloaterSpirit.prototype.activeOnAPixel = function(dg, px) {
   this.nearbyPx = px;
   let targetHeight = 9;
-  let relaxWhenWithinDist = 2;
+  let relaxWhenWithinDist = 1.5;
   let friction = this.getFriction();
 
   // distAboveTarget represents the spirit's world distance above the target band.
@@ -207,26 +174,6 @@ FloaterSpirit.prototype.activeOnAPixel = function(dg, px) {
     // Turn and move "forward" a bit too.
     this.addBodyAngVel(0.002 * turnSign);
     this.accel.add(this.vec2d.setXY(0, 0.01).rot(this.getBodyAngPos()));
-  }
-  this.activeFrictionAndAccel(friction, this.accel);
-};
-
-/**
- * The spirit is stunned, so try to fall to the ground and lie there.
- * @param {DistGrid} dg
- * @param {DistPixel} px
- */
-FloaterSpirit.prototype.activeStunnedOnPixel = function(dg, px) {
-  let friction = this.getFriction();
-  let gravity = 0.05 * this.getActiveTimeout();
-
-  let wakeFactor = Math.max(0, FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME - this.getStun())
-      / FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME;
-
-  if ((wakeFactor || !this.grounded) && px) {
-    this.nearbyPx = px;
-    px.getPixelToGround(this.accel).scaleToLength(gravity);
-    this.addBodyAngVel(0.5 * (Math.random() - 0.5) * wakeFactor);
   }
   this.activeFrictionAndAccel(friction, this.accel);
 };
@@ -283,26 +230,6 @@ FloaterSpirit.prototype.activeBrakesOnly = function() {
   }
 };
 
-/**
- * Apply friction and acceleration, and schedule another active timeout.
- * Do not try to stop the active timeout.
- * @param friction
- * @param accel
- */
-FloaterSpirit.prototype.activeFrictionAndAccel = function(friction, accel) {
-  let body = this.getBody();
-  let now = this.now();
-  body.applyLinearFrictionAtTime(friction, now);
-  body.applyAngularFrictionAtTime(friction, now);
-  let newVel = this.vec2d.set(this.getBodyVel());
-  newVel.add(this.accel);
-  let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
-  body.pathDurationMax = timeoutDuration * 1.01;
-  body.setVelAtTime(newVel, now);
-  body.invalidatePath();
-  this.scheduleActiveTimeout(now + timeoutDuration);
-};
-
 FloaterSpirit.prototype.explode = function() {
   let body = this.getBody();
   let pos = this.getBodyPos();
@@ -330,36 +257,6 @@ FloaterSpirit.prototype.onDraw = function(world, renderer) {
   }
 };
 
-
-/**
- * Called after bouncing and damage exchange are done.
- * @param {Vec2d} collisionVec
- * @param {Number} mag the magnitude of the collision, kinda?
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
- */
-FloaterSpirit.prototype.onAfterHitWall = function(collisionVec, mag, otherBody, otherSpirit) {
-  let body = this.getBody();
-  if (!body) return;
-  this.grounded = false;
-  let now = this.now();
-  if (this.lastThumpSoundTime + BaseSpirit.MIN_WALL_THUMP_SILENCE_TIME < this.now()) {
-    this.screen.sounds.wallThump(this.getBodyPos(), mag);
-  }
-  this.lastThumpSoundTime = now;
-
-  if (this.getStun()) {
-    if (this.getStun() > FloaterSpirit.PRE_UNSTUN_JIGGLE_TIME &&
-        this.getBodyVel().magnitudeSquared() < Math.random() * Math.random()) {
-      this.setBodyVel(Vec2d.ZERO);
-      this.setBodyAngVel(0);
-      this.grounded = true;
-    }
-  }
-
-  this.maybeWake();
-};
-
 FloaterSpirit.prototype.getFriction = function() {
-  return this.screen.isPlaying() ? 0.1 : 0.3;
+  return this.screen.isPlaying() ? 0.07 : 0.3;
 };
