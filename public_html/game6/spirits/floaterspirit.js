@@ -151,8 +151,8 @@ FloaterSpirit.prototype.activeOnAPixel = function(dg, px) {
       let clockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(-Math.PI * 0.5));
       let counterClockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(Math.PI * 0.5));
       let turnSign = clockwiseDist < counterClockwiseDist ? 1 : -1;
-      px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.3).scaleToLength(0.08);
-      this.addBodyAngVel(turnSign * 0.05);
+      px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.55).scaleToLength(0.08);
+      this.addBodyAngVel(turnSign * 0.03);
       friction = 0.3;
     }
   } else {
