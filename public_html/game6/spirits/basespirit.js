@@ -270,7 +270,7 @@ BaseSpirit.prototype.getColor = function() {
   } else {
     b = Math.max(0, (blinkStun - s) / blinkStun - Math.random());
   }
-  let c = 0.5 + b; // 0.5 - 1.5
+  let c = 0.4 + b;
   return this.color.setRGBA(c, c, c, 1);
 };
 
@@ -715,10 +715,61 @@ BaseSpirit.prototype.activeStunnedOnPixel = function(dg, px) {
       / BaseSpirit.PRE_UNSTUN_JIGGLE_TIME;
 
   if ((wakeFactor || !this.grounded) && px) {
-    this.nearbyPx = px;
     px.getPixelToGround(this.accel).scaleToLength(gravity);
     this.addBodyAngVel(0.5 * (Math.random() - 0.5) * wakeFactor);
   }
   this.activeFrictionAndAccel(friction, this.accel);
+};
+
+/**
+ * Not on a distGrid pixel, to go to the last known one, or find one sort of nearby.
+ * @param {DistGrid} dg
+ */
+BaseSpirit.prototype.activeOffPixel = function(dg) {
+  if (this.nearbyPx) {
+    // Body is off the DistGrid, but we know of a place that is on the grid, so head over there.
+    dg.pixelToWorld(this.vec2d.setXY(this.nearbyPx.pixelX, this.nearbyPx.pixelY), this.vec2d);
+    this.vec2d.subtract(this.getBodyPos()).scaleToLength(0.05);
+    this.accel.add(this.vec2d);
+  } else {
+    // Never been on the DistGrid! Do cheap random scan for a DistGrid pixel, at increasing distances.
+    this.pxScans++;
+    this.vec2d.setXY(0, Math.random() * this.pxScans).rot(Math.random() * 2 * Math.PI);
+    this.vec2d.add(this.getBodyPos());
+    let px = dg.getPixelAtWorldVec(this.vec2d);
+    if (px) {
+      this.nearbyPx = px;
+      this.pxScans = 0;
+    }
+  }
+  this.activeFrictionAndAccel(this.getFriction(), this.accel);
+};
+
+/**
+ * Slow down and try to stop. If stopped, don't schedule another active timeout - switch to passive.
+ */
+BaseSpirit.prototype.activeBrakesOnly = function() {
+  let body = this.getBody();
+  let now = this.now();
+  if (this.weapon) {
+    this.weapon.setButtonDown(false);
+  }
+  let friction = 0.5;
+  body.applyLinearFrictionAtTime(friction, now);
+  body.applyAngularFrictionAtTime(friction, now);
+  let stopped = this.maybeStop();
+  if (stopped) {
+    // Assume the next timeout will be the passive one.
+    let timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT;
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.invalidatePath();
+    // Do not schedule another active timeout.
+  } else {
+    // keep braking
+    let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
+    body.pathDurationMax = timeoutDuration * 1.01;
+    body.invalidatePath();
+    this.scheduleActiveTimeout(now + timeoutDuration);
+  }
 };
 

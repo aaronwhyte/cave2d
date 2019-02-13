@@ -13,5 +13,6 @@ let Game6Key = {
   MINE: 9,
   PLAYER_GUN: 11,
 
-  FLOATER: 12
+  FLOATER: 12,
+  WALKER: 13
 };

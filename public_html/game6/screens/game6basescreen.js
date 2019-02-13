@@ -73,6 +73,7 @@ Game6BaseScreen.prototype.getSpiritConfigs = function() {
 
     addToMenu(Game6Key.ANT);
     addToMenu(Game6Key.FLOATER);
+    addToMenu(Game6Key.WALKER);
     addToMenu(Game6Key.MINE);
     nextColumn();
   }

@@ -27,6 +27,9 @@ Game6HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   let s0 = this.screen.getSpiritForBody(b0);
   let s1 = this.screen.getSpiritForBody(b1);
 
+  if (s0) s0.grounded = false;
+  if (s1) s1.grounded = false;
+
   this.collide(time, collisionVec, b0, b1, s0, s1) ||
   this.collide(time, collisionVec, b1, b0, s1, s0) ||
   this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);

@@ -127,20 +127,17 @@ v make player gun into non-lethal paralyzer/freezer
 v make it clear what you can touch to eliminate, vs touch will hurt you
 v pre-unstun indication
 
-enemy components, from below
-- movement
-  - Stay between dist D0 and D1 from ground.
-    - needs to be editable on the fly
-    - maybe too simple to break into separate class
-  - Stay within D dist of a position and R radians from an angle. Turret.
-  - Fly and avoid walls. Done? Good for free-roaming hunters.
-- aim/firing
-  - check to see if players are visible within D and R
-    - first check for any player in that zone
-    - if found, then do line-of-sight check using obstructions
-  - periodic burst
-  - bullet-hell and patterns to force player to maneuver a certain way
+walkers
+* enemies that mostly roll/walk along the ground like trapped floaters, making even open ground dangerous
+v copy floater to start
 
+plops
+* enemies that stay put
+- they have a resting point, and will try to return to it if knocked away.
+- unstunned they have angry faces or hop slightly or something to show they're alive and well
+- Maybe they even lunge at the player when they get close, since they return to starting point.
+
+proper intro screen add/remove player
 
 Enemies and levels are lessons
 These are the tasks that are the core of the game!
@@ -167,8 +164,8 @@ These are the tasks that are the core of the game!
 - lesson 3: fly and fire
   - change flying fire to...
     - more of a gas-ejection, energy-wave, or flame-thrust deal - slower, wider, short range.
-    - maybe it just paralyzes or freezes enemies and drops them to the ground where they can be defeated by touch
-    - maybe player ONLY non-lethals enemies with shots, and then has to touch them in time to finish the job.
+    v maybe it just paralyzes or freezes enemies and drops them to the ground where they can be defeated by touch
+    v maybe player ONLY non-lethals enemies with shots, and then has to touch them in time to finish the job.
   - Plops with no opposite wall must be shot from the air
 - lesson 4: leave the ground to evade
   - wall-walking enemies! Floaters but without any floating. Ground-to-ground
@@ -209,6 +206,20 @@ These are the tasks that are the core of the game!
 - lesson 12: some things you cannot fight
   - indestructible chasers that are too big to fit through small openings
   - indestructible guards that laser you on sight
+
+enemy components, from below
+- movement
+  - Stay between dist D0 and D1 from ground.
+    - needs to be editable on the fly
+    - maybe too simple to break into separate class
+  - Stay within D dist of a position and R radians from an angle. Turret.
+  - Fly and avoid walls. Done? Good for free-roaming hunters.
+- aim/firing
+  - check to see if players are visible within D and R
+    - first check for any player in that zone
+    - if found, then do line-of-sight check using obstructions
+  - periodic burst
+  - bullet-hell and patterns to force player to maneuver a certain way
 
 plr grx and snd
 - driving
@@ -259,6 +270,25 @@ complications
   - teleporters obviously
   - spikey/zappy orbs that restrict movement
   - periodic zappers, like Caves of Mars, especially when you're running away
+- enemy danger ehnancers
+  - shooting
+  - chasing
+- critter motions
+  - bouncing
+  - flying, preferrably at an altitude
+  - swooping, diving, dropping otherwise melee-attacking player from the sky
+  - centipedes! bring 'em back!
+  - Heavy things that are dangerous when they fall onto you!
+- bullets
+  - linear, duh
+  - bouncing gravitationally
+  - rolling
+  - chasing like a missile
+  - exploding w radius
+  - exploding along the ground
+  - rapid fire
+  - circular burst
+  - sniper style
 
 main menu
 - shows existing joined player slots, with good default player

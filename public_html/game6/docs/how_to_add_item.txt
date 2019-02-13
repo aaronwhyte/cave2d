@@ -1,10 +1,10 @@
-To add an item:
+To add a tool or spirit:
 - Graphics
   - Add a modelId and model-getter to graphics/models.js
 - Game6BaseScreen constants
   - Add to Game6Key
 - Spirit class
-  - Create an tools/foo.js extending BaseTool
+  - Create an tools/foo.js extending BaseTool, or spirits.foo.js extending BaseSpirit
   - Add that file to index.html and edit/index.html
 - Update Game6Db
 - Update spirit configs (for deserialization) and editor menu

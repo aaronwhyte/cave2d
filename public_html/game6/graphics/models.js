@@ -39,6 +39,7 @@ let ModelId = (function() {
 
     ANT: ++i,
     FLOATER: ++i,
+    WALKER: ++i,
 
     PLAYER_FLYING: ++i,
     PLAYER_DRIVING: ++i,
@@ -135,8 +136,14 @@ Models.prototype.createModel = function(id) {
     case ModelId.FLOATER:
       return RigidModel.createCircle(4)
           .transformPositions(new Matrix44().toScaleOpXYZ(1.2, 1.2, 1))
-          .transformPositions(new Matrix44().toRotateZOp(Math.PI / 4))
-          .setColorRGB(0.8, 0.4, 0.8);
+          // .transformPositions(new Matrix44().toRotateZOp(Math.PI / 4))
+          .setColorRGB(0.8, 0.2, 0.8);
+
+    case ModelId.WALKER:
+      return RigidModel.createCircle(5)
+          .transformPositions(new Matrix44().toScaleOpXYZ(1.2, 1.2, 1))
+          // .transformPositions(new Matrix44().toRotateZOp(Math.PI / 4))
+          .setColorRGB(0.8, 0.6, 0.8);
 
     case ModelId.ENTRANCE:
       return RigidModel.createRingMesh(5, 0.8)
