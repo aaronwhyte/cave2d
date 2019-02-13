@@ -122,67 +122,15 @@ WalkerSpirit.prototype.doPlayingActiveTimeout = function() {
  */
 WalkerSpirit.prototype.activeOnAPixel = function(dg, px) {
   this.nearbyPx = px;
-  let speed = 0.08;
-  let friction = 0.2;
+  let speed = 0.1;
+  let friction = 0.25;
 
   let clockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(-Math.PI * 0.5));
   let counterClockwiseDist = this.getBodyVel().distanceSquared(px.getPixelToGround(this.vec2d).rot(Math.PI * 0.5));
   let turnSign = clockwiseDist < counterClockwiseDist ? 1 : -1;
-  px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.2).scaleToLength(speed);
+  px.getPixelToGround(this.accel).rot(-turnSign * Math.PI * 0.25).scaleToLength(speed);
   this.addBodyAngVel(turnSign * speed);
   this.activeFrictionAndAccel(friction, this.accel);
-};
-
-/**
- * Not on a distGrid pixel, to go to the last known one, or find one sort of nearby.
- * @param {DistGrid} dg
- */
-WalkerSpirit.prototype.activeOffPixel = function(dg) {
-  if (this.nearbyPx) {
-    // Body is off the DistGrid, but we know of a place that is on the grid, so head over there.
-    dg.pixelToWorld(this.vec2d.setXY(this.nearbyPx.pixelX, this.nearbyPx.pixelY), this.vec2d);
-    this.vec2d.subtract(this.getBodyPos()).scaleToLength(0.05);
-    this.accel.add(this.vec2d);
-  } else {
-    // Never been on the DistGrid! Do cheap random scan for a DistGrid pixel, at increasing distances.
-    this.pxScans++;
-    this.vec2d.setXY(0, Math.random() * this.pxScans).rot(Math.random() * 2 * Math.PI);
-    this.vec2d.add(this.getBodyPos());
-    let px = dg.getPixelAtWorldVec(this.vec2d);
-    if (px) {
-      this.nearbyPx = px;
-      this.pxScans = 0;
-    }
-  }
-  this.activeFrictionAndAccel(this.getFriction(), this.accel);
-};
-
-/**
- * Slow down and try to stop. If stopped, don't schedule another active timeout - switch to passive.
- */
-WalkerSpirit.prototype.activeBrakesOnly = function() {
-  let body = this.getBody();
-  let now = this.now();
-  if (this.weapon) {
-    this.weapon.setButtonDown(false);
-  }
-  let friction = 0.5;
-  body.applyLinearFrictionAtTime(friction, now);
-  body.applyAngularFrictionAtTime(friction, now);
-  let stopped = this.maybeStop();
-  if (stopped) {
-    // Assume the next timeout will be the passive one.
-    let timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT;
-    body.pathDurationMax = timeoutDuration * 1.01;
-    body.invalidatePath();
-    // Do not schedule another active timeout.
-  } else {
-    // keep braking
-    let timeoutDuration = this.getActiveTimeout() * (0.9 + 0.1 * Math.random());
-    body.pathDurationMax = timeoutDuration * 1.01;
-    body.invalidatePath();
-    this.scheduleActiveTimeout(now + timeoutDuration);
-  }
 };
 
 WalkerSpirit.prototype.explode = function() {
