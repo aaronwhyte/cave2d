@@ -49,7 +49,7 @@ PlayerSpirit.CAMERA_AIM_OFFSET = 3;
 PlayerSpirit.CAMERA_VEL_MULTIPLIER = 2;
 PlayerSpirit.CAMERA_VEL_OFFSET_MAX = 3;
 
-PlayerSpirit.FLYING_TRACTION = 0;//0.01;
+PlayerSpirit.FLYING_TRACTION = 0.01;
 PlayerSpirit.DRIVING_TRACTION = 0.5;
 PlayerSpirit.THRUST = 1.3;
 
