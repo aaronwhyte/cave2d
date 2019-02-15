@@ -270,7 +270,7 @@ BaseSpirit.prototype.getColor = function() {
   } else {
     b = Math.max(0, (blinkStun - s) / blinkStun - Math.random());
   }
-  let c = 0.4 + b;
+  let c = 0.6 + b;
   return this.color.setRGBA(c, c, c, 1);
 };
 
