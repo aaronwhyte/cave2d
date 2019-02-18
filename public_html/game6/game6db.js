@@ -40,4 +40,4 @@ Game6Db.prototype.getModelId = function(key) {
   return this.map.get(key).modelId;
 };
 
-let g5db = new Game6Db();
+let g6db = new Game6Db();

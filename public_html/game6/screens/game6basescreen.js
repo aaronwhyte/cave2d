@@ -62,9 +62,9 @@ Game6BaseScreen.prototype.getSpiritConfigs = function() {
 
     function addToMenu(key) {
       self.spiritConfigs[key] = self.createSpiritConfig2(
-          g5db.getSpiritCtor(key),
+          g6db.getSpiritCtor(key),
           key, column, row++,
-          self.models.createModel(g5db.getModelId(key)));
+          self.models.createModel(g6db.getModelId(key)));
     }
 
     addToMenu(Game6Key.ENTRANCE);
