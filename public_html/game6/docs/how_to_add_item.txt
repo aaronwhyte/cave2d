@@ -9,3 +9,5 @@ To add a tool or spirit:
 - Update Game6Db
 - Update spirit configs (for deserialization) and editor menu
   - Add to Game6BaseScreen.getSpiritConfigs
+- Update Game6HitResolver
+  - Game6HitResolver.prototype.getState knows all the object types, to convert to simpler States.

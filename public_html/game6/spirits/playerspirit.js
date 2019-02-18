@@ -40,6 +40,7 @@ function PlayerSpirit(screen) {
 
   this.flying = false;
   this.doLandingCheck = false;
+  this.lastWallHitTime = -10;
 }
 PlayerSpirit.prototype = new BaseSpirit();
 PlayerSpirit.prototype.constructor = PlayerSpirit;
@@ -67,6 +68,8 @@ PlayerSpirit.AIM_ANGPOS_ACCEL = Math.PI * 0.2;
 PlayerSpirit.ANGULAR_FRICTION = 0.6;
 
 PlayerSpirit.GRAVITY_ACCEL = 0.03;
+
+PlayerSpirit.WALL_LANDING_TIME_THROTTLE = 1;
 
 PlayerSpirit.SCHEMA = {
   0: "type",
@@ -419,8 +422,11 @@ PlayerSpirit.prototype.die = function() {
 PlayerSpirit.prototype.onBeforeHitWall = function(collisionVec) {
   if (this.flying) {
     this.doLandingCheck = true;
+  }
+  if (this.flying || this.lastWallHitTime + PlayerSpirit.WALL_LANDING_TIME_THROTTLE < this.now()) {
     this.setBodyAngPos(this.getBodyVel().angle());
   }
+  this.lastWallHitTime = this.now();
 };
 
 PlayerSpirit.prototype.getFriction = function() {

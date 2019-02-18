@@ -131,6 +131,10 @@ walkers
 * enemies that mostly roll/walk along the ground like trapped floaters, making even open ground dangerous
 v copy floater to start
 
+make mines work again
+v massive collision response logic overhaul
+- add getHitState() to spirits to simplify game6hitresolver
+
 plops
 * enemies that stay put
 - they have a resting point, and will try to return to it if knocked away.
@@ -168,7 +172,7 @@ These are the tasks that are the core of the game!
     v maybe player ONLY non-lethals enemies with shots, and then has to touch them in time to finish the job.
   - Plops with no opposite wall must be shot from the air
 - lesson 4: leave the ground to evade
-  - wall-walking enemies! Floaters but without any floating. Ground-to-ground
+  v wall-walking enemies! Floaters but without any floating. Ground-to-ground
   - flying enemies drop ground-hugging missiles, forcing you to jump over them.
   - explosive effects that hug the ground, or bramble maybe
 - lesson 5: dodge air-to-ground fire

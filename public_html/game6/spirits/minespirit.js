@@ -15,10 +15,6 @@ function MineSpirit(screen) {
   this.mat44 = new Matrix44();
   this.modelMatrix = new Matrix44();
 
-  // combat
-  this.toughness = 5;
-  this.damage = 0.05;
-
   this.shrapnelHitGroup = HitGroups.NEUTRAL_FIRE;
   this.retracted = false;
 
@@ -160,7 +156,7 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration, health) {
   return spiritId;
 };
 
-MineSpirit.prototype.onHitOther = function(collisionVec, mag, otherBody, otherSpirit) {
+MineSpirit.prototype.startDetonationSequence = function() {
   if (this.screen.isPlaying()) {
     if (!this.retracted) {
       this.addBodyAngVel(0.1 * (Math.random() < 0.5 ? 1 : -1));

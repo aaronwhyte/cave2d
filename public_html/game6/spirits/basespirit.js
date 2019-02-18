@@ -653,9 +653,6 @@ BaseSpirit.prototype.getStun = function() {
 BaseSpirit.prototype.onBeforeHitWall = function(collisionVec) {
 };
 
-BaseSpirit.prototype.onAfterHitWall = function(collisionVec, forceMagnitude) {
-};
-
 /**
  * Apply friction and acceleration, and schedule another active timeout.
  * Do not try to stop the active timeout.
@@ -678,10 +675,8 @@ BaseSpirit.prototype.activeFrictionAndAccel = function(friction) {
 /**
  * @param {Vec2d} collisionVec
  * @param {Number} mag the magnitude of the collision, kinda?
- * @param {Body} otherBody
- * @param {Spirit} otherSpirit
  */
-BaseSpirit.prototype.onAfterHitWall = function(collisionVec, mag, otherBody, otherSpirit) {
+BaseSpirit.prototype.onAfterHitWall = function(collisionVec, mag) {
   let body = this.getBody();
   if (!body) return;
   this.grounded = false;

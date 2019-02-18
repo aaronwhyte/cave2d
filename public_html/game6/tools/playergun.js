@@ -75,7 +75,6 @@ PlayerGun.prototype.addBullet = function(pos, vel, rad, duration) {
   spirit.addTrailSegment();
   spirit.health = 0;
   spirit.damage = 0;
-  spirit.stun = 30 * 4;
 
   spirit.wallDamageMultiplier = 0;
   spirit.bounceChance = 0;
