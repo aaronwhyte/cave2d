@@ -40,7 +40,6 @@ BulletSpirit.prototype.reset = function(screen) {
   this.segStartVec.reset();
   this.segEndVec.reset();
 
-  this.toughness = 0;
   this.stun = 15;
   this.trailDuration = 0.8;
   this.headRadFraction = 1;

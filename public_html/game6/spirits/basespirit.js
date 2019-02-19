@@ -15,24 +15,6 @@ function BaseSpirit(screen) {
 
   this.aimVec = new Vec2d();
 
-  // activation input/output...
-
-  // Source maintains map from target spirit IDs to output values to those targets, in case source gets polled.
-  this.outputIdsToVals = {};
-  // Target maintains set of source spirit IDs, for polling.
-  this.inputIds = {};
-  // Target also maintains map from pulse input end time to pulse input value.
-  this.pulseEndToVal = {};
-
-  this.lastThumpSoundTime = 0;
-
-  // These represent the futuremost times for each timeout.
-  this.nextActiveTime = -1;
-  this.nextPassiveTime = -1;
-
-  // Spirit is stunned until this time.
-  this.stunUntil = -Infinity;
-
   BaseSpirit.prototype.reset.call(this, screen);
 }
 BaseSpirit.prototype = new Spirit();
@@ -50,7 +32,6 @@ BaseSpirit.PASSIVE_TIMEOUT = 1000;
 
 BaseSpirit.PRE_UNSTUN_BLINK_TIME = 33;
 BaseSpirit.PRE_UNSTUN_JIGGLE_TIME = 10;
-
 
 
 /**
@@ -73,17 +54,16 @@ BaseSpirit.prototype.reset = function(screen) {
   this.id = -1;
   this.tempBodyPos.reset();
 
-  // energy
-  this.energyCapacity = 0;
-  this.energy = 0;
+  this.lastThumpSoundTime = 0;
 
-  // combat
-  this.team = Team.NEUTRAL;
-  this.health = 1;
+  // These represent the futuremost times for each timeout.
+  this.nextActiveTime = -1;
+  this.nextPassiveTime = -1;
 
-  // harmless and invulnerable
-  this.toughness = Infinity;
-  this.damage = 0;
+  // Spirit is stunned until this time.
+  this.stunUntil = -Infinity;
+
+  this.team = null;
 };
 
 BaseSpirit.prototype.setColorRGB = function(r, g, b) {

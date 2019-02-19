@@ -73,8 +73,6 @@ PlayerGun.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = 0;
-  spirit.damage = 0;
 
   spirit.wallDamageMultiplier = 0;
   spirit.bounceChance = 0;

@@ -84,7 +84,6 @@ SlowShooter.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.damage = 1;
   spirit.digChance = 2;
   spirit.team = wielder.team;
   spirit.trailDuration = 1;

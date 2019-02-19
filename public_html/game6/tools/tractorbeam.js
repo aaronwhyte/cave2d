@@ -1,5 +1,4 @@
 /**
- *
  * @param screen
  * @constructor
  * @extends {BaseTool}

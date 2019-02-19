@@ -24,8 +24,6 @@ function AntSpirit(screen) {
 
   this.distOutsideVisibleWorld = 0;
 
-  this.toughness = 1;
-  this.damage = 0;
   this.chasePlayer = true;
 }
 AntSpirit.prototype = new BaseSpirit();

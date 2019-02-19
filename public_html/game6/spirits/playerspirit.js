@@ -35,9 +35,6 @@ function PlayerSpirit(screen) {
   this.modelMatrix = new Matrix44();
   this.modelMatrix2 = new Matrix44();
 
-  // combat
-  this.toughness = 1.1;
-
   this.flying = false;
   this.doLandingCheck = false;
   this.lastWallHitTime = -10;

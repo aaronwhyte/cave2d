@@ -88,7 +88,6 @@ LaserWeapon.prototype.addBullet = function(pos, vel, rad, duration) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.damage = 1;
   spirit.team = wielder.team;
   spirit.trailDuration = 7;
   spirit.headRadFraction = 3;

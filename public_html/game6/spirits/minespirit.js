@@ -17,8 +17,6 @@ function MineSpirit(screen) {
 
   this.shrapnelHitGroup = HitGroups.NEUTRAL_FIRE;
   this.retracted = false;
-
-  this.inventory = new Inventory();
 }
 MineSpirit.prototype = new BaseSpirit();
 MineSpirit.prototype.constructor = MineSpirit;
@@ -121,7 +119,7 @@ MineSpirit.prototype.die = function() {
   this.screen.removeByBodyId(this.bodyId);
 };
 
-MineSpirit.prototype.addBullet = function(pos, vel, rad, duration, health) {
+MineSpirit.prototype.addBullet = function(pos, vel, rad, duration) {
   let now = this.now();
   let spirit = BulletSpirit.alloc(this.screen);
   spirit.setColorRGB(Math.random() * 0.3 + 0.7, Math.random() * 0.2 + 0.2, 0);
@@ -142,8 +140,6 @@ MineSpirit.prototype.addBullet = function(pos, vel, rad, duration, health) {
   let spiritId = this.screen.world.addSpirit(spirit);
   b.spiritId = spiritId;
   spirit.addTrailSegment();
-  spirit.health = health;
-  spirit.damage = rad * 2;
   spirit.wallDamageMultiplier = 2;
   spirit.team = Team.NEUTRAL; // TODO configurable
   spirit.trailDuration = 8;
