@@ -133,167 +133,9 @@ v copy floater to start
 
 make mines work again
 v massive collision response logic overhaul
-- add getHitState() to spirits to simplify game6hitresolver
-
-plops
-* enemies that stay put
-- they have a resting point, and will try to return to it if knocked away.
-- unstunned they have angry faces or hop slightly or something to show they're alive and well
-- Maybe they even lunge at the player when they get close, since they return to starting point.
+x add getHitState() to spirits to simplify game6hitresolver
 
 proper intro screen add/remove player
-
-Enemies and levels are lessons
-These are the tasks that are the core of the game!
-- lesson 1: drive and shoot, easy
-  v Floaters: open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
-    v basic editor-compat existence
-    v basic motion behavior
-    v complete motion
-      v lost-in-space
-        v scan for a populated distgrid pixel if none is known
-        v head towards the last known distgrid pixel
-      v escaping from tunnel
-        v Check when we're below minimum desired height
-        v detect by looking at neighboring pixels and seeing we're at a local maxima
-        v switch behavior mode to rolling along wall!
-  - Plops with angles that you can hit
-    - basic editor-compat existence
-    - find some ground and stay there.
-- lesson 2: fly to find a good angle, easy
-  - floaters around multiple planetoids so you need to visit the surface of each one
-  - plops on the ground require flight to get around, but are hittable from disconnected surfaces
-  - plops inside the entrance to a cave so you need to fly to back of cave first
-  - plops alternating along a corridor so you kinda need to flip from wall to wall
-- lesson 3: fly and fire
-  - change flying fire to...
-    - more of a gas-ejection, energy-wave, or flame-thrust deal - slower, wider, short range.
-    v maybe it just paralyzes or freezes enemies and drops them to the ground where they can be defeated by touch
-    v maybe player ONLY non-lethals enemies with shots, and then has to touch them in time to finish the job.
-  - Plops with no opposite wall must be shot from the air
-- lesson 4: leave the ground to evade
-  v wall-walking enemies! Floaters but without any floating. Ground-to-ground
-  - flying enemies drop ground-hugging missiles, forcing you to jump over them.
-  - explosive effects that hug the ground, or bramble maybe
-- lesson 5: dodge air-to-ground fire
-  - missiles that are too hard to dodge in the air, but that burst when they hit the ground, so ground-dodge
-- lesson 6: take cover from
-  - tough enemy that has a player-following rapid-fire phase. Hide behind stuff when that gets going, and fire when they pause.
-    (example: Big Bandit in Nuclear Throne)
-  - stationary enemy that contantly fires at you when you're anywhere close and in line of sight. Rotating field of view maybe?
-  - hovering enemy that fires a periodic burst
-  - sniper that will definitely kill ya
-- lesson 7: wall jump & get a good angle
-  - wide tunnels with turrets and wall-runners
-  - levels with interesting interior arenas
-  - indoor mazes where you need to get to a certain spot to be able to shoot a thing to get to the next spot etc.
-- lesson 8: run and fire backwards
-  - tough flying enemies that chase you around the planet, that fire ground-huggers or something to keep you off the ground.
-  - seeker missiles that have a big blast radius
-- lesson 9: maneuver swarming enemies into kill-zones
-  - flying enemies that chase you - force them into bottleneck opening
-  - ground-based critters that that chase you: Use wavy ground to aim ground-gun at them.
-- lesson 10: Fly and shoot flying things
-  - space enemies (Defender ships?) that stay at your altitude so you need to fly and shoot sideways to get them.
-  - flying chasers that come out of the ground, that are easy to shoot as you fly away
-- lesson 11: be careful what you shoot
-  - high explosives in close quarters
-  - enemies that change when they die
-    - enemies that explode
-    - enemies that turn into more, smaller enemies (asteroids, slimes, defender diamonds)
-    - enemies that turn into obstacles when shot - centipede drops fungus?
-  - enemies that are altered by being shot
-    - drivers become flyers
-    - drivers leap across to opposite wall
-    - flyers become drivers
-    - sleepers become attackers
-- lesson 12: some things you cannot fight
-  - indestructible chasers that are too big to fit through small openings
-  - indestructible guards that laser you on sight
-
-enemy components, from below
-- movement
-  - Stay between dist D0 and D1 from ground.
-    - needs to be editable on the fly
-    - maybe too simple to break into separate class
-  - Stay within D dist of a position and R radians from an angle. Turret.
-  - Fly and avoid walls. Done? Good for free-roaming hunters.
-- aim/firing
-  - check to see if players are visible within D and R
-    - first check for any player in that zone
-    - if found, then do line-of-sight check using obstructions
-  - periodic burst
-  - bullet-hell and patterns to force player to maneuver a certain way
-
-plr grx and snd
-- driving
-  - ground-effect (particles?)
-  - Walking legs??
-  - driving sound
-  - trail
-  - launch sound
-- flying
-  - thrust particles
-  - thrust/speed sound
-  - trail
-- terrain
-  - some kinda air rendering using existing distgrid
-  - cool terrain using a reverse distgrid for computing ground-pixel depth
-- smoother multiplayer camerawork using the view-rect itself
-
-
-complications
-- fire-keydown effects
-  - charge first shot when not firing, so timing first shot can be crucial
-    - special enemies that can only be hit with tht precision charge-shot
-- indestructible targets can be destroyed when the player is very powered up
-  - powering up comes from maxing out your combo bonus
-    - combo bonus from gathering collectibles enemies drop
-      - enemies drop collectibles
-        - ground-coins fall to ground
-        - floaters release ground-coins when they are killed
-        - player collects coins
-        - floating coins just hang out in space
-- power-ups for general game perversion
-  - ramming power
-  - rapid fire (maybe don't start off as such a hyperblaster)
-  - shield
-  - super-controlled flight
-  - explosive shells - for digging?
-  - forward-firing seeker missiles
-  - one-time explosive burst
-  - bouncy bullets
-  - gravity-following bombs
-- fun props
-  - neutral mines (hi game 5!) that are a benefit or a hazard. They don't blow walls tho.
-  - mines that DO blow up walls, for level transformation? (recompute distgrid!)
-    - efficient distgrid healing?
-  - Orbs that bullets bounce off of
-  - Orbs that will throw you pinball-like
-  - Destructible orbs that you can walk across
-  - teleporters obviously
-  - spikey/zappy orbs that restrict movement
-  - periodic zappers, like Caves of Mars, especially when you're running away
-- enemy danger ehnancers
-  - shooting
-  - chasing
-- critter motions
-  - bouncing
-  - flying, preferrably at an altitude
-  - swooping, diving, dropping otherwise melee-attacking player from the sky
-  - centipedes! bring 'em back!
-  - Heavy things that are dangerous when they fall onto you!
-- bullets
-  - linear, duh
-  - bouncing gravitationally
-  - rolling
-  - chasing like a missile
-  - exploding w radius
-  - exploding along the ground
-  - rapid fire
-  - circular burst
-  - sniper style
-
 main menu
 - shows existing joined player slots, with good default player
 - "players & controls"
@@ -364,3 +206,160 @@ Editable controls
   - constant preview of movement zones
 - auto save/load prefs
   - LocalStorage s27n
+
+
+
+Enemies and levels are lessons
+These are the tasks that are the core of the game!
+
+plops: enemies that stay put
+- they have a resting point, and will try to return to it if knocked away.
+- unstunned they have angry faces or hop slightly or something to show they're alive and well
+- Maybe they even lunge at the player when they get close, since they return to starting point.
+
+- lesson 1: drive and shoot, easy
+  v Floaters: open-space enemies that float far enough from an anchor wall that you can always drive under them and shoot 'em.
+    v basic editor-compat existence
+    v basic motion behavior
+    v complete motion
+      v lost-in-space
+        v scan for a populated distgrid pixel if none is known
+        v head towards the last known distgrid pixel
+      v escaping from tunnel
+        v Check when we're below minimum desired height
+        v detect by looking at neighboring pixels and seeing we're at a local maxima
+        v switch behavior mode to rolling along wall!
+  - Plops with angles that you can hit
+    - basic editor-compat existence
+    - find some ground and stay there.
+
+- lesson 2: fly to find a good angle, easy
+  - floaters around multiple planetoids so you need to visit the surface of each one
+  - plops on the ground require flight to get around, but are hittable from disconnected surfaces
+  - plops inside the entrance to a cave so you need to fly to back of cave first
+  - plops alternating along a corridor so you kinda need to flip from wall to wall
+
+- lesson 3: fly and fire
+  - change flying fire to...
+    - more of a gas-ejection, energy-wave, or flame-thrust deal - slower, wider, short range.
+    v maybe it just paralyzes or freezes enemies and drops them to the ground where they can be defeated by touch
+    v maybe player ONLY non-lethals enemies with shots, and then has to touch them in time to finish the job.
+  - Plops with no opposite wall must be shot from the air
+
+- lesson 4: leave the ground to evade
+  v wall-walking enemies! Floaters but without any floating. Ground-to-ground
+  - flying enemies drop ground-hugging missiles, forcing you to jump over them.
+  - explosive effects that hug the ground, or bramble maybe
+
+- lesson 5: dodge air-to-ground fire
+  - missiles that are too hard to dodge in the air, but that burst when they hit the ground, so ground-dodge
+
+- lesson 6: take cover
+  - tough enemy that has a player-following rapid-fire phase. Hide behind stuff when that gets going, and fire when they pause.
+    (example: Big Bandit in Nuclear Throne)
+  - stationary enemy that contantly fires at you when you're anywhere close and in line of sight. Rotating field of view maybe?
+  - hovering enemy that fires a periodic burst
+  - sniper that will definitely kill ya
+
+- lesson 7: wall jump & get a good angle
+  - wide tunnels with turrets and wall-runners
+  - levels with interesting interior arenas
+  - indoor mazes where you need to get to a certain spot to be able to shoot a thing to get to the next spot etc.
+
+- lesson 8: run and fire backwards
+  - tough flying enemies that chase you around the planet, that fire ground-huggers or something to keep you off the ground.
+  - seeker missiles that have a big blast radius
+
+- lesson 9: maneuver swarming enemies into kill-zones
+  - flying enemies that chase you - force them into bottleneck opening
+  - ground-based critters that that chase you: Use wavy ground to aim ground-gun at them.
+
+- lesson 10: Fly and shoot flying things
+  - space enemies (Defender ships?) that stay at your altitude so you need to fly and shoot sideways to get them.
+  - flying chasers that come out of the ground, that are easy to shoot as you fly away
+
+- lesson 11: be careful what you shoot
+  - high explosives in close quarters
+  - enemies that change when they die
+    - enemies that explode
+    - enemies that turn into more, smaller enemies (asteroids, slimes, defender diamonds)
+    - enemies that turn into obstacles when shot - centipede drops fungus?
+  - enemies that are altered by being shot
+    - drivers become flyers
+    - drivers leap across to opposite wall
+    - flyers become drivers
+    - sleepers become attackers
+
+- lesson 12: some things you cannot fight
+  - indestructible chasers that are too big to fit through small openings
+  - indestructible guards that laser you on sight
+
+plr grx and snd
+- driving
+  - ground-effect (particles?)
+  - Walking legs??
+  - driving sound
+  - trail
+  - launch sound
+- flying
+  - thrust particles
+  - thrust/speed sound
+  - trail
+- terrain
+  - some kinda air rendering using existing distgrid
+  - cool terrain using a reverse distgrid for computing ground-pixel depth
+- smoother multiplayer camerawork using the view-rect itself
+
+
+complications
+- fire-keydown effects
+  - charge first shot when not firing, so timing first shot can be crucial
+    - special enemies that can only be hit with tht precision charge-shot
+- indestructible targets can be destroyed when the player is very powered up
+  - powering up comes from maxing out your combo bonus
+    - combo bonus from gathering collectibles enemies drop
+      - enemies drop collectibles
+        - ground-coins fall to ground
+        - floaters release ground-coins when they are killed
+        - player collects coins
+        - floating coins just hang out in space
+- "phase 2" enemies that are invincible (until you kill all the vincible enemies?)
+- power-ups for general game perversion
+  - ramming power
+  - rapid fire (maybe don't start off as such a hyperblaster)
+  - shield
+  - super-controlled flight
+  - explosive shells - for digging?
+  - forward-firing seeker missiles
+  - one-time explosive burst
+  - bouncy bullets
+  - gravity-following bombs
+- fun props
+  v neutral mines (hi game 5!) that are a benefit or a hazard. They don't blow walls tho.
+  - mines that DO blow up walls, for level transformation? (recompute distgrid!)
+    - efficient distgrid healing?
+  - Orbs that bullets bounce off of
+  - Orbs that will throw you pinball-like
+  - Destructible orbs that you can walk across
+  - teleporters obviously
+  - spikey/zappy orbs that restrict movement
+  - periodic zappers, like Caves of Mars, especially when you're running away
+- enemy danger ehnancers
+  - shooting
+  - chasing
+- critter motions
+  - bouncing
+  - flying, preferrably at an altitude
+  - swooping, diving, dropping otherwise melee-attacking player from the sky
+  - centipedes! bring 'em back!
+  - Heavy things that are dangerous when they fall onto you!
+- bullets
+  - linear, duh
+  - bouncing gravitationally
+  - rolling
+  - chasing like a missile
+  - exploding w radius
+  - exploding along the ground
+  - rapid fire
+  - circular burst
+  - sniper style
