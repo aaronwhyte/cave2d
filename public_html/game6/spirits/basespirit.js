@@ -428,6 +428,12 @@ BaseSpirit.prototype.startTimeouts = function() {
   this.schedulePassiveTimeout(this.now() + BaseSpirit.PASSIVE_TIMEOUT * Math.random());
 };
 
+BaseSpirit.prototype.attacksTeam = function(otherTeam) {
+  return (this.team === Team.PLAYER && otherTeam === Team.ENEMY) ||
+      (this.team === Team.ENEMY && otherTeam === Team.PLAYER) ||
+      (this.team === Team.NEUTRAL && otherTeam);
+};
+
 /**
  * @param {number} duration  the spirit will be stunned until this time from now. If already
  * stunned for longer, then this has no effect.
