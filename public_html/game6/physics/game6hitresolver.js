@@ -21,7 +21,8 @@ Game6HitResolver.State = {
   NEUTRAL_FIRE: 5,
   ENEMY: 6,
   ENEMY_STUNNED: 7,
-  ENEMY_FIRE: 8
+  ENEMY_FIRE: 8,
+  NEUTRAL_PROP: 9
 };
 
 Game6HitResolver.Response = {
@@ -124,6 +125,9 @@ Game6HitResolver.prototype.getState = function(b, s) {
       return s.getStun()
           ? x.ENEMY_STUNNED
           : x.ENEMY;
+    case Game6Key.ENTRANCE:
+    case Game6Key.EXIT:
+      return x.NEUTRAL_PROP;
   }
   throw Error("unhandled body/spirit combo");
 };
@@ -144,7 +148,7 @@ Game6HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
   if (this.screen.isPlaying() && (spirit0 || spirit1)) {
     let state0 = this.getState(b0, spirit0);
     let state1 = this.getState(b1, spirit1);
-    let r = Game6HitResolver.RESOLUTIONS[state0][state1] || Game6HitResolver.DEFAULT_RESOLUTION;
+    let r = this.getResolution(state0, state1);
     this.applyPreBounceResponse(time, collisionVec, spirit0, spirit1, r[0]);
     this.applyPreBounceResponse(time, collisionVec, spirit1, spirit0, r[1]);
     if ((r[0] | r[1]) & Game6HitResolver.Response.NO_BOUNCE) {
@@ -158,6 +162,11 @@ Game6HitResolver.prototype.resolveHit = function(time, collisionVec, b0, b1) {
     // This is either edit-mode, or there are no spirits to execute fancy logic.
     this.bouncer.resolveHit(time, collisionVec, b0, b1, this.linearForce, this.rubForce);
   }
+};
+
+Game6HitResolver.prototype.getResolution = function(state0, state1) {
+  let a = Game6HitResolver.RESOLUTIONS[state0];
+  return (a && a[state1]) || Game6HitResolver.DEFAULT_RESOLUTION;
 };
 
 /**
@@ -181,8 +190,11 @@ Game6HitResolver.prototype.applyPreBounceResponse = function(time, collisionVec,
  */
 Game6HitResolver.prototype.applyPostBounceResponse = function(time, collisionVec, s0, s1, r0) {
   let r = Game6HitResolver.Response;
+  let mag = this.linearForce.magnitude() + this.rubForce.magnitude();
   if (r0 & r.WALL) {
-    s0.onAfterHitWall(collisionVec, this.linearForce.magnitude() + this.rubForce.magnitude());
+    s0.onAfterHitWall(collisionVec, mag);
+  } else {
+    s0 && s0.onAfterBounce(collisionVec, mag);
   }
   if (r0 & r.START_DESTRUCT) s0.startDetonationSequence();
   if (r0 & r.DIE) s0.die();

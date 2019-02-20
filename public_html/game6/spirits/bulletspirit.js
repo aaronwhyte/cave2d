@@ -182,8 +182,6 @@ BulletSpirit.prototype.onAfterHitWall = function(collisionVec, mag) {
   if (!body) return;
   let pos = this.getBodyPos();
 
-  this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag + 0.5));
-
   // bounce or vanish?
   if (Math.random() >= this.bounceChance) {
     // vanish
@@ -191,8 +189,17 @@ BulletSpirit.prototype.onAfterHitWall = function(collisionVec, mag) {
   } else {
     // bounce
     this.addTrailSegment();
-    this.screen.splashes.addDotSplash(this.now(), this.getBodyPos(), body.rad * (1 + Math.min(mag, 2)), 4,
+    this.screen.splashes.addDotSplash(this.now(), pos, body.rad * (1 + Math.min(mag, 2)), 4,
         this.color.getR(), this.color.getG(), this.color.getB());
-    this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag * 2));
+    this.screen.sounds.wallThump(pos, Math.min(1, mag * 2));
   }
+};
+
+BulletSpirit.prototype.onAfterBounce = function(collisionVec, mag) {
+  let body = this.getBody();
+  if (!body) return;
+
+  this.screen.sounds.wallThump(this.getBodyPos(), Math.min(1, mag + 0.5));
+
+  this.addTrailSegment();
 };

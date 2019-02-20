@@ -491,6 +491,11 @@ BaseSpirit.prototype.onAfterHitWall = function(collisionVec, mag) {
   this.maybeWake();
 };
 
+BaseSpirit.prototype.onAfterBounce = function(collisionVec, mag) {
+  this.grounded = false;
+  this.maybeWake();
+};
+
 /**
  * The spirit is stunned, so try to fall to the ground and lie there.
  * @param {DistGrid} dg
