@@ -55,7 +55,7 @@ FloaterSpirit.factory = function(screen, pos, dir) {
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
   b.turnable = true;
-  b.grip = 0.25;
+  b.grip = 1;
   b.elasticity = FloaterSpirit.ELASTICITY;
   b.setAngPosAtTime(dir, screen.now());
   b.setPosAtTime(pos, screen.now());

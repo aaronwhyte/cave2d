@@ -59,6 +59,7 @@ PlayerGun.prototype.addBullet = function(pos, vel, rad, duration) {
 
   let b = Body.alloc();
   b.shape = Body.Shape.CIRCLE;
+  b.grip = 0.9;
   b.setPosAtTime(pos, now);
   b.setVelAtTime(vel, now);
   b.rad = rad;
