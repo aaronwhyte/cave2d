@@ -46,7 +46,3 @@ EntranceSpirit.factory = function(screen, pos) {
 EntranceSpirit.prototype.getColor = function() {
   return Renderer.COLOR_WHITE;
 };
-
-EntranceSpirit.prototype.getModelId = function() {
-  return ModelId.ENTRANCE;
-};

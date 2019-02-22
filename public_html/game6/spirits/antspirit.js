@@ -84,10 +84,6 @@ AntSpirit.prototype.getActiveTimeout = function() {
   return AntSpirit.ACTIVE_TIMEOUT;
 };
 
-AntSpirit.prototype.getModelId = function() {
-  return ModelId.ANT;
-};
-
 /**
  * @override
  */

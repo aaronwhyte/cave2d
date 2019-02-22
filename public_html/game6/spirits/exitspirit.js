@@ -48,10 +48,6 @@ ExitSpirit.factory = function(screen, pos) {
   return spiritId;
 };
 
-ExitSpirit.prototype.getModelId = function() {
-  return ModelId.EXIT;
-};
-
 ExitSpirit.prototype.onTimeout = function(world, timeoutVal) {
   BaseSpirit.prototype.onTimeout.call(this, world, timeoutVal);
 
