@@ -36,7 +36,7 @@ BaseApp.prototype.getFileTree = function() {
 };
 
 BaseApp.prototype.startLoadingShaders = function() {
-  var self = this;
+  let self = this;
   this.shaderTextLoader = new TextLoader([this.vertexShaderPath, this.fragmentShaderPath]);
   this.shaderTextLoader.load(function() {
     self.maybeForwardShaderTexts();
@@ -47,8 +47,8 @@ BaseApp.prototype.startLoadingShaders = function() {
  * If both shader texts are loaded and the page exists, forward shader texts to the page.
  */
 BaseApp.prototype.maybeForwardShaderTexts = function() {
-  var vt = this.getVertexShaderText();
-  var ft = this.getFragmentShaderText();
+  let vt = this.getVertexShaderText();
+  let ft = this.getFragmentShaderText();
   if (vt && ft && this.page && this.page.onShaderTextChange) {
     this.page.onShaderTextChange(vt, ft);
   }
@@ -63,7 +63,7 @@ BaseApp.prototype.getFragmentShaderText = function() {
 };
 
 BaseApp.prototype.getBeforeUnloadFunction = function() {
-  var self = this;
+  let self = this;
   return function(e) {
     if (self.page) {
       self.page.exitDoc();

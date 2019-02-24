@@ -42,17 +42,17 @@ LevelListPage.prototype.exitDoc = function() {
 };
 
 LevelListPage.prototype.refreshList = function() {
-  var df = document.createDocumentFragment();
-  var e;
+  let df = document.createDocumentFragment();
+  let e;
 
-  var title = Dom.ce('header', df);
+  let title = Dom.ce('header', df);
   e = Dom.ce('a', title);
   e.href = '#';
   e.innerHTML = Strings.textToHtml(this.gameTitle);
 
   Dom.ce('p', df);
 
-  var colHead = Dom.ce('header', df, 'columnHeader');
+  let colHead = Dom.ce('header', df, 'columnHeader');
   e = Dom.ce('span', colHead);
   e.innerHTML = Strings.textToHtml(this.adventureName);
   e = Dom.ce('span', colHead, 'separator');
@@ -64,21 +64,21 @@ LevelListPage.prototype.refreshList = function() {
   e.onclick = this.createCreateFunction();
   e.innerHTML = Strings.textToHtml('create');
 
-  var names = this.fileTree.listChildren(
+  let names = this.fileTree.listChildren(
       BaseApp.path(this.basePath, this.adventureName).concat(BaseApp.PATH_LEVELS));
-  var rows = Dom.ce('div', df, 'rows');
-  for (var i = 0; i < names.length; i++) {
-    var name = names[i];
-    var row = Dom.ce('div', rows, 'row');
+  let rows = Dom.ce('div', df, 'rows');
+  for (let i = 0; i < names.length; i++) {
+    let name = names[i];
+    let row = Dom.ce('div', rows, 'row');
 
     e = Dom.ce('a', row);
     e.innerHTML = Strings.textToHtml(name);
-    var query = {};
+    let query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = this.adventureName;
     query[EditorApp.PARAM_LEVEL_NAME] = name;
     e.href = '#' + Url.encodeQuery(query);
 
-    var buttons = Dom.ce('div', row, 'rightButtonCluster');
+    let buttons = Dom.ce('div', row, 'rightButtonCluster');
 
     e = Dom.ce('button', buttons);
     e.innerHTML = Strings.textToHtml('copy');
@@ -98,9 +98,9 @@ LevelListPage.prototype.refreshList = function() {
 };
 
 LevelListPage.prototype.createCreateFunction = function() {
-  var self = this;
+  let self = this;
   return function() {
-    var newName = prompt('New level name?');
+    let newName = prompt('New level name?');
     if (newName) {
       self.touch(newName);
       self.refreshList();
@@ -109,7 +109,7 @@ LevelListPage.prototype.createCreateFunction = function() {
 };
 
 LevelListPage.prototype.createDeleteFunction = function(name) {
-  var self = this;
+  let self = this;
   return function() {
     if (confirm('Delete level ' + name + '\nAre you sure?')) {
       self.fileTree.moveDescendants(
@@ -121,9 +121,9 @@ LevelListPage.prototype.createDeleteFunction = function(name) {
 };
 
 LevelListPage.prototype.createRenameFunction = function(name) {
-  var self = this;
+  let self = this;
   return function() {
-    var newName = prompt('Rename ' + name + '\nNew name?');
+    let newName = prompt('Rename ' + name + '\nNew name?');
     if (newName) {
       self.fileTree.moveDescendants(
           BaseApp.path(self.basePath, self.adventureName, name),
@@ -134,9 +134,9 @@ LevelListPage.prototype.createRenameFunction = function(name) {
 };
 
 LevelListPage.prototype.createCopyFunction = function(name) {
-  var self = this;
+  let self = this;
   return function() {
-    var newName = prompt('Copy ' + name + '\nNew name?');
+    let newName = prompt('Copy ' + name + '\nNew name?');
     if (newName) {
       self.fileTree.copyDescendants(
           BaseApp.path(self.basePath, self.adventureName, name),

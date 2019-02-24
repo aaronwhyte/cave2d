@@ -51,16 +51,16 @@ EditorApp.prototype.getFileTree = function() {
 };
 
 EditorApp.prototype.getHashChangeFunction = function() {
-  var self = this;
+  let self = this;
   return function(e) {
-    var query = Url.decodeQuery(Url.getFragment());
-    var mode = query[EditorApp.PARAM_MODE];
-    var adventureName = query[EditorApp.PARAM_ADVENTURE_NAME];
-    var levelName = query[EditorApp.PARAM_LEVEL_NAME];
+    let query = Url.decodeQuery(Url.getFragment());
+    let mode = query[EditorApp.PARAM_MODE];
+    let adventureName = query[EditorApp.PARAM_ADVENTURE_NAME];
+    let levelName = query[EditorApp.PARAM_LEVEL_NAME];
     if (self.page) {
       self.page.exitDoc();
     }
-    if (mode == EditorApp.MODE_EXPORT) {
+    if (mode === EditorApp.MODE_EXPORT) {
       self.page = new ExportPage(self.gameTitle, self.basePath, self.fileTree, adventureName, levelName);
     } else {
       //'edit mode' is default
@@ -72,7 +72,7 @@ EditorApp.prototype.getHashChangeFunction = function() {
         self.page = new LevelListPage(self.gameTitle, self.basePath, self.fileTree, adventureName);
       } else {
         // we have an adventure and a level
-        if (mode == EditorApp.MODE_TEST) {
+        if (mode === EditorApp.MODE_TEST) {
           self.page = new self.testLevelPageCtor(
               self.gameTitle, self.basePath, self.fileTree, adventureName, levelName,
               self.shaderTextLoader);
@@ -90,7 +90,7 @@ EditorApp.prototype.getHashChangeFunction = function() {
 };
 
 EditorApp.trashPath = function(base, date, adventureName, levelName) {
-  var dateStr = Strings.formatTimeString(date);
+  let dateStr = Strings.formatTimeString(date);
   if (adventureName && levelName) {
     return base.concat(
         [EditorApp.PATH_TRASH, dateStr, BaseApp.PATH_ADVENTURES, adventureName, BaseApp.PATH_LEVELS, levelName]);

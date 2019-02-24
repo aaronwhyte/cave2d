@@ -20,7 +20,7 @@ PlayApp.prototype.constructor = PlayApp;
 PlayApp.prototype.start = function() {
   this.startLoadingShaders();
 
-  var self = this;
+  let self = this;
   this.dataFileLoader = new TextLoader([this.dataFilePath]);
   this.dataFileLoader.load(function() {
     self.onDataFileLoaded();
@@ -32,15 +32,15 @@ PlayApp.prototype.getFileTree = function() {
 };
 
 PlayApp.prototype.onDataFileLoaded = function() {
-  var jsonText = this.dataFileLoader.getTextByPath(this.dataFilePath);
-  var jsonObj = JSON.parse(jsonText);
+  let jsonText = this.dataFileLoader.getTextByPath(this.dataFilePath);
+  let jsonObj = JSON.parse(jsonText);
   this.fileTree = new FileTree(new JsonStorage());
   this.fileTree.setFromJson(jsonObj);
 
   // Start on the first (only) adventure's first (zeroeth) level.
-  var adventureNames = this.fileTree.listChildren(BaseApp.path(this.basePath).concat(BaseApp.PATH_ADVENTURES));
+  let adventureNames = this.fileTree.listChildren(BaseApp.path(this.basePath).concat(BaseApp.PATH_ADVENTURES));
   this.adventureName = adventureNames[0];
-  var levelNames = this.fileTree.listChildren(BaseApp.path(this.basePath, this.adventureName).concat(BaseApp.PATH_LEVELS));
+  let levelNames = this.fileTree.listChildren(BaseApp.path(this.basePath, this.adventureName).concat(BaseApp.PATH_LEVELS));
   this.levelName = levelNames.sort()[0];
   this.page = this.createPlayLevelPage();
   this.page.enterDoc();
@@ -59,9 +59,10 @@ PlayApp.prototype.createPlayLevelPage = function(startingGameState) {
 };
 
 PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName, gameState) {
-  var levelNames = this.fileTree.listChildren(BaseApp.path(this.basePath, fromAdventureName).concat(BaseApp.PATH_LEVELS));
+  let levelNames = this.fileTree.listChildren(BaseApp.path(this.basePath, fromAdventureName).concat(BaseApp.PATH_LEVELS));
   levelNames.sort();
-  for (var i = 0; i < levelNames.length; i++) {
+  let i;
+  for (i = 0; i < levelNames.length; i++) {
     if (levelNames[i] === fromLevelName) {
       break;
     }

@@ -41,8 +41,8 @@ AdventureListPage.prototype.exitDoc = function() {
 };
 
 AdventureListPage.prototype.refreshList = function() {
-  var df = document.createDocumentFragment();
-  var e;
+  let df = document.createDocumentFragment();
+  let e;
   e = Dom.ce('header', df);
   e.innerHTML = Strings.textToHtml(this.gameTitle);
 
@@ -55,19 +55,20 @@ AdventureListPage.prototype.refreshList = function() {
   e.onclick = this.createCreateFunction();
   e.innerHTML = Strings.textToHtml('create');
 
-  var names = this.fileTree.listChildren(BaseApp.path(this.basePath).concat(BaseApp.PATH_ADVENTURES));
-  var rows = Dom.ce('div', df, 'rows');
-  for (var i = 0; i < names.length; i++) {
-    var name = names[i];
-    var row = Dom.ce('div', rows, 'row');
+  let names = this.fileTree.listChildren(BaseApp.path(this.basePath).concat(BaseApp.PATH_ADVENTURES));
+  let rows = Dom.ce('div', df, 'rows');
+  let query;
+  for (let i = 0; i < names.length; i++) {
+    let name = names[i];
+    let row = Dom.ce('div', rows, 'row');
 
     e = Dom.ce('a', row);
     e.innerHTML = Strings.textToHtml(name);
-    var query = {};
+    query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = name;
     e.href = '#' + Url.encodeQuery(query);
 
-    var buttons = Dom.ce('div', row, 'rightButtonCluster');
+    let buttons = Dom.ce('div', row, 'rightButtonCluster');
 
     e = Dom.ce('button', buttons);
     e.innerHTML = Strings.textToHtml('copy');
@@ -79,7 +80,7 @@ AdventureListPage.prototype.refreshList = function() {
 
     e = Dom.ce('a', buttons);
     e.innerHTML = Strings.textToHtml('export');
-    var query = {};
+    query = {};
     query[EditorApp.PARAM_ADVENTURE_NAME] = name;
     query[EditorApp.PARAM_MODE] = EditorApp.MODE_EXPORT;
     e.href = '#' + Url.encodeQuery(query);
@@ -94,9 +95,9 @@ AdventureListPage.prototype.refreshList = function() {
 };
 
 AdventureListPage.prototype.createCreateFunction = function() {
-  var self = this;
+  let self = this;
   return function() {
-    var newName = prompt('New adventure name?');
+    let newName = prompt('New adventure name?');
     if (newName) {
       self.touch(newName);
       self.refreshList();
@@ -105,7 +106,7 @@ AdventureListPage.prototype.createCreateFunction = function() {
 };
 
 AdventureListPage.prototype.createDeleteFunction = function(name) {
-  var self = this;
+  let self = this;
   return function() {
     if (confirm('Delete adventure ' + name + '\nAre you sure?')) {
       self.fileTree.moveDescendants(
@@ -117,9 +118,9 @@ AdventureListPage.prototype.createDeleteFunction = function(name) {
 };
 
 AdventureListPage.prototype.createRenameFunction = function(name) {
-  var self = this;
+  let self = this;
   return function() {
-    var newName = prompt('Rename ' + name + '\nNew name?');
+    let newName = prompt('Rename ' + name + '\nNew name?');
     if (newName) {
       self.fileTree.moveDescendants(
           BaseApp.path(self.basePath, name),
@@ -130,9 +131,9 @@ AdventureListPage.prototype.createRenameFunction = function(name) {
 };
 
 AdventureListPage.prototype.createCopyFunction = function(name) {
-  var self = this;
+  let self = this;
   return function() {
-    var newName = prompt('Copy ' + name + '\nNew name?');
+    let newName = prompt('Copy ' + name + '\nNew name?');
     if (newName) {
       self.fileTree.copyDescendants(
           BaseApp.path(self.basePath, name),

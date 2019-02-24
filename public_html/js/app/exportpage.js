@@ -48,13 +48,13 @@ ExportPage.prototype.exitDoc = function() {
 };
 
 ExportPage.prototype.showJson = function() {
-  var df = document.createDocumentFragment();
-  var e;
+  let df = document.createDocumentFragment();
+  let e;
   e = Dom.ce('div', df);
-  var path = BaseApp.path(this.basePath, this.adventureName, this.levelName);
-  var names = this.fileTree.listDescendants(path);
-  var json = {};
-  for (var i = 0; i < names.length; i++) {
+  let path = BaseApp.path(this.basePath, this.adventureName, this.levelName);
+  let names = this.fileTree.listDescendants(path);
+  let json = {};
+  for (let i = 0; i < names.length; i++) {
     json[JSON.stringify(names[i])] = this.fileTree.getFile(names[i]);
   }
   e.innerText = JSON.stringify(json, null, 1);

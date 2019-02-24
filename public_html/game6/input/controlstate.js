@@ -1,7 +1,7 @@
 /**
  * @enum {String}
  */
-var ControlState = {
+let ControlState = {
   WAITING: 'w',
   PLAYING: 'p',
   MENU: 'm'

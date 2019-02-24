@@ -22,7 +22,7 @@ ChangeStack.REDO = -1;
 ChangeStack.prototype.save = function(changes) {
   // Pop all the redo records off, then push the new one on.
   // Saving while at non-zero depth destroys the old future. Typical time-travel rules. Me am play gods!
-  for (var i = 0; i < this.depth; i++) {
+  for (let i = 0; i < this.depth; i++) {
     this.queue.pop();
   }
   this.queue.enqueue(changes);
@@ -39,9 +39,9 @@ ChangeStack.prototype.hasRedo = function() {
 
 ChangeStack.prototype.selectUndo = function() {
   if (!this.hasUndo()) throw new Error('no undo data. check hasUndo()');
-  var changes = this.queue.getFromHead(this.depth);
-  var reverse = [];
-  for (var i = changes.length - 1; i >= 0; i--) {
+  let changes = this.queue.getFromHead(this.depth);
+  let reverse = [];
+  for (let i = changes.length - 1; i >= 0; i--) {
     reverse.push(changes[i].createReverse());
   }
   this.depth += ChangeStack.UNDO;
