@@ -176,6 +176,8 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
       }
     }
   }
+  // Always release the fire button at this point.
+  this.setToolButton(false);
 
   let thrust = PlayerSpirit.THRUST;
 
@@ -226,10 +228,7 @@ PlayerSpirit.prototype.handleInput = function(controlMap) {
     }
 
     this.flying = groundCount === 0;
-    if (this.flying) {
-      this.setToolButton(false);
-    } else {
-      this.updateToolButton();
+    if (!this.flying) {
       // The accel represents only the ground-scan results at this point.
       // Now is the time to do some spring damping.
       this.vec2d.set(this.getBodyVel()).projectOnto(this.accel).scale(-0.2);
