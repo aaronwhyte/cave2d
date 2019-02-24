@@ -16,6 +16,10 @@ function Game6IntroScreen(controller, canvas, renderer, stamps, sfx, adventureNa
   this.introGlyphs.initModels();
   this.introGlyphs.initStamps(this.renderer.gl);
   this.printer = new Printer(this.renderer, this.introGlyphs.stamps);
+
+  this.startWithMouseFn = this.getStartFn('mouse');
+  this.startWithKeyFn = this.getStartFn('key');
+  this.startWithTouchFn = this.getStartFn('touch');
 }
 Game6IntroScreen.prototype = new Game6BaseScreen();
 Game6IntroScreen.prototype.constructor = Game6IntroScreen;
@@ -24,6 +28,11 @@ Game6IntroScreen.FRICTION = 0.05;
 
 Game6IntroScreen.EXIT_DURATION = 30 * Game6IntroScreen.EXIT_WARP_MULTIPLIER;
 
+Game6IntroScreen.prototype.getStartFn = function(eventType) {
+  return function(e) {
+    console.log('eventType', eventType);
+  };
+};
 
 /**
  * @returns {number}
@@ -39,9 +48,18 @@ Game6IntroScreen.prototype.setScreenListening = function(listen) {
   Game6BaseScreen.prototype.setScreenListening.call(this, listen);
 
   let buttonEvents = ['click', 'touchEnd'];
+
+  // There's no full-screen button yet but there coooould beeee.
   Events.setListening(listen, document.querySelector('#fullScreenButton'),
       buttonEvents, this.fullScreenFn);
+
+  // No pause means no resume, but I left this here anyhow.
   Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
+
+  // Now here's the real deal
+  Events.setListening(listen, this.canvas, 'mousedown', this.startWithMouseFn);
+  Events.setListening(listen, window, 'keydown', this.startWithKeyFn);
+  Events.setListening(listen, this.canvas, 'touchstart', this.startWithTouchFn);
 };
 
 Game6IntroScreen.prototype.initPauseButtons = function() {

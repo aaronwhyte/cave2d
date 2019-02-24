@@ -1,6 +1,11 @@
 /**
  * hello
  * @param {PlayApp} app
+ * @param gameTitle
+ * @param basePath
+ * @param fileTree
+ * @param adventureName
+ * @param levelName
  * @constructor
  * @extends (ScreenPage)
  */
@@ -17,6 +22,7 @@ IntroPage.prototype.maybeCreateScreen = function() {
   this.screen.initWorld();
   this.screen.loadWorldFromJson(this.getLevelJsonObj());
   this.screen.initDistGrid();
+  this.screen.setScreenListening(true);
 };
 
 IntroPage.prototype.refreshPauseMenu = function() {
