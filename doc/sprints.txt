@@ -137,15 +137,27 @@ x add getHitState() to spirits to simplify game6hitresolver
 
 proper intro screen add/remove player
 main menu
-- shows existing joined player slots, with good default player
-- "players & controls"
-- instructions
-- "play!" if there's at least one player
+- create good default slot based on how player got past intro screen
+  - detect how plr got to main menu
+  - and remember
+  - go to main menu page from intro page
+    - Refactor PlayApp (or BaseApp?) to have a bunch of pages with names, and a way to nav betweein them,
+      without knowing about them all at compile time.
+- shows only current joined player slot(s)
+  - control type
+  - control details (specific to control type)
+    - keyboard/mouse
+    - touchscreen
+    - gamepad, eventually
+- "players & controls" button
+- "play!" button if there's at least one player
+- instructions link?
 
-player add/drop menu
+players & controls menu
 - possible players are represented as slots
   - 3 keyboard/mouse slots
   - 4 touchscreen slots
+- every slot has clear joined/dropped state and a join drop button
 - show list of existing controls
   - pause key (editable?? not yet)
   - 3 keyboard/mouse slots
@@ -168,7 +180,6 @@ player add/drop menu
         - home quadrant always wins
         - In unowned quadrant, short-sided region wins.
         - In square screen (??) neither gets it. Just don't explode. This Should Never Happen.
-  - every slot has clear joined/dropped state and a join drop button
   - unusable types are greyed out and below usable ones?
 
 That fixes some problems:
@@ -363,3 +374,8 @@ complications
   - rapid fire
   - circular burst
   - sniper style
+
+- change active/passive timeout system to care about whether
+  the spirit thinks it's in a plausible resting position or not.
+  - walker is very near the ground
+  - floater is at comfortable altitude
