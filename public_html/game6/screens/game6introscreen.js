@@ -29,8 +29,10 @@ Game6IntroScreen.FRICTION = 0.05;
 Game6IntroScreen.EXIT_DURATION = 30 * Game6IntroScreen.EXIT_WARP_MULTIPLIER;
 
 Game6IntroScreen.prototype.getStartFn = function(eventType) {
+  let self = this;
   return function(e) {
     console.log('eventType', eventType);
+    self.controller.gotoMainMenu(eventType);
   };
 };
 

@@ -42,8 +42,7 @@ PlayApp.prototype.onDataFileLoaded = function() {
   this.adventureName = adventureNames[0];
   let levelNames = this.fileTree.listChildren(BaseApp.path(this.basePath, this.adventureName).concat(BaseApp.PATH_LEVELS));
   this.levelName = levelNames.sort()[0];
-  this.page = this.createPlayLevelPage();
-  this.page.enterDoc();
+  this.gotoPage(this.createPlayLevelPage());
   this.page.setPaused(true);
   this.maybeForwardShaderTexts();
 };
@@ -67,21 +66,16 @@ PlayApp.prototype.exitLevel = function(fromAdventureName, fromLevelName, gameSta
       break;
     }
   }
-  this.page.exitDoc();
   if (i === levelNames.length - 1) {
-    this.page = new VictoryPage(this, gameState);
-    this.page.enterDoc();
+    this.gotoPage(new VictoryPage(this, gameState));
   } else {
     this.levelName = levelNames[i + 1];
-    this.page = this.createPlayLevelPage(gameState);
-    this.page.enterDoc();
+    this.gotoPage(this.createPlayLevelPage(gameState));
     this.maybeForwardShaderTexts();
   }
 };
 
 PlayApp.prototype.restartLevel = function(gameState) {
-  this.page.exitDoc();
-  this.page = this.createPlayLevelPage(gameState);
-  this.page.enterDoc();
+  this.gotoPage(this.createPlayLevelPage(gameState));
   this.maybeForwardShaderTexts();
 };

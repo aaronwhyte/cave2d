@@ -79,3 +79,10 @@ BaseApp.prototype.hasLevel = function(adventureName, levelName) {
   return this.getFileTree().hasDescendants(BaseApp.path(this.basePath, adventureName, levelName));
 };
 
+BaseApp.prototype.gotoPage = function(newPage) {
+  if (this.page) {
+    this.page.exitDoc();
+  }
+  this.page = newPage;
+  newPage.enterDoc();
+};
