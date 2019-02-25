@@ -12,6 +12,7 @@ function BaseApp(gameTitle, basePath, vertexShaderPath, fragmentShaderPath) {
   this.vertexShaderPath = vertexShaderPath;
   this.fragmentShaderPath = fragmentShaderPath;
   this.page = null;
+  this.inputDevices = new Set();
 }
 
 BaseApp.PATH_ADVENTURES = 'adventures';

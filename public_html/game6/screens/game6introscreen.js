@@ -17,9 +17,9 @@ function Game6IntroScreen(controller, canvas, renderer, stamps, sfx, adventureNa
   this.introGlyphs.initStamps(this.renderer.gl);
   this.printer = new Printer(this.renderer, this.introGlyphs.stamps);
 
-  this.startWithMouseFn = this.getStartFn('mouse');
-  this.startWithKeyFn = this.getStartFn('key');
-  this.startWithTouchFn = this.getStartFn('touch');
+  this.startWithMouseFn = this.getStartFn(InputDevices.MOUSE);
+  this.startWithKeyFn = this.getStartFn(InputDevices.KEYBOARD);
+  this.startWithTouchFn = this.getStartFn(InputDevices.TOUCHSCREEN);
 }
 Game6IntroScreen.prototype = new Game6BaseScreen();
 Game6IntroScreen.prototype.constructor = Game6IntroScreen;
@@ -28,11 +28,12 @@ Game6IntroScreen.FRICTION = 0.05;
 
 Game6IntroScreen.EXIT_DURATION = 30 * Game6IntroScreen.EXIT_WARP_MULTIPLIER;
 
-Game6IntroScreen.prototype.getStartFn = function(eventType) {
+Game6IntroScreen.prototype.getStartFn = function(inputDevice) {
   let self = this;
   return function(e) {
-    console.log('eventType', eventType);
-    self.controller.gotoMainMenu(eventType);
+    console.log('input device', inputDevice);
+    self.controller.app.inputDevices.add(inputDevice);
+    self.controller.gotoMainMenu();
   };
 };
 
