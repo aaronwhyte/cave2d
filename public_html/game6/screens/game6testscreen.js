@@ -2,8 +2,8 @@
  * @constructor
  * @extends {Game6PlayScreen}
  */
-function Game6TestScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  Game6PlayScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+function Game6TestScreen(page, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  Game6PlayScreen.call(this, page, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.shouldDrawStats = SHOULD_DRAW_STATS_DEFAULT;
 }

@@ -2,8 +2,8 @@
  * @constructor
  * @extends {Game6BaseScreen}
  */
-function Game6EditScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
-  Game6BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+function Game6EditScreen(page, canvas, renderer, stamps, sfx, adventureName, levelName) {
+  Game6BaseScreen.call(this, page, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.camera = new Camera(0.2, 0.6, Game6BaseScreen.CAMERA_VIEW_DIST);
   this.updateViewMatrix();
@@ -120,7 +120,7 @@ Game6EditScreen.prototype.drawScene = function() {
 
   // Animate whenever this thing draws.
   if (!this.paused) {
-    this.controller.requestAnimation();
+    this.page.requestAnimation();
   }
 };
 

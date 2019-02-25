@@ -2,16 +2,16 @@
  * @constructor
  * @extends {WorldScreen}
  */
-function Game6BaseScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+function Game6BaseScreen(page, canvas, renderer, stamps, sfx, adventureName, levelName) {
   let glyphs = new Glyphs(new GlyphMaker(0.4, 1.2), true);
   glyphs.initModels();
   let models = new Models(glyphs);
 
-  WorldScreen.call(this, controller, canvas, renderer, stamps, sfx,
+  WorldScreen.call(this, page, canvas, renderer, stamps, sfx,
       Game6BaseScreen.USE_FANS,
       Game6BaseScreen.SUPPORT_BATCH_DRAWING,
       models);
-  if (!controller) return; // generating prototype
+  if (!page) return; // generating prototype
 
   // override WorldScreen default value, to hep make this a walls-in-space level
   this.tileGridWallColor = 1;

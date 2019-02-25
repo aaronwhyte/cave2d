@@ -116,7 +116,7 @@ Game4EditScreen.prototype.drawScene = function() {
 
   // Animate whenever this thing draws.
   if (!this.paused) {
-    this.controller.requestAnimation();
+    this.page.requestAnimation();
   }
 };
 

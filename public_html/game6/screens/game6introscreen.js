@@ -2,11 +2,11 @@
  * @constructor
  * @extends {Game6BaseScreen}
  */
-function Game6IntroScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+function Game6IntroScreen(page, canvas, renderer, stamps, sfx, adventureName, levelName) {
   // Is this being used as a prototype?
-  if (!controller) return;
+  if (!page) return;
 
-  Game6BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+  Game6BaseScreen.call(this, page, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.vec4 = new Vec4();
   this.textMatrix = new Matrix44();
@@ -32,8 +32,8 @@ Game6IntroScreen.prototype.getStartFn = function(inputDevice) {
   let self = this;
   return function(e) {
     console.log('input device', inputDevice);
-    self.controller.app.inputDevices.add(inputDevice);
-    self.controller.gotoMainMenu();
+    self.page.app.inputDevices.add(inputDevice);
+    self.page.gotoMainMenu();
   };
 };
 
@@ -84,7 +84,7 @@ Game6IntroScreen.prototype.startExit = function(pos) {
 };
 
 Game6IntroScreen.prototype.exitLevel = function() {
-  this.controller.exitLevel(this.createGameState());
+  this.page.exitLevel(this.createGameState());
 };
 
 Game6IntroScreen.prototype.onHitEvent = function(e) {
@@ -113,7 +113,7 @@ Game6IntroScreen.prototype.drawScene = function() {
 
   // Animate whenever this thing draws.
   if (!this.paused) {
-    this.controller.requestAnimation();
+    this.page.requestAnimation();
   }
 };
 

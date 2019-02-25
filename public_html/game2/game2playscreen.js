@@ -20,7 +20,7 @@ function Game2PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.restartFn = function(e) {
     e = e || window.event;
-    self.controller.restartLevel();
+    self.page.restartLevel();
     e.preventDefault();
   };
 }
@@ -76,7 +76,7 @@ Game2PlayScreen.prototype.startExit = function(x, y) {
 };
 
 Game2PlayScreen.prototype.exitLevel = function() {
-  this.controller.exitLevel();
+  this.page.exitLevel();
 };
 
 Game2PlayScreen.prototype.snapCameraToPlayers = function() {
@@ -104,7 +104,7 @@ Game2PlayScreen.prototype.drawScene = function() {
 
   // Animate whenever this thing draws.
   if (!this.paused) {
-    this.controller.requestAnimation();
+    this.page.requestAnimation();
   }
 };
 

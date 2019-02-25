@@ -2,11 +2,11 @@
  * @constructor
  * @extends {Game6BaseScreen}
  */
-function Game6PlayScreen(controller, canvas, renderer, stamps, sfx, adventureName, levelName) {
+function Game6PlayScreen(page, canvas, renderer, stamps, sfx, adventureName, levelName) {
   // Is this being used as a prototype?
-  if (!controller) return;
+  if (!page) return;
 
-  Game6BaseScreen.call(this, controller, canvas, renderer, stamps, sfx, adventureName, levelName);
+  Game6BaseScreen.call(this, page, canvas, renderer, stamps, sfx, adventureName, levelName);
 
   this.updateViewMatrix();
 
@@ -28,7 +28,7 @@ function Game6PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.restartFn = function(e) {
     e = e || window.event;
-    self.controller.restartLevel();
+    self.page.restartLevel();
     e.preventDefault();
   };
 
@@ -271,7 +271,7 @@ Game6PlayScreen.prototype.startExit = function(pos) {
 };
 
 Game6PlayScreen.prototype.exitLevel = function() {
-  this.controller.exitLevel(this.createGameState());
+  this.page.exitLevel(this.createGameState());
 
   for (let slotName in this.slots) {
     this.slots[slotName].getControlMap().stopListening();
@@ -400,7 +400,7 @@ Game6PlayScreen.prototype.drawScene = function() {
 
   // Animate whenever this thing draws.
   if (!this.paused) {
-    this.controller.requestAnimation();
+    this.page.requestAnimation();
   }
 };
 

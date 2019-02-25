@@ -2,7 +2,7 @@
  * Extensible base-class for Screens that mainly wrap a World.
  * Some of this is here for backwards compat. It's better to use opt_supportBatchDrawing and opt_models, and not opt_stamps.
  *
- * @param {ScreenPage} controller
+ * @param {ScreenPage} page
  * @param {canvas} canvas
  * @param {Renderer} renderer
  * @param {Object=} opt_stamps  a map from stamp name to stamp, for one-off renderer drawing. Deprecated - use opt_models.
@@ -13,11 +13,11 @@
  * @constructor
  * @extends Screen
  */
-function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans, opt_supportBatchDrawing, opt_models) {
-  if (!controller) return; // generating prototype
+function WorldScreen(page, canvas, renderer, opt_stamps, sfx, opt_useFans, opt_supportBatchDrawing, opt_models) {
+  if (!page) return; // generating prototype
   Screen.call(this);
 
-  this.controller = controller;
+  this.page = page;
   this.canvas = canvas;
   this.renderer = renderer;
   this.stamps = opt_stamps;
@@ -169,7 +169,7 @@ function WorldScreen(controller, canvas, renderer, opt_stamps, sfx, opt_useFans,
 
   this.fullScreenFn = function(e) {
     e = e || window.event;
-    self.controller.requestFullScreen();
+    self.page.requestFullScreen();
     e.preventDefault();
   };
 
@@ -351,7 +351,7 @@ WorldScreen.prototype.setPaused = function(paused) {
     // resume
     this.hidePauseMenu();
     this.sounds.setMasterGain(this.oldMasterGain);
-    this.controller.requestAnimation();
+    this.page.requestAnimation();
   }
 };
 
@@ -373,7 +373,7 @@ WorldScreen.prototype.initWorld = function() {
 WorldScreen.prototype.getResizeFn = function() {
   let self = this;
   return function() {
-    self.controller.requestAnimation();
+    self.page.requestAnimation();
   }
 };
 

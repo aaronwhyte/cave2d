@@ -35,7 +35,7 @@ function Game4PlayScreen(controller, canvas, renderer, stamps, sfx, adventureNam
 
   this.restartFn = function(e) {
     e = e || window.event;
-    self.controller.restartLevel();
+    self.page.restartLevel();
     e.preventDefault();
   };
 
@@ -263,7 +263,7 @@ Game4PlayScreen.prototype.startExit = function(pos) {
 };
 
 Game4PlayScreen.prototype.exitLevel = function() {
-  this.controller.exitLevel(this.createGameState());
+  this.page.exitLevel(this.createGameState());
 
   for (let slotName in this.slots) {
     this.slots[slotName].getControlMap().stopListening();
@@ -413,7 +413,7 @@ Game4PlayScreen.prototype.drawScene = function() {
 
   // Animate whenever this thing draws.
   if (!this.paused) {
-    this.controller.requestAnimation();
+    this.page.requestAnimation();
   }
 };
 
