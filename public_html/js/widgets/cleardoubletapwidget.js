@@ -18,10 +18,7 @@ function ClearDoubleTapWidget(elem) {
   // wall time in epoch ms of last recorded tap within listening area
   this.tapTime = 0;
 
-  // When this is null, we're not tracking a touch.
-  this.touchId = null;
-
-  var self = this;
+  let self = this;
 
   this.touchStartListener = function(e) {
     self.onTouchStart(e);
@@ -29,8 +26,6 @@ function ClearDoubleTapWidget(elem) {
   // this.mouseDownListener = function(e) {
   //   self.onMouseDown(e);
   // };
-  this.listenerTracker = new ListenerTracker();
-
   this.widgetCuboid = new Cuboid();
 
   this.updateModelMatrix();
@@ -57,13 +52,15 @@ ClearDoubleTapWidget.prototype.getWidgetCuboid = function() {
 };
 
 ClearDoubleTapWidget.prototype.startListening = function() {
-  this.listenerTracker.addListener(this.elem, 'touchstart', this.touchStartListener);
-  // this.listenerTracker.addListener(this.elem, 'mousedown', this.mouseDownListener);
-  return this;
+  return this.setListening(true);
 };
 
 ClearDoubleTapWidget.prototype.stopListening = function() {
-  this.listenerTracker.removeAllListeners();
+  return this.setListening(false);
+};
+
+ClearDoubleTapWidget.prototype.setListening = function(listen) {
+  Events.setListening(listen, this.elem, 'touchstart', this.touchStartListener);
   return this;
 };
 
@@ -78,7 +75,7 @@ ClearDoubleTapWidget.prototype.removeDoubleTapListener = function(fn) {
 };
 
 ClearDoubleTapWidget.prototype.draw = function(renderer) {
-  var fraction = (Date.now() - this.tapTime) / ClearDoubleTapWidget.TIMEOUT;
+  let fraction = (Date.now() - this.tapTime) / ClearDoubleTapWidget.TIMEOUT;
   if (this.stamp && fraction >= 0 && fraction <= 1) {
     this.updateModelMatrix();
     renderer
@@ -99,9 +96,9 @@ ClearDoubleTapWidget.prototype.onMouseDown = function(e) {
 };
 
 ClearDoubleTapWidget.prototype.onTouchStart = function(e) {
-  var touches = e.changedTouches;
-  for (var i = 0; i < touches.length; i++) {
-    var touch = touches[i];
+  let touches = e.changedTouches;
+  for (let i = 0; i < touches.length; i++) {
+    let touch = touches[i];
     this.onDownXY(touch.pageX, touch.pageY);
     break;
   }
@@ -109,7 +106,7 @@ ClearDoubleTapWidget.prototype.onTouchStart = function(e) {
 
 ClearDoubleTapWidget.prototype.onDownXY = function(x, y) {
   if (this.widgetCuboid.overlapsXY(x, y)) {
-    var now = Date.now();
+    let now = Date.now();
     if (now - this.tapTime < ClearDoubleTapWidget.TIMEOUT) {
       this.tapTime = 0;
       this.pubsub.publish();
@@ -120,8 +117,8 @@ ClearDoubleTapWidget.prototype.onDownXY = function(x, y) {
 };
 
 ClearDoubleTapWidget.prototype.updateModelMatrix = function() {
-  var fraction = (Date.now() - this.tapTime) / ClearDoubleTapWidget.TIMEOUT;
-  var size = 1.5 * Math.cos((fraction * 1.5 - 0.5) * Math.PI/2);
+  let fraction = (Date.now() - this.tapTime) / ClearDoubleTapWidget.TIMEOUT;
+  let size = 1.5 * Math.cos((fraction * 1.5 - 0.5) * Math.PI/2);
   this.modelMatrix.toTranslateOpXYZ(this.widgetCuboid.pos.getX(), this.widgetCuboid.pos.getY(), -0.99)
       .multiply(this.mat44.toScaleOpXYZ(size * this.widgetCuboid.rad.getX(), size * this.widgetCuboid.rad.getY(), 1));
   return this;
