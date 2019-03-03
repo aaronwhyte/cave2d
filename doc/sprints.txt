@@ -135,11 +135,11 @@ make mines work again
 v massive collision response logic overhaul
 x add getHitState() to spirits to simplify game6hitresolver
 
-proper intro screen add/remove player
 main menu
 - create good default slot based on how player got past intro screen
-  - detect how plr got to main menu
+  v detect how plr left intro page
   - and remember
+    - pass default modality to ... App! It lives in the app. Later it can be in localstorage maybe.
   - go to main menu page from intro page
     - Refactor PlayApp (or BaseApp?) to have a bunch of pages with names, and a way to nav betweein them,
       without knowing about them all at compile time.
