@@ -3,7 +3,10 @@
  * @constructor
  */
 function PlayerSlot() {
+  // Each key is stateName and each value is a ControlMap.
   this.stateMap = {};
+
+  // The slot's current state.
   this.stateName = null;
 
   // hm...
@@ -26,10 +29,10 @@ PlayerSlot.prototype.add = function(stateName, controlMap) {
  */
 PlayerSlot.prototype.setState = function(newStateName) {
   if (this.stateName === newStateName) return;
-  var oldControls = this.stateMap[this.stateName];
+  let oldControls = this.stateMap[this.stateName];
   if (oldControls) oldControls.stopListening();
 
-  var newControls = this.stateMap[newStateName];
+  let newControls = this.stateMap[newStateName];
   if (newControls) newControls.startListening();
   this.stateName = newStateName;
   return this;
@@ -54,16 +57,17 @@ PlayerSlot.prototype.getControlMapForState = function(stateName) {
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.draw = function(renderer) {
-  var c = this.getControlMap();
+  let c = this.getControlMap();
   if (c) c.draw(renderer);
   return this;
 };
 
 /**
+ * Releases all the controls in the current state.
  * @returns {PlayerSlot}
  */
 PlayerSlot.prototype.releaseControls = function() {
-  var c = this.getControlMap();
+  let c = this.getControlMap();
   if (c) c.releaseControls();
   return this;
 };

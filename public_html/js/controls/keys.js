@@ -11,13 +11,13 @@ function Keys() {
 
 Keys.prototype.getKeyCodeForName = function(name) {
   if (!this.initialized) this.initKeys();
-  var key = this.byName[name];
+  let key = this.byName[name];
   return key ? key.keyCode : null;
 };
 
 Keys.prototype.getNameForKeyCode = function(keyCode) {
   if (!this.initialized) this.initKeys();
-  var key = this.byKeyCode[keyCode];
+  let key = this.byKeyCode[keyCode];
   return key ? key.name : null;
 };
 
@@ -25,20 +25,20 @@ Keys.prototype.getNameForKeyCode = function(keyCode) {
  *  Add all letters, numbers, and Key.Name values to byKeyCode and byName indexes.
  */
 Keys.prototype.initKeys = function() {
-  var self = this;
+  let self = this;
 
   function addKey(name, keyCode) {
-    var key = new Key(name, keyCode);
+    let key = new Key(name, keyCode);
     self.byName[name] = key;
     self.byKeyCode[keyCode] = key;
   }
 
   function addKeySequence(firstChar, firstKeyCode, lastChar) {
-    var firstCharCode = firstChar.charCodeAt(0);
-    var lastCharCode = lastChar.charCodeAt(0);
+    let firstCharCode = firstChar.charCodeAt(0);
+    let lastCharCode = lastChar.charCodeAt(0);
     if (firstCharCode > lastCharCode) throw Error(firstChar + ' > ' + lastChar);
-    var keyCode = firstKeyCode;
-    for (var charCode = firstCharCode; charCode <= lastCharCode; charCode++) {
+    let keyCode = firstKeyCode;
+    for (let charCode = firstCharCode; charCode <= lastCharCode; charCode++) {
       addKey(String.fromCharCode(charCode), keyCode);
       keyCode++;
     }

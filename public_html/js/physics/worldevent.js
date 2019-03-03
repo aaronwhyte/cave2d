@@ -88,7 +88,7 @@ WorldEvent.prototype.free = function() {
 };
 
 WorldEvent.prototype.toString = function() {
-  var s = [];
+  let s = [];
   s.push('{time: ', this.time, ', type: ', this.type);
   if (this.type === WorldEvent.TYPE_TIMEOUT) {
     s.push(', spiritId: ', this.spiritId, ', timeoutVal: ', this.timeoutVal);
