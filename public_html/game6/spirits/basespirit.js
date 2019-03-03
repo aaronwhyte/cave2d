@@ -332,6 +332,7 @@ BaseSpirit.prototype.schedulePassiveTimeout = function(time) {
 };
 
 BaseSpirit.prototype.doPassiveTimeout = function(world) {
+  this.distOutsideVisibleWorld = this.screen.distOutsideVisibleWorld(this.getBodyPos());
   let timeoutDuration = BaseSpirit.PASSIVE_TIMEOUT * (0.9 + 0.1 * Math.random());
   if (this.nextActiveTime < this.now()) {
     // There is no scheduled active time,
@@ -339,6 +340,10 @@ BaseSpirit.prototype.doPassiveTimeout = function(world) {
     let body = this.getBody();
     body.pathDurationMax = timeoutDuration * 1.01;
     body.invalidatePath();
+    if (this.distOutsideVisibleWorld < 10 * this.getBody().rad) {
+      // TODO use something more official than "10"
+      this.scheduleActiveTimeout(this.now() + this.getActiveTimeout() * Math.random());
+    }
   }
   this.schedulePassiveTimeout(this.now() + timeoutDuration);
 };
