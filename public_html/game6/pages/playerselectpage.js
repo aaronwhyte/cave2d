@@ -11,15 +11,19 @@ function PlayerSelectPage(app) {
 PlayerSelectPage.prototype = new Page();
 PlayerSelectPage.prototype.constructor = PlayerSelectPage;
 
+PlayerSelectPage.CSS_CLASS = 'PlayerSelectPage';
+
 PlayerSelectPage.prototype.enterDoc = function() {
   Page.prototype.enterDoc.call(this);
   this.exitPointerLock();
   let df = document.createDocumentFragment();
 
   this.div = Dom.ce('div', df);
+
   this.div.innerHTML = 'player select page goes here';
+
   document.body.appendChild(df);
-  document.body.classList.add('PlayerSelectPage');
+  document.body.classList.add(PlayerSelectPage.CSS_CLASS);
 
   let metaViewport = document.head.querySelector('meta[name="viewport"]');
   this.oldMetaViewportContent = metaViewport.content;
@@ -32,10 +36,7 @@ PlayerSelectPage.prototype.enterDoc = function() {
 PlayerSelectPage.prototype.exitDoc = function() {
   Page.prototype.exitDoc.call(this);
   document.body.removeChild(this.div);
-  document.body.classList.remove('PlayerSelectPage');
-  this.canvas = null;
-  this.pauseMenuDiv = null;
-  this.animationId = 0;
+  document.body.classList.remove(PlayerSelectPage.CSS_CLASS);
 
   let metaViewport = document.head.querySelector('meta[name="viewport"]');
   metaViewport.content = this.oldMetaViewportContent;

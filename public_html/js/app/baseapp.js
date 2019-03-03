@@ -12,7 +12,19 @@ function BaseApp(gameTitle, basePath, vertexShaderPath, fragmentShaderPath) {
   this.vertexShaderPath = vertexShaderPath;
   this.fragmentShaderPath = fragmentShaderPath;
   this.page = null;
-  this.inputDevices = new Set();
+
+  /**
+   * A list of input devices types known to be supported on this device
+   * @type {Array.<InputDeviceType>}
+   */
+  this.inputDevices = [];
+
+
+  /**
+   * A list of input devices types known to be supported on this device
+   * @type {Array.<PlayerSlot>}
+   */
+  this.playerSlots = [];
 }
 
 BaseApp.PATH_ADVENTURES = 'adventures';
@@ -86,4 +98,18 @@ BaseApp.prototype.gotoPage = function(newPage) {
   }
   this.page = newPage;
   newPage.enterDoc();
+};
+
+/**
+ * Add the input device at the beginning of the list, and remove it from its old spot
+ * if it was already in the list.
+ * @param d
+ */
+BaseApp.prototype.prioritizeInputDevice = function(d) {
+  this.inputDevices.splice(0, 0, d);
+  for (let i = 1; i < this.inputDevices.length; i++) {
+    if (this.inputDevices[i] === d) {
+      this.inputDevices.splice(i, 1);
+    }
+  }
 };

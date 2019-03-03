@@ -17,9 +17,10 @@ function Game6IntroScreen(page, canvas, renderer, stamps, sfx, adventureName, le
   this.introGlyphs.initStamps(this.renderer.gl);
   this.printer = new Printer(this.renderer, this.introGlyphs.stamps);
 
-  this.startWithMouseFn = this.getStartFn(InputDevices.MOUSE);
-  this.startWithKeyFn = this.getStartFn(InputDevices.KEYBOARD);
-  this.startWithTouchFn = this.getStartFn(InputDevices.TOUCHSCREEN);
+  // store the functions themselves so they can be unlistened
+  this.startWithMouseFn = this.getStartFn(InputDeviceType.MOUSE);
+  this.startWithKeyFn = this.getStartFn(InputDeviceType.KEYBOARD);
+  this.startWithTouchFn = this.getStartFn(InputDeviceType.TOUCHSCREEN);
 }
 Game6IntroScreen.prototype = new Game6BaseScreen();
 Game6IntroScreen.prototype.constructor = Game6IntroScreen;
@@ -29,11 +30,18 @@ Game6IntroScreen.FRICTION = 0.05;
 Game6IntroScreen.EXIT_DURATION = 30 * Game6IntroScreen.EXIT_WARP_MULTIPLIER;
 
 Game6IntroScreen.prototype.getStartFn = function(inputDevice) {
-  let self = this;
-  return function(e) {
-    console.log('input device', inputDevice);
-    self.page.app.inputDevices.add(inputDevice);
-    self.page.gotoMainMenu();
+  let page = this.page;
+  return function() {
+    if (inputDevice === InputDeviceType.MOUSE) {
+      // mouse implies keyboard
+      page.app.prioritizeInputDevice(InputDeviceType.KEYBOARD);
+    }
+    if (inputDevice === InputDeviceType.KEYBOARD) {
+      // keyboard implies mouse
+      page.app.prioritizeInputDevice(InputDeviceType.MOUSE);
+    }
+    page.app.prioritizeInputDevice(inputDevice);
+    page.gotoMainMenu();
   };
 };
 
@@ -57,7 +65,7 @@ Game6IntroScreen.prototype.setScreenListening = function(listen) {
       buttonEvents, this.fullScreenFn);
 
   // No pause means no resume, but I left this here anyhow.
-  Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
+  // Events.setListening(listen, document.querySelector('#resumeButton'), buttonEvents, this.pauseDownFn);
 
   // Now here's the real deal
   Events.setListening(listen, this.canvas, 'mousedown', this.startWithMouseFn);

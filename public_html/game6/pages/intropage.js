@@ -16,12 +16,18 @@ IntroPage.prototype = new ScreenPage();
 IntroPage.prototype.constructor = IntroPage;
 
 IntroPage.prototype.maybeCreateScreen = function() {
-  this.screen = new Game6IntroScreen(
-      this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx,
-      this.adventureName, this.levelName);
-  this.screen.initWorld();
-  this.screen.loadWorldFromJson(this.getLevelJsonObj());
-  this.screen.initDistGrid();
+  if (!this.screen) {
+    this.screen = new Game6IntroScreen(
+        this, this.canvas, this.renderer, Stamps.create(this.renderer), this.sfx,
+        this.adventureName, this.levelName);
+    this.screen.initWorld();
+    this.screen.loadWorldFromJson(this.getLevelJsonObj());
+    this.screen.initDistGrid();
+  }
+};
+
+IntroPage.prototype.gotoMainMenu = function() {
+  this.app.gotoPage(new PlayerSelectPage(this.app));
 };
 
 IntroPage.prototype.refreshPauseMenu = function() {

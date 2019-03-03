@@ -1,8 +1,8 @@
 /**
- * Actual physical input devices.
+ * Physical input device types.
  * @enum {String}
  */
-let InputDevices = {
+let InputDeviceType = {
   MOUSE: 'mouse',
   KEYBOARD: 'keyboard',
   TOUCHSCREEN: 'touchscreen',
