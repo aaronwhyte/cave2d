@@ -52,18 +52,18 @@ BaseScreen.prototype.getSpacebarFn = function() {
 
 BaseScreen.prototype.getMultiPointerLockFn = function() {
   var self = this;
-  return function(pointerEvent) {
+  return function() {
     if (self.pointerLockButtonSpirit) {
-      self.pointerLockButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+      self.pointerLockButtonSpirit.lookForClick(self.world, self.renderer);
     }
   };
 };
 
 BaseScreen.prototype.getFullscrnFn = function() {
   var self = this;
-  return function(pointerEvent) {
+  return function() {
     if (self.fullScrnButtonSpirit) {
-      self.fullScrnButtonSpirit.processPointerEvent(self.world, self.renderer, pointerEvent);
+      self.fullScrnButtonSpirit.lookForClick(self.world, self.renderer);
     }
   }
 };
