@@ -1,9 +1,10 @@
 /**
- * A tool for drawing one RigidModel, that batches up multiple draw calls in JS, in order
- * to minimize the number of actual GL calls, which helps performance on older mobile hardware.
- * (It's 2018 now, and I'm mainly talking about iPads from the few years.)
- * This keeps a buffer of the batchDraw data, automatically flushes when the buffer is full,
- * and allows for a manual flush() call when the caller knows there will be no more rawing this frame.
+ * A tool for drawing multiple instances of a RigidModel in one GL call.
+ * This batches up multiple draw calls in JS, in order to minimize the number of actual GL calls,
+ * which helps performance on older mobile hardware.
+ * (It's 2018 now, and I'm mainly talking about iPads from the lastfew years.)
+ * This keeps a buffer of the batchDraw data. This automatically flushes when the buffer is full,
+ * and there's a manual flush() for when the caller knows there will be no more drawing this frame.
  * @param {Array.<ModelStamp>} stamps An array of stamps, for N different instance counts.<br>
  * stamps[0] has one instance, stamps[1] has 2 instances, etc.
  * @param {Renderer} renderer
@@ -51,4 +52,3 @@ BatchDrawer.prototype.copyData = function(src, dest) {
     dest[start + i] = src[i];
   }
 };
-
