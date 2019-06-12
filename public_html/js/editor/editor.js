@@ -95,8 +95,8 @@ function Editor(host, canvas, renderer, glyphs, editorStamps, spiritConfigs, opt
 
   this.ongoingEditGesture = false;
 
-  this.digTileColor = 0;
-  this.fillTileColor = 1;
+  this.digTileColor = 1;
+  this.fillTileColor = 0;
 }
 
 /**
