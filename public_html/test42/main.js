@@ -1,9 +1,10 @@
 let canvas, ctx, dg;
 let v = new Vec2d();
+let v2 = new Vec2d();
 
-const scale = 4;
-const maxDist = 110;
-const speed = 1000;
+const scale = 16;
+const maxDist = 40;
+const speed = 200;
 
 function plot(x, y, c) {
   ctx.fillStyle = c;
@@ -20,19 +21,24 @@ function line(x0, y0, x1, y1) {
 function main() {
   canvas = document.querySelector('canvas');
   ctx = canvas.getContext("2d");
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.05) ';
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
   begin();
 }
 
 function begin() {
+  // ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  // ctx.fillRect(0, 0, canvas.width, canvas.height);
+  //
   dg = new DistGrid(1);
   dg.maxFillDist = maxDist;
   // make some ground and nearby start-points
-  let g = Math.random() * 500 + 5;
+  let g = Math.random() * 20 + 8;
   for (let i = 0; i < g; i++) {
-    v.setXY(0, Math.random() * 0.5 + 0.5).rot(2 * Math.PI * Math.random());
-    let x = Math.floor((canvas.width / 2 + v.x * canvas.width / 3) / scale);
-    let y = Math.floor((canvas.height / 2 + v.y * canvas.height / 3) / scale);
+    let r = (Math.random() + Math.random() + Math.random()) / 3;
+    v.setXY(0, r).rot(2 * Math.PI * Math.random());
+    let x = Math.floor((canvas.width / 2 + v.x * canvas.width / 2) / scale);
+    let y = Math.floor((canvas.height / 2 + v.y * canvas.height / 2) / scale);
     dg.setXY(x, y, x, y);
     dg.startKeys.delete(dg.keyAtPixelXY(x, y));
     if (!dg.getXY(x, y - 1)) {
@@ -41,7 +47,7 @@ function begin() {
     plot(x, y, 'red');
   }
   requestAnimationFrame(step);
-};
+}
 
 let lastSetCount = 0;
 
@@ -54,7 +60,7 @@ function step() {
     key = dg.lastVisitKey;
     dg.keyToPixelVec(key, v);
     pixel = dg.getXY(v.x, v.y);
-    if (!pixel) plot(v.x, v.y, 'rgba(0, 0, 0, 0.5');
+    plot(v.x, v.y, 'rgba(0, 0, 0, 1');
 
     if (lastSetCount !== dg.setCount) {
       lastSetCount = dg.setCount;
@@ -65,9 +71,15 @@ function step() {
         let c = Math.floor(255 * (1 - (0.5 + 0.5 * Math.cos(Math.PI * 20 * (pixel.pixelDist / dg.maxFillDist)))));
         // let c = Math.floor(255 * pixel.pixelDist / dg.maxFillDist);
         let style = 'rgb(' + [100, c, 255 - c].join(', ') + ')';
-        plot(v.x, v.y, style);
-        line(v.x, v.y, pixel.nearPixelX, pixel.nearPixelY);
-        plot(pixel.nearPixelX, pixel.nearPixelY, 'red');
+        //plot(v.x, v.y, style);
+        v2.set(v).addXY(-pixel.nearPixelX, -pixel.nearPixelY);
+        let len = v2.magnitude();
+        v2.scaleToLength(0.4);
+        // line(v.x - v2.x, v.y-v2.y, v.x+v2.x, v.y+v2.y); // spike
+        ctx.strokeStyle = `rgba(255, 0, 0, ${Math.max(0.5, len/10)})`;
+        line(v.x + v2.y, v.y-v2.x, v.x-v2.y, v.y+v2.x); // ripple
+        // line(v.x, v.y, pixel.nearPixelX, pixel.nearPixelY);
+        ///plot(pixel.nearPixelX, pixel.nearPixelY, 'red');
       }
     }
   }
