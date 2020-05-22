@@ -1,6 +1,6 @@
 /**
- * Baseclass for PlayApp and EditApp
- * @param {String} gameTitle
+ * Baseclass for PlayApp and EditApp.
+ * @param {String} gameTitle Used in pause menu
  * @param {Array.<String>} basePath
  * @param {String} vertexShaderPath
  * @param {String} fragmentShaderPath
