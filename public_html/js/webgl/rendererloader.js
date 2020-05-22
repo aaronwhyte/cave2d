@@ -28,7 +28,8 @@ RendererLoader.prototype.invalidate = function() {
   if (!this.renderer && vsText && fsText) {
     var gl = getWebGlContext(this.canvas, {
       alpha: false,
-      antialias: true
+      antialias: true,
+      powerPreference: 'high-performance',
     });
     var vs = compileShader(gl, vsText, gl.VERTEX_SHADER);
     var fs = compileShader(gl, fsText, gl.FRAGMENT_SHADER);

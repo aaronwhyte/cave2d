@@ -49,7 +49,8 @@ function main() {
 
   gl = getWebGlContext(canvas, {
     alpha: false,
-    antialias: true
+    antialias: true,
+    powerPreference: 'high-performance',
   });
 
   loadText('vertex-shader.txt', function(text) {

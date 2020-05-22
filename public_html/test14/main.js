@@ -44,7 +44,8 @@ function loop() {
 }
 
 function initGL(canvas) {
-  gl = canvas.getContext("experimental-webgl") || canvas.getContext("webgl");
+  var params = {powerPreference: 'high-performance'};
+  gl = canvas.getContext("experimental-webgl", params) || canvas.getContext("webgl", params);
   gl.viewportWidth = canvas.width;
   gl.viewportHeight = canvas.height;
   if (!gl) {

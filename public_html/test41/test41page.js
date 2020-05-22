@@ -132,7 +132,8 @@ Test41Page.prototype.onShaderTextChange = function(vertexShaderText, fragmentSha
 
   var gl = getWebGlContext(this.canvas, {
     alpha: false,
-    antialias: true
+    antialias: true,
+    powerPreference: 'high-performance',
   });
   var vs = compileShader(gl, vertexShaderText, gl.VERTEX_SHADER);
   var fs = compileShader(gl, fragmentShaderText, gl.FRAGMENT_SHADER);

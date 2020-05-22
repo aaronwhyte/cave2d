@@ -204,7 +204,8 @@ ScreenPage.prototype.onShaderTextChange = function(vertexShaderText, fragmentSha
 
   let gl = getWebGlContext(this.canvas, {
     alpha: false,
-    antialias: true
+    antialias: true,
+    powerPreference: 'high-performance',
   });
   let vs = compileShader(gl, vertexShaderText, gl.VERTEX_SHADER);
   let fs = compileShader(gl, fragmentShaderText, gl.FRAGMENT_SHADER);
