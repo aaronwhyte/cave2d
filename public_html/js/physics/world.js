@@ -979,7 +979,9 @@ World.prototype.maybeRecordBodyBefore = function(id, body) {
 };
 
 World.prototype.maybeRecordSpiritBefore = function(id, spirit) {
-  if (this.isChangeRecordingStarted() && !this.changeRecordingPaused && !(id in this.spiritBefores)) {
+  if (this.isChangeRecordingStarted() &&
+      !this.changeRecordingPaused &&
+      !(id in this.spiritBefores)) {
     this.spiritBefores[id] = spirit ? spirit.toJSON() : null;
   }
 };
