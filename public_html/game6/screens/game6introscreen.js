@@ -161,7 +161,7 @@ Game6IntroScreen.prototype.drawText = function() {
   // subtitle
   if (!this.startMatrix) this.startMatrix = new Matrix44();
   if (!this.nextCharMatrix) this.nextCharMatrix = new Matrix44();
-  let text = 'COMING SOON...';
+  let text = 'COMING... NEVER';
   let letterSize = 4;
   let spacingFraction = 3.1;
   this.startMatrix.toIdentity()
